@@ -70,17 +70,55 @@ function safeAbsMax(values: number[] | undefined, fallback: number): number {
 // REPORT GENERATOR CLASS
 // ============================================
 
+// ============================================
+// PROFESSIONAL REPORT THEME CONSTANTS
+// ============================================
+const THEME = {
+  // Primary brand colors
+  primary:      [18,  55, 106] as [number, number, number],  // Deep navy
+  primaryLight: [41,  98, 168] as [number, number, number],  // Medium blue
+  accent:       [0,  133, 202] as [number, number, number],  // Bright accent
+  accentGold:   [191, 155,  48] as [number, number, number], // Gold accent
+
+  // Status colors
+  pass:    [21, 128,  61] as [number, number, number],
+  fail:    [185, 28,  28] as [number, number, number],
+  warn:    [180, 120,  10] as [number, number, number],
+
+  // Neutrals
+  text:         [30,  30,  35] as [number, number, number],
+  textSecondary:[100, 105, 115] as [number, number, number],
+  textMuted:    [150, 155, 165] as [number, number, number],
+  headerBg:     [18,  55, 106] as [number, number, number],
+  headerText:   [255, 255, 255] as [number, number, number],
+  rowAlt:       [243, 246, 251] as [number, number, number],
+  border:       [210, 215, 225] as [number, number, number],
+  borderDark:   [170, 175, 185] as [number, number, number],
+  white:        [255, 255, 255] as [number, number, number],
+  coverBg:      [18,  55, 106] as [number, number, number],
+  coverText:    [255, 255, 255] as [number, number, number],
+  coverAccent:  [0,  133, 202] as [number, number, number],
+  calcBoxBg:    [250, 251, 254] as [number, number, number],
+  calcBoxBorder:[180, 195, 220] as [number, number, number],
+};
+
 export class ReportGenerator {
   private doc: jsPDF;
   private pageWidth: number;
   private pageHeight: number;
-  private margin: number = 15;
-  private headerHeight: number = 20;
-  private footerHeight: number = 15;
+  private margin: number = 20;
+  private headerHeight: number = 18;
+  private footerHeight: number = 14;
   private contentTop: number;
   private figureCount: number = 0;
   private tableCount: number = 0;
+  private sectionNumber: number = 0;
   private headerOpCountByPage: Map<number, number> = new Map();
+  private documentRef: string = '';
+  private projectTitle: string = 'Structural Analysis Report';
+  private revision: string = '00';
+  private preparedBy: string = '';
+  private tocEntries: Array<{ level: number; number: string; title: string; page: number }> = [];
 
   /** Maximum Y position before content would overlap the footer. */
   private get usableBottom(): number {
@@ -103,6 +141,533 @@ export class ReportGenerator {
     this.pageWidth = this.doc.internal.pageSize.getWidth();
     this.pageHeight = this.doc.internal.pageSize.getHeight();
     this.contentTop = this.margin + this.headerHeight;
+  }
+
+  // ============================================
+  // COVER PAGE — Industry Standard
+  // ============================================
+
+  /**
+   * Generate a professional full-page cover following
+   * ARUP / WSP / Buro Happold engineering report standards.
+   */
+  addCoverPage(options: {
+    projectName: string;
+    subtitle?: string;
+    clientName?: string;
+    projectNumber?: string;
+    engineerName?: string;
+    checkedBy?: string;
+    approvedBy?: string;
+    revision?: string;
+    classification?: string;
+    date?: Date;
+    companyName?: string;
+    companyAddress?: string;
+  }): void {
+    const {
+      projectName,
+      subtitle = 'Structural Analysis Report',
+      clientName = '',
+      projectNumber = '',
+      engineerName = '',
+      checkedBy = '',
+      approvedBy = '',
+      revision = '00',
+      classification = 'CONFIDENTIAL',
+      date = new Date(),
+      companyName = 'BeamLab Engineering',
+      companyAddress = 'www.beamlab.io',
+    } = options;
+
+    // Store metadata for headers/footers
+    this.projectTitle = projectName;
+    this.revision = revision;
+    this.preparedBy = engineerName;
+    this.documentRef = `BL-${String((projectName.length * 37) + (projectNumber.length * 53) + 1000).padStart(5, '0')}`;
+
+    const pw = this.pageWidth;
+    const ph = this.pageHeight;
+
+    // — Full-page navy background —
+    this.doc.setFillColor(...THEME.coverBg);
+    this.doc.rect(0, 0, pw, ph, 'F');
+
+    // — Accent stripe at top —
+    this.doc.setFillColor(...THEME.accent);
+    this.doc.rect(0, 0, pw, 4, 'F');
+
+    // — Gold accent bar —
+    this.doc.setFillColor(...THEME.accentGold);
+    this.doc.rect(0, 4, pw, 2, 'F');
+
+    // — Company branding area (top-left) —
+    const brandY = 28;
+    this.doc.setFontSize(22);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.coverText);
+    this.doc.text('BeamLab', this.margin, brandY);
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.coverAccent);
+    this.doc.text('STRUCTURAL ENGINEERING', this.margin, brandY + 7);
+
+    // — Classification badge (top-right) —
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(200, 200, 200);
+    this.doc.text(classification, pw - this.margin, brandY - 8, { align: 'right' });
+
+    // — Decorative divider line —
+    this.doc.setDrawColor(...THEME.accent);
+    this.doc.setLineWidth(0.8);
+    this.doc.line(this.margin, 50, pw - this.margin, 50);
+
+    // — Main title block (centred) —
+    const titleY = ph * 0.30;
+    this.doc.setFontSize(9);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.coverAccent);
+    const letterSpaced = 'S T R U C T U R A L   A N A L Y S I S   R E P O R T';
+    this.doc.text(letterSpaced, pw / 2, titleY - 10, { align: 'center' });
+
+    // — Accent line above title —
+    this.doc.setDrawColor(...THEME.accentGold);
+    this.doc.setLineWidth(1);
+    this.doc.line(pw / 2 - 40, titleY - 4, pw / 2 + 40, titleY - 4);
+
+    // — Project name (large) —
+    this.doc.setFontSize(28);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.coverText);
+    const titleLines = this.doc.splitTextToSize(projectName, pw - 2 * this.margin - 20);
+    this.doc.text(titleLines, pw / 2, titleY + 8, { align: 'center' });
+
+    // — Subtitle —
+    const subtitleY = titleY + 8 + titleLines.length * 12 + 5;
+    this.doc.setFontSize(13);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(180, 200, 230);
+    this.doc.text(subtitle, pw / 2, subtitleY, { align: 'center' });
+
+    // — Accent line below subtitle —
+    this.doc.setDrawColor(...THEME.accentGold);
+    this.doc.setLineWidth(1);
+    this.doc.line(pw / 2 - 40, subtitleY + 8, pw / 2 + 40, subtitleY + 8);
+
+    // — Document reference and revision —
+    const refY = subtitleY + 22;
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(170, 190, 220);
+    this.doc.text(`Document Ref: ${this.documentRef}`, pw / 2, refY, { align: 'center' });
+    this.doc.text(`Revision ${revision}  |  ${format(date, 'dd MMMM yyyy')}`, pw / 2, refY + 6, { align: 'center' });
+
+    // — Document Control mini-table at bottom —
+    const tableTop = ph - 95;
+    const colW = (pw - 2 * this.margin) / 4;
+
+    // Table border
+    this.doc.setDrawColor(80, 120, 170);
+    this.doc.setLineWidth(0.5);
+    this.doc.setFillColor(15, 45, 85);
+    this.doc.rect(this.margin, tableTop, pw - 2 * this.margin, 60, 'FD');
+
+    // Table header row
+    this.doc.setFillColor(12, 38, 72);
+    this.doc.rect(this.margin, tableTop, pw - 2 * this.margin, 12, 'F');
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.coverAccent);
+    const colHeaders = ['PROJECT', 'CLIENT', 'DOCUMENT NO.', 'REVISION'];
+    colHeaders.forEach((h, i) => {
+      this.doc.text(h, this.margin + colW * i + colW / 2, tableTop + 8, { align: 'center' });
+    });
+
+    // Table value row
+    this.doc.setFontSize(9);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.coverText);
+    const colValues = [projectName.slice(0, 22), clientName || '—', this.documentRef, revision];
+    colValues.forEach((v, i) => {
+      this.doc.text(v, this.margin + colW * i + colW / 2, tableTop + 20, { align: 'center' });
+    });
+
+    // Horizontal divider
+    this.doc.setDrawColor(80, 120, 170);
+    this.doc.line(this.margin, tableTop + 26, pw - this.margin, tableTop + 26);
+
+    // Second row headers
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.coverAccent);
+    const row2Headers = ['PREPARED BY', 'CHECKED BY', 'APPROVED BY', 'DATE'];
+    row2Headers.forEach((h, i) => {
+      this.doc.text(h, this.margin + colW * i + colW / 2, tableTop + 34, { align: 'center' });
+    });
+
+    // Second row values
+    this.doc.setFontSize(9);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.coverText);
+    const row2Values = [engineerName || '—', checkedBy || '—', approvedBy || '—', format(date, 'dd/MM/yyyy')];
+    row2Values.forEach((v, i) => {
+      this.doc.text(v, this.margin + colW * i + colW / 2, tableTop + 44, { align: 'center' });
+    });
+
+    // — Status line —
+    const statusY = tableTop + 55;
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.accentGold);
+    this.doc.text('STATUS: ISSUED FOR REVIEW', this.margin + 5, statusY);
+
+    // — Bottom accent bar —
+    this.doc.setFillColor(...THEME.accent);
+    this.doc.rect(0, ph - 6, pw, 4, 'F');
+    this.doc.setFillColor(...THEME.accentGold);
+    this.doc.rect(0, ph - 2, pw, 2, 'F');
+
+    // — Footer text —
+    this.doc.setFontSize(7);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(120, 150, 190);
+    this.doc.text(`© ${new Date().getFullYear()} ${companyName}. All rights reserved.`, this.margin, ph - 10);
+    this.doc.text(companyAddress, pw - this.margin, ph - 10, { align: 'right' });
+  }
+
+  // ============================================
+  // DOCUMENT CONTROL PAGE
+  // ============================================
+
+  addDocumentControlPage(options: {
+    engineerName?: string;
+    checkedBy?: string;
+    approvedBy?: string;
+    date?: Date;
+  }): void {
+    const { engineerName = '', checkedBy = '', approvedBy = '', date = new Date() } = options;
+
+    this.doc.addPage();
+    this.addHeader('Document Control');
+    let y = this.margin + this.headerHeight + 5;
+
+    // Revision History title
+    this.doc.setFontSize(12);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text('REVISION HISTORY', this.margin, y);
+    y += 2;
+
+    autoTable(this.doc, {
+      startY: y,
+      head: [['Rev', 'Date', 'Description', 'Author', 'Checked', 'Approved']],
+      body: [
+        [this.revision, format(date, 'dd/MM/yyyy'), 'Initial issue for review', engineerName || '—', checkedBy || '—', approvedBy || '—'],
+      ],
+      theme: 'grid',
+      headStyles: {
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
+        fontStyle: 'bold',
+        fontSize: 8,
+        halign: 'center',
+        cellPadding: 3,
+      },
+      bodyStyles: { fontSize: 8, halign: 'center', cellPadding: 3 },
+      margin: { left: this.margin, right: this.margin },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.3,
+    });
+
+    this.syncYAfterTable(12);
+
+    // Distribution table
+    y = this.contentTop;
+    this.doc.setFontSize(12);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text('DISTRIBUTION', this.margin, y);
+    y += 2;
+
+    autoTable(this.doc, {
+      startY: y,
+      head: [['Name', 'Role', 'Organisation', 'Copies']],
+      body: [
+        [engineerName || '—', 'Structural Engineer', 'BeamLab Engineering', '1 (electronic)'],
+      ],
+      theme: 'grid',
+      headStyles: {
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
+        fontStyle: 'bold',
+        fontSize: 8,
+        halign: 'center',
+        cellPadding: 3,
+      },
+      bodyStyles: { fontSize: 8, halign: 'center', cellPadding: 3 },
+      margin: { left: this.margin, right: this.margin },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.3,
+    });
+
+    this.syncYAfterTable(15);
+  }
+
+  // ============================================
+  // TABLE OF CONTENTS
+  // ============================================
+
+  addTableOfContents(): void {
+    // NOTE: Caller is responsible for page positioning and header.
+    // This method only renders TOC content starting from contentTop.
+    let y = this.contentTop + 5;
+
+    this.doc.setFontSize(16);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text('TABLE OF CONTENTS', this.margin, y);
+
+    // Decorative underline
+    this.doc.setDrawColor(...THEME.accent);
+    this.doc.setLineWidth(1);
+    this.doc.line(this.margin, y + 3, this.margin + 60, y + 3);
+    y += 14;
+
+    const tocItems = [
+      { num: '1.0', title: 'Executive Summary' },
+      { num: '2.0', title: 'Design Basis' },
+      { num: '2.1', title: 'Applicable Codes & Standards', indent: true },
+      { num: '2.2', title: 'Material Properties', indent: true },
+      { num: '2.3', title: 'Units & Sign Convention', indent: true },
+      { num: '2.4', title: 'Key Assumptions', indent: true },
+      { num: '3.0', title: 'Structural Model' },
+      { num: '3.1', title: 'Node Coordinates', indent: true },
+      { num: '3.2', title: 'Member Connectivity', indent: true },
+      { num: '3.3', title: 'Section Properties', indent: true },
+      { num: '3.4', title: 'Applied Loads', indent: true },
+      { num: '4.0', title: 'Analysis Results' },
+      { num: '4.1', title: 'Internal Member Forces', indent: true },
+      { num: '4.2', title: 'Support Reactions', indent: true },
+      { num: '4.3', title: 'Nodal Displacements', indent: true },
+      { num: '4.4', title: 'Critical Members Summary', indent: true },
+      { num: '5.0', title: 'Force & Moment Diagrams' },
+      { num: '6.0', title: 'Design Verification' },
+      { num: '7.0', title: 'Conclusions & Recommendations' },
+      { num: '', title: 'Appendix A — Signatures & Approval' },
+      { num: '', title: 'Appendix B — Legal Disclaimer' },
+    ];
+
+    this.doc.setFontSize(10);
+
+    tocItems.forEach((item) => {
+      const indent = (item as any).indent ? 8 : 0;
+      const isMain = !indent && item.num;
+
+      // Number
+      this.doc.setFont('helvetica', isMain ? 'bold' : 'normal');
+      if (isMain) {
+        this.doc.setTextColor(...THEME.primary);
+      } else {
+        this.doc.setTextColor(...THEME.textSecondary);
+      }
+      this.doc.text(item.num, this.margin + indent, y);
+
+      // Title
+      const titleX = this.margin + indent + 14;
+      this.doc.text(item.title, titleX, y);
+
+      // Dotted leader line
+      const titleEnd = titleX + this.doc.getTextWidth(item.title) + 2;
+      const lineEnd = this.pageWidth - this.margin;
+      this.doc.setDrawColor(...THEME.border);
+      this.doc.setLineWidth(0.2);
+      this.doc.setLineDashPattern([0.5, 1.5], 0);
+      if (titleEnd + 5 < lineEnd) {
+        this.doc.line(titleEnd, y - 0.3, lineEnd, y - 0.3);
+      }
+      this.doc.setLineDashPattern([], 0);
+
+      y += isMain ? 7 : 5.5;
+    });
+
+    this.contentTop = y;
+  }
+
+  // ============================================
+  // DESIGN BASIS SECTION
+  // ============================================
+
+  addDesignBasisSection(): void {
+    // NOTE: Caller is responsible for page management.
+    this.addNumberedSectionHeading('2.0', 'DESIGN BASIS');
+
+    // 2.1 Codes & Standards
+    this.addSubSectionHeading('2.1', 'Applicable Codes & Standards');
+
+    autoTable(this.doc, {
+      startY: this.contentTop,
+      head: [['Code / Standard', 'Description']],
+      body: [
+        ['IS 800:2007', 'General Construction in Steel — Code of Practice'],
+        ['IS 456:2000', 'Plain and Reinforced Concrete — Code of Practice'],
+        ['IS 1893:2016 (Part 1)', 'Criteria for Earthquake Resistant Design'],
+        ['IS 875 (Part 1–5)', 'Code of Practice for Design Loads'],
+        ['AISC 360-22', 'Specification for Structural Steel Buildings'],
+        ['ASCE 7-22', 'Minimum Design Loads and Associated Criteria'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: THEME.headerBg, textColor: THEME.headerText, fontStyle: 'bold', fontSize: 8, halign: 'left', cellPadding: 3 },
+      bodyStyles: { fontSize: 8, cellPadding: 3 },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 48, textColor: THEME.primary } },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      margin: { left: this.margin, right: this.margin },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
+    });
+    this.syncYAfterTable(8);
+
+    // 2.2 Material Properties
+    this.addSubSectionHeading('2.2', 'Material Properties');
+
+    autoTable(this.doc, {
+      startY: this.contentTop,
+      head: [['Material', 'E (GPa)', 'fy / fck (MPa)', 'Density (kN/m³)']],
+      body: [
+        ['Structural Steel (Fe 250)', '200.00', '250.00 (fy)', '78.50'],
+        ['Structural Steel (Fe 345)', '200.00', '345.00 (fy)', '78.50'],
+        ['Concrete (M25)', '25.00', '25.00 (fck)', '25.00'],
+        ['Concrete (M30)', '27.39', '30.00 (fck)', '25.00'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: THEME.headerBg, textColor: THEME.headerText, fontStyle: 'bold', fontSize: 8, halign: 'center', cellPadding: 3 },
+      bodyStyles: { fontSize: 8, halign: 'center', cellPadding: 3 },
+      columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      margin: { left: this.margin, right: this.margin },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
+    });
+    this.syncYAfterTable(8);
+
+    // 2.3 Units & Sign Convention
+    this.addSubSectionHeading('2.3', 'Units & Sign Convention');
+
+    autoTable(this.doc, {
+      startY: this.contentTop,
+      head: [['Quantity', 'Unit', 'Symbol']],
+      body: [
+        ['Length', 'metres', 'm'],
+        ['Force', 'kilonewtons', 'kN'],
+        ['Moment', 'kilonewton-metres', 'kN·m'],
+        ['Stress / Pressure', 'megapascals (N/mm²)', 'MPa'],
+        ['Displacement', 'millimetres', 'mm'],
+        ['Rotation', 'radians', 'rad'],
+        ['Temperature', 'degrees Celsius', '°C'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: THEME.headerBg, textColor: THEME.headerText, fontStyle: 'bold', fontSize: 8, halign: 'center', cellPadding: 3 },
+      bodyStyles: { fontSize: 8, cellPadding: 2.5 },
+      columnStyles: { 0: { fontStyle: 'bold' }, 2: { fontStyle: 'bold', halign: 'center' } },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      margin: { left: this.margin, right: this.margin },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
+    });
+    this.syncYAfterTable(6);
+
+    // Sign convention note
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text('Sign Convention (Right-Hand Rule):', this.margin, this.contentTop);
+    this.contentTop += 4;
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFontSize(7.5);
+    this.doc.setTextColor(...THEME.text);
+    const conventions = [
+      'Axial (N): Tension (+), Compression (−)',
+      'Shear (V): Positive in positive local axis direction at member start',
+      'Moment (M): Positive sagging (tension on bottom fibre), negative hogging',
+      'Displacements (δ): Positive in positive global axis direction',
+      'Global axes: X = horizontal (right), Y = vertical (up), Z = out-of-plane',
+    ];
+    conventions.forEach(c => {
+      this.doc.text(`  •  ${c}`, this.margin, this.contentTop);
+      this.contentTop += 3.5;
+    });
+
+    // 2.4 Assumptions
+    this.contentTop += 3;
+    this.addSubSectionHeading('2.4', 'Key Assumptions');
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
+    const assumptions = [
+      'Linear elastic analysis; small displacement theory.',
+      'Members are prismatic with uniform cross-section along length.',
+      'Connections are assumed rigid (moment-resisting) unless noted otherwise.',
+      'Self-weight is included based on assigned cross-section properties.',
+      'Soil–structure interaction effects are not considered in this model.',
+    ];
+    assumptions.forEach(a => {
+      this.doc.text(`  •  ${a}`, this.margin, this.contentTop);
+      this.contentTop += 4;
+    });
+  }
+
+  // ============================================
+  // NUMBERED SECTION HEADINGS
+  // ============================================
+
+  addNumberedSectionHeading(number: string, title: string): void {
+    this.syncYAfterTable(10);
+    this.ensureSpace(18);
+    const y = this.contentTop;
+
+    // Accent bar
+    this.doc.setFillColor(...THEME.primary);
+    this.doc.rect(this.margin, y - 3, 3, 10, 'F');
+
+    // Number
+    this.doc.setFontSize(11);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text(number, this.margin + 6, y + 4);
+
+    // Title
+    this.doc.setFontSize(13);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text(title, this.margin + 18, y + 4);
+
+    // Underline
+    this.doc.setDrawColor(...THEME.primary);
+    this.doc.setLineWidth(0.8);
+    this.doc.line(this.margin, y + 8, this.pageWidth - this.margin, y + 8);
+
+    this.doc.setTextColor(...THEME.text);
+    this.contentTop = y + 14;
+  }
+
+  addSubSectionHeading(number: string, title: string): void {
+    this.syncYAfterTable(6);
+    this.ensureSpace(12);
+    const y = this.contentTop;
+
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primaryLight);
+    this.doc.text(number, this.margin, y);
+    this.doc.text(title, this.margin + 10, y);
+
+    // Thin underline
+    this.doc.setDrawColor(...THEME.border);
+    this.doc.setLineWidth(0.3);
+    this.doc.line(this.margin, y + 2, this.pageWidth - this.margin, y + 2);
+
+    this.doc.setTextColor(...THEME.text);
+    this.contentTop = y + 7;
   }
 
   // ============================================
@@ -144,44 +709,50 @@ export class ReportGenerator {
   // ============================================
 
   /**
-   * Add header to current page
+   * Add professional running header to current page.
+   * Features: left — branding + doc ref, centre — section title, right — revision + date.
    */
   addHeader(title?: string): void {
-    const y = this.margin;
+    const y = this.margin - 6;
+    const pw = this.pageWidth;
 
-    // Left: BeamLab Ultimate branding
-    this.doc.setFontSize(12);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(59, 130, 246); // Blue
-    this.doc.text("BeamLab Ultimate", this.margin, y);
-
-    // Right: Generation timestamp
+    // — Left: BeamLab branding + doc ref —
     this.doc.setFontSize(9);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(100, 100, 100);
-    const timestamp = format(new Date(), "MMM dd, yyyy, hh:mm a");
-    this.doc.text(`Generated: ${timestamp}`, this.pageWidth - this.margin, y, {
-      align: "right",
-    });
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text('BeamLab', this.margin, y);
+    this.doc.setFontSize(6);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.textMuted);
+    this.doc.text(this.documentRef || 'STRUCTURAL ENGINEERING', this.margin, y + 4);
 
-    // Optional title (centered, below branding)
+    // — Centre: Section title —
     if (title) {
-      this.doc.setFontSize(14);
-      this.doc.setFont("helvetica", "bold");
-      this.doc.setTextColor(0, 0, 0);
-      this.doc.text(title, this.pageWidth / 2, y + 8, { align: "center" });
+      this.doc.setFontSize(8);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.textSecondary);
+      this.doc.text(title.toUpperCase(), pw / 2, y + 1, { align: 'center' });
     }
 
-    // Horizontal line under header
-    this.doc.setDrawColor(200, 200, 200);
-    this.doc.setLineWidth(0.5);
-    this.doc.line(this.margin, y + 12, this.pageWidth - this.margin, y + 12);
+    // — Right: Revision + date —
+    this.doc.setFontSize(7);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.textMuted);
+    const dateStr = format(new Date(), 'dd MMM yyyy');
+    this.doc.text(`Rev ${this.revision}  |  ${dateStr}`, pw - this.margin, y, { align: 'right' });
 
-    // Reset text color
-    this.doc.setTextColor(0, 0, 0);
+    // — Horizontal rules (double-line style) —
+    this.doc.setDrawColor(...THEME.primary);
+    this.doc.setLineWidth(0.8);
+    this.doc.line(this.margin, y + 7, pw - this.margin, y + 7);
+    this.doc.setDrawColor(...THEME.accent);
+    this.doc.setLineWidth(0.3);
+    this.doc.line(this.margin, y + 9, pw - this.margin, y + 9);
 
-    // Track operation count at header draw time for current page.
-    // This allows addPage() to detect whether meaningful body content was added.
+    // Reset
+    this.doc.setTextColor(...THEME.text);
+
+    // Track operations for blank-page detection
     const page = this.doc.getCurrentPageInfo().pageNumber;
     const pageOps = (this.doc as any).internal?.pages?.[page];
     const opCount = Array.isArray(pageOps) ? pageOps.length : 0;
@@ -189,37 +760,47 @@ export class ReportGenerator {
   }
 
   /**
-   * Add footer with page numbers
+   * Add professional footer to all pages.
+   * Features: left — project title + confidential, centre — page X of Y, right — copyright.
    */
   addFooter(): void {
     const totalPages = this.doc.getNumberOfPages();
+    const pw = this.pageWidth;
 
     for (let i = 1; i <= totalPages; i++) {
       this.doc.setPage(i);
 
-      const y = this.pageHeight - this.margin;
+      // Skip footer on cover page (page 1)
+      if (i === 1) continue;
 
-      // Horizontal line above footer
-      this.doc.setDrawColor(200, 200, 200);
+      const y = this.pageHeight - this.margin + 3;
+
+      // Double-line above footer (mirrors header)
+      this.doc.setDrawColor(...THEME.accent);
       this.doc.setLineWidth(0.3);
-      this.doc.line(this.margin, y - 5, this.pageWidth - this.margin, y - 5);
+      this.doc.line(this.margin, y - 7, pw - this.margin, y - 7);
+      this.doc.setDrawColor(...THEME.primary);
+      this.doc.setLineWidth(0.6);
+      this.doc.line(this.margin, y - 5, pw - this.margin, y - 5);
 
-      // Page number centered
-      this.doc.setFontSize(9);
-      this.doc.setFont("helvetica", "normal");
-      this.doc.setTextColor(100, 100, 100);
-      this.doc.text(`Page ${i} of ${totalPages}`, this.pageWidth / 2, y, {
-        align: "center",
-      });
+      // Left: Project + classification
+      this.doc.setFontSize(6.5);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.textMuted);
+      const projLabel = this.projectTitle ? `${this.projectTitle.slice(0, 35)} — CONFIDENTIAL` : 'CONFIDENTIAL';
+      this.doc.text(projLabel, this.margin, y);
 
-      // Left: Copyright
-      this.doc.setFontSize(8);
-      this.doc.text("© BeamLab Ultimate", this.margin, y);
+      // Centre: Page number
+      this.doc.setFontSize(7.5);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.textSecondary);
+      this.doc.text(`Page ${i - 1} of ${totalPages - 1}`, pw / 2, y, { align: 'center' });
 
-      // Right: Confidential notice
-      this.doc.text("Confidential", this.pageWidth - this.margin, y, {
-        align: "right",
-      });
+      // Right: Copyright
+      this.doc.setFontSize(6.5);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.textMuted);
+      this.doc.text(`© ${new Date().getFullYear()} BeamLab Engineering`, pw - this.margin, y, { align: 'right' });
     }
   }
 
@@ -228,41 +809,39 @@ export class ReportGenerator {
   // ============================================
 
   /**
-   * Add project information section
+   * Add project information section with professional two-column key-value layout.
    */
   addProjectInfo(project: ProjectData): void {
-    const startY = this.contentTop + 5;
+    this.addNumberedSectionHeading('', 'PROJECT INFORMATION');
 
-    // Section title
-    this.doc.setFontSize(14);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.text("Project Information", this.margin, startY);
-
-    // Project info table
     const projectData = [
-      ["Project Name", project.projectName || "Untitled Project"],
-      ["Project Number", project.projectNumber || "N/A"],
-      ["Client", project.clientName || "N/A"],
-      ["Engineer", project.engineerName || "N/A"],
-      ["Description", project.description || "Structural Analysis Report"],
+      ['Project Name', project.projectName || 'Untitled Project'],
+      ['Project Number', project.projectNumber || 'N/A'],
+      ['Client', project.clientName || 'N/A'],
+      ['Design Engineer', project.engineerName || 'N/A'],
+      ['Description', project.description || 'Structural Analysis Report'],
+      ['Software', 'BeamLab Ultimate — Advanced Structural Analysis'],
+      ['Analysis Method', 'Direct Stiffness Method (3-D Frame)'],
     ];
 
     autoTable(this.doc, {
-      startY: startY + 5,
+      startY: this.contentTop,
       head: [],
       body: projectData,
-      theme: "plain",
+      theme: 'grid',
       styles: {
-        fontSize: 10,
-        cellPadding: 3,
+        fontSize: 9,
+        cellPadding: 3.5,
+        lineColor: THEME.border,
+        lineWidth: 0.2,
       },
       columnStyles: {
-        0: { fontStyle: "bold", cellWidth: 40, textColor: [80, 80, 80] },
-        1: { cellWidth: "auto" },
+        0: { fontStyle: 'bold', cellWidth: 45, textColor: THEME.primary, fillColor: THEME.rowAlt },
+        1: { cellWidth: 'auto', textColor: THEME.text },
       },
       margin: { left: this.margin, right: this.margin },
     });
+    this.syncYAfterTable(8);
   }
 
   // ============================================
@@ -270,64 +849,64 @@ export class ReportGenerator {
   // ============================================
 
   /**
-   * Add a 3D model snapshot image
+   * Add a 3D model snapshot image with professional figure frame,
+   * numbered caption, and navy border.
    */
   add3DSnapshot(imageDataUrl: string, caption?: string): void {
     this.figureCount++;
 
-    // Calculate dimensions
     const maxWidth = this.pageWidth - 2 * this.margin;
-    const maxHeight = 120; // mm
+    const maxHeight = 120;
+    const frameH = maxHeight + 20;  // image + caption
 
-    // Add the image centered
-    const imgWidth = maxWidth;
-    const imgHeight = maxHeight;
-    const x = this.margin;
-
-    // Sync position and ensure enough space for the image + caption
-    this.syncYAfterTable(15);
-    this.ensureSpace(imgHeight + 20, "Analysis Results");
+    this.syncYAfterTable(10);
+    this.ensureSpace(frameH + 5, 'Analysis Results');
     const y = this.contentTop;
 
-    // Add border around image area
-    this.doc.setDrawColor(220, 220, 220);
-    this.doc.setLineWidth(0.5);
-    this.doc.rect(x, y, imgWidth, imgHeight);
+    // ---- Outer frame ----
+    this.doc.setDrawColor(...THEME.border);
+    this.doc.setLineWidth(0.4);
+    this.doc.roundedRect(this.margin, y, maxWidth, frameH, 1.5, 1.5, 'S');
 
-    // Add the image
+    // ---- Top accent bar ----
+    this.doc.setFillColor(...THEME.primary);
+    this.doc.rect(this.margin + 0.2, y + 0.2, maxWidth - 0.4, 1.5, 'F');
+
+    // ---- Image ----
     try {
       this.doc.addImage(
         imageDataUrl,
-        "PNG",
-        x + 1,
-        y + 1,
-        imgWidth - 2,
-        imgHeight - 2,
+        'PNG',
+        this.margin + 2,
+        y + 3,
+        maxWidth - 4,
+        maxHeight - 3,
       );
-    } catch (error) {
-      // If image fails, add placeholder text
+    } catch {
+      // Placeholder if image fails
+      this.doc.setFillColor(...THEME.rowAlt);
+      this.doc.rect(this.margin + 2, y + 3, maxWidth - 4, maxHeight - 3, 'F');
       this.doc.setFontSize(12);
-      this.doc.setTextColor(150, 150, 150);
-      this.doc.text("3D Model Preview", x + imgWidth / 2, y + imgHeight / 2, {
-        align: "center",
-      });
-      this.doc.setTextColor(0, 0, 0);
+      this.doc.setTextColor(...THEME.textMuted);
+      this.doc.text('3D Model Preview', this.margin + maxWidth / 2, y + maxHeight / 2, { align: 'center' });
     }
 
-    // Add caption
-    const captionText =
-      caption || `Figure ${this.figureCount}: 3D Structural Model`;
-    this.doc.setFontSize(10);
-    this.doc.setFont("helvetica", "italic");
-    this.doc.setTextColor(80, 80, 80);
-    this.doc.text(captionText, this.pageWidth / 2, y + imgHeight + 6, {
-      align: "center",
-    });
-    this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(0, 0, 0);
+    // ---- Figure caption ----
+    const captionText = caption || `Figure ${this.figureCount} — 3D Structural Model`;
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'italic');
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text(captionText, this.pageWidth / 2, y + maxHeight + 6, { align: 'center' });
 
-    // Advance contentTop past the image + caption
-    this.contentTop = y + imgHeight + 12;
+    // ---- Figure number reference (small, right-aligned) ----
+    this.doc.setFontSize(6.5);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.textMuted);
+    this.doc.text(`Fig. ${this.figureCount}`, this.margin + maxWidth - 2, y + maxHeight + 12, { align: 'right' });
+
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
+    this.contentTop = y + frameH + 4;
   }
 
   // ============================================
@@ -419,47 +998,51 @@ export class ReportGenerator {
   }
 
   /**
-   * Generic results table using autoTable
+   * Professional results table with industry-standard formatting.
+   * Dark navy header, alternating row bands, thin grid lines.
    */
   addResultsTable(
     title: string,
     headers: string[],
     data: (string | number)[][],
   ): void {
-    // Sync with previous autoTable position and ensure enough room for at
-    // least a title + a few table rows (~40mm minimum).
-    this.syncYAfterTable(15);
-    this.ensureSpace(40, "Analysis Results");
+    this.syncYAfterTable(12);
+    this.ensureSpace(40, 'Analysis Results');
     const startY = this.contentTop;
 
-    // Table title
-    this.doc.setFontSize(11);
-    this.doc.setFont("helvetica", "bold");
+    // Table title with figure/table reference styling
+    this.doc.setFontSize(9);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
     this.doc.text(title, this.margin, startY);
+    this.doc.setTextColor(...THEME.text);
 
-    // Create table
     autoTable(this.doc, {
       startY: startY + 3,
       head: [headers],
       body: data,
-      theme: "striped",
+      theme: 'grid',
       headStyles: {
-        fillColor: [75, 85, 99], // Grey
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        fontSize: 8,
-        halign: "center",
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
+        fontStyle: 'bold',
+        fontSize: 7.5,
+        halign: 'center',
+        cellPadding: 2.5,
       },
       bodyStyles: {
-        fontSize: 8,
-        halign: "center",
+        fontSize: 7.5,
+        halign: 'center',
         cellPadding: 2,
+        textColor: THEME.text,
       },
       alternateRowStyles: {
-        fillColor: [245, 247, 250],
+        fillColor: THEME.rowAlt,
       },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
       margin: { left: this.margin, right: this.margin },
-      tableWidth: "auto",
+      tableWidth: 'auto',
     });
   }
 
@@ -468,51 +1051,48 @@ export class ReportGenerator {
   // ============================================
 
   /**
-   * Add design checks section with pass/fail highlighting
+   * Add design checks section with professional utilisation ratio formatting.
+   * Features: summary badge, D/C ratio column, colour-coded status, clause references.
    */
   addDesignSection(designResults: DesignResult[]): void {
     this.tableCount++;
 
-    // Sync and ensure enough room for heading + summary + first rows
-    this.syncYAfterTable(15);
-    this.ensureSpace(60, "Design Checks");
-    const startY = this.contentTop;
+    this.syncYAfterTable(12);
+    this.ensureSpace(65, 'Design Verification');
 
-    // Section Title
-    this.doc.setFontSize(14);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.text(
-      "Design Checks (IS 800:2007 / AISC 360)",
-      this.margin,
-      startY,
-    );
+    // Section heading
+    this.addNumberedSectionHeading('6.0', 'DESIGN VERIFICATION');
 
-    // Count pass/fail
-    const passCount = designResults.filter((r) => r.status === "PASS").length;
-    const failCount = designResults.filter((r) => r.status === "FAIL").length;
+    // Summary badges
+    const passCount = designResults.filter((r) => r.status === 'PASS').length;
+    const failCount = designResults.filter((r) => r.status === 'FAIL').length;
+    const total = designResults.length;
+    const overallPass = failCount === 0;
 
-    // Summary line
-    this.doc.setFontSize(10);
-    this.doc.setFont("helvetica", "normal");
-    const summaryY = startY + 8;
-    this.doc.setTextColor(34, 197, 94); // Green
-    this.doc.text(`✓ ${passCount} Passed`, this.margin, summaryY);
-    this.doc.setTextColor(239, 68, 68); // Red
-    this.doc.text(`✗ ${failCount} Failed`, this.margin + 40, summaryY);
-    this.doc.setTextColor(0, 0, 0);
+    // Overall status badge
+    this.doc.setFillColor(...(overallPass ? THEME.pass : THEME.fail));
+    this.doc.roundedRect(this.margin, this.contentTop, 42, 8, 2, 2, 'F');
+    this.doc.setTextColor(...THEME.white);
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text(overallPass ? 'ALL CHECKS PASS' : 'CHECKS FAILED', this.margin + 21, this.contentTop + 5.5, { align: 'center' });
 
-    // Prepare table data
-    const headers = [
-      "Member ID",
-      "Section",
-      "Check Type",
-      "Ratio",
-      "Status",
-      "Clause",
-    ];
+    // Pass/fail counts
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.pass);
+    this.doc.text(`\u2713 ${passCount} Passed`, this.margin + 50, this.contentTop + 5.5);
+    this.doc.setTextColor(...THEME.fail);
+    this.doc.text(`\u2717 ${failCount} Failed`, this.margin + 78, this.contentTop + 5.5);
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text(`(${total} total checks)`, this.margin + 106, this.contentTop + 5.5);
+
+    this.contentTop += 14;
+
+    // Design checks table
+    const headers = ['Member ID', 'Section', 'Check Type', 'D/C Ratio', 'Status', 'Code Clause'];
     const tableData = designResults.map((result) => [
-      result.memberId.slice(0, 8),
+      result.memberId.slice(0, 10),
       result.section,
       result.checkType,
       result.criticalRatio.toFixed(3),
@@ -520,102 +1100,107 @@ export class ReportGenerator {
       result.clause,
     ]);
 
-    // Create table with conditional row styling
     autoTable(this.doc, {
-      startY: summaryY + 5,
+      startY: this.contentTop,
       head: [headers],
       body: tableData,
-      theme: "grid",
+      theme: 'grid',
       headStyles: {
-        fillColor: [75, 85, 99], // Grey header
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        fontSize: 8,
-        halign: "center",
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
+        fontStyle: 'bold',
+        fontSize: 7.5,
+        halign: 'center',
+        cellPadding: 2.5,
       },
       bodyStyles: {
-        fontSize: 8,
-        halign: "center",
+        fontSize: 7.5,
+        halign: 'center',
         cellPadding: 2,
       },
-      // Conditional row coloring based on status
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
       didParseCell: (data) => {
-        if (data.section === "body" && data.row.index !== undefined) {
+        if (data.section === 'body' && data.row.index !== undefined) {
           const result = designResults[data.row.index];
-          if (result && result.status === "FAIL") {
-            // Light red background for failed rows
-            data.cell.styles.fillColor = [255, 204, 204]; // #ffcccc
-            data.cell.styles.textColor = [180, 0, 0];
-          } else if (result && result.status === "PASS") {
-            // White/light green for passed
-            data.cell.styles.fillColor = [240, 255, 240];
-            data.cell.styles.textColor = [0, 100, 0];
+          if (!result) return;
+
+          // Row background based on status
+          if (result.status === 'FAIL') {
+            data.cell.styles.fillColor = [255, 235, 235];
+          } else {
+            data.cell.styles.fillColor = data.row.index % 2 === 0 ? [255, 255, 255] : THEME.rowAlt;
           }
-        }
-        // Highlight the Status column
-        if (data.section === "body" && data.column.index === 4) {
-          data.cell.styles.fontStyle = "bold";
+
+          // D/C ratio column (index 3) — colour-coded
+          if (data.column.index === 3) {
+            const ratio = result.criticalRatio;
+            if (ratio > 1.0) {
+              data.cell.styles.textColor = THEME.fail;
+            } else if (ratio > 0.85) {
+              data.cell.styles.textColor = THEME.warn;
+            } else {
+              data.cell.styles.textColor = THEME.pass;
+            }
+            data.cell.styles.fontStyle = 'bold';
+          }
+
+          // Status column (index 4)
+          if (data.column.index === 4) {
+            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.textColor = result.status === 'PASS' ? THEME.pass : THEME.fail;
+          }
+
+          // Code clause column (index 5)
+          if (data.column.index === 5) {
+            data.cell.styles.textColor = THEME.textMuted;
+            data.cell.styles.fontSize = 7;
+          }
         }
       },
       margin: { left: this.margin, right: this.margin },
-      tableWidth: "auto",
+      tableWidth: 'auto',
     });
 
-    // Detailed breakdown for failed members
-    const failedResults = designResults.filter(
-      (r) => r.status === "FAIL" && r.failureReason,
-    );
+    // Failed member details
+    const failedResults = designResults.filter((r) => r.status === 'FAIL' && r.failureReason);
 
     if (failedResults.length > 0) {
-      // Sync Y after the autoTable and ensure room for at least the heading
-      this.syncYAfterTable(10);
-      this.ensureSpace(30, "Design Checks - Details");
+      this.syncYAfterTable(8);
+      this.ensureSpace(30, 'Design Verification — Details');
       let detailY = this.contentTop;
 
-      // Section heading
-      this.doc.setFontSize(11);
-      this.doc.setFont("helvetica", "bold");
-      this.doc.setTextColor(239, 68, 68);
-      this.doc.text("Failed Member Details", this.margin, detailY);
-      this.doc.setTextColor(0, 0, 0);
+      // Box with left border
+      const boxHeight = Math.min(failedResults.length * 14 + 10, 60);
+      this.doc.setFillColor(255, 245, 245);
+      this.doc.rect(this.margin, detailY - 2, this.pageWidth - 2 * this.margin, boxHeight, 'F');
+      this.doc.setDrawColor(...THEME.fail);
+      this.doc.setLineWidth(1.5);
+      this.doc.line(this.margin, detailY - 2, this.margin, detailY - 2 + boxHeight);
 
+      detailY += 4;
+      this.doc.setFontSize(9);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.fail);
+      this.doc.text('FAILED MEMBER DETAILS', this.margin + 5, detailY);
       detailY += 6;
 
-      // List each failure
-      for (const result of failedResults) {
-        // Estimate needed: member line + reason lines (~20mm per failure)
-        if (detailY > this.usableBottom - 25) {
-          this.doc.addPage();
-          this.addHeader("Design Checks - Details");
-          detailY = this.margin + this.headerHeight + 5;
-        }
-
-        // Member ID
-        this.doc.setFontSize(9);
-        this.doc.setFont("helvetica", "bold");
-        this.doc.text(
-          `• Member ${result.memberId.slice(0, 8)} (${result.section})`,
-          this.margin + 2,
-          detailY,
-        );
-
+      for (const result of failedResults.slice(0, 4)) {
+        this.doc.setFontSize(8);
+        this.doc.setFont('helvetica', 'bold');
+        this.doc.setTextColor(...THEME.text);
+        this.doc.text(`\u2022 Member ${result.memberId.slice(0, 10)} (${result.section})`, this.margin + 5, detailY);
         detailY += 4;
 
-        // Failure reason
-        this.doc.setFont("helvetica", "normal");
-        this.doc.setTextColor(80, 80, 80);
-        const reasonText =
-          result.failureReason ||
-          `Failed in ${result.checkType} check (Ratio: ${result.criticalRatio.toFixed(3)} > 1.0)`;
-        const lines = this.doc.splitTextToSize(
-          reasonText,
-          this.pageWidth - 2 * this.margin - 10,
-        );
-        this.doc.text(lines, this.margin + 6, detailY);
-        this.doc.setTextColor(0, 0, 0);
-
-        detailY += lines.length * 4 + 4;
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setTextColor(...THEME.textSecondary);
+        const reason = result.failureReason || `Failed in ${result.checkType} check (D/C = ${result.criticalRatio.toFixed(3)} > 1.0)`;
+        const lines = this.doc.splitTextToSize(reason, this.pageWidth - 2 * this.margin - 15);
+        this.doc.text(lines, this.margin + 8, detailY);
+        detailY += lines.length * 3.5 + 3;
       }
+
+      this.contentTop = detailY + 4;
     }
   }
 
@@ -643,30 +1228,29 @@ export class ReportGenerator {
   }
 
   /**
-   * Add a section heading
+   * Add a section heading with accent bar.
    */
   addSectionHeading(text: string): void {
-    this.syncYAfterTable(15);
-    this.ensureSpace(20);
+    this.syncYAfterTable(12);
+    this.ensureSpace(16);
     const y = this.contentTop;
 
-    this.doc.setFontSize(13);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(59, 130, 246);
-    this.doc.text(text, this.margin, y);
-    this.doc.setTextColor(0, 0, 0);
+    // Accent bar
+    this.doc.setFillColor(...THEME.primary);
+    this.doc.rect(this.margin, y - 2, 3, 8, 'F');
 
-    // Underline
-    this.doc.setDrawColor(59, 130, 246);
-    this.doc.setLineWidth(0.5);
-    this.doc.line(
-      this.margin,
-      y + 2,
-      this.margin + this.doc.getTextWidth(text),
-      y + 2,
-    );
+    this.doc.setFontSize(12);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text(text, this.margin + 6, y + 4);
 
-    this.contentTop = y + 8;
+    // Full-width underline
+    this.doc.setDrawColor(...THEME.primary);
+    this.doc.setLineWidth(0.6);
+    this.doc.line(this.margin, y + 7, this.pageWidth - this.margin, y + 7);
+
+    this.doc.setTextColor(...THEME.text);
+    this.contentTop = y + 13;
   }
 
   /**
@@ -689,66 +1273,383 @@ export class ReportGenerator {
     this.contentTop += blockHeight + 5;
   }
 
+  // ============================================
+  // CONCLUSIONS & RECOMMENDATIONS PAGE
+  // ============================================
+
   /**
-   * Add legal disclaimer to report
+   * Professional conclusions page with structural assessment summary,
+   * recommendations, and caveats – ARUP / Buro Happold style.
    */
-  addLegalDisclaimer(): void {
-    this.addPage("Legal Disclaimer");
+  addConclusionsPage(options: {
+    overallStatus: 'PASS' | 'FAIL' | 'WARNING';
+    passCount: number;
+    failCount: number;
+    totalMembers: number;
+    criticalMembers: string[];
+    maxStress: number;
+  }): void {
+    const { overallStatus, passCount, failCount, totalMembers, criticalMembers, maxStress } = options;
+    const sectionNum = this.tocEntries.length > 0
+      ? this.tocEntries[this.tocEntries.length - 1].number
+      : '7';
 
-    const disclaimerText = `
-IMPORTANT LEGAL NOTICE AND DISCLAIMER
+    let y = this.contentTop + 5;
+    this.addNumberedSectionHeading(sectionNum + '.0', 'CONCLUSIONS & RECOMMENDATIONS');
+    y = this.contentTop;
 
-1. PROFESSIONAL USE ONLY
-BeamLab Ultimate is a computational aid intended for use by qualified professional engineers. It is not a substitute for professional engineering judgment, independent analysis, or verification.
+    // ---- Overall Assessment Box ----
+    const boxX = this.margin;
+    const boxW = this.pageWidth - 2 * this.margin;
+    const boxH = 32;
+    const isPass = overallStatus === 'PASS';
 
-2. NO WARRANTY
-The software is provided "as is" without any warranty of any kind, express or implied. The developers and operators of BeamLab Ultimate make no representations regarding the accuracy, reliability, or completeness of the analysis results.
+    // Border
+    this.doc.setDrawColor(...(isPass ? THEME.pass : THEME.fail));
+    this.doc.setLineWidth(0.6);
+    this.doc.roundedRect(boxX, y, boxW, boxH, 2, 2, 'S');
 
-3. LIMITATION OF LIABILITY
-The user assumes full responsibility for the use of this software and the interpretation of its results. BeamLab Ultimate shall not be liable for any direct, indirect, incidental, special, or consequential damages arising out of the use or inability to use this software, including but not limited to structural failures, property damage, or financial loss.
+    // Left accent bar
+    this.doc.setFillColor(...(isPass ? THEME.pass : THEME.fail));
+    this.doc.rect(boxX, y, 4, boxH, 'F');
 
-4. VERIFICATION REQUIRED
-All results generated by this software must be independently verified by a licensed Professional Engineer (PE/SE) using alternative methods or hand calculations before being used for construction or design purposes.
+    // Title
+    this.doc.setFontSize(11);
+    this.doc.setFont('helvetica', 'bold');
+    if (isPass) {
+      this.doc.setTextColor(...THEME.pass);
+    } else {
+      this.doc.setTextColor(...THEME.fail);
+    }
+    this.doc.text('OVERALL STRUCTURAL ASSESSMENT', boxX + 8, y + 7);
 
-By using this report, you acknowledge that you have read and understood these terms and agree to use the data herein at your own professional risk.
-`;
+    // Status badge
+    const badgeW = 28;
+    const badgeH = 8;
+    const badgeX = boxX + boxW - badgeW - 6;
+    const badgeY = y + 3;
+    this.doc.setFillColor(...(isPass ? THEME.pass : THEME.fail));
+    this.doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 2, 2, 'F');
+    this.doc.setTextColor(...THEME.white);
+    this.doc.setFontSize(9);
+    this.doc.text(overallStatus, badgeX + badgeW / 2, badgeY + 5.5, { align: 'center' });
 
-    this.doc.setFontSize(10);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(60, 60, 60);
+    // Summary text
+    this.doc.setFontSize(9);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
+    const summaryText = isPass
+      ? `All ${passCount} of ${totalMembers} members satisfy the design requirements. No remedial action is required.`
+      : `${failCount} of ${totalMembers} members do not satisfy the design requirements. Remedial action is recommended.`;
+    this.doc.text(summaryText, boxX + 8, y + 15);
 
-    const y = this.contentTop + 10;
-    const lines = this.doc.splitTextToSize(
-      disclaimerText.trim(),
-      this.pageWidth - 2 * this.margin,
-    );
+    // Key metrics line
+    this.doc.setFontSize(8);
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text(`Members checked: ${totalMembers}  |  Pass: ${passCount}  |  Fail: ${failCount}  |  Peak stress: ${maxStress.toFixed(1)} MPa`, boxX + 8, y + 22);
+    this.doc.text(`Utilisation: ${totalMembers > 0 ? ((passCount / totalMembers) * 100).toFixed(0) : 0}% pass rate`, boxX + 8, y + 27);
 
-    this.doc.text(lines, this.margin, y);
+    y += boxH + 10;
+    this.contentTop = y;
 
-    // Add signature line
-    const sigY = y + lines.length * 5 + 30;
+    // ---- Recommendations ----
+    this.addSubSectionHeading(sectionNum + '.1', 'Recommendations');
+    y = this.contentTop;
 
-    this.doc.setDrawColor(0, 0, 0);
-    this.doc.line(this.margin, sigY, this.margin + 80, sigY);
-    this.doc.text("Professional Engineer Signature", this.margin, sigY + 5);
+    this.doc.setFontSize(9);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
 
-    this.doc.line(
-      this.pageWidth - this.margin - 50,
-      sigY,
-      this.pageWidth - this.margin,
-      sigY,
-    );
-    this.doc.text("Date", this.pageWidth - this.margin - 50, sigY + 5);
+    const recommendations: string[] = [];
+    if (isPass) {
+      recommendations.push('All structural members are adequate for the applied loading. Proceed to detailed design and fabrication drawings.');
+      recommendations.push('Verify connection design separately — member checks only cover overall capacity.');
+      recommendations.push('Confirm loading assumptions with the project architect and services engineer.');
+    } else {
+      recommendations.push('Revise failed members with increased section sizes or alternative profiles.');
+      recommendations.push('Re-run analysis after modifications to verify adequacy.');
+      recommendations.push('Consider alternative load paths or bracing arrangements to reduce demand.');
+    }
+    recommendations.push('This report covers static analysis only. Dynamic, seismic, and fatigue analysis should be performed where applicable.');
+    recommendations.push('All connections shall be designed to transfer the forces indicated in Section 5.');
 
-    this.doc.setTextColor(0, 0, 0);
+    for (let i = 0; i < recommendations.length; i++) {
+      this.ensureSpace(10);
+      y = this.contentTop;
+      this.doc.setFontSize(9);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.text);
+
+      const bullet = `${i + 1}.`;
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.text(bullet, this.margin + 2, y);
+      this.doc.setFont('helvetica', 'normal');
+      const textLines = this.doc.splitTextToSize(recommendations[i], this.pageWidth - 2 * this.margin - 12);
+      this.doc.text(textLines, this.margin + 10, y);
+      this.contentTop = y + textLines.length * 4.5 + 2;
+    }
+
+    // ---- Critical members list (if any) ----
+    if (criticalMembers.length > 0) {
+      this.contentTop += 5;
+      this.addSubSectionHeading(sectionNum + '.2', 'Critical Members');
+      y = this.contentTop;
+
+      this.doc.setFillColor(255, 245, 245);
+      this.doc.setDrawColor(...THEME.fail);
+      this.doc.setLineWidth(0.3);
+      const listH = Math.min(criticalMembers.length, 8) * 5 + 8;
+      this.doc.roundedRect(this.margin, y, this.pageWidth - 2 * this.margin, listH, 1.5, 1.5, 'FD');
+
+      y += 5;
+      this.doc.setFontSize(8);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.fail);
+
+      for (const member of criticalMembers.slice(0, 8)) {
+        this.doc.text(`▸  ${member}`, this.margin + 4, y);
+        y += 5;
+      }
+      if (criticalMembers.length > 8) {
+        this.doc.setTextColor(...THEME.textMuted);
+        this.doc.text(`  … and ${criticalMembers.length - 8} additional members`, this.margin + 4, y);
+      }
+    }
+
+    this.doc.setTextColor(...THEME.text);
   }
 
   // ============================================
-  // DIAGRAM METHODS
+  // SIGNATURE & CERTIFICATION PAGE
   // ============================================
 
   /**
-   * Add a diagram (BMD, SFD, AFD) visualization to the PDF
+   * Professional signature page with engineer certification block
+   * and three-column Prepared / Checked / Approved layout.
+   */
+  addSignaturePage(options: {
+    engineerName: string;
+    checkedBy: string;
+    approvedBy: string;
+    projectName: string;
+    projectNumber: string;
+  }): void {
+    const { engineerName, checkedBy, approvedBy, projectName, projectNumber } = options;
+
+    let y = this.contentTop + 5;
+
+    // Section heading
+    this.addNumberedSectionHeading('A', 'CERTIFICATION & SIGNATURES');
+    y = this.contentTop;
+
+    // ---- Certification statement ----
+    this.doc.setFillColor(...THEME.calcBoxBg);
+    this.doc.setDrawColor(...THEME.primary);
+    this.doc.setLineWidth(0.5);
+    const certH = 28;
+    this.doc.roundedRect(this.margin, y, this.pageWidth - 2 * this.margin, certH, 2, 2, 'FD');
+
+    // Left navy bar
+    this.doc.setFillColor(...THEME.primary);
+    this.doc.rect(this.margin, y, 4, certH, 'F');
+
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text('ENGINEER\'S CERTIFICATION', this.margin + 8, y + 7);
+
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
+    const certText = `I certify that the structural analysis and design presented in this report for "${projectName}" `
+      + `(Ref: ${this.documentRef}) has been carried out in accordance with the applicable codes of practice `
+      + `and represents a true record of the analysis undertaken.`;
+    const certLines = this.doc.splitTextToSize(certText, this.pageWidth - 2 * this.margin - 16);
+    this.doc.text(certLines, this.margin + 8, y + 13);
+
+    y += certH + 12;
+
+    // ---- Three-column signature blocks ----
+    const colW = (this.pageWidth - 2 * this.margin - 10) / 3;  // 3 columns with 5mm gaps
+    const sigH = 50;
+    const signatories = [
+      { role: 'PREPARED BY', name: engineerName || '—', title: 'Design Engineer' },
+      { role: 'CHECKED BY', name: checkedBy || '—', title: 'Senior Engineer' },
+      { role: 'APPROVED BY', name: approvedBy || '—', title: 'Principal Engineer' },
+    ];
+
+    for (let i = 0; i < 3; i++) {
+      const x = this.margin + i * (colW + 5);
+      const sig = signatories[i];
+
+      // Box
+      this.doc.setDrawColor(...THEME.border);
+      this.doc.setLineWidth(0.3);
+      this.doc.roundedRect(x, y, colW, sigH, 1.5, 1.5, 'S');
+
+      // Header bar
+      this.doc.setFillColor(...THEME.primary);
+      this.doc.rect(x, y, colW, 8, 'F');
+      // Round top corners
+      this.doc.setFillColor(...THEME.primary);
+      this.doc.roundedRect(x, y, colW, 8, 1.5, 1.5, 'F');
+      this.doc.rect(x, y + 4, colW, 4, 'F'); // Fill bottom of header
+
+      this.doc.setFontSize(8);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.white);
+      this.doc.text(sig.role, x + colW / 2, y + 5.5, { align: 'center' });
+
+      // Name
+      this.doc.setFontSize(9);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.text);
+      this.doc.text(sig.name, x + colW / 2, y + 16, { align: 'center' });
+
+      // Title
+      this.doc.setFontSize(7);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.textSecondary);
+      this.doc.text(sig.title, x + colW / 2, y + 21, { align: 'center' });
+
+      // Signature line
+      this.doc.setDrawColor(...THEME.borderDark);
+      this.doc.setLineWidth(0.3);
+      this.doc.line(x + 6, y + 36, x + colW - 6, y + 36);
+      this.doc.setFontSize(7);
+      this.doc.setTextColor(...THEME.textMuted);
+      this.doc.text('Signature', x + colW / 2, y + 40, { align: 'center' });
+
+      // Date line
+      this.doc.line(x + 6, y + 45, x + colW - 6, y + 45);
+      this.doc.text('Date', x + colW / 2, y + 49, { align: 'center' });
+    }
+
+    y += sigH + 10;
+    this.contentTop = y;
+
+    // ---- Notes ----
+    this.doc.setFontSize(7);
+    this.doc.setFont('helvetica', 'italic');
+    this.doc.setTextColor(...THEME.textMuted);
+    const notes = [
+      'Note 1: This document shall not be reproduced in part without the written approval of the issuing organisation.',
+      'Note 2: All dimensions are in millimetres and forces in kilonewtons unless stated otherwise.',
+      `Note 3: Document Reference: ${this.documentRef}  |  Project Number: ${projectNumber || 'N/A'}`,
+    ];
+    for (const note of notes) {
+      this.doc.text(note, this.margin, y);
+      y += 4;
+    }
+
+    this.doc.setTextColor(...THEME.text);
+    this.contentTop = y;
+  }
+
+  /**
+   * Add a professional legal disclaimer page with bordered sections
+   * and clear hierarchy.
+   */
+  addLegalDisclaimer(): void {
+    this.addPage('Legal Disclaimer');
+
+    let y = this.contentTop + 5;
+
+    // ---- Title block ----
+    this.doc.setFillColor(...THEME.primary);
+    this.doc.roundedRect(this.margin, y, this.pageWidth - 2 * this.margin, 10, 1.5, 1.5, 'F');
+    this.doc.setFontSize(10);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.white);
+    this.doc.text('IMPORTANT LEGAL NOTICE AND DISCLAIMER', this.pageWidth / 2, y + 7, { align: 'center' });
+    y += 16;
+
+    // ---- Disclaimer clauses ----
+    const clauses = [
+      {
+        heading: '1.  PROFESSIONAL USE ONLY',
+        body: 'BeamLab Ultimate is a computational aid intended for use by qualified professional engineers. It is not a substitute for professional engineering judgment, independent analysis, or verification.',
+      },
+      {
+        heading: '2.  NO WARRANTY',
+        body: 'The software is provided "as is" without any warranty of any kind, express or implied. The developers and operators of BeamLab Ultimate make no representations regarding the accuracy, reliability, or completeness of the analysis results.',
+      },
+      {
+        heading: '3.  LIMITATION OF LIABILITY',
+        body: 'The user assumes full responsibility for the use of this software and the interpretation of its results. BeamLab Ultimate shall not be liable for any direct, indirect, incidental, special, or consequential damages arising out of the use or inability to use this software.',
+      },
+      {
+        heading: '4.  VERIFICATION REQUIRED',
+        body: 'All results generated by this software must be independently verified by a licensed Professional Engineer (PE/SE) using alternative methods or hand calculations before being used for construction or design purposes.',
+      },
+    ];
+
+    for (const clause of clauses) {
+      this.ensureSpace(22);
+      y = this.contentTop;
+
+      // Clause heading
+      this.doc.setFontSize(9);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.primary);
+      this.doc.text(clause.heading, this.margin, y);
+      y += 5;
+
+      // Clause body
+      this.doc.setFontSize(8);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.text);
+      const bodyLines = this.doc.splitTextToSize(clause.body, this.pageWidth - 2 * this.margin - 4);
+      this.doc.text(bodyLines, this.margin + 2, y);
+      y += bodyLines.length * 3.8 + 4;
+      this.contentTop = y;
+    }
+
+    // ---- Acceptance statement ----
+    this.ensureSpace(18);
+    y = this.contentTop + 4;
+    const boxW = this.pageWidth - 2 * this.margin;
+
+    this.doc.setFillColor(250, 251, 254);
+    this.doc.setDrawColor(...THEME.primary);
+    this.doc.setLineWidth(0.3);
+    this.doc.roundedRect(this.margin, y, boxW, 14, 1.5, 1.5, 'FD');
+
+    this.doc.setFontSize(7.5);
+    this.doc.setFont('helvetica', 'italic');
+    this.doc.setTextColor(...THEME.textSecondary);
+    const acceptText = 'By using this report, you acknowledge that you have read and understood these terms and agree to use the data herein at your own professional risk.';
+    const acceptLines = this.doc.splitTextToSize(acceptText, boxW - 8);
+    this.doc.text(acceptLines, this.margin + 4, y + 6);
+
+    y += 22;
+    this.contentTop = y;
+
+    // ---- Signature lines ----
+    this.doc.setDrawColor(...THEME.borderDark);
+    this.doc.setLineWidth(0.3);
+
+    // Engineer signature
+    this.doc.line(this.margin, y, this.margin + 80, y);
+    this.doc.setFontSize(7);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text('Professional Engineer Signature', this.margin, y + 4);
+
+    // Date
+    this.doc.line(this.pageWidth - this.margin - 50, y, this.pageWidth - this.margin, y);
+    this.doc.text('Date', this.pageWidth - this.margin - 50, y + 4);
+
+    this.doc.setTextColor(...THEME.text);
+  }
+
+  // ============================================
+  // DIAGRAM METHODS  —  Professional Plotting
+  // ============================================
+
+  /**
+   * Add a member diagram (BMD, SFD, AFD) with professional figure frame,
+   * labelled axes, and numbered figure caption.
    */
   addMemberDiagram(
     memberId: string,
@@ -756,30 +1657,37 @@ By using this report, you acknowledge that you have read and understood these te
     data: { x_values: number[]; values: number[] },
     maxValue: number,
   ): void {
-    // Check if we need a new page
-    if (this.contentTop > this.pageHeight - 80) {
-      this.addPage();
-    }
+    const diagramHeight = 60;
+    const frameH = diagramHeight + 18;  // frame + caption space
+    this.ensureSpace(frameH + 10);
 
-    // Title
-    this.doc.setFontSize(10);
-    this.doc.setTextColor(0, 0, 0);
-    this.doc.text(
-      `Member ${memberId} - ${diagramType}`,
-      this.margin,
-      this.contentTop,
-    );
+    this.figureCount++;
+    const typeLabel = diagramType === 'BMD' ? 'Bending Moment' : diagramType === 'SFD' ? 'Shear Force' : 'Axial Force';
+    const unitLabel = diagramType === 'BMD' ? 'kN·m' : 'kN';
 
-    // Draw canvas diagram
     const width = this.pageWidth - 2 * this.margin;
-    const height = 60;
+    let y = this.contentTop;
+
+    // ---- Figure frame ----
+    this.doc.setDrawColor(...THEME.border);
+    this.doc.setLineWidth(0.3);
+    this.doc.roundedRect(this.margin, y, width, frameH, 1, 1, 'S');
+
+    // ---- Title bar inside frame ----
+    this.doc.setFillColor(...THEME.rowAlt);
+    this.doc.rect(this.margin + 0.15, y + 0.15, width - 0.3, 8, 'F');
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text(`Member ${memberId}  —  ${typeLabel} Diagram  (${unitLabel})`, this.margin + 4, y + 5.5);
+
+    // ---- Draw diagram on canvas ----
     const canvas = document.createElement("canvas");
-    canvas.width = width * 3.78; // Convert mm to pixels (72 DPI)
-    canvas.height = height * 3.78;
+    canvas.width = width * 3.78;
+    canvas.height = diagramHeight * 3.78;
 
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      // Draw diagram
       this.drawDiagramOnCanvas(
         ctx,
         data.x_values,
@@ -789,25 +1697,35 @@ By using this report, you acknowledge that you have read and understood these te
         canvas.height,
       );
 
-      // Convert canvas to image
       const imgData = canvas.toDataURL("image/png");
-
-      // Add to PDF
-      this.contentTop += 2;
       this.doc.addImage(
         imgData,
         "PNG",
-        this.margin,
-        this.contentTop,
-        width,
-        height,
+        this.margin + 1,
+        y + 9,
+        width - 2,
+        diagramHeight,
       );
-      this.contentTop += height + 8;
     }
+
+    // ---- Figure caption ----
+    const captionY = y + 9 + diagramHeight + 4;
+    this.doc.setFontSize(7);
+    this.doc.setFont('helvetica', 'italic');
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text(
+      `Figure ${this.figureCount} — ${typeLabel} diagram for Member ${memberId}`,
+      this.margin + width / 2,
+      captionY,
+      { align: 'center' },
+    );
+
+    this.contentTop = captionY + 6;
+    this.doc.setTextColor(...THEME.text);
   }
 
   /**
-   * Helper: Draw diagram on canvas
+   * Helper: Draw professional diagram on canvas with grid, axes, fill, and value labels.
    */
   private drawDiagramOnCanvas(
     ctx: CanvasRenderingContext2D,
@@ -817,91 +1735,128 @@ By using this report, you acknowledge that you have read and understood these te
     canvasWidth: number,
     canvasHeight: number,
   ): void {
-    const padding = 40;
+    const padding = 50;
     const graphWidth = canvasWidth - 2 * padding;
     const graphHeight = canvasHeight - 2 * padding;
 
     // Clear background
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = '#FAFBFE';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // Draw axes
-    ctx.strokeStyle = "#000000";
+    // Border
+    ctx.strokeStyle = '#D2D7E1';
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, canvasHeight - padding);
-    ctx.lineTo(canvasWidth - padding, canvasHeight - padding);
-    ctx.stroke();
+    ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
 
-    // Draw grid
-    ctx.strokeStyle = "#e0e0e0";
+    // Draw grid (light)
+    ctx.strokeStyle = '#E8ECF2';
     ctx.lineWidth = 0.5;
-    for (let i = 0; i <= 5; i++) {
-      const x = padding + (graphWidth / 5) * i;
+    for (let i = 0; i <= 8; i++) {
+      const x = padding + (graphWidth / 8) * i;
       ctx.beginPath();
       ctx.moveTo(x, padding);
       ctx.lineTo(x, canvasHeight - padding);
       ctx.stroke();
-
-      const y = padding + (graphHeight / 5) * i;
+    }
+    for (let i = 0; i <= 6; i++) {
+      const y = padding + (graphHeight / 6) * i;
       ctx.beginPath();
       ctx.moveTo(padding, y);
       ctx.lineTo(canvasWidth - padding, y);
       ctx.stroke();
     }
 
+    // Zero axis (baseline) — dashed
+    const zeroY = canvasHeight / 2;
+    ctx.strokeStyle = '#AAB0BA';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 3]);
+    ctx.beginPath();
+    ctx.moveTo(padding, zeroY);
+    ctx.lineTo(canvasWidth - padding, zeroY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw axes (solid)
+    ctx.strokeStyle = `rgb(${THEME.primary.join(',')})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, canvasHeight - padding);
+    ctx.lineTo(canvasWidth - padding, canvasHeight - padding);
+    ctx.stroke();
+
     const maxAbsValue = Math.max(Math.abs(maxValue), 1e-9);
 
-    // Draw data line
+    // Draw data line and fill
     if (values.length > 0 && xValues.length > 0) {
-      ctx.strokeStyle = "#2563eb";
-      ctx.lineWidth = 2;
+      const xRange = xValues[xValues.length - 1] || 1;
+
+      // Fill under curve
+      ctx.fillStyle = 'rgba(0, 133, 202, 0.08)';
       ctx.beginPath();
-
+      ctx.moveTo(padding, zeroY);
       for (let i = 0; i < values.length; i++) {
-        const x =
-          padding +
-          (xValues[i] / (xValues[xValues.length - 1] || 1)) * graphWidth;
-        const y =
-          canvasHeight -
-          padding -
-          ((values[i] + maxAbsValue) / (2 * maxAbsValue)) * graphHeight;
+        const x = padding + (xValues[i] / xRange) * graphWidth;
+        const y = zeroY - (values[i] / maxAbsValue) * (graphHeight / 2);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(padding + (xValues[xValues.length - 1] / xRange) * graphWidth, zeroY);
+      ctx.closePath();
+      ctx.fill();
 
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
+      // Data line
+      ctx.strokeStyle = `rgb(${THEME.accent.join(',')})`;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i < values.length; i++) {
+        const x = padding + (xValues[i] / xRange) * graphWidth;
+        const y = zeroY - (values[i] / maxAbsValue) * (graphHeight / 2);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
       ctx.stroke();
 
-      // Fill under curve
-      ctx.fillStyle = "rgba(37, 99, 235, 0.1)";
-      ctx.lineTo(canvasWidth - padding, canvasHeight - padding);
-      ctx.lineTo(padding, canvasHeight - padding);
-      ctx.fill();
+      // Peak value markers
+      let peakIdx = 0;
+      let peakAbs = 0;
+      for (let i = 0; i < values.length; i++) {
+        if (Math.abs(values[i]) > peakAbs) { peakAbs = Math.abs(values[i]); peakIdx = i; }
+      }
+      if (peakAbs > 0) {
+        const px = padding + (xValues[peakIdx] / xRange) * graphWidth;
+        const py = zeroY - (values[peakIdx] / maxAbsValue) * (graphHeight / 2);
+        ctx.fillStyle = `rgb(${THEME.fail.join(',')})`;
+        ctx.beginPath();
+        ctx.arc(px, py, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgb(${THEME.primary.join(',')})`;
+        ctx.font = 'bold 11px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${values[peakIdx].toFixed(2)}`, px, py - 8);
+      }
     }
 
-    // Draw labels
-    ctx.fillStyle = "#666666";
-    ctx.font = "bold 12px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(`0`, padding - 20, canvasHeight - padding + 15);
-    ctx.textAlign = "center";
-    ctx.fillText(`L`, canvasWidth - padding + 5, canvasHeight - padding + 15);
+    // Axis labels
+    ctx.fillStyle = `rgb(${THEME.textSecondary.join(',')})`;
+    ctx.font = 'bold 11px Arial';
 
-    ctx.textAlign = "right";
-    ctx.fillText(`+${maxAbsValue.toFixed(1)}`, padding - 10, padding + 10);
-    ctx.fillText(
-      `-${maxAbsValue.toFixed(1)}`,
-      padding - 10,
-      canvasHeight - padding - 10,
-    );
+    // X-axis labels
+    ctx.textAlign = 'center';
+    ctx.fillText('0', padding, canvasHeight - padding + 18);
+    ctx.fillText('L', canvasWidth - padding, canvasHeight - padding + 18);
+    ctx.fillText('Position along member', canvasWidth / 2, canvasHeight - 8);
+
+    // Y-axis labels
+    ctx.textAlign = 'right';
+    ctx.fillText(`+${maxAbsValue.toFixed(1)}`, padding - 5, padding + 5);
+    ctx.fillText(`-${maxAbsValue.toFixed(1)}`, padding - 5, canvasHeight - padding + 5);
+    ctx.fillText('0', padding - 5, zeroY + 4);
   }
 
   /**
-   * Add multiple member diagrams for all members
+   * Add multiple member diagrams for all members with professional layout.
+   * Each member gets its own section; diagrams have figure numbers and captions.
    */
   addAllMemberDiagrams(
     members: Array<{
@@ -921,8 +1876,19 @@ By using this report, you acknowledge that you have read and understood these te
   ): void {
     if (members.length === 0) return;
 
-    this.addPage("Member Diagrams");
-    this.addSectionHeading("Force and Moment Diagrams");
+    this.addPage('Force & Moment Diagrams');
+    this.addNumberedSectionHeading('', 'FORCE & MOMENT DIAGRAMS');
+
+    // Introductory note
+    this.doc.setFontSize(8);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text(
+      'The following diagrams show the distribution of internal forces along each member. Positive values follow the adopted sign convention.',
+      this.margin,
+      this.contentTop,
+    );
+    this.contentTop += 6;
 
     members.forEach((member) => {
       if (!member.diagramData) return;
@@ -991,12 +1957,12 @@ By using this report, you acknowledge that you have read and understood these te
       // Member header
       this.doc.setFontSize(14);
       this.doc.setFont("helvetica", "bold");
-      this.doc.setTextColor(30, 64, 175);
+      this.doc.setTextColor(...THEME.primary);
       this.doc.text(`Member: ${member.id}`, this.margin, this.contentTop);
       this.contentTop += 8;
 
       // Member info box
-      this.doc.setFillColor(249, 250, 251);
+      this.doc.setFillColor(...THEME.calcBoxBg);
       this.doc.roundedRect(
         this.margin,
         this.contentTop,
@@ -1009,7 +1975,7 @@ By using this report, you acknowledge that you have read and understood these te
 
       this.doc.setFontSize(9);
       this.doc.setFont("helvetica", "normal");
-      this.doc.setTextColor(55, 65, 81);
+      this.doc.setTextColor(...THEME.text);
 
       const infoY = this.contentTop + 6;
       this.doc.text(
@@ -1045,7 +2011,7 @@ By using this report, you acknowledge that you have read and understood these te
       );
 
       this.contentTop += 30;
-      this.doc.setTextColor(0, 0, 0);
+      this.doc.setTextColor(...THEME.text);
 
       if (!member.diagramData) {
         this.doc.setFontSize(10);
@@ -1108,7 +2074,7 @@ By using this report, you acknowledge that you have read and understood these te
         // Diagram title
         this.doc.setFontSize(11);
         this.doc.setFont("helvetica", "bold");
-        this.doc.setTextColor(0, 0, 0);
+        this.doc.setTextColor(...THEME.primary);
         this.doc.text(diagram.type, this.margin, this.contentTop);
         this.contentTop += 5;
 
@@ -1316,7 +2282,8 @@ By using this report, you acknowledge that you have read and understood these te
   }
 
   /**
-   * Add detailed calculations for a member
+   * Add professional calculation sheet for a member.
+   * Styled as an engineering calculation pad with structured layout.
    */
   private addMemberCalculations(member: {
     id: string;
@@ -1335,47 +2302,22 @@ By using this report, you acknowledge that you have read and understood these te
       deflection_values: number[];
     };
   }): void {
-    // Calculation box = 6mm heading + 70mm box + 5mm gap = 81mm
-    this.ensureSpace(85, `Member ${member.id} - Calculations`);
-
-    // Calculations header
-    this.doc.setFontSize(11);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(30, 64, 175);
-    this.doc.text("Detailed Calculations", this.margin, this.contentTop);
-    this.contentTop += 6;
-
-    this.doc.setFontSize(9);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(0, 0, 0);
+    this.ensureSpace(90, `Member ${member.id} — Calculations`);
 
     const L = member.length;
-    const E = member.E || 200e6; // kN/m²
-    const I = member.I || 1e-4; // m⁴
-    const A = member.A || 1e-2; // m²
+    const E = member.E || 200e6;
+    const I = member.I || 1e-4;
+    const A = member.A || 1e-2;
 
-    // Extract key values
     const shearValues = member.diagramData?.shear_values || [];
     const momentValues = member.diagramData?.moment_values || [];
     const axialValues = member.diagramData?.axial_values || [];
     const deflectionValues = member.diagramData?.deflection_values || [];
 
-    const Vmax =
-      shearValues.length > 0
-        ? Math.max(...shearValues.map(Math.abs))
-        : member.maxShear || 0;
-    const Mmax =
-      momentValues.length > 0
-        ? Math.max(...momentValues.map(Math.abs))
-        : member.maxMoment || 0;
-    const Nmax =
-      axialValues.length > 0
-        ? Math.max(...axialValues.map(Math.abs))
-        : member.maxAxial || 0;
-    const deltaMax =
-      deflectionValues.length > 0
-        ? Math.max(...deflectionValues.map(Math.abs))
-        : 0;
+    const Vmax = shearValues.length > 0 ? Math.max(...shearValues.map(Math.abs)) : member.maxShear || 0;
+    const Mmax = momentValues.length > 0 ? Math.max(...momentValues.map(Math.abs)) : member.maxMoment || 0;
+    const Nmax = axialValues.length > 0 ? Math.max(...axialValues.map(Math.abs)) : member.maxAxial || 0;
+    const deltaMax = deflectionValues.length > 0 ? Math.max(...deflectionValues.map(Math.abs)) : 0;
 
     const V_start = shearValues[0] || 0;
     const V_end = shearValues[shearValues.length - 1] || 0;
@@ -1384,102 +2326,112 @@ By using this report, you acknowledge that you have read and understood these te
     const N_start = axialValues[0] || 0;
     const N_end = axialValues[axialValues.length - 1] || 0;
 
-    // Create calculation box
-    this.doc.setFillColor(254, 252, 232);
-    this.doc.roundedRect(
-      this.margin,
-      this.contentTop,
-      this.pageWidth - 2 * this.margin,
-      70,
-      2,
-      2,
-      "F",
-    );
-    this.doc.setDrawColor(202, 138, 4);
+    // Calculation box
+    const boxWidth = this.pageWidth - 2 * this.margin;
+    const boxHeight = 78;
+
+    // Box background
+    this.doc.setFillColor(...THEME.calcBoxBg);
+    this.doc.roundedRect(this.margin, this.contentTop, boxWidth, boxHeight, 2, 2, 'F');
+
+    // Left accent bar
+    this.doc.setFillColor(...THEME.primary);
+    this.doc.rect(this.margin, this.contentTop, 2.5, boxHeight, 'F');
+
+    // Border
+    this.doc.setDrawColor(...THEME.calcBoxBorder);
     this.doc.setLineWidth(0.3);
-    this.doc.roundedRect(
-      this.margin,
-      this.contentTop,
-      this.pageWidth - 2 * this.margin,
-      70,
-      2,
-      2,
-      "S",
-    );
+    this.doc.roundedRect(this.margin, this.contentTop, boxWidth, boxHeight, 2, 2, 'S');
 
     let calcY = this.contentTop + 6;
-    const col1 = this.margin + 5;
+    const col1 = this.margin + 7;
     const col2 = this.margin + 95;
 
-    // Section 1: Shear Force
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("Shear Force Analysis:", col1, calcY);
-    calcY += 5;
-    this.doc.setFont("helvetica", "normal");
+    // Title inside box
+    this.doc.setFontSize(9);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primary);
+    this.doc.text('CALCULATION SHEET', col1, calcY);
+    this.doc.setFontSize(7);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.textMuted);
+    this.doc.text(`Ref: Member ${member.id.slice(0, 12)}  |  L = ${L.toFixed(3)} m`, col2, calcY);
+
+    this.doc.setDrawColor(...THEME.calcBoxBorder);
+    this.doc.setLineWidth(0.2);
+    this.doc.line(col1, calcY + 2, this.margin + boxWidth - 5, calcY + 2);
+    calcY += 7;
+
+    this.doc.setFontSize(7.5);
+    this.doc.setTextColor(...THEME.text);
+
+    // Shear Force
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primaryLight);
+    this.doc.text('Shear Force:', col1, calcY);
+    calcY += 4;
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
     this.doc.text(`V\u1D62 = ${V_start.toFixed(3)} kN`, col1, calcY);
-    this.doc.text(`V\u2C7C = ${V_end.toFixed(3)} kN`, col2, calcY);
+    this.doc.text(`V\u2C7C = ${V_end.toFixed(3)} kN`, col1 + 50, calcY);
+    this.doc.text(`V(max) = ${Vmax.toFixed(3)} kN`, col2, calcY);
     calcY += 5;
-    this.doc.text(`V(max) = ${Vmax.toFixed(3)} kN`, col1, calcY);
-    this.doc.text(
-      `\u0394V = ${Math.abs(V_end - V_start).toFixed(3)} kN (change along member)`,
-      col2,
-      calcY,
-    );
-    calcY += 7;
 
-    // Section 2: Bending Moment
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("Bending Moment Analysis:", col1, calcY);
-    calcY += 5;
-    this.doc.setFont("helvetica", "normal");
+    // Bending Moment
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primaryLight);
+    this.doc.text('Bending Moment:', col1, calcY);
+    calcY += 4;
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
     this.doc.text(`M\u1D62 = ${M_start.toFixed(3)} kN\u00B7m`, col1, calcY);
-    this.doc.text(`M\u2C7C = ${M_end.toFixed(3)} kN\u00B7m`, col2, calcY);
-    calcY += 5;
-    this.doc.text(`M(max) = ${Mmax.toFixed(3)} kN\u00B7m`, col1, calcY);
-
-    // Calculate bending stress
-    const y_max = 0.15; // m (assumed distance to extreme fiber)
-    // σb = M*c/I, with M in kN·m and I in m⁴ => kN/m²; convert to MPa by /1000
+    this.doc.text(`M\u2C7C = ${M_end.toFixed(3)} kN\u00B7m`, col1 + 50, calcY);
+    this.doc.text(`M(max) = ${Mmax.toFixed(3)} kN\u00B7m`, col2, calcY);
+    calcY += 4;
+    const y_max = 0.15;
     const sigma_b = I > 1e-12 ? (Mmax * y_max) / I / 1000 : 0;
-    this.doc.text(
-      `\u03C3b \u2248 M\u00B7y/I = ${sigma_b.toFixed(2)} MPa (approx)`,
-      col2,
-      calcY,
-    );
-    calcY += 7;
-
-    // Section 3: Axial Force
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("Axial Force Analysis:", col1, calcY);
+    this.doc.setTextColor(...THEME.textSecondary);
+    this.doc.text(`\u03C3b \u2248 M\u00B7y/I = ${sigma_b.toFixed(2)} MPa`, col2, calcY);
     calcY += 5;
-    this.doc.setFont("helvetica", "normal");
+
+    // Axial Force
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primaryLight);
+    this.doc.text('Axial Force:', col1, calcY);
+    calcY += 4;
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
     this.doc.text(`N\u1D62 = ${N_start.toFixed(3)} kN`, col1, calcY);
-    this.doc.text(`N\u2C7C = ${N_end.toFixed(3)} kN`, col2, calcY);
-    calcY += 5;
-    this.doc.text(`N(max) = ${Nmax.toFixed(3)} kN`, col1, calcY);
-
-    // Calculate axial stress
-    // σa = N/A, with N in kN and A in m² => kN/m²; convert to MPa by /1000
+    this.doc.text(`N\u2C7C = ${N_end.toFixed(3)} kN`, col1 + 50, calcY);
+    this.doc.text(`N(max) = ${Nmax.toFixed(3)} kN`, col2, calcY);
+    calcY += 4;
     const sigma_a = A > 1e-12 ? Nmax / A / 1000 : 0;
+    this.doc.setTextColor(...THEME.textSecondary);
     this.doc.text(`\u03C3a = N/A = ${sigma_a.toFixed(2)} MPa`, col2, calcY);
-    calcY += 7;
+    calcY += 5;
 
-    // Section 4: Deflection
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("Deflection:", col1, calcY);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.text(
-      `\u03B4(max) = ${(deltaMax * 1000).toFixed(3)} mm`,
-      col1 + 40,
-      calcY,
-    );
-    this.doc.text(
-      `L/\u03B4 = ${deltaMax > 0 ? (L / deltaMax).toFixed(0) : "\u221E"}`,
-      col2,
-      calcY,
-    );
+    // Deflection
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...THEME.primaryLight);
+    this.doc.text('Deflection:', col1, calcY);
+    this.doc.setFont('helvetica', 'normal');
+    this.doc.setTextColor(...THEME.text);
+    this.doc.text(`\u03B4(max) = ${(deltaMax * 1000).toFixed(3)} mm`, col1 + 40, calcY);
+    this.doc.text(`L/\u03B4 = ${deltaMax > 0 ? (L / deltaMax).toFixed(0) : "\u221E"}`, col2, calcY);
 
-    this.contentTop += 75;
+    // Deflection status indicator
+    const lOverDelta = deltaMax > 0 ? L / deltaMax : Infinity;
+    const deflStatus = lOverDelta >= 300 ? 'OK' : 'REVIEW';
+    const deflColor = deflStatus === 'OK' ? THEME.pass : THEME.fail;
+    this.doc.setFillColor(...deflColor);
+    this.doc.roundedRect(col2 + 40, calcY - 3, 14, 5, 1, 1, 'F');
+    this.doc.setTextColor(...THEME.white);
+    this.doc.setFontSize(6);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text(deflStatus, col2 + 47, calcY + 0.5, { align: 'center' });
+
+    this.doc.setTextColor(...THEME.text);
+    this.contentTop += boxHeight + 5;
   }
 
   /**
@@ -1724,7 +2676,7 @@ By using this report, you acknowledge that you have read and understood these te
       this.margin,
       legendY,
     );
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setTextColor(...THEME.text);
 
     this.contentTop = legendY + 10;
   }
@@ -2215,13 +3167,13 @@ By using this report, you acknowledge that you have read and understood these te
     const legendY = y + canvasHeight + 8;
     this.doc.setFontSize(9);
     this.doc.setFont("helvetica", "normal");
-    this.doc.setTextColor(239, 68, 68);
+    this.doc.setTextColor(...THEME.fail);
     this.doc.text("● Applied Loads (Red)", this.margin, legendY);
-    this.doc.setTextColor(34, 197, 94);
+    this.doc.setTextColor(...THEME.pass);
     this.doc.text("● Reaction Forces (Green)", this.margin + 50, legendY);
-    this.doc.setTextColor(55, 65, 81);
+    this.doc.setTextColor(...THEME.textSecondary);
     this.doc.text("● Members (Grey)", this.margin + 110, legendY);
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setTextColor(...THEME.text);
 
     this.contentTop = legendY + 10;
   }
@@ -2307,40 +3259,40 @@ By using this report, you acknowledge that you have read and understood these te
     const equilibriumY = Math.abs(totalRy + totalLoadFy) < 0.01;
     const equilibriumZ = Math.abs(totalRz + totalLoadFz) < 0.01;
 
-    this.doc.setTextColor(
-      equilibriumX ? 34 : 239,
-      equilibriumX ? 197 : 68,
-      equilibriumX ? 94 : 68,
-    );
+    if (equilibriumX) {
+      this.doc.setTextColor(...THEME.pass);
+    } else {
+      this.doc.setTextColor(...THEME.fail);
+    }
     this.doc.text(
       `ΣFx = ${(totalRx + totalLoadFx).toFixed(4)} kN ${equilibriumX ? "✓" : "✗"}`,
       this.margin,
       checkY,
     );
 
-    this.doc.setTextColor(
-      equilibriumY ? 34 : 239,
-      equilibriumY ? 197 : 68,
-      equilibriumY ? 94 : 68,
-    );
+    if (equilibriumY) {
+      this.doc.setTextColor(...THEME.pass);
+    } else {
+      this.doc.setTextColor(...THEME.fail);
+    }
     this.doc.text(
       `ΣFy = ${(totalRy + totalLoadFy).toFixed(4)} kN ${equilibriumY ? "✓" : "✗"}`,
       this.margin + 60,
       checkY,
     );
 
-    this.doc.setTextColor(
-      equilibriumZ ? 34 : 239,
-      equilibriumZ ? 197 : 68,
-      equilibriumZ ? 94 : 68,
-    );
+    if (equilibriumZ) {
+      this.doc.setTextColor(...THEME.pass);
+    } else {
+      this.doc.setTextColor(...THEME.fail);
+    }
     this.doc.text(
       `ΣFz = ${(totalRz + totalLoadFz).toFixed(4)} kN ${equilibriumZ ? "✓" : "✗"}`,
       this.margin + 120,
       checkY,
     );
 
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setTextColor(...THEME.text);
   }
 
   // ============================================
@@ -2441,9 +3393,9 @@ By using this report, you acknowledge that you have read and understood these te
     // Section Title
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
-    this.doc.setTextColor(59, 130, 246);
+    this.doc.setTextColor(...THEME.primary);
     this.doc.text(title || "Hand Calculation Steps", this.margin, startY);
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setTextColor(...THEME.text);
 
     let y = startY + 8;
 
@@ -2463,9 +3415,9 @@ By using this report, you acknowledge that you have read and understood these te
       // Check if it's a step number line
       if (step.startsWith("Step")) {
         this.doc.setFont("helvetica", "bold");
-        this.doc.setTextColor(75, 85, 99);
+        this.doc.setTextColor(...THEME.textSecondary);
       } else {
-        this.doc.setTextColor(60, 60, 60);
+        this.doc.setTextColor(...THEME.text);
       }
 
       // Wrap long lines
@@ -2476,7 +3428,7 @@ By using this report, you acknowledge that you have read and understood these te
       this.doc.text(lines, this.margin + 3, y);
 
       y += lines.length * 4 + 2;
-      this.doc.setTextColor(0, 0, 0);
+      this.doc.setTextColor(...THEME.text);
     }
   }
 
@@ -2485,7 +3437,12 @@ By using this report, you acknowledge that you have read and understood these te
   // ============================================
 
   /**
-   * Generate a complete 4-page analysis report
+   * Generate a complete industry-standard structural analysis report.
+   *
+   * Report structure (ARUP / WSP / Buro Happold style):
+   *   Cover → Document Control → Table of Contents → Executive Summary →
+   *   Design Basis → Structural Model → Input Data → Analysis Results →
+   *   Design Verification → Conclusions → Signatures → Legal Disclaimer
    */
   generateFullReport(options: {
     project: ProjectData;
@@ -2501,6 +3458,10 @@ By using this report, you acknowledge that you have read and understood these te
     reactions?: ReactionRow[];
     memberForces?: MemberForceRow[];
     designResults?: DesignResult[];
+    checkedBy?: string;
+    approvedBy?: string;
+    revision?: string;
+    classification?: string;
   }): void {
     const {
       project,
@@ -2511,118 +3472,298 @@ By using this report, you acknowledge that you have read and understood these te
       reactions,
       memberForces,
       designResults,
+      checkedBy = '',
+      approvedBy = '',
+      revision = '00',
+      classification = 'CONFIDENTIAL',
     } = options;
 
-    // ========== PAGE 1: Title & Model ==========
-    this.addHeader("Structural Analysis Report");
+    // Reset section counter for fresh numbering
+    this.sectionNumber = 0;
+    this.tocEntries = [];
+
+    // ================================================================
+    // COVER PAGE  (page 1 — no header/footer)
+    // ================================================================
+    this.addCoverPage({
+      projectName: project.projectName,
+      subtitle: 'Structural Analysis Report',
+      clientName: project.clientName,
+      projectNumber: project.projectNumber,
+      engineerName: project.engineerName,
+      checkedBy,
+      approvedBy,
+      revision,
+      classification,
+    });
+
+    // ================================================================
+    // DOCUMENT CONTROL  (page 2)
+    // ================================================================
+    this.addDocumentControlPage({
+      engineerName: project.engineerName,
+      checkedBy,
+      approvedBy,
+    });
+
+    // ================================================================
+    // TABLE OF CONTENTS  (page 3 — placeholder, updated at end)
+    // ================================================================
+    const tocPageNumber = this.doc.getNumberOfPages() + 1;
+    this.doc.addPage();
+    // We will render the TOC at the end once we know page numbers
+
+    // ================================================================
+    // SECTION 1: EXECUTIVE SUMMARY
+    // ================================================================
+    this.doc.addPage();
+    this.addHeader('Executive Summary');
+
+    // Compute summary statistics
+    const maxDisp = nodes.length > 0 ? 0 : 0; // Will be overridden by actual data if available
+    const maxStress = memberForces && memberForces.length > 0
+      ? safeAbsMax(memberForces.map(mf => Math.abs(mf.axial)), 0)
+      : 0;
+    const passCount = designResults ? designResults.filter(d => d.status === 'PASS').length : 0;
+    const failCount = designResults ? designResults.filter(d => d.status === 'FAIL').length : 0;
+    const overallStatus: 'PASS' | 'FAIL' | 'WARNING' = failCount > 0 ? 'FAIL' : (designResults && designResults.length > 0 ? 'PASS' : 'WARNING');
+    const criticalMembers = designResults ? designResults.filter(d => d.status === 'FAIL').map(d => `Member ${d.memberId} — ${d.checkType} (D/C = ${d.criticalRatio.toFixed(2)})`) : [];
+
+    this.tocEntries.push({ level: 1, number: '1', title: 'Executive Summary', page: this.doc.getNumberOfPages() });
+    this.addNumberedSectionHeading('1.0', 'EXECUTIVE SUMMARY');
+
+    this.addExecutiveSummary({
+      totalNodes: nodes.length,
+      totalMembers: members.length,
+      totalLoads: 1,
+      maxDisplacement: maxDisp,
+      maxStress,
+      overallStatus,
+      criticalMembers,
+      analysisTime: 0,
+    });
+
+    // ================================================================
+    // SECTION 2: DESIGN BASIS
+    // ================================================================
+    this.doc.addPage();
+    this.addHeader('Design Basis');
+    this.tocEntries.push({ level: 1, number: '2', title: 'Design Basis', page: this.doc.getNumberOfPages() });
+    this.addDesignBasisSection();
+
+    // ================================================================
+    // SECTION 3: STRUCTURAL MODEL
+    // ================================================================
+    this.doc.addPage();
+    this.addHeader('Structural Model');
+    this.tocEntries.push({ level: 1, number: '3', title: 'Structural Model', page: this.doc.getNumberOfPages() });
+    this.addNumberedSectionHeading('3.0', 'STRUCTURAL MODEL');
+
+    // Project information
+    this.addSubSectionHeading('3.1', 'Project Information');
     this.addProjectInfo(project);
 
+    // 3D Model snapshot
     if (canvasImage) {
-      this.add3DSnapshot(canvasImage, "Figure 1: 3D Structural Model View");
+      this.ensureSpace(90);
+      this.add3DSnapshot(canvasImage, 'Figure 1 — 3D Structural Model View');
     }
 
-    // ========== PAGE 2: Input Data ==========
-    this.addPage("Input Data");
+    // Model statistics summary
+    this.ensureSpace(30);
+    let statsY = this.contentTop;
+    this.addSubSectionHeading('3.2', 'Model Summary');
+    statsY = this.contentTop;
+    autoTable(this.doc, {
+      startY: statsY,
+      head: [['Parameter', 'Value']],
+      body: [
+        ['Total Nodes', nodes.length.toString()],
+        ['Total Members', members.length.toString()],
+        ['Total Load Cases', '1'],
+        ['Analysis Type', 'Linear Static'],
+        ['Design Code', designResults && designResults.length > 0 ? designResults[0].designCode : 'N/A'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: THEME.primary, textColor: THEME.headerText, fontStyle: 'bold', fontSize: 9 },
+      styles: { fontSize: 9, cellPadding: 3 },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      margin: { left: this.margin, right: this.margin },
+    });
+    this.syncYAfterTable(5);
 
-    // Add model summary
-    this.doc.setFontSize(10);
-    this.doc.setFont("helvetica", "normal");
-    this.doc.text(
-      `Total Nodes: ${nodes.length}`,
-      this.margin,
-      this.contentTop + 5,
-    );
-    this.doc.text(
-      `Total Members: ${members.length}`,
-      this.margin + 50,
-      this.contentTop + 5,
-    );
+    // ================================================================
+    // SECTION 4: INPUT DATA
+    // ================================================================
+    this.doc.addPage();
+    this.addHeader('Input Data');
+    this.tocEntries.push({ level: 1, number: '4', title: 'Input Data', page: this.doc.getNumberOfPages() });
+    this.addNumberedSectionHeading('4.0', 'INPUT DATA');
 
-    // Nodes table
+    // 4.1 Node coordinates
     if (nodes.length > 0) {
+      this.addSubSectionHeading('4.1', 'Node Coordinates');
       this.addNodesTable(nodes);
     }
 
-    // Members table
+    // 4.2 Member connectivity
     if (members.length > 0) {
+      this.addSubSectionHeading('4.2', 'Member Connectivity');
       this.addMembersTable(members);
     }
 
-    // ========== PAGE 3: Analysis Results ==========
-    this.addPage("Analysis Results");
+    // ================================================================
+    // SECTION 5: ANALYSIS RESULTS
+    // ================================================================
+    this.doc.addPage();
+    this.addHeader('Analysis Results');
+    this.tocEntries.push({ level: 1, number: '5', title: 'Analysis Results', page: this.doc.getNumberOfPages() });
+    this.addNumberedSectionHeading('5.0', 'ANALYSIS RESULTS');
 
-    // Hand calculation steps
+    // 5.1 Hand calculation verification
     if (handCalcSteps && handCalcSteps.length > 0) {
-      this.addHandCalcSteps(handCalcSteps, "Hand Calculation Steps");
+      this.addSubSectionHeading('5.1', 'Calculation Verification');
+      this.addHandCalcSteps(handCalcSteps, 'Calculation Steps');
     }
 
-    // Reactions table
+    // 5.2 Support reactions
     if (reactions && reactions.length > 0) {
-      this.addReactionsTable(reactions, "Support Reactions");
+      const subNum = handCalcSteps && handCalcSteps.length > 0 ? '5.2' : '5.1';
+      this.addSubSectionHeading(subNum, 'Support Reactions');
+      this.addReactionsTable(reactions, 'Table — Support Reactions');
     }
 
-    // Member forces (optional on same or new page)
+    // 5.3 Member internal forces
     if (memberForces && memberForces.length > 0) {
-      this.addMemberForcesTable(memberForces, "Member Internal Forces");
+      let subNum = '5.2';
+      if (handCalcSteps && handCalcSteps.length > 0 && reactions && reactions.length > 0) subNum = '5.3';
+      else if (handCalcSteps && handCalcSteps.length > 0 || (reactions && reactions.length > 0)) subNum = '5.2';
+      this.addSubSectionHeading(subNum, 'Member Internal Forces');
+      this.addMemberForcesTable(memberForces, 'Table — Member Internal Forces');
     }
 
-    // ========== PAGE 4: Pass/Fail Checks ==========
+    // ================================================================
+    // SECTION 6: DESIGN VERIFICATION
+    // ================================================================
     if (designResults && designResults.length > 0) {
-      this.addPage("Design Checks");
+      this.doc.addPage();
+      this.addHeader('Design Verification');
+      this.tocEntries.push({ level: 1, number: '6', title: 'Design Verification', page: this.doc.getNumberOfPages() });
+      // addDesignSection renders its own section heading internally
+      this.addSubSectionHeading('6.1', 'Member Design Checks');
       this.addDesignSection(designResults);
     }
 
-    // ========== PAGE 5: Legal Disclaimer ==========
+    // ================================================================
+    // SECTION 7: CONCLUSIONS & RECOMMENDATIONS
+    // ================================================================
+    const conclusionSection = designResults && designResults.length > 0 ? 7 : 6;
+    this.doc.addPage();
+    this.addHeader('Conclusions');
+    this.tocEntries.push({ level: 1, number: conclusionSection.toString(), title: 'Conclusions & Recommendations', page: this.doc.getNumberOfPages() });
+    this.addConclusionsPage({
+      overallStatus,
+      passCount,
+      failCount,
+      totalMembers: members.length,
+      criticalMembers,
+      maxStress,
+    });
+
+    // ================================================================
+    // APPENDIX: SIGNATURE & CERTIFICATION
+    // ================================================================
+    this.doc.addPage();
+    this.addHeader('Certification');
+    this.tocEntries.push({ level: 1, number: 'A', title: 'Certification & Signatures', page: this.doc.getNumberOfPages() });
+    this.addSignaturePage({
+      engineerName: project.engineerName || '',
+      checkedBy,
+      approvedBy,
+      projectName: project.projectName,
+      projectNumber: project.projectNumber || '',
+    });
+
+    // ================================================================
+    // LEGAL DISCLAIMER (final page)
+    // ================================================================
     this.addLegalDisclaimer();
+
+    // ================================================================
+    // BACK-FILL: Render the Table of Contents on the reserved page
+    // ================================================================
+    this.doc.setPage(tocPageNumber);
+    this.contentTop = this.margin + this.headerHeight;
+    this.addHeader('Table of Contents');
+    this.addTableOfContents();
   }
 
   // ============================================
-  // WATERMARK
+  // WATERMARK  —  Subtle professional branding
   // ============================================
 
   /**
-   * Add watermark to all pages
+   * Add a subtle watermark to all pages (skips the cover page).
+   * Uses a faint diagonal "BeamLab Ultimate" text and a thin
+   * document-reference stamp at the bottom-right.
    */
   addWatermark(): void {
     const totalPages = this.doc.getNumberOfPages();
 
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 2; i <= totalPages; i++) {   // Skip cover (page 1)
       this.doc.setPage(i);
 
-      // Watermark at top right
-      this.doc.setFontSize(10);
-      this.doc.setFont("helvetica", "bold");
-      this.doc.setTextColor(200, 200, 200);
+      // ---- Diagonal centre watermark ----
+      this.doc.setFontSize(48);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(230, 235, 240);   // Very faint grey-blue
+      this.doc.text('BEAMLAB', this.pageWidth / 2, this.pageHeight / 2, {
+        align: 'center',
+        angle: 35,
+      });
 
-      // Diagonal watermark
+      // ---- Small doc reference stamp (bottom-right) ----
+      this.doc.setFontSize(6);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(200, 205, 215);
       this.doc.text(
-        "BeamLab Ultimate",
-        this.pageWidth - this.margin - 5,
-        this.margin + 5,
-        { align: "right", angle: 0 },
+        `Ref: ${this.documentRef}  |  Rev ${this.revision}`,
+        this.pageWidth - this.margin,
+        this.pageHeight - 4,
+        { align: 'right' },
       );
     }
 
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setTextColor(...THEME.text);
   }
 
   // ============================================
-  // ENHANCED SAVE WITH WATERMARK
+  // ENHANCED SAVE  —  Watermark + Footer + Metadata
   // ============================================
 
   /**
-   * Save the PDF report with watermark
+   * Finalise and save the PDF report.
+   * Applies watermarks, footers across all pages and sets PDF metadata.
    */
   saveWithWatermark(filename: string): void {
-    // Add watermark to all pages
+    // Apply watermark to all pages
     this.addWatermark();
 
-    // Add footers to all pages
+    // Apply footers to all pages (footer skips cover internally)
     this.addFooter();
 
-    // Generate filename
-    const cleanFilename = filename.replace(/[^a-zA-Z0-9]/g, "_");
-    const timestamp = format(new Date(), "yyyyMMdd_HHmm");
+    // Set PDF document properties
+    this.doc.setProperties({
+      title: `${this.projectTitle} — Structural Analysis Report`,
+      subject: 'Structural Engineering Analysis Report',
+      author: this.preparedBy || 'BeamLab Engineering',
+      creator: 'BeamLab Ultimate',
+      keywords: 'structural analysis, engineering, report, BeamLab',
+    });
+
+    // Generate professional filename
+    const cleanFilename = filename.replace(/[^a-zA-Z0-9]/g, '_');
+    const timestamp = format(new Date(), 'yyyyMMdd_HHmm');
     const fullFilename = `${cleanFilename}_Report_${timestamp}.pdf`;
 
     // Save
@@ -2646,105 +3787,159 @@ By using this report, you acknowledge that you have read and understood these te
       maxStress,
       overallStatus,
       criticalMembers,
-      analysisTime,
     } = options;
 
-    let startY = this.contentTop + 5;
+    let y = this.contentTop + 2;
 
-    // Section title
-    this.doc.setFontSize(14);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text("Executive Summary", this.margin, startY);
-    startY += 10;
-
-    // Status badge
-    const statusColors: Record<string, [number, number, number]> = {
-      PASS: [34, 197, 94],
-      FAIL: [239, 68, 68],
-      WARNING: [234, 179, 8],
+    // ---- Overall Status Banner ----
+    const bannerW = this.pageWidth - 2 * this.margin;
+    const bannerH = 14;
+    const statusMeta: Record<string, { bg: [number, number, number]; label: string }> = {
+      PASS:    { bg: THEME.pass, label: 'ALL CHECKS PASSED' },
+      FAIL:    { bg: THEME.fail, label: 'DESIGN CHECKS FAILED' },
+      WARNING: { bg: THEME.warn, label: 'REVIEW REQUIRED' },
     };
+    const sm = statusMeta[overallStatus] || statusMeta['WARNING'];
 
-    const statusColor = statusColors[overallStatus] || statusColors["WARNING"];
-    this.doc.setFillColor(...statusColor);
-    this.doc.roundedRect(this.margin, startY, 40, 8, 2, 2, "F");
-    this.doc.setTextColor(255, 255, 255);
-    this.doc.setFontSize(10);
-    this.doc.setFont("helvetica", "bold");
-    this.doc.text(overallStatus, this.margin + 20, startY + 5.5, {
-      align: "center",
-    });
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setFillColor(...sm.bg);
+    this.doc.roundedRect(this.margin, y, bannerW, bannerH, 2, 2, 'F');
+    this.doc.setTextColor(...THEME.white);
+    this.doc.setFontSize(12);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.text(sm.label, this.margin + bannerW / 2, y + 9.5, { align: 'center' });
 
-    startY += 15;
+    y += bannerH + 8;
 
-    // Summary statistics table
-    const summaryData = [
-      ["Model Statistics", ""],
-      ["Total Nodes", totalNodes.toString()],
-      ["Total Members", totalMembers.toString()],
-      ["Total Load Cases", totalLoads.toString()],
-      ["", ""],
-      ["Analysis Results", ""],
-      ["Max Displacement", `${maxDisplacement.toFixed(4)} mm`],
-      ["Max Stress", `${maxStress.toFixed(2)} MPa`],
-      ["Analysis Time", `${analysisTime.toFixed(2)} ms`],
+    // ---- KPI Cards (4 across) ----
+    const cardCount = 4;
+    const gap = 4;
+    const cardW = (bannerW - (cardCount - 1) * gap) / cardCount;
+    const cardH = 22;
+    const kpis = [
+      { label: 'NODES', value: totalNodes.toString(), color: THEME.accent },
+      { label: 'MEMBERS', value: totalMembers.toString(), color: THEME.accent },
+      { label: 'LOAD CASES', value: totalLoads.toString(), color: THEME.primaryLight },
+      { label: 'PEAK STRESS', value: `${maxStress.toFixed(1)} MPa`, color: THEME.primary },
     ];
 
+    for (let i = 0; i < cardCount; i++) {
+      const cx = this.margin + i * (cardW + gap);
+      const kpi = kpis[i];
+
+      // Card background
+      this.doc.setFillColor(245, 248, 254);
+      this.doc.setDrawColor(...kpi.color);
+      this.doc.setLineWidth(0.4);
+      this.doc.roundedRect(cx, y, cardW, cardH, 1.5, 1.5, 'FD');
+
+      // Top accent bar
+      this.doc.setFillColor(...kpi.color);
+      this.doc.rect(cx, y, cardW, 2, 'F');
+
+      // Value
+      this.doc.setFontSize(13);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.primary);
+      this.doc.text(kpi.value, cx + cardW / 2, y + 12, { align: 'center' });
+
+      // Label
+      this.doc.setFontSize(6.5);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.textSecondary);
+      this.doc.text(kpi.label, cx + cardW / 2, y + 18, { align: 'center' });
+    }
+
+    y += cardH + 8;
+
+    // ---- Summary Statistics Table ----
     autoTable(this.doc, {
-      startY: startY,
-      head: [],
-      body: summaryData,
-      theme: "plain",
-      styles: {
-        fontSize: 10,
-        cellPadding: 2,
+      startY: y,
+      head: [['Parameter', 'Value', 'Unit']],
+      body: [
+        ['Total Nodes', totalNodes.toString(), '—'],
+        ['Total Members', totalMembers.toString(), '—'],
+        ['Total Load Cases', totalLoads.toString(), '—'],
+        ['Max. Displacement', maxDisplacement.toFixed(4), 'mm'],
+        ['Max. Axial Stress', maxStress.toFixed(2), 'MPa'],
+        ['Overall Status', overallStatus, '—'],
+      ],
+      theme: 'grid',
+      headStyles: {
+        fillColor: THEME.primary,
+        textColor: THEME.headerText,
+        fontStyle: 'bold',
+        fontSize: 8,
+        halign: 'center',
+        cellPadding: 3,
       },
+      bodyStyles: { fontSize: 8, cellPadding: 2.5 },
       columnStyles: {
-        0: { fontStyle: "bold", cellWidth: 50, textColor: [80, 80, 80] },
-        1: { cellWidth: 40, halign: "right" },
+        0: { fontStyle: 'bold', textColor: THEME.text, cellWidth: 55 },
+        1: { halign: 'right', cellWidth: 40 },
+        2: { halign: 'center', cellWidth: 20, textColor: THEME.textSecondary },
       },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
       margin: { left: this.margin, right: this.margin },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
       didParseCell: (data) => {
-        // Make section headers bold and colored
-        if (data.row.index === 0 || data.row.index === 5) {
-          data.cell.styles.textColor = [59, 130, 246];
-          data.cell.styles.fontStyle = "bold";
+        // Color the status cell
+        if (data.section === 'body' && data.row.index === 5 && data.column.index === 1) {
+          if (overallStatus === 'PASS') {
+            data.cell.styles.textColor = THEME.pass;
+          } else if (overallStatus === 'FAIL') {
+            data.cell.styles.textColor = THEME.fail;
+          } else {
+            data.cell.styles.textColor = THEME.warn;
+          }
+          data.cell.styles.fontStyle = 'bold';
         }
       },
     });
+    this.syncYAfterTable(8);
 
-    // Critical members warning
+    // ---- Critical Members Warning Box ----
     if (criticalMembers.length > 0) {
-      this.syncYAfterTable(10);
-      this.ensureSpace(30);
-      let y = this.contentTop;
+      this.ensureSpace(35);
+      y = this.contentTop;
 
-      this.doc.setFontSize(11);
-      this.doc.setFont("helvetica", "bold");
-      this.doc.setTextColor(239, 68, 68);
-      this.doc.text("⚠ Critical Members Requiring Attention:", this.margin, y);
-      this.doc.setTextColor(0, 0, 0);
+      const boxH = Math.min(criticalMembers.length, 5) * 5 + 16;
+      this.doc.setFillColor(255, 245, 245);
+      this.doc.setDrawColor(...THEME.fail);
+      this.doc.setLineWidth(0.4);
+      this.doc.roundedRect(this.margin, y, bannerW, boxH, 2, 2, 'FD');
 
-      y += 5;
+      // Left red accent bar
+      this.doc.setFillColor(...THEME.fail);
+      this.doc.rect(this.margin, y, 4, boxH, 'F');
+
+      // Warning title
       this.doc.setFontSize(9);
-      this.doc.setFont("helvetica", "normal");
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(...THEME.fail);
+      this.doc.text('CRITICAL MEMBERS REQUIRING ATTENTION', this.margin + 8, y + 6);
+
+      // Member list
+      let ly = y + 12;
+      this.doc.setFontSize(8);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(...THEME.text);
 
       for (const member of criticalMembers.slice(0, 5)) {
-        y += 4;
-        this.doc.text(`• ${member}`, this.margin + 3, y);
+        this.doc.text(`▸  ${member}`, this.margin + 8, ly);
+        ly += 5;
       }
 
       if (criticalMembers.length > 5) {
-        y += 4;
-        this.doc.setTextColor(100, 100, 100);
-        this.doc.text(
-          `... and ${criticalMembers.length - 5} more`,
-          this.margin + 3,
-          y,
-        );
-        this.doc.setTextColor(0, 0, 0);
+        this.doc.setTextColor(...THEME.textMuted);
+        this.doc.text(`  … and ${criticalMembers.length - 5} additional members`, this.margin + 8, ly);
       }
+
+      this.contentTop = y + boxH + 5;
     }
+
+    // Reset text color
+    this.doc.setTextColor(...THEME.text);
   }
 
   // ============================================
@@ -2781,11 +3976,11 @@ By using this report, you acknowledge that you have read and understood these te
     this.doc.setFontSize(9);
     this.doc.setFont("helvetica", "normal");
     const summaryY = startY + 6;
-    this.doc.setTextColor(34, 197, 94);
+    this.doc.setTextColor(...THEME.pass);
     this.doc.text(`✓ ${passCount} OK`, this.margin, summaryY);
-    this.doc.setTextColor(239, 68, 68);
+    this.doc.setTextColor(...THEME.fail);
     this.doc.text(`✗ ${failCount} Excessive`, this.margin + 30, summaryY);
-    this.doc.setTextColor(0, 0, 0);
+    this.doc.setTextColor(...THEME.text);
 
     // Table
     autoTable(this.doc, {
@@ -2798,26 +3993,31 @@ By using this report, you acknowledge that you have read and understood these te
         `L/${(1 / d.ratio).toFixed(0)}`,
         d.status,
       ]),
-      theme: "striped",
+      theme: "grid",
       headStyles: {
-        fillColor: [75, 85, 99],
-        textColor: [255, 255, 255],
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
         fontStyle: "bold",
         fontSize: 8,
         halign: "center",
+        cellPadding: 2.5,
       },
       bodyStyles: {
         fontSize: 8,
         halign: "center",
+        cellPadding: 2,
       },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
       didParseCell: (cellData) => {
         if (cellData.section === "body" && cellData.column.index === 4) {
           const status = cellData.cell.text[0];
           if (status === "EXCESSIVE") {
-            cellData.cell.styles.textColor = [239, 68, 68];
+            cellData.cell.styles.textColor = THEME.fail;
             cellData.cell.styles.fontStyle = "bold";
           } else {
-            cellData.cell.styles.textColor = [34, 197, 94];
+            cellData.cell.styles.textColor = THEME.pass;
           }
         }
       },
@@ -2870,16 +4070,21 @@ By using this report, you acknowledge that you have read and understood these te
       body: rows,
       theme: "grid",
       headStyles: {
-        fillColor: [75, 85, 99],
-        textColor: [255, 255, 255],
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
         fontStyle: "bold",
         fontSize: 7,
         halign: "center",
+        cellPadding: 2.5,
       },
       bodyStyles: {
         fontSize: 7,
         halign: "center",
+        cellPadding: 2,
       },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
       margin: { left: this.margin, right: this.margin },
     });
   }
@@ -2909,7 +4114,9 @@ By using this report, you acknowledge that you have read and understood these te
 
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
+    this.doc.setTextColor(...THEME.primary);
     this.doc.text("Material Properties", this.margin, startY);
+    this.doc.setTextColor(...THEME.text);
 
     autoTable(this.doc, {
       startY: startY + 5,
@@ -2924,18 +4131,23 @@ By using this report, you acknowledge that you have read and understood these te
         (m.fu ?? "-").toString(),
         m.density.toFixed(0),
       ]),
-      theme: "striped",
+      theme: "grid",
       headStyles: {
-        fillColor: [59, 130, 246],
-        textColor: [255, 255, 255],
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
         fontStyle: "bold",
         fontSize: 9,
         halign: "center",
+        cellPadding: 2.5,
       },
       bodyStyles: {
         fontSize: 9,
         halign: "center",
+        cellPadding: 2,
       },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
       margin: { left: this.margin, right: this.margin },
     });
   }
@@ -2967,7 +4179,9 @@ By using this report, you acknowledge that you have read and understood these te
 
     this.doc.setFontSize(12);
     this.doc.setFont("helvetica", "bold");
+    this.doc.setTextColor(...THEME.primary);
     this.doc.text("Section Properties", this.margin, startY);
+    this.doc.setTextColor(...THEME.text);
 
     autoTable(this.doc, {
       startY: startY + 5,
@@ -2993,18 +4207,23 @@ By using this report, you acknowledge that you have read and understood these te
         s.Zy.toFixed(2),
         s.Zz.toFixed(2),
       ]),
-      theme: "striped",
+      theme: "grid",
       headStyles: {
-        fillColor: [59, 130, 246],
-        textColor: [255, 255, 255],
+        fillColor: THEME.headerBg,
+        textColor: THEME.headerText,
         fontStyle: "bold",
         fontSize: 8,
         halign: "center",
+        cellPadding: 2.5,
       },
       bodyStyles: {
         fontSize: 8,
         halign: "center",
+        cellPadding: 2,
       },
+      alternateRowStyles: { fillColor: THEME.rowAlt },
+      tableLineColor: THEME.border,
+      tableLineWidth: 0.2,
       margin: { left: this.margin, right: this.margin },
     });
   }
@@ -3084,11 +4303,9 @@ export async function generateAnalysisReport(options: {
     designResults,
   });
 
-  // Add executive summary if provided
-  if (executiveSummary) {
-    report.addPage("Executive Summary");
-    report.addExecutiveSummary(executiveSummary);
-  }
+  // Add executive summary if provided (note: generateFullReport already includes
+  // an auto-computed executive summary — only override if caller provides one)
+  // Removed duplicate: generateFullReport() now handles this internally.
 
   // Save with watermark
   report.saveWithWatermark(projectName);

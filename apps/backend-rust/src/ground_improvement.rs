@@ -224,10 +224,11 @@ impl StoneColumnDesign {
         let stress_ratio = 1.0 + (modulus_ratio - 1.0) * area_ratio / 
             (1.0 + (modulus_ratio - 1.0) * area_ratio * 0.5);
         
-        // Ultimate capacity - bulging failure
-        let sigma_3 = 2.0 * surcharge; // Simplified lateral stress
+        // Ultimate capacity - bulging failure (Hughes & Withers 1974)
+        let k0 = 1.0 - phi_g.sin(); // At-rest earth pressure coefficient
+        let sigma_3 = k0 * surcharge; // Lateral confining stress
         let qu_bulging = sigma_3 * kp_s;
-        let ultimate_capacity = qu_bulging * a_c * 1000.0;
+        let ultimate_capacity = qu_bulging * a_c; // kPa × m² = kN
         
         // Allowable load (FoS = 3)
         let allowable_load = ultimate_capacity / 3.0;
@@ -255,7 +256,8 @@ impl StoneColumnDesign {
     
     /// Check bearing capacity improvement
     pub fn improved_bearing_capacity(&self, untreated_qu: f64) -> f64 {
-        untreated_qu * self.improvement_factor.sqrt()
+        // Composite bearing capacity weighted by area replacement ratio
+        untreated_qu * (self.area_ratio * self.stress_ratio + (1.0 - self.area_ratio))
     }
 }
 
@@ -588,10 +590,13 @@ impl VerticalDrainDesign {
         let ds = dw * smear_ratio;
         let s = ds / dw;
         
-        // Well resistance parameter
+        // Well resistance parameter (Hansbo 1981) — uses kh not ch
+        // Approximate kh from ch: kh ≈ ch * mv * γw, but since we don't have mv,
+        // use dimensional correction: Fr = 2π·kh·l²/(3·qw)
+        // For now use ch/qw ratio with correct factor
         let qw = params.discharge_capacity;
         let l = params.length;
-        let fr = PI * 2.0 * l.powi(2) * ch / qw;
+        let fr = 2.0 * PI * l.powi(2) * ch / (3.0 * qw);
         
         // Combined parameter μ
         let fn_n = n.powi(2) / (n.powi(2) - 1.0) * (n.ln() - 0.75);
@@ -602,8 +607,8 @@ impl VerticalDrainDesign {
         let u_target: f64 = 0.90; // 90% consolidation
         let th90 = -mu * (1.0 - u_target).ln();
         
-        // Time for 90% consolidation
-        let time_90 = th90 * de.powi(2) / (4.0 * ch) * 365.0; // days
+        // Time for 90% consolidation (Barron/Hansbo: divisor is 8ch)
+        let time_90 = th90 * de.powi(2) / (8.0 * ch) * 365.0; // days
         
         Self {
             equivalent_diameter: dw,
@@ -619,7 +624,7 @@ impl VerticalDrainDesign {
     /// Calculate degree of consolidation at time t
     pub fn consolidation_at_time(&self, ch: f64, time_days: f64) -> f64 {
         let time_years = time_days / 365.0;
-        let th = 4.0 * ch * time_years / self.influence_diameter.powi(2);
+        let th = 8.0 * ch * time_years / self.influence_diameter.powi(2);
         
         let mu = self.time_factor_90 / (-(1.0 - 0.9_f64).ln());
         
@@ -751,8 +756,10 @@ impl DeepSoilMixingDesign {
         let column_area = PI * d.powi(2) / 4.0;
         let area_ratio = column_area / s.powi(2);
         
-        // Improvement factor
-        let improvement_factor = 1.0 + area_ratio * (column_modulus * 1000.0 / 10.0 - 1.0);
+        // Improvement factor (modular ratio method)
+        // Use column_modulus (MPa) and a representative soil modulus
+        let soil_e = 5.0; // Representative soil modulus (MPa) for soft clay
+        let improvement_factor = 1.0 + area_ratio * (column_modulus / soil_e - 1.0);
         
         // Binder consumption
         let column_volume = column_area * depth;
@@ -865,8 +872,8 @@ impl RigidInclusionDesign {
         let e_s = soil_modulus;
         let n = e_p / e_s;
         
-        // Stress concentration factor
-        let src = n * area_ratio / (1.0 + (n - 1.0) * area_ratio);
+        // Stress concentration ratio: SCR = n / (1 + (n-1)*as) per ASIRI
+        let src = n / (1.0 + (n - 1.0) * area_ratio);
         
         // Load transfer efficiency (depends on LTP design)
         let h = params.ltp_thickness;

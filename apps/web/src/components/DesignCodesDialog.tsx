@@ -10,7 +10,6 @@
 
 import { FC, useState } from 'react';
 import {
-    X,
     Building2,
     Wrench,
     Columns,
@@ -22,6 +21,8 @@ import {
     Download,
     RefreshCw,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
 
 // Import panel components
 import { SteelDesignPanel } from './SteelDesignPanel';
@@ -281,9 +282,9 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             )}
 
             {/* Checks Info */}
-            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-xs font-medium text-gray-500 mb-2">Design Checks</div>
-                <div className="grid grid-cols-2 gap-1 text-xs text-gray-400">
+            <div className="mt-4 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Design Checks</div>
+                <div className="grid grid-cols-2 gap-1 text-xs text-zinc-500 dark:text-zinc-400">
                     <div>✓ Bearing capacity</div>
                     <div>✓ One-way shear</div>
                     <div>✓ Punching shear</div>
@@ -309,8 +310,6 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
     const [activeTab, setActiveTab] = useState<DesignType>(initialTab);
     const [connectionDialogOpen, setConnectionDialogOpen] = useState(false);
 
-    if (!isOpen) return null;
-
     const renderPanel = () => {
         switch (activeTab) {
             case 'steel':
@@ -327,31 +326,31 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                         <p className="text-sm text-gray-500 mb-4">
                             Design steel connections per IS 800:2007 Chapter 10.
                         </p>
-                        <button
+                        <Button
                             onClick={() => setConnectionDialogOpen(true)}
                             className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
                         >
                             <Wrench className="w-4 h-4" />
                             Open Connection Designer
-                        </button>
+                        </Button>
 
                         {/* Connection Types */}
                         <div className="mt-4 grid grid-cols-2 gap-2">
-                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
                                 <div className="font-medium text-sm">Bolted Shear</div>
-                                <div className="text-xs text-gray-400">Fin plate, angles</div>
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Fin plate, angles</div>
                             </div>
-                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
                                 <div className="font-medium text-sm">Moment End Plate</div>
-                                <div className="text-xs text-gray-400">Extended, flush</div>
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Extended, flush</div>
                             </div>
-                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
                                 <div className="font-medium text-sm">Welded</div>
-                                <div className="text-xs text-gray-400">Fillet, butt</div>
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Fillet, butt</div>
                             </div>
-                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
                                 <div className="font-medium text-sm">Base Plate</div>
-                                <div className="text-xs text-gray-400">Anchor bolts</div>
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Anchor bolts</div>
                             </div>
                         </div>
                     </div>
@@ -365,13 +364,13 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
 
     return (
         <>
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <DialogHeader className="flex flex-row items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700 space-y-0">
                         <div className="flex items-center gap-2">
                             <FileCheck className="w-5 h-5 text-green-500" />
-                            <h2 className="font-semibold text-lg">Design Code Checks</h2>
+                            <DialogTitle className="font-semibold text-lg">Design Code Checks</DialogTitle>
                             {!isPro && (
                                 <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded">
                                     <Crown className="w-3 h-3" />
@@ -379,24 +378,19 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                                 </span>
                             )}
                         </div>
+                        <DialogDescription className="sr-only">Structural design code compliance checks</DialogDescription>
                         <div className="flex items-center gap-2">
-                            <button className="flex items-center gap-1 px-3 py-1 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <Button variant="ghost" size="sm" className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300">
                                 <Download className="w-4 h-4" />
                                 Export Report
-                            </button>
-                            <button
-                                onClick={onClose}
-                                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                            </Button>
                         </div>
-                    </div>
+                    </DialogHeader>
 
                     {/* Content */}
                     <div className="flex flex-1 overflow-hidden">
                         {/* Sidebar */}
-                        <div className="w-64 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+                        <div className="w-64 border-r border-zinc-200 dark:border-zinc-700 overflow-y-auto">
                             {DESIGN_OPTIONS.map((option) => {
                                 const Icon = option.icon;
                                 const isActive = activeTab === option.id;
@@ -408,20 +402,20 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                                         className={`
                                             w-full flex items-center gap-3 p-3 text-left transition-all
                                             ${isActive
-                                                ? 'bg-gray-100 dark:bg-gray-800 border-r-2 border-blue-500'
-                                                : 'hover:bg-gray-50 dark:hover:bg-gray-800'}
+                                                ? 'bg-zinc-100 dark:bg-zinc-800 border-r-2 border-blue-500'
+                                                : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'}
                                         `}
                                     >
-                                        <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'text-gray-400'}`} />
+                                        <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'text-zinc-500 dark:text-zinc-400'}`} />
                                         <div className="flex-1 min-w-0">
                                             <div className={`text-sm font-medium ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>
                                                 {option.name}
                                             </div>
-                                            <div className="text-xs text-gray-400 truncate">
+                                            <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                                                 {option.codes.join(', ')}
                                             </div>
                                         </div>
-                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-gray-300'}`} />
+                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-zinc-300 dark:text-zinc-500'}`} />
                                     </button>
                                 );
                             })}
@@ -432,8 +426,8 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                             {renderPanel()}
                         </div>
                     </div>
-                </div>
-            </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Connection Design Sub-Dialog */}
             <ConnectionDesignDialog

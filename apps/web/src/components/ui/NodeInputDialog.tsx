@@ -8,8 +8,10 @@
  */
 
 import { FC, useState, useEffect, useRef } from 'react';
-import { X, MapPin, Lock, Unlock } from 'lucide-react';
+import { MapPin, Lock, Unlock } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { Dialog, DialogContent, DialogFooter } from './dialog';
+import { Button } from './button';
 
 // ============================================
 // TYPES
@@ -144,25 +146,15 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
     const incrementX = (delta: number) => setX((parseFloat(x) + delta).toString());
     const incrementY = (delta: number) => setY((parseFloat(y) + delta).toString());
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-md p-0 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-blue-600 text-white">
-                    <div className="flex items-center gap-2">
-                        <MapPin className="w-5 h-5" />
-                        <h2 className="text-lg font-semibold">
-                            {editNodeId ? 'Edit Node' : 'Add Node'}
-                        </h2>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1 rounded hover:bg-white/20 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                <div className="flex items-center gap-2 px-6 py-4 bg-blue-600 text-white rounded-t-lg">
+                    <MapPin className="w-5 h-5" />
+                    <h2 className="text-lg font-semibold">
+                        {editNodeId ? 'Edit Node' : 'Add Node'}
+                    </h2>
                 </div>
 
                 {/* Content */}
@@ -288,22 +280,17 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700 flex justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
+                <DialogFooter className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700">
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button
                         onClick={handleSubmit}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                         {editNodeId ? 'Update Node' : 'Add Node'}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

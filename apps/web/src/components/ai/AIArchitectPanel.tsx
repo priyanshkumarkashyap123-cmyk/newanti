@@ -2,9 +2,12 @@
  * AIArchitectPanel.tsx - AI-Powered Structure Generation
  *
  * Allows users to describe a structure in natural language
- * and generates it using the Python AI backend with Google Gemini.
+ * and generates it using the unified AI backend (Express → Gemini).
  *
- * V2.0: 1000x Enhanced with smart model modifications
+ * V3.0: Unified backend integration with fallback chain:
+ *   1. Express API (/api/ai/*) — server-side Gemini proxy
+ *   2. Local AICommandInterpreter — instant offline commands
+ *   3. Python backend — structural generation fallback
  */
 
 import { FC, useState, useCallback, useEffect, useRef } from "react";
@@ -45,6 +48,9 @@ import { aiOrchestrator } from "./AIOrchestrator";
 // ============================================
 
 const PYTHON_API = API_CONFIG.pythonUrl;
+
+// Unified backend API base URL (Express API with server-side Gemini)
+const API_BASE = API_CONFIG.baseUrl;
 
 // ============================================
 // TYPES
@@ -386,7 +392,60 @@ export const AIArchitectPanel: FC = () => {
       }
 
       // ========================================
-      // STEP 2: FALL BACK TO ORCHESTRATOR (BeamLabAI + Gemini) for complex commands
+      // STEP 2: TRY UNIFIED BACKEND for AI-powered modifications
+      // ========================================
+      const model = getModelForAPI();
+
+      try {
+        const unifiedResponse = await fetch(`${API_BASE}/api/ai/modify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model,
+            command: modifyCommand,
+          }),
+        });
+
+        if (unifiedResponse.ok) {
+          const unifiedData = await unifiedResponse.json();
+          if (unifiedData.success && unifiedData.model) {
+            applyModelChanges(unifiedData.model);
+            setSuccess(unifiedData.message || "Model modified successfully");
+            setModifyHistory((prev) => [
+              ...prev,
+              { command: modifyCommand, result: unifiedData.message, success: true },
+            ]);
+            addMessage(sessionId, {
+              role: "assistant",
+              content: unifiedData.message,
+              type: "modify",
+            });
+            setModifyCommand("");
+            setIsModifying(false);
+            return;
+          } else if (unifiedData.success && unifiedData.response) {
+            // AI responded with text guidance instead of model changes
+            setSuccess(unifiedData.response);
+            setModifyHistory((prev) => [
+              ...prev,
+              { command: modifyCommand, result: unifiedData.response, success: true },
+            ]);
+            addMessage(sessionId, {
+              role: "assistant",
+              content: unifiedData.response,
+              type: "modify",
+            });
+            setModifyCommand("");
+            setIsModifying(false);
+            return;
+          }
+        }
+      } catch (unifiedErr) {
+        aiLogger.debug("[Modify] Unified backend unavailable:", unifiedErr);
+      }
+
+      // ========================================
+      // STEP 3: FALL BACK TO ORCHESTRATOR (BeamLabAI + Gemini) for complex commands
       // ========================================
       const orchestratorResult =
         await aiOrchestrator.processMessage(modifyCommand);
@@ -414,7 +473,7 @@ export const AIArchitectPanel: FC = () => {
         return;
       }
 
-      // If orchestrator can't execute as command, try the backend for model-level changes
+      // If orchestrator can't execute as command, try the Python backend for model-level changes
       if (nodes.size === 0) {
         setError(
           'No model to modify. Generate a structure first, or try: "Add node at (0,0,0)"',
@@ -422,8 +481,6 @@ export const AIArchitectPanel: FC = () => {
         setIsModifying(false);
         return;
       }
-
-      const model = getModelForAPI();
 
       const response = await fetch(`${PYTHON_API}/ai/smart-modify`, {
         method: "POST",
@@ -546,7 +603,7 @@ export const AIArchitectPanel: FC = () => {
   ]);
 
   // ========================================
-  // GENERATE HANDLER (with fallback + session tracking)
+  // GENERATE HANDLER (Unified backend → Python → Local fallback)
   // ========================================
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim()) {
@@ -563,12 +620,52 @@ export const AIArchitectPanel: FC = () => {
     const sessionId = ensureSession();
     addMessage(sessionId, { role: "user", content: prompt, type: "generate" });
 
-// console.log("[AIArchitect] Sending prompt:", prompt);
-
     let generatedViaBackend = false;
 
     try {
-      // Try Python backend first
+      // ========================================
+      // STEP 1: Try unified Express backend first (server-side Gemini)
+      // ========================================
+      try {
+        const response = await fetch(`${API_BASE}/api/ai/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.model) {
+          clearModel();
+          // Apply the generated model
+          applyModelChanges(data.model);
+
+          generatedViaBackend = true;
+          const modelName = data.model.metadata?.name || "AI Generated";
+          const nodeCount = data.model.nodes?.length || 0;
+          const memberCount = data.model.members?.length || 0;
+          const successMsg = `✓ Generated "${modelName}" (${nodeCount} nodes, ${memberCount} members)`;
+          setSuccess(successMsg);
+          addMessage(sessionId, {
+            role: "assistant",
+            content: successMsg,
+            type: "generate",
+            metadata: {
+              structureType: modelName,
+              nodesGenerated: nodeCount,
+              membersGenerated: memberCount,
+            },
+          });
+          setPrompt("");
+          return; // Done!
+        }
+      } catch (unifiedErr) {
+        aiLogger.debug("[AIArchitect] Unified backend unavailable, trying Python backend:", unifiedErr);
+      }
+
+      // ========================================
+      // STEP 2: Try Python backend
+      // ========================================
       const response = await fetch(`${PYTHON_API}/generate/ai`, {
         method: "POST",
         headers: {
@@ -804,7 +901,7 @@ export const AIArchitectPanel: FC = () => {
   ]);
 
   // ========================================
-  // CHAT HANDLER — Orchestrator (BeamLabAI + Gemini in parallel)
+  // CHAT HANDLER — Unified Backend → Orchestrator fallback
   // ========================================
   const handleChat = useCallback(async () => {
     if (!chatInput.trim()) return;
@@ -827,29 +924,97 @@ export const AIArchitectPanel: FC = () => {
 
     try {
       // ========================================
-      // Use the AI Orchestrator — runs BeamLabAI + Gemini in parallel
-      // Actions are intercepted by the local command interpreter,
-      // knowledge questions go to both engines simultaneously.
+      // STEP 1: Try local command interpreter first (instant, offline)
       // ========================================
-      const response = await aiOrchestrator.processMessage(inputText);
+      if (isActionCommand(inputText)) {
+        const parsed = interpretCommand(inputText);
+        if (parsed.action !== "unknown" && parsed.confidence >= 0.5) {
+          const result: ExecutionResult = executeCommand(parsed);
+          if (result.success) {
+            const assistantMessage: ChatMessage = {
+              role: "assistant",
+              content: `✅ ${result.message}`,
+              timestamp: new Date(),
+            };
+            setChatMessages((prev) => [...prev, assistantMessage]);
+            addMessage(sessionId, { role: "assistant", content: result.message, type: "chat" });
+            setIsChatting(false);
+            return;
+          }
+        }
+      }
 
-      const assistantMessage: ChatMessage = {
-        role: "assistant",
-        content: response.text,
-        timestamp: new Date(),
-      };
-      setChatMessages((prev) => [...prev, assistantMessage]);
-      addMessage(sessionId, {
-        role: "assistant",
-        content: response.text,
-        type: "chat",
-      });
+      // ========================================
+      // STEP 2: Try unified backend API (server-side Gemini — no API key in browser)
+      // ========================================
+      let responded = false;
+      try {
+        const model = getModelForAPI();
+        const chatHistory = chatMessages.slice(-10).map(m => ({
+          role: m.role,
+          content: m.content,
+        }));
 
-      aiLogger.debug(
-        `[Chat] Source: ${response.source}, Confidence: ${response.confidence}, Latency: ${response.latencyMs.toFixed(0)}ms`,
-      );
+        const response = await fetch(`${API_BASE}/api/ai/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: inputText,
+            context: JSON.stringify({
+              currentModel: model,
+              nodeCount: nodes.size,
+              memberCount: members.size,
+              loadCount: loads.length + memberLoads.length,
+            }),
+            history: chatHistory,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.response) {
+            const assistantMessage: ChatMessage = {
+              role: "assistant",
+              content: data.response,
+              timestamp: new Date(),
+              changes: data.actions?.map((a: any) => a.description) || undefined,
+            };
+            setChatMessages((prev) => [...prev, assistantMessage]);
+            addMessage(sessionId, { role: "assistant", content: data.response, type: "chat" });
+
+            // Auto-apply model changes if returned
+            if (data.model) {
+              applyModelChanges(data.model);
+            }
+
+            responded = true;
+            aiLogger.debug(`[Chat] Unified backend response OK`);
+          }
+        }
+      } catch (backendErr) {
+        aiLogger.debug("[Chat] Unified backend unavailable, trying orchestrator:", backendErr);
+      }
+
+      // ========================================
+      // STEP 3: Fall back to orchestrator (local BeamLabAI + direct Gemini)
+      // ========================================
+      if (!responded) {
+        const response = await aiOrchestrator.processMessage(inputText);
+
+        const assistantMessage: ChatMessage = {
+          role: "assistant",
+          content: response.text,
+          timestamp: new Date(),
+        };
+        setChatMessages((prev) => [...prev, assistantMessage]);
+        addMessage(sessionId, { role: "assistant", content: response.text, type: "chat" });
+
+        aiLogger.debug(
+          `[Chat] Orchestrator: source=${response.source}, confidence=${response.confidence}`,
+        );
+      }
     } catch (err) {
-      console.error("[AIOrchestrator] Chat error:", err);
+      console.error("[AIChat] All paths failed:", err);
 
       // Ultimate fallback: local EnhancedAIArchitect
       let fallbackResponse: string;
@@ -879,7 +1044,7 @@ export const AIArchitectPanel: FC = () => {
     } finally {
       setIsChatting(false);
     }
-  }, [chatInput, ensureSession, addMessage]);
+  }, [chatInput, chatMessages, nodes.size, members.size, loads.length, memberLoads.length, getModelForAPI, applyModelChanges, ensureSession, addMessage]);
 
   // ========================================
   // HANDLE EXAMPLE CLICK

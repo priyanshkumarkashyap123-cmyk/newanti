@@ -491,9 +491,9 @@ impl RunwayBeamDesigner {
         let cw = self.beam.cw();
         let zx = self.beam.zxx();
         
-        // Elastic LTB moment
+        // Elastic LTB moment (convert N·mm to kN·mm)
         let cb = 1.14; // Moment gradient factor for crane loading
-        let me = cb * PI / l * (e * iy * g * j + (PI * e / l).powi(2) * iy * cw).sqrt();
+        let me = cb * PI / l * (e * iy * g * j + (PI * e / l).powi(2) * iy * cw).sqrt() / 1000.0;
         
         // Plastic moment
         let mp = zx * self.beam.fy / 1000.0;
@@ -529,8 +529,8 @@ impl RunwayBeamDesigner {
         
         let cycles = self.crane.duty_class.design_cycles();
         
-        // Category B detail (welded flange)
-        let cf = 1.2e11_f64; // Fatigue constant for category B
+        // AISC Category B detail: Cf = 120×10⁸ ksi³ = 3.93×10¹² MPa³
+        let cf = 3.93e12_f64; // Fatigue constant for category B (MPa³)
         let fth = 110.0; // Threshold MPa
         
         // Allowable stress range

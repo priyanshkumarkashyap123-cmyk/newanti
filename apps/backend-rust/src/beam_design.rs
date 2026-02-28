@@ -318,17 +318,20 @@ impl SteelBeam {
         let hw_tw = h / self.web_thickness;
         let e = self.e;
         let fy = self.fy;
-        // Cv1 per G2.1: Cv1=1.0 when h/tw <= 2.24*sqrt(E/Fy)
+        // AISC 360-16 G2: kv=5.34 for unstiffened webs
+        let kv = 5.34;
         let cv1_limit = 2.24 * (e / fy).sqrt();
+        let cv2_yield = 1.10 * (kv * e / fy).sqrt();
+        let cv2_inelastic = 1.37 * (kv * e / fy).sqrt();
         let (cv, phi_v_factor) = if hw_tw <= cv1_limit {
-            (1.0, 1.0) // phi_v = 1.00 per G1
-        } else if hw_tw <= 1.10 * (1.2 * e / fy).sqrt() {
-            // Eq. G2-3: Cv1 = 1.10*sqrt(kv*E/Fy) / (h/tw), kv=5.34 for unstiffened
-            let kv = 5.34;
+            (1.0, 1.0) // G2.1(a): phi_v = 1.00
+        } else if hw_tw <= cv2_yield {
+            (1.0, 0.9) // G2-3: Cv1 = 1.0, phi_v = 0.90
+        } else if hw_tw <= cv2_inelastic {
+            // G2-4: Cv1 = 1.10*sqrt(kv*E/Fy) / (h/tw)
             (1.10 * (kv * e / fy).sqrt() / hw_tw, 0.9)
         } else {
-            // Eq. G2-4: Cv1 = 1.51*kv*E / ((h/tw)^2 * Fy)
-            let kv = 5.34;
+            // G2-5: Cv1 = 1.51*kv*E / ((h/tw)^2 * Fy)
             (1.51 * kv * e / (hw_tw.powi(2) * fy), 0.9)
         };
         let vn = 0.6 * fy * aw * cv / 1000.0;

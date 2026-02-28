@@ -199,7 +199,7 @@ impl TunnelLining {
     /// Flexibility ratio
     pub fn flexibility_ratio(&self) -> f64 {
         let r = self.internal_diameter / 2.0 + self.thickness / 2000.0;
-        self.ground.modulus() * r.powi(3) / (self.ring_stiffness())
+        self.ground.modulus() * 1000.0 * r.powi(3) / (self.ring_stiffness())
     }
     
     /// Ground load on crown (kPa) - Terzaghi's rock load
@@ -218,7 +218,8 @@ impl TunnelLining {
     
     /// Lateral ground pressure (kPa)
     pub fn lateral_pressure(&self) -> f64 {
-        let k0 = 1.0 - self.ground.poisson().sin(); // At rest coefficient
+        let nu = self.ground.poisson();
+        let k0 = nu / (1.0 - nu); // Elastic at-rest coefficient K0 = ν/(1−ν)
         let vertical = self.crown_pressure() + 20.0 * self.external_diameter() / 2.0;
         k0 * vertical
     }

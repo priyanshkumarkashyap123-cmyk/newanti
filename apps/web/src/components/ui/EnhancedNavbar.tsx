@@ -25,7 +25,6 @@ import {
   HelpCircle,
   Sparkles,
   ArrowRight,
-  X,
   Box,
   Grid3X3,
   Calculator,
@@ -40,6 +39,7 @@ import {
   Globe,
   Clock
 } from 'lucide-react';
+import { Dialog, DialogContent } from './dialog';
 import { useAuth } from '../../providers/AuthProvider';
 import beamLabLogo from '../../assets/beamlab_logo.png';
 
@@ -402,79 +402,58 @@ export const EnhancedNavbar: FC = () => {
       </nav>
 
       {/* Search Modal */}
-      <AnimatePresence>
-        {searchOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-              onClick={() => setSearchOpen(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-[20%] left-1/2 -translate-x-1/2 z-50 w-full max-w-xl"
-            >
-              <div className="bg-slate-900 rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden">
-                <div className="flex items-center gap-3 p-4 border-b border-slate-800">
-                  <Search className="w-5 h-5 text-slate-400" />
+      <Dialog open={searchOpen} onOpenChange={(open) => !open && setSearchOpen(false)}>
+        <DialogContent className="max-w-xl p-0 gap-0 top-[20%] translate-y-0">
+              <div className="flex items-center gap-3 p-4 border-b border-zinc-200 dark:border-zinc-800">
+                  <Search className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                   <input
                     ref={searchRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search commands, pages, help..."
-                    className="flex-1 bg-transparent text-white placeholder-slate-500 outline-none"
+                    className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 outline-none"
                     autoFocus
                   />
-                  <button onClick={() => setSearchOpen(false)} className="p-1 text-slate-400 hover:text-white">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                
-                <div className="max-h-80 overflow-y-auto">
-                  {filteredSuggestions.length > 0 ? (
-                    <div className="p-2">
-                      {filteredSuggestions.map((item, i) => (
-                        <button
-                          key={i}
-                          className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-800 transition-colors text-left"
-                          onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${
-                              item.type === 'action' ? 'bg-blue-500' :
-                              item.type === 'page' ? 'bg-green-500' : 'bg-purple-500'
-                            }`} />
-                            <span className="text-sm text-white">{item.label}</span>
-                          </div>
-                          {item.shortcut && (
-                            <kbd className="px-2 py-1 text-xs text-slate-400 bg-slate-800 rounded">
-                              {item.shortcut}
-                            </kbd>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center text-slate-400">
-                      No results found
-                    </div>
-                  )}
-                </div>
-                
-                <div className="p-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-                  <span>Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">↵</kbd> to select</span>
-                  <span>Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded">ESC</kbd> to close</span>
-                </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                
+              <div className="max-h-80 overflow-y-auto">
+                {filteredSuggestions.length > 0 ? (
+                  <div className="p-2">
+                    {filteredSuggestions.map((item, i) => (
+                      <button
+                        key={i}
+                        className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"
+                        onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${
+                            item.type === 'action' ? 'bg-blue-500' :
+                            item.type === 'page' ? 'bg-green-500' : 'bg-purple-500'
+                          }`} />
+                          <span className="text-sm text-zinc-900 dark:text-white">{item.label}</span>
+                        </div>
+                        {item.shortcut && (
+                          <kbd className="px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded">
+                            {item.shortcut}
+                          </kbd>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-zinc-500 dark:text-zinc-400">
+                    No results found
+                  </div>
+                )}
+              </div>
+                
+              <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                <span>Press <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">↵</kbd> to select</span>
+                <span>Press <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">ESC</kbd> to close</span>
+              </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

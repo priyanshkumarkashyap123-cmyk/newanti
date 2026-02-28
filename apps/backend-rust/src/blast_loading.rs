@@ -700,9 +700,9 @@ impl SdofBlastResponse {
     
     /// Dynamic load factor for triangular load
     fn dynamic_load_factor(td_t: f64) -> f64 {
-        // Simplified from response spectra
+        // Simplified from response spectra (triangular pulse)
         if td_t < 0.4 {
-            2.0 * PI * td_t
+            PI * td_t
         } else if td_t < 2.0 {
             2.0 * (1.0 - 0.3 * (td_t - 0.4) / 1.6)
         } else {
@@ -903,8 +903,8 @@ impl FragmentAnalysis {
     
     /// Gurney velocity for cased charges (m/s)
     pub fn gurney_velocity(explosive_mass: f64, case_mass: f64, gurney_constant: f64) -> f64 {
-        // V = √(2E) * √(M/(M+C/2))
-        let ratio = case_mass / (case_mass + 0.5 * explosive_mass);
+        // V = √(2E) * √(C/(M+C/2)) for cylindrical casing
+        let ratio = explosive_mass / (case_mass + 0.5 * explosive_mass);
         gurney_constant * ratio.sqrt()
     }
     

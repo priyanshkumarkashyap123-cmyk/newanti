@@ -284,13 +284,15 @@ impl OrthotropicElastic {
         d[1][1] = self.e2 * (1.0 - self.nu13 * nu31) / delta;
         d[2][2] = self.e3 * (1.0 - self.nu12 * nu21) / delta;
         
-        d[0][1] = self.e1 * (self.nu12 + self.nu13 * nu32) / delta;
+        // Off-diagonal: use derived Poisson's ratios (nu21, nu31, nu32) to get correct
+        // elastic coupling. Canonical form: C_12 = E1*(nu21 + nu31*nu23)/Δ, etc.
+        d[0][1] = self.e1 * (nu21 + nu31 * self.nu23) / delta;
         d[1][0] = d[0][1];
         
-        d[0][2] = self.e1 * (self.nu13 + self.nu12 * self.nu23) / delta;
+        d[0][2] = self.e1 * (nu31 + nu21 * nu32) / delta;
         d[2][0] = d[0][2];
         
-        d[1][2] = self.e2 * (self.nu23 + self.nu12 * nu31) / delta;
+        d[1][2] = self.e2 * (nu32 + nu31 * self.nu12) / delta;
         d[2][1] = d[1][2];
         
         d[3][3] = self.g12;

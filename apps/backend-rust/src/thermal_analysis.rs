@@ -918,11 +918,10 @@ impl ThermoMechanicalCoupling {
         // Simplified: uniform thermal strain in all directions
         let eps_thermal = [eps_th, eps_th, eps_th, 0.0, 0.0, 0.0];
 
-        // This is a placeholder - full implementation needs proper integration
-        let _factor = elastic_modulus * volume;
+        // f_th = ∫ Bᵀ D ε_th dV ≈ Bᵀ (E ε_th) V (simplified, ν not available)
         for i in 0..n_dof {
             for j in 0..6 {
-                f_th[i] += b_matrix[j * n_dof + i] * eps_thermal[j] * volume;
+                f_th[i] += b_matrix[j * n_dof + i] * elastic_modulus * eps_thermal[j] * volume;
             }
         }
 

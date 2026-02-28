@@ -12,13 +12,16 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-    X, Plus, Trash2, ChevronRight, ChevronDown,
+    Plus, Trash2, ChevronRight, ChevronDown,
     ArrowDown, ArrowRight, ArrowUp, RotateCcw,
     Thermometer, Cable, Layers, Grid3X3,
     Target, Zap, Wind, Activity, Box
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { useModelStore } from '../store/model';
 import {
     LoadCase, LoadCaseType, LoadDirection,
@@ -81,15 +84,6 @@ const LOAD_DIRECTIONS: { value: LoadDirection; label: string }[] = [
 // ============================================
 
 export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
-    // Escape key to close
-    React.useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        if (isOpen) window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
-
     const [activeTab, setActiveTab] = useState<LoadTab>('nodal');
     const [selectedLoadCase, setSelectedLoadCase] = useState<string>('DEAD');
     const [loadCases, setLoadCases] = useState<Map<string, LoadCase>>(() => {
@@ -395,69 +389,52 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
     }, [loadCases, selectedLoadCase, storeAddLoad, storeAddMemberLoad, storeAddFloorLoad, onClose]);
 
 
-    if (!isOpen) return null;
-
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                onClick={(e) => e.target === e.currentTarget && onClose()}
-            >
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-[95vw] max-w-5xl h-[85vh] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl shadow-2xl border border-white/10 overflow-hidden flex flex-col"
-                >
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-5xl h-[85vh] flex flex-col overflow-hidden p-0">
+                {/* Header */}
+                <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 space-y-0">
+                    <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
                                 <Zap size={20} className="text-white" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-white">Loading Manager</h2>
-                                <p className="text-sm text-slate-400">Define loads, cases & combinations</p>
+                                <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">Loading Manager</DialogTitle>
+                                <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">Define loads, cases & combinations</DialogDescription>
                             </div>
                         </div>
 
                         {/* Load Case Selector */}
                         <div className="flex items-center gap-3">
-                            <span className="text-sm text-slate-400">Load Case:</span>
+                            <span className="text-sm text-zinc-500 dark:text-zinc-400">Load Case:</span>
                             <select
                                 value={selectedLoadCase}
                                 onChange={(e) => setSelectedLoadCase(e.target.value)}
-                                className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                                className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg text-zinc-900 dark:text-white text-sm"
                             >
                                 {Array.from(loadCases.keys()).map(name => (
                                     <option key={name} value={name}>{name}</option>
                                 ))}
                             </select>
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => {
                                     const type = LOAD_CASE_TYPES.find(t => !loadCases.has(t)) || 'IMPOSED';
                                     addLoadCase(type);
                                 }}
-                                className="p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
                                 title="Add Load Case"
+                                className="h-8 w-8"
                             >
-                                <Plus size={18} className="text-green-400" />
-                            </button>
+                                <Plus size={18} className="text-green-500" />
+                            </Button>
                         </div>
-
-                        <button
-                            onClick={onClose}
-                            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                        >
-                            <X size={20} className="text-slate-400" />
-                        </button>
                     </div>
+                </DialogHeader>
 
                     {/* Tabs */}
-                    <div className="flex gap-1 px-4 py-2 border-b border-white/10 bg-slate-800/50">
+                    <div className="flex gap-1 px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
                         {TABS.map(tab => (
                             <button
                                 key={tab.id}
@@ -465,8 +442,8 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                                 className={`
                                     flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
                                     ${activeTab === tab.id
-                                        ? 'bg-slate-700 text-white'
-                                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'}
+                                        ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700/50'}
                                 `}
                             >
                                 <span className={tab.color}>{tab.icon}</span>
@@ -531,32 +508,24 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between px-6 py-3 border-t border-white/10 bg-slate-800/50">
-                        <div className="text-sm text-slate-400">
+                    <DialogFooter className="flex items-center justify-between px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 sm:justify-between">
+                        <div className="text-sm text-zinc-500 dark:text-zinc-400">
                             {activeLoadCase.nodalLoads.length} nodal •
                             {activeLoadCase.memberLoads.length} member •
                             {activeLoadCase.floorLoads.length} floor loads
                         </div>
                         <div className="flex gap-2">
-                            <button
-                                onClick={onClose}
-                                className="px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 rounded-lg transition-colors"
-                            >
+                            <Button variant="outline" onClick={onClose}>
                                 Cancel
-                            </button>
-                            <button
-                                onClick={handleApplyLoads}
-                                disabled={isApplying}
-                                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center gap-2"
-                            >
-                                {isApplying ? <Activity size={16} className="animate-spin" /> : null}
+                            </Button>
+                            <Button onClick={handleApplyLoads} disabled={isApplying}>
+                                {isApplying ? <Activity size={16} className="animate-spin mr-2" /> : null}
                                 Apply Loads
-                            </button>
+                            </Button>
                         </div>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
     );
 };
 
@@ -580,21 +549,22 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
     return (
         <div className="space-y-4">
             {/* Add Load Section */}
-            <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+            <div className="flex items-center gap-3 p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <Target size={18} className="text-blue-400" />
-                <span className="text-sm text-slate-300">
+                <span className="text-sm text-zinc-600 dark:text-zinc-300">
                     {selectedNodeIds.length > 0
                         ? `${selectedNodeIds.length} node(s) selected`
                         : 'Select node(s) in viewport to add loads'}
                 </span>
                 {selectedNodeIds.length > 0 && (
-                    <button
+                    <Button
                         onClick={() => onAdd(selectedNodeIds)}
-                        className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg"
+                        className="ml-auto"
+                        size="sm"
                     >
                         <Plus size={16} />
                         Add Nodal Load
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -605,42 +575,44 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                     return (
                         <div
                             key={load.id}
-                            className="p-4 bg-slate-800/30 rounded-lg border border-slate-700 hover:border-blue-500/50 transition-colors"
+                            className="p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:border-blue-500/50 transition-colors"
                         >
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                     <Target size={16} className="text-blue-400" />
-                                    <span className="text-sm font-medium text-white">
+                                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
                                         Node: {load.nodeId.slice(0, 8)}
                                     </span>
                                     {node && (
-                                        <span className="text-xs text-slate-400">
+                                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                             ({node.x.toFixed(1)}, {node.y.toFixed(1)}, {node.z.toFixed(1)})
                                         </span>
                                     )}
                                 </div>
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={() => onRemove(load.id)}
-                                    className="p-1 hover:bg-red-500/20 rounded text-red-400"
+                                    className="h-6 w-6 hover:bg-red-500/20 text-red-400"
                                 >
                                     <Trash2 size={14} />
-                                </button>
+                                </Button>
                             </div>
 
                             <div className="grid grid-cols-6 gap-2">
                                 {(['fx', 'fy', 'fz', 'mx', 'my', 'mz'] as const).map(key => (
                                     <div key={key}>
-                                        <label className="text-xs text-slate-400 uppercase">{key}</label>
-                                        <input
+                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 uppercase">{key}</Label>
+                                        <Input
                                             type="number"
                                             value={load[key]}
                                             onChange={(e) => onUpdate(load.id, { [key]: parseFloat(e.target.value) || 0 })}
-                                            className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                            className="h-8"
                                         />
                                     </div>
                                 ))}
                             </div>
-                            <div className="mt-2 text-xs text-slate-400">
+                            <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                                 Units: Forces (kN), Moments (kN·m) • Negative = downward/clockwise
                             </div>
                         </div>
@@ -648,7 +620,7 @@ const NodalLoadPanel: React.FC<NodalLoadPanelProps> = ({
                 })}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-400">
+                    <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                         No nodal loads defined. Select nodes and click "Add Nodal Load".
                     </div>
                 )}
@@ -679,10 +651,10 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
     return (
         <div className="space-y-4">
             {/* Add Load Section */}
-            <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+            <div className="p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center gap-3 mb-3">
                     <ArrowDown size={18} className="text-green-400" />
-                    <span className="text-sm text-slate-300">
+                    <span className="text-sm text-zinc-600 dark:text-zinc-300">
                         {selectedMemberIds.length > 0
                             ? `${selectedMemberIds.length} member(s) selected`
                             : 'Select member(s) in viewport'}
@@ -693,7 +665,7 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                     <select
                         value={loadType}
                         onChange={(e) => setLoadType(e.target.value as typeof loadType)}
-                        className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                        className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm text-zinc-900 dark:text-white"
                     >
                         <option value="uniform">Uniform (UDL)</option>
                         <option value="trapezoidal">Trapezoidal/Triangular</option>
@@ -702,13 +674,14 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                     </select>
 
                     {selectedMemberIds.length > 0 && (
-                        <button
+                        <Button
                             onClick={() => onAdd(selectedMemberIds, loadType)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white text-sm rounded-lg"
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-500"
                         >
                             <Plus size={16} />
                             Add to Selected
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
@@ -725,7 +698,7 @@ const MemberLoadPanel: React.FC<MemberLoadPanelProps> = ({
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-400">
+                    <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                         No member loads defined. Select members and choose a load type.
                     </div>
                 )}
@@ -759,68 +732,70 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
     };
 
     return (
-        <div className="bg-slate-800/30 rounded-lg border border-slate-700">
+        <div className="bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700">
             <div
-                className="flex items-center justify-between p-3 cursor-pointer hover:bg-slate-700/30"
+                className="flex items-center justify-between p-3 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700/30"
                 onClick={() => setExpanded(!expanded)}
             >
                 <div className="flex items-center gap-2">
                     {typeIcons[load.type]}
-                    <span className="text-sm font-medium text-white">{typeLabels[load.type]}</span>
-                    <span className="text-xs text-slate-400">on {load.memberId.slice(0, 8)}</span>
+                    <span className="text-sm font-medium text-zinc-900 dark:text-white">{typeLabels[load.type]}</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">on {load.memberId.slice(0, 8)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                        className="p-1 hover:bg-red-500/20 rounded text-red-400"
+                        className="h-6 w-6 hover:bg-red-500/20 text-red-400"
                     >
                         <Trash2 size={14} />
-                    </button>
+                    </Button>
                     {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 </div>
             </div>
 
             {expanded && (
-                <div className="p-3 pt-0 border-t border-slate-700/50">
+                <div className="p-3 pt-0 border-t border-zinc-200 dark:border-zinc-700/50">
                     {load.type === 'uniform' && (
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <label className="text-xs text-slate-400">Intensity (kN/m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Intensity (kN/m)</Label>
+                                <Input
                                     type="number"
                                     value={(load as UniformLoad).w}
                                     onChange={(e) => onUpdate({ w: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Start Pos (0-1)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Start Pos (0-1)</Label>
+                                <Input
                                     type="number"
                                     step="0.1"
                                     min="0" max="1"
                                     value={(load as UniformLoad).startPos}
                                     onChange={(e) => onUpdate({ startPos: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">End Pos (0-1)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">End Pos (0-1)</Label>
+                                <Input
                                     type="number"
                                     step="0.1"
                                     min="0" max="1"
                                     value={(load as UniformLoad).endPos}
                                     onChange={(e) => onUpdate({ endPos: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Direction</label>
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Direction</Label>
                                 <select
                                     value={(load as UniformLoad).direction}
                                     onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="w-full h-8 px-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm text-zinc-900 dark:text-white"
                                 >
                                     {LOAD_DIRECTIONS.map(d => (
                                         <option key={d.value} value={d.value}>{d.label}</option>
@@ -833,41 +808,41 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'trapezoidal' && (
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <label className="text-xs text-slate-400">W1 Start (kN/m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">W1 Start (kN/m)</Label>
+                                <Input
                                     type="number"
                                     value={(load as TrapezoidalLoad).w1}
                                     onChange={(e) => onUpdate({ w1: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">W2 End (kN/m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">W2 End (kN/m)</Label>
+                                <Input
                                     type="number"
                                     value={(load as TrapezoidalLoad).w2}
                                     onChange={(e) => onUpdate({ w2: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Start Pos</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Start Pos</Label>
+                                <Input
                                     type="number"
                                     step="0.1"
                                     value={(load as TrapezoidalLoad).startPos}
                                     onChange={(e) => onUpdate({ startPos: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">End Pos</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">End Pos</Label>
+                                <Input
                                     type="number"
                                     step="0.1"
                                     value={(load as TrapezoidalLoad).endPos}
                                     onChange={(e) => onUpdate({ endPos: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                         </div>
@@ -876,31 +851,31 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'point' && (
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <label className="text-xs text-slate-400">Load P (kN)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Load P (kN)</Label>
+                                <Input
                                     type="number"
                                     value={(load as PointLoadOnMember).P}
                                     onChange={(e) => onUpdate({ P: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Position (0-1)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Position (0-1)</Label>
+                                <Input
                                     type="number"
                                     step="0.1"
                                     min="0" max="1"
                                     value={(load as PointLoadOnMember).a}
                                     onChange={(e) => onUpdate({ a: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Direction</label>
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Direction</Label>
                                 <select
                                     value={(load as PointLoadOnMember).direction}
                                     onChange={(e) => onUpdate({ direction: e.target.value as LoadDirection })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="w-full h-8 px-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm text-zinc-900 dark:text-white"
                                 >
                                     {LOAD_DIRECTIONS.map(d => (
                                         <option key={d.value} value={d.value}>{d.label}</option>
@@ -913,31 +888,31 @@ const MemberLoadCard: React.FC<MemberLoadCardProps> = ({ load, onRemove, onUpdat
                     {load.type === 'moment' && (
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <label className="text-xs text-slate-400">Moment M (kN·m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Moment M (kN·m)</Label>
+                                <Input
                                     type="number"
                                     value={(load as MomentOnMember).M}
                                     onChange={(e) => onUpdate({ M: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Position (0-1)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Position (0-1)</Label>
+                                <Input
                                     type="number"
                                     step="0.1"
                                     min="0" max="1"
                                     value={(load as MomentOnMember).a}
                                     onChange={(e) => onUpdate({ a: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">About Axis</label>
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">About Axis</Label>
                                 <select
                                     value={(load as MomentOnMember).aboutAxis}
                                     onChange={(e) => onUpdate({ aboutAxis: e.target.value as 'y' | 'z' })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="w-full h-8 px-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm text-zinc-900 dark:text-white"
                                 >
                                     <option value="z">Z-axis (typical)</option>
                                     <option value="y">Y-axis</option>
@@ -966,69 +941,72 @@ interface FloorLoadPanelProps {
 const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove, onUpdate }) => {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center gap-3">
                     <Grid3X3 size={18} className="text-purple-400" />
                     <div>
-                        <span className="text-sm text-white">Floor/Area Loads</span>
-                        <p className="text-xs text-slate-400">Auto-distributes to beams using yield line method</p>
+                        <span className="text-sm text-zinc-900 dark:text-white">Floor/Area Loads</span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Auto-distributes to beams using yield line method</p>
                     </div>
                 </div>
-                <button
+                <Button
                     onClick={onAdd}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-sm rounded-lg"
+                    size="sm"
+                    className="bg-purple-600 hover:bg-purple-500"
                 >
                     <Plus size={16} />
                     Add Floor Load
-                </button>
+                </Button>
             </div>
 
             <div className="space-y-2">
                 {loads.map(load => (
                     <div
                         key={load.id}
-                        className="p-4 bg-slate-800/30 rounded-lg border border-slate-700"
+                        className="p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700"
                     >
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <Layers size={16} className="text-purple-400" />
-                                <span className="text-sm font-medium text-white">Floor Load</span>
+                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Floor Load</span>
                             </div>
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => onRemove(load.id)}
-                                className="p-1 hover:bg-red-500/20 rounded text-red-400"
+                                className="h-6 w-6 hover:bg-red-500/20 text-red-400"
                             >
                                 <Trash2 size={14} />
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3 mb-3">
                             <div>
-                                <label className="text-xs text-slate-400">Pressure (kN/m²)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Pressure (kN/m²)</Label>
+                                <Input
                                     type="number"
                                     value={load.pressure}
                                     onChange={(e) => onUpdate(load.id, { pressure: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Y Level (m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Y Level (m)</Label>
+                                <Input
                                     type="number"
                                     value={load.yLevel}
                                     onChange={(e) => onUpdate(load.id, { yLevel: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Distribution</label>
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Distribution</Label>
                                 <select
                                     value={load.distributionOverride || 'auto'}
                                     onChange={(e) => onUpdate(load.id, {
                                         distributionOverride: e.target.value === 'auto' ? undefined : e.target.value as any
                                     })}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="w-full h-8 px-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm text-zinc-900 dark:text-white"
                                 >
                                     <option value="auto">Auto (Aspect Ratio)</option>
                                     <option value="one_way">One-Way</option>
@@ -1038,7 +1016,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                             </div>
                         </div>
 
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
                             Bounds: X [{load.xMin === -Infinity ? '-∞' : load.xMin} to {load.xMax === Infinity ? '∞' : load.xMax}],
                             Z [{load.zMin === -Infinity ? '-∞' : load.zMin} to {load.zMax === Infinity ? '∞' : load.zMax}]
                         </div>
@@ -1046,7 +1024,7 @@ const FloorLoadPanel: React.FC<FloorLoadPanelProps> = ({ loads, onAdd, onRemove,
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-400">
+                    <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                         No floor loads defined. Click "Add Floor Load" to create one.
                     </div>
                 )}
@@ -1072,22 +1050,23 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
 }) => {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center gap-3">
                     <Thermometer size={18} className="text-orange-400" />
                     <div>
-                        <span className="text-sm text-white">Temperature Loads</span>
-                        <p className="text-xs text-slate-400">ΔT causes axial strain: ε = α × ΔT</p>
+                        <span className="text-sm text-zinc-900 dark:text-white">Temperature Loads</span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">ΔT causes axial strain: ε = α × ΔT</p>
                     </div>
                 </div>
                 {selectedMemberIds.length > 0 && (
-                    <button
+                    <Button
                         onClick={() => onAdd(selectedMemberIds)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-orange-600 hover:bg-orange-500 text-white text-sm rounded-lg"
+                        size="sm"
+                        className="bg-orange-600 hover:bg-orange-500"
                     >
                         <Plus size={16} />
                         Add to Selected
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -1095,37 +1074,37 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                 {loads.map(load => (
                     <div
                         key={load.id}
-                        className="p-4 bg-slate-800/30 rounded-lg border border-slate-700"
+                        className="p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700"
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <Thermometer size={16} className="text-orange-400" />
-                            <span className="text-sm font-medium text-white">Member: {load.memberId.slice(0, 8)}</span>
+                            <span className="text-sm font-medium text-zinc-900 dark:text-white">Member: {load.memberId.slice(0, 8)}</span>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
                             <div>
-                                <label className="text-xs text-slate-400">ΔT (°C)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">ΔT (°C)</Label>
+                                <Input
                                     type="number"
                                     defaultValue={load.deltaT}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">α (×10⁻⁶/°C)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">α (×10⁻⁶/°C)</Label>
+                                <Input
                                     type="number"
                                     defaultValue={load.alpha * 1e6}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">Gradient ΔT (°C)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Gradient ΔT (°C)</Label>
+                                <Input
                                     type="number"
                                     defaultValue={load.gradientT || 0}
                                     placeholder="Optional"
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                         </div>
@@ -1133,7 +1112,7 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-400">
+                    <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                         Select members to add temperature loads.
                     </div>
                 )}
@@ -1159,22 +1138,23 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
 }) => {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center gap-3">
                     <Cable size={18} className="text-cyan-400" />
                     <div>
-                        <span className="text-sm text-white">Prestress Loads</span>
-                        <p className="text-xs text-slate-400">Parabolic cable profile with equivalent loads</p>
+                        <span className="text-sm text-zinc-900 dark:text-white">Prestress Loads</span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Parabolic cable profile with equivalent loads</p>
                     </div>
                 </div>
                 {selectedMemberIds.length > 0 && (
-                    <button
+                    <Button
                         onClick={() => onAdd(selectedMemberIds)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-sm rounded-lg"
+                        size="sm"
+                        className="bg-cyan-600 hover:bg-cyan-500"
                     >
                         <Plus size={16} />
                         Add to Selected
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -1182,59 +1162,59 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                 {loads.map(load => (
                     <div
                         key={load.id}
-                        className="p-4 bg-slate-800/30 rounded-lg border border-slate-700"
+                        className="p-4 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700"
                     >
                         <div className="flex items-center gap-2 mb-3">
                             <Cable size={16} className="text-cyan-400" />
-                            <span className="text-sm font-medium text-white">Member: {load.memberId.slice(0, 8)}</span>
+                            <span className="text-sm font-medium text-zinc-900 dark:text-white">Member: {load.memberId.slice(0, 8)}</span>
                         </div>
 
                         <div className="grid grid-cols-4 gap-3">
                             <div>
-                                <label className="text-xs text-slate-400">Force P (kN)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">Force P (kN)</Label>
+                                <Input
                                     type="number"
                                     defaultValue={load.P}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">e_start (m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">e_start (m)</Label>
+                                <Input
                                     type="number"
                                     step="0.01"
                                     defaultValue={load.eStart}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">e_mid (m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">e_mid (m)</Label>
+                                <Input
                                     type="number"
                                     step="0.01"
                                     defaultValue={load.eMid}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-slate-400">e_end (m)</label>
-                                <input
+                                <Label className="text-xs text-zinc-500 dark:text-zinc-400">e_end (m)</Label>
+                                <Input
                                     type="number"
                                     step="0.01"
                                     defaultValue={load.eEnd}
-                                    className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-white"
+                                    className="h-8"
                                 />
                             </div>
                         </div>
 
-                        <div className="mt-2 text-xs text-slate-400">
+                        <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                             Eccentricity: +ve below centroid, Equivalent UDL = 8Pe/L²
                         </div>
                     </div>
                 ))}
 
                 {loads.length === 0 && (
-                    <div className="text-center py-8 text-slate-400">
+                    <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                         Select members to add prestress loads.
                     </div>
                 )}
@@ -1268,39 +1248,40 @@ const CombinationsPanel: React.FC<CombinationsPanelProps> = ({
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+            <div className="flex items-center justify-between p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <div className="flex items-center gap-3">
                     <Layers size={18} className="text-yellow-400" />
                     <div>
-                        <span className="text-sm text-white">Load Combinations</span>
-                        <p className="text-xs text-slate-400">IS 456 / IS 1893 factored combinations</p>
+                        <span className="text-sm text-zinc-900 dark:text-white">Load Combinations</span>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">IS 456 / IS 1893 factored combinations</p>
                     </div>
                 </div>
-                <button
+                <Button
                     onClick={addCombination}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-white text-sm rounded-lg"
+                    size="sm"
+                    className="bg-yellow-600 hover:bg-yellow-500"
                 >
                     <Plus size={16} />
                     Add Combination
-                </button>
+                </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
                 {combinations.map((combo, idx) => (
                     <div
                         key={combo.name}
-                        className="p-3 bg-slate-800/30 rounded-lg border border-slate-700"
+                        className="p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700"
                     >
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-white">{combo.name}</span>
-                            <span className="text-xs text-slate-400">{combo.description}</span>
+                            <span className="text-sm font-medium text-zinc-900 dark:text-white">{combo.name}</span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">{combo.description}</span>
                         </div>
 
                         <div className="flex flex-wrap gap-1">
                             {Object.entries(combo.factors).map(([caseName, factor]) => (
                                 <span
                                     key={caseName}
-                                    className="px-2 py-0.5 bg-slate-700 rounded text-xs text-slate-300"
+                                    className="px-2 py-0.5 bg-zinc-200 dark:bg-zinc-700 rounded text-xs text-zinc-700 dark:text-zinc-300"
                                 >
                                     {factor}{caseName}
                                 </span>

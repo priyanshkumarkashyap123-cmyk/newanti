@@ -598,18 +598,25 @@ impl DiagramCalculator {
                     let t = x_eff / load_length;
                     
                     // Intensity at x: w1 + (w2-w1) * t_local
-                    // For triangular portion
-                    let avg_w = w1 + 0.5 * (w2 - w1) * t;
+                    // Decompose trapezoidal into uniform + triangular for correct moment arm:
+                    //   Uniform part: w1 * x_eff, centroid at x_eff/2 from d1
+                    //   Triangular part: 0.5*(w_at_x - w1)*x_eff, centroid at 2*x_eff/3 from d1
+                    let w_at_x = w1 + (w2 - w1) * t;
+                    let f_uniform = w1 * x_eff;
+                    let f_triangle = 0.5 * (w_at_x - w1) * x_eff;
+                    let total_shear = f_uniform + f_triangle;
+                    let lever = x - d1;
                     
                     match load.direction {
                         LoadDirection::LocalY | LoadDirection::GlobalY => {
-                            station.forces.shear_y -= avg_w * x_eff;
-                            // Simplified moment calculation
-                            station.forces.moment_z += avg_w * x_eff * (x - d1 - x_eff / 3.0);
+                            station.forces.shear_y -= total_shear;
+                            station.forces.moment_z += f_uniform * (lever - x_eff / 2.0)
+                                                     + f_triangle * (lever - 2.0 * x_eff / 3.0);
                         }
                         LoadDirection::LocalZ | LoadDirection::GlobalZ => {
-                            station.forces.shear_z -= avg_w * x_eff;
-                            station.forces.moment_y -= avg_w * x_eff * (x - d1 - x_eff / 3.0);
+                            station.forces.shear_z -= total_shear;
+                            station.forces.moment_y -= f_uniform * (lever - x_eff / 2.0)
+                                                     + f_triangle * (lever - 2.0 * x_eff / 3.0);
                         }
                         _ => {}
                     }

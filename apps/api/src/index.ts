@@ -141,25 +141,10 @@ const httpServer = createServer(app);
 const socketServer = new SocketServer(httpServer);
 
 // ============================================
-// SECURITY MIDDLEWARE
+// CORS — MUST be the absolute first middleware so that
+// every response (including errors) carries CORS headers.
 // ============================================
 
-// HTTP security headers (helmet)
-app.use(securityHeaders);
-
-// Request ID + structured request logging
-app.use(requestIdMiddleware);
-app.use(requestLoggerWithId);
-
-// Attach res.ok() / res.fail() unified envelope helpers
-app.use(attachResponseHelpers);
-
-// ============================================
-// CORS & PARSING  (BEFORE rate-limiting so preflight
-// OPTIONS and rate-limit responses always carry CORS headers)
-// ============================================
-
-// Allowed origins for CORS
 const configuredOrigins = (process.env["CORS_ALLOWED_ORIGINS"] || "")
   .split(",")
   .map((origin) => origin.trim())
@@ -205,12 +190,13 @@ const corsOptions: cors.CorsOptions = {
     if (isTrustedOrigin(origin)) {
       return callback(null, true);
     }
-    // Log blocked origins for debugging
+    // Log blocked origins for debugging but still send CORS headers
+    // (returning false = no Access-Control-Allow-Origin, but won't throw into error handler)
     console.warn(`CORS blocked origin: ${origin}`);
-    return callback(new Error("Not allowed by CORS"));
+    return callback(null, false);
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
@@ -224,9 +210,23 @@ const corsOptions: cors.CorsOptions = {
   optionsSuccessStatus: 204,
 };
 
-// Handle preflight OPTIONS requests explicitly before any other middleware
+// Preflight + all requests — BEFORE everything else
 app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
+
+// ============================================
+// SECURITY MIDDLEWARE
+// ============================================
+
+// HTTP security headers (helmet)
+app.use(securityHeaders);
+
+// Request ID + structured request logging
+app.use(requestIdMiddleware);
+app.use(requestLoggerWithId);
+
+// Attach res.ok() / res.fail() unified envelope helpers
+app.use(attachResponseHelpers);
 
 app.use(express.json({ limit: "10mb" })); // Limit payload size
 app.use(cookieParser()); // Parse cookies for CSRF double-submit pattern

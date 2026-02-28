@@ -13,7 +13,6 @@
 import React from 'react';
 import { FC, useState, useMemo, useCallback, Fragment } from "react";
 import {
-  X,
   Ruler,
   BarChart3,
   ArrowDown,
@@ -40,6 +39,8 @@ import {
   type SteelDetailedResult,
   REBAR_SIZES,
 } from "../engines/DetailedSectionDesign";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Button } from './ui/button';
 
 interface DetailedDesignPanelProps {
   isOpen: boolean;
@@ -163,37 +164,29 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-700 w-[1050px] max-h-[88vh] flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[1050px] max-h-[88vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-gray-700">
+        <DialogHeader className="px-6 py-3 border-b border-zinc-200 dark:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
               <Ruler className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">
+              <DialogTitle className="text-base font-bold">
                 Detailed Section Design
-              </h2>
-              <p className="text-xs text-gray-400">
+              </DialogTitle>
+              <DialogDescription className="text-xs">
                 Full detailing output — bar layout, curtailment, crack width,
                 LTB, interaction diagrams
-              </p>
+              </DialogDescription>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-700 px-4">
+        <div className="flex border-b border-zinc-200 dark:border-zinc-700 px-4">
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = mode === tab.id;
@@ -204,7 +197,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                   isActive
                     ? "border-blue-500 text-blue-400"
-                    : "border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500"
+                    : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:border-gray-500"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -217,7 +210,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
         {/* Content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left: Inputs */}
-          <div className="w-[360px] border-r border-gray-700 p-4 overflow-y-auto space-y-3">
+          <div className="w-[360px] border-r border-zinc-200 dark:border-zinc-700 p-4 overflow-y-auto space-y-3">
             {mode === "rc_beam" && (
               <BeamInputForm input={beamInput} onChange={setBeamInput} />
             )}
@@ -264,8 +257,8 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -283,7 +276,7 @@ const InputRow: FC<{
   step?: number;
 }> = ({ label, value, unit, onChange, min, max, step }) => (
   <div className="flex items-center gap-2">
-    <label className="text-xs text-gray-400 w-28 shrink-0">{label}</label>
+    <label className="text-xs text-zinc-500 dark:text-zinc-400 w-28 shrink-0">{label}</label>
     <input
       type="number"
       value={value}
@@ -291,9 +284,9 @@ const InputRow: FC<{
       max={max}
       step={step || 1}
       onChange={(e) => onChange(Number(e.target.value))}
-      className="flex-1 px-2 py-1 text-sm bg-gray-800 border border-gray-600 rounded text-white"
+      className="flex-1 px-2 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-white"
     />
-    {unit && <span className="text-xs text-gray-500 w-10">{unit}</span>}
+    {unit && <span className="text-xs text-zinc-500 dark:text-zinc-400 w-10">{unit}</span>}
   </div>
 );
 
@@ -304,11 +297,11 @@ const SelectRow: FC<{
   onChange: (v: string) => void;
 }> = ({ label, value, options, onChange }) => (
   <div className="flex items-center gap-2">
-    <label className="text-xs text-gray-400 w-28 shrink-0">{label}</label>
+    <label className="text-xs text-zinc-500 dark:text-zinc-400 w-28 shrink-0">{label}</label>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="flex-1 px-2 py-1 text-sm bg-gray-800 border border-gray-600 rounded text-white"
+      className="flex-1 px-2 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-zinc-900 dark:text-white"
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>
@@ -326,10 +319,10 @@ const ResultCard: FC<{
   toggle: (k: string) => void;
   children: React.ReactNode;
 }> = ({ title, id, expanded: exp, toggle, children }) => (
-  <div className="border border-gray-700 rounded-lg overflow-hidden">
+  <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
     <button
       onClick={() => toggle(id)}
-      className="w-full flex items-center gap-2 px-3 py-2 bg-gray-800/60 hover:bg-gray-800 text-sm font-medium text-gray-200 text-left"
+      className="w-full flex items-center gap-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:bg-zinc-800 text-sm font-medium text-gray-200 text-left"
     >
       {exp[id] ? (
         <ChevronDown className="w-3.5 h-3.5" />
@@ -363,8 +356,8 @@ const KV: FC<{ k: string; v: string | number; unit?: string }> = ({
   unit,
 }) => (
   <div className="flex justify-between">
-    <span className="text-gray-400">{k}</span>
-    <span className="text-white font-mono">
+    <span className="text-zinc-500 dark:text-zinc-400">{k}</span>
+    <span className="text-zinc-900 dark:text-white font-mono">
       {typeof v === "number" ? v.toFixed(2) : v}
       {unit ? ` ${unit}` : ""}
     </span>
@@ -383,7 +376,7 @@ const BeamInputForm: FC<{
     onChange({ ...input, [key]: val });
   return (
     <>
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
         Geometry
       </h3>
       <InputRow
@@ -418,7 +411,7 @@ const BeamInputForm: FC<{
         min={20}
         max={75}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Material
       </h3>
       <InputRow
@@ -437,7 +430,7 @@ const BeamInputForm: FC<{
         min={250}
         max={600}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Forces (Factored)
       </h3>
       <InputRow
@@ -461,7 +454,7 @@ const BeamInputForm: FC<{
         onChange={(v) => u("Tu", v)}
         min={0}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Design Parameters
       </h3>
       <SelectRow
@@ -511,7 +504,7 @@ const BeamResults: FC<{
           result.isDoublyReinforced ? "Doubly Reinforced" : "Singly Reinforced"
         }
       />
-      <div className="border-t border-gray-700 my-1" />
+      <div className="border-t border-zinc-200 dark:border-zinc-700 my-1" />
       <KV k="Ast required" v={result.Ast_required} unit="mm²" />
       <KV k="Ast provided" v={result.Ast_provided} unit="mm²" />
       <KV k="Ast min" v={result.Ast_min} unit="mm²" />
@@ -557,9 +550,9 @@ const BeamResults: FC<{
     >
       <KV k="Ld (tension)" v={result.Ld_tension} unit="mm" />
       <KV k="Ld (compression)" v={result.Ld_compression} unit="mm" />
-      <div className="border-t border-gray-700 my-1" />
+      <div className="border-t border-zinc-200 dark:border-zinc-700 my-1" />
       {result.curtailment.map((cp, i) => (
-        <div key={i} className="text-gray-300">
+        <div key={i} className="text-zinc-600 dark:text-zinc-300">
           At {(cp.distanceFromSupport / 1000).toFixed(2)}m: {cp.barsRequired}{" "}
           bars needed (M = {cp.momentAtPoint.toFixed(1)} kN·m)
         </div>
@@ -607,7 +600,7 @@ const BeamResults: FC<{
       toggle={toggle}
     >
       {result.detailingNotes.map((note, i) => (
-        <div key={i} className="text-gray-300 flex gap-1.5">
+        <div key={i} className="text-zinc-600 dark:text-zinc-300 flex gap-1.5">
           <AlertTriangle className="w-3 h-3 text-yellow-500 shrink-0 mt-0.5" />
           {note}
         </div>
@@ -722,7 +715,7 @@ const SlabInputForm: FC<{
     onChange({ ...input, [key]: val });
   return (
     <>
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
         Geometry
       </h3>
       <InputRow
@@ -755,7 +748,7 @@ const SlabInputForm: FC<{
         min={15}
         max={50}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Material
       </h3>
       <InputRow
@@ -774,7 +767,7 @@ const SlabInputForm: FC<{
         min={250}
         max={600}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Loading
       </h3>
       <InputRow
@@ -793,7 +786,7 @@ const SlabInputForm: FC<{
         min={0}
         step={0.25}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Edge Condition
       </h3>
       <SelectRow
@@ -831,7 +824,7 @@ const SlabResults: FC<{
       <KV k="Ly/Lx" v={result.ratio} />
       <KV k="d (short dir)" v={result.d_short} unit="mm" />
       <KV k="d (long dir)" v={result.d_long} unit="mm" />
-      <div className="border-t border-gray-700 my-1" />
+      <div className="border-t border-zinc-200 dark:border-zinc-700 my-1" />
       <KV k="Self weight" v={result.selfWeight} unit="kN/m²" />
       <KV k="Total factored wu" v={result.totalFactoredLoad} unit="kN/m²" />
     </ResultCard>
@@ -855,10 +848,10 @@ const SlabResults: FC<{
       toggle={toggle}
     >
       <KV k="Ast min (0.12%)" v={result.Ast_min} unit="mm²/m" />
-      <div className="border-t border-gray-700 my-1" />
+      <div className="border-t border-zinc-200 dark:border-zinc-700 my-1" />
       <div className="font-medium text-blue-400 mb-1">Main Steel:</div>
       {result.mainSteel.map((s, i) => (
-        <div key={i} className="text-gray-300">
+        <div key={i} className="text-zinc-600 dark:text-zinc-300">
           {s.direction}: {s.bar.label} @ {s.spacing}mm c/c
         </div>
       ))}
@@ -868,7 +861,7 @@ const SlabResults: FC<{
             Distribution Steel:
           </div>
           {result.distSteel.map((s, i) => (
-            <div key={i} className="text-gray-300">
+            <div key={i} className="text-zinc-600 dark:text-zinc-300">
               {s.direction}: {s.bar.label} @ {s.spacing}mm c/c
             </div>
           ))}
@@ -897,7 +890,7 @@ const SlabResults: FC<{
       toggle={toggle}
     >
       {result.detailingNotes.map((note, i) => (
-        <div key={i} className="text-gray-300 flex gap-1.5">
+        <div key={i} className="text-zinc-600 dark:text-zinc-300 flex gap-1.5">
           <AlertTriangle className="w-3 h-3 text-yellow-500 shrink-0 mt-0.5" />
           {note}
         </div>
@@ -918,7 +911,7 @@ const ColumnInputForm: FC<{
     onChange({ ...input, [key]: val });
   return (
     <>
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
         Geometry
       </h3>
       <InputRow
@@ -950,7 +943,7 @@ const ColumnInputForm: FC<{
         min={30}
         max={75}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Material
       </h3>
       <InputRow
@@ -969,7 +962,7 @@ const ColumnInputForm: FC<{
         min={250}
         max={600}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Forces (Factored)
       </h3>
       <InputRow
@@ -1079,7 +1072,7 @@ const ColumnResults: FC<{
       toggle={toggle}
     >
       {result.detailingNotes.map((note, i) => (
-        <div key={i} className="text-gray-300 flex gap-1.5">
+        <div key={i} className="text-zinc-600 dark:text-zinc-300 flex gap-1.5">
           <AlertTriangle className="w-3 h-3 text-yellow-500 shrink-0 mt-0.5" />
           {note}
         </div>
@@ -1180,7 +1173,7 @@ const SteelInputForm: FC<{
     onChange({ ...input, [key]: val });
   return (
     <>
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
         Section
       </h3>
       <InputRow
@@ -1213,7 +1206,7 @@ const SteelInputForm: FC<{
         min={4}
         step={0.1}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Material
       </h3>
       <InputRow
@@ -1232,7 +1225,7 @@ const SteelInputForm: FC<{
         min={350}
         max={700}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Member
       </h3>
       <InputRow
@@ -1267,7 +1260,7 @@ const SteelInputForm: FC<{
         max={2.5}
         step={0.05}
       />
-      <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mt-3">
+      <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider mt-3">
         Forces (Factored)
       </h3>
       <InputRow
@@ -1361,7 +1354,7 @@ const SteelResults: FC<{
       <KV k="N/Nd" v={result.interaction.N_ratio} />
       <KV k="M/Md" v={result.interaction.M_ratio} />
       <KV k="Combined" v={result.interaction.combined} />
-      <div className="text-xs text-gray-400 mt-1">
+      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
         {result.interaction.formula}
       </div>
       <StatusBadge
@@ -1423,7 +1416,7 @@ const SteelResults: FC<{
       toggle={toggle}
     >
       {result.detailingNotes.map((note, i) => (
-        <div key={i} className="text-gray-300 flex gap-1.5">
+        <div key={i} className="text-zinc-600 dark:text-zinc-300 flex gap-1.5">
           <AlertTriangle className="w-3 h-3 text-yellow-500 shrink-0 mt-0.5" />
           {note}
         </div>

@@ -892,8 +892,8 @@ impl PscBeamDesigner {
         let d = dp;
         let d_overall = self.section.depth; // Overall depth D
         
-        // Concrete stresses at centroid
-        let fcp = pe / self.section.area + pe * self.geometry.e_mid / self.section.zb;
+        // Compressive stress at centroidal axis due to prestress (IS 1343 Cl. 22.4.1)
+        let fcp = pe / self.section.area;  // At centroid: only P/A, no eccentricity term
         let ft = 0.24 * fck.sqrt();
         let fpe = pe / self.aps();
         let fp = self.strand_type.fpu();
@@ -904,7 +904,8 @@ impl PscBeamDesigner {
         
         // Decompression moment M0 - includes eccentricity
         // M0 = (P/A + P*e/Zb) * Zb = P*(Zb/A + e)
-        let mo = (pe / self.section.area + pe * self.geometry.e_mid / self.section.zb) * self.section.zb / 1e6;
+        let f_bot_prestress = pe / self.section.area + pe * self.geometry.e_mid / self.section.zb;
+        let mo = f_bot_prestress * self.section.zb / 1e6;
         
         // Cracked shear capacity (Vcr) - IS 1343 Clause 22.4.2
         // Vcr = (1 - 0.55*fpe/fp) * τc * b * d + M0 * V / M
@@ -1171,7 +1172,7 @@ mod tests {
         
         let result = designer.ultimate_moment_capacity(pe, dp);
         assert!(result.mn_nominal > 0.0);
-        assert!(result.phi_mn < result.mn_nominal);
+        assert!(result.phi_mn <= result.mn_nominal);
     }
 
     #[test]

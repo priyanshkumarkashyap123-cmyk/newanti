@@ -9,7 +9,6 @@
 
 import { FC, useState, useEffect, useCallback } from 'react';
 import {
-    X,
     Save,
     Cloud,
     FolderOpen,
@@ -22,6 +21,10 @@ import {
     Download,
     Upload
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { useAuth } from '../providers/AuthProvider';
 import { useModelStore } from '../store/model';
 import { API_CONFIG } from '../config/env';
@@ -329,34 +332,30 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
         }
     }, [nodes, members, loads, memberLoads, projectInfo, projectName]);
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-lg bg-zinc-900 rounded-xl shadow-2xl overflow-hidden">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-lg overflow-hidden p-0">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600">
+                <DialogHeader className="px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600">
                     <div className="flex items-center gap-3">
                         <Cloud className="w-6 h-6 text-white" />
-                        <h2 className="text-lg font-bold text-white">Cloud Projects</h2>
+                        <DialogTitle className="text-lg font-bold text-white">Cloud Projects</DialogTitle>
                         {isPro && (
                             <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/20 rounded text-yellow-400 text-xs">
                                 <Crown className="w-3 h-3" /> PRO
                             </span>
                         )}
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-white/20 rounded">
-                        <X className="w-5 h-5 text-white" />
-                    </button>
-                </div>
+                    <DialogDescription className="sr-only">Save or load your structural analysis projects</DialogDescription>
+                </DialogHeader>
 
                 {/* Tabs */}
-                <div className="flex border-b border-zinc-800">
+                <div className="flex border-b border-zinc-200 dark:border-zinc-800">
                     <button
                         onClick={() => setActiveTab('save')}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'save'
                             ? 'text-blue-400 border-b-2 border-blue-500'
-                            : 'text-zinc-400 hover:text-white'
+                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                             }`}
                     >
                         <Save className="w-4 h-4 inline mr-2" />
@@ -366,7 +365,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                         onClick={() => setActiveTab('load')}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'load'
                             ? 'text-blue-400 border-b-2 border-blue-500'
-                            : 'text-zinc-400 hover:text-white'
+                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                             }`}
                     >
                         <FolderOpen className="w-4 h-4 inline mr-2" />
@@ -394,34 +393,34 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                         /* Save Tab - Available for ALL users */
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                                <Label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                                     Project Name
-                                </label>
-                                <input
+                                </Label>
+                                <Input
                                     type="text"
                                     value={projectName}
                                     onChange={(e) => setProjectName(e.target.value)}
                                     placeholder="My Structure"
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                                <Label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                                     Description (optional)
-                                </label>
+                                </Label>
                                 <textarea
                                     value={projectDescription}
                                     onChange={(e) => setProjectDescription(e.target.value)}
                                     placeholder="Brief description of this project..."
                                     rows={2}
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                    className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                 />
                             </div>
 
-                            <div className="p-4 bg-zinc-800/50 rounded-lg">
-                                <div className="text-sm text-zinc-400 mb-2">Current Model</div>
-                                <div className="flex gap-4 text-white">
+                            <div className="p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg">
+                                <div className="text-sm text-zinc-500 dark:text-zinc-400 mb-2">Current Model</div>
+                                <div className="flex gap-4 text-zinc-900 dark:text-white">
                                     <span>{nodes.size} nodes</span>
                                     <span>{members.size} members</span>
                                     <span>{loads.length} loads</span>
@@ -430,10 +429,10 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
 
                             <div className="flex gap-2">
                                 {/* Local + Cloud Save */}
-                                <button
+                                <Button
                                     onClick={handleSave}
                                     disabled={saving || !projectName.trim()}
-                                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white font-medium flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 flex items-center justify-center gap-2"
                                 >
                                     {saving ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -441,17 +440,18 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                         <Save className="w-5 h-5" />
                                     )}
                                     Save Project
-                                </button>
+                                </Button>
 
                                 {/* Export as JSON */}
-                                <button
+                                <Button
                                     onClick={handleExport}
                                     disabled={nodes.size === 0}
-                                    className="px-4 py-3 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 rounded-lg text-white flex items-center justify-center gap-2"
+                                    variant="secondary"
+                                    className="px-4 py-3 flex items-center justify-center gap-2"
                                     title="Export as JSON file"
                                 >
                                     <Download className="w-5 h-5" />
-                                </button>
+                                </Button>
                             </div>
 
                             {!isSignedIn && (
@@ -474,7 +474,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                     <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                                 </div>
                             ) : (localProjects.length === 0 && projects.length === 0) ? (
-                                <p className="text-center text-zinc-400 py-8">
+                                <p className="text-center text-zinc-500 dark:text-zinc-400 py-8">
                                     No saved projects yet
                                 </p>
                             ) : (
@@ -483,17 +483,17 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                     {localProjects.length > 0 && (
                                         <div>
                                             <div className="flex items-center gap-2 mb-2">
-                                                <HardDrive className="w-3.5 h-3.5 text-zinc-400" />
-                                                <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Local</span>
+                                                <HardDrive className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />
+                                                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Local</span>
                                             </div>
                                             {localProjects.map((proj) => (
                                                 <div
                                                     key={proj.id}
-                                                    className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors mb-2"
+                                                    className="flex items-center justify-between p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors mb-2"
                                                 >
                                                     <div>
-                                                        <div className="font-medium text-white">{proj.name}</div>
-                                                        <div className="text-xs text-zinc-400">
+                                                        <div className="font-medium text-zinc-900 dark:text-white">{proj.name}</div>
+                                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
                                                             {proj.nodeCount} nodes • {proj.memberCount} members
                                                             {proj.description && ` • ${proj.description.substring(0, 30)}`}
                                                         </div>
@@ -532,11 +532,11 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                             {projects.map((proj) => (
                                                 <div
                                                     key={proj.id}
-                                                    className="flex items-center justify-between p-4 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 transition-colors mb-2"
+                                                    className="flex items-center justify-between p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors mb-2"
                                                 >
                                                     <div>
-                                                        <div className="font-medium text-white">{proj.name}</div>
-                                                        <div className="text-xs text-zinc-400">
+                                                        <div className="font-medium text-zinc-900 dark:text-white">{proj.name}</div>
+                                                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
                                                             {proj.nodeCount} nodes • {proj.memberCount} members
                                                         </div>
                                                     </div>
@@ -565,8 +565,8 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

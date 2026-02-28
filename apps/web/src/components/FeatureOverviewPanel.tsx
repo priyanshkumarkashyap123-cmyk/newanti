@@ -7,7 +7,6 @@
 
 import React, { useState } from 'react';
 import {
-    X,
     BarChart3,
     Ruler,
     Wind,
@@ -24,6 +23,8 @@ import {
     Sparkles
 } from 'lucide-react';
 import { useUIStore } from '../store/uiStore';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
 
 interface FeatureOverviewPanelProps {
     isOpen: boolean;
@@ -111,35 +112,27 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
         }
     ];
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="relative w-full max-w-4xl max-h-[85vh] bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col overflow-hidden p-0">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-800">
+                <DialogHeader className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-gradient-to-r from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
-                            <Sparkles className="w-6 h-6 text-blue-400" />
+                            <Sparkles className="w-6 h-6 text-blue-500 dark:text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-white">What Can You Do?</h2>
-                            <p className="text-sm text-zinc-400">Explore all BeamLab capabilities</p>
+                            <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">What Can You Do?</DialogTitle>
+                            <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">Explore all BeamLab capabilities</DialogDescription>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                </DialogHeader>
 
                 {/* Keyboard Shortcut Hint */}
-                <div className="px-6 py-2 border-b border-zinc-800 bg-zinc-800/50">
-                    <p className="text-xs text-zinc-400">
+                <div className="px-6 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800/50">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
                         💡 <span className="font-medium">Pro tip:</span> Press{' '}
-                        <kbd className="px-1.5 py-0.5 bg-zinc-700 rounded text-zinc-300">⌘K</kbd>{' '}
+                        <kbd className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 rounded text-zinc-600 dark:text-zinc-300">⌘K</kbd>{' '}
                         anytime to quickly search and access any feature
                     </p>
                 </div>
@@ -147,7 +140,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                 {/* Content */}
                 <div className="flex h-[calc(85vh-180px)]">
                     {/* Section Tabs */}
-                    <div className="w-56 border-r border-zinc-800 p-3 space-y-1">
+                    <div className="w-56 border-r border-zinc-200 dark:border-zinc-800 p-3 space-y-1">
                         {sections.map((section) => (
                             <button
                                 key={section.title}
@@ -160,7 +153,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                     w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all
                                     ${activeSection === section.title.toLowerCase().replace(' ', '-')
                                         ? `${section.bgColor} ${section.color} border ${section.borderColor}`
-                                        : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+                                        : 'text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200'
                                     }
                                 `}
                             >
@@ -195,7 +188,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                                 flex items-start gap-3 p-4 rounded-xl border transition-all text-left group
                                                 ${item.action
                                                     ? `${section.bgColor} ${section.borderColor} hover:brightness-110 cursor-pointer`
-                                                    : 'bg-zinc-800/50 border-zinc-700/50'
+                                                    : 'bg-zinc-100 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/50'
                                                 }
                                             `}
                                         >
@@ -204,7 +197,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium text-white">{item.label}</span>
+                                                    <span className="font-medium text-zinc-900 dark:text-white">{item.label}</span>
                                                     {item.isPro && (
                                                         <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">
                                                             <Crown className="w-2.5 h-2.5" />
@@ -212,10 +205,10 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-xs text-zinc-400 mt-0.5">{item.description}</p>
+                                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{item.description}</p>
                                             </div>
                                             {item.action && (
-                                                <ChevronRight className="w-4 h-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             )}
                                         </button>
                                     ))}
@@ -225,11 +218,11 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
 
                         {!activeSection && (
                             <div className="flex flex-col items-center justify-center h-full text-center">
-                                <Sparkles className="w-16 h-16 text-zinc-500 mb-4" />
-                                <h3 className="text-lg font-semibold text-zinc-300 mb-2">
+                                <Sparkles className="w-16 h-16 text-zinc-400 dark:text-zinc-500 mb-4" />
+                                <h3 className="text-lg font-semibold text-zinc-600 dark:text-zinc-300 mb-2">
                                     Select a Category
                                 </h3>
-                                <p className="text-sm text-zinc-400 max-w-sm">
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
                                     Choose a category from the left to explore available features
                                 </p>
                             </div>
@@ -238,22 +231,19 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-3 border-t border-zinc-800 bg-zinc-800/50 flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-xs text-zinc-400">
+                <DialogFooter className="px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="flex items-center gap-1">
                             <Crown className="w-3 h-3 text-amber-500" />
                             PRO features require upgrade
                         </span>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
-                    >
+                    <Button onClick={onClose}>
                         Got it!
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

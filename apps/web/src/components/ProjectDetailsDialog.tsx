@@ -6,8 +6,12 @@
  */
 
 import { FC, useState, useEffect } from 'react';
-import { X, Save, User, Briefcase, FileText, Hash, Calendar } from 'lucide-react';
+import { Save, User, Briefcase, FileText, Hash, Calendar } from 'lucide-react';
 import { useModelStore, type ProjectInfo } from '../store/model';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 interface ProjectDetailsDialogProps {
     isOpen: boolean;
@@ -68,8 +72,6 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
         }
     }, [isOpen, isNewProject, projectInfo]);
 
-    if (!isOpen) return null;
-
     const handleChange = (field: keyof ProjectInfo, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         // Clear error when user types
@@ -127,48 +129,38 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden">
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-lg">
+                <DialogHeader>
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
                             <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                            <DialogTitle>
                                 {isNewProject ? 'New Project' : 'Project Details'}
-                            </h2>
-                            <p className="text-sm text-zinc-400 dark:text-zinc-400">
+                            </DialogTitle>
+                            <DialogDescription>
                                 {isNewProject ? 'Enter project information' : 'Edit project information'}
-                            </p>
+                            </DialogDescription>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 rounded-lg text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                </DialogHeader>
 
                 {/* Form */}
                 <div className="px-6 py-5 space-y-4">
                     {/* Project Name */}
                     <div>
-                        <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                        <Label className="flex items-center gap-2 mb-1.5">
                             <Briefcase className="w-4 h-4" />
                             Project Name <span className="text-red-500">*</span>
-                        </label>
-                        <input
+                        </Label>
+                        <Input
                             type="text"
                             value={formData.name}
                             onChange={(e) => handleChange('name', e.target.value)}
                             placeholder="e.g., Office Building Frame Analysis"
-                            className={`w-full px-3 py-2 rounded-lg border ${errors.name
-                                    ? 'border-red-500 focus:ring-red-500'
-                                    : 'border-zinc-300 dark:border-zinc-600 focus:ring-blue-500'
-                                } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent`}
+                            className={errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}
                         />
                         {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
                     </div>
@@ -176,32 +168,28 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                     {/* Client & Engineer Row */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            <Label className="flex items-center gap-2 mb-1.5">
                                 <User className="w-4 h-4" />
                                 Client Name
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 value={formData.client}
                                 onChange={(e) => handleChange('client', e.target.value)}
                                 placeholder="Client/Company"
-                                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            <Label className="flex items-center gap-2 mb-1.5">
                                 <User className="w-4 h-4" />
                                 Engineer <span className="text-red-500">*</span>
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 value={formData.engineer}
                                 onChange={(e) => handleChange('engineer', e.target.value)}
                                 placeholder="Your name"
-                                className={`w-full px-3 py-2 rounded-lg border ${errors.engineer
-                                        ? 'border-red-500 focus:ring-red-500'
-                                        : 'border-zinc-300 dark:border-zinc-600 focus:ring-blue-500'
-                                    } bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:border-transparent`}
+                                className={errors.engineer ? 'border-red-500 focus-visible:ring-red-500' : ''}
                             />
                             {errors.engineer && <p className="mt-1 text-sm text-red-500">{errors.engineer}</p>}
                         </div>
@@ -210,77 +198,67 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
                     {/* Job No, Rev, Date Row */}
                     <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            <Label className="flex items-center gap-2 mb-1.5">
                                 <Hash className="w-4 h-4" />
                                 Job No.
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 value={formData.jobNo}
                                 onChange={(e) => handleChange('jobNo', e.target.value)}
                                 placeholder="PRJ-001"
-                                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            <Label className="flex items-center gap-2 mb-1.5">
                                 Rev.
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="text"
                                 value={formData.rev}
                                 onChange={(e) => handleChange('rev', e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                            <Label className="flex items-center gap-2 mb-1.5">
                                 <Calendar className="w-4 h-4" />
                                 Date
-                            </label>
-                            <input
+                            </Label>
+                            <Input
                                 type="date"
                                 value={formData.date instanceof Date ? formData.date.toISOString().split('T')[0] : ''}
                                 onChange={(e) => setFormData(prev => ({ ...prev, date: new Date(e.target.value) }))}
-                                className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                        <Label className="flex items-center gap-2 mb-1.5">
                             Description
-                        </label>
+                        </Label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => handleChange('description', e.target.value)}
                             placeholder="Brief project description..."
                             rows={3}
-                            className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                         />
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700 flex items-center justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors"
-                    >
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>
                         Cancel
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
-                    >
+                    </Button>
+                    <Button onClick={handleSubmit}>
                         <Save className="w-4 h-4" />
                         {isNewProject ? 'Create Project' : 'Save Changes'}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

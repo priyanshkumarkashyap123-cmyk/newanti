@@ -20,6 +20,8 @@ import {
   formatTimeRemaining,
 } from '@/hooks/useProgressTracking';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './dialog';
+import { Button } from './button';
 
 // ============================================================================
 // STEP INDICATOR
@@ -389,18 +391,11 @@ export function ProgressModal({
   showCloseOnComplete = true,
   children,
 }: ProgressModalProps) {
-  if (!isOpen) return null;
-
   const canClose = !preventClose || state.status === 'completed' || state.status === 'failed' || state.status === 'cancelled';
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="progress-modal-title"
-    >
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && canClose && onClose?.()}>
+      <DialogContent className="max-w-md p-8">
         <div className="text-center mb-6">
           {/* Animated icon */}
           {state.status === 'running' && (
@@ -428,22 +423,24 @@ export function ProgressModal({
             </div>
           )}
 
-          <h2 id="progress-modal-title" className="text-xl font-semibold text-white">
-            {state.title}
-          </h2>
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              {state.title}
+            </DialogTitle>
+          </DialogHeader>
         </div>
 
         {/* Progress bar */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
               {state.steps[state.currentStepIndex]?.label || 'Processing...'}
             </span>
-            <span className="text-sm font-medium text-white">
+            <span className="text-sm font-medium text-zinc-900 dark:text-white">
               {state.overallProgress}%
             </span>
           </div>
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+          <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full transition-all duration-300',
@@ -453,7 +450,7 @@ export function ProgressModal({
             />
           </div>
           {state.estimatedTimeRemaining && state.status === 'running' && (
-            <p className="text-sm text-slate-400 mt-2 text-center">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 text-center">
               About {formatTimeRemaining(state.estimatedTimeRemaining)} remaining
             </p>
           )}
@@ -461,7 +458,7 @@ export function ProgressModal({
 
         {/* Current step message */}
         {state.steps[state.currentStepIndex]?.message && (
-          <p className="text-sm text-slate-400 text-center mb-4">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center mb-4">
             {state.steps[state.currentStepIndex]?.message}
           </p>
         )}
@@ -472,27 +469,19 @@ export function ProgressModal({
         {/* Actions */}
         <div className="flex items-center justify-center gap-3 mt-6">
           {state.canCancel && state.status === 'running' && onCancel && (
-            <button
-              onClick={onCancel}
-              className="px-6 py-2 text-sm font-medium text-red-400 hover:text-red-300 
-                         border border-red-500/30 hover:border-red-400/50 rounded-lg transition-colors"
-            >
+            <Button variant="outline" onClick={onCancel} className="text-red-500 border-red-500/30 hover:border-red-400/50">
               Cancel
-            </button>
+            </Button>
           )}
           
           {canClose && showCloseOnComplete && onClose && (
-            <button
-              onClick={onClose}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 
-                         hover:bg-blue-500 rounded-lg transition-colors"
-            >
+            <Button onClick={onClose}>
               {state.status === 'completed' ? 'Done' : 'Close'}
-            </button>
+            </Button>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

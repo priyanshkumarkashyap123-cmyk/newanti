@@ -255,11 +255,14 @@ impl KarhunenLoeve {
 
         // Transform to lognormal if needed
         if spec.is_lognormal {
+            let cv = spec.cov();
+            let sigma_ln = (1.0 + cv * cv).ln().sqrt();
+            let mu_ln = spec.mean.ln() - 0.5 * sigma_ln * sigma_ln;
+
             field = field.iter()
                 .map(|&v| {
-                    let log_mean = spec.mean.ln() - 0.5 * spec.variance / spec.mean.powi(2);
-                    let log_std = (spec.variance / spec.mean.powi(2)).ln().sqrt();
-                    (log_mean + log_std * (v - spec.mean) / spec.variance.sqrt()).exp()
+                    let z = (v - spec.mean) / spec.variance.sqrt();
+                    (mu_ln + sigma_ln * z).exp()
                 })
                 .collect();
         }

@@ -683,8 +683,9 @@ impl Mullion {
     
     /// Maximum moment under uniform load (N·mm)
     pub fn max_moment(&self, w_per_m: f64) -> f64 {
-        // Simply supported beam
-        w_per_m * self.span.powi(2) / 8.0
+        // Simply supported beam - convert N/m to N/mm for consistency with span in mm
+        let w = w_per_m / 1000.0; // N/m → N/mm
+        w * self.span.powi(2) / 8.0
     }
     
     /// Maximum stress (MPa)
@@ -696,7 +697,8 @@ impl Mullion {
     /// Maximum deflection (mm)
     pub fn max_deflection(&self, w_per_m: f64) -> f64 {
         let e = 70_000.0; // MPa for aluminum
-        5.0 * w_per_m * self.span.powi(4) / (384.0 * e * self.moment_of_inertia)
+        let w = w_per_m / 1000.0; // N/m → N/mm for consistency with span in mm
+        5.0 * w * self.span.powi(4) / (384.0 * e * self.moment_of_inertia)
     }
     
     /// Design check
@@ -768,7 +770,7 @@ impl StructuralSilicone {
         let short_dim = glass_width.min(glass_height);
         
         // Stress on short edge governs
-        let bite_required = pressure_kpa * area * 1000.0 / (2.0 * short_dim * self.design_strength);
+        let bite_required = pressure_kpa * area * 1e6 / (2.0 * short_dim * self.design_strength);
         
         bite_required.max(6.0) // Minimum 6mm bite
     }
@@ -778,7 +780,7 @@ impl StructuralSilicone {
         let area = glass_width * glass_height / 1e6;
         let short_dim = glass_width.min(glass_height);
         
-        2.0 * short_dim * self.bite * self.design_strength / (area * 1000.0)
+        2.0 * short_dim * self.bite * self.design_strength / (area * 1e6)
     }
     
     /// Movement capacity (mm)

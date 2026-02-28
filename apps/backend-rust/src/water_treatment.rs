@@ -154,11 +154,11 @@ impl CircularTank {
     
     /// Check crack width (simplified)
     pub fn check_crack_width(&self, steel_stress: f64, bar_spacing: f64) -> f64 {
-        // Gergely-Lutz approximation
-        let dc = self.exposure.min_cover() + 8.0; // Cover + half bar
-        let a = 2.0 * dc * bar_spacing;
+        // Gergely-Lutz in SI: w(mm) = 0.011 × β × fs(MPa) × (dc×A)^(1/3) / 1000
+        let dc = self.exposure.min_cover() + 8.0; // Cover + half bar (mm)
+        let a = 2.0 * dc * bar_spacing; // mm² (effective tension area per bar)
         
-        0.076 * steel_stress * a.cbrt() / 1e6
+        0.011 * steel_stress * (dc * a).cbrt() / 1000.0
     }
 }
 
@@ -217,7 +217,7 @@ impl RectangularBasin {
     pub fn long_wall_moment(&self) -> f64 {
         let gamma = 10.0;
         let h = self.water_depth;
-        let l = self.width;
+        let l = self.length;
         
         // Simply supported horizontally
         gamma * h * l.powi(2) / 8.0
@@ -227,7 +227,7 @@ impl RectangularBasin {
     pub fn short_wall_moment(&self) -> f64 {
         let gamma = 10.0;
         let h = self.water_depth;
-        let l = self.length;
+        let l = self.width;
         
         gamma * h * l.powi(2) / 8.0
     }
@@ -245,8 +245,8 @@ impl RectangularBasin {
         let gamma = 10.0;
         let h = self.water_depth;
         
-        // At corner
-        gamma * h * self.width.min(self.length) / 2.0
+        // At corner - design for maximum direct tension
+        gamma * h * self.width.max(self.length) / 2.0
     }
     
     /// Floor moment - long span (kN·m/m)
@@ -334,7 +334,7 @@ pub struct Digester {
 
 impl Digester {
     pub fn new(diameter: f64, volume: f64) -> Self {
-        let sidewall_height = volume * 4.0 / (PI * diameter.powi(2)) - diameter / 6.0;
+        let sidewall_height = volume * 4.0 / (PI * diameter.powi(2)) - diameter / 9.0;
         
         Self {
             digester_type: DigesterType::Primary,

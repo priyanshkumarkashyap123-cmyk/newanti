@@ -15,12 +15,12 @@
  *   • Print-optimised @media rules
  */
 
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    Download, Printer, Share2, TableProperties, Check, X,
-    FileText, ChevronLeft, Building2, Layout, FileCode,
-    AlertTriangle, CheckCircle2, XCircle, Info, ArrowUp, ArrowDown,
+    Download, Printer, Share2, TableProperties,
+    ChevronLeft, Layout, FileCode,
+    AlertTriangle, CheckCircle2, XCircle,
     ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
@@ -388,8 +388,12 @@ export const ReportsPage = () => {
                        ║                   COVER PAGE                    ║
                        ╚══════════════════════════════════════════════════╝ */}
                     <div className="relative min-h-[297mm] flex flex-col justify-between p-12 md:p-16 print:p-[25mm] print:break-after-page z-10">
+                        {/* ─── Branded accent bars (matches PDF THEME) ─── */}
+                        <div className="absolute top-0 left-0 right-0 h-[6px] bg-[#12376A]" />
+                        <div className="absolute top-[6px] left-0 right-0 h-[3px] bg-[#BF9B30]" />
+
                         {/* Top band - branding */}
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between mt-2">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200 print:border-slate-400 shadow-sm">
                                     <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
@@ -411,7 +415,7 @@ export const ReportsPage = () => {
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-3">
                                 Structural Analysis Report
                             </p>
-                            <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight mb-4 max-w-md">
+                            <h2 className="text-3xl md:text-4xl font-black text-[#12376A] leading-tight mb-4 max-w-md">
                                 BeamLab Project
                             </h2>
                             <p className="text-sm text-slate-500 font-medium mb-1">Document Ref: {ref}</p>
@@ -468,6 +472,12 @@ export const ReportsPage = () => {
                             }
                         }
                     `}</style>
+
+                    {/* ─── On-screen running header (hidden in print, @page handles it) ─── */}
+                    <div className="flex items-center justify-between px-12 md:px-16 print:hidden py-2 border-b-2 border-[#12376A] bg-slate-50 text-[10px] text-slate-400">
+                        <span className="font-bold tracking-wider">BeamLab — {ref}</span>
+                        <span>Rev {revision} &nbsp;|&nbsp; {fmtDate(now)}</span>
+                    </div>
 
                     {/* ╔══════════════════════════════════════════════════╗
                        ║          DOCUMENT CONTROL & REVISIONS           ║
@@ -1735,7 +1745,7 @@ export const ReportsPage = () => {
                 </button>
                 <button
                     onClick={handleExportExcel}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border-2 border-green-600 dark:border-green-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all text-slate-500 dark:text-gray-300 font-medium text-sm"
                     title="Export Results to Excel (CSV)"
                 >
                     <TableProperties className="w-5 h-5 text-green-600" />

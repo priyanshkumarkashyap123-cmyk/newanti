@@ -8,9 +8,8 @@
  * - Base plate design
  */
 
-import { FC, useState, useMemo } from 'react';
+import { FC, useState } from 'react';
 import {
-    X,
     Link2,
     Check,
     AlertTriangle,
@@ -19,6 +18,10 @@ import {
     Crown,
 } from 'lucide-react';
 import { designConnection, BOLT_GRADES, STEEL_GRADES } from '../api/design';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 // ============================================
 // TYPES
@@ -137,18 +140,18 @@ const InputField: FC<{
     step?: number;
 }> = ({ label, value, onChange, unit, min = 0, max, step = 1 }) => (
     <div className="flex flex-col gap-1">
-        <label className="text-xs text-gray-500">{label}</label>
+        <Label className="text-xs text-muted-foreground">{label}</Label>
         <div className="flex items-center gap-1">
-            <input
+            <Input
                 type="number"
                 value={value}
                 onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
                 min={min}
                 max={max}
                 step={step}
-                className="flex-1 px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                className="flex-1 h-8 text-sm"
             />
-            <span className="text-xs text-gray-400 w-8">{unit}</span>
+            <span className="text-xs text-muted-foreground w-8">{unit}</span>
         </div>
     </div>
 );
@@ -162,7 +165,7 @@ const ConnectionSketch: FC<{ type: ConnectionType; result?: DesignResult }> = ({
     result,
 }) => {
     return (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 h-48 flex items-center justify-center">
+        <div className="bg-muted rounded-lg p-4 h-48 flex items-center justify-center">
             <svg viewBox="0 0 200 150" className="w-full h-full">
                 {type === 'bolted_shear' && (
                     <g>
@@ -340,28 +343,20 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
         });
     };
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <DialogHeader>
                     <div className="flex items-center gap-2">
                         <Link2 className="w-5 h-5 text-blue-500" />
-                        <h2 className="font-semibold text-lg">Connection Design</h2>
-                        <span className="text-xs text-gray-500">IS 800:2007 Ch. 10</span>
+                        <DialogTitle>Connection Design</DialogTitle>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                    <DialogDescription>IS 800:2007 Ch. 10</DialogDescription>
+                </DialogHeader>
 
                 {/* Content */}
-                <div className="flex-1 overflow-auto p-4">
+                <div className="flex-1 overflow-auto">
                     {!isPro ? (
                         <div className="p-6 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
                             <div className="flex items-center gap-2 mb-3">
@@ -373,7 +368,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                             <p className="text-orange-600 dark:text-orange-300">
                                 Connection design is a Pro feature. Upgrade to access:
                             </p>
-                            <ul className="mt-2 space-y-1 text-sm text-orange-600 dark:text-orange-300">
+                            <ul className="mt-2 space-y-1 text-sm text-orange-600 dark:text-orange-300 list-none">
                                 <li>• Bolted shear connections</li>
                                 <li>• Moment end plate design</li>
                                 <li>• Welded connections</li>
@@ -387,21 +382,21 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                             <div className="space-y-4">
                                 {/* Connection Type */}
                                 <div>
-                                    <label className="text-xs text-gray-500 mb-2 block">Connection Type</label>
+                                    <Label className="text-xs text-muted-foreground mb-2 block">Connection Type</Label>
                                     <div className="grid grid-cols-2 gap-2">
                                         {(Object.keys(CONNECTION_TYPES) as ConnectionType[]).map((type) => (
                                             <button
                                                 key={type}
                                                 onClick={() => setConnectionType(type)}
                                                 className={`p-2 rounded-lg border text-left transition-all ${connectionType === type
-                                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                                                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                                                        ? 'border-primary bg-primary/10'
+                                                        : 'border-border hover:border-primary/50'
                                                     }`}
                                             >
                                                 <div className="font-medium text-sm">
                                                     {CONNECTION_TYPES[type].icon} {CONNECTION_TYPES[type].name}
                                                 </div>
-                                                <div className="text-xs text-gray-500 truncate">
+                                                <div className="text-xs text-muted-foreground truncate">
                                                     {CONNECTION_TYPES[type].description}
                                                 </div>
                                             </button>
@@ -410,8 +405,8 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                 </div>
 
                                 {/* Applied Loads */}
-                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                    <div className="text-xs font-medium text-gray-500 mb-2">Applied Loads</div>
+                                <div className="p-3 bg-muted rounded-lg">
+                                    <div className="text-xs font-medium text-muted-foreground mb-2">Applied Loads</div>
                                     <div className="grid grid-cols-3 gap-2">
                                         <InputField label="Shear" value={shearForce} onChange={setShearForce} unit="kN" />
                                         <InputField label="Axial" value={axialForce} onChange={setAxialForce} unit="kN" />
@@ -421,15 +416,15 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
 
                                 {/* Bolt Parameters */}
                                 {connectionType !== 'welded' && (
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                        <div className="text-xs font-medium text-gray-500 mb-2">Bolt Parameters</div>
+                                    <div className="p-3 bg-muted rounded-lg">
+                                        <div className="text-xs font-medium text-muted-foreground mb-2">Bolt Parameters</div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label className="text-xs text-gray-500">Grade</label>
+                                                <Label className="text-xs text-muted-foreground">Grade</Label>
                                                 <select
                                                     value={boltGrade}
                                                     onChange={(e) => setBoltGrade(e.target.value)}
-                                                    className="w-full mt-1 px-2 py-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+                                                    className="w-full mt-1 px-2 py-1.5 border rounded text-sm bg-background border-input"
                                                 >
                                                     {Object.entries(BOLT_GRADES).map(([grade, props]) => (
                                                         <option key={grade} value={grade}>
@@ -439,11 +434,11 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                                 </select>
                                             </div>
                                             <div>
-                                                <label className="text-xs text-gray-500">Diameter</label>
+                                                <Label className="text-xs text-muted-foreground">Diameter</Label>
                                                 <select
                                                     value={boltDiameter}
                                                     onChange={(e) => setBoltDiameter(parseInt(e.target.value))}
-                                                    className="w-full mt-1 px-2 py-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+                                                    className="w-full mt-1 px-2 py-1.5 border rounded text-sm bg-background border-input"
                                                 >
                                                     {BOLT_DIAMETERS.map((d) => (
                                                         <option key={d} value={d}>M{d}</option>
@@ -456,22 +451,22 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
 
                                 {/* Weld Parameters */}
                                 {connectionType === 'welded' && (
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                        <div className="text-xs font-medium text-gray-500 mb-2">Weld Parameters</div>
+                                    <div className="p-3 bg-muted rounded-lg">
+                                        <div className="text-xs font-medium text-muted-foreground mb-2">Weld Parameters</div>
                                         <InputField label="Fillet Size" value={weldSize} onChange={setWeldSize} unit="mm" min={3} max={16} />
                                     </div>
                                 )}
 
                                 {/* Plate Parameters */}
-                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                    <div className="text-xs font-medium text-gray-500 mb-2">Plate/Material</div>
+                                <div className="p-3 bg-muted rounded-lg">
+                                    <div className="text-xs font-medium text-muted-foreground mb-2">Plate/Material</div>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label className="text-xs text-gray-500">Plate Thickness</label>
+                                            <Label className="text-xs text-muted-foreground">Plate Thickness</Label>
                                             <select
                                                 value={plateThickness}
                                                 onChange={(e) => setPlateThickness(parseInt(e.target.value))}
-                                                className="w-full mt-1 px-2 py-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+                                                className="w-full mt-1 px-2 py-1.5 border rounded text-sm bg-background border-input"
                                             >
                                                 {PLATE_THICKNESSES.map((t) => (
                                                     <option key={t} value={t}>{t} mm</option>
@@ -479,11 +474,11 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500">Steel Grade</label>
+                                            <Label className="text-xs text-muted-foreground">Steel Grade</Label>
                                             <select
                                                 value={steelGrade}
                                                 onChange={(e) => setSteelGrade(e.target.value)}
-                                                className="w-full mt-1 px-2 py-1.5 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+                                                className="w-full mt-1 px-2 py-1.5 border rounded text-sm bg-background border-input"
                                             >
                                                 {Object.entries(STEEL_GRADES).map(([name, _props]) => (
                                                     <option key={name} value={name}>{name}</option>
@@ -499,16 +494,16 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                 <ConnectionSketch type={connectionType} result={result || undefined} />
 
                                 {result && (
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div className="p-3 bg-muted rounded-lg">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-medium text-gray-500">Design Result</span>
+                                            <span className="text-xs font-medium text-muted-foreground">Design Result</span>
                                             <StatusBadge status={result.overallStatus} />
                                         </div>
 
                                         {/* Summary */}
                                         {result.summary.numBolts && (
                                             <div className="text-sm mb-2">
-                                                <span className="text-gray-500">Bolts required:</span>{' '}
+                                                <span className="text-muted-foreground">Bolts required:</span>{' '}
                                                 <span className="font-medium">
                                                     {result.summary.numBolts} × M{boltDiameter} ({result.summary.boltRows}×{result.summary.boltCols})
                                                 </span>
@@ -519,11 +514,11 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                         <div className="space-y-1">
                                             {result.checks.map((check, idx) => (
                                                 <div key={idx} className="flex items-center justify-between text-xs">
-                                                    <span className="text-gray-600 dark:text-gray-400">
+                                                    <span className="text-muted-foreground">
                                                         {check.name}
                                                     </span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-gray-500">
+                                                        <span className="text-muted-foreground">
                                                             {check.demand.toFixed(1)}/{check.capacity.toFixed(1)} kN
                                                         </span>
                                                         <span className={`font-medium ${check.status === 'pass' ? 'text-green-500' :
@@ -543,32 +538,29 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400"
-                    >
+                <DialogFooter className="flex justify-between sm:justify-between">
+                    <Button variant="ghost" onClick={onClose}>
                         Cancel
-                    </button>
+                    </Button>
                     <div className="flex gap-2">
                         {result && (
-                            <button className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <Button variant="outline" className="flex items-center gap-2">
                                 <Download className="w-4 h-4" />
                                 Export PDF
-                            </button>
+                            </Button>
                         )}
-                        <button
+                        <Button
                             onClick={handleDesign}
                             disabled={isLoading || !isPro}
-                            className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg transition-colors"
+                            className="flex items-center gap-2"
                         >
                             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                             {isLoading ? 'Designing...' : 'Design Connection'}
-                        </button>
+                        </Button>
                     </div>
-                </div>
-            </div>
-        </div>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

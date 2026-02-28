@@ -116,7 +116,7 @@ export const AI_CONFIG = {
    */
   geminiApiKey: import.meta.env.DEV ? getEnv("VITE_GEMINI_API_KEY") : "",
   /** Gemini model to use */
-  geminiModel: getEnv("VITE_GEMINI_MODEL", "gemini-1.5-flash"),
+  geminiModel: getEnv("VITE_GEMINI_MODEL", "gemini-2.0-flash"),
   /** Prefer Gemini over local engine when available */
   preferGemini: getBoolEnv("VITE_PREFER_GEMINI", true),
   /** Gemini timeout in ms before falling back to local */

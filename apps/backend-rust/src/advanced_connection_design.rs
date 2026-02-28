@@ -262,20 +262,22 @@ impl MomentEndPlate {
     }
     
     fn bolt_shear_strength(&self) -> f64 {
+        // Fnv per AISC 360-22 Table J3.2 (threads included)
         match self.bolts.grade {
             BoltGrade::A325 | BoltGrade::Grade8_8 => 457.0,  // MPa
             BoltGrade::A490 | BoltGrade::Grade10_9 => 579.0,
             BoltGrade::Grade4_6 => 240.0,
-            BoltGrade::A307 => 310.0,
+            BoltGrade::A307 => 188.0,  // 27 ksi per AISC Table J3.2
         }
     }
     
     fn bolt_tensile_strength(&self) -> f64 {
+        // Fnt per AISC 360-22 Table J3.2
         match self.bolts.grade {
             BoltGrade::A325 | BoltGrade::Grade8_8 => 620.0,  // MPa
             BoltGrade::A490 | BoltGrade::Grade10_9 => 780.0,
             BoltGrade::Grade4_6 => 400.0,
-            BoltGrade::A307 => 414.0,
+            BoltGrade::A307 => 310.0,  // 45 ksi per AISC Table J3.2
         }
     }
     
@@ -623,9 +625,9 @@ impl ColumnBasePlate {
         let a1 = self.plate.b * self.plate.n;  // Plate area
         let a2 = self.concrete.pedestal_width * self.concrete.pedestal_length;
         
-        // Bearing strength per AISC J8
+        // Bearing strength per AISC J8 with φ_c = 0.65 (concrete bearing)
         let sqrt_ratio = (a2 / a1).sqrt().min(2.0);
-        let fp_max = 0.85 * fc * sqrt_ratio;
+        let fp_max = 0.65 * 0.85 * fc * sqrt_ratio;
         
         // Eccentricity
         let e = if pu.abs() > 1e-6 { mu * 1000.0 / pu } else { 0.0 };

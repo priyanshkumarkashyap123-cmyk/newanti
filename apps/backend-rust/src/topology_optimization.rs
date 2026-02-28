@@ -943,17 +943,21 @@ impl ProjectionFilter {
         Self { eta, beta }
     }
     
-    /// Apply Heaviside projection
+    /// Apply Heaviside projection (Guest-Lazarov-Sigmund)
     pub fn project(&self, rho_tilde: f64) -> f64 {
-        let num = ((-self.beta * self.eta).exp() - (-self.beta * rho_tilde).exp()).tanh();
-        let den = ((-self.beta * self.eta).exp() - (-self.beta).exp()).tanh();
-        (num + (self.beta * self.eta).tanh()) / (den + (self.beta * self.eta).tanh())
+        let b = self.beta;
+        let e = self.eta;
+        let num = (b * e).tanh() + (b * (rho_tilde - e)).tanh();
+        let den = (b * e).tanh() + (b * (1.0 - e)).tanh();
+        num / den
     }
     
     /// Derivative of projection
     pub fn project_derivative(&self, rho_tilde: f64) -> f64 {
-        let num = self.beta * (1.0 - ((-self.beta * self.eta).exp() - (-self.beta * rho_tilde).exp()).tanh().powi(2));
-        let den = ((-self.beta * self.eta).exp() - (-self.beta).exp()).tanh() + (self.beta * self.eta).tanh();
+        let b = self.beta;
+        let e = self.eta;
+        let num = b * (1.0 - (b * (rho_tilde - e)).tanh().powi(2));
+        let den = (b * e).tanh() + (b * (1.0 - e)).tanh();
         num / den
     }
 }

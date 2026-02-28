@@ -10,13 +10,16 @@
  */
 
 import { FC, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-    X, Box, Users, Wind, Snowflake, Truck,
+    Box, Users, Wind, Snowflake, Truck,
     Calculator, ArrowDown, ArrowRight, Check, Copy,
     ChevronDown, Info
 } from 'lucide-react';
 import { useModelStore, MemberLoad } from '../store/model';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 // ============================================
 // TYPES
@@ -214,42 +217,24 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
         onClose();
     };
 
-    if (!isOpen) return null;
-
     const currentCategory = LOAD_CATEGORIES.find(c => c.id === category);
     const CategoryIcon = currentCategory?.icon || Box;
 
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                onClick={onClose}
-            >
-                <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl"
-                >
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     {/* Header */}
-                    <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+                    <DialogHeader>
                         <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center`}>
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center">
                                 <CategoryIcon className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold text-white">IS 875 Load Generator</h2>
-                                <p className="text-sm text-zinc-400">Apply loads as per Indian Standards</p>
+                                <DialogTitle className="text-lg font-bold">IS 875 Load Generator</DialogTitle>
+                                <DialogDescription>Apply loads as per Indian Standards</DialogDescription>
                             </div>
                         </div>
-                        <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
+                    </DialogHeader>
 
                     {/* Content */}
                     <div className="p-6">
@@ -258,41 +243,40 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                             {LOAD_CATEGORIES.map((cat) => {
                                 const Icon = cat.icon;
                                 return (
-                                    <button
+                                    <Button
                                         key={cat.id}
+                                        variant={category === cat.id ? 'default' : 'outline'}
                                         onClick={() => setCategory(cat.id)}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all ${category === cat.id
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-zinc-800 text-zinc-400 hover:text-white'
-                                            }`}
+                                        className="flex items-center gap-2 whitespace-nowrap"
                                     >
                                         <Icon className="w-4 h-4" />
                                         <span className="text-sm font-medium">{cat.name}</span>
-                                    </button>
+                                    </Button>
                                 );
                             })}
                         </div>
 
                         {/* Load Type Selector */}
                         <div className="mb-6">
-                            <label className="text-zinc-400 text-sm mb-2 block">Distribution Type</label>
+                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Distribution Type</Label>
                             <div className="flex gap-2">
                                 {[
                                     { id: 'UDL', label: 'Uniform (UDL)', icon: '▬▬▬' },
                                     { id: 'UVL', label: 'Varying (UVL)', icon: '◢' },
                                     { id: 'point', label: 'Point Load', icon: '↓' }
                                 ].map((type) => (
-                                    <button
+                                    <Button
                                         key={type.id}
+                                        variant="outline"
                                         onClick={() => setLoadType(type.id as 'UDL' | 'UVL' | 'point')}
-                                        className={`flex-1 flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${loadType === type.id
+                                        className={`flex-1 flex flex-col items-center gap-1 p-3 h-auto transition-all ${loadType === type.id
                                                 ? 'border-blue-500 bg-blue-500/10'
-                                                : 'border-zinc-700 hover:border-zinc-600'
+                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
                                             }`}
                                     >
                                         <span className="text-xl">{type.icon}</span>
-                                        <span className="text-xs text-zinc-400">{type.label}</span>
-                                    </button>
+                                        <span className="text-xs text-zinc-500 dark:text-zinc-400">{type.label}</span>
+                                    </Button>
                                 ))}
                             </div>
                         </div>
@@ -304,11 +288,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'dead' && (
                                     <>
                                         <div>
-                                            <label className="text-zinc-400 text-sm mb-2 block">Material (IS 875 Part 1)</label>
+                                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Material (IS 875 Part 1)</Label>
                                             <select
                                                 value={selectedMaterial.id}
                                                 onChange={(e) => setSelectedMaterial(MATERIALS.find(m => m.id === e.target.value) || MATERIALS[0])}
-                                                className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
+                                                className="w-full px-3 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
                                             >
                                                 {MATERIALS.map(m => (
                                                     <option key={m.id} value={m.id}>
@@ -319,23 +303,21 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="text-zinc-400 text-sm mb-2 block">Thickness (m)</label>
-                                                <input
+                                                <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Thickness (m)</Label>
+                                                <Input
                                                     type="number"
-                                                    step="0.01"
+                                                    step={0.01}
                                                     value={thickness}
                                                     onChange={(e) => setThickness(parseFloat(e.target.value) || 0.15)}
-                                                    className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-zinc-400 text-sm mb-2 block">Width (m)</label>
-                                                <input
+                                                <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Width (m)</Label>
+                                                <Input
                                                     type="number"
-                                                    step="0.1"
+                                                    step={0.1}
                                                     value={width}
                                                     onChange={(e) => setWidth(parseFloat(e.target.value) || 1)}
-                                                    className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                                 />
                                             </div>
                                         </div>
@@ -345,11 +327,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'imposed' && (
                                     <>
                                         <div>
-                                            <label className="text-zinc-400 text-sm mb-2 block">Occupancy Type (IS 875 Part 2 Table 1)</label>
+                                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Occupancy Type (IS 875 Part 2 Table 1)</Label>
                                             <select
                                                 value={selectedOccupancy.id}
                                                 onChange={(e) => setSelectedOccupancy(OCCUPANCY_LOADS.find(o => o.id === e.target.value) || OCCUPANCY_LOADS[0])}
-                                                className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
+                                                className="w-full px-3 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
                                             >
                                                 {OCCUPANCY_LOADS.map(o => (
                                                     <option key={o.id} value={o.id}>
@@ -359,13 +341,12 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-zinc-400 text-sm mb-2 block">Tributary Width (m)</label>
-                                            <input
+                                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Tributary Width (m)</Label>
+                                            <Input
                                                 type="number"
-                                                step="0.1"
+                                                step={0.1}
                                                 value={tributaryWidth}
                                                 onChange={(e) => setTributaryWidth(parseFloat(e.target.value) || 3)}
-                                                className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                             />
                                         </div>
                                     </>
@@ -374,24 +355,22 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'wind' && (
                                     <>
                                         <div>
-                                            <label className="text-zinc-400 text-sm mb-2 block">Design Wind Pressure Pz (kN/m²)</label>
-                                            <input
+                                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Design Wind Pressure Pz (kN/m²)</Label>
+                                            <Input
                                                 type="number"
-                                                step="0.1"
+                                                step={0.1}
                                                 value={windPressure}
                                                 onChange={(e) => setWindPressure(parseFloat(e.target.value) || 1.5)}
-                                                className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                             />
-                                            <p className="text-xs text-zinc-400 mt-1">Use IS 875 Part 3 calculator to determine Pz</p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Use IS 875 Part 3 calculator to determine Pz</p>
                                         </div>
                                         <div>
-                                            <label className="text-zinc-400 text-sm mb-2 block">Surface Width (m)</label>
-                                            <input
+                                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Surface Width (m)</Label>
+                                            <Input
                                                 type="number"
-                                                step="0.1"
+                                                step={0.1}
                                                 value={surfaceWidth}
                                                 onChange={(e) => setSurfaceWidth(parseFloat(e.target.value) || 3)}
-                                                className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                             />
                                         </div>
                                     </>
@@ -400,11 +379,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'snow' && (
                                     <>
                                         <div>
-                                            <label className="text-zinc-400 text-sm mb-2 block">Snow Zone (IS 875 Part 4)</label>
+                                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Snow Zone (IS 875 Part 4)</Label>
                                             <select
                                                 value={selectedSnowZone.id}
                                                 onChange={(e) => setSelectedSnowZone(SNOW_ZONES.find(z => z.id === e.target.value) || SNOW_ZONES[2])}
-                                                className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
+                                                className="w-full px-3 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
                                             >
                                                 {SNOW_ZONES.map(z => (
                                                     <option key={z.id} value={z.id}>
@@ -412,28 +391,26 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                                     </option>
                                                 ))}
                                             </select>
-                                            <p className="text-xs text-zinc-400 mt-1">{selectedSnowZone.description}</p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{selectedSnowZone.description}</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
-                                                <label className="text-zinc-400 text-sm mb-2 block">Roof Slope (°)</label>
-                                                <input
+                                                <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Roof Slope (°)</Label>
+                                                <Input
                                                     type="number"
-                                                    min="0"
-                                                    max="60"
+                                                    min={0}
+                                                    max={60}
                                                     value={roofSlope}
                                                     onChange={(e) => setRoofSlope(parseFloat(e.target.value) || 10)}
-                                                    className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-zinc-400 text-sm mb-2 block">Tributary Width (m)</label>
-                                                <input
+                                                <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Tributary Width (m)</Label>
+                                                <Input
                                                     type="number"
-                                                    step="0.1"
+                                                    step={0.1}
                                                     value={tributaryWidth}
                                                     onChange={(e) => setTributaryWidth(parseFloat(e.target.value) || 3)}
-                                                    className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
                                                 />
                                             </div>
                                         </div>
@@ -443,11 +420,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                                 {category === 'special' && (
                                     <>
                                         <div>
-                                            <label className="text-zinc-400 text-sm mb-2 block">Special Load Type (IS 875 Part 5)</label>
+                                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm mb-2 block">Special Load Type (IS 875 Part 5)</Label>
                                             <select
                                                 value={selectedSpecial.id}
                                                 onChange={(e) => setSelectedSpecial(SPECIAL_LOADS.find(s => s.id === e.target.value) || SPECIAL_LOADS[0])}
-                                                className="w-full px-3 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
+                                                className="w-full px-3 py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
                                             >
                                                 {SPECIAL_LOADS.map(s => (
                                                     <option key={s.id} value={s.id}>
@@ -461,33 +438,33 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                             </div>
 
                             {/* Right Column - Calculation Result */}
-                            <div className="bg-zinc-800/50 rounded-xl p-4 border border-zinc-700">
-                                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            <div className="bg-zinc-100/50 dark:bg-zinc-800/50 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700">
+                                <h3 className="text-zinc-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
                                     <Calculator className="w-4 h-4 text-blue-400" />
                                     Calculated Load
                                 </h3>
 
-                                <div className="bg-zinc-900/50 rounded-lg p-4 mb-4 font-mono text-sm text-zinc-300">
+                                <div className="bg-zinc-200/50 dark:bg-zinc-900/50 rounded-lg p-4 mb-4 font-mono text-sm text-zinc-700 dark:text-zinc-300">
                                     {calculatedLoad.formula}
                                 </div>
 
                                 <div className="text-center py-6">
-                                    <div className="text-4xl font-bold text-white">
+                                    <div className="text-4xl font-bold text-zinc-900 dark:text-white">
                                         {Math.abs(calculatedLoad.load).toFixed(2)}
                                     </div>
-                                    <div className="text-zinc-400">
+                                    <div className="text-zinc-500 dark:text-zinc-400">
                                         kN/m {loadType === 'point' ? '(point)' : '(distributed)'}
                                     </div>
-                                    <div className="text-xs text-zinc-400 mt-2 flex items-center justify-center gap-1">
+                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 flex items-center justify-center gap-1">
                                         <ArrowDown className="w-3 h-3" />
                                         Downward direction (gravity)
                                     </div>
                                 </div>
 
                                 {/* Target Info */}
-                                <div className="bg-zinc-800 rounded-lg p-3">
-                                    <div className="text-xs text-zinc-400">Applying to</div>
-                                    <div className="text-white font-medium">
+                                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3">
+                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Applying to</div>
+                                    <div className="text-zinc-900 dark:text-white font-medium">
                                         {targetMemberId
                                             ? `Member ${targetMemberId}`
                                             : selectedIds.size > 0
@@ -499,11 +476,11 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                         </div>
 
                         {/* Info Box */}
-                        <div className="mt-6 bg-blue-900/20 border border-blue-800 rounded-lg p-4 flex items-start gap-3">
+                        <div className="mt-6 bg-blue-100/50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
                             <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                            <div className="text-sm text-zinc-300">
-                                <strong className="text-white">{currentCategory?.description}</strong>
-                                <p className="text-zinc-400 mt-1">
+                            <div className="text-sm text-zinc-700 dark:text-zinc-300">
+                                <strong className="text-zinc-900 dark:text-white">{currentCategory?.description}</strong>
+                                <p className="text-zinc-500 dark:text-zinc-400 mt-1">
                                     Load values are as per IS 875:2015. For critical structures, verify with latest code provisions.
                                 </p>
                             </div>
@@ -511,25 +488,20 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
                     </div>
 
                     {/* Footer */}
-                    <div className="sticky bottom-0 px-6 py-4 border-t border-zinc-800 bg-zinc-900 flex justify-between">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-zinc-400 hover:text-white transition-colors"
-                        >
+                    <DialogFooter className="flex justify-between sm:justify-between">
+                        <Button variant="ghost" onClick={onClose}>
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={handleApplyLoad}
                             disabled={!targetMemberId && selectedIds.size === 0}
-                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg flex items-center gap-2 transition-colors"
                         >
-                            <Check className="w-4 h-4" />
+                            <Check className="w-4 h-4 mr-2" />
                             Apply Load
-                        </button>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                        </Button>
+                    </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

@@ -21,9 +21,11 @@ import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
 import {
     Layers, Plus, Trash2, Copy, Check, AlertCircle,
-    ChevronDown, ChevronRight, FileText
+    ChevronDown, ChevronRight, FileText, Download, Loader2
 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useModelStore } from '@/store/model';
+import { API_CONFIG } from '@/config/env';
 
 // ===== PREDEFINED COMBINATIONS =====
 
@@ -83,6 +85,50 @@ const LoadCombinationsDialog: React.FC = () => {
         'IS456_LSM': false,
         'USER': true,
     });
+
+    // Backend fetching state
+    const [isFetching, setIsFetching] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+
+    // Fetch combinations from Python backend
+    const fetchFromBackend = useCallback(async (code: string) => {
+        setIsFetching(true);
+        setFetchError(null);
+        try {
+            const response = await fetch(`${API_CONFIG.pythonUrl}/load-combinations/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code,
+                    load_types: LOAD_TYPES,
+                }),
+            });
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            const data = await response.json();
+            if (data.combinations && Array.isArray(data.combinations)) {
+                const backendCombos: LoadCombination[] = data.combinations.map((c: any, i: number) => ({
+                    id: `${code}_BE_${i}`,
+                    name: c.name || c.expression || `Combo ${i + 1}`,
+                    code: code,
+                    factors: (c.factors || []).map((f: any) => ({
+                        type: f.load_type || f.type,
+                        factor: f.factor,
+                    })),
+                    isActive: true,
+                    isUserDefined: false,
+                }));
+                // Replace existing combos of same code with backend ones
+                setCombinations(prev => [
+                    ...prev.filter(c => c.code !== code),
+                    ...backendCombos,
+                ]);
+            }
+        } catch (err) {
+            setFetchError(err instanceof Error ? err.message : 'Failed to fetch combinations');
+        } finally {
+            setIsFetching(false);
+        }
+    }, []);
 
     // New combination state
     const [newComboName, setNewComboName] = useState('');
@@ -171,9 +217,19 @@ const LoadCombinationsDialog: React.FC = () => {
     }, {} as Record<string, LoadCombination[]>);
 
     const activeCombinations = combinations.filter(c => c.isActive);
+    const { addLoadCombination, loadCombinations: storedCombos } = useModelStore();
 
     const handleApply = () => {
-// console.log('Applying load combinations:', activeCombinations);
+        // Store each active combination in the model store
+        activeCombinations.forEach(combo => {
+            const storeCombo = {
+                id: combo.id,
+                name: combo.name,
+                code: combo.code,
+                factors: combo.factors.map(f => ({ loadCaseId: f.type, factor: f.factor })),
+            };
+            addLoadCombination(storeCombo);
+        });
         setModal('loadCombinationsDialog', false);
     };
 
@@ -207,7 +263,30 @@ const LoadCombinationsDialog: React.FC = () => {
 
                     {/* Predefined Tab */}
                     <TabsContent value="predefined" className="flex-1 overflow-hidden">
-                        <ScrollArea className="h-[400px] pr-4">
+                        {/* Generate from Backend */}
+                        <div className="flex items-center gap-2 mb-3 px-1">
+                            <span className="text-xs text-muted-foreground">Generate from code:</span>
+                            {['ASCE7_LRFD', 'IS456_LSM', 'ACI318'].map(code => (
+                                <Button
+                                    key={code}
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={isFetching}
+                                    onClick={() => fetchFromBackend(code)}
+                                    className="h-7 text-xs"
+                                >
+                                    {isFetching ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Download className="h-3 w-3 mr-1" />}
+                                    {code === 'ASCE7_LRFD' ? 'ASCE 7' : code === 'IS456_LSM' ? 'IS 456' : 'ACI 318'}
+                                </Button>
+                            ))}
+                        </div>
+                        {fetchError && (
+                            <div className="flex items-center gap-2 px-3 py-2 mb-2 text-xs text-red-600 bg-red-50 dark:bg-red-950 rounded">
+                                <AlertCircle className="h-3 w-3" />
+                                {fetchError}
+                            </div>
+                        )}
+                        <ScrollArea className="h-[370px] pr-4">
                             <div className="space-y-4">
                                 {Object.entries(groupedCombinations).map(([code, combos]) => {
                                     const isExpanded = expandedCodes[code] ?? true;

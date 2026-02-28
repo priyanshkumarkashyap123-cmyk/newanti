@@ -304,9 +304,8 @@ pub fn stud_strength_aisc(
     let fc = concrete.fc; // MPa
     
     // Basic stud strength (AISC I8-1)
-    let qn1 = 0.5 * asc * (fc * ec).sqrt(); // N
-    let qn2 = asc * fu_stud; // Rg*Rp*Asc*Fu
-    let qn_base = qn1.min(qn2) / 1000.0; // kN
+    // Qn = 0.5*Asc*sqrt(f'c*Ec) ≤ Rg*Rp*Asc*Fu
+    let qn1 = 0.5 * asc * (fc * ec).sqrt(); // N (concrete breakout)
     
     // Deck reduction factors
     let hr = deck.rib_height;
@@ -333,13 +332,17 @@ pub fn stud_strength_aisc(
         0.75 // Conservative
     };
     
-    let qn_reduced = qn_base * rg * rp;
+    let qn2 = rg * rp * asc * fu_stud; // N (steel fracture, with reduction)
+    let qn_base = qn1.min(qn2) / 1000.0; // kN (per AISC: Qn ≤ Rg*Rp*Asc*Fu)
+    
+    // Unreduced for reporting
+    let qn_unreduced = (0.5 * asc * (fc * ec).sqrt()).min(asc * fu_stud) / 1000.0;
     
     StudCapacityResult {
-        qn: qn_base,
+        qn: qn_unreduced,
         rg,
         rp,
-        qn_reduced,
+        qn_reduced: qn_base,
         n_required: 0,
         composite_ratio: 100.0,
     }

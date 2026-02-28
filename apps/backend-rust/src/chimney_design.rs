@@ -144,7 +144,7 @@ impl ConcreteChimney {
     pub fn fundamental_period(&self) -> f64 {
         // Approximate formula for tapered chimney
         let e = 30000.0; // MPa
-        let gamma = 25.0 / 9.81; // t/m³
+        let gamma = 25.0 * 1000.0 / 9.81; // kg/m³ (mass density of concrete)
         
         let i_base = self.inertia_at(0.0);
         let a_avg = (self.area_at(0.0) + self.area_at(self.height)) / 2.0;
@@ -252,7 +252,8 @@ impl SteelChimney {
     
     /// Self-weight (kN/m)
     pub fn weight_per_m(&self) -> f64 {
-        let steel_weight = self.area() * 7850.0 / 1e9; // kN/m
+        // ρ(kg/m³) × g(m/s²) = unit weight (N/m³); area(mm²) × 1e-6 → m²
+        let steel_weight = self.area() * 7850.0 * 9.81 / 1e9; // kN/m
         
         if self.is_lined {
             steel_weight + 0.5 // Approximate liner weight
@@ -272,8 +273,9 @@ impl SteelChimney {
         let m_per_length = self.weight_per_m() / 9.81 * 1000.0; // kg/m
         let i = self.inertia() / 1e12; // m⁴
         
-        // Cantilever beam
-        let omega = 1.875_f64.powi(2) * (e * 1e9 * i / (m_per_length * self.height.powi(4))).sqrt();
+        // Cantilever beam: ω₁ = (1.875/L)² × √(EI/m̄)
+        // E(MPa)×1e6 → Pa; I(mm⁴)/1e12 → m⁴; EI in N·m²
+        let omega = 1.875_f64.powi(2) * (e * 1e6 * i / (m_per_length * self.height.powi(4))).sqrt();
         
         2.0 * PI / omega
     }

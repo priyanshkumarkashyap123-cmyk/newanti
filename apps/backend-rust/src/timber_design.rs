@@ -247,6 +247,20 @@ pub fn size_factor_sawn(depth: f64) -> f64 {
     }
 }
 
+/// Size factor CF for Fc (compression parallel) - NDS Table 4A
+/// Different from Fb size factors
+pub fn size_factor_fc(depth: f64) -> f64 {
+    if depth <= 4.0 {
+        1.15
+    } else if depth <= 6.0 {
+        1.10
+    } else if depth <= 8.0 {
+        1.05
+    } else {
+        1.0
+    }
+}
+
 /// Volume factor CV for glulam (NDS 5.3.6)
 pub fn volume_factor_glulam(length: f64, depth: f64, width: f64) -> f64 {
     let x = 1.0 / 10.0; // Loading condition exponent
@@ -262,6 +276,7 @@ pub fn volume_factor_glulam(length: f64, depth: f64, width: f64) -> f64 {
 }
 
 /// Beam stability factor CL (NDS 3.3.3)
+/// c = 0.95 for glulam, 0.80 for sawn lumber
 pub fn beam_stability_factor(fb_prime: f64, e_min_prime: f64, le: f64, d: f64, b: f64) -> f64 {
     // Effective length ratio
     let rb = (le * d / b.powi(2)).sqrt();
@@ -269,10 +284,12 @@ pub fn beam_stability_factor(fb_prime: f64, e_min_prime: f64, le: f64, d: f64, b
     // Critical buckling stress
     let fbe = 1.20 * e_min_prime / rb.powi(2);
     
-    // Beam stability factor
+    // Beam stability factor (NDS 3.3.3.8)
+    // Use c = 0.80 for sawn lumber (conservative default)
+    let c = 0.80;
     let ratio = fbe / fb_prime;
-    let term1 = (1.0 + ratio) / 1.9;
-    let term2 = ((1.0 + ratio) / 1.9).powi(2) - ratio / 0.95;
+    let term1 = (1.0 + ratio) / (2.0 * c);
+    let term2 = ((1.0 + ratio) / (2.0 * c)).powi(2) - ratio / c;
     
     term1 - term2.sqrt()
 }
@@ -416,13 +433,14 @@ impl NdsTimberDesigner {
         let cm_e = self.moisture.cm("E");
         let ct = temperature_factor(self.temperature, self.moisture);
         let cf = size_factor_sawn(self.section.d);
+        let cf_fc = size_factor_fc(self.section.d);
         
         AdjustedValues {
             fb_prime: ref_vals.fb * grade_factor * cd * cm_fb * ct * cf,
             ft_prime: ref_vals.ft * grade_factor * cd * cm_ft * ct * cf,
-            fv_prime: ref_vals.fv * grade_factor * cd * cm_fv * ct,
-            fc_perp_prime: ref_vals.fc_perp * grade_factor * cm_fc_perp * ct,
-            fc_prime: ref_vals.fc * grade_factor * cd * cm_fc * ct * cf,
+            fv_prime: ref_vals.fv * cd * cm_fv * ct, // No grade_factor for Fv per NDS Table 4A
+            fc_perp_prime: ref_vals.fc_perp * cm_fc_perp * ct, // No grade_factor for Fc_perp per NDS Table 4A
+            fc_prime: ref_vals.fc * grade_factor * cd * cm_fc * ct * cf_fc, // Use Fc-specific CF
             e_prime: ref_vals.e * cm_e * ct,
             e_min_prime: ref_vals.e_min * cm_e * ct,
         }
@@ -487,7 +505,8 @@ impl NdsTimberDesigner {
             adj.e_min_prime, 
             le, 
             self.section.d.min(self.section.b), 
-            0.8 // c for sawn lumber
+            // NDS 3.7.1: c = 0.9 for glulam/SCL, 0.8 for sawn lumber
+            0.8
         );
         
         let fc_adj = adj.fc_prime * cp;
@@ -530,7 +549,13 @@ impl NdsTimberDesigner {
             let comp = self.check_compression(p, le);
             
             // NDS Eq. 3.9-3 for combined compression + bending
-            let interaction = (comp.ratio).powi(2) + bending.ratio / (1.0 - comp.fc_actual / (0.822 * self.adjusted_values().e_min_prime / (le / self.section.d).powi(2)));
+            let fce1 = 0.822 * self.adjusted_values().e_min_prime / (le / self.section.d).powi(2);
+            let amplification = if comp.fc_actual >= fce1 {
+                f64::INFINITY // Beyond Euler buckling
+            } else {
+                1.0 / (1.0 - comp.fc_actual / fce1)
+            };
+            let interaction = (comp.ratio).powi(2) + bending.ratio * amplification;
             (comp.ratio, interaction)
         } else {
             let tens = self.check_tension(p);
@@ -677,7 +702,7 @@ impl Ec5StrengthClass {
                 fm_k: 28.0,
                 ft_0_k: 22.3,
                 ft_90_k: 0.5,
-                fc_0_k: 28.0,
+                fc_0_k: 26.5, // EN 14080 Table 5 for GL28h
                 fc_90_k: 3.0,
                 fv_k: 3.5,
                 e_0_mean: 12600.0,

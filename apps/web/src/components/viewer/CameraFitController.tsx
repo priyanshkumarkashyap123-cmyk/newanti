@@ -184,6 +184,130 @@ export const CameraFitController: React.FC = () => {
     return () => document.removeEventListener("fit-view", handler);
   }, [fitToModel]);
 
+  // ── respond to "change-view" custom event (ViewCube) ─────────────
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const view = (e as CustomEvent).detail?.view as string;
+      if (!view || !controls || !camera) return;
+
+      // Compute model center/radius for positioning
+      const box = computeModelBounds(nodes);
+      const center = new THREE.Vector3();
+      let radius = 10;
+      if (box) {
+        box.getCenter(center);
+        const sphere = new THREE.Sphere();
+        box.getBoundingSphere(sphere);
+        radius = Math.max(sphere.radius, 2);
+      }
+
+      const dist = radius * FIT_PADDING * 2;
+
+      // Standard engineering view positions
+      const viewPositions: Record<string, THREE.Vector3> = {
+        front: new THREE.Vector3(0, 0, dist).add(center),
+        back: new THREE.Vector3(0, 0, -dist).add(center),
+        left: new THREE.Vector3(-dist, 0, 0).add(center),
+        right: new THREE.Vector3(dist, 0, 0).add(center),
+        top: new THREE.Vector3(0, dist, 0.001).add(center), // tiny z offset avoids gimbal lock
+        iso: new THREE.Vector3(dist * 0.6, dist * 0.5, dist * 0.6).add(center),
+      };
+
+      const pos = viewPositions[view];
+      if (pos) {
+        camera.position.copy(pos);
+        if ('target' in controls) {
+          (controls as any).target.copy(center);
+          (controls as any).update();
+        }
+        camera.lookAt(center);
+        if (camera instanceof THREE.PerspectiveCamera) {
+          camera.updateProjectionMatrix();
+        }
+      }
+    };
+    document.addEventListener("change-view", handler);
+    return () => document.removeEventListener("change-view", handler);
+  }, [camera, controls, nodes]);
+
+  // ── respond to "zoom-in" / "zoom-out" custom events ──────────────
+
+  useEffect(() => {
+    const handleZoomIn = () => {
+      if (!camera || !controls) return;
+      if (camera instanceof THREE.PerspectiveCamera) {
+        const target = (controls as any).target as THREE.Vector3 || new THREE.Vector3();
+        const dir = camera.position.clone().sub(target);
+        dir.multiplyScalar(0.75); // zoom in by 25%
+        camera.position.copy(target).add(dir);
+      } else if (camera instanceof THREE.OrthographicCamera) {
+        camera.zoom *= 1.25;
+        camera.updateProjectionMatrix();
+      }
+      if ('update' in controls) (controls as any).update();
+    };
+
+    const handleZoomOut = () => {
+      if (!camera || !controls) return;
+      if (camera instanceof THREE.PerspectiveCamera) {
+        const target = (controls as any).target as THREE.Vector3 || new THREE.Vector3();
+        const dir = camera.position.clone().sub(target);
+        dir.multiplyScalar(1.33); // zoom out by ~25%
+        camera.position.copy(target).add(dir);
+      } else if (camera instanceof THREE.OrthographicCamera) {
+        camera.zoom *= 0.75;
+        camera.updateProjectionMatrix();
+      }
+      if ('update' in controls) (controls as any).update();
+    };
+
+    document.addEventListener("zoom-in", handleZoomIn);
+    document.addEventListener("zoom-out", handleZoomOut);
+    return () => {
+      document.removeEventListener("zoom-in", handleZoomIn);
+      document.removeEventListener("zoom-out", handleZoomOut);
+    };
+  }, [camera, controls]);
+
+  // ── respond to "reset-view" custom event ─────────────────────────
+
+  useEffect(() => {
+    const handler = () => {
+      // Reset = fit to model from isometric angle
+      if (!camera || !controls) return;
+
+      const box = computeModelBounds(nodes);
+      const center = new THREE.Vector3();
+      let radius = 10;
+      if (box) {
+        box.getCenter(center);
+        const sphere = new THREE.Sphere();
+        box.getBoundingSphere(sphere);
+        radius = Math.max(sphere.radius, 2);
+      }
+      const dist = radius * FIT_PADDING * 2;
+
+      // Isometric default position
+      camera.position.set(
+        center.x + dist * 0.6,
+        center.y + dist * 0.5,
+        center.z + dist * 0.6,
+      );
+      if ('target' in controls) {
+        (controls as any).target.copy(center);
+        (controls as any).update();
+      }
+      camera.lookAt(center);
+      if (camera instanceof THREE.PerspectiveCamera) {
+        camera.updateProjectionMatrix();
+      }
+    };
+
+    document.addEventListener("reset-view", handler);
+    return () => document.removeEventListener("reset-view", handler);
+  }, [camera, controls, nodes]);
+
   // ── respond to "Home" key shortcut ───────────────────────────────
 
   useEffect(() => {

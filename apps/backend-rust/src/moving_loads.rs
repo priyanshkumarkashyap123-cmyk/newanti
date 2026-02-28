@@ -261,30 +261,29 @@ pub enum DesignCode {
 
 impl VehicleDefinition {
     /// IRC Class AA Tracked Vehicle
+    /// IRC 6:2017 Annex A: 700 kN uniformly distributed over 3.6m contact length
     pub fn irc_class_aa_tracked() -> Self {
         Self {
             name: "IRC Class AA Tracked".to_string(),
             code: DesignCode::IRC,
-            axles: vec![
-                AxleLoad { position: 0.0, load: 350.0, width: Some(0.85) },
-                AxleLoad { position: 3.6, load: 350.0, width: Some(0.85) },
-            ],
+            axles: vec![],
             length: 3.6,
-            udl: None,
-            udl_length: None,
+            udl: Some(194.44),      // 700 kN / 3.6 m = 194.44 kN/m
+            udl_length: Some(3.6),  // track contact length
         }
     }
     
     /// IRC Class AA Wheeled Vehicle
+    /// IRC 6:2017 Annex A: 400 kN total, 4 axles × 100 kN
     pub fn irc_class_aa_wheeled() -> Self {
         Self {
             name: "IRC Class AA Wheeled".to_string(),
             code: DesignCode::IRC,
             axles: vec![
-                AxleLoad { position: 0.0, load: 200.0, width: Some(1.8) },
-                AxleLoad { position: 1.2, load: 200.0, width: Some(1.8) },
-                AxleLoad { position: 2.4, load: 200.0, width: Some(1.8) },
-                AxleLoad { position: 3.6, load: 200.0, width: Some(1.8) },
+                AxleLoad { position: 0.0, load: 100.0, width: Some(1.8) },
+                AxleLoad { position: 1.2, load: 100.0, width: Some(1.8) },
+                AxleLoad { position: 2.4, load: 100.0, width: Some(1.8) },
+                AxleLoad { position: 3.6, load: 100.0, width: Some(1.8) },
             ],
             length: 3.6,
             udl: None,
@@ -293,73 +292,75 @@ impl VehicleDefinition {
     }
     
     /// IRC Class 70R Tracked Vehicle
+    /// IRC 6:2017 Annex A: 700 kN uniformly distributed over 4.57m contact length
     pub fn irc_class_70r_tracked() -> Self {
         Self {
             name: "IRC Class 70R Tracked".to_string(),
             code: DesignCode::IRC,
-            axles: vec![
-                AxleLoad { position: 0.0, load: 350.0, width: Some(0.84) },
-                AxleLoad { position: 4.57, load: 350.0, width: Some(0.84) },
-            ],
+            axles: vec![],
             length: 4.57,
-            udl: None,
-            udl_length: None,
+            udl: Some(153.17),      // 700 kN / 4.57 m = 153.17 kN/m
+            udl_length: Some(4.57), // track contact length
         }
     }
     
-    /// IRC Class 70R Wheeled Vehicle (simplified)
+    /// IRC Class 70R Wheeled Vehicle
+    /// IRC 6:2017 Annex A: 1000 kN total, 7 axles
+    /// Spacings: 3.96, 1.52, 2.13, 1.37, 3.05, 1.37 m
     pub fn irc_class_70r_wheeled() -> Self {
         Self {
             name: "IRC Class 70R Wheeled".to_string(),
             code: DesignCode::IRC,
             axles: vec![
-                AxleLoad { position: 0.0, load: 80.0, width: Some(2.79) },
-                AxleLoad { position: 1.37, load: 120.0, width: Some(2.79) },
-                AxleLoad { position: 4.17, load: 120.0, width: Some(2.79) },
-                AxleLoad { position: 5.47, load: 170.0, width: Some(2.79) },
-                AxleLoad { position: 6.77, load: 170.0, width: Some(2.79) },
-                AxleLoad { position: 8.07, load: 170.0, width: Some(2.79) },
-                AxleLoad { position: 9.37, load: 170.0, width: Some(2.79) },
+                AxleLoad { position: 0.0,   load: 80.0,  width: Some(2.79) },
+                AxleLoad { position: 3.96,  load: 120.0, width: Some(2.79) },
+                AxleLoad { position: 5.48,  load: 120.0, width: Some(2.79) },
+                AxleLoad { position: 7.61,  load: 170.0, width: Some(2.79) },
+                AxleLoad { position: 8.98,  load: 170.0, width: Some(2.79) },
+                AxleLoad { position: 12.03, load: 170.0, width: Some(2.79) },
+                AxleLoad { position: 13.40, load: 170.0, width: Some(2.79) },
             ],
-            length: 9.37,
+            length: 13.40,
             udl: None,
             udl_length: None,
         }
     }
     
     /// IRC Class A Train of Vehicles
+    /// IRC 6:2017 Annex A: spacings 1.1, 3.2, 1.2, 4.3, 3.0, 3.0, 3.0 m
     pub fn irc_class_a() -> Self {
         Self {
             name: "IRC Class A".to_string(),
             code: DesignCode::IRC,
             axles: vec![
-                AxleLoad { position: 0.0, load: 27.0, width: Some(1.8) },
-                AxleLoad { position: 1.1, load: 27.0, width: Some(1.8) },
-                AxleLoad { position: 4.3, load: 114.0, width: Some(1.8) },
-                AxleLoad { position: 7.5, load: 114.0, width: Some(1.8) },
-                AxleLoad { position: 10.7, load: 68.0, width: Some(1.8) },
-                AxleLoad { position: 13.9, load: 68.0, width: Some(1.8) },
-                AxleLoad { position: 17.1, load: 68.0, width: Some(1.8) },
-                AxleLoad { position: 20.3, load: 68.0, width: Some(1.8) },
+                AxleLoad { position: 0.0,  load: 27.0,  width: Some(1.8) },
+                AxleLoad { position: 1.1,  load: 27.0,  width: Some(1.8) },
+                AxleLoad { position: 4.3,  load: 114.0, width: Some(1.8) },
+                AxleLoad { position: 5.5,  load: 114.0, width: Some(1.8) },  // +1.2m
+                AxleLoad { position: 9.8,  load: 68.0,  width: Some(1.8) },  // +4.3m
+                AxleLoad { position: 12.8, load: 68.0,  width: Some(1.8) },  // +3.0m
+                AxleLoad { position: 15.8, load: 68.0,  width: Some(1.8) },  // +3.0m
+                AxleLoad { position: 18.8, load: 68.0,  width: Some(1.8) },  // +3.0m
             ],
-            length: 20.3,
+            length: 18.8,
             udl: None,
             udl_length: None,
         }
     }
     
-    /// AASHTO HL-93 Truck
+    /// AASHTO HL-93 Design Truck (AASHTO LRFD 3.6.1.2.2)
+    /// Axle loads are already in kN (SI values from the standard).
     pub fn aashto_hl93_truck() -> Self {
         Self {
             name: "AASHTO HL-93 Truck".to_string(),
             code: DesignCode::AASHTO,
             axles: vec![
-                // Front axle
-                AxleLoad { position: 0.0, load: 35.0 * 4.448, width: Some(1.8) }, // 35 kip = 156 kN
-                // Drive axle
-                AxleLoad { position: 4.27, load: 145.0 * 4.448 / 2.0, width: Some(1.8) }, // 145 kip spread
-                // Rear axle (variable 4.27m to 9.14m)
-                AxleLoad { position: 8.54, load: 145.0 * 4.448 / 2.0, width: Some(1.8) },
+                // Front axle: 35 kN (8 kip)
+                AxleLoad { position: 0.0, load: 35.0, width: Some(1.8) },
+                // Drive axle: 145 kN (32 kip)
+                AxleLoad { position: 4.27, load: 145.0, width: Some(1.8) },
+                // Rear axle: 145 kN (32 kip) — spacing variable 4.27m to 9.14m
+                AxleLoad { position: 8.54, load: 145.0, width: Some(1.8) },
             ],
             length: 8.54,
             udl: None,
@@ -367,14 +368,15 @@ impl VehicleDefinition {
         }
     }
     
-    /// AASHTO HL-93 Tandem
+    /// AASHTO HL-93 Design Tandem (AASHTO LRFD 3.6.1.2.3)
+    /// Two 110 kN (25 kip) axles spaced 1.2m (4 ft) apart.
     pub fn aashto_hl93_tandem() -> Self {
         Self {
             name: "AASHTO HL-93 Tandem".to_string(),
             code: DesignCode::AASHTO,
             axles: vec![
-                AxleLoad { position: 0.0, load: 110.0 * 4.448, width: Some(1.8) },
-                AxleLoad { position: 1.2, load: 110.0 * 4.448, width: Some(1.8) },
+                AxleLoad { position: 0.0, load: 110.0, width: Some(1.8) },  // 110 kN (25 kip)
+                AxleLoad { position: 1.2, load: 110.0, width: Some(1.8) },  // 110 kN (25 kip)
             ],
             length: 1.2,
             udl: None,
@@ -472,16 +474,10 @@ impl ImpactFactor {
         Self { code: DesignCode::IRC, factor }
     }
     
-    /// IRC impact factor for wheeled vehicles
+    /// IRC impact factor for wheeled vehicles (Class A / Class B)
     pub fn irc_wheeled(span: f64) -> Self {
-        // IRC 6:2017 Clause 211.1
-        let factor = if span <= 3.0 {
-            0.545
-        } else if span <= 45.0 {
-            4.5 / (6.0 + span)
-        } else {
-            0.088
-        };
+        // IRC 6:2017 Clause 211.1: A = 4.5 / (6 + L) for RC bridges
+        let factor = 4.5 / (6.0 + span);
         
         Self { code: DesignCode::IRC, factor }
     }
@@ -492,15 +488,11 @@ impl ImpactFactor {
     }
     
     /// Eurocode dynamic factor
-    pub fn eurocode(span: f64) -> Self {
-        // Simplified - EN 1991-2 more complex
-        let factor = if span < 10.0 {
-            0.10
-        } else {
-            0.10 * (50.0 - span) / 40.0
-        }.max(0.0);
-        
-        Self { code: DesignCode::Eurocode, factor }
+    /// EN 1991-2 LM1 characteristic values already include dynamic amplification.
+    /// No additional IM factor should be applied for LM1 analysis.
+    /// For fatigue or special vehicles, use φ from EN 1991-2 Annex C.
+    pub fn eurocode(_span: f64) -> Self {
+        Self { code: DesignCode::Eurocode, factor: 0.0 }
     }
 }
 
@@ -766,7 +758,7 @@ impl MovingLoadAnalyzer {
             max_location: 0.0,
             vehicle_position: max_pl,
             min_value: min_rl * impact_mult,
-            min_location: self.span,
+            min_location: 0.0,  // left reaction is always at x = 0
         };
         
         envelopes.push(ResponseEnvelope {
@@ -1046,8 +1038,8 @@ mod tests {
     #[test]
     fn test_irc_vehicles() {
         let aa_tracked = VehicleDefinition::irc_class_aa_tracked();
-        assert_eq!(aa_tracked.axles.len(), 2);
-        assert!((aa_tracked.total_weight() - 700.0).abs() < 1e-6);
+        assert_eq!(aa_tracked.axles.len(), 0); // tracked vehicle uses UDL, not axles
+        assert!(aa_tracked.udl.is_some());
         
         let class_a = VehicleDefinition::irc_class_a();
         assert_eq!(class_a.axles.len(), 8);
@@ -1057,9 +1049,13 @@ mod tests {
     fn test_aashto_vehicles() {
         let hl93_truck = VehicleDefinition::aashto_hl93_truck();
         assert_eq!(hl93_truck.axles.len(), 3);
+        // 35 + 145 + 145 = 325 kN
+        assert!((hl93_truck.total_weight() - 325.0).abs() < 1e-6);
         
         let tandem = VehicleDefinition::aashto_hl93_tandem();
         assert_eq!(tandem.axles.len(), 2);
+        // 110 + 110 = 220 kN
+        assert!((tandem.total_weight() - 220.0).abs() < 1e-6);
     }
     
     #[test]

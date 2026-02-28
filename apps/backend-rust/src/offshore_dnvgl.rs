@@ -294,7 +294,9 @@ impl MorisonLoading {
             }
 
             // Velocity and acceleration at this depth (Airy wave theory)
-            let depth_factor = ((k * (z + d)).cosh()) / (k * d).sinh();
+            // z is elevation from seabed; in Airy theory z_MWL = z - d, so
+            // cosh(k(z_MWL + d)) = cosh(k·z) where z is from seabed
+            let depth_factor = (k * z).cosh() / (k * d).sinh();
             let u_max = omega * h / 2.0 * depth_factor + wave.current_velocity;
             let a_max = omega * omega * h / 2.0 * depth_factor;
 

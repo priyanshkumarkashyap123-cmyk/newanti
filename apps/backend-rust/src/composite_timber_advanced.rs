@@ -531,7 +531,11 @@ impl TimberDesign {
         let lambda_rel_z = (material.fc_0_k / sigma_c_crit_z).sqrt();
 
         // Buckling factors (EN 1995 Eq 6.25-6.28)
-        let beta_c = 0.2; // For solid timber
+        // β_c = 0.2 for solid timber, 0.1 for glulam/LVL per EN 1995-1-1 §6.3.2
+        let beta_c = match section.section_type {
+            TimberSectionType::Glulam | TimberSectionType::LVL => 0.1,
+            _ => 0.2,
+        };
         let k_y = 0.5 * (1.0 + beta_c * (lambda_rel_y - 0.3) + lambda_rel_y.powi(2));
         let k_z = 0.5 * (1.0 + beta_c * (lambda_rel_z - 0.3) + lambda_rel_z.powi(2));
 

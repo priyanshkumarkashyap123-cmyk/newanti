@@ -995,8 +995,9 @@ impl PostTensionedSlab {
         let p = if self.tendon_spacing > 0.0 { p_eff * 1e6 / self.tendon_spacing } else { 0.0 }; // N per m width
         let e = self.thickness / 2.0 - 25.0; // eccentricity in mm
         
-        // Service stresses
-        let w = self.dead_load + self.live_load - self.balance_load();
+        // Service stresses — use total moment (Method A: -P/A ± Pe/S ∓ M_ext/S)
+        let sw = self.thickness / 1000.0 * 24.0; // Self-weight (kPa)
+        let w = sw + self.dead_load + self.live_load;
         let m = w * self.span.powi(2) / 8.0 * 1e6;
         
         // f = -P/A ± Pe/S ∓ M/S (tendon below centroid: +Pe/S at top, sagging M: -M/S at top)

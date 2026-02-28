@@ -175,11 +175,12 @@ impl ArchBridge {
 
     /// Circular arch ordinate
     pub fn circular_ordinate(&self, x: f64) -> f64 {
-        // Radius from rise and span
+        // Radius from rise and span: R = L²/(8f) + f/2
         let r = self.span.powi(2) / (8.0 * self.rise) + self.rise / 2.0;
         let x_centered = x - self.span / 2.0;
         
-        r - (r.powi(2) - x_centered.powi(2)).sqrt() + (r - self.rise)
+        // y = √(R² - x_c²) - (R - f), center at (L/2, -(R-f))
+        (r.powi(2) - x_centered.powi(2)).sqrt() - (r - self.rise)
     }
 
     /// Catenary arch ordinate
@@ -321,10 +322,16 @@ impl ArchBridge {
         
         let a = load_position;
         let b = self.span - a;
-        let ya = self.parabolic_ordinate(a);
         
-        // Horizontal thrust from point load
-        let h = p * a * b / (self.span * self.rise) * ya / self.rise;
+        // Three-hinged parabolic arch:
+        // Crown hinge condition (M at L/2 = 0) gives:
+        //   a ≤ L/2: H = Pa/(2f)
+        //   a > L/2: H = Pb/(2f)
+        let h = if a <= self.span / 2.0 {
+            p * a / (2.0 * self.rise)
+        } else {
+            p * b / (2.0 * self.rise)
+        };
         
         // Vertical reactions
         let ra = p * b / self.span;
@@ -377,27 +384,34 @@ impl ArchBridge {
             // Influence ordinate for unit load at position x
             let a = x;
             let b = self.span - x;
-            let ya = self.parabolic_ordinate(x);
             
-            // Thrust influence ordinate
-            let h_inf = a * b / (self.span * self.rise) * ya / self.rise;
+            // Thrust influence ordinate (three-hinged arch):
+            //   a ≤ L/2: H = a/(2f)
+            //   a > L/2: H = b/(2f)
+            let h_inf = if a <= self.span / 2.0 {
+                a / (2.0 * self.rise)
+            } else {
+                b / (2.0 * self.rise)
+            };
             thrust_il.push(h_inf);
             
             // Moment at crown (x = L/2)
+            // M0(L/2) = a/2 for a ≤ L/2; b/2 for a > L/2
             let y_crown = self.rise;
             let m_simple_crown = if x <= self.span / 2.0 {
-                b / self.span * self.span / 2.0
+                a / 2.0
             } else {
-                a / self.span * self.span / 2.0
+                b / 2.0
             };
             moment_crown_il.push(m_simple_crown - h_inf * y_crown);
             
             // Moment at quarter point (x = L/4)
+            // M0(L/4) = 3a/4 for a ≤ L/4; b/4 for a > L/4
             let y_quarter = self.parabolic_ordinate(self.span / 4.0);
             let m_simple_quarter = if x <= self.span / 4.0 {
-                b / self.span * self.span / 4.0
+                3.0 * a / 4.0
             } else {
-                a / self.span * self.span / 4.0
+                b / 4.0
             };
             moment_quarter_il.push(m_simple_quarter - h_inf * y_quarter);
             

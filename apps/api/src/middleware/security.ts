@@ -236,11 +236,18 @@ export const requestLoggerWithId = (
 
 export const secureErrorHandler = (
   err: Error,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ) => {
   console.error("[ERROR]", err.message);
+
+  // Ensure CORS headers are present even on error responses
+  const origin = req.get("origin");
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
 
   // Don't expose internal errors to client
   const isDev = process.env["NODE_ENV"] !== "production";

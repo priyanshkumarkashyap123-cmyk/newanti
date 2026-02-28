@@ -126,7 +126,8 @@ impl TimberStrengthClass {
         }
     }
     
-    /// Embedment strength parallel to grain (MPa)
+    /// Base embedment strength parallel to grain (MPa)
+    /// Note: EC5 8.15 diameter correction (1-0.01d) applied at connection call sites
     pub fn fh_0_k(&self) -> f64 {
         0.082 * self.rho_k
     }
@@ -284,8 +285,9 @@ impl TimberToTimberConnection {
         let t2 = self.t2;
         let my_rk = self.fastener.my_rk;
         
-        let fh_1_k = self.embedment_strength(self.timber1.fh_0_k(), self.alpha1);
-        let fh_2_k = self.embedment_strength(self.timber2.fh_0_k(), self.alpha2);
+        // EC5 Eq. 8.15: fh,0,k = 0.082 × (1 − 0.01d) × ρk
+        let fh_1_k = self.embedment_strength(self.timber1.fh_0_k() * (1.0 - 0.01 * d), self.alpha1);
+        let fh_2_k = self.embedment_strength(self.timber2.fh_0_k() * (1.0 - 0.01 * d), self.alpha2);
         
         let beta = fh_2_k / fh_1_k;
         
@@ -399,7 +401,8 @@ impl SteelToTimberConnection {
         
         let alpha_rad = self.alpha * PI / 180.0;
         let k90 = 1.35 + 0.015 * d;
-        let fh_k = self.timber.fh_0_k() / (k90 * alpha_rad.sin().powi(2) + alpha_rad.cos().powi(2));
+        // EC5 Eq. 8.15: apply (1 − 0.01d) diameter correction
+        let fh_k = self.timber.fh_0_k() * (1.0 - 0.01 * d) / (k90 * alpha_rad.sin().powi(2) + alpha_rad.cos().powi(2));
         
         match self.plate_position {
             PlatePosition::External => {
@@ -512,7 +515,8 @@ impl CltConnection {
         let l_ef = self.clt_thickness * 0.8; // Effective length
         
         // EC5 withdrawal for screws in CLT
-        let fax_k = 0.52 * d.powf(-0.5) * l_ef.powf(0.1) * rho_k.powf(0.8);
+        // EC5 Eq. 8.38: f_ax,k = 0.52 × d^(-0.5) × l_ef^(-0.1) × ρk^0.8
+        let fax_k = 0.52 * d.powf(-0.5) * l_ef.powf(-0.1) * rho_k.powf(0.8);
         
         fax_k * d * l_ef / 1000.0
     }
@@ -522,7 +526,8 @@ impl CltConnection {
         // Simplified - perpendicular layers affect capacity
         let d = self.fastener.d;
         let t_eff = self.layer_thickness * 0.9; // Reduced for CLT
-        let fh_k = self.timber.fh_0_k() * 0.85; // Reduction for CLT
+        // EC5 Eq. 8.15 diameter correction + CLT reduction
+        let fh_k = self.timber.fh_0_k() * (1.0 - 0.01 * d) * 0.85;
         let my_rk = self.fastener.my_rk;
         
         let f_v = (fh_k * t_eff * d).min(2.3 * (my_rk * fh_k * d).sqrt());
@@ -606,7 +611,8 @@ impl MomentConnection {
     
     /// Shear capacity per fastener (kN)
     pub fn shear_per_fastener(&self) -> f64 {
-        let fh_k = self.timber.fh_0_k();
+        // EC5 Eq. 8.15: apply (1 − 0.01d) diameter correction
+        let fh_k = self.timber.fh_0_k() * (1.0 - 0.01 * self.d);
         let my_rk = 0.3 * 400.0 * self.d.powf(2.6); // Steel dowel
         let _t = self.b / 2.0; // Side member thickness
         

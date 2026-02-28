@@ -222,18 +222,19 @@ impl CableStayedBridge {
     /// Ernst equivalent modulus for cable sag
     pub fn ernst_modulus(&self, cable: &CableElement, tension: f64) -> f64 {
         let geom = self.cable_geometry(cable);
-        let w = cable.area * 78.5e-9; // kN/m (steel weight)
+        let w = cable.area * 78.5e-6; // kN/m (steel weight: area_mm² × 1e-6 m²/mm² × 78.5 kN/m³)
         let l = geom.horizontal_projection;
         
         // Ernst formula: E_eq = E / (1 + (w*L)^2 * E * A / (12 * T^3))
-        let sag_factor = (w * l).powi(2) * cable.e_modulus * 1e3 * cable.area / (12.0 * tension.powi(3));
+        // Units: w(kN/m), L(m), E(GPa), A(mm²), T(kN) → dimensionless
+        let sag_factor = (w * l).powi(2) * cable.e_modulus * cable.area / (12.0 * tension.powi(3));
         cable.e_modulus / (1.0 + sag_factor)
     }
 
     /// Calculate cable sag
     pub fn cable_sag(&self, cable: &CableElement, tension: f64) -> CableSagAnalysis {
         let geom = self.cable_geometry(cable);
-        let w = cable.area * 78.5e-9; // kN/m
+        let w = cable.area * 78.5e-6; // kN/m (area_mm² × 1e-6 m²/mm² × 78.5 kN/m³)
         let l = geom.horizontal_projection;
         
         // Parabolic approximation: sag = w * L² / (8 * H)
@@ -297,7 +298,7 @@ impl CableStayedBridge {
             let geom = self.cable_geometry(cable);
             
             // Self-weight contribution
-            let cable_weight = cable.area * 78.5e-9 * geom.length;
+            let cable_weight = cable.area * 78.5e-6 * geom.length;
             
             // Deck load contribution
             let tributary = self.main_span / (self.cables.len() as f64 / 4.0);

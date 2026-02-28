@@ -16,7 +16,6 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Columns,
   Calculator,
@@ -34,8 +33,10 @@ import {
   Layers,
   CircleDot,
   Square,
-  X,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
 
 // =============================================================================
 // TYPES
@@ -421,7 +422,7 @@ export function EnhancedColumnDesignDialog({
     const py = padding + (1 - P / Pn) * (height - 2 * padding);
     
     return (
-      <svg width={width} height={height} className="mx-auto bg-zinc-900 rounded-lg">
+      <svg width={width} height={height} className="mx-auto bg-white dark:bg-zinc-900 rounded-lg">
         {/* Grid */}
         {[0.25, 0.5, 0.75].map(f => (
           <React.Fragment key={f}>
@@ -492,30 +493,17 @@ export function EnhancedColumnDesignDialog({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          onClick={e => e.stopPropagation()}
-          className="w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl bg-zinc-900 border border-zinc-800 shadow-2xl"
-        >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+          <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 space-y-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-amber-500/20">
                 <Columns className="w-5 h-5 text-amber-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">RCC Column Design</h2>
-                <p className="text-sm text-zinc-400">{CODE_INFO[designCode].name}</p>
+                <DialogTitle className="text-lg font-semibold">RCC Column Design</DialogTitle>
+                <DialogDescription>{CODE_INFO[designCode].name}</DialogDescription>
               </div>
             </div>
             
@@ -524,24 +512,17 @@ export function EnhancedColumnDesignDialog({
               <select
                 value={designCode}
                 onChange={e => setDesignCode(e.target.value as DesignCode)}
-                className="px-3 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {Object.entries(CODE_INFO).map(([code, info]) => (
                   <option key={code} value={code}>{info.name}</option>
                 ))}
               </select>
-              
-              <button
-                onClick={onClose}
-                className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
-          </div>
+          </DialogHeader>
 
           {/* Tabs */}
-          <div className="flex border-b border-zinc-800">
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800">
             {[
               { id: 'input', label: 'Input', icon: <Settings className="w-4 h-4" /> },
               { id: 'results', label: 'Results', icon: <FileText className="w-4 h-4" /> },
@@ -553,7 +534,7 @@ export function EnhancedColumnDesignDialog({
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/5'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50'
                 }`}
               >
                 {tab.icon}
@@ -568,14 +549,14 @@ export function EnhancedColumnDesignDialog({
               <div className="grid grid-cols-3 gap-6">
                 {/* Section Properties */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Square className="w-4 h-4 text-blue-400" />
                     Section Properties
                   </h3>
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">Shape</label>
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Shape</label>
                       <div className="flex gap-2">
                         {['rectangular', 'circular'].map(shape => (
                           <button
@@ -584,7 +565,7 @@ export function EnhancedColumnDesignDialog({
                             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                               input.shape === shape
                                 ? 'bg-blue-600 text-white'
-                                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                             }`}
                           >
                             {shape === 'rectangular' ? 'Rectangular' : 'Circular'}
@@ -595,52 +576,52 @@ export function EnhancedColumnDesignDialog({
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">Width (mm)</label>
+                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Width (mm)</label>
                         <input
                           type="number"
                           value={input.width}
                           onChange={e => updateInput('width', Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">Depth (mm)</label>
+                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Depth (mm)</label>
                         <input
                           type="number"
                           value={input.depth}
                           onChange={e => updateInput('depth', Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">Unsupported Height (mm)</label>
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Unsupported Height (mm)</label>
                       <input
                         type="number"
                         value={input.height}
                         onChange={e => updateInput('height', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">Effective Length (mm)</label>
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Effective Length (mm)</label>
                       <input
                         type="number"
                         value={input.effectiveLength}
                         onChange={e => updateInput('effectiveLength', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">Clear Cover (mm)</label>
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Clear Cover (mm)</label>
                       <input
                         type="number"
                         value={input.clearCover}
                         onChange={e => updateInput('clearCover', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -648,18 +629,18 @@ export function EnhancedColumnDesignDialog({
 
                 {/* Material Properties */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Layers className="w-4 h-4 text-emerald-400" />
                     Material & Loads
                   </h3>
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">Concrete Grade (MPa)</label>
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Concrete Grade (MPa)</label>
                       <select
                         value={input.concreteGrade}
                         onChange={e => updateInput('concreteGrade', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {CONCRETE_GRADES.map(g => (
                           <option key={g} value={g}>M{g} ({g} MPa)</option>
@@ -668,11 +649,11 @@ export function EnhancedColumnDesignDialog({
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">Steel Grade (MPa)</label>
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Steel Grade (MPa)</label>
                       <select
                         value={input.steelGrade}
                         onChange={e => updateInput('steelGrade', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {STEEL_GRADES.map(g => (
                           <option key={g} value={g}>Fe{g} ({g} MPa)</option>
@@ -680,39 +661,39 @@ export function EnhancedColumnDesignDialog({
                       </select>
                     </div>
                     
-                    <div className="pt-2 border-t border-zinc-800">
-                      <label className="block text-xs text-zinc-400 mb-1">Axial Load Pu (kN)</label>
+                    <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Axial Load Pu (kN)</label>
                       <input
                         type="number"
                         value={input.axialLoad}
                         onChange={e => updateInput('axialLoad', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">Mux (kN·m)</label>
+                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Mux (kN·m)</label>
                         <input
                           type="number"
                           value={input.momentX}
                           onChange={e => updateInput('momentX', Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1">Muy (kN·m)</label>
+                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Muy (kN·m)</label>
                         <input
                           type="number"
                           value={input.momentY}
                           onChange={e => updateInput('momentY', Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1">Bracing Condition</label>
+                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Bracing Condition</label>
                       <div className="flex gap-2">
                         {['braced', 'unbraced'].map(cond => (
                           <button
@@ -721,7 +702,7 @@ export function EnhancedColumnDesignDialog({
                             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                               input.bracingCondition === cond
                                 ? 'bg-emerald-600 text-white'
-                                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                             }`}
                           >
                             {cond.charAt(0).toUpperCase() + cond.slice(1)}
@@ -734,37 +715,37 @@ export function EnhancedColumnDesignDialog({
 
                 {/* Preview */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Grid className="w-4 h-4 text-purple-400" />
                     Section Preview
                   </h3>
                   
-                  <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700">
+                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
                     {renderSectionPreview()}
                   </div>
                   
-                  <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 space-y-2">
+                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-400">Slenderness (λx):</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">Slenderness (λx):</span>
                       <span className={`font-medium ${slenderness.x > CODE_INFO[designCode].slendernessLimit ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {slenderness.x.toFixed(1)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-400">Slenderness (λy):</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">Slenderness (λy):</span>
                       <span className={`font-medium ${slenderness.y > CODE_INFO[designCode].slendernessLimit ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {slenderness.y.toFixed(1)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-400">Column Type:</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">Column Type:</span>
                       <span className={`font-medium ${columnType === 'slender' ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {columnType.charAt(0).toUpperCase() + columnType.slice(1)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-400">Limit ({designCode}):</span>
-                      <span className="text-zinc-400">{CODE_INFO[designCode].slendernessLimit}</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">Limit ({designCode}):</span>
+                      <span className="text-zinc-500 dark:text-zinc-400">{CODE_INFO[designCode].slendernessLimit}</span>
                     </div>
                   </div>
                 </div>
@@ -786,53 +767,53 @@ export function EnhancedColumnDesignDialog({
                         <h3 className={`text-lg font-semibold ${result.isAdequate ? 'text-emerald-400' : 'text-red-400'}`}>
                           {result.isAdequate ? 'Design Adequate' : 'Design Inadequate'}
                         </h3>
-                        <p className="text-sm text-zinc-400">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
                           Interaction Ratio: {(result.interactionRatio * 100).toFixed(1)}%
                         </p>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700">
-                    <h4 className="text-sm font-semibold text-white mb-3">Reinforcement Summary</h4>
+                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
+                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Reinforcement Summary</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Main Bars:</span>
-                        <span className="text-white font-medium">
+                        <span className="text-zinc-500 dark:text-zinc-400">Main Bars:</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">
                           {result.mainBars.count} - {result.mainBars.diameter}mm Φ
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Ties:</span>
-                        <span className="text-white font-medium">
+                        <span className="text-zinc-500 dark:text-zinc-400">Ties:</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">
                           {result.ties.diameter}mm Φ @ {result.ties.spacing}mm c/c
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Steel Ratio:</span>
-                        <span className="text-white font-medium">{result.steelRatio.toFixed(2)}%</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Steel Ratio:</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">{result.steelRatio.toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Provided Ast:</span>
-                        <span className="text-white font-medium">{result.providedAst.toFixed(0)} mm²</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Provided Ast:</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">{result.providedAst.toFixed(0)} mm²</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700">
-                    <h4 className="text-sm font-semibold text-white mb-3">Capacity</h4>
+                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
+                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Capacity</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Axial (Pn):</span>
-                        <span className="text-white font-medium">{result.capacity.Pn.toFixed(0)} kN</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Axial (Pn):</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">{result.capacity.Pn.toFixed(0)} kN</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Moment X (Mnx):</span>
-                        <span className="text-white font-medium">{result.capacity.MnX.toFixed(1)} kN·m</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Moment X (Mnx):</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">{result.capacity.MnX.toFixed(1)} kN·m</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-400">Moment Y (Mny):</span>
-                        <span className="text-white font-medium">{result.capacity.MnY.toFixed(1)} kN·m</span>
+                        <span className="text-zinc-500 dark:text-zinc-400">Moment Y (Mny):</span>
+                        <span className="text-zinc-900 dark:text-white font-medium">{result.capacity.MnY.toFixed(1)} kN·m</span>
                       </div>
                     </div>
                   </div>
@@ -840,18 +821,18 @@ export function EnhancedColumnDesignDialog({
                 
                 {/* Section Preview and Messages */}
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700">
-                    <h4 className="text-sm font-semibold text-white mb-3">Cross Section</h4>
+                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
+                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Cross Section</h4>
                     {renderSectionPreview()}
                   </div>
                   
-                  <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700">
-                    <h4 className="text-sm font-semibold text-white mb-3">Design Notes</h4>
+                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
+                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Design Notes</h4>
                     <div className="space-y-2">
                       {result.messages.map((msg, i) => (
                         <div key={i} className="flex items-start gap-2 text-sm">
                           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                          <span className="text-zinc-400">{msg}</span>
+                          <span className="text-zinc-500 dark:text-zinc-400">{msg}</span>
                         </div>
                       ))}
                     </div>
@@ -862,10 +843,10 @@ export function EnhancedColumnDesignDialog({
 
             {activeTab === 'diagram' && (
               <div className="flex flex-col items-center gap-6">
-                <div className="p-6 rounded-xl bg-zinc-800/50 border border-zinc-700">
-                  <h4 className="text-sm font-semibold text-white mb-4 text-center">P-M Interaction Diagram</h4>
+                <div className="p-6 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
+                  <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 text-center">P-M Interaction Diagram</h4>
                   {result ? renderInteractionDiagram() : (
-                    <div className="w-[300px] h-[250px] flex items-center justify-center text-zinc-400 text-sm">
+                    <div className="w-[300px] h-[250px] flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-sm">
                       Run design to view interaction diagram
                     </div>
                   )}
@@ -873,16 +854,16 @@ export function EnhancedColumnDesignDialog({
                 
                 {result && (
                   <div className="grid grid-cols-3 gap-4 w-full max-w-xl">
-                    <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 text-center">
-                      <p className="text-xs text-zinc-400 mb-1">Applied P</p>
-                      <p className="text-lg font-semibold text-white">{input.axialLoad} kN</p>
+                    <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 text-center">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Applied P</p>
+                      <p className="text-lg font-semibold text-zinc-900 dark:text-white">{input.axialLoad} kN</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 text-center">
-                      <p className="text-xs text-zinc-400 mb-1">Applied Mx</p>
-                      <p className="text-lg font-semibold text-white">{input.momentX} kN·m</p>
+                    <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 text-center">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Applied Mx</p>
+                      <p className="text-lg font-semibold text-zinc-900 dark:text-white">{input.momentX} kN·m</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700 text-center">
-                      <p className="text-xs text-zinc-400 mb-1">Interaction</p>
+                    <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 text-center">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Interaction</p>
                       <p className={`text-lg font-semibold ${result.interactionRatio <= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {(result.interactionRatio * 100).toFixed(1)}%
                       </p>
@@ -894,47 +875,46 @@ export function EnhancedColumnDesignDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 bg-zinc-900/50">
-            <button
+          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-white dark:bg-zinc-900/50">
+            <Button
+              variant="outline"
               onClick={() => {
                 setResult(null);
                 setActiveTab('input');
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-4 h-4 mr-2" />
               Reset
-            </button>
+            </Button>
             
             <div className="flex items-center gap-3">
               {result && (
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white transition-colors">
-                  <Download className="w-4 h-4" />
+                <Button variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
                   Export
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 onClick={designColumn}
                 disabled={calculating}
-                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-500/25"
               >
                 {calculating ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                     Calculating...
                   </>
                 ) : (
                   <>
-                    <Calculator className="w-4 h-4" />
+                    <Calculator className="w-4 h-4 mr-2" />
                     Design Column
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 }
 

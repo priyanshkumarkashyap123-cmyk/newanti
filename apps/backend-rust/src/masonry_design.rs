@@ -278,38 +278,48 @@ impl Aci530Designer {
         }
     }
     
-    /// Allowable axial compression (kN) - ASD
+    /// Allowable axial compression (kN) - ASD per TMS 402 §8.3.4.2.1
     pub fn allowable_axial_compression_asd(
         &self,
         section: &MasonryWallSection,
         effective_length_factor: f64,
     ) -> f64 {
-        let h_t = section.slenderness_ratio();
-        let r = self.slenderness_factor(h_t * effective_length_factor);
+        // TMS 402 uses h/r, not h/t; r = t/√12 for solid rectangular section
+        let r_gyration = section.thickness / 12.0_f64.sqrt();
+        let h_r = (section.height * effective_length_factor) / r_gyration;
+        let slenderness_red = self.slenderness_factor(h_r);
         
-        let fa = 0.25 * self.material.fm; // Allowable stress
         let a_n = section.gross_area() * 0.75; // Net area factor
+        // vertical_reinf_area is mm²/m; convert length mm→m
+        let a_s = section.vertical_reinf_area * section.length / 1000.0;
+        let fs = 0.4 * section.fy; // Allowable steel stress per TMS 402 §8.3.3.1
         
-        fa * a_n * r / 1000.0 // kN
+        // Pa = (0.25*f'm*An + 0.65*As*Fs) * slenderness_reduction
+        let pa = (0.25 * self.material.fm * a_n + 0.65 * a_s * fs) * slenderness_red;
+        
+        pa / 1000.0 // kN
     }
     
-    /// Nominal axial capacity (kN) - Strength Design
+    /// Nominal axial capacity (kN) - Strength Design per TMS 402 §9.3.5.4.1
     pub fn nominal_axial_capacity_sd(
         &self,
         section: &MasonryWallSection,
         effective_length_factor: f64,
     ) -> f64 {
-        let h_t = section.slenderness_ratio();
-        let _r = self.slenderness_factor(h_t * effective_length_factor);
+        // TMS 402 uses h/r, not h/t; r = t/√12 for solid rectangular section
+        let r_gyration = section.thickness / 12.0_f64.sqrt();
+        let h_r = (section.height * effective_length_factor) / r_gyration;
+        let slenderness_red = self.slenderness_factor(h_r);
         
-        // φPn = 0.80 * [0.80 * f'm * (An - As) + fy * As] for h/r ≤ 99
+        // φPn = 0.80 * [0.80 * f'm * (An - As) + fy * As] * slenderness_reduction
         let a_n = section.gross_area() * 0.75;
-        let a_s = section.vertical_reinf_area * section.height / 1000.0;
+        // vertical_reinf_area is mm²/m of wall length; convert length mm→m
+        let a_s = section.vertical_reinf_area * section.length / 1000.0;
         
         let phi = 0.9; // Axial compression
         let pn = 0.80 * (0.80 * self.material.fm * (a_n - a_s) + section.fy * a_s);
         
-        phi * pn / 1000.0 // kN
+        phi * pn * slenderness_red / 1000.0 // kN
     }
     
     /// Allowable flexural tension (kN/m) - unreinforced
@@ -336,15 +346,17 @@ impl Aci530Designer {
         phi * mn
     }
     
-    /// Shear capacity (kN)
-    pub fn shear_capacity(&self, section: &MasonryWallSection) -> f64 {
-        let d = section.effective_depth();
-        let fv = 0.083 * self.material.fm.sqrt(); // MPa
+    /// Shear capacity (kN) per TMS 402 §9.3.4.1.2
+    pub fn shear_capacity(&self, section: &MasonryWallSection, axial_load: f64) -> f64 {
+        let a_n = section.gross_area() * 0.75;
+        
+        // Vnm = [4.0 - 1.75*(Mu/Vu*dv)] * An * sqrt(f'm) / 12 + 0.25*Pu
+        // Conservatively use M/Vd = 1.0 (coefficient = 4.0 - 1.75 = 2.25)
+        let coefficient = 2.25;
+        let vnm = coefficient * a_n * self.material.fm.sqrt() / 12.0 + 0.25 * axial_load * 1000.0; // N
         
         let phi = 0.8;
-        let vn = fv * section.length * d / 1000.0;
-        
-        phi * vn
+        phi * vnm / 1000.0 // kN
     }
     
     /// Design wall for axial + bending (interaction check)
@@ -463,7 +475,7 @@ impl Eurocode6Designer {
     pub fn shear_resistance(&self, section: &MasonryWallSection, axial_stress: f64) -> f64 {
         // fvk = fvk0 + 0.4 * σd (with limit)
         let fvk0 = 0.2; // Initial shear strength (MPa)
-        let fvk = (fvk0 + 0.4 * axial_stress).min(0.065 * self.material.fm);
+        let fvk = (fvk0 + 0.4 * axial_stress).min(0.065 * self.material.unit_strength);
         
         let fvd = fvk / self.gamma_m;
         let a = section.gross_area() * 0.75; // Net area
@@ -596,7 +608,7 @@ impl MasonryWallDesign {
         
         let axial_capacity = designer.nominal_axial_capacity_sd(&self.section, 1.0);
         let moment_capacity = designer.nominal_flexural_capacity(&self.section);
-        let shear_capacity = designer.shear_capacity(&self.section);
+        let shear_capacity = designer.shear_capacity(&self.section, self.axial_load);
         
         let interaction = designer.check_interaction(
             &self.section,
@@ -706,9 +718,12 @@ impl MasonryBeam {
         phi * mn
     }
     
-    /// Shear capacity (kN)
+    /// Shear capacity (kN) per TMS 402 §9.3.4.1.2 (simplified, no axial)
     pub fn shear_capacity(&self) -> f64 {
-        let fv = 0.083 * self.material.fm.sqrt(); // MPa
+        // Vnm = [4.0 - 1.75*(Mu/Vu*dv)] * An * sqrt(f'm) / 12
+        // Conservatively use maximum M/Vd ratio = 1.0 (minimum coefficient)
+        // Vns omitted for no shear reinforcement in beam context
+        let fv = 0.083 * self.material.fm.sqrt(); // MPa (coefficient 1.0 for M/Vd >= 1.0)
         let phi = 0.8;
         
         phi * fv * self.width * self.d / 1000.0
@@ -716,7 +731,24 @@ impl MasonryBeam {
     
     /// Cracking moment (kN·m)
     pub fn cracking_moment(&self) -> f64 {
-        let fr = 0.62 * self.material.fm.sqrt(); // Modulus of rupture
+        // TMS 402 Table 9.1.9.1 — tabulated fr values (MPa) for fully grouted masonry
+        let fr = match self.material.unit_type {
+            MasonryUnitType::ConcreteMasonry => {
+                match self.material.mortar_type {
+                    MortarType::TypeM | MortarType::TypeS => 1.12,  // 163 psi
+                    MortarType::TypeN => 0.97,   // 140 psi
+                    _ => 0.83,
+                }
+            }
+            MasonryUnitType::ClayBrick => {
+                match self.material.mortar_type {
+                    MortarType::TypeM | MortarType::TypeS => 1.38,  // 200 psi
+                    MortarType::TypeN => 1.12,
+                    _ => 1.03,
+                }
+            }
+            _ => 0.69, // Conservative default
+        };
         let ig = self.width * self.depth.powi(3) / 12.0;
         let yt = self.depth / 2.0;
         
@@ -725,12 +757,14 @@ impl MasonryBeam {
     
     /// Deflection at midspan under uniform load (mm)
     pub fn midspan_deflection(&self, w: f64) -> f64 {
-        // w in kN/m, returns mm
-        let l = self.span;
-        let e = self.material.em * 1000.0; // kPa
-        let i = self.width * self.depth.powi(3) / 12.0 / 1e12; // m⁴
+        // All units: mm, N, MPa
+        // w in kN/m = 1 N/mm; L in mm; E in MPa (N/mm²); I in mm⁴
+        let w_n_mm = w; // 1 kN/m = 1 N/mm
+        let l = self.span; // mm
+        let e = self.material.em; // MPa = N/mm²
+        let i = self.width * self.depth.powi(3) / 12.0; // mm⁴
         
-        5.0 * w * l.powi(4) / (384.0 * e * i * 1e3)
+        5.0 * w_n_mm * l.powi(4) / (384.0 * e * i) // result in mm
     }
 }
 
@@ -783,7 +817,12 @@ impl MasonryColumn {
     
     /// Nominal axial capacity (kN)
     pub fn axial_capacity(&self) -> f64 {
-        let an = self.gross_area() * 0.80; // Grouted
+        // Net area depends on grout fill
+        let an = match self.grout_fill {
+            GroutFill::FullyGrouted => self.gross_area(),       // An = Ag for fully grouted
+            GroutFill::PartiallyGrouted => self.gross_area() * 0.80,
+            GroutFill::Ungrouted => self.gross_area() * 0.55,   // Typical hollow CMU
+        };
         let phi = 0.9;
         
         let pn = 0.80 * (0.80 * self.material.fm * (an - self.as_total) + self.fy * self.as_total);
@@ -803,7 +842,11 @@ impl MasonryColumn {
     pub fn balanced_load(&self) -> f64 {
         let d = self.depth - 40.0;
         let epsilon_y = self.fy / (200_000.0); // Steel strain at yield
-        let epsilon_mu = 0.0025; // Ultimate masonry strain
+        // TMS 402 §9.3.2: 0.0025 for concrete masonry, 0.0035 for clay
+        let epsilon_mu = match self.material.unit_type {
+            MasonryUnitType::ClayBrick => 0.0035,
+            _ => 0.0025,
+        };
         
         let cb = epsilon_mu * d / (epsilon_mu + epsilon_y);
         let ab = 0.80 * cb;

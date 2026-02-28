@@ -73,9 +73,11 @@ impl LeadRubberBearing {
         PI * self.lead_diameter.powi(2) / 4.0
     }
     
-    /// Shape factor S
+    /// Shape factor S (accounts for lead core void)
     pub fn shape_factor(&self) -> f64 {
-        self.diameter / (4.0 * self.layer_thickness)
+        // S = (D² - d²) / (4·D·t) for hollow circular pad with confined lead core
+        (self.diameter.powi(2) - self.lead_diameter.powi(2))
+            / (4.0 * self.diameter * self.layer_thickness)
     }
     
     /// Horizontal stiffness (kN/mm)
@@ -106,12 +108,14 @@ impl LeadRubberBearing {
     /// Effective stiffness at displacement D (kN/mm)
     pub fn effective_stiffness(&self, displacement: f64) -> f64 {
         let qd = self.characteristic_strength();
-        let kd = self.horizontal_stiffness() * self.post_yield_ratio();
+        // Post-yield stiffness kd = rubber stiffness (NOT ratio × rubber stiffness)
+        let kd = self.horizontal_stiffness();
         
         if displacement > 0.0 {
             (qd / displacement) + kd
         } else {
-            self.horizontal_stiffness()
+            // Return initial elastic stiffness ku = kd / alpha
+            self.horizontal_stiffness() / self.post_yield_ratio()
         }
     }
     
@@ -123,10 +127,12 @@ impl LeadRubberBearing {
         
         let qd = self.characteristic_strength();
         let k_eff = self.effective_stiffness(displacement);
+        let alpha = self.post_yield_ratio();
+        let kd = self.horizontal_stiffness();
         
-        // Energy dissipated per cycle
-        let dy = qd / (self.horizontal_stiffness() * (1.0 - self.post_yield_ratio()));
-        let ed = 4.0 * qd * (displacement - dy);
+        // Yield displacement: dy = Qd / (ku - kd) = Qd·α / (kd·(1 - α))
+        let dy = qd * alpha / (kd * (1.0 - alpha));
+        let ed = 4.0 * qd * (displacement - dy).max(0.0);
         
         // Effective damping
         ed / (2.0 * PI * k_eff * displacement.powi(2))
@@ -306,8 +312,23 @@ impl SiteClass {
             SiteClass::A => 0.8,
             SiteClass::B => 1.0,
             SiteClass::C => if ss <= 0.5 { 1.2 } else if ss >= 1.0 { 1.0 } else { 1.2 - 0.2 * (ss - 0.5) / 0.5 },
-            SiteClass::D => if ss <= 0.25 { 1.6 } else if ss >= 1.0 { 1.0 } else { 1.6 - 0.8 * (ss - 0.25) / 0.75 },
-            SiteClass::E => if ss <= 0.25 { 2.5 } else if ss >= 0.75 { 0.9 } else { 2.5 - 3.2 * (ss - 0.25) / 0.5 },
+            SiteClass::D => {
+                // ASCE 7-16 Table 11.4-1: 1.6, 1.4, 1.2, 1.1, 1.0
+                if ss <= 0.25 { 1.6 }
+                else if ss <= 0.50 { 1.6 + (1.4 - 1.6) * (ss - 0.25) / 0.25 }
+                else if ss <= 0.75 { 1.4 + (1.2 - 1.4) * (ss - 0.50) / 0.25 }
+                else if ss <= 1.00 { 1.2 + (1.1 - 1.2) * (ss - 0.75) / 0.25 }
+                else if ss <= 1.25 { 1.1 + (1.0 - 1.1) * (ss - 1.00) / 0.25 }
+                else { 1.0 }
+            },
+            SiteClass::E => {
+                // ASCE 7-16 Table 11.4-1: 2.5, 1.7, 1.2, 0.9, 0.9
+                if ss <= 0.25 { 2.5 }
+                else if ss <= 0.50 { 2.5 + (1.7 - 2.5) * (ss - 0.25) / 0.25 }
+                else if ss <= 0.75 { 1.7 + (1.2 - 1.7) * (ss - 0.50) / 0.25 }
+                else if ss <= 1.00 { 1.2 + (0.9 - 1.2) * (ss - 0.75) / 0.25 }
+                else { 0.9 }
+            },
             SiteClass::F => 1.0, // Requires site-specific study
         }
     }
@@ -317,8 +338,23 @@ impl SiteClass {
             SiteClass::A => 0.8,
             SiteClass::B => 1.0,
             SiteClass::C => if s1 <= 0.1 { 1.7 } else if s1 >= 0.5 { 1.3 } else { 1.7 - (s1 - 0.1) },
-            SiteClass::D => if s1 <= 0.1 { 2.4 } else if s1 >= 0.4 { 1.5 } else { 2.4 - 3.0 * (s1 - 0.1) },
-            SiteClass::E => if s1 <= 0.1 { 3.5 } else if s1 >= 0.4 { 2.4 } else { 3.5 - 3.67 * (s1 - 0.1) },
+            SiteClass::D => {
+                // ASCE 7-16 Table 11.4-2: 2.4, 2.0, 1.8, 1.6, 1.5
+                if s1 <= 0.1 { 2.4 }
+                else if s1 <= 0.2 { 2.4 + (2.0 - 2.4) * (s1 - 0.1) / 0.1 }
+                else if s1 <= 0.3 { 2.0 + (1.8 - 2.0) * (s1 - 0.2) / 0.1 }
+                else if s1 <= 0.4 { 1.8 + (1.6 - 1.8) * (s1 - 0.3) / 0.1 }
+                else if s1 <= 0.5 { 1.6 + (1.5 - 1.6) * (s1 - 0.4) / 0.1 }
+                else { 1.5 }
+            },
+            SiteClass::E => {
+                // ASCE 7-16 Table 11.4-2: 3.5, 3.2, 2.8, 2.4, 2.4
+                if s1 <= 0.1 { 3.5 }
+                else if s1 <= 0.2 { 3.5 + (3.2 - 3.5) * (s1 - 0.1) / 0.1 }
+                else if s1 <= 0.3 { 3.2 + (2.8 - 3.2) * (s1 - 0.2) / 0.1 }
+                else if s1 <= 0.4 { 2.8 + (2.4 - 2.8) * (s1 - 0.3) / 0.1 }
+                else { 2.4 }
+            },
             SiteClass::F => 1.0,
         }
     }
@@ -424,18 +460,16 @@ impl IsolationSystemDesigner {
     pub fn total_design_displacement(&self, eccentricity: f64, distance: f64, pt: f64) -> f64 {
         let dd = self.design_displacement();
         let y = distance;
-        let e = eccentricity.abs() + 0.05 * pt.sqrt(); // 5% accidental
+        let e = eccentricity.abs() + 0.05 * pt; // 5% accidental eccentricity per ASCE 7 §17.5.3.3
         
         dd * (1.0 + y * 12.0 * e / (pt.powi(2) + distance.powi(2)))
     }
     
     /// Minimum lateral force above isolation (kN)
+    /// Vs = keff × DD / RI per ASCE 7-22 Eq.17.5-7
     pub fn design_force_above(&self) -> f64 {
-        let (sds, _) = self.design_spectrum();
-        let w = self.structure.weight;
-        let ri = 2.0; // Response modification for isolated superstructure
-        
-        sds * w / ri
+        let ri = 2.0; // Response modification for isolated superstructure (RI ≤ 2.0)
+        self.design_force_isolation() / ri
     }
     
     /// Lateral force at isolation interface (kN)  
@@ -443,7 +477,7 @@ impl IsolationSystemDesigner {
         let dd = self.design_displacement() / 1000.0; // convert to m
         let k_eff = self.structure.weight / (self.structure.t_isolated.powi(2) * 9.81 / (4.0 * PI.powi(2)));
         
-        k_eff * dd * 1000.0 // kN
+        k_eff * dd // kN (k_eff is kN/m, dd is m)
     }
     
     /// Required effective stiffness per isolator (kN/mm)
@@ -529,11 +563,13 @@ impl ViscousDamper {
     }
     
     /// Energy dissipated per cycle at amplitude A and frequency ω
+    /// Ed = λ·C·ω^α·A^(1+α), where λ = 2^(2+α)·Γ²(1+α/2)/Γ(2+α)
     pub fn energy_per_cycle(&self, amplitude: f64, omega: f64) -> f64 {
-        let lambda = gamma_function(1.0 + self.alpha / 2.0).powi(2) / 
-                     gamma_function(2.0 + self.alpha);
+        let lambda = (2.0_f64).powf(2.0 + self.alpha)
+            * gamma_function(1.0 + self.alpha / 2.0).powi(2)
+            / gamma_function(2.0 + self.alpha);
         
-        4.0 * lambda * self.c * (omega * amplitude).powf(1.0 + self.alpha)
+        lambda * self.c * omega.powf(self.alpha) * amplitude.powf(1.0 + self.alpha)
     }
     
     /// Equivalent linear damping coefficient

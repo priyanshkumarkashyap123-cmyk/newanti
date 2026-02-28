@@ -58,7 +58,8 @@ impl Distribution {
             Distribution::Normal { std_dev, .. } => std_dev,
             Distribution::Lognormal { mean, std_dev } => {
                 let cv = std_dev / mean;
-                mean * ((cv * cv).exp() - 1.0).sqrt() * (cv * cv / 2.0).exp()
+                let sigma2 = (1.0 + cv * cv).ln();
+                mean * (sigma2.exp() - 1.0).sqrt()
             }
             Distribution::Uniform { min, max } => (max - min) / (12.0_f64).sqrt(),
             Distribution::Weibull { scale, shape } => {

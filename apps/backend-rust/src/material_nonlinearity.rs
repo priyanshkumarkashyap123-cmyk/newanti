@@ -59,8 +59,8 @@ impl ConcreteMaterial {
             2.12 * (1.0 + fcm / 10.0).ln()
         };
         
-        let ecm = 22000.0 * (fcm / 10.0).powf(0.3);  // GPa → MPa
-        let epsilon_c1 = 0.7 * fcm.powf(0.31).min(2.8) / 1000.0;
+        let ecm = 22000.0 * (fcm / 10.0).powf(0.3);  // MPa
+        let epsilon_c1 = (0.7 * fcm.powf(0.31)).min(2.8) / 1000.0;
         let epsilon_cu1 = if fck <= 50.0 { 0.0035 } else { 
             0.0035 - (fck - 50.0) * 0.00001 
         };

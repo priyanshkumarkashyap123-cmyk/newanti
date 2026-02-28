@@ -226,14 +226,14 @@ impl TimeDependentConcrete {
         }
     }
     
-    /// Concrete strength at age t (ACI 209)
+    /// Concrete strength at age t (ACI 209R-92, Table 2.2.1)
     pub fn strength_at_age(&self, t: u32) -> f64 {
-        let a = match self.cement_type {
-            CementType::TypeI => 4.0,
-            CementType::TypeII => 2.3,
-            CementType::TypeIII => 1.0,
+        // α and β for moist-cured concrete
+        let (a, b) = match self.cement_type {
+            CementType::TypeI => (4.0, 0.85),
+            CementType::TypeII => (4.0, 0.85),   // Similar to Type I
+            CementType::TypeIII => (2.3, 0.92),  // High early strength
         };
-        let b = 0.85;
         
         let ratio = t as f64 / (a + b * t as f64);
         ratio * self.fc28

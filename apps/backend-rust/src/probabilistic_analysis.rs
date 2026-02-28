@@ -255,8 +255,8 @@ impl FirstOrderReliability {
                     let pdf_x = var.distribution.pdf(xi);
                     let u_i = var.distribution.to_standard_normal(xi);
                     let phi_u = standard_normal_pdf(u_i);
-                    if phi_u > 1e-14 {
-                        dg * pdf_x / phi_u
+                    if pdf_x > 1e-14 {
+                        dg * phi_u / pdf_x
                     } else {
                         dg
                     }
@@ -275,7 +275,7 @@ impl FirstOrderReliability {
             // HL-RF iteration
             let u_dot_alpha: f64 = u.iter().zip(alpha.iter()).map(|(&a, &b)| a * b).sum();
             let new_u: Vec<f64> = alpha.iter()
-                .map(|&ai| ai * (u_dot_alpha - g / grad_norm))
+                .map(|&ai| ai * (u_dot_alpha + g / grad_norm))
                 .collect();
 
             // Check convergence

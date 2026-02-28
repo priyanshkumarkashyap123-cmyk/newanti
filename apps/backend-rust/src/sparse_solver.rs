@@ -326,23 +326,10 @@ impl SkylineMatrix {
             return 0.0;
         }
         
-        // For symmetric lower triangle storage
-        if row <= col {
-            let offset = col - row;
-            self.values[self.diag_ptr[col + 1] - 1 - offset]
-        } else {
-            // Get from column `row`
-            let other_col_start = self.diag_ptr[row];
-            let other_profile = self.diag_ptr[row + 1] - other_col_start - 1;
-            let other_skyline = row.saturating_sub(other_profile);
-            
-            if col < other_skyline {
-                0.0
-            } else {
-                let offset = row - col;
-                self.values[self.diag_ptr[row + 1] - 1 - offset]
-            }
-        }
+        // Entry (row, col) with row >= col is stored in column col's profile
+        // set() stores at diag_ptr[col+1]-1-(row-col), so get() must match
+        let offset = row - col;
+        self.values[self.diag_ptr[col + 1] - 1 - offset]
     }
     
     /// Set element (i, j) - only lower triangle
@@ -554,16 +541,19 @@ impl IncompleteCholesky {
         let mut l_triplets: Vec<(usize, usize, f64)> = Vec::new();
         let mut d = vec![0.0; n];
         
+        // Store computed L values for lookup (IC(0) must use L values, not A values)
+        let mut l_computed: HashMap<(usize, usize), f64> = HashMap::new();
+        
         // Column-by-column Cholesky
         for j in 0..n {
             // Get diagonal element
             let mut diag = lower.get(j, j);
             
-            // Subtract contributions from previous columns
+            // Subtract contributions from previous columns using computed L values
             for k in lower.row_ptr[j]..lower.row_ptr[j + 1] {
                 let col = lower.col_idx[k];
                 if col < j {
-                    let ljk = lower.values[k];
+                    let ljk = l_computed.get(&(j, col)).copied().unwrap_or(0.0);
                     diag -= ljk * ljk * d[col];
                 }
             }
@@ -584,17 +574,20 @@ impl IncompleteCholesky {
                 
                 let mut lij = aij;
                 
-                // Subtract contributions
+                // Subtract contributions using computed L values
                 for k in lower.row_ptr[i]..lower.row_ptr[i + 1] {
                     let col = lower.col_idx[k];
                     if col < j {
-                        let lik = lower.values[k];
-                        let ljk = lower.get(j, col);
+                        let lik = l_computed.get(&(i, col)).copied().unwrap_or(0.0);
+                        let ljk = l_computed.get(&(j, col)).copied().unwrap_or(0.0);
                         lij -= lik * ljk * d[col];
                     }
                 }
                 
                 lij /= d[j];
+                
+                // Store computed L value for subsequent columns
+                l_computed.insert((i, j), lij);
                 
                 if lij.abs() > 1e-16 {
                     l_triplets.push((i, j, lij));

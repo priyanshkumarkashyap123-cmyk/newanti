@@ -39,8 +39,8 @@ export function csrfCookieMiddleware(
 
   res.cookie(CSRF_COOKIE, token, {
     httpOnly: false, // Client JS must read it to send in the header
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: true,
+    sameSite: "none", // Required for cross-origin (frontend & API on different domains)
     path: "/",
     maxAge: 60 * 60 * 1000, // 1 hour
   });

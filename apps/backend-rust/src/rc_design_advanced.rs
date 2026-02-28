@@ -356,13 +356,12 @@ impl CrackWidthAnalysis {
         // Using simplified approach: wk ≈ 0.6 * sr * fs / Es
         let crack_width = 0.6 * sr * fs / es;
 
-        // Alternative Gergely-Lutz approach (ACI)
-        // w = 0.076 * β * fs * (dc * A)^(1/3) / 1000
-        // where β = h2/h1, dc = cover + db/2, A = 2*dc*s/n
+        // Gergely-Lutz approach (ACI) in SI units
+        // w = 0.011 * β * fs * (dc * A)^(1/3) / 1000 (mm)
         let dc = cover + bar_diameter / 2.0;
         let a = 2.0 * dc * spacing;
         let beta = 1.2; // Approximate for beams
-        let w_aci = 0.076 * beta * fs * (dc * a).powf(1.0/3.0) / 1000.0;
+        let w_aci = 0.011 * beta * fs * (dc * a).powf(1.0/3.0) / 1000.0;
 
         // Use larger of two methods
         let crack_width = crack_width.max(w_aci);

@@ -9,12 +9,15 @@
  */
 
 import { FC, useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     X, Layers, ArrowRight, Calculator, Check,
     AlertTriangle, Info, Download, ChevronDown
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 // ============================================
 // TYPES
@@ -207,18 +210,18 @@ interface SelectProps {
 
 const Select: FC<SelectProps> = ({ label, value, onChange, options }) => (
     <div className="flex flex-col gap-2">
-        <label className="text-zinc-400 text-sm font-medium">{label}</label>
+        <Label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">{label}</Label>
         <div className="relative">
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-zinc-700 bg-zinc-800 text-white h-11 px-4 pr-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
+                className="w-full appearance-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white h-11 px-4 pr-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
             >
                 {options.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
         </div>
     </div>
 );
@@ -239,19 +242,19 @@ interface InputProps {
 
 const NumberInput: FC<InputProps> = ({ label, value, onChange, unit, min = 0, max, step = 1 }) => (
     <div className="flex flex-col gap-2">
-        <label className="text-zinc-400 text-sm font-medium">{label}</label>
+        <Label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">{label}</Label>
         <div className="relative">
-            <input
+            <Input
                 type="number"
                 value={value}
                 onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
                 min={min}
                 max={max}
                 step={step}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white h-11 px-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
+                className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white h-11 px-4 pr-12 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
             />
             {unit && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 text-sm">
                     {unit}
                 </span>
             )}
@@ -279,7 +282,7 @@ const ResultCard: FC<{ result: FoundationResult }> = ({ result }) => {
     return (
         <div className={`rounded-lg border-2 p-4 ${statusColors[result.status]}`}>
             <div className="flex items-center justify-between mb-3">
-                <h4 className="text-white font-semibold">Foundation Design</h4>
+                <h4 className="text-zinc-900 dark:text-white font-semibold">Foundation Design</h4>
                 <div className="flex items-center gap-2">
                     {statusIcons[result.status]}
                     <span className={`text-sm font-medium capitalize ${result.status === 'safe' ? 'text-green-500' :
@@ -292,28 +295,28 @@ const ResultCard: FC<{ result: FoundationResult }> = ({ result }) => {
 
             <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                    <span className="text-zinc-400">Size</span>
-                    <p className="text-white font-medium">{result.requiredWidth}m × {result.requiredLength}m</p>
+                    <span className="text-zinc-500 dark:text-zinc-400">Size</span>
+                    <p className="text-zinc-900 dark:text-white font-medium">{result.requiredWidth}m × {result.requiredLength}m</p>
                 </div>
                 <div>
-                    <span className="text-zinc-400">Depth</span>
-                    <p className="text-white font-medium">{result.requiredDepth}m</p>
+                    <span className="text-zinc-500 dark:text-zinc-400">Depth</span>
+                    <p className="text-zinc-900 dark:text-white font-medium">{result.requiredDepth}m</p>
                 </div>
                 <div>
-                    <span className="text-zinc-400">Bearing Pressure</span>
-                    <p className="text-white font-medium">{result.bearingPressure.toFixed(1)} kN/m²</p>
+                    <span className="text-zinc-500 dark:text-zinc-400">Bearing Pressure</span>
+                    <p className="text-zinc-900 dark:text-white font-medium">{result.bearingPressure.toFixed(1)} kN/m²</p>
                 </div>
                 <div>
-                    <span className="text-zinc-400">Safety Factor</span>
-                    <p className="text-white font-medium">{result.safetyFactor.toFixed(2)}</p>
+                    <span className="text-zinc-500 dark:text-zinc-400">Safety Factor</span>
+                    <p className="text-zinc-900 dark:text-white font-medium">{result.safetyFactor.toFixed(2)}</p>
                 </div>
                 <div className="col-span-2">
-                    <span className="text-zinc-400">Main Reinforcement</span>
-                    <p className="text-white font-medium">{result.rebarMain}</p>
+                    <span className="text-zinc-500 dark:text-zinc-400">Main Reinforcement</span>
+                    <p className="text-zinc-900 dark:text-white font-medium">{result.rebarMain}</p>
                 </div>
                 <div className="col-span-2">
-                    <span className="text-zinc-400">Concrete Volume</span>
-                    <p className="text-white font-medium">{result.concreteVolume.toFixed(2)} m³</p>
+                    <span className="text-zinc-500 dark:text-zinc-400">Concrete Volume</span>
+                    <p className="text-zinc-900 dark:text-white font-medium">{result.concreteVolume.toFixed(2)} m³</p>
                 </div>
             </div>
         </div>
@@ -375,47 +378,29 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
         }
     }, [analysisResults]);
 
-    if (!isOpen) return null;
-
     const selectedSoilData = SOIL_TYPES.find(s => s.id === selectedSoil);
 
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                onClick={onClose}
-            >
-                <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl"
-                >
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                     {/* Header */}
-                    <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900">
+                    <DialogHeader>
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-600 to-orange-600 flex items-center justify-center">
                                 <Layers className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-bold text-white">Foundation Design</h2>
-                                <p className="text-sm text-zinc-400">Soil conditions & isolated footing</p>
+                                <DialogTitle className="text-lg font-bold">Foundation Design</DialogTitle>
+                                <DialogDescription>Soil conditions & isolated footing</DialogDescription>
                             </div>
                         </div>
-                        <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
+                    </DialogHeader>
 
                     {/* Content */}
                     <div className="p-6 space-y-6">
                         {/* Soil Properties Section */}
                         <section>
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            <h3 className="text-zinc-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
                                 <div className="w-6 h-6 rounded bg-amber-500/20 flex items-center justify-center text-amber-500 text-xs font-bold">1</div>
                                 Soil Properties
                             </h3>
@@ -430,17 +415,17 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                         }}
                                         className={`p-3 rounded-lg border text-left transition-all ${selectedSoil === soil.id && !useCustomBearing
                                                 ? 'border-blue-500 bg-blue-500/10'
-                                                : 'border-zinc-700 hover:border-zinc-600'
+                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-600'
                                             }`}
                                     >
                                         <div className={`w-4 h-4 rounded ${soil.color} mb-2`} />
-                                        <p className="text-white text-sm font-medium">{soil.name}</p>
-                                        <p className="text-zinc-400 text-xs">{soil.bearingCapacity} kN/m²</p>
+                                        <p className="text-zinc-900 dark:text-white text-sm font-medium">{soil.name}</p>
+                                        <p className="text-zinc-500 dark:text-zinc-400 text-xs">{soil.bearingCapacity} kN/m²</p>
                                     </button>
                                 ))}
                             </div>
 
-                            <div className="flex items-center gap-4 p-4 rounded-lg border border-zinc-700 bg-zinc-800/50">
+                            <div className="flex items-center gap-4 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100/50 dark:bg-zinc-800/50">
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
@@ -448,7 +433,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                         onChange={(e) => setUseCustomBearing(e.target.checked)}
                                         className="w-4 h-4 rounded border-zinc-600 bg-zinc-900 text-blue-600"
                                     />
-                                    <span className="text-zinc-300 text-sm">Custom Bearing Capacity</span>
+                                    <span className="text-zinc-600 dark:text-zinc-300 text-sm">Custom Bearing Capacity</span>
                                 </label>
                                 {useCustomBearing && (
                                     <div className="flex-1">
@@ -465,16 +450,16 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                             </div>
 
                             {selectedSoilData && !useCustomBearing && (
-                                <div className="mt-3 p-3 rounded-lg bg-zinc-800/30 flex items-start gap-2">
+                                <div className="mt-3 p-3 rounded-lg bg-zinc-100/30 dark:bg-zinc-800/30 flex items-start gap-2">
                                     <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                                    <p className="text-zinc-400 text-sm">{selectedSoilData.description}</p>
+                                    <p className="text-zinc-500 dark:text-zinc-400 text-sm">{selectedSoilData.description}</p>
                                 </div>
                             )}
                         </section>
 
                         {/* Loading Section */}
                         <section>
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            <h3 className="text-zinc-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
                                 <div className="w-6 h-6 rounded bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs font-bold">2</div>
                                 Column Loading
                                 {analysisResults && (
@@ -523,7 +508,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
 
                         {/* Material Section */}
                         <section>
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            <h3 className="text-zinc-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
                                 <div className="w-6 h-6 rounded bg-green-500/20 flex items-center justify-center text-green-500 text-xs font-bold">3</div>
                                 Concrete Grade
                             </h3>
@@ -535,7 +520,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                                         onClick={() => setConcreteGrade(grade)}
                                         className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${concreteGrade === grade
                                                 ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                                                : 'border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                                                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-600'
                                             }`}
                                     >
                                         {grade}
@@ -546,7 +531,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
 
                         {/* Results Section */}
                         <section>
-                            <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            <h3 className="text-zinc-900 dark:text-white font-semibold mb-4 flex items-center gap-2">
                                 <div className="w-6 h-6 rounded bg-purple-500/20 flex items-center justify-center text-purple-500 text-xs font-bold">4</div>
                                 Design Results
                             </h3>
@@ -556,23 +541,17 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
                     </div>
 
                     {/* Footer */}
-                    <div className="sticky bottom-0 px-6 py-4 border-t border-zinc-800 bg-zinc-900 flex justify-between">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-zinc-400 hover:text-white transition-colors"
-                        >
+                    <DialogFooter className="flex justify-between sm:justify-between">
+                        <Button variant="ghost" onClick={onClose}>
                             Cancel
-                        </button>
-                        <button
-                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg flex items-center gap-2 transition-colors"
-                        >
+                        </Button>
+                        <Button className="flex items-center gap-2">
                             <Download className="w-4 h-4" />
                             Export Design
-                        </button>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                        </Button>
+                    </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

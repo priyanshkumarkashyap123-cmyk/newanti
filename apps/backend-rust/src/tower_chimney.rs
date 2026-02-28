@@ -338,7 +338,7 @@ impl ChimneyDesigner {
         let ft_allow = 0.7 * self.fck.sqrt();
         
         let as_required = if max_tens > ft_allow {
-            (max_tens - ft_allow) * area * 1000.0 / (0.87 * self.fy)
+            (max_tens - ft_allow) * area * 1e6 / (0.87 * self.fy) // area m² → mm²
         } else {
             0.0
         };
@@ -573,7 +573,8 @@ impl LatticeTowerDesigner {
         let fa = if lambda < 120.0 {
             self.fy * (1.0 - lambda.powi(2) / 20000.0) / 1.67
         } else {
-            12.0 * PI.powi(2) * 200000.0 / (23.0 * lambda.powi(2)) / 1000.0
+            // AISC ASD elastic buckling: Fa = 12π²E / (23λ²) in MPa
+            12.0 * PI.powi(2) * 200000.0 / (23.0 * lambda.powi(2))
         };
         
         let stress = compression * 1000.0 / self.tower.leg_area;
@@ -706,8 +707,9 @@ impl GuyedTower {
         let e = 160_000.0; // Steel cable E (MPa)
         let a = self.guy_area;
         
-        // Horizontal stiffness = EA/L * cos²θ
-        e * a / (l * 1000.0) * angle.cos().powi(2)
+        // Horizontal stiffness = EA/L * sin²θ (θ from vertical)
+        // sin(θ) = R/L is the horizontal direction cosine
+        e * a / (l * 1000.0) * angle.sin().powi(2)
     }
     
     /// Guy tension under wind load
@@ -715,8 +717,9 @@ impl GuyedTower {
         let angle = self.guy_angle(level_index).to_radians();
         let k = self.guy_stiffness(level_index);
         
-        // Windward guys slacken, leeward guys tighten
-        self.pretension + k * deflection / angle.cos()
+        // Cable tension: T = T0 + kh * δ / sin(θ)
+        // sin(θ) converts horizontal stiffness back to cable tension
+        self.pretension + k * deflection / angle.sin()
     }
 }
 

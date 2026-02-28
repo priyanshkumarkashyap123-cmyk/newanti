@@ -121,9 +121,11 @@ impl BlastLoad {
         let pso = self.incident_pressure();
         let angle_rad = self.angle.to_radians();
         
-        // Reflection coefficient (normal incidence approximation)
-        // Cr = 2 + 0.05 * Pso (simplified)
-        let cr = (2.0 + 0.05 * pso / 100.0).min(8.0).max(2.0);
+        // Rankine-Hugoniot reflection coefficient (normal incidence)
+        // Cr = 2 * (7*P0 + 4*Pso) / (7*P0 + Pso)
+        // Limits: Cr → 2 (acoustic), Cr → 8 (strong shock)
+        let p0 = 101.3; // Atmospheric pressure (kPa)
+        let cr = 2.0 * (7.0 * p0 + 4.0 * pso) / (7.0 * p0 + pso);
         
         // Angle effect
         let angle_factor = angle_rad.cos().powi(2);

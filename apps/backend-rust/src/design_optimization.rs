@@ -768,7 +768,7 @@ impl SectionOptimizer {
             let ast_lim = 0.36 * fck * b * xu_max / (0.87 * fy);
             let ast2 = mu2 * 1e6 / (0.87 * fy * (d - d_prime));
             let ast_total = ast_lim + ast2;
-            let asc = ast2 * fy / (0.87 * fy - 0.446 * fck);
+            let asc = ast2 * 0.87 * fy / (0.87 * fy - 0.446 * fck);
             
             let (n_tens, dia_tens) = self.select_rebar(ast_total);
             let (n_comp, dia_comp) = self.select_rebar(asc);

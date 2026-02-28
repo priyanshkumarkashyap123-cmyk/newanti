@@ -2334,7 +2334,7 @@ async def ai_chat(request: AIChatRequest):
         import google.generativeai as genai
         
         genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         
         # Build the chat prompt with richer engineering context
         system_context = """You are an expert Structural Engineering AI assistant for BeamLab Ultimate, 
@@ -2608,7 +2608,7 @@ async def ai_status():
             "structure_generation_basic",
             "mock_responses"
         ],
-        "model": "gemini-1.5-flash" if GEMINI_API_KEY else "mock"
+        "model": "gemini-2.0-flash" if GEMINI_API_KEY else "mock"
     }
 
 

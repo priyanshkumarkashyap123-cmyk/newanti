@@ -149,9 +149,11 @@ impl BoltGrade {
     /// Nominal tensile strength (MPa)
     pub fn fub(&self) -> f64 {
         match self {
-            BoltGrade::A325 | BoltGrade::Grade8_8 => 830.0,
-            BoltGrade::A490 | BoltGrade::Grade10_9 => 1040.0,
-            BoltGrade::Grade4_6 => 400.0,
+            BoltGrade::A325 => 830.0,          // 120 ksi
+            BoltGrade::A490 => 1040.0,         // 150 ksi
+            BoltGrade::Grade8_8 => 800.0,      // 8 × 100 MPa per ISO 898-1
+            BoltGrade::Grade10_9 => 1000.0,    // 10 × 100 MPa per ISO 898-1
+            BoltGrade::Grade4_6 => 400.0,      // 4 × 100 MPa
         }
     }
     
@@ -821,8 +823,11 @@ pub fn check_extended_endplate_connection(
         f64::MAX
     };
     
-    // Bolt shear capacity
-    let fnv = bolt.grade.fnv();
+    // Bolt shear capacity - must account for thread condition
+    let fnv = match bolt.thread_type {
+        ThreadType::Included => bolt.grade.fub() * 0.450,
+        ThreadType::Excluded => bolt.grade.fub() * 0.563,
+    };
     let bolt_shear_capacity = 0.75 * fnv * bolt.area_gross() / 1000.0;
     
     // Prying action
@@ -880,9 +885,11 @@ pub fn calculate_bolt_shear_ec3(
     gamma_m2: f64,  // Typically 1.25
 ) -> f64 {
     let fub = bolt.grade.fub();
+    // EC3 Table 3.4: αv = 0.5 for 4.8/5.8/6.8/10.9 when threads in shear plane
+    // αv = 0.6 for all grades when shank (unthreaded) in shear plane
     let alpha_v = match bolt.thread_type {
-        ThreadType::Included => 0.6,
-        ThreadType::Excluded => if fub > 800.0 { 0.5 } else { 0.6 },
+        ThreadType::Included => if fub > 800.0 { 0.5 } else { 0.6 },
+        ThreadType::Excluded => 0.6,
     };
     
     let a = match bolt.thread_type {

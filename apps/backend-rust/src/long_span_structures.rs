@@ -142,14 +142,18 @@ impl SpaceFrame {
     
     /// Deflection under uniform load (approximate, m)
     pub fn deflection(&self, load_kpa: f64) -> f64 {
-        let e = 200_000.0; // Steel E (MPa)
-        let l = self.span_x.max(self.span_y);
+        let e = 200_000.0; // Steel E (N/mm²)
+        let l = self.span_x.max(self.span_y) * 1000.0; // mm
         
-        // Equivalent thickness for stiffness
-        let i_eff = 2.0 * self.chord_area * (self.depth / 2.0).powi(2);
+        // Effective I per module strip: 2 chord layers at depth/2 from centroid
+        let d_half = self.depth / 2.0 * 1000.0; // mm
+        let i_eff = 2.0 * self.chord_area * d_half.powi(2); // mm⁴
         
-        // Plate-like deflection
-        5.0 * load_kpa * l.powi(4) / (384.0 * e * i_eff * self.span_x.min(self.span_y)) * 1e-6
+        // Load per module strip width (N/mm)
+        let w = load_kpa * 1e-3 * self.module_size * 1000.0;
+        
+        // Simply-supported deflection
+        5.0 * w * l.powi(4) / (384.0 * e * i_eff) / 1000.0 // mm to m
     }
     
     /// Suggested depth based on span

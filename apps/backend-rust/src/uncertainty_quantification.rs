@@ -381,7 +381,8 @@ impl SobolAnalysis {
             // First-order index: S_i = V(E[Y|X_i]) / V(Y)
             let v_i: f64 = y_b.iter()
                 .zip(y_ab_i.iter())
-                .map(|(&yb, &yab)| yb * (yab - y_a[0]))
+                .zip(y_a.iter())
+                .map(|((&yb, &yab), &ya)| yb * (yab - ya))
                 .sum::<f64>() / self.n_samples as f64;
 
             first_order[i] = v_i / var_y;

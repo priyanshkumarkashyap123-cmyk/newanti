@@ -9,7 +9,6 @@
 
 import { FC, useState, useMemo, useCallback } from "react";
 import {
-  X,
   Sparkles,
   Globe2,
   Building2,
@@ -24,6 +23,17 @@ import {
   RotateCcw,
   Check,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import {
   CURVED_TEMPLATES,
   generateCurvedStructure,
@@ -121,39 +131,31 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
     }
   }, [selectedTemplate]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-gray-900 rounded-xl shadow-2xl border border-gray-700 w-[950px] max-h-[85vh] flex flex-col">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[950px] max-h-[85vh] flex flex-col p-0 gap-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+        <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">
+              <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-white">
                 Curved Structure Generator
-              </h2>
-              <p className="text-xs text-gray-400">
+              </DialogTitle>
+              <DialogDescription className="text-xs text-zinc-500 dark:text-zinc-400">
                 Parametric domes, tunnels, arches, shells & more
-              </p>
+              </DialogDescription>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        </DialogHeader>
 
         <div className="flex flex-1 overflow-hidden">
           {/* Left: Category & Template List */}
-          <div className="w-[320px] border-r border-gray-700 flex flex-col">
+          <div className="w-[320px] border-r border-zinc-200 dark:border-zinc-700 flex flex-col">
             {/* Category tabs */}
-            <div className="px-3 py-2 border-b border-gray-800 flex flex-wrap gap-1">
+            <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap gap-1">
               {categories.map((cat) => {
                 const Icon =
                   cat === "all" ? Globe2 : CATEGORY_ICONS[cat] || Globe2;
@@ -167,7 +169,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${
                       isActive
                         ? "bg-blue-600 text-white"
-                        : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200"
+                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-200"
                     }`}
                   >
                     <Icon className="w-3 h-3" />
@@ -188,16 +190,16 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     className={`w-full text-left p-3 rounded-lg border transition-all ${
                       isSelected
                         ? "border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/10"
-                        : "border-gray-700 bg-gray-800/50 hover:border-gray-500 hover:bg-gray-800"
+                        : "border-zinc-200 dark:border-zinc-700 bg-zinc-100/50 dark:bg-zinc-800/50 hover:border-zinc-400 dark:hover:border-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{template.icon}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-white truncate">
+                        <div className="font-medium text-sm text-zinc-900 dark:text-white truncate">
                           {template.name}
                         </div>
-                        <div className="text-xs text-gray-400 capitalize">
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 capitalize">
                           {template.category}
                         </div>
                       </div>
@@ -216,14 +218,14 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
             {selectedTemplate ? (
               <>
                 {/* Template header */}
-                <div className="px-6 py-4 border-b border-gray-800">
+                <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{selectedTemplate.icon}</span>
                     <div>
-                      <h3 className="font-bold text-white">
+                      <h3 className="font-bold text-zinc-900 dark:text-white">
                         {selectedTemplate.name}
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
                         Adjust parameters below and generate
                       </p>
                     </div>
@@ -245,9 +247,9 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                     return (
                       <div key={key} className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <label className="text-sm text-gray-300 font-medium">
+                          <Label className="text-sm text-zinc-600 dark:text-zinc-300 font-medium">
                             {label}
-                          </label>
+                          </Label>
                           {isNumeric && (
                             <span className="text-xs text-blue-400 font-mono">
                               {value}
@@ -266,16 +268,16 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                               onChange={(e) =>
                                 handleParamChange(key, Number(e.target.value))
                               }
-                              className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                              className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
-                            <input
+                            <Input
                               type="number"
                               value={value}
                               step={ranges.step}
                               onChange={(e) =>
                                 handleParamChange(key, Number(e.target.value))
                               }
-                              className="w-20 px-2 py-1 text-sm bg-gray-800 border border-gray-600 rounded text-white text-center"
+                              className="w-20 px-2 py-1 text-sm text-center"
                             />
                           </div>
                         ) : isStringSelect ? (
@@ -284,7 +286,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                             onChange={(e) =>
                               handleParamChange(key, e.target.value)
                             }
-                            className="w-full px-3 py-2 text-sm bg-gray-800 border border-gray-600 rounded-lg text-white"
+                            className="w-full px-3 py-2 text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg text-zinc-900 dark:text-white"
                           >
                             {getStringOptions(key).map((opt) => (
                               <option key={opt} value={opt}>
@@ -299,14 +301,15 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                 </div>
 
                 {/* Actions */}
-                <div className="px-6 py-4 border-t border-gray-700 flex items-center justify-between">
-                  <button
+                <DialogFooter className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <Button
+                    variant="ghost"
                     onClick={handleResetParams}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+                    className="flex items-center gap-2"
                   >
                     <RotateCcw className="w-4 h-4" />
                     Reset Defaults
-                  </button>
+                  </Button>
                   <div className="flex items-center gap-3">
                     {lastGenerated && (
                       <div className="flex items-center gap-1.5 text-xs text-green-400">
@@ -314,26 +317,26 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                         Generated: {lastGenerated}
                       </div>
                     )}
-                    <button
+                    <Button
                       onClick={handleGenerate}
                       disabled={generating}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-medium rounded-lg transition-all disabled:opacity-50"
+                      className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white"
                     >
                       <Sparkles className="w-4 h-4" />
                       {generating ? "Generating..." : "Generate Structure"}
-                    </button>
+                    </Button>
                   </div>
-                </div>
+                </DialogFooter>
               </>
             ) : (
               /* Empty state */
               <div className="flex-1 flex items-center justify-center text-center px-12">
                 <div>
-                  <Globe2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-400 mb-2">
+                  <Globe2 className="w-16 h-16 text-zinc-400 dark:text-zinc-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-zinc-500 dark:text-zinc-400 mb-2">
                     Select a Template
                   </h3>
-                  <p className="text-sm text-gray-500 max-w-md">
+                  <p className="text-sm text-zinc-500 max-w-md">
                     Choose a curved structure template from the list on the
                     left. Available: geodesic domes, barrel vaults, parabolic
                     arches, tunnels, spheres, tanks, cooling towers, helical
@@ -344,8 +347,8 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -3,7 +3,7 @@
  * Based on ASCE 7-22 Equivalent Lateral Force Procedure
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -24,8 +24,10 @@ import {
 } from './ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
-import { Activity, MapPin, Building2, Calculator, Info, Settings2 } from 'lucide-react';
+import { Activity, MapPin, Building2, Calculator, Info, Settings2, Loader2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useModelStore } from '@/store/model';
+import { API_CONFIG } from '@/config/env';
 
 // ===== ASCE 7 CONSTANTS =====
 
@@ -289,7 +291,55 @@ const ASCE7SeismicLoadDialog: React.FC = () => {
 
     const handleApply = () => {
         if (!results) return;
-// console.log('Applying ASCE 7 seismic loads:', results);
+        const { nodes, addLoadCase } = useModelStore.getState();
+        const direction = params.direction || 'X';
+
+        // Group nodes by Y-level (floor height) with 0.1m tolerance
+        const levelMap = new Map<number, string[]>();
+        nodes.forEach((node, id) => {
+            const roundedY = Math.round(node.y * 10) / 10;
+            if (!levelMap.has(roundedY)) levelMap.set(roundedY, []);
+            levelMap.get(roundedY)!.push(id);
+        });
+
+        // Build nodal loads by matching story heights to Y-levels
+        const nodalLoads: { id: string; nodeId: string; fx?: number; fy?: number; fz?: number }[] = [];
+        let loadIdx = 0;
+
+        results.Qi.forEach(story => {
+            // Find the closest Y-level to this story height
+            let bestY = -1;
+            let bestDist = Infinity;
+            levelMap.forEach((_, y) => {
+                const dist = Math.abs(y - story.height);
+                if (dist < bestDist) { bestDist = dist; bestY = y; }
+            });
+
+            if (bestY >= 0 && bestDist < 1.0) {
+                const nodeIds = levelMap.get(bestY) || [];
+                if (nodeIds.length > 0) {
+                    const forcePerNode = story.force / nodeIds.length;
+                    nodeIds.forEach(nodeId => {
+                        loadIdx++;
+                        const load: any = { id: `EQ_${loadIdx}`, nodeId };
+                        if (direction === 'X') load.fx = forcePerNode;
+                        else load.fz = forcePerNode;
+                        nodalLoads.push(load);
+                    });
+                }
+            }
+        });
+
+        // Create seismic load case
+        addLoadCase({
+            id: `LC_EQ_ASCE7_${direction}`,
+            name: `Seismic ASCE 7 (${direction})`,
+            type: 'seismic',
+            loads: nodalLoads,
+            memberLoads: [],
+            factor: 1.0,
+        });
+
         setModal('asce7SeismicDialog', false);
     };
 

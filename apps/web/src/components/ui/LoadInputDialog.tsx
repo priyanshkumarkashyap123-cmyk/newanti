@@ -8,8 +8,10 @@
  */
 
 import { FC, useState, useEffect } from 'react';
-import { X, ArrowDown, ArrowUp, ArrowLeft, ArrowRight, RotateCw } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, RotateCw } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { Dialog, DialogContent, DialogFooter } from './dialog';
+import { Button } from './button';
 
 // ============================================
 // TYPES
@@ -107,35 +109,25 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
         onClose();
     };
 
-    if (!isOpen) return null;
-
     const dirConfig = getDirectionConfig();
     const DirIcon = dirConfig.icon;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-            <div className="w-full max-w-md bg-zinc-900 rounded-xl shadow-2xl overflow-hidden border border-zinc-700" onClick={(e) => e.stopPropagation()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-md p-0 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 bg-orange-600 text-white">
-                    <div className="flex items-center gap-2">
-                        <ArrowDown className="w-5 h-5" />
-                        <h2 className="text-lg font-semibold">Apply Load</h2>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1 rounded hover:bg-white/20 transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                <div className="flex items-center gap-2 px-6 py-4 bg-orange-600 text-white rounded-t-lg">
+                    <ArrowDown className="w-5 h-5" />
+                    <h2 className="text-lg font-semibold">Apply Load</h2>
                 </div>
 
                 {/* Content */}
                 <div className="px-6 py-4">
                     {/* Target Info */}
-                    <div className="mb-4 p-3 bg-zinc-800 rounded-lg">
-                        <span className="text-sm text-zinc-400">
+                    <div className="mb-4 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
                             Applying to: {' '}
-                            <span className="font-medium text-white">
+                            <span className="font-medium text-zinc-900 dark:text-white">
                                 {targetNodeId ? `Node ${targetNodeId}` : targetMemberId ? `Member ${targetMemberId}` : 'Select target'}
                             </span>
                         </span>
@@ -143,7 +135,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Load Type */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                        <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
                             Load Type
                         </h3>
                         <div className="grid grid-cols-3 gap-2">
@@ -162,12 +154,12 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                             ? 'opacity-50 cursor-not-allowed'
                                             : loadType === type.id
                                                 ? 'border-orange-500 bg-orange-900/30 text-white'
-                                                : 'border-zinc-700 hover:border-zinc-500 text-zinc-300'
+                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
                                         }
                                     `}
                                 >
                                     <span className="text-xl">{type.icon}</span>
-                                    <span className="text-xs text-zinc-400">{type.label}</span>
+                                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{type.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -176,7 +168,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Direction */}
                     {loadType !== 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
                                 Direction
                             </h3>
                             <div className="grid grid-cols-4 gap-2">
@@ -191,7 +183,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                                 flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all
                                                 ${direction === dir
                                                     ? 'border-orange-500 bg-orange-900/30 text-white'
-                                                    : 'border-zinc-700 hover:border-zinc-500 text-zinc-300'
+                                                    : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
                                                 }
                                             `}
                                         >
@@ -207,7 +199,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Moment Direction */}
                     {loadType === 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
                                 Rotation
                             </h3>
                             <div className="grid grid-cols-2 gap-2">
@@ -219,7 +211,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                             flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all
                                             ${direction === dir
                                                 ? 'border-orange-500 bg-orange-900/30 text-white'
-                                                : 'border-zinc-700 hover:border-zinc-500 text-zinc-300'
+                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
                                             }
                                         `}
                                     >
@@ -233,7 +225,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Magnitude */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium text-zinc-300 mb-3">
+                        <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
                             Magnitude
                         </h3>
                         <div className="flex items-center gap-2">
@@ -242,9 +234,9 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 step="1"
                                 value={magnitude}
                                 onChange={(e) => setMagnitude(e.target.value)}
-                                className="flex-1 px-4 py-3 rounded-lg border border-zinc-700 bg-zinc-800 text-white text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             />
-                            <span className="text-zinc-400 dark:text-zinc-400 font-medium">
+                            <span className="text-zinc-500 dark:text-zinc-400 font-medium">
                                 {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                             </span>
                         </div>
@@ -258,7 +250,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         px-3 py-1 text-xs rounded transition-colors
                                         ${magnitude === val.toString()
                                             ? 'bg-orange-500 text-white'
-                                            : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
+                                            : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300'
                                         }
                                     `}
                                 >
@@ -269,14 +261,14 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     </div>
 
                     {/* Preview */}
-                    <div className="p-4 bg-zinc-800 rounded-lg">
+                    <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
                         <div className="flex items-center justify-center gap-3">
                             <DirIcon className={`w-8 h-8 text-orange-500 ${direction === 'ccw' ? 'scale-x-[-1]' : ''}`} />
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-white">
+                                <div className="text-2xl font-bold text-zinc-900 dark:text-white">
                                     {magnitude} {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                                 </div>
-                                <div className="text-xs text-zinc-400">
+                                <div className="text-xs text-zinc-500 dark:text-zinc-400">
                                     {dirConfig.label}
                                 </div>
                             </div>
@@ -285,23 +277,18 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-zinc-800/50 border-t border-zinc-700 flex justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-zinc-400 hover:text-zinc-200 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
+                <DialogFooter className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-300 dark:border-zinc-700">
+                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button
                         onClick={handleSubmit}
                         disabled={!targetNodeId && !targetMemberId}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
                     >
                         Apply Load
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

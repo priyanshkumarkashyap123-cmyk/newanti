@@ -563,10 +563,10 @@ impl BasePlate {
         // Steel strength
         let phi_ns = 0.75 * fut * ab / 1000.0;
         
-        // Concrete breakout (simplified)
+        // Concrete breakout (ACI 318 Eq. 17.6.2.1)
         let hef = self.anchor_embedment;
-        let anc = 9.0 * hef.powi(2);
-        let phi_ncb = 0.7 * 10.0 * self.concrete_fc.sqrt() * anc / 1000.0;
+        // Nb = kc * λ * √f'c * hef^1.5 (kc=10 for cracked, λ=1.0)
+        let phi_ncb = 0.7 * 10.0 * self.concrete_fc.sqrt() * hef.powf(1.5) / 1000.0;
         
         phi_ns.min(phi_ncb)
     }

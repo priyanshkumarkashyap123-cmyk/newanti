@@ -307,18 +307,18 @@ impl RectangularBunker {
     /// Bending moment in long wall (kN·m/m) - simply supported
     pub fn bending_long_wall(&self, depth: f64) -> f64 {
         let p = self.pressure_long_wall(depth);
-        let b = self.width;
+        let a = self.length; // Long wall spans the length
         
         // Plate bending
-        p * b.powi(2) / 8.0
+        p * a.powi(2) / 8.0
     }
     
     /// Bending moment in short wall (kN·m/m)
     pub fn bending_short_wall(&self, depth: f64) -> f64 {
         let p = self.pressure_short_wall(depth);
-        let a = self.length;
+        let b = self.width; // Short wall spans the width
         
-        p * a.powi(2) / 8.0
+        p * b.powi(2) / 8.0
     }
     
     /// Corner moment (kN·m/m)
@@ -402,15 +402,15 @@ impl SteelTank {
     
     /// Shell thickness by one-foot method (mm)
     pub fn thickness_one_foot(&self, course: usize, sd: f64) -> f64 {
-        let d = self.diameter * 1000.0; // mm
+        let d = self.diameter; // API 650 uses D in meters
         let h = self.height_to_course_bottom(course);
         let g = self.specific_gravity;
         let ca = self.corrosion_allowance;
         
         // Height from liquid surface (m)
-        let h_design = self.design_level - h + 0.3; // 1 foot above bottom
+        let h_design = self.design_level - h - 0.3; // 1 foot (0.3m) above bottom reduces effective head
         
-        // API 650 formula
+        // API 650 Eq. 5.6.3.2: td = 4.9*D*H*G/Sd + CA
         4.9 * d * h_design.max(0.0) * g / sd + ca
     }
     
@@ -428,16 +428,16 @@ impl SteelTank {
             return self.thickness_one_foot(course, sd);
         }
         
-        let d = self.diameter * 1000.0;
+        let d = self.diameter; // API 650 uses D in meters
         let g = self.specific_gravity;
         let ca = self.corrosion_allowance;
         
         // Bottom of course
         let h1 = self.height_to_course_bottom(course);
         
-        // Design point location
+        // Design point location (radius in mm = d*500, t in mm)
         let t_lower = self.courses.get(course - 2).map(|c| c.thickness).unwrap_or(6.0);
-        let x = 0.61 * (d * t_lower / 2.0).sqrt() / 1000.0; // Convert to m
+        let x = 0.61 * (d * 500.0 * t_lower).sqrt() / 1000.0; // Convert to m
         
         let h_design = self.design_level - h1 - x.min(0.3);
         

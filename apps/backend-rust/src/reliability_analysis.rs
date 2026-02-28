@@ -122,7 +122,7 @@ impl RandomVariable {
                 let beta = self.std_dev * (6.0_f64).sqrt() / PI;
                 let mu = self.mean - 0.5772 * beta;
                 let p = standard_normal_cdf(u);
-                mu - beta * (-(-p).ln()).ln()
+                mu - beta * (-p.ln()).ln()
             }
             _ => self.mean + u * self.std_dev,
         }
@@ -243,8 +243,8 @@ impl ReliabilityAnalyzer {
                 let pdf_x = self.variables[i].pdf(x[i]);
                 let std_normal_pdf = (-0.5 * u[i].powi(2)).exp() / (2.0 * PI).sqrt();
                 
-                if std_normal_pdf > 1e-10 {
-                    grad_g_u[i] = grad_g[i] * pdf_x / std_normal_pdf;
+                if pdf_x > 1e-10 {
+                    grad_g_u[i] = grad_g[i] * std_normal_pdf / pdf_x;
                 } else {
                     grad_g_u[i] = grad_g[i] * self.variables[i].std_dev;
                 }

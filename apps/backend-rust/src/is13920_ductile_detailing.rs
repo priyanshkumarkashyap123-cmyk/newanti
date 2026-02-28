@@ -198,7 +198,8 @@ pub fn check_beam_ductility(
     });
     
     // Cl. 6.2.1: Minimum reinforcement
-    let as_min = 0.24 * (materials.fck / materials.fy).sqrt() * beam.b * beam.d_eff;
+    // IS 13920:2016 Cl. 6.2.1(a): ρ_min = 0.24 * √fck / fy
+    let as_min = 0.24 * materials.fck.sqrt() / materials.fy * beam.b * beam.d_eff;
     let as_min_alt = 0.0012 * beam.b * beam.d;
     let as_min_req = as_min.max(as_min_alt);
     

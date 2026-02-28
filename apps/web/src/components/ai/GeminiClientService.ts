@@ -79,7 +79,7 @@ class GeminiClientService {
   private model: GenerativeModel | null = null;
   private chatSession: ChatSession | null = null;
   private apiKey: string = "";
-  private modelName: string = "gemini-1.5-flash";
+  private modelName: string = "gemini-2.0-flash";
   private chatHistory: Content[] = [];
   private _isConfigured: boolean = false;
 
@@ -105,7 +105,7 @@ class GeminiClientService {
 
   configure(apiKey: string, modelName?: string): void {
     this.apiKey = apiKey;
-    this.modelName = modelName || "gemini-1.5-flash";
+    this.modelName = modelName || "gemini-2.0-flash";
 
     if (!apiKey) {
       this._isConfigured = false;

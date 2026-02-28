@@ -717,13 +717,23 @@ pub struct ACI209Creep {
 
 impl ACI209Creep {
     pub fn new(_fc_28: f64, humidity: f64, volume_surface_ratio: f64) -> Self {
-        // Correction factors
+        // Correction factors for CREEP (ACI 209R-92 §2.5.3)
         let gamma_la = 1.0; // Loading age
-        let gamma_h = 1.27 - 0.0067 * humidity; // Humidity
-        let gamma_vs = (2.0 / 3.0) * (1.0 + 1.13 * (-0.54 * volume_surface_ratio).exp());
+        let gamma_h_creep = 1.27 - 0.0067 * humidity;
+        let gamma_vs_creep = (2.0 / 3.0) * (1.0 + 1.13 * (-0.54 * volume_surface_ratio).exp());
         
-        let phi_u = 2.35 * gamma_la * gamma_h * gamma_vs;
-        let epsilon_sh_u = 780e-6 * gamma_h * gamma_vs;
+        let phi_u = 2.35 * gamma_la * gamma_h_creep * gamma_vs_creep;
+        
+        // Correction factors for SHRINKAGE (different from creep per ACI 209R-92)
+        // Humidity: γ_sh = 1.40 - 0.010H for H ≤ 80%, 3.00 - 0.030H for H > 80%
+        let gamma_h_shrinkage = if humidity <= 80.0 {
+            1.40 - 0.010 * humidity
+        } else {
+            3.00 - 0.030 * humidity
+        };
+        // V/S: γ_vs = 1.2 × e^(-0.12 × V/S)
+        let gamma_vs_shrinkage = 1.2 * (-0.12 * volume_surface_ratio).exp();
+        let epsilon_sh_u = 780e-6 * gamma_h_shrinkage * gamma_vs_shrinkage;
         
         Self {
             phi_u,
@@ -771,9 +781,11 @@ impl EC2Creep {
         let beta_t0 = 1.0 / (0.1 + t0.powf(0.2));
         
         let phi_0 = phi_rh * beta_fcm * beta_t0;
-        let beta_h = 1.5 * (1.0 + (0.012 * rh).powf(18.0)) * h0 + 250.0 * alpha_1;
+        // EN 1992-1-1 Eq. B.8b: β_H uses α3 = (35/fcm)^0.5, not α1
+        let alpha_3 = (35.0 / fc).powf(0.5);
+        let beta_h = 1.5 * (1.0 + (0.012 * rh).powf(18.0)) * h0 + 250.0 * alpha_3;
         
-        Self { phi_0, beta_h: beta_h.min(1500.0 * alpha_1) }
+        Self { phi_0, beta_h: beta_h.min(1500.0 * alpha_3) }
     }
     
     /// Creep coefficient at time t

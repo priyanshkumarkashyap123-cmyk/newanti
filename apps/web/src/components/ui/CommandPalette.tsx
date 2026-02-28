@@ -6,13 +6,13 @@
 
 import React from 'react';
 import { FC, useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, Command, ArrowRight, Plus, Settings, HelpCircle,
     FileText, Play, Download, Upload, Folder, Home, LogOut,
     Keyboard, Moon, Sun, Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogContent } from './dialog';
 
 // ============================================
 // Types
@@ -241,30 +241,11 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
     }, [selectedIndex]);
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-                    />
-
-                    {/* Palette */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="fixed top-[20%] left-1/2 -translate-x-1/2 z-50 w-full max-w-xl"
-                    >
-                        <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
-                            {/* Search Input */}
-                            <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-800">
-                                <Search className="w-5 h-5 text-slate-400" />
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-xl p-0 overflow-hidden top-[20%] translate-y-0">
+                {/* Search Input */}
+                            <div className="flex items-center gap-3 px-4 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                                <Search className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                                 <input
                                     ref={inputRef}
                                     type="text"
@@ -275,9 +256,9 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                     }}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Search commands..."
-                                    className="flex-1 bg-transparent text-white placeholder:text-slate-400 focus:outline-none text-lg"
+                                    className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none text-lg"
                                 />
-                                <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 bg-slate-800 text-slate-400 text-xs rounded border border-slate-700">
+                                <kbd className="hidden sm:flex items-center gap-1 px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-xs rounded border border-zinc-300 dark:border-zinc-700">
                                     <Command className="w-3 h-3" />K
                                 </kbd>
                             </div>
@@ -288,14 +269,14 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                 className="max-h-[400px] overflow-y-auto p-2"
                             >
                                 {filteredCommands.length === 0 ? (
-                                    <div className="py-12 text-center text-slate-400">
+                                    <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">
                                         <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
                                         <p>No commands found</p>
                                     </div>
                                 ) : (
                                     Object.entries(groupedCommands).map(([category, commands]) => (
                                         <div key={category} className="mb-4 last:mb-0">
-                                            <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                            <div className="px-3 py-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                                                 {category}
                                             </div>
                                             {commands.map((cmd) => {
@@ -313,13 +294,13 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                             transition-colors text-left
                                                             ${isSelected
                                                                 ? 'bg-blue-600 text-white'
-                                                                : 'text-slate-300 hover:bg-slate-800'
+                                                                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800'
                                                             }
                                                         `}
                                                     >
                                                         <div className={`
                                                             w-8 h-8 rounded-lg flex items-center justify-center
-                                                            ${isSelected ? 'bg-blue-500' : 'bg-slate-800'}
+                                                            ${isSelected ? 'bg-blue-500' : 'bg-zinc-100 dark:bg-zinc-800'}
                                                         `}>
                                                             {cmd.icon}
                                                         </div>
@@ -328,7 +309,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                                 {cmd.label}
                                                             </div>
                                                             {cmd.description && (
-                                                                <div className={`text-sm truncate ${isSelected ? 'text-blue-200' : 'text-slate-400'
+                                                                <div className={`text-sm truncate ${isSelected ? 'text-blue-200' : 'text-zinc-500 dark:text-zinc-400'
                                                                     }`}>
                                                                     {cmd.description}
                                                                 </div>
@@ -339,7 +320,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                                 px-2 py-1 text-xs rounded
                                                                 ${isSelected
                                                                     ? 'bg-blue-500 text-white'
-                                                                    : 'bg-slate-800 text-slate-400'
+                                                                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
                                                                 }
                                                             `}>
                                                                 {cmd.shortcut}
@@ -354,28 +335,25 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                             </div>
 
                             {/* Footer */}
-                            <div className="px-4 py-3 bg-slate-800/50 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                                 <div className="flex items-center gap-4">
                                     <span className="flex items-center gap-1">
-                                        <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">↑</kbd>
-                                        <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">↓</kbd>
+                                        <kbd className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 rounded">↑</kbd>
+                                        <kbd className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 rounded">↓</kbd>
                                         to navigate
                                     </span>
                                     <span className="flex items-center gap-1">
-                                        <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">↵</kbd>
+                                        <kbd className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 rounded">↵</kbd>
                                         to select
                                     </span>
                                 </div>
                                 <span className="flex items-center gap-1">
-                                    <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">esc</kbd>
+                                    <kbd className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 rounded">esc</kbd>
                                     to close
                                 </span>
                             </div>
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+            </DialogContent>
+        </Dialog>
     );
 };
 

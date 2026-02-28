@@ -234,12 +234,12 @@ impl FlexuralStrengthening {
     
     /// Debonding strain limit (ACI 440.2R Eq. 10-2)
     pub fn debonding_strain(&self) -> f64 {
-        let fc_psi = self.fc * 145.0; // Convert to psi
         let n = self.n_plies as f64;
         let tf = self.frp.ply_thickness;
-        let ef_psi = self.frp.ef * 145000.0; // GPa to psi
+        let ef_mpa = self.frp.ef * 1000.0; // GPa to MPa
         
-        let eps_fd = 0.41 * (fc_psi / (n * ef_psi * tf)).sqrt() / 1000.0;
+        // ACI 440.2R-17 Eq. 10.1.1 in SI units (f'c MPa, Ef MPa, tf mm)
+        let eps_fd = 0.41 * (self.fc / (n * ef_mpa * tf)).sqrt();
         
         // Limit to 0.9 * design strain
         eps_fd.min(0.9 * self.frp.design_strain())

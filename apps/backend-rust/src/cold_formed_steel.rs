@@ -151,7 +151,7 @@ impl CfsSectionProps {
         // Moment of inertia about x-axis
         let ix = t * d_c.powi(3) / 12.0 
             + 2.0 * t * b_c * (d_c / 2.0).powi(2)
-            + 2.0 * t * c_c * (d_c / 2.0 - c_c / 2.0).powi(2);
+            + 2.0 * (t * c_c.powi(3) / 12.0 + t * c_c * (d_c / 2.0 - c_c / 2.0).powi(2));
         
         // Moment of inertia about y-axis  
         let x_bar = (2.0 * b_c * t * b_c / 2.0 + 2.0 * c_c * t * b_c) / area_gross;
@@ -229,8 +229,8 @@ impl CfsSectionProps {
             + 2.0 * t * b_c * (d_c / 2.0).powi(2)
             + 2.0 * t * c_c * (d_c / 2.0 - c_c / 2.0).powi(2);
         
-        let iy = 2.0 * t * b_c.powi(3) / 12.0 
-            + 2.0 * t * c_c.powi(3) / 12.0;
+        let iy = 2.0 * t * b_c.powi(3) / 3.0 
+            + 2.0 * t * c_c * b_c.powi(2);
         
         let sx = ix / (d / 2.0);
         let sy = iy / (b / 2.0);
@@ -401,7 +401,12 @@ impl EffectiveWidthCalculator {
             let rho = self.reduction_factor(lambda);
             let be = rho * w;
             let b1 = be / (3.0 - psi);
-            let b2 = be - b1;
+            // AISI S100-16 Section 1.1.2
+            let b2 = if psi > -0.236 {
+                be - b1
+            } else {
+                be / 2.0
+            };
             (b1, b2)
         }
     }
@@ -421,9 +426,12 @@ impl EffectiveWidthCalculator {
         
         let ia = if w_t <= 0.328 * s {
             0.0
-        } else {
+        } else if w_t < s {
             let ratio = w_t / s;
             399.0 * t.powi(4) * (ratio - 0.328).powi(3)
+        } else {
+            // AISI S100-16 Section 1.3.1.2.1: S <= w/t <= 3S
+            t.powi(4) * (115.0 * w_t / s + 5.0)
         };
         
         // Lip moment of inertia
@@ -530,7 +538,12 @@ impl CfsMemberDesigner {
         let pn_rupture = self.section.area_net * fu;
         
         let pn = pn_yield.min(pn_rupture);
-        let phi_pn = self.phi_t * pn;
+        // AISI S100 D2: phi_t = 0.90 for yielding, 0.75 for rupture
+        let phi_pn = if pn_yield <= pn_rupture {
+            0.90 * pn  // Yielding governs
+        } else {
+            0.75 * pn  // Rupture governs
+        };
         
         TensionResult {
             pn_yield,
@@ -643,8 +656,8 @@ impl CfsMemberDesigner {
             // Yielding
             0.6 * fy * h * t
         } else if h_t <= 1.40 * ek_fv.sqrt() {
-            // Inelastic buckling
-            0.64 * (ek_fv).sqrt() * t.powi(2) * (self.e * kv * fy).sqrt()
+            // Inelastic buckling - AISI S100 Eq. G2.1-2
+            0.64 * t.powi(2) * (self.e * kv * fy).sqrt()
         } else {
             // Elastic buckling
             0.905 * self.e * kv * t.powi(3) / h
@@ -676,11 +689,11 @@ impl CfsMemberDesigner {
             WebCripplingCase::InteriorTwoFlange => (24.0, 0.52, 0.15, 0.001),
         };
         
-        let pn = c * t.powi(2) * fy.sqrt() * (1.0 - c_r * (r / t).sqrt())
+        let pn = c * t.powi(2) * fy * (1.0 - c_r * (r / t).sqrt())
             * (1.0 + c_n * (n / t).sqrt()) * (1.0 - c_h * (h / t).sqrt())
             * theta.sin();
         
-        self.phi_c * pn * 0.75 // Web crippling phi = 0.75
+        pn * 0.75 // Web crippling phi_w per AISI S100 Table G5-1
     }
     
     /// Torsional buckling stress
@@ -702,20 +715,20 @@ impl CfsMemberDesigner {
     
     /// Lateral-torsional buckling moment
     fn lateral_torsional_buckling_moment(&self, lb: f64, cb: f64) -> f64 {
-        let sf = self.section.sx;
+        let _sf = self.section.sx;
         let iy = self.section.iy;
         let j = self.section.j;
         let cw = self.section.cw;
         
-        let ro = self.section.ro;
+        let _ro = self.section.ro;
         let _a = self.section.area_gross;
         
-        // Elastic LTB moment
-        let fe = (cb * PI.powi(2) * self.e * iy / lb.powi(2))
-            * (self.g * j + PI.powi(2) * self.e * cw / lb.powi(2)).sqrt()
-            / (sf * ro);
+        // Elastic LTB moment: Me = Cb * sqrt(π²EIy/Lb² * (GJ + π²ECw/Lb²))
+        let term1 = PI.powi(2) * self.e * iy / lb.powi(2);
+        let term2 = self.g * j + PI.powi(2) * self.e * cw / lb.powi(2);
+        let me = cb * (term1 * term2).sqrt();
         
-        sf * fe
+        me
     }
     
     /// Calculate effective area at given stress

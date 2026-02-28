@@ -900,10 +900,10 @@ pub fn principal_stresses(stress: &[f64; 6]) -> [f64; 3] {
            - stress[1] * stress[5].powi(2)
            - stress[2] * stress[3].powi(2);
     
-    // Solve cubic: σ³ - I₁σ² + I₂σ - I₃ = 0
-    // Using trigonometric solution for real roots
+    // Solve depressed cubic: t³ + pt + q = 0, where σ = t + I₁/3
+    // Using trigonometric (Cardano's) solution for 3 real roots
     let p = i2 - i1.powi(2) / 3.0;
-    let q = 2.0 * i1.powi(3) / 27.0 - i1 * i2 / 3.0 + i3;
+    let q = -2.0 * i1.powi(3) / 27.0 + i1 * i2 / 3.0 - i3;
     
     // Handle edge case when p ≈ 0 (hydrostatic stress)
     if p.abs() < 1e-10 {

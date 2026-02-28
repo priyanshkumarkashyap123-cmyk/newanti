@@ -119,7 +119,7 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
   providers: {
     gemini: {
       type: 'gemini',
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       maxTokens: 8192,
       temperature: 0.7,
       timeout: 30000,
@@ -1001,7 +1001,7 @@ export class AIOrchestrator {
           requestId,
           success: true,
           provider: 'gemini',
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.0-flash',
           content: result.description,
           structuredData: { type: 'structure', data: result.structure },
           confidence: result.confidence,

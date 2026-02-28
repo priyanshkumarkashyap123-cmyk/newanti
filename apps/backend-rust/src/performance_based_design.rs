@@ -206,8 +206,9 @@ impl PbSeismicDesign {
         let sa_capacity = drift_limit * self.height * 4.0 * PI.powi(2) 
             / (4.0 * 9.81 * self.period.powi(2));
         
-        // Integrate hazard curve with fragility
-        self.k0 / sa_capacity.powf(self.k) * (0.5 * self.k * beta.powi(2)).exp()
+        // Integrate hazard curve with fragility (Cornell et al. 2002)
+        // λ = k₀ × SC^(-k) × exp(½ × k² × β²)
+        self.k0 / sa_capacity.powf(self.k) * (0.5 * self.k.powi(2) * beta.powi(2)).exp()
     }
     
     /// Collapse probability in 50 years

@@ -146,7 +146,7 @@ impl ConcretePressureCalculator {
                     p.min(gamma * h).min(100.0 * cw)
                 } else {
                     // Walls R ≥ 2.1 m/h
-                    let p = cw * cc * (7.2 + 1156.0 + 244.0 * r / (t + 17.8));
+                    let p = cw * cc * (7.2 + 1156.0 / (t + 17.8) + 244.0 * r / (t + 17.8));
                     p.min(gamma * h).min(150.0 * cw)
                 }
             }
@@ -346,7 +346,9 @@ impl WallFormworkDesigner {
             
             // Maximum span (mm)
             let span_bending = (10.0 * fb * s / pressure).powf(0.5);
-            let span_deflection = (185.0 * e * i / (pressure * allowable_defl)).powf(0.25);
+            // allowable_defl is a span ratio (e.g. L/360 = 0.003)
+            // δ = wL⁴/(185EI) ≤ ratio × L  →  L³ ≤ 185EI × ratio / w
+            let span_deflection = (185.0 * e * i * allowable_defl / pressure).powf(1.0 / 3.0);
             
             let span = span_bending.min(span_deflection);
             
@@ -810,7 +812,9 @@ impl FalseworkTowerDesigner {
         
         for (name, d, t, capacity) in leg_options {
             // Reduce capacity for height (buckling)
-            let slenderness = height * 1000.0 / (d / 2.0);
+            // Radius of gyration for CHS: r ≈ (D - t) / (2√2)
+            let r_gyration = (d - t) / (2.0 * 2.0_f64.sqrt());
+            let slenderness = height * 1000.0 / r_gyration;
             let reduction = if slenderness < 60.0 {
                 1.0
             } else if slenderness < 120.0 {

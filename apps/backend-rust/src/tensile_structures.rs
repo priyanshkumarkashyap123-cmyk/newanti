@@ -112,7 +112,8 @@ impl Cable {
     
     /// Axial stiffness EA (kN)
     pub fn axial_stiffness(&self) -> f64 {
-        self.area * self.cable_type.modulus() / 1000.0
+        // 1 mm² × 1 GPa = 1e-6 m² × 1e9 N/m² = 1e3 N = 1 kN
+        self.area * self.cable_type.modulus()
     }
     
     /// Design strength with factor of safety

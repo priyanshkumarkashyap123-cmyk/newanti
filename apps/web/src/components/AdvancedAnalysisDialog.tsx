@@ -11,7 +11,6 @@
 
 import { FC, useState, useMemo } from 'react';
 import {
-    X,
     Layers,
     Activity,
     Waves,
@@ -27,6 +26,11 @@ import {
     Ban,
     Info,
 } from 'lucide-react';
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 import { useModelStore } from '../store/model';
 import { useAuth } from '../providers/AuthProvider';
@@ -241,29 +245,29 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                     {/* Zone */}
                     <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Seismic Zone</label>
+                        <Label className="mb-1 block">Seismic Zone</Label>
                         <select
                             value={zone}
                             onChange={(e) => setZone(parseInt(e.target.value))}
-                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded text-sm bg-white dark:bg-zinc-800"
                         >
                             <option value={2}>Zone II (Low)</option>
                             <option value={3}>Zone III (Moderate)</option>
                             <option value={4}>Zone IV (Severe)</option>
                             <option value={5}>Zone V (Very Severe)</option>
                         </select>
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                             Z = {IS1893_ZONE_FACTORS[zone]?.toFixed(2) ?? '—'}
                         </div>
                     </div>
 
                     {/* Soil Type */}
                     <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Soil Type</label>
+                        <Label className="mb-1 block">Soil Type</Label>
                         <select
                             value={soilType}
                             onChange={(e) => setSoilType(e.target.value)}
-                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded text-sm bg-white dark:bg-zinc-800"
                         >
                             <option value="I">Type I - Rock (N &gt; 30)</option>
                             <option value="II">Type II - Medium (10 &lt; N ≤ 30)</option>
@@ -273,11 +277,11 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                     {/* Importance Factor */}
                     <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Importance Factor (I)</label>
+                        <Label className="mb-1 block">Importance Factor (I)</Label>
                         <select
                             value={importance}
                             onChange={(e) => setImportance(parseFloat(e.target.value))}
-                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded text-sm bg-white dark:bg-zinc-800"
                         >
                             <option value={1.0}>1.0 - Regular Building</option>
                             <option value={1.2}>1.2 - Important Building</option>
@@ -287,11 +291,11 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                     {/* Response Reduction */}
                     <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Response Factor (R)</label>
+                        <Label className="mb-1 block">Response Factor (R)</Label>
                         <select
                             value={response}
                             onChange={(e) => setResponse(parseFloat(e.target.value))}
-                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded text-sm bg-white dark:bg-zinc-800"
                         >
                             <option value={1.5}>1.5 - Unreinforced Masonry (IS 1893 Table 9)</option>
                             <option value={3.0}>3.0 - Ordinary RC Moment Frame</option>
@@ -303,11 +307,11 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                     {/* Direction */}
                     <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Excitation Direction</label>
+                        <Label className="mb-1 block">Excitation Direction</Label>
                         <select
                             value={direction}
                             onChange={(e) => setDirection(e.target.value)}
-                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded text-sm bg-white dark:bg-zinc-800"
                         >
                             <option value="X">X-Direction</option>
                             <option value="Y">Y-Direction</option>
@@ -317,22 +321,21 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                     {/* Damping */}
                     <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Damping Ratio</label>
-                        <input
+                        <Label className="mb-1 block">Damping Ratio</Label>
+                        <Input
                             type="number"
                             step="0.01"
                             min="0"
                             max="0.2"
                             value={damping}
                             onChange={(e) => setDamping(parseFloat(e.target.value))}
-                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
                         />
                     </div>
                 </div>
 
                 {/* IS 1893:2016 Design Spectrum — Computed from Sa/g formula */}
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg mb-4">
-                    <div className="text-xs font-medium text-gray-500 mb-2">
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg mb-4">
+                    <div className="text-xs font-medium text-zinc-500 mb-2">
                         Design Spectrum (IS 1893:2016 Fig. 2) — Soil Type {soilType}
                     </div>
                     <div className="h-36 relative">
@@ -399,7 +402,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             ))}
                         </svg>
                     </div>
-                    <div className="text-[10px] text-gray-400 mt-1">
+                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
                         Aₕ = (Z/2) × (I/R) × (Sa/g) = ({(IS1893_ZONE_FACTORS[zone] || 0.24).toFixed(2)}/2) × ({importance}/{response}) × Sa/g
                     </div>
                 </div>
@@ -429,9 +432,9 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         </div>
 
                         {/* Modal Contribution Table */}
-                        <div className="border rounded-lg overflow-hidden dark:border-gray-700">
+                        <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
                             <table className="w-full text-xs text-left">
-                                <thead className="bg-gray-100 dark:bg-gray-800 font-semibold">
+                                <thead className="bg-zinc-100 dark:bg-zinc-800 font-semibold">
                                     <tr>
                                         <th className="p-2">Mode</th>
                                         <th className="p-2">Period (s)</th>
@@ -441,7 +444,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                 </thead>
                                 <tbody>
                                     {result.modal_contributions?.slice(0, 5).map((m: any, i: number) => (
-                                        <tr key={i} className="border-t border-gray-100 dark:border-gray-700">
+                                        <tr key={i} className="border-t border-zinc-200 dark:border-zinc-700">
                                             <td className="p-1.5">{m.mode}</td>
                                             <td className="p-1.5">{m.period.toFixed(3)}</td>
                                             <td className="p-1.5">{m.contribution_pct?.toFixed(2)}%</td>
@@ -451,7 +454,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                 </tbody>
                             </table>
                             {result.modal_contributions?.length > 5 && (
-                                <div className="p-1.5 text-center text-gray-500 bg-gray-50 dark:bg-gray-800 text-[10px]">
+                                <div className="p-1.5 text-center text-zinc-500 bg-zinc-50 dark:bg-zinc-800 text-[10px]">
                                     + {result.modal_contributions.length - 5} more modes
                                 </div>
                             )}
@@ -461,13 +464,10 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             </div>
 
             {/* Run Button */}
-            <button
+            <Button
                 onClick={handleRunSpectrum}
                 disabled={isRunning || !isPro}
-                className={`
-                    w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors
-                    ${isRunning ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600 text-white'}
-                `}
+                className="w-full"
             >
                 {isRunning ? (
                     <>
@@ -480,10 +480,10 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                         Run Spectrum Analysis
                     </>
                 )}
-            </button>
+            </Button>
 
             {/* Info — IS 1893 Design Horizontal Seismic Coefficient */}
-            <div className="mt-4 text-xs text-gray-500 space-y-1">
+            <div className="mt-4 text-xs text-zinc-500 dark:text-zinc-400 space-y-1">
                 <p>Design horizontal seismic coefficient (IS 1893 Cl.6.4.2):</p>
                 <p className="font-mono">A<sub>h</sub> = (Z/2) × (I/R) × (S<sub>a</sub>/g)</p>
                 <p>Design base shear: V<sub>B</sub> = A<sub>h</sub> × W</p>
@@ -509,39 +509,37 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
 
             <div className="space-y-4">
                 {/* Member Type Selection */}
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="text-xs font-medium text-gray-500 mb-2">Member Behavior</div>
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                    <div className="text-xs font-medium text-zinc-500 mb-2">Member Behavior</div>
                     <div className="grid grid-cols-3 gap-2">
-                        <button className="p-2 text-center border rounded text-xs hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30">
+                        <Button variant="outline" size="sm" className="text-xs">
                             Normal
-                        </button>
-                        <button className="p-2 text-center border rounded text-xs border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700">
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700">
                             Tension Only
-                        </button>
-                        <button className="p-2 text-center border rounded text-xs hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30">
+                        </Button>
+                        <Button variant="outline" size="sm" className="text-xs">
                             Compression Only
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
                 {/* Cable Properties */}
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="text-xs font-medium text-gray-500 mb-2">Cable Properties</div>
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                    <div className="text-xs font-medium text-zinc-500 mb-2">Cable Properties</div>
                     <div className="grid grid-cols-2 gap-2">
                         <div>
-                            <label className="text-xs text-gray-400">Self-weight (N/m)</label>
-                            <input
+                            <Label>Self-weight (N/m)</Label>
+                            <Input
                                 type="number"
                                 defaultValue={50}
-                                className="w-full px-2 py-1 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-gray-400">Pretension (kN)</label>
-                            <input
+                            <Label>Pretension (kN)</Label>
+                            <Input
                                 type="number"
                                 defaultValue={10}
-                                className="w-full px-2 py-1 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
                             />
                         </div>
                     </div>
@@ -559,10 +557,10 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                 </div>
 
                 {/* Run Button */}
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors">
+                <Button className="w-full bg-teal-500 hover:bg-teal-600 text-white">
                     <Play className="w-4 h-4" />
                     Run Cable Analysis
-                </button>
+                </Button>
             </div>
         </div>
     );
@@ -603,8 +601,6 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
     const eligibleCount = classification.eligibility.filter((e) => e.eligible).length;
     const totalCount = classification.eligibility.length;
 
-    if (!isOpen) return null;
-
     const activeEligibility = eligibilityMap.get(activeTab);
     const isActiveEligible = activeEligibility?.eligible ?? true;
 
@@ -616,10 +612,10 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                     <div className="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-6">
                         <Ban className="w-10 h-10 text-red-500" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+                    <h3 className="text-xl font-bold text-zinc-800 dark:text-zinc-100 mb-2">
                         Not Applicable to This Structure
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md mb-4">
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md mb-4">
                         {activeEligibility.reason}
                     </p>
                     {activeEligibility.hint && (
@@ -630,7 +626,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                             </p>
                         </div>
                     )}
-                    <div className="mt-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs text-gray-500 dark:text-gray-400">
+                    <div className="mt-6 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg text-xs text-zinc-500 dark:text-zinc-400">
                         <span className="font-medium">Detected structure:</span> {classification.label}
                     </div>
                 </div>
@@ -656,46 +652,41 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-blue-500" />
-                        <h2 className="font-semibold text-lg">Advanced Analysis</h2>
-                        {!isPro && (
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded">
-                                <Crown className="w-3 h-3" />
-                                Pro
-                            </span>
-                        )}
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                <DialogHeader className="flex flex-row items-center gap-2 p-4 border-b space-y-0">
+                    <Zap className="w-5 h-5 text-blue-500" />
+                    <DialogTitle>Advanced Analysis</DialogTitle>
+                    {!isPro && (
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded">
+                            <Crown className="w-3 h-3" />
+                            Pro
+                        </span>
+                    )}
+                    <DialogDescription className="sr-only">
+                        Configure and run advanced structural analysis options
+                    </DialogDescription>
+                </DialogHeader>
 
                 {/* Structure Classification Banner */}
-                <div className="px-4 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60">
+                <div className="px-4 py-2.5 border-b bg-zinc-50 dark:bg-zinc-800/60">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className={`w-2.5 h-2.5 rounded-full ${
                                 eligibleCount === totalCount ? 'bg-green-500' :
                                 eligibleCount > 0 ? 'bg-amber-500' : 'bg-red-500'
                             }`} />
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                 {classification.label}
                             </span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
                                 — {classification.description}
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                                 {eligibleCount}/{totalCount} analyses applicable
                             </span>
                         </div>
@@ -705,7 +696,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                 {/* Content */}
                 <div className="flex flex-1 overflow-hidden">
                     {/* Sidebar */}
-                    <div className="w-72 border-r border-gray-200 dark:border-gray-700 overflow-y-auto bg-gray-50/50 dark:bg-gray-800/50">
+                    <div className="w-72 border-r overflow-y-auto bg-zinc-50/50 dark:bg-zinc-800/50">
                         {ANALYSIS_OPTIONS.map((option) => {
                             const Icon = option.icon;
                             const isActive = activeTab === option.id;
@@ -731,19 +722,19 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                                         w-full flex items-center gap-3 p-4 text-left transition-all cursor-pointer relative
                                         ${!isEligible ? 'opacity-50' : ''}
                                         ${isActive
-                                            ? `${isEligible ? colors.bg : 'bg-gray-100 dark:bg-gray-800'} border-r-4 ${isEligible ? colors.border : 'border-gray-400'}`
-                                            : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-r-4 border-transparent'}
+                                            ? `${isEligible ? colors.bg : 'bg-zinc-100 dark:bg-zinc-800'} border-r-4 ${isEligible ? colors.border : 'border-zinc-400'}`
+                                            : 'hover:bg-zinc-50 dark:hover:bg-zinc-800 border-r-4 border-transparent'}
                                     `}
                                 >
                                     <div className="relative">
-                                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && isEligible ? colors.text : isEligible ? 'text-gray-400' : 'text-gray-300 dark:text-gray-600'}`} />
+                                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && isEligible ? colors.text : isEligible ? 'text-zinc-400' : 'text-zinc-300 dark:text-zinc-600'}`} />
                                         {!isEligible && (
                                             <Ban className="w-3 h-3 text-red-400 absolute -top-1 -right-1" />
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-1.5">
-                                            <span className={`text-sm font-semibold ${isActive && isEligible ? colors.textDark : isEligible ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-500'}`}>
+                                            <span className={`text-sm font-semibold ${isActive && isEligible ? colors.textDark : isEligible ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-400 dark:text-zinc-500'}`}>
                                                 {option.name}
                                             </span>
                                             {isEligible ? (
@@ -752,23 +743,23 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                                                 <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
                                             )}
                                         </div>
-                                        <div className={`text-xs truncate mt-0.5 ${isEligible ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'}`}>
+                                        <div className={`text-xs truncate mt-0.5 ${isEligible ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600'}`}>
                                             {isEligible ? option.description : (elig?.reason.slice(0, 60) + (elig && elig.reason.length > 60 ? '…' : ''))}
                                         </div>
                                     </div>
-                                    <ChevronRight className={`w-4 h-4 flex-shrink-0 ${isActive && isEligible ? colors.text : 'text-gray-300 dark:text-gray-600'}`} />
+                                    <ChevronRight className={`w-4 h-4 flex-shrink-0 ${isActive && isEligible ? colors.text : 'text-zinc-300 dark:text-zinc-600'}`} />
                                 </button>
                             );
                         })}
                     </div>
 
                     {/* Panel Content */}
-                    <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 p-6">
+                    <div className="flex-1 overflow-y-auto p-6">
                         {renderPanel()}
                     </div>
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

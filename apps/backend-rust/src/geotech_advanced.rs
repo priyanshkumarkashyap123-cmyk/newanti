@@ -99,10 +99,12 @@ impl LiquefactionAssessment {
             cumulative_depth = depth;
 
             // Calculate stresses
+            // Total vertical stress: γ_moist above GWT, γ_sat below GWT
+            // γ_sat = γ' + γ_w = submerged_weight + 9.81
             let sigma_v = if depth <= gwt_depth {
                 depth * unit_weight
             } else {
-                gwt_depth * unit_weight + (depth - gwt_depth) * (unit_weight + 9.81)
+                gwt_depth * unit_weight + (depth - gwt_depth) * (submerged_weight + 9.81)
             };
 
             let sigma_v_prime = if depth <= gwt_depth {
@@ -202,14 +204,12 @@ impl LiquefactionAssessment {
     }
 
     fn calculate_crr(n1_60_cs: f64) -> f64 {
-        // Youd et al. (2001) CRR curve
+        // Youd et al. (2001) Eq. 4 — CRR for M7.5 earthquake
         if n1_60_cs < 30.0 {
-            let a = n1_60_cs / 34.8;
-            let b = n1_60_cs / 126.0;
-            let c = n1_60_cs / 23.6;
-            let d = n1_60_cs / 25.4;
-            
-            1.0 / (34.0 - n1_60_cs) + a - b + c.powi(2) - d.powi(4) + 0.1 - 0.05
+            1.0 / (34.0 - n1_60_cs)
+                + n1_60_cs / 135.0
+                + 50.0 / (10.0 * n1_60_cs + 45.0).powi(2)
+                - 1.0 / 200.0
         } else {
             // N1,60 >= 30 is generally non-liquefiable
             2.0
@@ -720,7 +720,8 @@ impl SettlementAnalysis {
                 cumulative_depth - layer.thickness / 2.0,
             );
 
-            let mv = layer.compression_index / (1.0 + layer.void_ratio) / layer.sigma_v;
+            // mv = Cc / ((1 + e0) × σ'v × ln(10)) — standard definition
+            let mv = layer.compression_index / (1.0 + layer.void_ratio) / layer.sigma_v / 2.302585;
             let consolidation = mv * delta_sigma * layer.thickness * 1000.0;
 
             // Secondary compression

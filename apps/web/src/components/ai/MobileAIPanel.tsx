@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { voiceInput, VoiceCommand } from '../../services/voice/VoiceInputService';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 
 interface MobileAIPanelProps {
     onCommand?: (command: VoiceCommand) => void;
@@ -115,54 +116,39 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                 )}
             </button>
 
-            {/* Side Panel */}
-            <div
-                className={`fixed inset-y-0 right-0 z-40 w-full sm:w-80 bg-gray-900 transform transition-transform duration-300 ease-out
-                    ${isExpanded ? 'translate-x-0' : 'translate-x-full'}`}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-700">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl">🤖</span>
-                        <span className="font-semibold text-white">AI Assistant</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {/* Online indicator */}
-                        <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
-
-                        <button
-                            onClick={() => setIsExpanded(false)}
-                            className="p-2 text-gray-400 hover:text-white rounded-lg"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+            {/* AI Panel Dialog */}
+            <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+                <DialogContent className="max-w-sm sm:max-w-[380px] h-[85vh] p-0 flex flex-col gap-0">
+                    <DialogHeader className="p-4 border-b border-zinc-300 dark:border-zinc-700">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl">🤖</span>
+                            <DialogTitle>AI Assistant</DialogTitle>
+                            <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-400' : 'bg-red-400'}`} />
+                        </div>
+                        <DialogDescription>Ask questions, run analysis, or optimize your structure.</DialogDescription>
+                    </DialogHeader>
 
                 {/* Quick Actions */}
-                <div className="p-3 border-b border-gray-700">
+                <div className="p-3 border-b border-zinc-300 dark:border-zinc-700">
                     <div className="grid grid-cols-4 gap-2">
                         {quickActions.map((action, i) => (
                             <button
                                 key={i}
                                 onClick={action.action}
-                                className="flex flex-col items-center p-2 bg-gray-800 rounded-lg 
-                           active:bg-gray-700 transition-colors touch-manipulation"
+                                className="flex flex-col items-center p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg 
+                           active:bg-zinc-200 dark:active:bg-zinc-700 transition-colors touch-manipulation"
                             >
                                 <span className="text-2xl mb-1">{action.icon}</span>
-                                <span className="text-xs text-gray-400">{action.label}</span>
+                                <span className="text-xs text-zinc-500 dark:text-zinc-400">{action.label}</span>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: 'calc(100vh - 220px)' }}>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {messages.length === 0 ? (
-                        <div className="text-center text-gray-500 py-8">
+                        <div className="text-center text-zinc-500 dark:text-zinc-500 py-8">
                             <p>👋 Hi! How can I help?</p>
                             <p className="text-sm mt-2">Tap the mic or type a question</p>
                         </div>
@@ -172,7 +158,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                                 key={i}
                                 className={`p-3 rounded-lg ${msg.role === 'user'
                                         ? 'bg-blue-600 ml-8 text-white'
-                                        : 'bg-gray-800 mr-8 text-gray-200'
+                                        : 'bg-zinc-100 dark:bg-zinc-800 mr-8 text-zinc-700 dark:text-zinc-200'
                                     }`}
                             >
                                 {msg.text}
@@ -181,22 +167,22 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                     )}
 
                     {isAnalyzing && (
-                        <div className="bg-gray-800 p-3 rounded-lg mr-8 flex items-center gap-2">
+                        <div className="bg-zinc-100 dark:bg-zinc-800 p-3 rounded-lg mr-8 flex items-center gap-2">
                             <span className="animate-spin">⚙️</span>
-                            <span className="text-gray-400">Analyzing...</span>
+                            <span className="text-zinc-500 dark:text-zinc-400">Analyzing...</span>
                         </div>
                     )}
                 </div>
 
                 {/* Input Area */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gray-800 border-t border-gray-700">
+                <div className="p-3 bg-zinc-100 dark:bg-zinc-800 border-t border-zinc-300 dark:border-zinc-700">
                     <div className="flex items-center gap-2">
                         {/* Voice Button */}
                         <button
                             onClick={handleVoiceToggle}
                             className={`p-3 rounded-full transition-colors touch-manipulation ${isListening
                                     ? 'bg-red-500 text-white animate-pulse'
-                                    : 'bg-gray-700 text-gray-400'
+                                    : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'
                                 }`}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,10 +200,10 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                             placeholder="Ask anything..."
-                            className="flex-1 bg-gray-700 text-white rounded-full px-4 py-2 
+                            className="flex-1 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded-full px-4 py-2 
                          focus:outline-none focus:ring-2 focus:ring-blue-500
-                         text-base" // Prevent iOS zoom
-                            style={{ fontSize: '16px' }} // Prevent iOS zoom on focus
+                         text-base"
+                            style={{ fontSize: '16px' }}
                         />
 
                         {/* Send Button */}
@@ -234,15 +220,8 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                         </button>
                     </div>
                 </div>
-            </div>
-
-            {/* Backdrop */}
-            {isExpanded && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-30 sm:hidden"
-                    onClick={() => setIsExpanded(false)}
-                />
-            )}
+                </DialogContent>
+            </Dialog>
         </>
     );
 };
@@ -260,22 +239,22 @@ export const MobileViewerControls: React.FC<{
         <div className="fixed left-4 bottom-20 z-40 flex flex-col gap-2">
             <button
                 onClick={onZoomIn}
-                className="w-12 h-12 bg-gray-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-white text-xl active:bg-gray-700 touch-manipulation shadow-lg"
+                className="w-12 h-12 bg-zinc-100/90 dark:bg-zinc-800/90 backdrop-blur rounded-lg flex items-center justify-center
+                   text-zinc-900 dark:text-white text-xl active:bg-zinc-200 dark:active:bg-zinc-700 touch-manipulation shadow-lg"
             >
                 +
             </button>
             <button
                 onClick={onZoomOut}
-                className="w-12 h-12 bg-gray-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-white text-xl active:bg-gray-700 touch-manipulation shadow-lg"
+                className="w-12 h-12 bg-zinc-100/90 dark:bg-zinc-800/90 backdrop-blur rounded-lg flex items-center justify-center
+                   text-zinc-900 dark:text-white text-xl active:bg-zinc-200 dark:active:bg-zinc-700 touch-manipulation shadow-lg"
             >
                 −
             </button>
             <button
                 onClick={onReset}
-                className="w-12 h-12 bg-gray-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-white active:bg-gray-700 touch-manipulation shadow-lg"
+                className="w-12 h-12 bg-zinc-100/90 dark:bg-zinc-800/90 backdrop-blur rounded-lg flex items-center justify-center
+                   text-zinc-900 dark:text-white active:bg-zinc-200 dark:active:bg-zinc-700 touch-manipulation shadow-lg"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -285,8 +264,8 @@ export const MobileViewerControls: React.FC<{
             </button>
             <button
                 onClick={onToggleMode}
-                className="w-12 h-12 bg-gray-800/90 backdrop-blur rounded-lg flex items-center justify-center
-                   text-white active:bg-gray-700 touch-manipulation shadow-lg"
+                className="w-12 h-12 bg-zinc-100/90 dark:bg-zinc-800/90 backdrop-blur rounded-lg flex items-center justify-center
+                   text-zinc-900 dark:text-white active:bg-zinc-200 dark:active:bg-zinc-700 touch-manipulation shadow-lg"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}

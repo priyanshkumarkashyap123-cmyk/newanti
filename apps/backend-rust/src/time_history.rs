@@ -342,9 +342,10 @@ pub fn newmark_sdof(
     // Effective stiffness
     let k_eff = k + gamma / (beta * dt) * c + m / (beta * dt * dt);
     
-    // Integration constants
-    let a1 = m / (beta * dt) + gamma / beta * c;
-    let a2 = m / (2.0 * beta) + dt * (gamma / (2.0 * beta) - 1.0) * c;
+    // Integration constants for total formulation (matches MDOF version)
+    let cu = m / (beta * dt * dt) + gamma * c / (beta * dt);  // u coefficient
+    let cv = m / (beta * dt) + (gamma / beta - 1.0) * c;      // v coefficient
+    let ca = m * (1.0 / (2.0 * beta) - 1.0) + dt * (gamma / (2.0 * beta) - 1.0) * c;  // a coefficient
     
     for i in 1..n {
         let t = i as f64 * dt;
@@ -354,10 +355,8 @@ pub fn newmark_sdof(
         let ag_i = ground_motion.acceleration_at(t);
         let ag_i_ms2 = if ground_motion.in_g { ag_i * 9.81 } else { ag_i };
         
-        // Effective load
-        let p_eff = -m * ag_i_ms2 + a1 * u[i-1] + a2 * a[i-1] + 
-                   (gamma / (beta * dt) * u[i-1] + (gamma / beta - 1.0) * v[i-1] + 
-                    dt * (gamma / (2.0 * beta) - 1.0) * a[i-1]) * c;
+        // Effective load (total formulation)
+        let p_eff = -m * ag_i_ms2 + cu * u[i-1] + cv * v[i-1] + ca * a[i-1];
         
         // Solve for displacement
         let u_i = p_eff / k_eff;

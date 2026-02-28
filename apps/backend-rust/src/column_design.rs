@@ -267,7 +267,8 @@ impl SteelColumn {
         let area = PI / 4.0 * (d.powi(2) - di.powi(2));
         let i = PI / 64.0 * (d.powi(4) - di.powi(4));
         let r = (i / area).sqrt();
-        let z = PI / 32.0 * (d.powi(3) - di.powi(3));
+        // Plastic section modulus for hollow circle: Z = (D³ - d³) / 6
+        let z = (d.powi(3) - di.powi(3)) / 6.0;
 
         SteelSectionProps {
             area,

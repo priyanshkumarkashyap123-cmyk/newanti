@@ -641,11 +641,12 @@ pub struct DesignSpectrum {
 impl DesignSpectrum {
     /// Create IS 1893:2016 design spectrum
     pub fn is1893(zone_factor: f64, importance: f64, response_reduction: f64, soil_type: &str) -> Self {
-        let (_s1, s2, s3) = match soil_type {
-            "rock" | "I" => (1.0, 2.5, 1.0),
-            "medium" | "II" => (1.0, 2.5, 1.36),
-            "soft" | "III" => (1.0, 2.5, 1.67),
-            _ => (1.0, 2.5, 1.36),
+        // IS 1893:2016 Clause 6.4.2 — soil-dependent transition period and 1/T coefficient
+        let (ts, sa_by_t) = match soil_type {
+            "rock" | "I" => (0.40, 1.0),
+            "medium" | "II" => (0.55, 1.36),
+            "soft" | "III" => (0.67, 1.67),
+            _ => (0.55, 1.36),
         };
         
         let z_i_2r = zone_factor * importance / (2.0 * response_reduction);
@@ -654,13 +655,13 @@ impl DesignSpectrum {
         let sa: Vec<f64> = periods.iter()
             .map(|&t| {
                 let sa_g = if t < 0.1 {
-                    1.0 + 15.0 * t * (s2 - 1.0)
-                } else if t < 0.4 {
-                    s2
-                } else if t < 4.0 {
-                    s2 * 0.4 / t * s3
+                    1.0 + 15.0 * t
+                } else if t < ts {
+                    2.5
+                } else if t <= 4.0 {
+                    sa_by_t / t
                 } else {
-                    s2 * 0.4 / 4.0 * s3
+                    sa_by_t / 4.0
                 };
                 z_i_2r * sa_g
             })
@@ -800,9 +801,10 @@ impl CapacitySpectrumMethod {
         if ductility <= 1.0 {
             beta_0
         } else {
-            // ATC-40 Type B structure (average hysteretic behavior)
-            let kappa = 0.33; // Type B factor
-            let beta_eq = kappa * (ductility - 1.0) / (PI * ductility);
+            // ATC-40 Table 8-1: β_eff = β₀ + κ × (2/π) × (1 - 1/μ)
+            // Type B structure: κ = 2/3
+            let kappa = 2.0 / 3.0; // Type B factor per ATC-40
+            let beta_eq = kappa * 2.0 * (ductility - 1.0) / (PI * ductility);
             beta_0 + beta_eq
         }
     }

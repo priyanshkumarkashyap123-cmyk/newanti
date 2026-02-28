@@ -10,7 +10,9 @@
 
 import React from 'react';
 import { FC } from 'react';
-import { Check, Loader2, X, AlertTriangle } from 'lucide-react';
+import { Check, Loader2, AlertTriangle } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
 
 // ============================================
 // TYPES
@@ -62,27 +64,20 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
     onClose,
     stats
 }) => {
-    // Escape key to close when analysis is complete or errored
-    React.useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && (stage === 'complete' || stage === 'error')) onClose();
-        };
-        if (isOpen) window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, stage, onClose]);
-
-    if (!isOpen) return null;
-
     const currentStageIndex = STAGES.findIndex(s => s.id === stage);
     const isComplete = stage === 'complete';
     const isError = stage === 'error';
 
+    // Only allow closing when complete or errored
+    const handleOpenChange = (open: boolean) => {
+        if (!open && (isComplete || isError)) onClose();
+    };
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-             onClick={(e) => { if (e.target === e.currentTarget && (stage === 'complete' || stage === 'error')) onClose(); }}>
-            <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-xl shadow-2xl overflow-hidden">
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+            <DialogContent className="max-w-md p-0 overflow-hidden" onInteractOutside={(e) => { if (!isComplete && !isError) e.preventDefault(); }}>
                 {/* Header */}
-                <div className={`
+                <DialogHeader className={`
                     flex items-center justify-between px-6 py-4
                     ${isComplete
                         ? 'bg-green-600 text-white'
@@ -91,21 +86,17 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                             : 'bg-blue-600 text-white'
                     }
                 `}>
-                    <h2 className="text-lg font-semibold">
+                    <DialogTitle className="text-lg font-semibold text-white">
                         {isComplete
                             ? '✓ Analysis Complete'
                             : isError
                                 ? '✗ Analysis Failed'
                                 : 'Running Analysis...'}
-                    </h2>
-                    {(isComplete || isError) && (
-                        <button
-                            onClick={onClose}
-                            className="p-1 rounded hover:bg-white/20 transition-colors"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                    )}
+                    </DialogTitle>
+                    <DialogDescription className="sr-only">
+                        {isComplete ? 'Analysis finished successfully' : isError ? 'Analysis encountered an error' : 'Analysis is in progress'}
+                    </DialogDescription>
+                </DialogHeader>
                 </div>
 
                 {/* Content */}
@@ -231,23 +222,20 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
 
                 {/* Footer */}
                 {(isComplete || isError) && (
-                    <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700">
-                        <button
+                    <DialogFooter className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700">
+                        <Button
                             onClick={onClose}
-                            className={`
-                                w-full py-2 rounded-lg font-medium transition-colors
-                                ${isComplete
+                            className={`w-full ${isComplete
                                     ? 'bg-green-600 hover:bg-green-700 text-white'
                                     : 'bg-zinc-600 hover:bg-zinc-700 text-white'
-                                }
-                            `}
+                                }`}
                         >
                             {isComplete ? 'View Results' : 'Close'}
-                        </button>
-                    </div>
+                        </Button>
+                    </DialogFooter>
                 )}
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

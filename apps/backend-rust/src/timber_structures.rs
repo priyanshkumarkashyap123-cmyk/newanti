@@ -353,11 +353,12 @@ impl TimberBeam {
     
     /// Shear capacity (kN)
     pub fn shear_capacity(&self) -> f64 {
-        // Effective shear area = 2/3 * b * h for rectangular section
+        // EC5 §6.1.7: τ_d = 1.5·V / (kcr·b·h) ≤ fv,d
+        // → V ≤ (2/3) · fv,d · kcr · b · h
         let kcr = 0.67; // Crack factor
         let av = kcr * self.width * self.depth;
         
-        self.design_shear_strength() * av / 1000.0
+        (2.0 / 3.0) * self.design_shear_strength() * av / 1000.0
     }
     
     /// Check combined bending and shear
@@ -561,11 +562,8 @@ impl TimberConnection {
         let d = self.diameter;
         let fu = self.fu;
         
-        match self.fastener_type {
-            FastenerType::Nail => 0.3 * fu * d.powf(2.6),
-            FastenerType::Screw => 0.3 * fu * d.powf(2.6),
-            FastenerType::Bolt | FastenerType::Dowel => 0.3 * fu * d.powi(3) / 6.0,
-        }
+        // EC5 Eq. 8.14 / 8.30: My,Rk = 0.3 × fu × d^2.6 for all dowel-type fasteners
+        0.3 * fu * d.powf(2.6)
     }
     
     /// Single shear capacity per fastener (N) - Johansen yield theory

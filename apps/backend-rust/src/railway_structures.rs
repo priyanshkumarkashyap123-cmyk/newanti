@@ -516,8 +516,8 @@ impl RailwayBridgeLoad {
         let l_phi = self.determinant_length();
         let k = if self.track_continuous { 1.0 } else { 0.5 };
         
-        // Φ2 for careful maintenance
-        let phi2 = 1.44 / (l_phi - 0.2).sqrt() + 0.82;
+        // Φ2 for careful maintenance (EN 1991-2 Eq. 6.4)
+        let phi2 = 1.44 / (l_phi.sqrt() - 0.2) + 0.82;
         
         (k * phi2).max(1.0).min(2.0)
     }

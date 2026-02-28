@@ -325,8 +325,13 @@ impl CreepCalculator {
         let props = &self.props;
         let fcm = props.fc28 + 8.0;
         
-        // Notional shrinkage coefficient
-        let eps_s_fcm = (160.0 + 10.0 * (9.0 - fcm / 10.0)) * 1e-6;
+        // CEB-FIP MC90: εs(fcm) uses cement-type βsc, not hardcoded 10
+        let beta_sc = match self.props.cement_type {
+            CementType::Slow => 4.0,
+            CementType::Normal => 5.0,
+            CementType::Rapid => 8.0,
+        };
+        let eps_s_fcm = (160.0 + beta_sc * (9.0 - fcm / 10.0)) * 1e-6;
         let beta_rh = -1.55 * (1.0 - (props.rh).powi(3));
         let eps_cs0 = eps_s_fcm * beta_rh;
         
@@ -369,8 +374,8 @@ impl CreepCalculator {
     
     fn phi_bc_mc2010(&self, t: f64, t0: f64, fcm: f64, t0_adj: f64) -> f64 {
         let beta_bc_fcm = 1.8 / fcm.powf(0.7);
-        let beta_bc_t = ((30.0 / t0_adj + 0.035).powi(2) * (t - t0)).ln();
-        let beta_bc_t = beta_bc_t.max(0.0);
+        // fib MC2010 Eq. 5.1-53: β_bc = ln{[(30/t0_adj + 0.035)² × (t−t0)] + 1}
+        let beta_bc_t = ((30.0 / t0_adj + 0.035).powi(2) * (t - t0) + 1.0).ln();
         
         beta_bc_fcm * beta_bc_t
     }
@@ -438,9 +443,11 @@ impl CreepCalculator {
             CementType::Slow => 0.013,
         };
         
-        let eps_cds0 = ((220.0 + 110.0 * alpha_ds1 as f64) * (-alpha_ds2 * fcm).exp()) * 1e-6;
+        // fib MC2010 Eq. 5.1-66: fcm normalized by fcm0=10 MPa
+        let eps_cds0 = ((220.0 + 110.0 * alpha_ds1 as f64) * (-alpha_ds2 * fcm / 10.0).exp()) * 1e-6;
         let beta_rh = -1.55 * (1.0 - rh.powi(3));
-        let beta_ds = (dt / (0.035 * (h0 / 100.0).powi(2) + dt)).sqrt();
+        // fib MC2010 Eq. 5.1-68: h0 in mm, no /100 division
+        let beta_ds = (dt / (0.035 * h0.powi(2) + dt)).sqrt();
         
         eps_cds0 * beta_rh * beta_ds
     }
@@ -489,7 +496,8 @@ impl CreepCalculator {
         let n = 0.1;
         let _m = 0.5;
         
-        let c0 = q2 * self.q_t(t, t0, n) + q3 * (t0.ln() - t.ln()).abs() + q4 * (t / t0).ln();
+        // B3 model: C0 = q2·Q(t,t0) + q3·ln[1+(t-t0)^n] + q4·ln(t/t0)
+        let c0 = q2 * self.q_t(t, t0, n) + q3 * (1.0 + (t - t0).powf(n)).ln() + q4 * (t / t0).ln();
         
         // Drying creep
         let h = props.rh;
@@ -512,8 +520,10 @@ impl CreepCalculator {
     
     fn q_t(&self, t: f64, t0: f64, n: f64) -> f64 {
         let xi = t / t0;
+        if xi <= 1.0 { return 1.0; }
         let z = t0.powf(-0.5) * (xi - 1.0).ln();
-        let q = 1.0 + (0.086 * t0.powf(2.0 / 9.0) + 1.21 * t0.powf(4.0 / 9.0)) * z.powi(n as i32);
+        // n=0.1: must use powf(n), not powi(n as i32) which truncates to 0
+        let q = 1.0 + (0.086 * t0.powf(2.0 / 9.0) + 1.21 * t0.powf(4.0 / 9.0)) * z.abs().powf(n);
         q
     }
     
@@ -643,7 +653,8 @@ impl CreepCalculator {
             CementType::Slow => 0.75,
         };
         
-        -900.0 * k * (30.0 / fcm28).powf(0.5) * (1.0 - rh.powi(4)) * 1e-6
+        // GL2000: humidity function uses 1.18 coefficient per Gardner-Lockman (2001)
+        -900.0 * k * (30.0 / fcm28).powf(0.5) * (1.0 - 1.18 * rh.powi(4)).max(0.0) * 1e-6
     }
 }
 
@@ -757,11 +768,13 @@ pub fn calculate_prestress_losses(
     let eps_sh = calc.shrinkage_strain(t, ts);
     let shrinkage_loss = eps_sh.abs() * ep_steel;
     
-    // Steel relaxation (simplified)
+    // Steel relaxation (Magura-Sozen-Siess formula)
     let fpy = 1670.0; // Yield stress (typical low-relax strand)
     let stress_ratio = fpi / fpy;
+    // Δfpr/fpi = (log₁₀(t_hours)/10) × (fpi/fpy − 0.55)
     let relaxation_loss = if stress_ratio > 0.55 {
-        fpi * (0.55 * stress_ratio - 0.55) * (t / 1000.0).log10().max(0.0)
+        let t_hours = t * 24.0; // convert days to hours
+        fpi * (stress_ratio - 0.55) * (t_hours.max(1.0)).log10() / 10.0
     } else {
         0.0
     };

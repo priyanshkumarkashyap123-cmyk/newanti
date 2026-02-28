@@ -236,9 +236,11 @@ impl Asce7WindLoad {
         match surface {
             WallSurface::Windward => 0.8,
             WallSurface::Leeward => {
+                // ASCE 7-22 Figure 27.3-1: L/B=0-1: -0.5, L/B=2: -0.3, L/B≥4: -0.2
                 if l_b <= 1.0 { -0.5 }
+                else if l_b <= 2.0 { -0.5 + 0.2 * (l_b - 1.0) }
                 else if l_b >= 4.0 { -0.2 }
-                else { -0.5 + 0.3 * (l_b - 1.0) / 3.0 }  // Linear interpolation
+                else { -0.3 + 0.1 * (l_b - 2.0) / 2.0 }
             }
             WallSurface::SideWall => -0.7,
         }

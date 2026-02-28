@@ -467,7 +467,7 @@ impl BiaxialColumnAnalyzer {
                 0.85 * section.concrete.fck / 1.5 // fcd
             }
             ConcreteDesignCode::IS456_2000 => {
-                0.4 * section.concrete.fck + 0.67 * section.concrete.fck
+                0.4 * section.concrete.fck  // IS 456 §39.3: 0.4fck for concrete
             }
             _ => 0.85 * section.concrete.fck,
         };
@@ -480,7 +480,7 @@ impl BiaxialColumnAnalyzer {
                 section.rebar.fy / 1.15 // fyd
             }
             ConcreteDesignCode::IS456_2000 => {
-                0.87 * section.rebar.fy
+                0.67 * section.rebar.fy  // IS 456 §39.3: 0.67fy for column compression
             }
             _ => section.rebar.fy,
         };
@@ -713,7 +713,7 @@ impl BiaxialColumnAnalyzer {
                 if fck <= 50.0 { 0.8 } else { 0.8 - (fck - 50.0) / 400.0 }
             }
             ConcreteDesignCode::IS456_2000 => {
-                0.42 // For parabolic-rectangular stress block
+                0.81 // Equivalent rectangular block depth: 0.446fck × 0.81 ≈ 0.36fck
             }
             _ => 0.85,
         }
@@ -863,8 +863,8 @@ pub fn calculate_slenderness_aci(
     // Effective stiffness
     let ei_eff = 0.4 * ec * ig / (1.0 + beta_dns);
     
-    // Critical buckling load
-    let pcr = PI.powi(2) * ei_eff / (k * lu).powi(2) / 1e9; // kN
+    // Critical buckling load (EI in N·mm², (klu)² in mm² → Pcr in N → /1000 for kN)
+    let pcr = PI.powi(2) * ei_eff / (k * lu).powi(2) / 1000.0; // kN
     
     // Moment magnifier
     let cm = 0.6 + 0.4 * m1_m2;
@@ -968,7 +968,9 @@ impl BiaxialColumnAnalyzer {
         let theta = if a >= d {
             PI
         } else {
-            2.0 * ((a - r).max(-r).min(r) / r).acos()
+            // Angle subtended by compression cap at circle center
+            // Boundary at y = r - a from center: cos(θ/2) = (r-a)/r
+            2.0 * ((r - a).max(-r).min(r) / r).acos()
         };
         let area_comp = r.powi(2) * (theta - theta.sin()) / 2.0;
         let y_bar = if theta.sin() > 0.001 {
@@ -978,7 +980,8 @@ impl BiaxialColumnAnalyzer {
         };
         
         let pc = 0.85 * fc * area_comp / 1000.0;
-        let mc = pc * (r - y_bar) / 1000.0;
+        // Moment about section centroid (circle center): force × centroid distance
+        let mc = pc * y_bar / 1000.0;
         
         // Steel contribution
         let mut ps = 0.0;

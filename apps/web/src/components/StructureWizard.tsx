@@ -17,11 +17,13 @@
 
 import React from 'react';
 import { FC, useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-    X, Check, Sparkles, Triangle, Building2, Factory,
+    Check, Sparkles, Triangle, Building2, Factory,
     Columns, Grid3X3, Ruler, ArrowDown, Zap, Shield
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Label } from './ui/label';
 
 // ============================================
 // TYPES
@@ -798,7 +800,7 @@ const CATEGORY_INFO: Record<StructureCategory, { name: string; icon: any; color:
 function StructurePreview({ structure }: { structure: GeneratedStructure | null }) {
     if (!structure || structure.nodes.length === 0) {
         return (
-            <div className="w-full h-48 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center text-slate-500 text-sm">
+            <div className="w-full h-48 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/50 flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-sm">
                 Configure parameters to see preview
             </div>
         );
@@ -822,7 +824,7 @@ function StructurePreview({ structure }: { structure: GeneratedStructure | null 
     const memberById = new Map(structure.members.map(m => [m.id, m]));
 
     return (
-        <svg viewBox={'0 0 ' + W + ' ' + H} className="w-full h-48 rounded-xl bg-slate-800/60 border border-slate-700/50">
+        <svg viewBox={'0 0 ' + W + ' ' + H} className="w-full h-48 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/50">
             {/* Member lines */}
             {structure.members.map(m => {
                 const n1 = nodeById.get(m.startNodeId);
@@ -1029,174 +1031,154 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
         }
     }, [preview, onGenerate, onClose]);
 
-    if (!isOpen) return null;
-
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                onClick={onClose}
-            >
-                <motion.div
-                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                    className="w-full max-w-4xl max-h-[90vh] overflow-hidden bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-700/60 rounded-2xl shadow-2xl flex flex-col"
-                >
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80 shrink-0">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center shadow-lg">
-                                <Sparkles className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-bold text-white">Structure Wizard</h2>
-                                <p className="text-xs text-slate-400">Choose a template, configure and generate</p>
-                            </div>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+                {/* Header */}
+                <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-600 flex items-center justify-center shadow-lg">
+                            <Sparkles className="w-5 h-5 text-white" />
                         </div>
-                        <button onClick={onClose} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-                            <X className="w-5 h-5" />
-                        </button>
+                        <div>
+                            <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-white">Structure Wizard</DialogTitle>
+                            <DialogDescription className="text-xs text-zinc-500 dark:text-zinc-400">Choose a template, configure and generate</DialogDescription>
+                        </div>
+                    </div>
+                </DialogHeader>
+
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                    {/* Category Tabs */}
+                    <div className="flex gap-2">
+                        {(Object.keys(CATEGORY_INFO) as StructureCategory[]).filter(c => TEMPLATES.some(t => t.category === c)).map(cat => {
+                            const info = CATEGORY_INFO[cat];
+                            const Icon = info.icon;
+                            const active = selectedCategory === cat;
+                            return (
+                                <button
+                                    key={cat}
+                                    onClick={() => handleSelectCategory(cat)}
+                                    className={'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ' +
+                                        (active
+                                            ? 'bg-zinc-200 dark:bg-white/10 text-zinc-900 dark:text-white border border-zinc-300 dark:border-white/20 shadow-lg'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/50 border border-transparent')
+                                    }
+                                >
+                                    <Icon className={'w-4 h-4 ' + (active ? info.color : '')} />
+                                    {info.name}
+                                </button>
+                            );
+                        })}
                     </div>
 
-                    {/* Body */}
-                    <div className="flex-1 overflow-y-auto p-5 space-y-5">
-                        {/* Category Tabs */}
-                        <div className="flex gap-2">
-                            {(Object.keys(CATEGORY_INFO) as StructureCategory[]).filter(c => TEMPLATES.some(t => t.category === c)).map(cat => {
-                                const info = CATEGORY_INFO[cat];
-                                const Icon = info.icon;
-                                const active = selectedCategory === cat;
-                                return (
-                                    <button
-                                        key={cat}
-                                        onClick={() => handleSelectCategory(cat)}
-                                        className={'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ' +
-                                            (active
-                                                ? 'bg-white/10 text-white border border-white/20 shadow-lg'
-                                                : 'text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent')
-                                        }
-                                    >
-                                        <Icon className={'w-4 h-4 ' + (active ? info.color : '')} />
-                                        {info.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                    {/* Template Cards */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {categoryTemplates.map(tmpl => {
+                            const Icon = tmpl.icon;
+                            const active = selectedTemplateId === tmpl.id;
+                            return (
+                                <button
+                                    key={tmpl.id}
+                                    onClick={() => handleSelectTemplate(tmpl.id)}
+                                    className={'relative p-4 rounded-xl border text-left transition-all group ' +
+                                        (active
+                                            ? 'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30'
+                                            : 'border-zinc-200 dark:border-zinc-700/50 bg-zinc-50 dark:bg-zinc-800/40 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800/70')
+                                    }
+                                >
+                                    <Icon className={'w-6 h-6 mb-2 ' + (active ? tmpl.color : 'text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300')} />
+                                    <h4 className="text-zinc-900 dark:text-white font-semibold text-sm">{tmpl.name}</h4>
+                                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 leading-tight">{tmpl.description}</p>
+                                    {active && (
+                                        <div className="absolute top-2 right-2">
+                                            <Check className="w-4 h-4 text-emerald-400" />
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                        {/* Template Cards */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {categoryTemplates.map(tmpl => {
-                                const Icon = tmpl.icon;
-                                const active = selectedTemplateId === tmpl.id;
-                                return (
-                                    <button
-                                        key={tmpl.id}
-                                        onClick={() => handleSelectTemplate(tmpl.id)}
-                                        className={'relative p-4 rounded-xl border text-left transition-all group ' +
-                                            (active
-                                                ? 'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30'
-                                                : 'border-slate-700/50 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/70')
-                                        }
-                                    >
-                                        <Icon className={'w-6 h-6 mb-2 ' + (active ? tmpl.color : 'text-slate-500 group-hover:text-slate-300')} />
-                                        <h4 className="text-white font-semibold text-sm">{tmpl.name}</h4>
-                                        <p className="text-[11px] text-slate-400 mt-1 leading-tight">{tmpl.description}</p>
-                                        {active && (
-                                            <div className="absolute top-2 right-2">
-                                                <Check className="w-4 h-4 text-emerald-400" />
-                                            </div>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                    {/* Parameters + Preview */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-semibold text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-amber-400" /> Parameters
+                            </h3>
+                            <div className="space-y-3 bg-zinc-50 dark:bg-zinc-800/40 rounded-xl p-4 border border-zinc-200 dark:border-zinc-700/40">
+                                {template.params.map(p => (
+                                    <div key={p.key}>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <Label className="text-xs text-zinc-500 dark:text-zinc-400">{p.label}</Label>
+                                            <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
+                                                {effectiveParams[p.key]}{p.unit ? (' ' + p.unit) : ''}
+                                            </span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min={p.min}
+                                            max={p.max}
+                                            step={p.step}
+                                            value={effectiveParams[p.key]}
+                                            onChange={e => handleParamChange(p.key, parseFloat(e.target.value))}
+                                            className="w-full h-1.5 bg-zinc-300 dark:bg-zinc-700 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                                        />
+                                        <div className="flex justify-between text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                            <span>{p.min}{p.unit ? (' ' + p.unit) : ''}</span>
+                                            <span>{p.max}{p.unit ? (' ' + p.unit) : ''}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
 
-                        {/* Parameters + Preview */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-3">
-                                <h3 className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                                    <Zap className="w-4 h-4 text-amber-400" /> Parameters
-                                </h3>
-                                <div className="space-y-3 bg-slate-800/40 rounded-xl p-4 border border-slate-700/40">
-                                    {template.params.map(p => (
-                                        <div key={p.key}>
-                                            <div className="flex items-center justify-between mb-1">
-                                                <label className="text-xs text-slate-400">{p.label}</label>
-                                                <span className="text-xs font-mono text-slate-300">
-                                                    {effectiveParams[p.key]}{p.unit ? (' ' + p.unit) : ''}
-                                                </span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min={p.min}
-                                                max={p.max}
-                                                step={p.step}
-                                                value={effectiveParams[p.key]}
-                                                onChange={e => handleParamChange(p.key, parseFloat(e.target.value))}
-                                                className="w-full h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-emerald-500"
-                                            />
-                                            <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
-                                                <span>{p.min}{p.unit ? (' ' + p.unit) : ''}</span>
-                                                <span>{p.max}{p.unit ? (' ' + p.unit) : ''}</span>
-                                            </div>
+                            {stats && (
+                                <div className="grid grid-cols-5 gap-2">
+                                    {[
+                                        { label: 'Nodes', value: String(stats.nodes) },
+                                        { label: 'Members', value: String(stats.members) },
+                                        { label: 'Supports', value: String(stats.supports) },
+                                        { label: 'Loads', value: String(stats.loads) },
+                                        { label: 'Total Load', value: stats.totalLoad + ' kN' },
+                                    ].map(s => (
+                                        <div key={s.label} className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-2 text-center border border-zinc-200 dark:border-zinc-700/30">
+                                            <div className="text-sm font-bold text-zinc-900 dark:text-white">{s.value}</div>
+                                            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">{s.label}</div>
                                         </div>
                                     ))}
                                 </div>
+                            )}
+                        </div>
 
-                                {stats && (
-                                    <div className="grid grid-cols-5 gap-2">
-                                        {[
-                                            { label: 'Nodes', value: String(stats.nodes) },
-                                            { label: 'Members', value: String(stats.members) },
-                                            { label: 'Supports', value: String(stats.supports) },
-                                            { label: 'Loads', value: String(stats.loads) },
-                                            { label: 'Total Load', value: stats.totalLoad + ' kN' },
-                                        ].map(s => (
-                                            <div key={s.label} className="bg-slate-800/50 rounded-lg p-2 text-center border border-slate-700/30">
-                                                <div className="text-sm font-bold text-white">{s.value}</div>
-                                                <div className="text-[10px] text-slate-400">{s.label}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <h3 className="text-sm font-semibold text-slate-300">Live Preview</h3>
-                                <StructurePreview structure={preview} />
-                                {preview && (
-                                    <p className="text-xs text-slate-500 text-center">{preview.name}</p>
-                                )}
-                            </div>
+                        <div className="space-y-2">
+                            <h3 className="text-sm font-semibold text-zinc-600 dark:text-zinc-300">Live Preview</h3>
+                            <StructurePreview structure={preview} />
+                            {preview && (
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center">{preview.name}</p>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    {/* Footer */}
-                    <div className="px-6 py-4 border-t border-slate-800/80 flex items-center justify-between shrink-0 bg-slate-950/50">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-2"
-                        >
-                            <X className="w-4 h-4" /> Cancel
-                        </button>
-                        <button
-                            onClick={handleGenerate}
-                            disabled={!preview}
-                            className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl flex items-center gap-2 shadow-lg transition-all"
-                        >
-                            <Sparkles className="w-4 h-4" />
-                            Generate and Load
-                        </button>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                {/* Footer */}
+                <DialogFooter className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 shrink-0 bg-zinc-50/50 dark:bg-zinc-950/50 sm:justify-between">
+                    <Button
+                        variant="outline"
+                        onClick={onClose}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleGenerate}
+                        disabled={!preview}
+                        className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 disabled:from-zinc-400 disabled:to-zinc-400 dark:disabled:from-zinc-700 dark:disabled:to-zinc-700 text-white font-semibold"
+                    >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate and Load
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

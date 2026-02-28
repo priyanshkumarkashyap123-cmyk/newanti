@@ -557,24 +557,30 @@ impl CraigBampton {
         let mut lambda = 0.0;
 
         for _ in 0..50 {
-            // Solve A * y = B * x
+            // Solve A * y = B * x  (i.e., K * y = M * x)
             let bx: Vec<f64> = (0..n).map(|i| {
                 (0..n).map(|j| b[i * n + j] * x[j]).sum::<f64>()
             }).collect();
 
             let y = self.solve_linear(a, &bx, n);
 
-            // Rayleigh quotient
-            let xbx: f64 = (0..n).map(|i| x[i] * bx[i]).sum();
-            let xay: f64 = (0..n).map(|i| x[i] * {
-                (0..n).map(|j| a[i * n + j] * y[j]).sum::<f64>()
-            }).sum();
-
-            lambda = xay / xbx;
-
-            // Normalize
+            // Normalize and update x
             let norm: f64 = y.iter().map(|&v| v * v).sum::<f64>().sqrt();
+            if norm < 1e-14 {
+                break;
+            }
             x = y.iter().map(|&v| v / norm).collect();
+
+            // Rayleigh quotient: λ = xᵀKx / xᵀMx (NOT xᵀKy/xᵀMx which always = 1)
+            let ax: Vec<f64> = (0..n).map(|i| {
+                (0..n).map(|j| a[i * n + j] * x[j]).sum::<f64>()
+            }).collect();
+            let mx: Vec<f64> = (0..n).map(|i| {
+                (0..n).map(|j| b[i * n + j] * x[j]).sum::<f64>()
+            }).collect();
+            let xax: f64 = x.iter().zip(ax.iter()).map(|(&xi, &axi)| xi * axi).sum();
+            let xmx: f64 = x.iter().zip(mx.iter()).map(|(&xi, &mxi)| xi * mxi).sum();
+            lambda = xax / xmx;
         }
 
         (lambda, x)

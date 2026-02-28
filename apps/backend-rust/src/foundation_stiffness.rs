@@ -583,12 +583,15 @@ impl GazetasImpedance {
         let b = width / 2.0;  // Half-width
         let ab = l / b;       // Aspect ratio
         
-        // Vertical stiffness (Eq. 2-1)
-        let kv = (g * l / (1.0 - nu)) * (0.73 + 1.54 * ab.powf(-0.75));
+        // Vertical stiffness (Gazetas 1991, Eq. 2-1)
+        // Kz = 2GL/(1-ν) [0.73 + 1.54(B/L)^0.75]
+        let kv = (2.0 * g * l / (1.0 - nu)) * (0.73 + 1.54 * ab.powf(-0.75));
         
-        // Horizontal stiffness (Eq. 2-2)
-        let khx = (g * l / (2.0 - nu)) * (6.8 * ab.powf(-0.65) + 0.8 * ab + 1.6);
-        let khy = (g * l / (2.0 - nu)) * (6.8 * ab.powf(-0.65) + 2.4);
+        // Horizontal stiffness (Gazetas 1991, Eq. 2-2)
+        // Ky = 2GL/(2-ν) [6.8(B/L)^0.65 + 0.8(L/B) + 1.6]
+        // Kx = 2GL/(2-ν) [6.8(B/L)^0.65 + 2.4]
+        let khx = (2.0 * g * l / (2.0 - nu)) * (6.8 * ab.powf(-0.65) + 0.8 * ab + 1.6);
+        let khy = (2.0 * g * l / (2.0 - nu)) * (6.8 * ab.powf(-0.65) + 2.4);
         
         // Rocking stiffness (Eq. 2-3, 2-4)
         let krx = (g * l.powi(3) / (1.0 - nu)) * (3.2 * ab + 0.8);

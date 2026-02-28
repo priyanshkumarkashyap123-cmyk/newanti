@@ -11,11 +11,15 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Layers, Grid3X3, Plus, Check, AlertTriangle, Eye } from 'lucide-react';
+import { Layers, Grid3X3, Plus, AlertTriangle, Eye } from 'lucide-react';
 import { useModelStore } from '../../store/model';
 import type { Plate, FloorLoad } from '../../store/model';
 import { detectPanels, type NodeInfo, type MemberInfo, type DetectedPanel } from '../../services/floorLoadDistributor';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Checkbox } from '../ui/checkbox';
 
 interface FloorSlabDialogProps {
   isOpen: boolean;
@@ -145,209 +149,181 @@ export const FloorSlabDialog: React.FC<FloorSlabDialogProps> = ({ isOpen, onClos
     }
   }, [detectedPanels, findCornerNodes, material, thickness, pressure, applyLoad, distribution, yLevel, addPlate, addFloorLoad, getNextPlateId, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-[600px] max-h-[85vh] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl shadow-2xl border border-white/10 overflow-hidden flex flex-col"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
-                <Layers size={20} className="text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">Floor Slab</h2>
-                <p className="text-sm text-slate-400">Auto-detect panels & create slabs with area loads</p>
-              </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[600px] max-h-[85vh] flex flex-col p-0 gap-0">
+        {/* Header */}
+        <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+              <Layers size={20} className="text-white" />
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-slate-700 rounded-lg transition-colors">
-              <X size={18} className="text-slate-400" />
-            </button>
+            <div>
+              <DialogTitle className="text-xl font-bold">Floor Slab</DialogTitle>
+              <DialogDescription>Auto-detect panels & create slabs with area loads</DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Y Level Selection */}
+          <div className="space-y-2">
+            <Label>Floor Level (Y)</Label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={yLevel}
+                onChange={(e) => setYLevel(parseFloat(e.target.value) || 0)}
+                step={0.5}
+              />
+              <span className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">m</span>
+            </div>
+            {availableYLevels.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">Quick select:</span>
+                {availableYLevels.map((y) => (
+                  <Button
+                    key={y}
+                    variant={Math.abs(y - yLevel) < 0.001 ? 'default' : 'outline'}
+                    size="sm"
+                    className={`h-6 text-xs ${Math.abs(y - yLevel) < 0.001 ? 'bg-purple-600 hover:bg-purple-700' : ''}`}
+                    onClick={() => setYLevel(y)}
+                  >
+                    Y = {y}m
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Y Level Selection */}
+          {/* Panel Detection Results */}
+          <div className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+            <div className="flex items-center gap-2 mb-3">
+              <Eye size={16} className="text-purple-500 dark:text-purple-400" />
+              <span className="text-sm font-medium text-zinc-900 dark:text-white">Detected Panels</span>
+              <span className="ml-auto px-2 py-0.5 bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-medium">
+                {detectedPanels.length} found
+              </span>
+            </div>
+            {detectedPanels.length > 0 ? (
+              <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                {detectedPanels.map((panel, i) => (
+                  <div key={i} className="flex items-center gap-3 text-xs text-zinc-600 dark:text-zinc-300 px-2 py-1.5 bg-zinc-100 dark:bg-zinc-700/50 rounded">
+                    <Grid3X3 size={12} className="text-purple-500 dark:text-purple-400 shrink-0" />
+                    <span className="font-mono">
+                      {panel.Lx.toFixed(2)}m × {panel.Lz.toFixed(2)}m
+                    </span>
+                    <span className="text-zinc-500 dark:text-zinc-400">
+                      ({panel.distribution.replace(/_/g, ' ')})
+                    </span>
+                    <span className="ml-auto text-zinc-500 dark:text-zinc-400">
+                      AR {panel.aspectRatio.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+                <AlertTriangle size={14} />
+                <span>No rectangular panels found at Y = {yLevel}m. Ensure beams form closed rectangles at this level.</span>
+              </div>
+            )}
+          </div>
+
+          {/* Slab Properties */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Floor Level (Y)</label>
+              <Label>Thickness</Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="number"
-                  value={yLevel}
-                  onChange={(e) => setYLevel(parseFloat(e.target.value) || 0)}
-                  className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
-                  step={0.5}
+                  value={thickness * 1000}
+                  onChange={(e) => setThickness((parseFloat(e.target.value) || 150) / 1000)}
+                  step={10}
+                  min={50}
                 />
-                <span className="px-3 py-2 text-sm text-slate-400">m</span>
+                <span className="px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400">mm</span>
               </div>
-              {availableYLevels.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  <span className="text-xs text-slate-500">Quick select:</span>
-                  {availableYLevels.map((y) => (
-                    <button
-                      key={y}
-                      onClick={() => setYLevel(y)}
-                      className={`px-2 py-0.5 text-xs rounded border transition-colors ${
-                        Math.abs(y - yLevel) < 0.001
-                          ? 'bg-purple-600 border-purple-500 text-white'
-                          : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
-                      }`}
-                    >
-                      Y = {y}m
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
-
-            {/* Panel Detection Results */}
-            <div className="p-4 rounded-lg border border-slate-700 bg-slate-800/50">
-              <div className="flex items-center gap-2 mb-3">
-                <Eye size={16} className="text-purple-400" />
-                <span className="text-sm font-medium text-white">Detected Panels</span>
-                <span className="ml-auto px-2 py-0.5 bg-purple-600/30 text-purple-300 text-xs rounded-full font-medium">
-                  {detectedPanels.length} found
-                </span>
-              </div>
-              {detectedPanels.length > 0 ? (
-                <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                  {detectedPanels.map((panel, i) => (
-                    <div key={i} className="flex items-center gap-3 text-xs text-slate-300 px-2 py-1.5 bg-slate-700/50 rounded">
-                      <Grid3X3 size={12} className="text-purple-400 shrink-0" />
-                      <span className="font-mono">
-                        {panel.Lx.toFixed(2)}m × {panel.Lz.toFixed(2)}m
-                      </span>
-                      <span className="text-slate-500">
-                        ({panel.distribution.replace(/_/g, ' ')})
-                      </span>
-                      <span className="ml-auto text-slate-500">
-                        AR {panel.aspectRatio.toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-sm text-amber-400">
-                  <AlertTriangle size={14} />
-                  <span>No rectangular panels found at Y = {yLevel}m. Ensure beams form closed rectangles at this level.</span>
-                </div>
-              )}
+            <div className="space-y-2">
+              <Label>Material</Label>
+              <select
+                value={material}
+                onChange={(e) => setMaterial(e.target.value as any)}
+                className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
+              >
+                <option value="concrete">Concrete (M25)</option>
+                <option value="steel">Steel (Fe250)</option>
+                <option value="custom">Custom</option>
+              </select>
             </div>
+          </div>
 
-            {/* Slab Properties */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white">Thickness</label>
-                <div className="flex gap-2">
-                  <input
+          {/* Area Load */}
+          <div className="space-y-3 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="applyLoad"
+                checked={applyLoad}
+                onCheckedChange={(checked) => setApplyLoad(checked === true)}
+              />
+              <Label htmlFor="applyLoad" className="cursor-pointer">
+                Apply Area Load (distributed to beams during analysis)
+              </Label>
+            </div>
+            {applyLoad && (
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div className="space-y-2">
+                  <Label className="text-xs">Pressure (kN/m²)</Label>
+                  <Input
                     type="number"
-                    value={thickness * 1000}
-                    onChange={(e) => setThickness((parseFloat(e.target.value) || 150) / 1000)}
-                    className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
-                    step={10}
-                    min={50}
+                    value={pressure}
+                    onChange={(e) => setPressure(parseFloat(e.target.value) || 0)}
+                    step={0.5}
                   />
-                  <span className="px-3 py-2 text-sm text-slate-400">mm</span>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">Negative = downward (gravity)</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Distribution</Label>
+                  <select
+                    value={distribution}
+                    onChange={(e) => setDistribution(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white text-sm"
+                  >
+                    <option value="auto">Auto (IS 456)</option>
+                    <option value="one_way">One-Way</option>
+                    <option value="two_way_triangular">Two-Way Triangular</option>
+                    <option value="two_way_trapezoidal">Two-Way Trapezoidal</option>
+                  </select>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white">Material</label>
-                <select
-                  value={material}
-                  onChange={(e) => setMaterial(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
-                >
-                  <option value="concrete">Concrete (M25)</option>
-                  <option value="steel">Steel (Fe250)</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Area Load */}
-            <div className="space-y-3 p-4 rounded-lg border border-slate-700 bg-slate-800/50">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="applyLoad"
-                  checked={applyLoad}
-                  onChange={(e) => setApplyLoad(e.target.checked)}
-                  className="accent-purple-500"
-                />
-                <label htmlFor="applyLoad" className="text-sm font-medium text-white cursor-pointer">
-                  Apply Area Load (distributed to beams during analysis)
-                </label>
-              </div>
-              {applyLoad && (
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-400">Pressure (kN/m²)</label>
-                    <input
-                      type="number"
-                      value={pressure}
-                      onChange={(e) => setPressure(parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
-                      step={0.5}
-                    />
-                    <p className="text-[10px] text-slate-500">Negative = downward (gravity)</p>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs text-slate-400">Distribution</label>
-                    <select
-                      value={distribution}
-                      onChange={(e) => setDistribution(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
-                    >
-                      <option value="auto">Auto (IS 456)</option>
-                      <option value="one_way">One-Way</option>
-                      <option value="two_way_triangular">Two-Way Triangular</option>
-                      <option value="two_way_trapezoidal">Two-Way Trapezoidal</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-white/10 bg-slate-900/80">
-            <p className="text-xs text-slate-500">
-              {detectedPanels.length} panel{detectedPanels.length !== 1 ? 's' : ''} ·
-              {applyLoad ? ` ${Math.abs(pressure)} kN/m² load` : ' no load'} ·
-              {thickness * 1000}mm {material}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                disabled={detectedPanels.length === 0}
-                className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                <Plus size={16} />
-                Create {detectedPanels.length} Slab{detectedPanels.length !== 1 ? 's' : ''}
-              </button>
-            </div>
+        {/* Footer */}
+        <DialogFooter className="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between sm:justify-between">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            {detectedPanels.length} panel{detectedPanels.length !== 1 ? 's' : ''} ·
+            {applyLoad ? ` ${Math.abs(pressure)} kN/m² load` : ' no load'} ·
+            {thickness * 1000}mm {material}
+          </p>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={detectedPanels.length === 0}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500"
+            >
+              <Plus size={16} className="mr-2" />
+              Create {detectedPanels.length} Slab{detectedPanels.length !== 1 ? 's' : ''}
+            </Button>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };

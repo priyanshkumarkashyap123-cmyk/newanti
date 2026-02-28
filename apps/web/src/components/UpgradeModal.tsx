@@ -5,8 +5,9 @@
 
 import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useSubscription, SubscriptionTier } from '../hooks/useSubscription';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Button } from './ui/button';
 
 // ============================================
 // FEATURE INFO
@@ -96,101 +97,75 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
     };
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-                    />
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-md p-0 overflow-hidden">
+                {/* Header with icon */}
+                <div className="bg-gradient-to-br from-accent/20 to-accent/5 p-8 text-center">
+                    <div className="w-16 h-16 mx-auto bg-accent rounded-2xl flex items-center justify-center text-steel-blue mb-4 shadow-lg">
+                        <span className="material-symbols-outlined text-3xl">{icon}</span>
+                    </div>
 
-                    {/* Modal */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md"
-                    >
-                        <div className="bg-white dark:bg-surface-dark rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-border-dark">
-                            {/* Header with icon */}
-                            <div className="bg-gradient-to-br from-accent/20 to-accent/5 p-8 text-center relative">
-                                <div className="absolute top-4 right-4">
-                                    <button
-                                        onClick={onClose}
-                                        className="p-1 rounded-full hover:bg-black/10 text-steel-blue/60 hover:text-steel-blue transition-colors"
-                                    >
-                                        <span className="material-symbols-outlined">close</span>
-                                    </button>
-                                </div>
+                    <DialogHeader className="space-y-2">
+                        <DialogTitle className="text-2xl font-bold text-steel-blue">{title}</DialogTitle>
+                        <DialogDescription asChild>
+                            <span className="inline-block mt-2 px-3 py-1 bg-steel-blue/10 text-steel-blue text-xs font-bold rounded-full uppercase">
+                                {requiredTier === 'enterprise' ? 'Enterprise' : 'Pro'} Feature
+                            </span>
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
 
-                                <div className="w-16 h-16 mx-auto bg-accent rounded-2xl flex items-center justify-center text-steel-blue mb-4 shadow-lg">
-                                    <span className="material-symbols-outlined text-3xl">{icon}</span>
-                                </div>
+                {/* Body */}
+                <div className="p-6">
+                    <p className="text-steel-blue/70 text-center mb-6">
+                        {description}
+                    </p>
 
-                                <h2 className="text-2xl font-bold text-steel-blue">{title}</h2>
-                                <span className="inline-block mt-2 px-3 py-1 bg-steel-blue/10 text-steel-blue text-xs font-bold rounded-full uppercase">
-                                    {requiredTier === 'enterprise' ? 'Enterprise' : 'Pro'} Feature
-                                </span>
-                            </div>
-
-                            {/* Body */}
-                            <div className="p-6">
-                                <p className="text-steel-blue/70 text-center mb-6">
-                                    {description}
-                                </p>
-
-                                {/* Current tier info */}
-                                <div className="bg-gray-50 dark:bg-background-dark rounded-lg p-4 mb-6">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-steel-blue/60">Your current plan:</span>
-                                        <span className="font-bold text-steel-blue capitalize">{subscription.tier}</span>
-                                    </div>
-                                </div>
-
-                                {/* Pro benefits */}
-                                <div className="space-y-3 mb-6">
-                                    <p className="text-xs font-bold text-steel-blue/60 uppercase tracking-wider">Upgrade to Pro and get:</p>
-                                    {[
-                                        'Unlimited projects',
-                                        'PDF report generation',
-                                        'AI design assistant',
-                                        'All design codes (IS, AISC, ACI, Eurocode)',
-                                        'Priority email support'
-                                    ].map((benefit, i) => (
-                                        <div key={i} className="flex items-center gap-2 text-sm text-steel-blue/80">
-                                            <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
-                                            {benefit}
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex flex-col gap-3">
-                                    <button
-                                        onClick={handleUpgrade}
-                                        className="w-full py-3 px-4 bg-accent hover:bg-accent/90 text-steel-blue font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">rocket_launch</span>
-                                        Upgrade to Pro - ₹749/mo
-                                    </button>
-                                    <button
-                                        onClick={onClose}
-                                        className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-steel-blue/70 font-medium rounded-lg transition-colors"
-                                    >
-                                        Maybe Later
-                                    </button>
-                                </div>
-                            </div>
+                    {/* Current tier info */}
+                    <div className="bg-gray-50 dark:bg-background-dark rounded-lg p-4 mb-6">
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="text-steel-blue/60">Your current plan:</span>
+                            <span className="font-bold text-steel-blue capitalize">{subscription.tier}</span>
                         </div>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+                    </div>
+
+                    {/* Pro benefits */}
+                    <div className="space-y-3 mb-6">
+                        <p className="text-xs font-bold text-steel-blue/60 uppercase tracking-wider">Upgrade to Pro and get:</p>
+                        {[
+                            'Unlimited projects',
+                            'PDF report generation',
+                            'AI design assistant',
+                            'All design codes (IS, AISC, ACI, Eurocode)',
+                            'Priority email support'
+                        ].map((benefit, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm text-steel-blue/80">
+                                <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
+                                {benefit}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-3">
+                        <Button
+                            onClick={handleUpgrade}
+                            className="w-full py-3 bg-accent hover:bg-accent/90 text-steel-blue font-bold shadow-md hover:shadow-lg"
+                        >
+                            <span className="material-symbols-outlined text-xl">rocket_launch</span>
+                            Upgrade to Pro - ₹749/mo
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={onClose}
+                            className="w-full py-3"
+                        >
+                            Maybe Later
+                        </Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

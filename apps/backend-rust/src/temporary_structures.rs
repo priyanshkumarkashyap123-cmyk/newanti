@@ -332,9 +332,10 @@ impl ScaffoldingDesigner {
         let standard_self = tube_weight * params.height * 9.81 / 1000.0;
         let total_load = standard_load + standard_self;
         
-        // Base plate bearing
+        // Base plate bearing pressure in kPa
         let base_plate_size = 150.0; // mm
-        let bearing_pressure = total_load * 1000.0 / (base_plate_size * base_plate_size);
+        let base_plate_area_m2 = (base_plate_size / 1000.0) * (base_plate_size / 1000.0);
+        let bearing_pressure = total_load / base_plate_area_m2; // kPa
         
         BaseLoadDesign {
             load_per_standard: total_load,

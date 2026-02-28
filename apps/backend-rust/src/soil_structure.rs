@@ -703,16 +703,15 @@ impl PileGroup {
         self.piles.len()
     }
     
-    /// Group efficiency factor
+    /// Group efficiency factor (Converse-Labarre)
     pub fn efficiency(&self, spacing: f64) -> f64 {
-        let _s_d = spacing / self.pile.diameter;
-        
-        // Converse-Labarre formula
         let n = self.n_piles() as f64;
-        let m = (n.sqrt()).ceil();
+        let m = (n.sqrt()).ceil(); // Approximate rows/columns for square group
         
         let theta = (self.pile.diameter / spacing).atan().to_degrees();
-        1.0 - theta * (2.0 * m - 2.0) / (90.0 * m.powi(2))
+        // Converse-Labarre: η = 1 − θ(n−1)m + (m−1)n / (90mn)
+        // For square group (m=n=rows): η = 1 − 2θ(m−1) / (90m)
+        1.0 - theta * (2.0 * m - 2.0) / (90.0 * m)
     }
     
     /// Calculate pile loads under vertical load and moments

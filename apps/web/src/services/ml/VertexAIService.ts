@@ -170,7 +170,7 @@ class VertexAIServiceClass {
      */
     async submitTrainingJob(
         dataset: FineTuningDataset,
-        baseModel: string = 'gemini-1.5-flash'
+        baseModel: string = 'gemini-2.0-flash'
     ): Promise<TrainingJob> {
         const job: TrainingJob = {
             id: `job_${Date.now()}`,
@@ -257,7 +257,7 @@ class VertexAIServiceClass {
     /**
      * Get model to use (with traffic splitting)
      */
-    getModelForRequest(baseModel: string = 'gemini-1.5-flash'): string {
+    getModelForRequest(baseModel: string = 'gemini-2.0-flash'): string {
         const versions = this.modelVersions.get(baseModel);
         if (!versions || versions.length === 0) {
             return baseModel;

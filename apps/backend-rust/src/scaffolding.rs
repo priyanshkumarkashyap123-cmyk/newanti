@@ -153,7 +153,8 @@ impl ScaffoldTube {
         if lambda_bar <= 0.2 {
             self.fy * self.area() / 1.5 / 1000.0
         } else {
-            let eta = 0.001 * 5.5 * (lambda_bar - 0.2);
+            // EC3 curve c imperfection factor (α=0.49) for scaffold tubes
+            let eta = 0.49 * (lambda_bar - 0.2);
             let phi = (1.0 + eta + lambda_bar.powi(2)) / 2.0;
             let chi = 1.0 / (phi + (phi.powi(2) - lambda_bar.powi(2)).sqrt());
             

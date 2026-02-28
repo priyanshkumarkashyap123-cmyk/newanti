@@ -213,12 +213,14 @@ impl GroundReactionCurve {
         }
     }
     
-    /// Critical internal pressure (MPa)
+    /// Critical internal pressure (MPa) - Carranza-Torres formulation
+    /// pcr = (2p₀ - σcm) / (Kp + 1), where σcm = 2c√Kp
     pub fn critical_pressure(&self) -> f64 {
         let phi_rad = self.phi * PI / 180.0;
         let kp = (1.0 + phi_rad.sin()) / (1.0 - phi_rad.sin());
+        let sigma_cm = 2.0 * self.cm * kp.sqrt();
         
-        2.0 * self.p0 - self.cm * (kp - 1.0) / (kp + 1.0)
+        (2.0 * self.p0 - sigma_cm) / (kp + 1.0)
     }
     
     /// Elastic convergence (mm) at pressure pi
@@ -270,7 +272,7 @@ impl ShotcreteLining {
             thickness,
             fck,
             fiber_dosage: 0.0,
-            ec: (fck / 10.0).sqrt() * 22.0 / 1000.0, // GPa
+            ec: (fck / 10.0).sqrt() * 22.0, // GPa (EC2-style)
         }
     }
     
@@ -279,7 +281,7 @@ impl ShotcreteLining {
             thickness,
             fck,
             fiber_dosage: fiber,
-            ec: (fck / 10.0).sqrt() * 22.0 / 1000.0,
+            ec: (fck / 10.0).sqrt() * 22.0, // GPa (EC2-style)
         }
     }
     

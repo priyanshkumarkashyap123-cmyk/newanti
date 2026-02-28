@@ -284,8 +284,8 @@ impl ShellAnalysis {
         // Wind induced circumferential stress
         let q = self.wind_at_height(z) * 1000.0; // Pa
         
-        // Simplified membrane theory
-        q * r * 1000.0 / t // N/mm² = MPa
+        // Simplified membrane theory: σ = p(Pa) × R(m) / (t(mm) × 1000) → MPa
+        q * r / (t * 1000.0)
     }
     
     /// Buckling check - critical wind speed

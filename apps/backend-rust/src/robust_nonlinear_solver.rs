@@ -355,7 +355,7 @@ impl ArcLengthSolver {
             ArcLengthConstraint::Cylindrical => {
                 // Cylindrical constraint: δu · δu = L²
                 let a1 = dot(delta_u_f, delta_u_f);
-                let a2 = 2.0 * (dot(delta_u, delta_u_r) + dot(delta_u, delta_u_f));
+                let a2 = 2.0 * (dot(delta_u, delta_u_f) + dot(delta_u_r, delta_u_f));
                 
                 // Quadratic: a1 * ddλ² + a2 * ddλ + (c - L²) = 0
                 let c = dot(delta_u, delta_u) + 2.0 * dot(delta_u, delta_u_r) 

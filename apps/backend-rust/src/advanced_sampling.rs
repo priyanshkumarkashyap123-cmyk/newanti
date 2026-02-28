@@ -1111,14 +1111,14 @@ fn box_muller_normal(state: &mut u64) -> f64 {
 // standard_normal_cdf is imported from crate::special_functions
 
 fn chi_squared_cdf_complement(x: f64, k: usize) -> f64 {
-    // Complement of chi-squared CDF: P(X > x)
+    // Complement of chi-squared CDF: P(X > x) = Q(k/2, x/2)
     // Using regularized incomplete gamma function
     if x <= 0.0 { return 1.0; }
     
     let a = k as f64 / 2.0;
     let z = x / 2.0;
     
-    // Series approximation for upper incomplete gamma
+    // Series approximation for regularized lower incomplete gamma P(a, z)
     let mut sum = 0.0;
     let mut term = (-z).exp();
     
@@ -1130,7 +1130,10 @@ fn chi_squared_cdf_complement(x: f64, k: usize) -> f64 {
         }
     }
     
-    sum * z.powf(a) / gamma(a + 1.0)
+    let p = sum * z.powf(a) / gamma(a + 1.0);
+    
+    // Return complement Q = 1 - P (the tail probability)
+    1.0 - p
 }
 
 fn binomial(n: usize, k: usize) -> usize {

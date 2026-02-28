@@ -500,7 +500,7 @@ Output a detailed JSON action plan:
 
 class GeminiAIService {
   private apiKey: string | null = null;
-  private model: string = 'gemini-1.5-flash';
+  private model: string = 'gemini-2.0-flash';
   private conversationHistory: AIConversation[] = [];
   private listeners: Set<(event: string, data: any) => void> = new Set();
   private isProcessing: boolean = false;

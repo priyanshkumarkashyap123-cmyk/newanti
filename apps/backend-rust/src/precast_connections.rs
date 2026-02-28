@@ -334,7 +334,9 @@ impl BearingPad {
     }
     
     pub fn reinforced_pad(length: f64, width: f64, thickness: f64, num_layers: u32) -> Self {
-        let layer_t = thickness / (num_layers as f64 + 1.0);
+        let shim_thickness = 3.0; // mm per steel shim
+        let total_rubber = thickness - num_layers as f64 * shim_thickness;
+        let layer_t = total_rubber / (num_layers as f64 + 1.0);
         
         Self {
             pad_type: PadType::ReinforcedElastomeric,
@@ -366,7 +368,8 @@ impl BearingPad {
     pub fn compressive_stress_limit_plain(&self) -> f64 {
         let s = self.shape_factor();
         
-        (1000.0 / s).min(5.5) // GS/β <= 1000 psi or 6.9 MPa, use 5.5
+        // AASHTO: σs ≤ G*S ≤ 5.5 MPa for plain pads
+        (self.shear_modulus * s).min(5.5)
     }
     
     /// Compressive stress limit (MPa) - reinforced pad
@@ -425,8 +428,10 @@ impl BearingPad {
         let stress = load * 1000.0 / self.area();
         let s = self.shape_factor();
         let ec = 3.0 * self.shear_modulus * s.powi(2); // Effective modulus
+        // Only rubber layers compress - subtract steel shim thickness
+        let hrt = self.thickness - self.num_shims as f64 * 3.0;
         
-        stress * self.thickness / ec
+        stress * hrt / ec
     }
     
     /// Stability check - thickness vs plan dimensions

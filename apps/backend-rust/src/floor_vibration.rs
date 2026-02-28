@@ -228,7 +228,7 @@ impl FrequencyCalculator {
         let i_eff = bay.i_beam + bay.ec / bay.es * bay.slab_thickness.powi(3) * bay.length_y / 12.0;
         
         let delta = 5.0 * w * l.powi(4) / (384.0 * bay.es * 1e6 * i_eff);
-        let f0 = 18.0 / delta.sqrt();
+        let f0 = 18.0 / (delta * 1000.0).sqrt(); // SCI P354: f=18/√δ_mm, δ converted m→mm
         
         FrequencyResult {
             f_beam: f0,
@@ -382,8 +382,8 @@ impl VibrationResponse {
             // Dynamic amplification factor
             let dmf = 1.0 / ((1.0 - r.powi(2)).powi(2) + (2.0 * zeta * r).powi(2)).sqrt();
             
-            // Acceleration response
-            let accel = force * dmf / modal_mass;
+            // Acceleration response (true acceleration = Ω² × displacement = r² × F/M × Rd)
+            let accel = force * r.powi(2) * dmf / modal_mass;
             
             if accel > max_response {
                 max_response = accel;

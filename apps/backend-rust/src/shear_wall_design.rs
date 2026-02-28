@@ -374,12 +374,14 @@ impl ShearWallDesigner {
         } else if pier.aspect_ratio() >= 2.0 {
             0.17
         } else {
-            0.25 - 0.08 * (pier.aspect_ratio() - 1.5)
+            0.25 - 0.16 * (pier.aspect_ratio() - 1.5) // Slope: (0.25-0.17)/(2.0-1.5)=0.16
         };
         
         let vc = alpha_c * fc.sqrt() * acv; // N
         let vs = pier.rho_h * fy * acv; // N
-        let vn = phi_v * (vc + vs) / 1000.0; // kN
+        // ACI 318-19 §18.10.4.4 upper limit
+        let vn_max = 0.66 * fc.sqrt() * acv; // N
+        let vn = phi_v * (vc + vs).min(vn_max) / 1000.0; // kN
         
         result.vn = vn;
         result.shear_dcr = result.vu / vn.max(1.0);
@@ -393,7 +395,7 @@ impl ShearWallDesigner {
         }
         
         // Shear friction check at base
-        let mu = 1.0; // Friction coefficient
+        let mu = 1.4; // ACI 318-19 §22.9.4.2: monolithic concrete, normal weight
         let avf = pier.rho_v * acv;
         let vn_friction = phi_v * mu * avf * fy / 1000.0;
         if result.vu > vn_friction {
@@ -426,7 +428,7 @@ impl ShearWallDesigner {
         
         if c > c_limit {
             result.boundary_required = true;
-            result.boundary_length_req = c - 0.1 * lw; // Simplified
+            result.boundary_length_req = (c - 0.1 * lw).max(c / 2.0); // ACI 318-19 §18.10.6.4(a)
             result.messages.push(format!(
                 "Boundary element required: c = {:.0} mm > c_limit = {:.0} mm",
                 c, c_limit
@@ -471,15 +473,18 @@ impl ShearWallDesigner {
             result.messages.push("Slender wall: check flexure-shear interaction".to_string());
         }
         
-        // Boundary element per IS 13920 Cl. 10.4
-        let pu = forces.p.abs() * 1000.0; // N
-        let agfck = pier.gross_area() * 1e6 * pier.fc;
-        if pu > 0.2 * agfck {
+        // Boundary element per IS 13920 Cl. 10.4.1
+        // Required when extreme fiber compressive stress > 0.2 fck
+        let ag = pier.gross_area() * 1e6; // mm²
+        let z_section = pier.thickness * 1000.0 * (lw * lw) / 6.0; // mm³ - elastic section modulus
+        let mu_val = forces.m2_bottom.abs().max(forces.m2_top.abs()) * 1e6; // N·mm
+        let sigma_max = forces.p.abs() * 1000.0 / ag + mu_val / z_section; // MPa
+        if sigma_max > 0.2 * pier.fc {
             result.boundary_required = true;
             result.boundary_length_req = 0.15 * lw / 1000.0;
             result.messages.push(format!(
-                "Boundary element required: Pu/Agfck = {:.2} > 0.2",
-                pu / agfck
+                "Boundary element required: σ_max = {:.2} MPa > 0.2fck = {:.2} MPa",
+                sigma_max, 0.2 * pier.fc
             ));
         }
         
@@ -503,7 +508,7 @@ impl ShearWallDesigner {
         ));
         
         // Ductility class check
-        let mu_phi = 2.0 * 4.0 - 1.0; // DCM q0=3, μφ ≈ 2q0-1
+        let mu_phi = 2.0 * 3.0 - 1.0; // DCM q0=3, μφ ≈ 2q0-1 = 5.0
         result.messages.push(format!(
             "Design for ductility μφ = {:.1}",
             mu_phi
@@ -511,7 +516,7 @@ impl ShearWallDesigner {
         
         // Boundary element per EC8 5.4.3.4
         let xu = self.calculate_neutral_axis_depth(pier, forces);
-        let xu_limit = (0.15 + 0.20 * 1.0) * lw; // For εcu = 0.0035
+        let xu_limit = 0.15 * lw; // EC8 §5.4.3.4.2: lc >= max(0.15*lw, 1.5*bw)
         
         if xu > xu_limit {
             result.boundary_required = true;
@@ -522,26 +527,32 @@ impl ShearWallDesigner {
         result
     }
     
-    /// Calculate wall moment capacity (simplified)
-    fn calculate_wall_moment_capacity(&self, pier: &PierElement, _axial: f64) -> f64 {
+    /// Calculate wall moment capacity (simplified P-M interaction)
+    fn calculate_wall_moment_capacity(&self, pier: &PierElement, axial: f64) -> f64 {
         let lw = pier.length * 1000.0;
         let tw = pier.thickness * 1000.0;
-        let _fc = pier.fc;
+        let fc = pier.fc;
         let fy = pier.fy;
+        let pu = axial.abs() * 1000.0; // N (tensile positive)
         
         let as_total = pier.rho_v * lw * tw; // mm²
         
-        // Simplified: assume reinforcement at edges
-        let arm = 0.8 * lw; // mm
-        let mn = as_total * fy * arm / 1e6; // kN-m
+        // Simplified formula including axial load contribution:
+        // Mn ≈ As*fy*(lw/2) + Pu*(lw/2)*(1 - Pu/(f'c*tw*lw))
+        let mn_steel = as_total * fy * lw / 2.0; // N·mm
+        let mn_axial = pu * lw / 2.0 * (1.0 - pu / (fc * tw * lw).max(1.0));
+        let mn = (mn_steel + mn_axial.max(0.0)) / 1e6; // kN·m
         
         mn
     }
     
     /// Calculate P-M demand/capacity ratio
     fn calculate_pm_dcr(&self, p: f64, m: f64, pier: &PierElement) -> f64 {
-        let pn_max = 0.80 * 0.65 * pier.fc * pier.gross_area() * 1000.0;
-        let mn_0 = self.calculate_wall_moment_capacity(pier, 0.0);
+        // ACI 318-19 §22.4.2.1: Pn_max = 0.80 * [0.85*f'c*(Ag-Ast) + fy*Ast]
+        let ag = pier.gross_area() * 1e6; // mm²
+        let ast = pier.rho_v * ag;
+        let pn_max = 0.80 * 0.65 * (0.85 * pier.fc * (ag - ast) + pier.fy * ast) / 1000.0; // kN
+        let mn_0 = self.calculate_wall_moment_capacity(pier, p);
         
         // Simplified bilinear interaction
         let p_ratio = p.abs() / pn_max.max(1.0);
@@ -554,12 +565,45 @@ impl ShearWallDesigner {
     fn calculate_neutral_axis_depth(&self, pier: &PierElement, forces: &PierForces) -> f64 {
         let lw = pier.length * 1000.0;
         let fc = pier.fc;
+        let tw = pier.thickness * 1000.0;
+        let fy = pier.fy;
         let pu = forces.p.abs() * 1000.0; // N
-        let _mu = forces.m2_bottom.abs().max(forces.m2_top.abs()) * 1e6; // N-mm
+        let mu = forces.m2_bottom.abs().max(forces.m2_top.abs()) * 1e6; // N·mm
         
-        // Simplified calculation
-        let a = pu / (0.85 * fc * pier.thickness * 1000.0);
-        let c = a / 0.85;
+        // β1 per ACI 318-19 §22.2.2.4.3
+        let beta1 = if fc <= 28.0 { 0.85 } else { (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65) };
+        
+        // Iterative solution for c given Pu and Mu
+        // Simplified: assume distributed reinforcement
+        let as_total = pier.rho_v * lw * tw;
+        
+        // Start with axial-only estimate
+        let mut c = (pu + as_total * fy) / (0.85 * fc * beta1 * tw + 0.001);
+        
+        // Newton-type iteration for P-M equilibrium
+        for _ in 0..20 {
+            let a = beta1 * c;
+            // Compression force
+            let cc = 0.85 * fc * a.min(lw) * tw;
+            // Steel: bars in compression zone yield in compression, others in tension
+            let compression_steel = as_total * (a.min(lw) / lw);
+            let tension_steel = as_total - compression_steel;
+            let p_calc = cc + compression_steel * fy - tension_steel * fy;
+            
+            // Moment about wall centroid
+            let m_cc = cc * (lw / 2.0 - a.min(lw) / 2.0);
+            let m_cs = compression_steel * fy * (lw / 2.0 - a.min(lw) / 2.0 / 2.0);
+            let m_ts = tension_steel * fy * ((lw - a.min(lw)) / 2.0);
+            let m_calc = m_cc + m_cs + m_ts;
+            
+            // Adjust c based on moment error
+            if m_calc > 0.001 {
+                let err = (pu - p_calc) / (0.85 * fc * beta1 * tw).max(1.0)
+                    + (mu - m_calc) / (0.85 * fc * beta1 * tw * lw).max(1.0);
+                c += err * 0.5;
+            }
+            c = c.max(0.01 * lw).min(lw);
+        }
         
         c.max(0.1 * lw)
     }

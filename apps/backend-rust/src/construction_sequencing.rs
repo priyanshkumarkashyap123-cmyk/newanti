@@ -156,7 +156,8 @@ impl ConcreteAgeEffect {
         let phi_0 = phi_rh * beta_fcm * beta_t0;
         
         // Development coefficient β_c(t,t0)
-        let beta_h = 1.5 * h0 * (1.0 + (0.012 * rh).powi(18)).min(1500.0);
+        // EN 1992-1-1 Eq. B.8a: β_H = 1.5[1+(0.012·RH)^18]·h0 + 250 ≤ 1500
+        let beta_h = (1.5 * h0 * (1.0 + (0.012 * rh).powi(18)) + 250.0).min(1500.0);
         let beta_c = ((t - t0) / (beta_h + t - t0)).powf(0.3);
         
         phi_0 * beta_c

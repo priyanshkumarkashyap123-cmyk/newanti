@@ -197,11 +197,15 @@ impl MonopileDesigner {
         // Wind thrust on turbine
         let f_wind = turbine.max_thrust;
         
-        // Mudline shear
-        let v_mudline = f_wave * d * 0.5 + f_current + f_wind;
+        // Mudline shear (all in kN)
+        let v_wave = f_wave * d * 0.5 / 1000.0; // N → kN
+        let v_current = f_current / 1000.0; // N → kN
+        let v_mudline = v_wave + v_current + f_wind; // all kN
         
-        // Mudline moment
-        let m_mudline = f_wave * d.powi(2) / 3.0 + f_current * d * 0.5 + f_wind * (d + turbine.hub_height);
+        // Mudline moment (all in kN·m)
+        let m_wave = f_wave * d.powi(2) / 3.0 / 1000.0; // N·m → kN·m
+        let m_current = f_current * d * 0.5 / 1000.0; // N·m → kN·m
+        let m_mudline = m_wave + m_current + f_wind * (d + turbine.hub_height); // all kN·m
         
         (m_mudline, v_mudline)
     }
@@ -457,7 +461,8 @@ impl FloatingPlatformAnalyzer {
         // Center of gravity (low due to ballast)
         let zcg = draft * 0.6; // From keel
         let zb = draft / 2.0; // Center of buoyancy
-        let bm = awp / volume; // BM = I/V
+        let i_wp = PI * diameter.powi(4) / 64.0; // Second moment of waterplane area
+        let bm = i_wp / volume; // BM = I_wp / V
         let gm = zb + bm - zcg;
         
         // Pitch period

@@ -275,15 +275,12 @@ impl ImpactForce {
         // Contact width estimate
         let width = params.contact_area.sqrt();
         
-        // Contact pressure
-        let pressure = f_peak / params.contact_area * 1000.0; // kPa to MPa
-        
         Self {
             peak_force: f_peak,
             static_equivalent: f_eq,
             duration,
             force_per_width: f_peak / width,
-            contact_pressure: pressure / 1000.0,
+            contact_pressure: f_peak / params.contact_area / 1000.0, // kN/m² (kPa) → MPa
             impulse: params.momentum(),
         }
     }
@@ -307,7 +304,7 @@ impl ImpactForce {
             static_equivalent: f_peak / params.dynamic_factor,
             duration,
             force_per_width: f_peak / width,
-            contact_pressure: f_peak / params.contact_area,
+            contact_pressure: f_peak / params.contact_area / 1000.0, // kN/m² (kPa) → MPa
             impulse: params.momentum(),
         }
     }
@@ -341,7 +338,7 @@ impl ImpactForce {
             static_equivalent: f_dx,
             duration: if hard_impact { 50.0 } else { 200.0 },
             force_per_width: f_dx / 0.5,
-            contact_pressure: f_dx / 0.25, // Approximate contact area 0.5 x 0.5
+            contact_pressure: f_dx / 0.25 / 1000.0, // kN/m² → MPa, area 0.5 x 0.5
             impulse: f_dx * if hard_impact { 0.05 } else { 0.2 },
         }
     }
@@ -360,7 +357,7 @@ impl ImpactForce {
             static_equivalent: f,
             duration: 100.0,
             force_per_width: f / 1.2,
-            contact_pressure: f / 1.0,
+            contact_pressure: f / 1.0 / 1000.0, // kN/m² → MPa
             impulse: f * 0.1,
         }
     }

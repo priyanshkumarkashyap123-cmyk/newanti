@@ -7,7 +7,7 @@ import React from 'react';
 import { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Mail, MapPin, Send, CheckCircle } from "lucide-react";
+import { Mail, MapPin, Send, CheckCircle, Phone } from "lucide-react";
 import beamLabLogo from "../assets/beamlab_logo.png";
 
 export const ContactPage: FC = () => {
@@ -131,6 +131,26 @@ export const ContactPage: FC = () => {
                     <br />
                     India
                   </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-5 rounded-xl bg-slate-900 border border-slate-800 hover-lift">
+                <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">
+                    Call Us
+                  </h3>
+                  <p className="text-slate-400 mb-2">
+                    Mon-Sat, 9:00 AM - 7:00 PM (IST)
+                  </p>
+                  <a
+                    href="tel:+919827012345"
+                    className="text-emerald-400 font-medium hover:text-emerald-300 transition-colors"
+                  >
+                    +91 98270 12345
+                  </a>
                 </div>
               </div>
             </div>

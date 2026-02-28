@@ -56,6 +56,7 @@ import {
 import { useModelStore } from '../../store/model';
 import { geminiAI, AIAction, AIPlan, AIModelContext } from '../../services/GeminiAIService';
 import { getErrorMessage } from '../../lib/errorHandling';
+import { API_CONFIG } from '../../config/env';
 
 // ============================================
 // TYPES
@@ -559,6 +560,50 @@ ${apiStatus}
       // Remove thinking message
       setMessages(prev => prev.filter(m => m.role !== 'thinking'));
       
+      // ========================================
+      // FALLBACK: Try unified backend API directly if GeminiAIService fails
+      // ========================================
+      try {
+        const context = getModelContext();
+        const fallbackResponse = await fetch(`${API_CONFIG.baseUrl}/api/ai/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: input.trim(),
+            context: JSON.stringify({
+              nodes: context.nodes.length,
+              members: context.members.length,
+              loads: context.loads.length,
+            }),
+          }),
+        });
+
+        if (fallbackResponse.ok) {
+          const data = await fallbackResponse.json();
+          if (data.success && data.response) {
+            const assistantMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              role: 'assistant',
+              content: data.response,
+              timestamp: new Date(),
+              type: 'text',
+              actions: data.actions,
+            };
+            setMessages(prev => [...prev, assistantMessage]);
+
+            // Auto-execute actions if any
+            if (data.actions && data.actions.length > 0 && autoExecute) {
+              await executeActions(data.actions);
+            }
+
+            setProcessingState({ status: 'idle' });
+            return;
+          }
+        }
+      } catch (fallbackErr) {
+        console.warn('[AI Agent] Unified backend also unavailable:', fallbackErr);
+      }
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',

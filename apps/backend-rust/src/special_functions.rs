@@ -145,7 +145,7 @@ pub fn erfinv(y: f64) -> f64 {
         return f64::INFINITY;
     }
     if y.abs() < 1e-15 {
-        return y * FRAC_2_SQRT_PI / 2.0; // First-order Taylor
+        return y * PI.sqrt() / 2.0; // First-order Taylor: erf(x)≈(2/√π)x → erfinv(y)≈(√π/2)y
     }
     
     let sign = if y < 0.0 { -1.0 } else { 1.0 };
@@ -570,20 +570,20 @@ fn besselj_backward(n: i32, x: f64) -> f64 {
     let mut j_curr = 1.0;
     let mut sum = 0.0;
     let mut result = 0.0;
-    let mut is_even = true;
     
     for k in (0..=nstart).rev() {
         let j_prev = (2.0 * (k + 1) as f64 / x) * j_curr - j_next;
         j_next = j_curr;
         j_curr = j_prev;
         
-        if is_even {
+        // Accumulate even-indexed J values for Neumann identity:
+        // J_0 + 2(J_2 + J_4 + ...) = 1
+        if k % 2 == 0 {
             sum += j_curr;
         }
-        is_even = !is_even;
         
         if k == n {
-            result = j_next;
+            result = j_curr;  // j_curr = J_k = J_n (not j_next which is J_{n+1})
         }
     }
     
@@ -677,7 +677,22 @@ pub fn besseli(n: i32, x: f64) -> f64 {
     } else if n < 0 {
         besseli(-n, x)
     } else {
-        besseli_backward(n, x)
+        // Recurrence: I_{k+1}(x) = I_{k-1}(x) - (2k/x)*I_k(x)
+        // Forward recurrence is unstable for I_n when n >> x (I_n is minimal solution)
+        // Use backward recurrence (Miller's algorithm) when x < n for stability
+        if x.abs() < n as f64 {
+            besseli_backward(n, x)
+        } else {
+            let tox = 2.0 / x.abs();
+            let mut bi_prev = besseli0(x);
+            let mut bi_curr = besseli1(x);
+            for k in 1..n {
+                let bi_next = bi_prev - (k as f64) * tox * bi_curr;
+                bi_prev = bi_curr;
+                bi_curr = bi_next;
+            }
+            bi_curr
+        }
     }
 }
 
@@ -1271,7 +1286,9 @@ pub fn sinint(x: f64) -> f64 {
         
         sign * sum
     } else {
-        // Auxiliary functions
+        // Auxiliary functions for asymptotic expansion:
+        // Si(x) = π/2 - f(x)·cos(x) - g(x)·sin(x)
+        // f(x) ~ (1/x)·Σ (-1)^k (2k)!/x^{2k}, g(x) ~ (1/x²)·Σ (-1)^k (2k+1)!/x^{2k}
         let f = {
             let mut sum = 0.0;
             let mut term = 1.0 / x;
@@ -1282,7 +1299,7 @@ pub fn sinint(x: f64) -> f64 {
                     break;
                 }
             }
-            sum / x
+            sum  // sum already = f(x) = (1/x)(1 - 2!/x² + 4!/x⁴ - ...)
         };
         
         let g = {
@@ -1329,6 +1346,7 @@ pub fn cosint(x: f64) -> f64 {
         sum
     } else {
         // Auxiliary functions (same as sinint)
+        // Ci(x) = f(x)·sin(x) - g(x)·cos(x)
         let f = {
             let mut sum = 0.0;
             let mut term = 1.0 / x;
@@ -1339,7 +1357,7 @@ pub fn cosint(x: f64) -> f64 {
                     break;
                 }
             }
-            sum / x
+            sum  // sum already = f(x) = (1/x)(1 - 2!/x² + 4!/x⁴ - ...)
         };
         
         let g = {

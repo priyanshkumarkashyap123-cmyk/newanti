@@ -657,9 +657,11 @@ impl EnsembleSampler {
                     j = (lcg_random(&mut rng_state) * self.n_walkers as f64) as usize;
                 }
 
-                // Stretch move
-                let z = (lcg_random(&mut rng_state) * (self.stretch_factor - 1.0 / self.stretch_factor)
-                    + 1.0 / self.stretch_factor).powi(2);
+                // Stretch move: z from p(z) ∝ 1/√z on [1/a, a] (Goodman & Weare 2010)
+                // z = [u·(√a - 1/√a) + 1/√a]²
+                let sqrt_a = self.stretch_factor.sqrt();
+                let z = (lcg_random(&mut rng_state) * (sqrt_a - 1.0 / sqrt_a)
+                    + 1.0 / sqrt_a).powi(2);
 
                 let proposed: Vec<f64> = self.walkers[j].iter()
                     .zip(self.walkers[i].iter())

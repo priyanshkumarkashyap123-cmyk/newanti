@@ -61,11 +61,16 @@ impl FireCurve {
         let theta_k: f64 = theta + 273.0;
         let t0_k: f64 = 293.0;
         
-        // Stefan-Boltzmann: q = ε * σ * (Tg⁴ - T0⁴)
-        let sigma: f64 = 5.67e-8; // W/m²K⁴
-        let epsilon: f64 = 0.8;
+        // Convective component: αc × (θg - θ0)
+        let alpha_c: f64 = 25.0; // W/(m²·K) for standard fire
+        let q_conv = alpha_c * (theta - 20.0);
         
-        epsilon * sigma * (theta_k.powi(4) - t0_k.powi(4)) / 1000.0
+        // Radiative component: ε × σ × (Tg⁴ - T0⁴)
+        let sigma: f64 = 5.67e-8; // W/m²K⁴
+        let epsilon: f64 = 0.7; // EN 1991-1-2: εf×εm = 1.0×0.7
+        let q_rad = epsilon * sigma * (theta_k.powi(4) - t0_k.powi(4));
+        
+        (q_conv + q_rad) / 1000.0 // kW/m²
     }
 }
 
@@ -77,22 +82,22 @@ impl FireCurve {
 pub struct ConcreteFireProperties;
 
 impl ConcreteFireProperties {
-    /// Compressive strength reduction factor kc(θ) per EN 1992-1-2
+    /// Compressive strength reduction factor kc(θ) per EN 1992-1-2 Table 3.1
     pub fn strength_factor(theta: f64, aggregate: &str) -> f64 {
         let kc = match aggregate {
             "siliceous" => {
                 if theta <= 100.0 { 1.0 }
-                else if theta <= 200.0 { 0.95 - 0.05 * (theta - 100.0) / 100.0 }
-                else if theta <= 400.0 { 0.90 - 0.15 * (theta - 200.0) / 200.0 }
+                else if theta <= 200.0 { 1.0 - 0.05 * (theta - 100.0) / 100.0 }
+                else if theta <= 400.0 { 0.95 - 0.20 * (theta - 200.0) / 200.0 }
                 else if theta <= 800.0 { 0.75 - 0.60 * (theta - 400.0) / 400.0 }
                 else { 0.15 - 0.15 * (theta - 800.0) / 400.0 }
             }
             "calcareous" => {
                 if theta <= 100.0 { 1.0 }
-                else if theta <= 200.0 { 0.97 - 0.03 * (theta - 100.0) / 100.0 }
-                else if theta <= 400.0 { 0.94 - 0.09 * (theta - 200.0) / 200.0 }
-                else if theta <= 800.0 { 0.85 - 0.55 * (theta - 400.0) / 400.0 }
-                else { 0.30 - 0.30 * (theta - 800.0) / 400.0 }
+                else if theta <= 200.0 { 1.0 - 0.03 * (theta - 100.0) / 100.0 }
+                else if theta <= 400.0 { 0.97 - 0.12 * (theta - 200.0) / 200.0 }
+                else if theta <= 800.0 { 0.85 - 0.58 * (theta - 400.0) / 400.0 }
+                else { 0.27 - 0.27 * (theta - 800.0) / 400.0 }
             }
             _ => Self::strength_factor(theta, "siliceous"),
         };
@@ -120,7 +125,7 @@ impl ConcreteFireProperties {
         if theta <= 100.0 {
             900.0
         } else if theta <= 115.0 && moisture > 0.0 {
-            900.0 + moisture * 18800.0 * (theta - 100.0) / 15.0
+            900.0 + moisture * 38000.0 * (theta - 100.0) / 15.0
         } else if theta <= 200.0 {
             1000.0 + (theta - 200.0)
         } else if theta <= 400.0 {
@@ -133,7 +138,7 @@ impl ConcreteFireProperties {
     /// 500°C isotherm depth (mm) - simplified
     pub fn isotherm_500_depth(fire_duration_min: f64, one_sided: bool) -> f64 {
         // Approximate penetration depth
-        let depth = 8.0 * fire_duration_min.sqrt();
+        let depth = 4.0 * fire_duration_min.sqrt(); // EN 1992-1-2 Annex A profiles
         if one_sided { depth } else { depth * 0.7 }
     }
 }
@@ -142,7 +147,7 @@ impl ConcreteFireProperties {
 pub struct SteelFireProperties;
 
 impl SteelFireProperties {
-    /// Yield strength reduction factor ky(θ) per EN 1993-1-2
+    /// Yield strength reduction factor ky(θ) per EN 1993-1-2 Table 3.1
     pub fn yield_factor(theta: f64) -> f64 {
         if theta <= 400.0 { 1.0 }
         else if theta <= 500.0 { 1.0 - 0.22 * (theta - 400.0) / 100.0 }
@@ -150,10 +155,12 @@ impl SteelFireProperties {
         else if theta <= 700.0 { 0.47 - 0.24 * (theta - 600.0) / 100.0 }
         else if theta <= 800.0 { 0.23 - 0.12 * (theta - 700.0) / 100.0 }
         else if theta <= 900.0 { 0.11 - 0.05 * (theta - 800.0) / 100.0 }
-        else { 0.06 - 0.04 * (theta - 900.0) / 100.0 }
+        else if theta <= 1000.0 { 0.06 - 0.02 * (theta - 900.0) / 100.0 }
+        else if theta <= 1100.0 { 0.04 - 0.02 * (theta - 1000.0) / 100.0 }
+        else { (0.02 - 0.02 * (theta - 1100.0) / 100.0).max(0.0) }
     }
     
-    /// Elastic modulus reduction factor kE(θ)
+    /// Elastic modulus reduction factor kE(θ) per EN 1993-1-2
     pub fn modulus_factor(theta: f64) -> f64 {
         if theta <= 100.0 { 1.0 }
         else if theta <= 200.0 { 1.0 - 0.1 * (theta - 100.0) / 100.0 }
@@ -163,27 +170,31 @@ impl SteelFireProperties {
         else if theta <= 600.0 { 0.6 - 0.29 * (theta - 500.0) / 100.0 }
         else if theta <= 700.0 { 0.31 - 0.18 * (theta - 600.0) / 100.0 }
         else if theta <= 800.0 { 0.13 - 0.04 * (theta - 700.0) / 100.0 }
-        else { 0.09 - 0.04 * (theta - 800.0) / 100.0 }
+        else if theta <= 900.0 { 0.09 - 0.0225 * (theta - 800.0) / 100.0 }
+        else { (0.0675 - 0.0225 * (theta - 900.0) / 100.0).max(0.0) }
     }
     
-    /// Proportional limit reduction factor
+    /// Proportional limit reduction factor kp,θ per EN 1993-1-2 (piecewise linear)
     pub fn proportional_factor(theta: f64) -> f64 {
-        if theta <= 100.0 { 1.0 }
-        else if theta <= 200.0 { 0.807 }
-        else if theta <= 300.0 { 0.613 }
-        else if theta <= 400.0 { 0.420 }
-        else if theta <= 500.0 { 0.360 }
-        else if theta <= 600.0 { 0.180 }
-        else if theta <= 700.0 { 0.075 }
-        else if theta <= 800.0 { 0.050 }
-        else { 0.0375 }
+        let kp = if theta <= 100.0 { 1.0 }
+        else if theta <= 200.0 { 1.0 - 0.193 * (theta - 100.0) / 100.0 }
+        else if theta <= 300.0 { 0.807 - 0.194 * (theta - 200.0) / 100.0 }
+        else if theta <= 400.0 { 0.613 - 0.193 * (theta - 300.0) / 100.0 }
+        else if theta <= 500.0 { 0.420 - 0.060 * (theta - 400.0) / 100.0 }
+        else if theta <= 600.0 { 0.360 - 0.180 * (theta - 500.0) / 100.0 }
+        else if theta <= 700.0 { 0.180 - 0.105 * (theta - 600.0) / 100.0 }
+        else if theta <= 800.0 { 0.075 - 0.025 * (theta - 700.0) / 100.0 }
+        else if theta <= 900.0 { 0.050 - 0.0125 * (theta - 800.0) / 100.0 }
+        else if theta <= 1000.0 { 0.0375 - 0.0125 * (theta - 900.0) / 100.0 }
+        else if theta <= 1100.0 { 0.025 - 0.0125 * (theta - 1000.0) / 100.0 }
+        else { 0.0125 - 0.0125 * (theta - 1100.0) / 100.0 };
+        kp.max(0.0)
     }
     
-    /// Thermal expansion coefficient
+    /// Thermal elongation Δl/l per EN 1993-1-2 §3.4.1.1
     pub fn thermal_expansion(theta: f64) -> f64 {
-        // EN 1993-1-2
         if theta <= 750.0 {
-            1.2e-5 + 0.4e-8 * theta - 2.416e-11 * theta.powi(2)
+            1.2e-5 * theta + 0.4e-8 * theta.powi(2) - 2.416e-4
         } else if theta <= 860.0 {
             1.1e-2
         } else {
@@ -191,23 +202,35 @@ impl SteelFireProperties {
         }
     }
     
-    /// Steel temperature for unprotected section (simplified)
+    /// Steel temperature for unprotected section per EN 1993-1-2 §4.2.5.1
     pub fn unprotected_temperature(
         section_factor: f64, // Am/V (m⁻¹)
         time_min: f64,
         fire_curve: &FireCurve,
     ) -> f64 {
-        // Incremental method (simplified)
         let mut theta_s = 20.0;
-        let dt = 0.5; // 30 seconds
+        let dt = 0.5; // 30 seconds in minutes
         
-        for i in 0..(time_min / dt * 2.0) as i32 {
+        for i in 0..(time_min / dt) as i32 {
             let t = (i as f64) * dt;
             let theta_g = fire_curve.temperature(t);
             
-            // Heat transfer
-            let h_net = 25.0 + 0.04 * (theta_g - theta_s); // Convection + radiation approx
-            let d_theta = section_factor * h_net * dt * 60.0 / (7850.0 * 600.0);
+            // Net heat flux per EN 1993-1-2 §4.2.5.1
+            let alpha_c = 25.0; // W/(m²·K)
+            let sigma = 5.67e-8;
+            let epsilon = 0.7; // εm × εf
+            let theta_g_k = theta_g + 273.0;
+            let theta_s_k = theta_s + 273.0;
+            let h_net = alpha_c * (theta_g - theta_s)
+                + epsilon * sigma * (theta_g_k.powi(4) - theta_s_k.powi(4));
+            
+            // Temperature-dependent specific heat (simplified)
+            let ca = if theta_s < 600.0 { 440.0 + 0.48 * theta_s }
+                     else if theta_s < 735.0 { 666.0 + 13002.0 / (738.0 - theta_s).max(1.0) }
+                     else if theta_s < 900.0 { 545.0 + 17820.0 / (theta_s - 731.0).max(1.0) }
+                     else { 650.0 };
+            
+            let d_theta = section_factor * h_net * dt * 60.0 / (7850.0 * ca);
             
             theta_s += d_theta;
             theta_s = theta_s.min(theta_g);
@@ -227,41 +250,54 @@ impl SteelFireProperties {
 pub struct RebarFireProperties;
 
 impl RebarFireProperties {
-    /// Yield strength reduction for hot-rolled bars
+    /// Yield strength reduction for hot-rolled bars per EN 1992-1-2 Table 3.2a
     pub fn yield_factor_hot_rolled(theta: f64) -> f64 {
         if theta <= 400.0 { 1.0 }
         else if theta <= 500.0 { 1.0 - 0.22 * (theta - 400.0) / 100.0 }
         else if theta <= 600.0 { 0.78 - 0.31 * (theta - 500.0) / 100.0 }
         else if theta <= 700.0 { 0.47 - 0.24 * (theta - 600.0) / 100.0 }
         else if theta <= 800.0 { 0.23 - 0.12 * (theta - 700.0) / 100.0 }
-        else { 0.11 - 0.05 * (theta - 800.0) / 100.0 }
+        else if theta <= 900.0 { 0.11 - 0.05 * (theta - 800.0) / 100.0 }
+        else { (0.06 - 0.02 * (theta - 900.0) / 100.0).max(0.0) }
     }
     
-    /// Yield strength reduction for cold-worked bars
+    /// Yield strength reduction for cold-worked bars per EN 1992-1-2 Table 3.2b
     pub fn yield_factor_cold_worked(theta: f64) -> f64 {
-        if theta <= 100.0 { 1.0 }
-        else if theta <= 200.0 { 1.0 - 0.04 * (theta - 100.0) / 100.0 }
-        else if theta <= 300.0 { 0.96 - 0.15 * (theta - 200.0) / 100.0 }
-        else if theta <= 400.0 { 0.81 - 0.18 * (theta - 300.0) / 100.0 }
-        else if theta <= 500.0 { 0.63 - 0.23 * (theta - 400.0) / 100.0 }
-        else if theta <= 600.0 { 0.40 - 0.18 * (theta - 500.0) / 100.0 }
-        else if theta <= 700.0 { 0.22 - 0.14 * (theta - 600.0) / 100.0 }
-        else { 0.08 - 0.05 * (theta - 700.0) / 100.0 }
+        if theta <= 300.0 { 1.0 }
+        else if theta <= 400.0 { 1.0 - 0.06 * (theta - 300.0) / 100.0 }
+        else if theta <= 500.0 { 0.94 - 0.27 * (theta - 400.0) / 100.0 }
+        else if theta <= 600.0 { 0.67 - 0.27 * (theta - 500.0) / 100.0 }
+        else if theta <= 700.0 { 0.40 - 0.28 * (theta - 600.0) / 100.0 }
+        else if theta <= 800.0 { 0.12 - 0.01 * (theta - 700.0) / 100.0 }
+        else if theta <= 900.0 { 0.11 - 0.03 * (theta - 800.0) / 100.0 }
+        else { (0.08 - 0.025 * (theta - 900.0) / 100.0).max(0.0) }
     }
     
-    /// Temperature at depth from fire-exposed surface (simplified)
+    /// Temperature at depth from fire-exposed surface (1-D semi-infinite solid)
     pub fn temperature_at_depth(depth_mm: f64, fire_duration_min: f64) -> f64 {
-        // Simplified 1D heat transfer
         let fire = FireCurve::Iso834;
         let theta_g = fire.temperature(fire_duration_min);
         
-        // Exponential decay with depth
         let alpha = 0.5e-6; // Thermal diffusivity m²/s
         let t = fire_duration_min * 60.0;
         let x = depth_mm / 1000.0;
         
-        let decay = (-x / (2.0 * (alpha * t).sqrt())).exp();
-        20.0 + (theta_g - 20.0) * decay
+        // erfc approximation (Abramowitz & Stegun 7.1.26)
+        let xi = x / (2.0 * (alpha * t).sqrt());
+        let erfc_xi = if xi < 0.0 {
+            2.0
+        } else {
+            let p = 0.3275911;
+            let a1 = 0.254829592;
+            let a2 = -0.284496736;
+            let a3 = 1.421413741;
+            let a4 = -1.453152027;
+            let a5 = 1.061405429;
+            let t_val = 1.0 / (1.0 + p * xi);
+            let poly = ((((a5 * t_val + a4) * t_val + a3) * t_val + a2) * t_val + a1) * t_val;
+            (poly * (-xi * xi).exp()).max(0.0).min(1.0)
+        };
+        20.0 + (theta_g - 20.0) * erfc_xi
     }
 }
 
@@ -419,7 +455,9 @@ impl RcBeamFireDesign {
         let m_rd_fi = self.as_tension * ks * self.fy * z / 1e6; // kN·m
         
         // Cold capacity (for comparison)
-        let z_cold = self.depth - self.axis_distance - self.axis_distance;
+        let d_cold = self.depth - self.axis_distance;
+        let a_block = self.as_tension * self.fy / (0.85 * self.fck * self.width);
+        let z_cold = d_cold - 0.5 * a_block;
         let m_rd_cold = self.as_tension * self.fy * z_cold / 1e6;
         
         let ratio = m_rd_fi / m_rd_cold;

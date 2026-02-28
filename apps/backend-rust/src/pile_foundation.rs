@@ -199,7 +199,7 @@ impl SoilLayer {
             SoilType::DenseSand | SoilType::Gravel => {
                 let n = self.n_spt.unwrap_or(20) as f64;
                 let nq = (45.0 + self.phi / 2.0).to_radians().tan().powi(2) 
-                         * PI.exp() * self.phi.to_radians().tan();
+                         * (PI * self.phi.to_radians().tan()).exp();
                 let qb = nq * self.gamma * 10.0; // At 10m depth reference
                 (qb * factor).min(n * 400.0) // Limiting value
             }
@@ -687,10 +687,14 @@ impl LateralPileAnalyzer {
             // Cohesive soil - short pile
             9.0 * avg_cu * d * l * 0.5
         } else {
-            // Cohesionless soil
+            // Cohesionless soil - Broms method
             let avg_gamma = self.soil_layers.iter().map(|l| l.gamma).sum::<f64>() 
                           / self.soil_layers.len() as f64;
-            let kp = 3.0; // Passive pressure coefficient
+            let avg_phi = self.soil_layers.iter()
+                .filter(|l| l.phi > 0.0)
+                .map(|l| l.phi)
+                .sum::<f64>() / self.soil_layers.iter().filter(|l| l.phi > 0.0).count().max(1) as f64;
+            let kp = (45.0_f64 + avg_phi / 2.0).to_radians().tan().powi(2);
             kp * avg_gamma * d * l.powi(2) / 2.0
         }
     }

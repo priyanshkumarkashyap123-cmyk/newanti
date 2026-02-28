@@ -467,9 +467,10 @@ impl Silo {
     pub fn horizontal_pressure(&self, z: f64) -> f64 {
         let gamma = self.material.unit_weight();
         let z0 = self.characteristic_depth();
+        let k = self.janssen_k();
         
-        // ph = γ * z0 * (1 - e^(-z/z0))
-        gamma * z0 * (1.0 - (-z / z0).exp())
+        // ph = k * γ * z0 * (1 - e^(-z/z0)), where pv = γ·z0·(1-e^(-z/z0))
+        k * gamma * z0 * (1.0 - (-z / z0).exp())
     }
     
     /// Vertical pressure at depth z (kPa)
@@ -481,7 +482,9 @@ impl Silo {
     pub fn max_horizontal_pressure(&self) -> f64 {
         let gamma = self.material.unit_weight();
         let z0 = self.characteristic_depth();
-        gamma * z0
+        let k = self.janssen_k();
+        // ph_max = k * γ * z0 = γ * R / μ
+        k * gamma * z0
     }
     
     /// Wall friction force per unit area (kPa)
@@ -501,12 +504,10 @@ impl Silo {
     pub fn vertical_wall_load(&self, z: f64) -> f64 {
         let gamma = self.material.unit_weight();
         let z0 = self.characteristic_depth();
-        let mu = self.material.wall_friction();
-        let k = self.janssen_k();
         let r = self.hydraulic_radius();
         
-        // Integration of wall friction from 0 to z
-        gamma * r * (z - z0 * (1.0 - (-z / z0).exp())) / (k * mu)
+        // Fv = γR(z - z0(1 - e^(-z/z0))) from vertical equilibrium
+        gamma * r * (z - z0 * (1.0 - (-z / z0).exp()))
     }
     
     /// Overpressure factor for filling/discharge

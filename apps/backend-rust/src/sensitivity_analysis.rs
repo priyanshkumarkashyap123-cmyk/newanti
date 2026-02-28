@@ -315,8 +315,8 @@ impl DirectDifferentiation {
     }
 
     /// Compliance sensitivity
-    /// C = u' * K * u = u' * F
-    /// dC/dp = 2 * (du/dp)' * F + u' * (dF/dp)
+    /// C = u' * F
+    /// dC/dp = (du/dp)' * F + u' * (dF/dp)
     pub fn compliance_sensitivity(
         &self,
         force: &[f64],
@@ -325,7 +325,7 @@ impl DirectDifferentiation {
     ) -> f64 {
         let du_dp = &self.displacement_sensitivity[param_idx];
 
-        let term1: f64 = du_dp.iter().zip(force.iter()).map(|(d, f)| 2.0 * d * f).sum();
+        let term1: f64 = du_dp.iter().zip(force.iter()).map(|(d, f)| d * f).sum();
         let term2: f64 = self.displacement.iter().zip(df_dp.iter()).map(|(u, df)| u * df).sum();
 
         term1 + term2

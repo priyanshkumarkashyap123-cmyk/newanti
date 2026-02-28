@@ -378,11 +378,11 @@ impl HHTAlphaIntegrator {
             // Stiffness contribution at n (the -α·K·u_n part):
             // Note: We have (1+α)·K·u_{n+1} - α·K·u_n, so we add α·K·u_n to RHS
             for j in 0..self.ndof {
-                f_eff[i] += (-alpha) * self.stiffness[i * self.ndof + j] * self.state.u[j];
+                f_eff[i] += alpha * self.stiffness[i * self.ndof + j] * self.state.u[j];
             }
             
             // Damping at n (the -α·C·v_n part): add α·C·v_n to RHS
-            f_eff[i] += (-alpha) * self.damping[i] * self.state.v[i];
+            f_eff[i] += alpha * self.damping[i] * self.state.v[i];
         }
         
         // Solve K_eff · u_{n+1} = f_eff
@@ -597,15 +597,15 @@ impl GeneralizedAlphaIntegrator {
             
             // Mass contributions
             f_eff[i] += one_minus_am * self.mass[i] * (a0 * self.state.u[i] + a2 * self.state.v[i] + a3 * self.state.a[i]);
-            f_eff[i] += alpha_m * self.mass[i] * self.state.a[i];
+            f_eff[i] -= alpha_m * self.mass[i] * self.state.a[i];
             
             // Damping contributions  
             f_eff[i] += one_minus_af * self.damping[i] * (a1 * self.state.u[i] + a4 * self.state.v[i] + a5 * self.state.a[i]);
-            f_eff[i] += alpha_f * self.damping[i] * self.state.v[i];
+            f_eff[i] -= alpha_f * self.damping[i] * self.state.v[i];
             
-            // Stiffness at n (the αf·K·u_n part)
+            // Stiffness at n (the αf·K·u_n part — subtract since on LHS)
             for j in 0..self.ndof {
-                f_eff[i] += alpha_f * self.stiffness[i * self.ndof + j] * self.state.u[j];
+                f_eff[i] -= alpha_f * self.stiffness[i * self.ndof + j] * self.state.u[j];
             }
         }
         

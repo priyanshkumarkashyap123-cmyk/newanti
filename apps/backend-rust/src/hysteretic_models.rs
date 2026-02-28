@@ -112,12 +112,14 @@ impl BilinearHysteresis {
             stress = trial_stress;
             stiffness = self.k0;
         } else {
-            // Plastic
+            // Plastic — return mapping with kinematic hardening modulus H = α·k0/(1-α)
             let sign = if trial_stress - backstress >= 0.0 { 1.0 } else { -1.0 };
-            let d_plastic = f_trial / self.k0;
+            let d_plastic = f_trial * (1.0 - self.alpha) / self.k0;
             self.state.plastic_strain += sign * d_plastic;
             
-            stress = backstress + sign * self.fy + self.alpha * self.k0 * sign * d_plastic;
+            // Recompute backstress after plastic strain update (H = α·k0/(1-α))
+            let new_backstress = self.k0 * self.alpha * self.state.plastic_strain / (1.0 - self.alpha);
+            stress = new_backstress + sign * self.fy;
             stiffness = self.alpha * self.k0;
             
             // Energy dissipation
@@ -246,8 +248,8 @@ impl TakedaHysteresis {
                     stiffness = k_reload;
                 }
             } else {
-                // Loading from negative to zero
-                let k_unload = self.k0 * (self.dmax_neg / dy).abs().powf(self.beta);
+                // Loading from negative to zero (degraded Takeda unloading)
+                let k_unload = self.k0 * (dy / self.dmax_neg.abs()).powf(self.beta);
                 stress = prev_stress + k_unload * d_strain;
                 stiffness = k_unload;
             }
@@ -274,8 +276,8 @@ impl TakedaHysteresis {
                     stiffness = k_reload;
                 }
             } else {
-                // Unloading from positive to zero
-                let k_unload = self.k0 * (self.dmax_pos / dy).powf(self.beta);
+                // Unloading from positive to zero (degraded Takeda unloading)
+                let k_unload = self.k0 * (dy / self.dmax_pos).powf(self.beta);
                 stress = prev_stress + k_unload * d_strain;
                 stiffness = k_unload;
             }
@@ -372,7 +374,8 @@ impl BoucWenHysteresis {
         let z_n = z.abs().powf(self.n);
         let z_n1 = z.abs().powf(self.n - 1.0) * z;
         
-        let dz_deps = self.a_param - (self.beta * z_n + self.gamma_param * z_n1 * sign_d_eps);
+        // Wen (1976): dz/dε = A - β·sign(ε̇)·z·|z|^(n-1) - γ·|z|^n
+        let dz_deps = self.a_param - (self.beta * z_n1 * sign_d_eps + self.gamma_param * z_n);
         
         // Integrate z
         let z_new = z + dz_deps * d_eps;
@@ -580,7 +583,8 @@ impl FlagShapedHysteresis {
         
         // Apply flag shape (unloading at lower level)
         let unload_factor = 1.0 - self.beta;
-        let is_unloading = (strain - self.state.strain) * (self.state.loading_dir as f64) < 0.0;
+        let d_strain = strain - self.state.strain;
+        let is_unloading = d_strain * (self.state.loading_dir as f64) < 0.0;
         
         let final_stress = if is_unloading && strain.abs() > ea {
             stress * unload_factor
@@ -588,15 +592,16 @@ impl FlagShapedHysteresis {
             stress
         };
         
+        // Update loading direction BEFORE overwriting state.strain
+        if d_strain.abs() > 1e-16 {
+            self.state.loading_dir = if d_strain > 0.0 { 1 } else { -1 };
+        }
+        
         self.state.strain = strain;
         self.state.stress = final_stress;
         self.state.stiffness = stiffness;
         self.state.max_strain = self.state.max_strain.max(strain);
         self.state.min_strain = self.state.min_strain.min(strain);
-        
-        if (strain - self.state.strain).abs() > 1e-16 {
-            self.state.loading_dir = if strain > self.state.strain { 1 } else { -1 };
-        }
         
         (final_stress, stiffness)
     }

@@ -140,19 +140,21 @@ pub fn solve_eigenvalues(
     // For MVP: Apply small mass to massless DOFs to avoid singularity or use partition.
     
     let mut m_inv_sqrt = DMatrix::zeros(dof, dof);
+    // Find minimum real mass entry for dummy mass scaling
+    let min_real_mass = (0..dof)
+        .map(|i| m_global[(i, i)])
+        .filter(|&m| m > 1e-15)
+        .fold(f64::MAX, f64::min);
+    let dummy_mass = if min_real_mass < f64::MAX { min_real_mass * 1e-8 } else { 1e-10 };
+    
     for i in 0..dof {
         let m = m_global[(i, i)];
         if m > 1e-9 {
             m_inv_sqrt[(i, i)] = 1.0 / m.sqrt();
         } else {
             // Massless DOF (e.g. rotation in lumped model)
-            // Assign dummy small mass? Or condense?
-            // Condensation is complex.
-            // Dummy mass approach:
-            // m_inv_sqrt[(i, i)] = 1.0 / (1e-6).sqrt(); 
-            // Better: If diagonal is zero, it might be a static slave DOF.
-            // Let's skip dynamics for those or set small mass.
-            m_inv_sqrt[(i, i)] = 1.0 / (1e-3_f64).sqrt(); // Small fictitious mass
+            // Use small fraction of minimum real mass to avoid corrupting eigenvalue spectrum
+            m_inv_sqrt[(i, i)] = 1.0 / dummy_mass.sqrt();
         }
     }
     
@@ -196,10 +198,9 @@ pub fn solve_eigenvalues(
         let y = eigenvectors.column(idx);
         let x = &m_inv_sqrt * y;
         
-        // Normalize (Mass normalized? or Unity?)
-        // Let's normalize so max displacement is 1.0 for visualization
+        // Normalize so max displacement is 1.0 for visualization
         let max_disp = x.iter().fold(0.0f64, |acc, &val| acc.max(val.abs()));
-        let _x_norm = x / max_disp;
+        let _x_norm = if max_disp > 1e-15 { x / max_disp } else { x };
         
         // Store in HashMap format
         // Need node mapping passed here or reconstruct? 
@@ -284,17 +285,20 @@ fn get_spectral_acceleration(T: f64, soil: u8) -> f64 {
         1 => { // Hard Soil (Rock)
              if T < 0.10 { 1.0 + 15.0 * T }
              else if T <= 0.40 { 2.5 }
-             else { 1.0 / T }
+             else if T <= 4.0 { 1.0 / T }
+             else { 1.0 / 4.0 } // Cap at T=4.0s per IS 1893:2016 Cl. 6.4.2
         },
         2 => { // Medium Soil
              if T < 0.10 { 1.0 + 15.0 * T }
              else if T <= 0.55 { 2.5 }
-             else { 1.36 / T }
+             else if T <= 4.0 { 1.36 / T }
+             else { 1.36 / 4.0 }
         },
         3 => { // Soft Soil
              if T < 0.10 { 1.0 + 15.0 * T }
              else if T <= 0.67 { 2.5 }
-             else { 1.67 / T }
+             else if T <= 4.0 { 1.67 / T }
+             else { 1.67 / 4.0 }
         },
         _ => 2.5 // Conservative
     }

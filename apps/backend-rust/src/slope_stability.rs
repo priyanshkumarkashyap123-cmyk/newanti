@@ -418,10 +418,10 @@ impl EarthPressure {
         let alpha = (90.0 - self.wall_angle).to_radians();
         let beta = self.backfill_slope.to_radians();
         
-        let num = (alpha - phi).sin().powi(2);
-        let denom = alpha.sin().powi(2) * (alpha + delta).sin() *
+        let num = (alpha + phi).sin().powi(2);
+        let denom = alpha.sin().powi(2) * (alpha - delta).sin() *
                     (1.0 + ((phi + delta).sin() * (phi - beta).sin() /
-                           ((alpha + delta).sin() * (alpha - beta).sin())).sqrt()).powi(2);
+                           ((alpha - delta).sin() * (alpha + beta).sin())).sqrt()).powi(2);
         
         if denom > 0.0 {
             num / denom
@@ -437,10 +437,10 @@ impl EarthPressure {
         let alpha = (90.0 - self.wall_angle).to_radians();
         let beta = self.backfill_slope.to_radians();
         
-        let num = (alpha + phi).sin().powi(2);
-        let denom = alpha.sin().powi(2) * (alpha - delta).sin() *
+        let num = (alpha - phi).sin().powi(2);
+        let denom = alpha.sin().powi(2) * (alpha + delta).sin() *
                     (1.0 - ((phi + delta).sin() * (phi + beta).sin() /
-                           ((alpha - delta).sin() * (alpha + beta).sin())).sqrt()).powi(2);
+                           ((alpha + delta).sin() * (alpha - beta).sin())).sqrt()).powi(2);
         
         if denom > 0.0 {
             num / denom
@@ -554,7 +554,7 @@ impl InfiniteSlope {
         let hw = self.water_above_failure;
         
         let sigma_n = (gamma * (z - hw) + (gamma_sat - gamma_w) * hw) * beta.cos().powi(2);
-        let tau = gamma_sat * z * beta.sin() * beta.cos();
+        let tau = (gamma * (z - hw) + gamma_sat * hw) * beta.sin() * beta.cos();
         
         (c + sigma_n * phi.tan()) / tau.max(0.001)
     }

@@ -7,6 +7,9 @@
 
 import React, { useState } from 'react';
 import { feedbackService, FeedbackEntry } from '../../services/FeedbackService';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
 
 // ============================================
 // QUICK RATING COMPONENT
@@ -56,7 +59,7 @@ export const QuickRating: React.FC<QuickRatingProps> = ({
 
     return (
         <div className={`flex items-center gap-2 ${compact ? '' : 'p-2'}`}>
-            <span className="text-gray-400 text-sm">{compact ? '' : 'Rate this:'}</span>
+            <span className="text-zinc-500 dark:text-zinc-400 text-sm">{compact ? '' : 'Rate this:'}</span>
             <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(value => (
                     <button
@@ -64,7 +67,7 @@ export const QuickRating: React.FC<QuickRatingProps> = ({
                         onClick={() => handleRate(value)}
                         className={`w-7 h-7 rounded-lg font-medium text-sm transition-all ${rating === value
                                 ? 'bg-yellow-500 text-black'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600'
                             }`}
                     >
                         {value}
@@ -108,7 +111,7 @@ export const CorrectionButton: React.FC<CorrectionButtonProps> = ({
         <>
             <button
                 onClick={() => setShowDialog(true)}
-                className="text-xs text-gray-400 hover:text-white flex items-center gap-1"
+                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white flex items-center gap-1"
             >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -118,46 +121,38 @@ export const CorrectionButton: React.FC<CorrectionButtonProps> = ({
                 Correct
             </button>
 
-            {showDialog && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-gray-800 rounded-xl p-6 w-96 border border-gray-700">
-                        <h3 className="text-white font-semibold mb-4">Submit Correction</h3>
+            <Dialog open={showDialog} onOpenChange={(open) => !open && setShowDialog(false)}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Submit Correction</DialogTitle>
+                        <DialogDescription>Provide the correct output to help improve the system.</DialogDescription>
+                    </DialogHeader>
 
-                        <div className="mb-4">
-                            <label className="text-gray-400 text-sm block mb-1">Original Output</label>
-                            <div className="bg-gray-900 rounded-lg p-3 text-sm text-gray-300 max-h-32 overflow-auto">
+                    <div className="space-y-4">
+                        <div>
+                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm block mb-1">Original Output</Label>
+                            <div className="bg-white dark:bg-zinc-900 rounded-lg p-3 text-sm text-zinc-700 dark:text-zinc-300 max-h-32 overflow-auto border border-zinc-200 dark:border-zinc-800">
                                 {typeof output === 'string' ? output : JSON.stringify(output, null, 2)}
                             </div>
                         </div>
 
-                        <div className="mb-4">
-                            <label className="text-gray-400 text-sm block mb-1">Your Correction</label>
+                        <div>
+                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm block mb-1">Your Correction</Label>
                             <textarea
                                 value={correction}
                                 onChange={e => setCorrection(e.target.value)}
                                 placeholder="What should the correct output be?"
-                                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white h-24 resize-none"
+                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-zinc-900 dark:text-white h-24 resize-none"
                             />
                         </div>
-
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setShowDialog(false)}
-                                className="flex-1 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!correction.trim()}
-                                className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50"
-                            >
-                                Submit
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
+
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
+                        <Button onClick={handleSubmit} disabled={!correction.trim()}>Submit</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 };
@@ -197,7 +192,7 @@ export const InlineFeedback: React.FC<InlineFeedbackProps> = ({
     output
 }) => {
     return (
-        <div className="flex items-center gap-4 pt-2 border-t border-gray-700 mt-2">
+        <div className="flex items-center gap-4 pt-2 border-t border-zinc-300 dark:border-zinc-700 mt-2">
             <QuickRating feature={feature} input={input} output={output} compact />
             <CorrectionButton feature={feature} input={input} output={output} />
         </div>
@@ -229,26 +224,26 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
     };
 
     return (
-        <div className="bg-gray-900 rounded-xl border border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-300 dark:border-zinc-700 overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-3 bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+            <div className="px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-300 dark:border-zinc-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                         />
                     </svg>
-                    <h3 className="font-semibold text-white">User Feedback</h3>
+                    <h3 className="font-semibold text-zinc-900 dark:text-white">User Feedback</h3>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={handleExport}
-                        className="px-3 py-1 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600"
+                        className="px-3 py-1 text-sm bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-600"
                     >
                         Export
                     </button>
                     {onClose && (
-                        <button onClick={onClose} className="text-gray-400 hover:text-white">
+                        <button onClick={onClose} className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -258,17 +253,17 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-700">
+            <div className="flex border-b border-zinc-300 dark:border-zinc-700">
                 <button
                     onClick={() => setView('recent')}
-                    className={`flex-1 py-2 text-sm font-medium ${view === 'recent' ? 'text-white border-b-2 border-pink-500' : 'text-gray-400'
+                    className={`flex-1 py-2 text-sm font-medium ${view === 'recent' ? 'text-zinc-900 dark:text-white border-b-2 border-pink-500' : 'text-zinc-500 dark:text-zinc-400'
                         }`}
                 >
                     Recent
                 </button>
                 <button
                     onClick={() => setView('stats')}
-                    className={`flex-1 py-2 text-sm font-medium ${view === 'stats' ? 'text-white border-b-2 border-pink-500' : 'text-gray-400'
+                    className={`flex-1 py-2 text-sm font-medium ${view === 'stats' ? 'text-zinc-900 dark:text-white border-b-2 border-pink-500' : 'text-zinc-500 dark:text-zinc-400'
                         }`}
                 >
                     Statistics
@@ -280,16 +275,16 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
                 {view === 'recent' && (
                     <>
                         {recent.length === 0 ? (
-                            <div className="text-center py-8 text-gray-400">
+                            <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
                                 <p>No feedback collected yet</p>
                                 <p className="text-sm mt-2">Rate AI outputs to help improve the system</p>
                             </div>
                         ) : (
                             <div className="space-y-2">
                                 {recent.map(entry => (
-                                    <div key={entry.id} className="p-3 bg-gray-800 rounded-lg">
+                                    <div key={entry.id} className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xs bg-gray-700 px-2 py-0.5 rounded text-gray-300">
+                                            <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-zinc-700 dark:text-zinc-300">
                                                 {entry.type}
                                             </span>
                                             {entry.rating && (
@@ -298,7 +293,7 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="text-sm text-gray-300 truncate">
+                                        <div className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
                                             {entry.originalInput.slice(0, 100)}
                                         </div>
                                     </div>
@@ -311,34 +306,34 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
                 {view === 'stats' && (
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gray-800 rounded-lg p-4 text-center">
-                                <div className="text-3xl font-bold text-white">{stats.totalFeedback}</div>
-                                <div className="text-gray-400 text-sm">Total Feedback</div>
+                            <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
+                                <div className="text-3xl font-bold text-zinc-900 dark:text-white">{stats.totalFeedback}</div>
+                                <div className="text-zinc-500 dark:text-zinc-400 text-sm">Total Feedback</div>
                             </div>
-                            <div className="bg-gray-800 rounded-lg p-4 text-center">
+                            <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
                                 <div className="text-3xl font-bold text-yellow-400">
                                     {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : '-'}
                                 </div>
-                                <div className="text-gray-400 text-sm">Avg Rating</div>
+                                <div className="text-zinc-500 dark:text-zinc-400 text-sm">Avg Rating</div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-800 rounded-lg p-4">
-                            <h4 className="text-white font-medium mb-2">By Feature</h4>
+                        <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
+                            <h4 className="text-zinc-900 dark:text-white font-medium mb-2">By Feature</h4>
                             {Object.entries(stats.byFeature).map(([feature, count]) => (
                                 <div key={feature} className="flex justify-between text-sm py-1">
-                                    <span className="text-gray-400">{feature.replace('_', ' ')}</span>
-                                    <span className="text-white">{count}</span>
+                                    <span className="text-zinc-500 dark:text-zinc-400">{feature.replace('_', ' ')}</span>
+                                    <span className="text-zinc-900 dark:text-white">{count}</span>
                                 </div>
                             ))}
                         </div>
 
-                        <div className="bg-gray-800 rounded-lg p-4">
-                            <h4 className="text-white font-medium mb-2">By Type</h4>
+                        <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
+                            <h4 className="text-zinc-900 dark:text-white font-medium mb-2">By Type</h4>
                             {Object.entries(stats.byType).map(([type, count]) => (
                                 <div key={type} className="flex justify-between text-sm py-1">
-                                    <span className="text-gray-400">{type}</span>
-                                    <span className="text-white">{count}</span>
+                                    <span className="text-zinc-500 dark:text-zinc-400">{type}</span>
+                                    <span className="text-zinc-900 dark:text-white">{count}</span>
                                 </div>
                             ))}
                         </div>

@@ -213,8 +213,9 @@ impl SuspensionBridge {
     /// Maximum cable tension at towers
     pub fn max_cable_tension(&self) -> f64 {
         let h = self.horizontal_tension();
-        let slope = self.cable_slope(0.0);
-        h / slope.cos()
+        let slope = self.cable_slope(0.0); // dy/dx = tan(θ)
+        // T = H / cos(θ) = H * √(1 + tan²θ)
+        h * (1.0 + slope.powi(2)).sqrt()
     }
 
     /// Cable length calculation
@@ -502,7 +503,9 @@ impl SuspensionBridge {
         let t_max = self.max_cable_tension();
         
         // Vertical force from cables
-        let v_main = 2.0 * t_max * (self.cable_slope(0.0)).sin().abs();
+        // V = T * sin(θ) = H * tan(θ) = H * slope
+        let slope_at_tower = self.cable_slope(0.0);
+        let v_main = 2.0 * h * slope_at_tower.abs();
         let v_side = self.side_span_tension() * 
                     (self.tower_height / (self.tower_height.powi(2) + 
                      self.side_span.powi(2)).sqrt());

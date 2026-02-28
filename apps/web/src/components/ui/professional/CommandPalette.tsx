@@ -13,7 +13,6 @@
 
 import React from 'react';
 import { FC, useState, useCallback, useEffect, useRef, useMemo, memo, createContext, useContext, ReactNode } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Command, Hash, AtSign, ChevronRight, File, FileText, Code,
   Settings, Play, Zap, Box, Circle, Layers, ArrowDown, Anchor,
@@ -21,6 +20,7 @@ import {
   Undo, Redo, Copy, Clipboard, Trash2, Edit3, Move, FlipHorizontal,
   Activity, Shield, Clock, Star, Terminal, Keyboard, Moon, Sun
 } from 'lucide-react';
+import { Dialog, DialogContent } from '../dialog';
 
 // ============================================
 // TYPES
@@ -229,7 +229,7 @@ const SearchInput: FC<{
   };
 
   return (
-    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-700">
+    <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-700">
       {getModeIcon()}
       <input
         ref={inputRef}
@@ -237,13 +237,13 @@ const SearchInput: FC<{
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || getPlaceholder()}
-        className="flex-1 bg-transparent text-sm text-zinc-200 placeholder-zinc-500 outline-none"
+        className="flex-1 bg-transparent text-sm text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 outline-none"
         autoFocus
       />
-      <div className="flex items-center gap-1 text-[10px] text-zinc-400">
-        <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded">↑↓</kbd>
+      <div className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+        <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">↑↓</kbd>
         <span>navigate</span>
-        <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded ml-2">Enter</kbd>
+        <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded ml-2">Enter</kbd>
         <span>select</span>
       </div>
     </div>
@@ -269,7 +269,7 @@ const CommandItem: FC<{
     <div
       className={`
         flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors
-        ${isSelected ? 'bg-blue-500/20' : 'hover:bg-zinc-800/50'}
+        ${isSelected ? 'bg-blue-500/20' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/50'}
         ${command.disabled ? 'opacity-40 cursor-not-allowed' : ''}
       `}
       onClick={() => !command.disabled && onClick()}
@@ -277,17 +277,17 @@ const CommandItem: FC<{
     >
       <Icon className={`w-4 h-4 ${categoryConfig.color}`} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-zinc-200 truncate">{command.label}</div>
+        <div className="text-sm text-zinc-800 dark:text-zinc-200 truncate">{command.label}</div>
         {command.description && (
-          <div className="text-xs text-zinc-400 truncate">{command.description}</div>
+          <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{command.description}</div>
         )}
       </div>
       <div className="flex items-center gap-2">
-        <span className={`text-[10px] px-1.5 py-0.5 rounded ${categoryConfig.color} bg-zinc-800`}>
+        <span className={`text-[10px] px-1.5 py-0.5 rounded ${categoryConfig.color} bg-zinc-100 dark:bg-zinc-800`}>
           {categoryConfig.label}
         </span>
         {command.shortcut && (
-          <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-700 text-zinc-300 rounded">
+          <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded">
             {command.shortcut}
           </kbd>
         )}
@@ -321,18 +321,18 @@ const FileItem: FC<{
     <div
       className={`
         flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors
-        ${isSelected ? 'bg-blue-500/20' : 'hover:bg-zinc-800/50'}
+        ${isSelected ? 'bg-blue-500/20' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/50'}
       `}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
     >
       <Icon className="w-4 h-4 text-amber-400" />
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-zinc-200 truncate">{file.name}</div>
-        <div className="text-xs text-zinc-400 truncate">{file.path}</div>
+        <div className="text-sm text-zinc-800 dark:text-zinc-200 truncate">{file.name}</div>
+        <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{file.path}</div>
       </div>
       {file.modified && (
-        <span className="text-[10px] text-zinc-500">
+        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
           {file.modified.toLocaleDateString()}
         </span>
       )}
@@ -379,19 +379,19 @@ const SymbolItem: FC<{
     <div
       className={`
         flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors
-        ${isSelected ? 'bg-blue-500/20' : 'hover:bg-zinc-800/50'}
+        ${isSelected ? 'bg-blue-500/20' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/50'}
       `}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
     >
-      <Icon className={`w-4 h-4 ${typeColors[symbol.type] || 'text-zinc-400'}`} />
+      <Icon className={`w-4 h-4 ${typeColors[symbol.type] || 'text-zinc-500 dark:text-zinc-400'}`} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-zinc-200 truncate">{symbol.name}</div>
+        <div className="text-sm text-zinc-800 dark:text-zinc-200 truncate">{symbol.name}</div>
         {symbol.location && (
-          <div className="text-xs text-zinc-400 truncate">{symbol.location}</div>
+          <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{symbol.location}</div>
         )}
       </div>
-      <span className={`text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 ${typeColors[symbol.type] || 'text-zinc-400'}`}>
+      <span className={`text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 ${typeColors[symbol.type] || 'text-zinc-500 dark:text-zinc-400'}`}>
         {symbol.type}
       </span>
     </div>
@@ -614,21 +614,8 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: -20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          className="w-[600px] max-h-[60vh] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
-        >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[600px] max-h-[60vh] p-0 gap-0 top-[15vh] translate-y-0 overflow-hidden">
           {/* Search Input */}
           <SearchInput
             value={query}
@@ -638,7 +625,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           />
 
           {/* Mode Tabs */}
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-800 bg-zinc-900/50">
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
             {[
               { mode: 'command' as PaletteMode, label: 'Commands', prefix: '>' },
               { mode: 'file' as PaletteMode, label: 'Files', prefix: '' },
@@ -655,11 +642,11 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                   px-2 py-1 text-xs rounded transition-colors
                   ${mode === tab.mode 
                     ? 'bg-blue-500/20 text-blue-300' 
-                    : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800'
                   }
                 `}
               >
-                {tab.prefix && <span className="text-zinc-500 mr-1">{tab.prefix}</span>}
+                {tab.prefix && <span className="text-zinc-400 dark:text-zinc-500 mr-1">{tab.prefix}</span>}
                 {tab.label}
               </button>
             ))}
@@ -668,17 +655,17 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           {/* Results List */}
           <div ref={listRef} className="overflow-y-auto max-h-[calc(60vh-120px)]">
             {mode === 'goto' ? (
-              <div className="px-4 py-8 text-center text-zinc-400">
+              <div className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                 <Hash className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Type a line number to navigate</p>
                 {query && !isNaN(parseInt(query)) && (
-                  <p className="mt-2 text-zinc-400">
-                    Press <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded text-xs">Enter</kbd> to go to line {query}
+                  <p className="mt-2 text-zinc-500 dark:text-zinc-400">
+                    Press <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-xs">Enter</kbd> to go to line {query}
                   </p>
                 )}
               </div>
             ) : filteredResults.length === 0 ? (
-              <div className="px-4 py-8 text-center text-zinc-400">
+              <div className="px-4 py-8 text-center text-zinc-500 dark:text-zinc-400">
                 <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No results found</p>
               </div>
@@ -702,9 +689,9 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                   
                   return (
                     <div key={category}>
-                      <div className="flex items-center gap-2 px-4 py-1.5 bg-zinc-800/50 sticky top-0">
+                      <div className="flex items-center gap-2 px-4 py-1.5 bg-zinc-100 dark:bg-zinc-800/50 sticky top-0">
                         <CategoryIcon className={`w-3.5 h-3.5 ${config.color}`} />
-                        <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+                        <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                           {config.label}
                         </span>
                       </div>
@@ -748,22 +735,21 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-4 py-2 border-t border-zinc-800 bg-zinc-900/50 flex items-center justify-between text-[10px] text-zinc-500">
+          <div className="px-4 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
             <div className="flex items-center gap-4">
               <span>
-                <kbd className="px-1 py-0.5 bg-zinc-800 rounded">Ctrl</kbd>+
-                <kbd className="px-1 py-0.5 bg-zinc-800 rounded">K</kbd> Quick search
+                <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">Ctrl</kbd>+
+                <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">K</kbd> Quick search
               </span>
               <span>
-                <kbd className="px-1 py-0.5 bg-zinc-800 rounded">Ctrl</kbd>+
-                <kbd className="px-1 py-0.5 bg-zinc-800 rounded">P</kbd> Command palette
+                <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">Ctrl</kbd>+
+                <kbd className="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">P</kbd> Command palette
               </span>
             </div>
             <span>{filteredResults.length} results</span>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 };
 

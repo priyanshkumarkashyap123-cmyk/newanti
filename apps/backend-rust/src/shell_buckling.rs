@@ -392,8 +392,8 @@ impl RingStiffener {
     
     /// Required moment of inertia (mm⁴) for external pressure
     pub fn required_inertia(pressure: f64, radius: f64, spacing: f64, e: f64) -> f64 {
-        // ASME-type formula
-        pressure * radius.powi(3) * spacing * 1e9 / (3.0 * e)
+        // I = p × R³ × L / (3E) in m⁴; × 1e12 to convert to mm⁴
+        pressure * radius.powi(3) * spacing * 1e12 / (3.0 * e)
     }
     
     /// Effective shell width participating with ring (m)

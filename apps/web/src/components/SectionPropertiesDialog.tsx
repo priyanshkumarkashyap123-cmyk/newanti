@@ -9,7 +9,10 @@
  */
 
 import { FC, useState, useMemo } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import {
     MATERIALS_DATABASE,
     STEEL_SECTIONS,
@@ -194,60 +197,56 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
     ];
 
     return (
-        <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black/70 z-50" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] max-h-[90vh] bg-surface-dark border border-border-dark rounded-xl shadow-2xl z-50 overflow-hidden">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-[900px] max-h-[90vh] overflow-hidden p-0">
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-border-dark">
-                        <div>
-                            <Dialog.Title className="text-lg font-bold text-white">
+                    <DialogHeader className="p-4 border-b border-border-dark">
+                            <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-white">
                                 Section & Material Properties
-                            </Dialog.Title>
-                            <Dialog.Description className="text-sm text-text-muted">
+                            </DialogTitle>
+                            <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
                                 {memberId ? `Configure properties for Member ${memberId}` : 'Define section and material properties'}
-                            </Dialog.Description>
-                        </div>
-                        <Dialog.Close className="text-text-muted hover:text-white p-2">
-                            <span className="material-symbols-outlined">close</span>
-                        </Dialog.Close>
-                    </div>
+                            </DialogDescription>
+                    </DialogHeader>
 
                     <div className="flex h-[600px]">
                         {/* Left Panel - Input Mode */}
                         <div className="w-[400px] border-r border-border-dark overflow-y-auto">
                             {/* Mode Tabs */}
                             <div className="flex border-b border-border-dark">
-                                <button
+                                <Button
+                                    variant="ghost"
                                     onClick={() => setActiveTab('database')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'database'
+                                    className={`flex-1 px-4 py-3 text-sm font-medium rounded-none transition-colors ${activeTab === 'database'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
-                                            : 'text-text-muted hover:text-white'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                         }`}
                                 >
                                     <span className="material-symbols-outlined text-[16px] mr-1 align-middle">database</span>
                                     Database
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="ghost"
                                     onClick={() => setActiveTab('calculate')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'calculate'
+                                    className={`flex-1 px-4 py-3 text-sm font-medium rounded-none transition-colors ${activeTab === 'calculate'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
-                                            : 'text-text-muted hover:text-white'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                         }`}
                                 >
                                     <span className="material-symbols-outlined text-[16px] mr-1 align-middle">calculate</span>
                                     Calculate
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="ghost"
                                     onClick={() => setActiveTab('custom')}
-                                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'custom'
+                                    className={`flex-1 px-4 py-3 text-sm font-medium rounded-none transition-colors ${activeTab === 'custom'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
-                                            : 'text-text-muted hover:text-white'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                         }`}
                                 >
                                     <span className="material-symbols-outlined text-[16px] mr-1 align-middle">edit</span>
                                     Custom
-                                </button>
+                                </Button>
                             </div>
 
                             <div className="p-4 space-y-4">
@@ -255,13 +254,13 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 {activeTab === 'database' && (
                                     <>
                                         <div>
-                                            <label className="text-xs font-bold text-text-muted uppercase tracking-wider block mb-2">
+                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
                                                 Section Type
-                                            </label>
+                                            </Label>
                                             <select
                                                 value={selectedSectionType}
                                                 onChange={(e) => setSelectedSectionType(e.target.value as SectionType)}
-                                                className="w-full bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-white text-sm"
+                                                className="w-full bg-white dark:bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
                                             >
                                                 {sectionTypes.map(st => (
                                                     <option key={st.type} value={st.type}>{st.label}</option>
@@ -270,13 +269,13 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                         </div>
 
                                         <div>
-                                            <label className="text-xs font-bold text-text-muted uppercase tracking-wider block mb-2">
+                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
                                                 Section ({filteredSections.length} available)
-                                            </label>
+                                            </Label>
                                             <select
                                                 value={selectedSectionId}
                                                 onChange={(e) => setSelectedSectionId(e.target.value)}
-                                                className="w-full bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-white text-sm"
+                                                className="w-full bg-white dark:bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
                                                 size={8}
                                             >
                                                 {filteredSections.map(s => (
@@ -293,51 +292,50 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 {activeTab === 'calculate' && (
                                     <>
                                         <div>
-                                            <label className="text-xs font-bold text-text-muted uppercase tracking-wider block mb-2">
+                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
                                                 Section Shape
-                                            </label>
+                                            </Label>
                                             <div className="grid grid-cols-3 gap-2">
                                                 {(['rectangular', 'circular', 'I'] as const).map(shape => (
-                                                    <button
+                                                    <Button
                                                         key={shape}
+                                                        variant="outline"
                                                         onClick={() => setSectionShape(shape)}
-                                                        className={`p-3 rounded-lg border text-center text-xs font-medium transition-all ${sectionShape === shape
+                                                        className={`p-3 h-auto rounded-lg border text-center text-xs font-medium transition-all ${sectionShape === shape
                                                                 ? 'bg-primary/20 border-primary text-primary'
-                                                                : 'bg-zinc-900 border-border-dark text-text-muted hover:border-text-muted'
+                                                                : 'bg-white dark:bg-zinc-900 border-border-dark text-zinc-500 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500'
                                                             }`}
                                                     >
                                                         <span className="material-symbols-outlined text-[24px] block mb-1">
                                                             {shape === 'rectangular' ? 'rectangle' : shape === 'circular' ? 'circle' : 'view_column'}
                                                         </span>
                                                         {shape.charAt(0).toUpperCase() + shape.slice(1)}
-                                                    </button>
+                                                    </Button>
                                                 ))}
                                             </div>
                                         </div>
 
                                         <div className="space-y-3">
-                                            <label className="text-xs font-bold text-text-muted uppercase tracking-wider block">
+                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
                                                 Dimensions (mm)
-                                            </label>
+                                            </Label>
 
                                             {sectionShape === 'rectangular' && (
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
-                                                        <label className="text-xs text-text-muted block mb-1">Width (b)</label>
-                                                        <input
+                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Width (b)</Label>
+                                                        <Input
                                                             type="number"
                                                             value={dimensions.b}
                                                             onChange={(e) => setDimensions({ ...dimensions, b: Number(e.target.value) })}
-                                                            className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="text-xs text-text-muted block mb-1">Height (h)</label>
-                                                        <input
+                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Height (h)</Label>
+                                                        <Input
                                                             type="number"
                                                             value={dimensions.h}
                                                             onChange={(e) => setDimensions({ ...dimensions, h: Number(e.target.value) })}
-                                                            className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                         />
                                                     </div>
                                                 </div>
@@ -345,12 +343,11 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                                             {sectionShape === 'circular' && (
                                                 <div>
-                                                    <label className="text-xs text-text-muted block mb-1">Diameter (D)</label>
-                                                    <input
+                                                    <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Diameter (D)</Label>
+                                                    <Input
                                                         type="number"
                                                         value={dimensions.D}
                                                         onChange={(e) => setDimensions({ ...dimensions, D: Number(e.target.value) })}
-                                                        className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                     />
                                                 </div>
                                             )}
@@ -358,39 +355,35 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                             {sectionShape === 'I' && (
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
-                                                        <label className="text-xs text-text-muted block mb-1">Depth (d)</label>
-                                                        <input
+                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Depth (d)</Label>
+                                                        <Input
                                                             type="number"
                                                             value={dimensions.d}
                                                             onChange={(e) => setDimensions({ ...dimensions, d: Number(e.target.value) })}
-                                                            className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="text-xs text-text-muted block mb-1">Flange Width (bf)</label>
-                                                        <input
+                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Flange Width (bf)</Label>
+                                                        <Input
                                                             type="number"
                                                             value={dimensions.bf}
                                                             onChange={(e) => setDimensions({ ...dimensions, bf: Number(e.target.value) })}
-                                                            className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="text-xs text-text-muted block mb-1">Flange Thickness (tf)</label>
-                                                        <input
+                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Flange Thickness (tf)</Label>
+                                                        <Input
                                                             type="number"
                                                             value={dimensions.tf}
                                                             onChange={(e) => setDimensions({ ...dimensions, tf: Number(e.target.value) })}
-                                                            className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="text-xs text-text-muted block mb-1">Web Thickness (tw)</label>
-                                                        <input
+                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Web Thickness (tw)</Label>
+                                                        <Input
                                                             type="number"
                                                             value={dimensions.tw}
                                                             onChange={(e) => setDimensions({ ...dimensions, tw: Number(e.target.value) })}
-                                                            className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                         />
                                                     </div>
                                                 </div>
@@ -403,86 +396,77 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 {activeTab === 'custom' && (
                                     <div className="space-y-3">
                                         <div>
-                                            <label className="text-xs text-text-muted block mb-1">Section Name</label>
-                                            <input
+                                            <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Section Name</Label>
+                                            <Input
                                                 type="text"
                                                 value={customSection.name}
                                                 onChange={(e) => setCustomSection({ ...customSection, name: e.target.value })}
-                                                className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                             />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">Area (mm²)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Area (mm²)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.A}
                                                     onChange={(e) => setCustomSection({ ...customSection, A: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">Weight (kg/m)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Weight (kg/m)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.weight}
                                                     onChange={(e) => setCustomSection({ ...customSection, weight: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">Ix (mm⁴)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Ix (mm⁴)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.Ix}
                                                     onChange={(e) => setCustomSection({ ...customSection, Ix: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">Iy (mm⁴)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Iy (mm⁴)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.Iy}
                                                     onChange={(e) => setCustomSection({ ...customSection, Iy: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">Sx (mm³)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Sx (mm³)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.Sx}
                                                     onChange={(e) => setCustomSection({ ...customSection, Sx: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">Zx (mm³)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Zx (mm³)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.Zx}
                                                     onChange={(e) => setCustomSection({ ...customSection, Zx: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">rx (mm)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">rx (mm)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.rx}
                                                     onChange={(e) => setCustomSection({ ...customSection, rx: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">ry (mm)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">ry (mm)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customSection.ry}
                                                     onChange={(e) => setCustomSection({ ...customSection, ry: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                         </div>
@@ -491,21 +475,22 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                                 {/* Material Selection */}
                                 <div className="pt-4 border-t border-border-dark">
-                                    <label className="text-xs font-bold text-text-muted uppercase tracking-wider block mb-2">
+                                    <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
                                         Material
-                                    </label>
+                                    </Label>
                                     <div className="flex gap-2 mb-3">
                                         {(['steel', 'concrete', 'custom'] as const).map(type => (
-                                            <button
+                                            <Button
                                                 key={type}
+                                                variant={materialType === type ? 'default' : 'secondary'}
                                                 onClick={() => setMaterialType(type)}
                                                 className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${materialType === type
                                                         ? 'bg-primary text-white'
-                                                        : 'bg-zinc-800 text-text-muted hover:text-white'
+                                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                                                     }`}
                                             >
                                                 {type.charAt(0).toUpperCase() + type.slice(1)}
-                                            </button>
+                                            </Button>
                                         ))}
                                     </div>
 
@@ -513,7 +498,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                         <select
                                             value={selectedMaterialId}
                                             onChange={(e) => setSelectedMaterialId(e.target.value)}
-                                            className="w-full bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-white text-sm"
+                                            className="w-full bg-white dark:bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
                                         >
                                             {MATERIALS_DATABASE
                                                 .filter(m => m.type === materialType)
@@ -524,21 +509,19 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     ) : (
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">E (MPa)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">E (MPa)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customMaterial.E}
                                                     onChange={(e) => setCustomMaterial({ ...customMaterial, E: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-xs text-text-muted block mb-1">fy (MPa)</label>
-                                                <input
+                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">fy (MPa)</Label>
+                                                <Input
                                                     type="number"
                                                     value={customMaterial.fy}
                                                     onChange={(e) => setCustomMaterial({ ...customMaterial, fy: Number(e.target.value) })}
-                                                    className="w-full bg-zinc-900 border border-border-dark rounded px-3 py-2 text-white text-sm"
                                                 />
                                             </div>
                                         </div>
@@ -548,8 +531,8 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                         </div>
 
                         {/* Right Panel - Properties Display */}
-                        <div className="flex-1 p-4 overflow-y-auto bg-zinc-900/50">
-                            <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                        <div className="flex-1 p-4 overflow-y-auto bg-zinc-50 dark:bg-zinc-900/50">
+                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary text-[18px]">info</span>
                                 Section Properties
                             </h3>
@@ -559,7 +542,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     {/* Section Name */}
                                     <div className="bg-primary/10 rounded-lg p-3 text-center">
                                         <p className="text-primary text-lg font-bold">{selectedSection.name}</p>
-                                        <p className="text-text-muted text-xs">{selectedSection.type}</p>
+                                        <p className="text-zinc-500 dark:text-zinc-400 text-xs">{selectedSection.type}</p>
                                     </div>
 
                                     {/* Geometric Properties */}
@@ -580,7 +563,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     {/* Dimensions */}
                                     {(selectedSection.d || selectedSection.bf || selectedSection.D) && (
                                         <div className="pt-3 border-t border-border-dark">
-                                            <h4 className="text-xs font-bold text-text-muted uppercase mb-2">Dimensions</h4>
+                                            <h4 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-2">Dimensions</h4>
                                             <div className="grid grid-cols-4 gap-2">
                                                 {selectedSection.d && <PropertyCard label="d" value={selectedSection.d} unit="mm" small />}
                                                 {selectedSection.bf && <PropertyCard label="bf" value={selectedSection.bf} unit="mm" small />}
@@ -595,7 +578,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                                     {/* Material Properties */}
                                     <div className="pt-3 border-t border-border-dark">
-                                        <h4 className="text-xs font-bold text-text-muted uppercase mb-2">Material: {selectedMaterial.name}</h4>
+                                        <h4 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-2">Material: {selectedMaterial.name}</h4>
                                         <div className="grid grid-cols-2 gap-2">
                                             <PropertyCard label="E" value={selectedMaterial.E} unit="MPa" />
                                             {selectedMaterial.fy && <PropertyCard label="fy" value={selectedMaterial.fy} unit="MPa" />}
@@ -611,28 +594,26 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between p-4 border-t border-border-dark">
-                        <p className="text-xs text-text-muted">
+                    <DialogFooter className="flex items-center justify-between p-4 border-t border-border-dark sm:justify-between">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
                             Properties will be applied to {memberId ? `Member ${memberId}` : 'selected members'}
                         </p>
                         <div className="flex gap-3">
-                            <button
+                            <Button
+                                variant="outline"
                                 onClick={onClose}
-                                className="px-4 py-2 text-sm font-medium text-text-muted hover:text-white border border-border-dark rounded-lg transition-colors"
                             >
                                 Cancel
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={handleApply}
-                                className="px-6 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-lg shadow-primary/20 transition-colors"
                             >
                                 Apply Properties
-                            </button>
+                            </Button>
                         </div>
-                    </div>
-                </Dialog.Content>
-            </Dialog.Portal>
-        </Dialog.Root>
+                    </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 
@@ -654,10 +635,10 @@ const PropertyCard: FC<PropertyCardProps> = ({ label, value, unit, scientific, s
         : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
     return (
-        <div className={`bg-zinc-800 rounded-lg ${small ? 'p-2' : 'p-3'}`}>
-            <p className={`text-text-muted ${small ? 'text-[10px]' : 'text-xs'} mb-0.5`}>{label}</p>
-            <p className={`text-white font-mono ${small ? 'text-xs' : 'text-sm'} font-medium`}>
-                {formattedValue} <span className="text-text-muted text-[10px]">{unit}</span>
+        <div className={`bg-zinc-100 dark:bg-zinc-800 rounded-lg ${small ? 'p-2' : 'p-3'}`}>
+            <p className={`text-zinc-500 dark:text-zinc-400 ${small ? 'text-[10px]' : 'text-xs'} mb-0.5`}>{label}</p>
+            <p className={`text-zinc-900 dark:text-white font-mono ${small ? 'text-xs' : 'text-sm'} font-medium`}>
+                {formattedValue} <span className="text-zinc-500 dark:text-zinc-400 text-[10px]">{unit}</span>
             </p>
         </div>
     );

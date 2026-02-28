@@ -79,8 +79,8 @@ pub mod aci318 {
             if self.aggregate == "normal" {
                 4700.0 * self.fc.sqrt() // MPa
             } else {
-                // Lightweight concrete
-                (self.wc / 1000.0).powf(1.5) * 33.0 * self.fc.sqrt() * 0.145 // Convert to MPa
+                // Lightweight concrete (ACI 318-19 Table 19.2.2.1(b) SI)
+                0.043 * self.wc.powf(1.5) * self.fc.sqrt() // MPa
             }
         }
         
@@ -840,7 +840,7 @@ pub mod as4100 {
     pub fn member_moment_capacity(
         ms: f64,    // Section moment capacity (kN·m)
         le: f64,    // Effective length (mm)
-        iy: f64,    // Radius of gyration about minor axis (mm)
+        i_y: f64,   // Second moment of area about minor axis (mm⁴)
         j: f64,     // Torsion constant (mm⁴)
         iw: f64,    // Warping constant (mm⁶)
         _fy: f64,    // Yield stress (MPa)
@@ -850,10 +850,11 @@ pub mod as4100 {
         let g = 80000.0;  // MPa
         
         // Reference buckling moment (AS 4100 Eq. 5.6.1.1)
-        let mo = ((PI.powi(2) * e * iy.powi(2) / le.powi(2)) * (g * j + (PI.powi(2) * e * iw / le.powi(2)))).sqrt() / 1e6;
+        // Mo = sqrt[(π²EIy/Le²)(GJ + π²EIw/Le²)] — units: N·mm → /1e6 → kN·m
+        let mo = ((PI.powi(2) * e * i_y / le.powi(2)) * (g * j + (PI.powi(2) * e * iw / le.powi(2)))).sqrt() / 1e6;
         
-        // Slenderness reduction factor
-        let alpha_s = 0.6 * ((ms / mo).powi(2) + 3.0).sqrt() - ms / mo;
+        // Slenderness reduction factor (0.6 multiplies entire bracket)
+        let alpha_s = 0.6 * (((ms / mo).powi(2) + 3.0).sqrt() - ms / mo);
         let alpha_s = alpha_s.min(1.0).max(0.0);
         
         // Member moment capacity

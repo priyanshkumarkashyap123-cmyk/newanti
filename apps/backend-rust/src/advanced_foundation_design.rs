@@ -241,34 +241,46 @@ pub struct BearingCapacityResult {
 pub fn bearing_capacity_factors(phi_deg: f64, method: BearingCapacityMethod) -> (f64, f64, f64) {
     let phi = phi_deg.to_radians();
     
-    // Nq factor (same for all methods)
-    let nq = (PI / 4.0 + phi / 2.0).tan().powi(2) * (PI * phi.tan()).exp();
-    
-    // Nc factor
-    let nc = if phi_deg.abs() < 0.01 {
-        5.14 // For φ = 0
-    } else {
-        (nq - 1.0) / phi.tan()
-    };
-    
-    // Nγ factor (varies by method)
-    let n_gamma = match method {
+    match method {
         BearingCapacityMethod::Terzaghi => {
-            if phi_deg < 1.0 { 0.0 }
-            else { 0.5 * (nq / phi.cos().powi(2) - 1.0) * phi.tan() }
+            // Terzaghi's factors use a different Nq formulation
+            // Nq = a² / [2·cos²(45° + φ/2)] where a = exp((3π/4 − φ/2)·tan φ)
+            if phi_deg.abs() < 0.01 {
+                return (5.7, 1.0, 0.0); // Terzaghi φ=0 values
+            }
+            let a = ((3.0 * PI / 4.0 - phi / 2.0) * phi.tan()).exp();
+            let nq_t = a * a / (2.0 * (PI / 4.0 + phi / 2.0).cos().powi(2));
+            let nc_t = (nq_t - 1.0) / phi.tan();
+            // Kumbhojkar (1993) approximation for Terzaghi Nγ
+            let n_gamma_t = 2.0 * (nq_t + 1.0) * phi.tan() * 0.8; // Terzaghi Nγ ≈ 0.8× Vesic approximation
+            (nc_t, nq_t, n_gamma_t)
         }
-        BearingCapacityMethod::Meyerhof => {
-            (nq - 1.0) * (1.4 * phi).tan()
+        _ => {
+            // Prandtl/Reissner Nq (used by Meyerhof, Hansen, Vesic)
+            let nq = (PI / 4.0 + phi / 2.0).tan().powi(2) * (PI * phi.tan()).exp();
+            
+            let nc = if phi_deg.abs() < 0.01 {
+                5.14 // For φ = 0
+            } else {
+                (nq - 1.0) / phi.tan()
+            };
+            
+            let n_gamma = match method {
+                BearingCapacityMethod::Meyerhof => {
+                    (nq - 1.0) * (1.4 * phi).tan()
+                }
+                BearingCapacityMethod::Hansen => {
+                    1.5 * (nq - 1.0) * phi.tan()
+                }
+                BearingCapacityMethod::Vesic => {
+                    2.0 * (nq + 1.0) * phi.tan()
+                }
+                _ => unreachable!(),
+            };
+            
+            (nc, nq, n_gamma)
         }
-        BearingCapacityMethod::Hansen => {
-            1.5 * (nq - 1.0) * phi.tan()
-        }
-        BearingCapacityMethod::Vesic => {
-            2.0 * (nq + 1.0) * phi.tan()
-        }
-    };
-    
-    (nc, nq, n_gamma)
+    }
 }
 
 /// Spread footing definition
@@ -318,7 +330,7 @@ impl SpreadFooting {
     
     /// Effective depth for design
     pub fn effective_depth(&self) -> f64 {
-        self.thickness - self.cover / 1000.0 - 0.010 // Assume #10 bars
+        self.thickness - self.cover / 1000.0 - 0.005 // Assume #10 bars, d = h - cover - db/2
     }
 }
 
@@ -338,27 +350,64 @@ pub fn calculate_bearing_capacity(
     let df = footing.embedment;
     
     let (nc, nq, n_gamma) = bearing_capacity_factors(phi, method);
+    let phi_rad = phi.to_radians();
     
-    // Shape factors (Hansen/Vesic)
-    let sc = 1.0 + (nq / nc) * (b / l);
-    let sq = 1.0 + (b / l) * phi.to_radians().tan();
-    let s_gamma = 1.0 - 0.4 * (b / l);
+    // Shape, depth, and inclination factors depend on method
+    let (sc, sq, s_gamma);
+    let (dc, dq, d_gamma);
+    let (ic, iq, i_gamma);
     
-    // Depth factors
-    let k = if df / b <= 1.0 { df / b } else { (df / b).atan() };
-    let dc = 1.0 + 0.4 * k;
-    let dq = 1.0 + 2.0 * phi.to_radians().tan() * (1.0 - phi.to_radians().sin()).powi(2) * k;
-    let d_gamma = 1.0;
-    
-    // Inclination factors
-    let alpha = load_inclination.to_radians();
-    let ic = if phi.abs() < 0.01 {
-        1.0 - 2.0 * alpha / PI
-    } else {
-        (1.0 - alpha / (PI / 2.0)).powi(2)
-    };
-    let iq = ic;
-    let i_gamma = (1.0 - alpha / phi.to_radians().max(0.01)).powi(2).max(0.0);
+    match method {
+        BearingCapacityMethod::Terzaghi => {
+            // Terzaghi shape factors (no depth or inclination factors)
+            sc = 1.0 + 0.3 * (b / l);        // rectangular; =1.3 for square
+            sq = 1.0;                          // Terzaghi has no sq
+            s_gamma = 1.0 - 0.2 * (b / l);   // rectangular; =0.8 for square
+            dc = 1.0; dq = 1.0; d_gamma = 1.0;
+            ic = 1.0; iq = 1.0; i_gamma = 1.0;
+        }
+        BearingCapacityMethod::Meyerhof => {
+            // Meyerhof shape factors
+            let kp = (PI / 4.0 + phi_rad / 2.0).tan().powi(2);
+            sc = 1.0 + 0.2 * kp * (b / l);
+            sq = if phi > 10.0 { 1.0 + 0.1 * kp * (b / l) } else { 1.0 };
+            s_gamma = sq;
+            // Meyerhof depth factors
+            let kp_sqrt = kp.sqrt();
+            dc = 1.0 + 0.2 * kp_sqrt * (df / b);
+            dq = if phi > 10.0 { 1.0 + 0.1 * kp_sqrt * (df / b) } else { 1.0 };
+            d_gamma = dq;
+            // Meyerhof inclination factors
+            let alpha = load_inclination.to_radians();
+            ic = (1.0 - alpha / (PI / 2.0)).powi(2);
+            iq = ic;
+            i_gamma = if phi > 0.01 {
+                (1.0 - alpha / phi_rad).powi(2).max(0.0)
+            } else { 1.0 };
+        }
+        BearingCapacityMethod::Hansen | BearingCapacityMethod::Vesic => {
+            // Hansen/Vesic shape factors
+            sc = 1.0 + (nq / nc) * (b / l);
+            sq = 1.0 + (b / l) * phi_rad.tan();
+            s_gamma = 1.0 - 0.4 * (b / l);
+            // Hansen/Vesic depth factors
+            let k = if df / b <= 1.0 { df / b } else { (df / b).atan() };
+            dc = 1.0 + 0.4 * k;
+            dq = 1.0 + 2.0 * phi_rad.tan() * (1.0 - phi_rad.sin()).powi(2) * k;
+            d_gamma = 1.0;
+            // Meyerhof-style inclination (angle-based approximation)
+            let alpha = load_inclination.to_radians();
+            ic = if phi < 0.01 {
+                1.0 - 2.0 * alpha / PI
+            } else {
+                (1.0 - alpha / (PI / 2.0)).powi(2)
+            };
+            iq = ic;
+            i_gamma = if phi > 0.01 {
+                (1.0 - alpha / phi_rad).powi(2).max(0.0)
+            } else { 1.0 };
+        }
+    }
     
     // Groundwater correction
     let gamma_effective = if groundwater_depth <= df {
@@ -369,8 +418,16 @@ pub fn calculate_bearing_capacity(
         gamma
     };
     
-    // Overburden pressure
-    let q = gamma * df;
+    // Overburden pressure (effective, accounting for groundwater)
+    let q = if groundwater_depth <= 0.0 {
+        // GWL at or above surface
+        (gamma - 9.81) * df
+    } else if groundwater_depth < df {
+        // GWL between surface and footing base
+        gamma * groundwater_depth + (gamma - 9.81) * (df - groundwater_depth)
+    } else {
+        gamma * df
+    };
     
     // Ultimate bearing capacity (general equation)
     let qu = c * nc * sc * dc * ic +
@@ -430,10 +487,10 @@ pub fn calculate_immediate_settlement(
     let e = soil.elastic_modulus * 1000.0; // Convert MPa to kPa
     let nu = soil.poisson_ratio;
     
-    // Influence factor for corner of rectangle
+    // Influence factor for corner of rectangle (Schleicher 1926)
     let m = l / b;
-    let f1 = (1.0 + m * m).sqrt().ln() + m * ((1.0 + 1.0 / (m * m)).sqrt()).ln();
-    let f2 = m * (1.0 + m * m).sqrt().atan() / m;
+    let f1 = m * ((1.0 + (1.0 + m * m).sqrt()) / m).ln();
+    let f2 = (m + (1.0 + m * m).sqrt()).ln();
     
     let i_f = (1.0 / PI) * (f1 + f2);
     
@@ -456,8 +513,9 @@ pub fn calculate_consolidation_settlement(
     let h = soil.thickness() * 1000.0; // mm
     let cc = soil.compression_index;
     let cr = soil.recompression_index;
-    let sigma_0 = soil.preconsolidation; // Initial effective stress estimate
+    // sigma_0 = in-situ effective overburden stress = preconsolidation / OCR
     let sigma_c = soil.preconsolidation;
+    let sigma_0 = if soil.ocr > 0.0 { sigma_c / soil.ocr } else { sigma_c };
     
     let settlement = if soil.ocr <= 1.0 {
         // Normally consolidated
@@ -682,6 +740,9 @@ pub fn pile_capacity_beta(
     let mut current_depth = 0.0;
     let gamma_water = 9.81;
     
+    // Accumulate overburden for correct sigma_v in multi-layer profiles
+    let mut sigma_v_at_top = 0.0; // Effective stress accumulated to current layer top
+    
     for layer in soil_layers {
         let layer_top = current_depth;
         let layer_bottom = current_depth + layer.thickness();
@@ -693,15 +754,17 @@ pub fn pile_capacity_beta(
             
             if segment_length > 0.0 {
                 let mid_depth = (z_top + z_bottom) / 2.0;
+                let depth_in_layer = mid_depth - layer_top;
                 
-                // Effective stress at mid-depth
+                // Effective unit weight depends on water table
                 let gamma = if mid_depth > water_table_depth {
                     layer.saturated_unit_weight - gamma_water
                 } else {
                     layer.unit_weight
                 };
                 
-                let sigma_v = gamma * mid_depth;
+                // Accumulated overburden stress at segment mid-depth
+                let sigma_v = sigma_v_at_top + gamma * depth_in_layer;
                 
                 // Beta = Ks * tan(delta)
                 let phi = layer.friction_angle.to_radians();
@@ -715,6 +778,14 @@ pub fn pile_capacity_beta(
                 qs_total += fs_layer * pile.perimeter() * segment_length;
             }
         }
+        
+        // Accumulate full-layer stress for next layer
+        let gamma_full = if layer_bottom > water_table_depth {
+            layer.saturated_unit_weight - gamma_water
+        } else {
+            layer.unit_weight
+        };
+        sigma_v_at_top += gamma_full * layer.thickness();
         
         current_depth = layer_bottom;
         if current_depth >= pile.length {
@@ -733,11 +804,21 @@ pub fn pile_capacity_beta(
     let phi = tip_layer.friction_angle.to_radians();
     let nq = (45.0_f64.to_radians() + phi / 2.0).tan().powi(2) * (PI * phi.tan()).exp();
     
-    // Effective stress at pile tip
-    let sigma_vp = soil_layers.iter()
-        .map(|l| l.unit_weight * l.thickness())
-        .sum::<f64>()
-        .min(pile.length * 18.0); // Limit for very deep piles
+    // Effective stress at pile tip (accumulated through layers, water-table aware)
+    let mut sigma_vp = 0.0;
+    let mut z_accum = 0.0;
+    for layer in soil_layers {
+        let layer_thick = layer.thickness().min(pile.length - z_accum);
+        if layer_thick <= 0.0 { break; }
+        let gamma_eff = if z_accum + layer_thick > water_table_depth {
+            layer.saturated_unit_weight - gamma_water
+        } else {
+            layer.unit_weight
+        };
+        sigma_vp += gamma_eff * layer_thick;
+        z_accum += layer_thick;
+        if z_accum >= pile.length { break; }
+    }
     
     let qp = nq * sigma_vp * pile.tip_area();
     

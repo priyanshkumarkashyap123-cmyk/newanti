@@ -363,7 +363,9 @@ impl FatigueAssessor {
     
     /// Calculate allowable cycles for a stress range (N-Δσ relationship)
     pub fn allowable_cycles(&self, delta_sigma: f64) -> f64 {
-        let delta_sigma_r = delta_sigma * self.gamma_ff / self.gamma_mf;
+        // EN 1993-1-9 §9: effective stress = γFf × γMf × Δσ for comparison
+        // against characteristic S-N curve (both factors increase effective stress)
+        let delta_sigma_r = delta_sigma * self.gamma_ff * self.gamma_mf;
         let delta_sigma_c = self.category.delta_sigma_c();
         let delta_sigma_d = self.category.delta_sigma_d();
         let delta_sigma_l = self.category.delta_sigma_l();

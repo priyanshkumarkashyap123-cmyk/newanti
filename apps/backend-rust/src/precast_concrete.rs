@@ -471,12 +471,13 @@ impl HollowCoreSlab {
 
     /// Calculate stresses at transfer and service
     fn calculate_stresses(&self, props: &SectionProperties, pe: f64, e: f64, span: f64) -> StressResults {
-        // Self-weight moment
-        let w = self.concrete_grade.density * props.area / 1e6; // kN/m
+        // Self-weight moment (density kg/m³ → unit weight kN/m³)
+        let unit_weight = self.concrete_grade.density * 9.81 / 1000.0; // kN/m³
+        let w = unit_weight * props.area / 1e6; // kN/m
         let mg = w * span.powi(2) / 8.0 * 1e6; // N·mm
         
-        // At transfer
-        let pi = pe / 0.82; // Approximate initial (before losses)
+        // At transfer (convert kN to N for consistent stress: N/mm² = MPa)
+        let pi = pe / 0.82 * 1000.0; // N (approximate initial before losses)
         let top_transfer = -pi / props.area + pi * e / props.section_modulus_top 
                           - mg / props.section_modulus_top;
         let bottom_transfer = -pi / props.area - pi * e / props.section_modulus_bot 
@@ -486,9 +487,10 @@ impl HollowCoreSlab {
         let live_load = 5.0; // kN/m² typical
         let ml = live_load * self.width / 1000.0 * span.powi(2) / 8.0 * 1e6;
         
-        let top_service = -pe / props.area + pe * e / props.section_modulus_top 
+        let pe_n = pe * 1000.0; // Convert kN to N
+        let top_service = -pe_n / props.area + pe_n * e / props.section_modulus_top 
                          - (mg + ml) / props.section_modulus_top;
-        let bottom_service = -pe / props.area - pe * e / props.section_modulus_bot 
+        let bottom_service = -pe_n / props.area - pe_n * e / props.section_modulus_bot 
                             + (mg + ml) / props.section_modulus_bot;
         
         StressResults {
@@ -513,15 +515,17 @@ impl HollowCoreSlab {
         let aps: f64 = self.prestress_strands.iter().map(|s| s.area).sum();
         let fpu = 1860.0; // MPa
         
-        // Stress in strand at nominal (approximate)
+        // Beta1 factor (ACI 318)
+        let beta1 = (0.85 - 0.05 * (self.concrete_grade.fc - 28.0) / 7.0).max(0.65).min(0.85);
+        
+        // Stress in strand at nominal (ACI 318 §20.3.2.3.1)
         let gamma_p = 0.28; // Low-relaxation
         let rho_p = aps / (self.width * d);
-        let fps = fpu * (1.0 - gamma_p * rho_p * fpu / self.concrete_grade.fc);
+        let fps = fpu * (1.0 - gamma_p / beta1 * rho_p * fpu / self.concrete_grade.fc);
         
         // Neutral axis
         let a = aps * fps / (0.85 * self.concrete_grade.fc * self.width);
-        let beta1 = 0.85 - 0.05 * (self.concrete_grade.fc - 28.0) / 7.0;
-        let c = a / beta1.max(0.65);
+        let c = a / beta1;
         
         // Nominal moment
         let mn = aps * fps * (d - a / 2.0) / 1e6; // kN·m
@@ -702,14 +706,16 @@ impl PrecastColumn {
         
         // Balanced condition
         let cb = 0.003 / (0.003 + fy / 200000.0) * d;
-        let ab = 0.85 * cb;
+        let beta1 = (0.85 - 0.05 * (fc - 28.0) / 7.0).max(0.65).min(0.85);
+        let ab = beta1 * cb;
         
         let cc = 0.85 * fc * ab * self.width;
+        let d_prime = self.main_bars.cover + self.main_bars.diameter / 2.0;
         let cs = ast * (fy - 0.85 * fc);
         let ts = ast * fy;
         
         let pb = cc + cs - ts;
-        let mb = cc * (d - ab / 2.0) / 2.0 + cs * (d - self.main_bars.cover) / 2.0;
+        let mb = cc * (d - ab / 2.0) + cs * (d - d_prime);
         
         // Linearly interpolate based on axial load
         let po = self.axial_capacity() * 1000.0;
@@ -779,8 +785,7 @@ impl PrecastWall {
         
         let vc = 0.17 * self.concrete_grade.fc.sqrt() * effective_thickness * self.height / 1000.0;
         
-        let av = PI * (self.vertical_rebar.diameter / 2.0).powi(2) * 
-                (self.width / self.vertical_rebar.spacing);
+        let av = PI * (self.vertical_rebar.diameter / 2.0).powi(2); // Per-bar area
         let vs = av * self.vertical_rebar.grade * 0.8 * self.height / 
                 (self.vertical_rebar.spacing * 1000.0);
         

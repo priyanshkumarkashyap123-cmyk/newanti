@@ -8,9 +8,13 @@
  */
 
 import { FC, useState } from 'react';
-import { X, Weight, Loader2 } from 'lucide-react';
+import { Weight, Loader2 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { STEEL_SECTIONS } from '../data/SectionDatabase';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 interface DeadLoadGeneratorProps {
     open: boolean;
@@ -156,130 +160,129 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
         }
     };
 
-    if (!open) return null;
-
     const hasSelection = selectedIds.size > 0;
     const targetNodeCount = applyToSelection && hasSelection
         ? Array.from(selectedIds).filter(id => nodes.has(id)).length
         : nodes.size;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 rounded-xl shadow-2xl border border-slate-700 w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col">
+        <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+            <DialogContent className="max-w-xl max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
+                <DialogHeader>
                     <div className="flex items-center gap-3">
                         <Weight className="w-6 h-6 text-amber-400" />
                         <div>
-                            <h2 className="text-xl font-bold text-white">Dead Load Generator</h2>
-                            <p className="text-sm text-slate-400">
+                            <DialogTitle className="text-xl font-bold">Dead Load Generator</DialogTitle>
+                            <DialogDescription>
                                 Automatic self-weight and floor load calculation
-                            </p>
+                            </DialogDescription>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+                </DialogHeader>
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Self-Weight Option */}
-                    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                        <label className="flex items-start gap-3 cursor-pointer">
+                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
+                        <Label className="flex items-start gap-3 cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={includeSelfWeight}
                                 onChange={(e) => setIncludeSelfWeight(e.target.checked)}
-                                className="w-5 h-5 mt-0.5 rounded border-2 border-slate-600 bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
+                                className="w-5 h-5 mt-0.5 rounded border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-700 checked:bg-blue-500 checked:border-blue-500"
                             />
                             <div className="flex-1">
-                                <div className="font-semibold text-white">Include Member Self-Weight</div>
-                                <p className="text-sm text-slate-400 mt-1">
+                                <div className="font-semibold text-zinc-900 dark:text-white">Include Member Self-Weight</div>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                                     Automatically calculate and apply weight of all structural members based on
                                     section properties (steel density: 7850 kg/m³)
                                 </p>
                             </div>
-                        </label>
+                        </Label>
                     </div>
 
                     {/* Floor Load */}
-                    <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                        <div className="font-semibold text-white mb-3">Additional Floor Load</div>
-                        <p className="text-sm text-slate-400 mb-3">
+                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
+                        <div className="font-semibold text-zinc-900 dark:text-white mb-3">Additional Floor Load</div>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
                             Apply uniform floor load to horizontal members (slabs, beams)
                         </p>
                         <div className="space-y-3">
                             <div>
-                                <label className="block text-xs text-slate-400 mb-1">
+                                <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">
                                     Floor Load Intensity (kN/m²)
-                                </label>
-                                <input
+                                </Label>
+                                <Input
                                     type="number"
                                     step="0.5"
                                     value={floorLoad}
                                     onChange={(e) => setFloorLoad(parseFloat(e.target.value) || 0)}
-                                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white"
                                 />
                             </div>
 
                             {/* Quick presets */}
                             <div className="flex flex-wrap gap-2">
-                                <button
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => setFloorLoad(2.0)}
-                                    className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-md"
+                                    className="text-xs"
                                 >
                                     Residential (2.0)
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => setFloorLoad(4.0)}
-                                    className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-md"
+                                    className="text-xs"
                                 >
                                     Office (4.0)
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => setFloorLoad(5.0)}
-                                    className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-md"
+                                    className="text-xs"
                                 >
                                     Retail (5.0)
-                                </button>
-                                <button
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => setFloorLoad(0)}
-                                    className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-md"
+                                    className="text-xs"
                                 >
                                     None
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
 
                     {/* Apply to Selection */}
                     {hasSelection && (
-                        <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                            <label className="flex items-start gap-3 cursor-pointer">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-500/30 rounded-lg p-4">
+                            <Label className="flex items-start gap-3 cursor-pointer">
                                 <input
                                     type="checkbox"
                                     checked={applyToSelection}
                                     onChange={(e) => setApplyToSelection(e.target.checked)}
-                                    className="w-5 h-5 mt-0.5 rounded border-2 border-blue-600 bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
+                                    className="w-5 h-5 mt-0.5 rounded border-2 border-blue-600 bg-zinc-200 dark:bg-zinc-700 checked:bg-blue-500 checked:border-blue-500"
                                 />
                                 <div className="flex-1">
-                                    <div className="font-semibold text-blue-300">Apply to Selection Only</div>
-                                    <p className="text-sm text-blue-200 mt-1">
+                                    <div className="font-semibold text-blue-700 dark:text-blue-300">Apply to Selection Only</div>
+                                    <p className="text-sm text-blue-600 dark:text-blue-200 mt-1">
                                         Apply loads only to the {selectedIds.size} selected element(s) instead of entire structure
                                     </p>
                                 </div>
-                            </label>
+                            </Label>
                         </div>
                     )}
 
                     {/* Summary */}
-                    <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4">
-                        <div className="text-sm font-semibold text-amber-300 mb-2">Summary</div>
-                        <div className="text-sm text-amber-200 space-y-1">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-500/30 rounded-lg p-4">
+                        <div className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-2">Summary</div>
+                        <div className="text-sm text-amber-600 dark:text-amber-200 space-y-1">
                             <div>• Target: {targetNodeCount} node(s)</div>
                             {includeSelfWeight && <div>• Self-weight: Auto-calculated from sections</div>}
                             {floorLoad > 0 && <div>• Floor load: {floorLoad.toFixed(2)} kN/m²</div>}
@@ -289,27 +292,24 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-slate-700 bg-slate-800/50 flex items-center justify-between">
-                    <button
+                <DialogFooter className="flex items-center justify-between sm:justify-between">
+                    <Button
+                        variant="ghost"
                         onClick={onClose}
-                        className="px-4 py-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
                     >
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={handleGenerate}
                         disabled={isGenerating || (!includeSelfWeight && floorLoad === 0)}
-                        className={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${!isGenerating && (includeSelfWeight || floorLoad > 0)
-                                ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-500/30'
-                                : 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                            }`}
+                        className="bg-amber-600 hover:bg-amber-700 text-white"
                     >
                         {isGenerating && <Loader2 className="w-4 h-4 animate-spin" />}
                         Generate Dead Loads
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

@@ -161,7 +161,7 @@ impl DesignSpectrum {
             let sa_g = if t <= 0.0 {
                 1.0
             } else if t <= t_a {
-                1.0 + 15.0 * t * (2.5 - 1.0)  // Linear rise
+                1.0 + 15.0 * t  // Linear rise from 1.0 at T=0 to 2.5 at T=0.1
             } else if t <= t_b {
                 2.5  // Constant plateau
             } else if t <= t_c {
@@ -211,7 +211,7 @@ impl DesignSpectrum {
         let fa = match site_class {
             SiteClass::A => 0.8,
             SiteClass::B => 0.9,
-            SiteClass::C => 1.0,
+            SiteClass::C => if ss <= 0.75 { 1.2 } else if ss >= 1.0 { 1.0 } else { 1.2 - 0.2 * (ss - 0.75) / 0.25 },
             SiteClass::D => if ss <= 0.25 { 1.6 } else if ss >= 1.0 { 1.0 } else { 1.6 - 0.6 * (ss - 0.25) / 0.75 },
             SiteClass::E => if ss <= 0.25 { 2.4 } else if ss >= 1.0 { 1.2 } else { 2.4 - 1.2 * (ss - 0.25) / 0.75 },
             SiteClass::F => 1.0,  // Requires site-specific analysis
@@ -444,7 +444,7 @@ impl ResponseSpectrumAnalysis {
         let r2 = r * r;
         
         let num = 8.0 * zeta2 * (1.0 + r) * r.sqrt() * r;
-        let den = (1.0 - r2).powi(2) + 4.0 * zeta2 * r * (1.0 + r2);
+        let den = (1.0 - r2).powi(2) + 4.0 * zeta2 * r * (1.0 + r).powi(2);
         
         if den.abs() < 1e-14 {
             1.0

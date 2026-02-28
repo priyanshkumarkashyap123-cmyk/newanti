@@ -6,8 +6,10 @@
  */
 
 import { FC, useState, useEffect } from 'react';
-import { X, Anchor, CircleDot, Move } from 'lucide-react';
+import { Anchor, CircleDot, Move } from 'lucide-react';
 import { useModelStore, type Restraints } from '../store/model';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
 
 interface BoundaryConditionsDialogProps {
     open: boolean;
@@ -132,41 +134,28 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
         setCustomRestraints(prev => ({ ...prev, [dof]: !prev[dof] }));
     };
 
-    if (!open) return null;
-
     const hasSelection = selectedNodes.length > 0;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 rounded-xl shadow-2xl border border-slate-700 w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
-                    <div className="flex items-center gap-3">
-                        <Anchor className="w-6 h-6 text-blue-400" />
-                        <div>
-                            <h2 className="text-xl font-bold text-white">Boundary Conditions</h2>
-                            <p className="text-sm text-slate-400">
-                                {hasSelection
-                                    ? `${selectedNodes.length} node(s) selected`
-                                    : 'No nodes selected'}
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors text-slate-400 hover:text-white"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+            <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                        <Anchor className="w-5 h-5" />
+                        Boundary Conditions
+                    </DialogTitle>
+                    <DialogDescription>
+                        Assign support conditions to selected nodes
+                    </DialogDescription>
+                </DialogHeader>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="flex-1 overflow-y-auto space-y-6 py-4">
                     {!hasSelection ? (
                         <div className="text-center py-12">
-                            <CircleDot className="w-16 h-16 mx-auto text-slate-500 mb-4" />
-                            <p className="text-slate-400 text-lg">No nodes selected</p>
-                            <p className="text-slate-400 text-sm mt-2">
+                            <CircleDot className="w-16 h-16 mx-auto text-zinc-400 dark:text-slate-500 mb-4" />
+                            <p className="text-zinc-500 dark:text-slate-400 text-lg">No nodes selected</p>
+                            <p className="text-zinc-500 dark:text-slate-400 text-sm mt-2">
                                 Please select one or more nodes to assign boundary conditions
                             </p>
                         </div>
@@ -174,7 +163,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                         <>
                             {/* Support Type Presets */}
                             <div>
-                                <h3 className="text-sm font-semibold text-slate-300 mb-3">Support Type</h3>
+                                <h3 className="text-sm font-semibold text-zinc-700 dark:text-slate-300 mb-3">Support Type</h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     {(Object.entries(SUPPORT_PRESETS) as [SupportType, typeof SUPPORT_PRESETS[SupportType]][]).map(([type, preset]) => (
                                         <button
@@ -182,18 +171,18 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                             onClick={() => setSelectedType(type)}
                                             className={`p-4 rounded-lg border-2 transition-all text-left ${selectedType === type
                                                 ? 'border-blue-500 bg-blue-500/20 shadow-lg shadow-blue-500/20'
-                                                : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                                                : 'border-zinc-300 dark:border-slate-600 bg-zinc-100/50 dark:bg-slate-800/50 hover:border-zinc-400 dark:hover:border-slate-500'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <span className="text-2xl">{preset.icon}</span>
                                                 <div>
-                                                    <div className={`font-semibold ${selectedType === type ? 'text-white' : 'text-slate-300'
+                                                    <div className={`font-semibold ${selectedType === type ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-slate-300'
                                                         }`}>
                                                         {preset.label}
                                                     </div>
                                                     {preset.restraints && (
-                                                        <div className="text-xs text-slate-400 mt-1 font-mono">
+                                                        <div className="text-xs text-zinc-500 dark:text-slate-400 mt-1 font-mono">
                                                             {Object.entries(preset.restraints)
                                                                 .filter(([_, val]) => val)
                                                                 .map(([key]) => key.toUpperCase())
@@ -210,23 +199,23 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                             {/* Custom DOF Selection */}
                             {selectedType === 'custom' && (
                                 <div>
-                                    <h3 className="text-sm font-semibold text-slate-300 mb-3">Custom Restraints</h3>
-                                    <div className="bg-slate-800/50 rounded-lg p-4 space-y-3">
+                                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-slate-300 mb-3">Custom Restraints</h3>
+                                    <div className="bg-zinc-100/50 dark:bg-slate-800/50 rounded-lg p-4 space-y-3">
                                         <div className="grid grid-cols-2 gap-3">
                                             {/* Translation DOFs */}
                                             <div className="space-y-2">
-                                                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Translation</div>
+                                                <div className="text-xs font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider">Translation</div>
                                                 {(['fx', 'fy', 'fz'] as const).map(dof => (
                                                     <label key={dof} className="flex items-center gap-3 cursor-pointer group">
                                                         <input
                                                             type="checkbox"
                                                             checked={customRestraints[dof]}
                                                             onChange={() => toggleCustomRestraint(dof)}
-                                                            className="w-5 h-5 rounded border-2 border-slate-600 bg-slate-700 checked:bg-blue-500 checked:border-blue-500 cursor-pointer"
+                                                            className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-slate-600 bg-zinc-50 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500 cursor-pointer"
                                                         />
-                                                        <span className="text-slate-300 group-hover:text-white font-mono text-sm">
+                                                        <span className="text-zinc-700 dark:text-slate-300 group-hover:text-zinc-900 dark:group-hover:text-white font-mono text-sm">
                                                             {dof.toUpperCase()}
-                                                            <span className="text-slate-400 ml-2">
+                                                            <span className="text-zinc-500 dark:text-slate-400 ml-2">
                                                                 ({dof === 'fx' ? 'X-axis' : dof === 'fy' ? 'Y-axis' : 'Z-axis'})
                                                             </span>
                                                         </span>
@@ -236,18 +225,18 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
 
                                             {/* Rotation DOFs */}
                                             <div className="space-y-2">
-                                                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Rotation</div>
+                                                <div className="text-xs font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider">Rotation</div>
                                                 {(['mx', 'my', 'mz'] as const).map(dof => (
                                                     <label key={dof} className="flex items-center gap-3 cursor-pointer group">
                                                         <input
                                                             type="checkbox"
                                                             checked={customRestraints[dof]}
                                                             onChange={() => toggleCustomRestraint(dof)}
-                                                            className="w-5 h-5 rounded border-2 border-slate-600 bg-slate-700 checked:bg-blue-500 checked:border-blue-500 cursor-pointer"
+                                                            className="w-5 h-5 rounded border-2 border-zinc-300 dark:border-slate-600 bg-zinc-50 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500 cursor-pointer"
                                                         />
-                                                        <span className="text-slate-300 group-hover:text-white font-mono text-sm">
+                                                        <span className="text-zinc-700 dark:text-slate-300 group-hover:text-zinc-900 dark:group-hover:text-white font-mono text-sm">
                                                             {dof.toUpperCase()}
-                                                            <span className="text-slate-400 ml-2">
+                                                            <span className="text-zinc-500 dark:text-slate-400 ml-2">
                                                                 ({dof === 'mx' ? 'About X' : dof === 'my' ? 'About Y' : 'About Z'})
                                                             </span>
                                                         </span>
@@ -260,9 +249,9 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                             )}
 
                             {/* Preview */}
-                            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                                <div className="text-sm font-semibold text-blue-300 mb-2">Preview</div>
-                                <div className="text-sm text-blue-200">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-lg p-4">
+                                <div className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">Preview</div>
+                                <div className="text-sm text-blue-600 dark:text-blue-200">
                                     {selectedType !== 'custom' && SUPPORT_PRESETS[selectedType].restraints ? (
                                         <>
                                             <strong>{SUPPORT_PRESETS[selectedType].label}</strong> will be applied to {selectedNodes.length} node(s)
@@ -273,7 +262,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                         </>
                                     )}
                                 </div>
-                                <div className="mt-2 text-xs text-blue-300 font-mono">
+                                <div className="mt-2 text-xs text-blue-600 dark:text-blue-300 font-mono">
                                     Restrained DOFs: {Object.entries(selectedType === 'custom' ? customRestraints : SUPPORT_PRESETS[selectedType].restraints || {})
                                         .filter(([_, val]) => val)
                                         .map(([key]) => key.toUpperCase())
@@ -285,26 +274,19 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-slate-700 bg-slate-800/50 flex items-center justify-between">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
-                    >
+                <DialogFooter className="flex items-center justify-between sm:justify-between gap-2">
+                    <Button variant="ghost" onClick={onClose}>
                         Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         onClick={handleApply}
                         disabled={!hasSelection}
-                        className={`px-6 py-2 rounded-lg font-medium transition-all ${hasSelection
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
-                            : 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                            }`}
                     >
                         Apply to {selectedNodes.length} Node{selectedNodes.length !== 1 ? 's' : ''}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

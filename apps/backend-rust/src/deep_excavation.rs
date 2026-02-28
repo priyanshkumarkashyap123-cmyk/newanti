@@ -190,27 +190,30 @@ impl SoilLayer {
     }
     
     /// Active coefficient with wall friction (Coulomb)
+    /// Ka = sin²(α+φ) / [sin²α · sin(α−δ) · (1 + √(sin(φ+δ)sin(φ−β)/(sin(α−δ)sin(α+β))))²]
     pub fn ka_coulomb(&self) -> f64 {
         let phi = self.phi * PI / 180.0;
         let delta = self.delta * PI / 180.0;
         let alpha = PI / 2.0; // Vertical wall
         let beta = 0.0; // Horizontal backfill
         
-        let num = (phi + alpha).cos().powi(2);
-        let denom = (alpha.cos().powi(2)) * (alpha - delta).cos() 
-            * (1.0 + ((phi + delta).sin() * (phi - beta).sin() 
-                / ((alpha - delta).cos() * (alpha + beta).cos())).sqrt()).powi(2);
+        let num = (alpha + phi).sin().powi(2);
+        let denom = alpha.sin().powi(2) * (alpha - delta).sin()
+            * (1.0 + ((phi + delta).sin() * (phi - beta).sin()
+                / ((alpha - delta).sin() * (alpha + beta).sin())).sqrt()).powi(2);
         
         num / denom
     }
     
     /// Passive coefficient with wall friction (Coulomb)
+    /// Kp = cos²φ / [cosδ · (1 − √(sin(φ+δ)sinφ/cosδ))²]
     pub fn kp_coulomb(&self) -> f64 {
         let phi = self.phi * PI / 180.0;
         let delta = self.delta * PI / 180.0;
         
-        let num = (phi).cos().powi(2);
-        let denom = (1.0 - ((phi + delta).sin() * phi.sin()).sqrt()).powi(2);
+        let num = phi.cos().powi(2);
+        let denom = delta.cos()
+            * (1.0 - ((phi + delta).sin() * phi.sin() / delta.cos()).sqrt()).powi(2);
         
         num / denom
     }
@@ -298,18 +301,20 @@ impl EarthPressure {
             let z = i as f64 * dz;
             depth.push(z);
             
-            // Find layer at this depth
+            // Find layer at this depth (accumulate overburden)
             let mut z_top = 0.0;
+            let mut sigma_v_accum = 0.0;
             for layer in layers {
                 if z <= z_top + layer.thickness {
                     let z_in_layer = z - z_top;
-                    let sigma_v = layer.unit_weight * z_in_layer;
+                    sigma_v_accum += layer.unit_weight * z_in_layer;
                     let kp = layer.kp_coulomb();
                     let c = layer.cohesion;
-                    let p = kp * sigma_v + 2.0 * c * kp.sqrt();
+                    let p = kp * sigma_v_accum + 2.0 * c * kp.sqrt();
                     pressure.push(p);
                     break;
                 }
+                sigma_v_accum += layer.unit_weight * layer.thickness;
                 z_top += layer.thickness;
             }
         }
@@ -387,8 +392,8 @@ impl ApparentPressure {
         let phi_rad = phi * PI / 180.0;
         let ka = (PI / 4.0 - phi_rad / 2.0).tan().powi(2);
         
-        // P = 0.65 * Ka * γ * H
-        let max_pressure = 0.65 * ka * gamma * depth + ka * surcharge;
+        // P = 0.65 * Ka * (γH + q) per Terzaghi-Peck
+        let max_pressure = 0.65 * ka * (gamma * depth + surcharge);
         
         Self {
             pressure_type: ApparentPressureType::Sand,
@@ -402,13 +407,9 @@ impl ApparentPressure {
         // Stability number N = γH/Su
         let _n = gamma * depth / su;
         
-        // m coefficient
-        let m = 1.0 - 4.0 * su / (gamma * depth);
-        let _m = m.max(0.4);
-        
-        // P = Ka * γ * H where Ka = 1 - m * 4Su/(γH)
-        let ka = (1.0 - 4.0 * su / (gamma * depth)).max(0.2);
-        let max_pressure = ka * gamma * depth + surcharge;
+        // Ka = 1 - m*4Su/(γH), with m = 1.0 default, min Ka = 0.25 per FHWA
+        let ka = (1.0 - 4.0 * su / (gamma * depth)).max(0.25);
+        let max_pressure = ka * (gamma * depth + surcharge);
         
         Self {
             pressure_type: ApparentPressureType::SoftClay,
@@ -424,11 +425,12 @@ impl ApparentPressure {
         
         // For stiff clay N < 4
         let max_pressure = if n < 4.0 {
-            // Use triangular distribution reduced
-            0.2 * gamma * depth + surcharge * 0.5
+            // Stiff clay: use 0.3γH per Terzaghi-Peck
+            0.3 * gamma * depth + 0.3 * surcharge
         } else {
-            // Transition to soft clay
-            0.3 * gamma * depth + surcharge * 0.6
+            // N >= 4: transition to soft clay ka formulation
+            let ka = (1.0 - 4.0 * su / (gamma * depth)).max(0.25);
+            ka * (gamma * depth + surcharge)
         };
         
         Self {
@@ -446,19 +448,12 @@ impl ApparentPressure {
                 self.max_pressure
             }
             ApparentPressureType::SoftClay => {
-                // Trapezoidal: increases to 0.25H, constant to 0.75H, decreases
-                let h = self.depth;
-                if z < 0.25 * h {
-                    self.max_pressure * z / (0.25 * h)
-                } else if z < 0.75 * h {
-                    self.max_pressure
-                } else {
-                    self.max_pressure * (h - z) / (0.25 * h)
-                }
+                // Rectangular per Terzaghi-Peck: constant over full depth
+                self.max_pressure
             }
             ApparentPressureType::StiffClay => {
-                // Triangular increasing with depth
-                self.max_pressure * z / self.depth
+                // Rectangular envelope per Terzaghi-Peck for stiff clay
+                self.max_pressure
             }
             ApparentPressureType::Layered => {
                 // Simplified: average of sand and clay
@@ -471,8 +466,8 @@ impl ApparentPressure {
     pub fn total_force(&self) -> f64 {
         match self.pressure_type {
             ApparentPressureType::Sand => self.max_pressure * self.depth,
-            ApparentPressureType::SoftClay => 0.75 * self.max_pressure * self.depth,
-            ApparentPressureType::StiffClay => 0.5 * self.max_pressure * self.depth,
+            ApparentPressureType::SoftClay => self.max_pressure * self.depth,
+            ApparentPressureType::StiffClay => self.max_pressure * self.depth,
             ApparentPressureType::Layered => 0.65 * self.max_pressure * self.depth,
         }
     }
@@ -530,13 +525,13 @@ impl WallAnalysis {
         let _yp = excavation_depth + passive.application_point;
         
         // Required embedment from moment equilibrium
-        // Pa * ya = Pp * (H + d/3) / FoS
+        // Pa * ya = Pp * (H + 2d/3) / FoS
         // Solve iteratively
         let mut d = embedment;
         for _ in 0..20 {
             let pp_d = pp * d / embedment;
             let moment_active = pa * ya;
-            let moment_passive = pp_d * (excavation_depth + d / 3.0);
+            let moment_passive = pp_d * (excavation_depth + 2.0 * d / 3.0);
             
             if moment_passive >= moment_active {
                 break;
@@ -544,17 +539,19 @@ impl WallAnalysis {
             d *= 1.1;
         }
         
-        // Maximum moment (approximately at zero shear)
-        let max_moment = 0.5 * pa * ya;
+        // Maximum moment at dredge level (conservative)
+        let max_moment = pa * (excavation_depth - ya);
         let max_shear = pa;
         
-        // Factor of safety
-        let toe_fos = passive.total_force * embedment / (active.total_force * active.application_point);
+        // Factor of safety (moments about toe)
+        let arm_active = (excavation_depth + d) - ya;
+        let arm_passive = d / 3.0; // centroid of triangular passive from toe
+        let toe_fos = (passive.total_force * arm_passive) / (active.total_force * arm_active);
         
         Self {
             max_moment,
             max_shear,
-            max_moment_depth: excavation_depth * 0.6,
+            max_moment_depth: excavation_depth + d / 3.0, // Below dredge at ~zero-shear point
             strut_forces: Vec::new(),
             toe_fos,
             required_embedment: d * 1.2, // 20% margin
@@ -604,7 +601,7 @@ impl WallAnalysis {
             max_moment = max_moment.max(m);
         }
         
-        let max_shear = apparent.total_force() / n_struts as f64;
+        let max_shear = strut_forces.iter().cloned().fold(0.0_f64, f64::max);
         
         Self {
             max_moment,
@@ -724,7 +721,7 @@ impl GroundSettlement {
         let (influence, profile_type) = match soil_type {
             ApparentPressureType::Sand => (2.0 * h, "triangular"),
             ApparentPressureType::StiffClay => (2.0 * h, "trapezoidal"),
-            ApparentPressureType::SoftClay => (4.0 * h, "concave"),
+            ApparentPressureType::SoftClay => (2.0 * h, "concave"),
             _ => (3.0 * h, "trapezoidal"),
         };
         
@@ -862,12 +859,12 @@ impl BaseHeave {
         // Stability number
         let n = gamma * h / su;
         
-        // Bearing capacity factor (Nc depends on D/B)
+        // Bearing capacity factor (Nc depends on D/B) per Terzaghi 1943
         let d_b_ratio = h / b;
         let nc = if d_b_ratio < 1.0 {
-            5.14 * (1.0 + 0.2 * d_b_ratio)
+            5.7 * (1.0 + 0.2 * d_b_ratio)
         } else {
-            5.14 * 1.2
+            5.7 * 1.2
         };
         
         // Factor of safety
@@ -901,19 +898,17 @@ impl BaseHeave {
     ) -> Self {
         let h = excavation_depth;
         let b = excavation_width;
-        let d = embedment;
+        let _d = embedment;
         
-        // Equivalent foundation width
-        let b_eq = b.min(d * 2.0);
-        
-        // Bearing capacity
-        let nc = 5.14 * (1.0 + 0.2 * (h / b_eq).min(1.0));
+        // Skempton Nc with depth factor (up to D/B = 2.5)
+        let d_b_ratio = (h / b).min(2.5);
+        let nc = 5.14 * (1.0 + 0.2 * d_b_ratio);
         
         // Driving pressure
         let q_drive = gamma * h + surcharge;
         
-        // Resisting pressure (including wall embedment)
-        let q_resist = nc * su + gamma * d * 0.5;
+        // Resisting pressure (Bjerrum-Eide: Nc*su only, no embedment term)
+        let q_resist = nc * su;
         
         let fos = q_resist / q_drive;
         
@@ -921,7 +916,7 @@ impl BaseHeave {
             factor_of_safety: fos,
             heave_potential: 0.0,
             stability_number: gamma * h / su,
-            critical_depth_ratio: h / b_eq,
+            critical_depth_ratio: h / b,
         }
     }
     
@@ -1051,8 +1046,8 @@ impl StrutDesign {
         spacing: f64,
         fy: f64,
     ) -> Self {
-        // Required capacity with safety factor
-        let required_capacity = required_force * spacing * 1.5;
+        // Required capacity (ASD: unfactored)
+        let required_capacity = required_force * spacing;
         
         // Trial diameter (empirical)
         let d = (required_capacity * 1000.0 / fy).sqrt() * 4.0; // mm
@@ -1061,16 +1056,23 @@ impl StrutDesign {
         let area = PI * d * t;
         let inertia = PI * d.powi(3) * t / 8.0;
         
-        // Buckling capacity (Euler)
+        // Buckling capacity (Euler) — convert to kN
         let e = 200_000.0; // MPa
         let k = 1.0; // Effective length factor
-        let pe = PI.powi(2) * e * inertia / (k * length * 1000.0).powi(2);
+        let pe = PI.powi(2) * e * inertia / (k * length * 1000.0).powi(2) / 1000.0; // kN
         
-        // Yield capacity
+        // Yield capacity (kN)
         let py = area * fy / 1000.0;
         
-        // Design capacity (interaction)
-        let p_design = if pe > py { py / 1.67 } else { pe / 2.0 };
+        // Design capacity per AISC 360-16 E3 ASD (kN)
+        // Crossover at Fy/Fe = 2.25 → Pe/Py = 1/2.25 ≈ 0.444
+        let p_design = if py / pe <= 2.25 {
+            // Inelastic buckling (KL/r ≤ 4.71√(E/Fy))
+            py * (0.658_f64.powf(py / pe)) / 1.67
+        } else {
+            // Elastic buckling (KL/r > 4.71√(E/Fy))
+            0.877 * pe / 1.67
+        };
         
         let utilization = required_capacity / p_design;
         

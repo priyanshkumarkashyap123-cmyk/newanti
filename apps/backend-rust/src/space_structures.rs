@@ -558,10 +558,10 @@ impl ReciprocalFrame {
     
     /// Bending moment at joint (kN·m) for unit load
     pub fn joint_moment(&self, unit_load: f64) -> f64 {
-        let e = self.joint_eccentricity();
-        let reaction = unit_load / self.n_members as f64;
+        let e = self.joint_eccentricity(); // m
+        let reaction = unit_load / self.n_members as f64; // kN
         
-        reaction * e * 1000.0 // N·m to kN·mm to kN·m
+        reaction * e // kN × m = kN·m
     }
 }
 

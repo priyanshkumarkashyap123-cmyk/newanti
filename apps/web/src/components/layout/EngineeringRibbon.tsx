@@ -323,8 +323,8 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
         <ToolButton
           icon={Layers}
           label="Library"
-          onClick={() => openModal("geometryTools")}
-          tooltip="Section Database — ISMB, ISMC, W-Shapes, Custom"
+          onClick={() => openModal("sectionBrowserDialog")}
+          tooltip="Section Database — ISMB, ISMC, W-Shapes, Custom (Rust Backend)"
           size="large"
         />
         <StackedButtons>
@@ -336,18 +336,18 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
         <ToolButton
           icon={Database}
           label="Material"
-          onClick={() => {}}
+          onClick={() => openModal("geometryTools")}
           tooltip="Material Library — Steel, Concrete, Timber, Custom"
         />
         <StackedButtons>
-          <MiniButton icon={Settings} label="Assign" onClick={() => {}} />
-          <MiniButton icon={Table2} label="Properties" onClick={() => {}} />
+          <MiniButton icon={Settings} label="Assign" onClick={() => openModal("geometryTools")} />
+          <MiniButton icon={Table2} label="Properties" onClick={() => openModal("geometryTools")} />
         </StackedButtons>
       </ToolGroup>
       <ToolGroup label="Specifications">
-        <ToolButton icon={Table2} label="Beta Angle" onClick={() => {}} tooltip="Member Orientation / Beta Angle" />
-        <ToolButton icon={Link2} label="Releases" onClick={() => {}} tooltip="Member End Releases — Pinned, Partial" />
-        <ToolButton icon={Ruler} label="Offsets" onClick={() => {}} tooltip="Member End Offsets" />
+        <ToolButton icon={Table2} label="Beta Angle" onClick={() => openModal("geometryTools")} tooltip="Member Orientation / Beta Angle" />
+        <ToolButton icon={Link2} label="Releases" onClick={() => openModal("geometryTools")} tooltip="Member End Releases — Pinned, Partial" />
+        <ToolButton icon={Ruler} label="Offsets" onClick={() => openModal("geometryTools")} tooltip="Member End Offsets" />
       </ToolGroup>
     </>
   );
@@ -428,11 +428,15 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
           onClick={() => openModal("windLoadDialog")}
           tooltip="Wind Load Generator — IS 875-III / ASCE 7-22"
         />
+        <StackedButtons>
+          <MiniButton icon={Zap} label="ASCE 7 Seismic" onClick={() => openModal("asce7SeismicDialog")} />
+          <MiniButton icon={Zap} label="IS 1893 Seismic" onClick={() => openModal("is1893SeismicDialog")} />
+        </StackedButtons>
         <ToolButton
-          icon={Zap}
-          label="Seismic"
-          onClick={() => openModal("seismicLoadDialog")}
-          tooltip="Seismic Load Generator — IS 1893 / ASCE 7"
+          icon={Layers}
+          label="Combinations"
+          onClick={() => openModal("loadCombinationsDialog")}
+          tooltip="Load Combination Generator — ASCE 7, IS 456"
         />
       </ToolGroup>
     </>
@@ -497,7 +501,10 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
           onClick={() => document.dispatchEvent(new CustomEvent("toggle-diagrams"))}
           tooltip="SFD / BMD / AFD Diagrams"
         />
-        <ToolButton icon={FileText} label="Output" onClick={() => {}} tooltip="Tabular Results Output" />
+        <ToolButton icon={FileText} label="Output" onClick={() => {
+          const s = useModelStore.getState();
+          s.setShowResults(!s.showResults);
+        }} tooltip="Tabular Results Output" />
         <ToolButton
           icon={Download}
           label="Export"
@@ -707,6 +714,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
               />
             </ToolGroup>
             <ToolGroup label="Advanced AI">
+              <ToolButton
+                icon={Sparkles}
+                label="AI Architect"
+                onClick={() => document.dispatchEvent(new CustomEvent("toggle-ai-architect"))}
+                tooltip="AI Architect — Create, modify & analyze structures with AI"
+              />
               <ToolButton
                 icon={Sparkles}
                 label="Generative"

@@ -231,7 +231,8 @@ impl CaissonGeometry {
             }
             CrossSection::Twin => 2.0 * PI * self.outer_dimension,
             CrossSection::Octagonal => {
-                8.0 * self.outer_dimension / (2.0 * (1.0 + 2.0_f64.sqrt()))
+                // Regular octagon: P = 8s where s = d/(1+√2), d = across flats
+                8.0 * self.outer_dimension / (1.0 + 2.0_f64.sqrt())
             }
         }
     }
@@ -247,7 +248,7 @@ impl CaissonGeometry {
             CrossSection::Dumbbell => PI * self.inner_dimension * 1.5,
             CrossSection::Twin => 2.0 * PI * self.inner_dimension,
             CrossSection::Octagonal => {
-                8.0 * self.inner_dimension / (2.0 * (1.0 + 2.0_f64.sqrt()))
+                8.0 * self.inner_dimension / (1.0 + 2.0_f64.sqrt())
             }
         }
     }
@@ -327,10 +328,17 @@ impl BearingCapacity {
         let nc = (nq - 1.0) / phi_rad.tan().max(0.01);
         let n_gamma = 2.0 * (nq + 1.0) * phi_rad.tan();
         
-        // Shape factors for circular caisson
-        let sq = 1.0 + (geometry.outer_dimension / geometry.depth) * phi_rad.sin();
-        let sc = 1.0 + nq / nc * 0.2;
-        let s_gamma = 0.6;
+        // Shape factors (Hansen/Vesic) for circular caisson: B/L = 1.0
+        let b_over_l = match geometry.cross_section {
+            CrossSection::Circular | CrossSection::Octagonal => 1.0,
+            CrossSection::Rectangular => {
+                geometry.outer_dimension / geometry.length.unwrap_or(geometry.outer_dimension)
+            }
+            _ => 1.0,
+        };
+        let sq = 1.0 + b_over_l * phi_rad.sin();
+        let sc = 1.0 + nq / nc * b_over_l;
+        let s_gamma = 1.0 - 0.4 * b_over_l;
         
         // Depth factors
         let dq = 1.0 + 2.0 * phi_rad.tan() * (1.0 - phi_rad.sin()).powi(2) 
@@ -338,10 +346,11 @@ impl BearingCapacity {
         let dc = dq - (1.0 - dq) / (nc * phi_rad.tan().max(0.01));
         let d_gamma = 1.0;
         
-        // Effective overburden
-        let effective_depth = geometry.depth - water_depth;
-        let sigma_v = soil.unit_weight * effective_depth 
-            + (soil.unit_weight - 10.0).max(0.0) * water_depth.min(geometry.depth);
+        // Effective overburden: dry soil above WT + buoyant soil below WT
+        let dry_depth = water_depth.min(geometry.depth);
+        let submerged_depth = (geometry.depth - water_depth).max(0.0);
+        let sigma_v = soil.unit_weight * dry_depth 
+            + (soil.unit_weight - 10.0).max(0.0) * submerged_depth;
         
         // Ultimate base resistance
         let q_ult = soil.cohesion * nc * sc * dc 

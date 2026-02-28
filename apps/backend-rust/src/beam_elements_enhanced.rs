@@ -648,7 +648,7 @@ impl TimoshenkoBeam3D {
         mass[1][1] = m1;
         mass[1][5] = -m2;
         mass[1][7] = m3;
-        mass[1][11] = m4;
+        mass[1][11] = -m4;  // Convention: θz = -dv/dx → sign flip vs XZ plane
         
         mass[5][1] = -m2;
         mass[5][5] = m5;
@@ -660,7 +660,7 @@ impl TimoshenkoBeam3D {
         mass[7][7] = m1;
         mass[7][11] = m2;
         
-        mass[11][1] = m4;
+        mass[11][1] = -m4;  // Convention: θz = -dv/dx → sign flip vs XZ plane
         mass[11][5] = m6;
         mass[11][7] = m2;
         mass[11][11] = m5;
@@ -707,47 +707,48 @@ impl TimoshenkoBeam3D {
         let _c2 = p / 10.0;
         let _c3 = p * l / 30.0;
         
-        // Bending in x-z plane
+        // Bending in x-z plane (standard geometric stiffness per Cook et al.)
+        // kg = P/(30L) × [36, 3L, -36, 3L; 3L, 4L², -3L, -L²; ...]
         kg[2][2] = 6.0 * c1 / 5.0;
-        kg[2][4] = c1 / 10.0;
+        kg[2][4] = l * c1 / 10.0;
         kg[2][8] = -6.0 * c1 / 5.0;
-        kg[2][10] = c1 / 10.0;
+        kg[2][10] = l * c1 / 10.0;
         
-        kg[4][2] = c1 / 10.0;
-        kg[4][4] = 2.0 * l * c1 / 15.0;
-        kg[4][8] = -c1 / 10.0;
-        kg[4][10] = -l * c1 / 30.0;
+        kg[4][2] = l * c1 / 10.0;
+        kg[4][4] = 2.0 * l * l * c1 / 15.0;
+        kg[4][8] = -l * c1 / 10.0;
+        kg[4][10] = -l * l * c1 / 30.0;
         
         kg[8][2] = -6.0 * c1 / 5.0;
-        kg[8][4] = -c1 / 10.0;
+        kg[8][4] = -l * c1 / 10.0;
         kg[8][8] = 6.0 * c1 / 5.0;
-        kg[8][10] = -c1 / 10.0;
+        kg[8][10] = -l * c1 / 10.0;
         
-        kg[10][2] = c1 / 10.0;
-        kg[10][4] = -l * c1 / 30.0;
-        kg[10][8] = -c1 / 10.0;
-        kg[10][10] = 2.0 * l * c1 / 15.0;
+        kg[10][2] = l * c1 / 10.0;
+        kg[10][4] = -l * l * c1 / 30.0;
+        kg[10][8] = -l * c1 / 10.0;
+        kg[10][10] = 2.0 * l * l * c1 / 15.0;
         
-        // Bending in x-y plane (similar pattern)
+        // Bending in x-y plane (same pattern, opposite sign for v-θz coupling)
         kg[1][1] = 6.0 * c1 / 5.0;
-        kg[1][5] = -c1 / 10.0;
+        kg[1][5] = -l * c1 / 10.0;
         kg[1][7] = -6.0 * c1 / 5.0;
-        kg[1][11] = -c1 / 10.0;
+        kg[1][11] = -l * c1 / 10.0;
         
-        kg[5][1] = -c1 / 10.0;
-        kg[5][5] = 2.0 * l * c1 / 15.0;
-        kg[5][7] = c1 / 10.0;
-        kg[5][11] = -l * c1 / 30.0;
+        kg[5][1] = -l * c1 / 10.0;
+        kg[5][5] = 2.0 * l * l * c1 / 15.0;
+        kg[5][7] = l * c1 / 10.0;
+        kg[5][11] = -l * l * c1 / 30.0;
         
         kg[7][1] = -6.0 * c1 / 5.0;
-        kg[7][5] = c1 / 10.0;
+        kg[7][5] = l * c1 / 10.0;
         kg[7][7] = 6.0 * c1 / 5.0;
-        kg[7][11] = c1 / 10.0;
+        kg[7][11] = l * c1 / 10.0;
         
-        kg[11][1] = -c1 / 10.0;
-        kg[11][5] = -l * c1 / 30.0;
-        kg[11][7] = c1 / 10.0;
-        kg[11][11] = 2.0 * l * c1 / 15.0;
+        kg[11][1] = -l * c1 / 10.0;
+        kg[11][5] = -l * l * c1 / 30.0;
+        kg[11][7] = l * c1 / 10.0;
+        kg[11][11] = 2.0 * l * l * c1 / 15.0;
         
         // Transform to global
         let t = self.transformation_matrix();

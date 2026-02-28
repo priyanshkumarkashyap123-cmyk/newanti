@@ -183,7 +183,8 @@ impl GroundSlab {
         let k = self.subgrade.k_value; // MN/m³
         
         let d = e * h.powi(3) / (12.0 * (1.0 - nu.powi(2)));
-        (d / k / 1000.0).powf(0.25)
+        // l = (D / k_N/mm³)^0.25 where k_N/mm³ = k_MN/m³ × 10⁻³
+        (d * 1000.0 / k).powf(0.25)
     }
     
     /// Negative moment capacity Mp (kN·m/m)
@@ -237,16 +238,16 @@ impl GroundSlab {
     /// Punching shear capacity (kN)
     pub fn punching_capacity(&self, contact_area: f64) -> f64 {
         let d = self.thickness * 0.9; // Effective depth
-        let l = self.radius_of_stiffness();
         
         // Contact radius
         let a = (contact_area / PI).sqrt();
         
-        // Critical perimeter
-        let u = 2.0 * PI * (a + 2.0 * l);
+        // Critical perimeter at 2d from loaded area (TR34/EC2)
+        let u = 2.0 * PI * (a + 2.0 * d);
         
-        // Shear stress
-        let vc = 0.035 * (100.0 * 0.002_f64).powf(1.0 / 3.0) * self.fck.powf(0.5);
+        // EC2 minimum punching shear stress (unreinforced)
+        let k = (1.0 + (200.0 / d).sqrt()).min(2.0);
+        let vc = 0.035 * k.powf(1.5) * self.fck.sqrt();
         
         vc * u * d / 1000.0
     }

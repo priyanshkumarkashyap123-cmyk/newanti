@@ -170,12 +170,12 @@ impl BoltDiameter {
         std::f64::consts::PI * d * d / 4.0
     }
     
-    /// Standard hole diameter (mm) - standard clearance
+    /// Standard hole diameter (mm) - IS 800 Table 19 clearance
     pub fn hole_diameter(&self) -> f64 {
         let d = self.nominal();
-        if d <= 24.0 { d + 2.0 }
-        else if d <= 30.0 { d + 3.0 }
-        else { d + 3.0 }
+        if d <= 14.0 { d + 1.0 }      // M12: 1mm clearance per IS 800
+        else if d <= 24.0 { d + 2.0 }  // M16-M24: 2mm clearance
+        else { d + 3.0 }               // M27+: 3mm clearance
     }
 }
 
@@ -246,8 +246,10 @@ impl BoltSpec {
         let fu = self.grade.fu();
         let an = self.diameter.tensile_area();
         
-        // Tnb = 0.9 * fub * An
-        let tnb = 0.9 * fu * an;
+        // Tnb = 0.9 * fub * An, but <= fyb * Asb * (γmb/γm0)
+        let tnb_rupture = 0.9 * fu * an;
+        let tnb_yield = self.grade.fy() * self.diameter.shank_area() * (gamma_mb / 1.10);
+        let tnb = tnb_rupture.min(tnb_yield);
         
         tnb / (gamma_mb * 1000.0) // Convert to kN
     }
@@ -264,10 +266,10 @@ impl BoltSpec {
             return 0.0;
         }
         
-        let fo = self.grade.fy();
+        let fo = self.grade.fu(); // Use ultimate strength per IS 800 Cl. 10.4.3
         let an = self.diameter.tensile_area();
         
-        // Proof load: Fo = 0.7 * fyb * Anb
+        // Proof load: Fo = 0.7 * fub * Anb
         let proof_load = 0.7 * fo * an;
         
         // Vnsf = μf * ne * Kh * Fo
@@ -586,15 +588,21 @@ impl ConnectionDesigner {
         // Check 2: Bolt bearing
         checks.push(DesignCheck::new("Bolt Bearing", v_bolt_bearing * n_bolts as f64, shear_demand, "IS 800 Cl. 10.3.4"));
         
-        // Check 3: Block shear (simplified)
-        let avn = (plate_length - edge_dist - (n_bolts - 1) as f64 * bolt.diameter.hole_diameter()) * plate_t;
-        let atg = edge_dist * plate_t;
+        // Check 3: Block shear (IS 800 Cl. 6.4.1 - both cases)
+        let avg = (plate_length - edge_dist) * plate_t; // Gross shear area
+        let avn = avg - ((n_bolts as f64) - 0.5) * bolt.diameter.hole_diameter() * plate_t; // Net shear area
+        let atg = edge_dist * plate_t; // Gross tension area
+        let atn = atg - 0.5 * bolt.diameter.hole_diameter() * plate_t; // Net tension area
         let fu = fu_plate;
         let fy = fu_plate * 0.6; // Approximate
         
-        // Tdb1 = Avg * fy / (√3 * γm0) + 0.9 * Atn * fu / γm1
-        let tdb = (avn * fy / (3.0_f64.sqrt() * self.params.gamma_m0 * 1000.0)) + 
-                  (0.9 * atg * fu / (self.params.gamma_mb * 1000.0));
+        // Case 1: Shear yielding + tension rupture
+        let tdb1 = (avg * fy / (3.0_f64.sqrt() * self.params.gamma_m0 * 1000.0)) + 
+                   (0.9 * atn * fu / (self.params.gamma_mb * 1000.0));
+        // Case 2: Shear rupture + tension yielding
+        let tdb2 = (0.9 * avn * fu / (3.0_f64.sqrt() * self.params.gamma_mb * 1000.0)) + 
+                   (atg * fy / (self.params.gamma_m0 * 1000.0));
+        let tdb = tdb1.min(tdb2);
         checks.push(DesignCheck::new("Block Shear (Plate)", tdb, shear_demand, "IS 800 Cl. 6.4"));
         
         // Check 4: Plate gross section shear
@@ -833,7 +841,7 @@ impl ConnectionDesigner {
         let tp_bearing = (3.0 * w * projection.powi(2) / fy_plate).sqrt();
         
         // If moment is significant, check for tension in anchor bolts
-        let eccentricity = moment_demand / axial_demand.abs().max(0.001);
+        let eccentricity = moment_demand * 1000.0 / axial_demand.abs().max(0.001); // Convert to mm
         let has_tension = eccentricity > bp_length / 6.0;
         
         let (num_tension_bolts, tension_force) = if has_tension {
@@ -870,7 +878,7 @@ impl ConnectionDesigner {
             demand_moment: moment_demand,
             capacity_shear: total_shear_capacity,
             demand_shear: shear_demand,
-            utilization_moment: moment_demand / (axial_demand * bp_length / 6000.0).max(moment_demand),
+            utilization_moment: moment_demand / (axial_demand * bp_length / 6000.0).max(0.001),
             utilization_shear: shear_demand / total_shear_capacity,
             num_tension_bolts,
             num_shear_bolts: num_tension_bolts, // Same bolts

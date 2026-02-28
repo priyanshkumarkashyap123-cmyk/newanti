@@ -104,8 +104,8 @@ impl StructuralSystem {
     pub fn cd_factor(&self) -> f64 {
         match self {
             StructuralSystem::SteelSMRF => 5.5,
-            StructuralSystem::SteelIMRF => 4.5,
-            StructuralSystem::SteelOMRF => 3.5,
+            StructuralSystem::SteelIMRF => 4.0,
+            StructuralSystem::SteelOMRF => 3.0,
             StructuralSystem::SteelSCBF => 5.0,
             StructuralSystem::SteelOCBF => 3.25,
             StructuralSystem::SteelEBF => 4.0,
@@ -169,13 +169,19 @@ impl DriftLimits {
         }
     }
     
-    /// Get Eurocode 8 drift limits
+    /// Get Eurocode 8 drift limits (EN 1998-1 Cl. 4.4.3.2)
+    /// Note: EC8 limits depend on non-structural element type, not risk category.
+    /// limit_normal → non-interfering non-structural elements (dr·ν ≤ 0.010h)
+    /// limit_high → ductile non-structural elements (dr·ν ≤ 0.0075h)
+    /// limit_essential → brittle non-structural elements (dr·ν ≤ 0.005h)
+    /// The ν factor (0.5 for importance I/II, 0.4 for III/IV) must be applied
+    /// to the computed drift before comparing against these limits.
     pub fn en1998() -> Self {
         DriftLimits {
             code: SeismicDriftCode::EN1998,
-            limit_normal: 0.010,    // 1.0% for brittle non-structural
-            limit_high: 0.0075,     // 0.75% for ductile non-structural
-            limit_essential: 0.005, // 0.5% for structural pounding
+            limit_normal: 0.010,    // non-interfering non-structural elements
+            limit_high: 0.0075,     // ductile non-structural elements
+            limit_essential: 0.005, // brittle non-structural elements
         }
     }
     
@@ -204,7 +210,8 @@ pub struct Story {
     pub height: f64,
     /// Elevation at top of story (mm)
     pub elevation: f64,
-    /// Story weight for P-Delta (kN)
+    /// Total vertical design load at AND above this level, Px (kN)
+    /// Per ASCE 7-22 §12.8.7: Px includes all gravity load at and above level x
     pub weight: f64,
     /// Story shear in X (kN)
     pub vx: f64,
@@ -325,6 +332,8 @@ pub struct DriftConfig {
     /// Consider P-Delta effects
     pub check_pdelta: bool,
     /// P-Delta stability limit θmax
+    /// ASCE 7: θmax = 0.5/(β×Cd) ≤ 0.25; 0.10 is only the threshold
+    /// below which P-Delta effects may be neglected, NOT the structural limit.
     pub theta_max: f64,
 }
 
@@ -339,7 +348,7 @@ impl Default for DriftConfig {
             cd: system.cd_factor(),
             ie: system.importance_factor(risk),
             check_pdelta: true,
-            theta_max: 0.10, // ASCE 7 limit
+            theta_max: 0.25, // ASCE 7-22 upper bound: θmax = 0.5/(β×Cd) ≤ 0.25
         }
     }
 }
@@ -402,14 +411,27 @@ impl DriftAnalyzer {
             let dcr_x = ratio_x / allowable;
             let dcr_y = ratio_y / allowable;
             
-            // Torsional ratio (max/avg)
-            let torsion_ratio_x = if disp.dx_avg.abs() > 1e-6 {
-                disp.dx_max.abs().max(disp.dx_min.abs()) / disp.dx_avg.abs()
+            // Torsional ratio (max/avg) per ASCE 7-22 Table 12.3-1
+            // Must use STORY DRIFTS at diaphragm edges, not total displacements
+            let (dx_max_below, dx_min_below, dy_max_below, dy_min_below) = if i == 0 {
+                (0.0, 0.0, 0.0, 0.0)
+            } else {
+                let dp = &displacements[i - 1];
+                (dp.dx_max, dp.dx_min, dp.dy_max, dp.dy_min)
+            };
+            let drift_dx_max = (disp.dx_max - dx_max_below).abs();
+            let drift_dx_min = (disp.dx_min - dx_min_below).abs();
+            let drift_dy_max = (disp.dy_max - dy_max_below).abs();
+            let drift_dy_min = (disp.dy_min - dy_min_below).abs();
+            let drift_dx_avg = (drift_dx_max + drift_dx_min) / 2.0;
+            let drift_dy_avg = (drift_dy_max + drift_dy_min) / 2.0;
+            let torsion_ratio_x = if drift_dx_avg > 1e-6 {
+                drift_dx_max.max(drift_dx_min) / drift_dx_avg
             } else {
                 1.0
             };
-            let torsion_ratio_y = if disp.dy_avg.abs() > 1e-6 {
-                disp.dy_max.abs().max(disp.dy_min.abs()) / disp.dy_avg.abs()
+            let torsion_ratio_y = if drift_dy_avg > 1e-6 {
+                drift_dy_max.max(drift_dy_min) / drift_dy_avg
             } else {
                 1.0
             };

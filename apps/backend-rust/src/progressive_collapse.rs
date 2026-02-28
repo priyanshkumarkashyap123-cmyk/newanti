@@ -735,16 +735,16 @@ impl CatenaryAction {
         let t = self.tension_capacity();
         let theta = (2.0 * delta / self.span).atan();
         
-        // w = 8 * T * sin(θ) / L
-        8.0 * t * theta.sin() / self.span
+        // w = 2 * T * sin(θ) / L  (two-segment catenary equilibrium)
+        2.0 * t * theta.sin() / self.span
     }
     
     /// Required deflection for given load (m)
     pub fn required_deflection(&self, w: f64) -> f64 {
         let t = self.tension_capacity();
         
-        // θ = arcsin(w * L / (8 * T))
-        let sin_theta = (w * self.span / (8.0 * t)).min(1.0);
+        // θ = arcsin(w * L / (2 * T))
+        let sin_theta = (w * self.span / (2.0 * t)).min(1.0);
         let theta = sin_theta.asin();
         
         // δ = L * tan(θ) / 2

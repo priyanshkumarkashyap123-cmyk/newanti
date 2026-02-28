@@ -229,19 +229,21 @@ impl PDeltaAnalysis {
     }
 
     /// Calculate stability coefficient per ASCE 7-22 Eq. 12.8-16
-    /// θ = (Px * Δ * Ie) / (Vx * hsx * Cd)
+    /// θ = (Px * Δ) / (Vx * hsx * Cd)
     pub fn calculate_stability(
         &mut self,
         story: usize,
         height: f64,
         px: f64,      // Total vertical load
         vx: f64,      // Story shear
-        delta: f64,   // Story drift
+        delta: f64,   // Design story drift (already includes Cd/Ie)
         cd: f64,      // Deflection amplification factor
-        ie: f64,      // Importance factor
+        ie: f64,      // Importance factor (stored but not used in θ)
     ) -> StoryStability {
+        // ASCE 7-22 Eq. 12.8-16: θ = Px × Δ / (Vx × hsx × Cd)
+        // Ie is NOT in this equation — it is already captured in Δ = Cd×δxe/Ie
         let theta = if vx > 0.0 && height > 0.0 && cd > 0.0 {
-            (px * delta * ie) / (vx * height * cd)
+            (px * delta) / (vx * height * cd)
         } else {
             0.0
         };

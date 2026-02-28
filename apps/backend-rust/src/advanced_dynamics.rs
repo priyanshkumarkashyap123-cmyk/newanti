@@ -491,10 +491,16 @@ impl RandomVibrationAnalyzer {
                 
                 let real = k - omega * omega * m;
                 let imag = omega * c;
+                let denom_sq = real * real + imag * imag;
                 
-                1.0 / (real * real + imag * imag)
+                // For acceleration input PSD, H = -m/(k-ω²m+jωc)
+                // so |H|² = m²/|k-ω²m+jωc|²
+                match self.input_psd.psd_type {
+                    PSDType::Acceleration => m * m / denom_sq,
+                    _ => 1.0 / denom_sq, // Force input
+                }
             } else {
-                // Simplified
+                // Simplified MDOF
                 1.0
             };
             
@@ -606,22 +612,22 @@ impl CraigBamptonReduction {
             }
         }
         
-        // Modal DOFs (simplified - using diagonal entries)
+        // Modal DOFs - use distinct interior DOFs (simplified C-B approximation)
+        // Collect all interior DOFs
+        let interior_dofs: Vec<usize> = (0..self.full_ndof)
+            .filter(|d| !self.boundary_dofs.contains(d))
+            .collect();
+        
         for k in 0..n_k {
             let idx = n_b + k;
-            // Find an interior DOF
-            let mut interior_dof = 0;
-            for d in 0..self.full_ndof {
-                if !self.boundary_dofs.contains(&d) {
-                    interior_dof = d;
-                    break;
+            // Use k-th interior DOF (not always the first one)
+            if k < interior_dofs.len() {
+                let interior_dof = interior_dofs[k];
+                if interior_dof < mass.len() {
+                    red_mass[idx][idx] = 1.0; // Normalized modal mass
+                    red_stiff[idx][idx] = stiffness[interior_dof][interior_dof] / mass[interior_dof][interior_dof];
+                    transform[idx][interior_dof] = 1.0;
                 }
-            }
-            
-            if interior_dof < mass.len() {
-                red_mass[idx][idx] = 1.0; // Normalized modal mass
-                red_stiff[idx][idx] = stiffness[interior_dof][interior_dof] / mass[interior_dof][interior_dof];
-                transform[idx][interior_dof] = 1.0;
             }
         }
         
@@ -754,11 +760,22 @@ impl RotorDynamicsAnalyzer {
         let omega_cr = (k_total / m).sqrt();
         let rpm_cr = omega_cr * 60.0 / (2.0 * PI);
         
-        // Second critical (gyroscopic effect)
+        // Second critical (gyroscopic effect - forward whirl)
+        // For Jeffcott rotor: Ω_cr2 = ω_n / sqrt(1 - Ip/It)
         let ip = self.rotor.ip;
         let it = self.rotor.it;
-        let gyro_factor = if it > 0.0 { (ip / it).sqrt() } else { 1.0 };
-        let rpm_cr2 = rpm_cr * gyro_factor * 2.0;
+        let rpm_cr2 = if it > 0.0 {
+            let ratio = ip / it;
+            if ratio < 1.0 {
+                // Forward whirl critical speed
+                let omega_cr2 = omega_cr / (1.0 - ratio).sqrt();
+                omega_cr2 * 60.0 / (2.0 * PI)
+            } else {
+                f64::INFINITY // Supercritical disc: no second forward critical
+            }
+        } else {
+            rpm_cr * 2.0 // Fallback
+        };
         
         vec![rpm_cr, rpm_cr2]
     }
@@ -805,9 +822,18 @@ impl RotorDynamicsAnalyzer {
             rpm += rpm_step;
         }
         
-        // Stability (simplified)
+        // Stability (log decrement using consistent omega_n)
         let total_damping: f64 = self.bearings.iter().map(|b| b.cxx).sum();
-        let log_dec = 2.0 * PI * total_damping / (2.0 * self.rotor.mass * omega_n);
+        let k_total_stab = self.rotor.shaft_stiffness
+            + self.bearings.iter().map(|b| b.kxx).sum::<f64>();
+        let omega_n_stab = (k_total_stab / self.rotor.mass).sqrt();
+        let zeta_stab = total_damping / (2.0 * self.rotor.mass * omega_n_stab);
+        // Exact log decrement: δ = 2πζ/√(1-ζ²)
+        let log_dec = if zeta_stab < 1.0 {
+            2.0 * PI * zeta_stab / (1.0 - zeta_stab * zeta_stab).sqrt()
+        } else {
+            f64::INFINITY
+        };
         
         RotorDynamicsResults {
             critical_speeds: criticals,

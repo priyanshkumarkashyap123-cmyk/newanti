@@ -740,7 +740,7 @@ impl NASGROEquation {
             return f64::INFINITY;
         }
 
-        let term1 = self.c * ((1.0 - f) * delta_k).powf(self.n);
+        let term1 = self.c * ((1.0 - f) / (1.0 - r_ratio) * delta_k).powf(self.n);
         let term2 = (1.0 - delta_k_th / delta_k).powf(self.p);
         let term3 = 1.0 / (1.0 - k_max / self.k_max_crit).powf(self.q);
 

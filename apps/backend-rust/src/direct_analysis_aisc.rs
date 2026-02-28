@@ -281,6 +281,9 @@ pub struct StoryData {
     pub v_y: f64,
     /// Cm factor for members (typically 1.0 for sway frames)
     pub cm: f64,
+    /// RM factor: 1 - 0.15(Pmf/Pstory).
+    /// Use 0.85 when all columns are in moment frames, 1.0 for braced frames.
+    pub rm: f64,
 }
 
 /// Calculate B2 (sway amplification) factor per AISC 360 Appendix 8.2.2
@@ -294,8 +297,8 @@ pub fn calculate_b2(
     let alpha = 1.0; // LRFD
     
     // Story stiffness method: Pe2 = RM × H × L / ΔH
-    // RM = 0.85 for moment frames, 1.0 for braced
-    let rm = 0.85;
+    // RM = 1 - 0.15(Pmf/Pstory) per AISC 360 App. 8.2.2
+    let rm = story.rm;
     
     // ΣPe2 from drift
     let pe2_x = if story.delta_x.abs() > 1e-6 {
@@ -323,9 +326,9 @@ pub fn calculate_b2(
         f64::MAX
     };
     
-    // Limit check (B2 should be < ~2.5 for practical structures)
-    let b2_x = b2_x.min(2.5);
-    let b2_y = b2_y.min(2.5);
+    // AISC 360 does not impose an artificial cap on B2.
+    // B2 > 1.5 triggers requirement for rigorous second-order analysis.
+    // B2 → ∞ indicates elastic instability — do NOT silently clamp.
     
     (b2_x.max(1.0), b2_y.max(1.0))
 }
@@ -333,17 +336,21 @@ pub fn calculate_b2(
 /// Calculate B1 (non-sway amplification) factor per AISC 360 Appendix 8.2.1
 ///
 /// B1 = Cm / (1 - αPr/Pe1) ≥ 1.0
+/// Pe1 uses reduced stiffness EI* = 0.8τbEI for Direct Analysis Method
 pub fn calculate_b1(
     member: &MemberProperties,
     cm: f64,
     k_factor: f64,
+    tau_b: f64, // τb stiffness reduction factor (1.0 if not using DAM)
 ) -> (f64, f64) {
     let alpha = 1.0; // LRFD
     
-    // Pe1 = π²EI/(KL)²
-    let pe1_x = PI.powi(2) * member.e * member.ix / 
+    // Pe1 = π²EI*/(K1×L)² where EI* = 0.8×τb×EI for DAM (AISC 360-22 C2.3)
+    let ei_star_x = 0.8 * tau_b * member.e * member.ix;
+    let ei_star_y = 0.8 * tau_b * member.e * member.iy;
+    let pe1_x = PI.powi(2) * ei_star_x / 
         (k_factor * member.l).powi(2) / 1000.0; // kN
-    let pe1_y = PI.powi(2) * member.e * member.iy / 
+    let pe1_y = PI.powi(2) * ei_star_y / 
         (k_factor * member.l).powi(2) / 1000.0;
     
     let pr = member.pr.abs();
@@ -579,10 +586,10 @@ pub fn generate_dam_load_cases(
     
     for combo in base_combinations {
         // Determine if gravity-only or lateral
+        // S = Snow (gravity load) — do NOT exclude it from gravity-only classification
         let is_gravity = combo.contains("D") && 
             !combo.contains("E") && 
-            !combo.contains("W") &&
-            !combo.contains("S");
+            !combo.contains("W");
         
         if is_gravity {
             // Gravity-only: apply notional in all 4 directions
@@ -770,6 +777,7 @@ mod tests {
             v_x: 500.0,
             v_y: 400.0,
             cm: 1.0,
+            rm: 0.85,
         };
         let config = DirectAnalysisConfig::default();
         let (b2_x, b2_y) = calculate_b2(&story, &config);

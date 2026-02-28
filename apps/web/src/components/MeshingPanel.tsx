@@ -8,13 +8,18 @@
  */
 
 import { FC, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-    X, Grid3X3, Triangle, Box, Loader2,
-    Check, AlertCircle, Settings2, Layers
+    Grid3X3, Triangle, Box, Loader2,
+    Check, AlertCircle, Layers
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { MesherService } from '../utils/MesherService';
+import { API_CONFIG } from '../config/env';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Checkbox } from './ui/checkbox';
 
 // ============================================
 // TYPES
@@ -42,6 +47,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
     const [nx, setNx] = useState(4);
     const [ny, setNy] = useState(4);
     const [snapToNodes, setSnapToNodes] = useState(true);
+    const [useBackend, setUseBackend] = useState(true);
 
     // Mesh results
     const [meshResult, setMeshResult] = useState<{
@@ -71,7 +77,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
         return corners;
     };
 
-    // Mesh plate using local MesherService
+    // Mesh plate — try Python backend first, fall back to local MesherService
     const handleMeshPlate = async () => {
         const corners = getSelectedCorners();
         if (!corners) {
@@ -84,16 +90,46 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
         setSuccess(null);
 
         try {
-            // Use local MesherService to generate the mesh
-            const result = MesherService.meshSurface(corners, {
-                meshSize: Math.max(
-                    Math.abs(corners[1].x - corners[0].x) / nx,
-                    Math.abs(corners[2].y - corners[0].y) / ny,
-                    0.1
-                ),
-                thickness: 0.15,
-                materialId: 'concrete',
-            });
+            let result: { nodes: { id: string; x: number; y: number; z: number }[]; elements: { nodes: string[]; thickness: number }[] };
+
+            if (useBackend) {
+                try {
+                    const response = await fetch(`${API_CONFIG.pythonUrl}/mesh/plate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            corners,
+                            nx,
+                            ny,
+                            thickness: 0.15,
+                        }),
+                    });
+                    if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+                    const data = await response.json();
+                    result = data;
+                } catch {
+                    // Fallback to local mesher
+                    result = MesherService.meshSurface(corners, {
+                        meshSize: Math.max(
+                            Math.abs(corners[1].x - corners[0].x) / nx,
+                            Math.abs(corners[2].y - corners[0].y) / ny,
+                            0.1
+                        ),
+                        thickness: 0.15,
+                        materialId: 'concrete',
+                    });
+                }
+            } else {
+                result = MesherService.meshSurface(corners, {
+                    meshSize: Math.max(
+                        Math.abs(corners[1].x - corners[0].x) / nx,
+                        Math.abs(corners[2].y - corners[0].y) / ny,
+                        0.1
+                    ),
+                    thickness: 0.15,
+                    materialId: 'concrete',
+                });
+            }
 
             // Map MesherService node IDs → model store node IDs
             const meshNodeIdToStoreId = new Map<string, string>();
@@ -152,7 +188,7 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
         }
     };
 
-    // Triangulate boundary using local MesherService
+    // Triangulate boundary — try Python backend, fall back to local
     const handleTriangulate = async () => {
         const selectedNodeIds = Array.from(selectedIds).filter((id: string) => nodes.has(id));
         if (selectedNodeIds.length < 3) {
@@ -169,17 +205,40 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
                 return { x: node.x, y: node.y, z: node.z };
             });
 
-            // Use meshSurface for polygon meshing
             const avgEdgeLength = boundary.reduce((sum, p, i) => {
                 const next = boundary[(i + 1) % boundary.length];
                 return sum + Math.hypot(next.x - p.x, next.y - p.y);
             }, 0) / boundary.length;
 
-            const result = MesherService.meshSurface(boundary, {
-                meshSize: avgEdgeLength / 2,
-                thickness: 0.15,
-                materialId: 'concrete',
-            });
+            let result: { nodes: { id: string; x: number; y: number; z: number }[]; elements: { nodes: string[]; thickness: number }[] };
+
+            if (useBackend) {
+                try {
+                    const response = await fetch(`${API_CONFIG.pythonUrl}/mesh/triangulate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            boundary,
+                            mesh_size: avgEdgeLength / 2,
+                            thickness: 0.15,
+                        }),
+                    });
+                    if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+                    result = await response.json();
+                } catch {
+                    result = MesherService.meshSurface(boundary, {
+                        meshSize: avgEdgeLength / 2,
+                        thickness: 0.15,
+                        materialId: 'concrete',
+                    });
+                }
+            } else {
+                result = MesherService.meshSurface(boundary, {
+                    meshSize: avgEdgeLength / 2,
+                    thickness: 0.15,
+                    materialId: 'concrete',
+                });
+            }
 
             // Map mesh node IDs → model store node IDs
             const meshNodeIdToStoreId = new Map<string, string>();
@@ -237,190 +296,173 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                onClick={onClose}
-            >
-                <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.95, opacity: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden"
-                >
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
-                                <Grid3X3 className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-bold text-white">FEA Meshing</h2>
-                                <p className="text-sm text-zinc-400">Plate & Surface Mesh Generation</p>
-                            </div>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
+                            <Grid3X3 className="w-5 h-5 text-white" />
                         </div>
-                        <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg">
-                            <X className="w-5 h-5" />
-                        </button>
+                        <div>
+                            <DialogTitle>FEA Meshing</DialogTitle>
+                            <DialogDescription>Plate & Surface Mesh Generation</DialogDescription>
+                        </div>
+                    </div>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                    {/* Mesh Type Selection */}
+                    <div className="flex gap-2">
+                        <Button
+                            variant={meshType === 'plate' ? 'default' : 'outline'}
+                            className={`flex-1 ${meshType === 'plate' ? 'bg-violet-600 hover:bg-violet-700' : ''}`}
+                            onClick={() => setMeshType('plate')}
+                        >
+                            <Grid3X3 className="w-4 h-4 mr-2" />
+                            Plate (Quad)
+                        </Button>
+                        <Button
+                            variant={meshType === 'triangulate' ? 'default' : 'outline'}
+                            className={`flex-1 ${meshType === 'triangulate' ? 'bg-violet-600 hover:bg-violet-700' : ''}`}
+                            onClick={() => setMeshType('triangulate')}
+                        >
+                            <Triangle className="w-4 h-4 mr-2" />
+                            Triangulate
+                        </Button>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6">
-                        {/* Mesh Type Selection */}
-                        <div className="flex gap-2 mb-6">
-                            <button
-                                onClick={() => setMeshType('plate')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all ${meshType === 'plate'
-                                    ? 'bg-violet-600 text-white'
-                                    : 'bg-zinc-800 text-zinc-400 hover:text-white'
-                                    }`}
-                            >
-                                <Grid3X3 className="w-4 h-4" />
-                                Plate (Quad)
-                            </button>
-                            <button
-                                onClick={() => setMeshType('triangulate')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all ${meshType === 'triangulate'
-                                    ? 'bg-violet-600 text-white'
-                                    : 'bg-zinc-800 text-zinc-400 hover:text-white'
-                                    }`}
-                            >
-                                <Triangle className="w-4 h-4" />
-                                Triangulate
-                            </button>
+                    {/* Selection Info */}
+                    <div className="p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg flex items-center gap-3">
+                        <Layers className="w-5 h-5 text-violet-500 dark:text-violet-400" />
+                        <div className="text-sm">
+                            <span className="text-zinc-500 dark:text-zinc-400">Selected Nodes: </span>
+                            <span className="font-medium text-zinc-900 dark:text-white">
+                                {Array.from(selectedIds).filter((id: string) => nodes.has(id)).length}
+                            </span>
+                            <span className="text-zinc-500 dark:text-zinc-400 ml-2">
+                                {meshType === 'plate' ? '(Need 4 for corners)' : '(Min 3 for boundary)'}
+                            </span>
                         </div>
+                    </div>
 
-                        {/* Selection Info */}
-                        <div className="mb-4 p-3 bg-zinc-800/50 rounded-lg flex items-center gap-3">
-                            <Layers className="w-5 h-5 text-violet-400" />
-                            <div className="text-sm">
-                                <span className="text-zinc-400">Selected Nodes: </span>
-                                <span className="text-white font-medium">
-                                    {Array.from(selectedIds).filter((id: string) => nodes.has(id)).length}
-                                </span>
-                                <span className="text-zinc-400 ml-2">
-                                    {meshType === 'plate' ? '(Need 4 for corners)' : '(Min 3 for boundary)'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Plate Mesh Options */}
-                        {meshType === 'plate' && (
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm text-zinc-400 mb-2">Divisions X</label>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            max={20}
-                                            value={nx}
-                                            onChange={(e) => setNx(parseInt(e.target.value) || 4)}
-                                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-zinc-400 mb-2">Divisions Y</label>
-                                        <input
-                                            type="number"
-                                            min={1}
-                                            max={20}
-                                            value={ny}
-                                            onChange={(e) => setNy(parseInt(e.target.value) || 4)}
-                                            className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white"
-                                        />
-                                    </div>
-                                </div>
-
-                                <label className="flex items-center gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={snapToNodes}
-                                        onChange={(e) => setSnapToNodes(e.target.checked)}
-                                        className="w-4 h-4 rounded border-zinc-600"
+                    {/* Plate Mesh Options */}
+                    {meshType === 'plate' && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="nx">Divisions X</Label>
+                                    <Input
+                                        id="nx"
+                                        type="number"
+                                        min={1}
+                                        max={20}
+                                        value={nx}
+                                        onChange={(e) => setNx(parseInt(e.target.value) || 4)}
                                     />
-                                    <span className="text-sm text-zinc-300">Snap to existing nodes (hard points)</span>
-                                </label>
-                            </div>
-                        )}
-
-                        {/* Triangulation Options */}
-                        {meshType === 'triangulate' && (
-                            <div className="p-4 bg-zinc-800/50 rounded-lg text-center">
-                                <Triangle className="w-10 h-10 text-violet-400 mx-auto mb-3" />
-                                <p className="text-zinc-300">Select boundary nodes in order (CCW)</p>
-                                <p className="text-sm text-zinc-400 mt-1">
-                                    Constrained Delaunay Triangulation
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Mesh Result */}
-                        {meshResult && (
-                            <div className="mt-4 p-3 bg-violet-900/20 border border-violet-800 rounded-lg">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Box className="w-4 h-4 text-violet-400" />
-                                    <span className="text-sm text-white font-medium">Mesh Generated</span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4 text-sm">
-                                    <div>
-                                        <span className="text-zinc-400">Nodes:</span>
-                                        <span className="text-white ml-2">{meshResult.nodes}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-zinc-400">Elements:</span>
-                                        <span className="text-white ml-2">{meshResult.elements}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-zinc-400">Type:</span>
-                                        <span className="text-white ml-2">{meshResult.type}</span>
-                                    </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="ny">Divisions Y</Label>
+                                    <Input
+                                        id="ny"
+                                        type="number"
+                                        min={1}
+                                        max={20}
+                                        value={ny}
+                                        onChange={(e) => setNy(parseInt(e.target.value) || 4)}
+                                    />
                                 </div>
                             </div>
-                        )}
 
-                        {/* Status Messages */}
-                        {error && (
-                            <div className="mt-4 p-3 bg-red-900/20 border border-red-800 rounded-lg flex items-center gap-2">
-                                <AlertCircle className="w-4 h-4 text-red-400" />
-                                <span className="text-sm text-red-300">{error}</span>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="snapToNodes"
+                                    checked={snapToNodes}
+                                    onCheckedChange={(checked) => setSnapToNodes(checked === true)}
+                                />
+                                <Label htmlFor="snapToNodes" className="cursor-pointer text-sm font-normal">
+                                    Snap to existing nodes (hard points)
+                                </Label>
                             </div>
-                        )}
-                        {success && (
-                            <div className="mt-4 p-3 bg-emerald-900/20 border border-emerald-800 rounded-lg flex items-center gap-2">
-                                <Check className="w-4 h-4 text-emerald-400" />
-                                <span className="text-sm text-emerald-300">{success}</span>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* Footer */}
-                    <div className="px-6 py-4 border-t border-zinc-800 flex justify-between">
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 text-zinc-400 hover:text-white"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={meshType === 'plate' ? handleMeshPlate : handleTriangulate}
-                            disabled={isProcessing}
-                            className="px-6 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-lg flex items-center gap-2"
-                        >
-                            {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
-                            {meshType === 'plate' ? 'Generate Plate Mesh' : 'Triangulate'}
-                        </button>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="useBackend"
+                                    checked={useBackend}
+                                    onCheckedChange={(checked) => setUseBackend(checked === true)}
+                                />
+                                <Label htmlFor="useBackend" className="cursor-pointer text-sm font-normal">
+                                    Use Python backend mesher (recommended)
+                                </Label>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Triangulation Options */}
+                    {meshType === 'triangulate' && (
+                        <div className="p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg text-center">
+                            <Triangle className="w-10 h-10 text-violet-500 dark:text-violet-400 mx-auto mb-3" />
+                            <p className="text-zinc-700 dark:text-zinc-300">Select boundary nodes in order (CCW)</p>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                                Constrained Delaunay Triangulation
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Mesh Result */}
+                    {meshResult && (
+                        <div className="p-3 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Box className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Mesh Generated</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span className="text-zinc-500 dark:text-zinc-400">Nodes:</span>
+                                    <span className="text-zinc-900 dark:text-white ml-2">{meshResult.nodes}</span>
+                                </div>
+                                <div>
+                                    <span className="text-zinc-500 dark:text-zinc-400">Elements:</span>
+                                    <span className="text-zinc-900 dark:text-white ml-2">{meshResult.elements}</span>
+                                </div>
+                                <div>
+                                    <span className="text-zinc-500 dark:text-zinc-400">Type:</span>
+                                    <span className="text-zinc-900 dark:text-white ml-2">{meshResult.type}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Status Messages */}
+                    {error && (
+                        <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400" />
+                            <span className="text-sm text-red-700 dark:text-red-300">{error}</span>
+                        </div>
+                    )}
+                    {success && (
+                        <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg flex items-center gap-2">
+                            <Check className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                            <span className="text-sm text-emerald-700 dark:text-emerald-300">{success}</span>
+                        </div>
+                    )}
+                </div>
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={onClose}>
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={meshType === 'plate' ? handleMeshPlate : handleTriangulate}
+                        disabled={isProcessing}
+                        className="bg-violet-600 hover:bg-violet-700"
+                    >
+                        {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        {meshType === 'plate' ? 'Generate Plate Mesh' : 'Triangulate'}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
 

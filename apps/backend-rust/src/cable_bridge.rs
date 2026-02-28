@@ -164,12 +164,15 @@ impl CableElement {
     /// Ernst equivalent modulus considering sag
     pub fn ernst_modulus(&self, tension: f64) -> f64 {
         let e = self.material.e;
-        let w = self.unit_weight();
         let l = self.horizontal_length();
         let sigma = tension * 1000.0 / self.area; // MPa
         
-        // Ernst formula: E_eq = E / (1 + (γ² * L² * E) / (12 * σ³))
-        let lambda = (w * l).powi(2) * e / (12.0 * sigma.powi(3));
+        // Ernst formula: E_eq = E / (1 + γ²·L²·E / (12·σ³))
+        // where γ is specific weight (force/volume), not weight per length.
+        // γ[kN/m³] × L[m] gives kN/m² = 10⁻³ MPa
+        // So γ·L in MPa = gamma × l / 1000
+        let gamma_l = self.material.gamma * l / 1000.0; // MPa units
+        let lambda = gamma_l.powi(2) * e / (12.0 * sigma.powi(3));
         e / (1.0 + lambda)
     }
     

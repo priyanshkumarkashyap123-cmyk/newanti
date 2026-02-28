@@ -185,7 +185,8 @@ impl Ply {
     }
 
     /// Transformation matrix for angle theta
-    /// [T] transforms strains from laminate to material coordinates
+    /// [T_ε] transforms engineering strains from laminate to material coordinates
+    /// Note: For engineering shear strains γ, T_ε ≠ T_σ (Reuter matrix correction)
     pub fn get_strain_transformation(&self) -> [[f64; 3]; 3] {
         let theta = self.angle * PI / 180.0;
         let c = theta.cos();
@@ -194,10 +195,11 @@ impl Ply {
         let s2 = s * s;
         let cs = c * s;
 
+        // T_ε = R · T_σ · R⁻¹ for engineering shear strains
         [
-            [c2, s2, 2.0 * cs],
-            [s2, c2, -2.0 * cs],
-            [-cs, cs, c2 - s2],
+            [c2, s2, cs],
+            [s2, c2, -cs],
+            [-2.0 * cs, 2.0 * cs, c2 - s2],
         ]
     }
 

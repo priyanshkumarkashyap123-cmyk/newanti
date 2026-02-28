@@ -119,11 +119,11 @@ impl LeadRubberBearing {
         PI / 4.0 * self.lead_diameter.powi(2)
     }
     
-    /// Shape factor (individual layer)
+    /// Shape factor (individual layer) — annular bearing with lead core
     pub fn shape_factor(&self) -> f64 {
-        let loaded_area = PI / 4.0 * self.outer_diameter.powi(2);
-        let perimeter = PI * self.outer_diameter;
-        loaded_area / (perimeter * self.rubber_layer_thickness)
+        // For annular bearing: S = (D_o - D_i) / (4 * t_r)
+        // Must account for lead core hole in bonded rubber area
+        (self.outer_diameter - self.lead_diameter) / (4.0 * self.rubber_layer_thickness)
     }
     
     /// Rubber stiffness (kN/mm)
@@ -143,8 +143,8 @@ impl LeadRubberBearing {
     
     /// Elastic stiffness (kN/mm)
     pub fn elastic_stiffness(&self) -> f64 {
-        // Lead shear modulus ~130 GPa before yielding
-        let lead_g = 130000.0; // MPa
+        // Lead shear modulus ~5.6 GPa (not 130 GPa which is steel-like)
+        let lead_g = 5600.0; // MPa — pure lead shear modulus
         let lead_stiffness = lead_g * self.lead_area() / self.total_rubber_thickness / 1000.0;
         self.rubber_stiffness() + lead_stiffness
     }
@@ -519,9 +519,11 @@ impl ViscousDamper {
         let omega = 2.0 * PI * frequency;
         let _v_max = omega * amplitude;
         
-        // Lambda factor for nonlinear damper
-        let lambda = gamma_function(1.0 + self.velocity_exponent / 2.0).powi(2) 
-            / gamma_function(2.0 + self.velocity_exponent) * 4.0;
+        // Lambda factor for nonlinear damper (Constantinou & Symans 1992)
+        // λ = 2^(2+α) × Γ²(1+α/2) / Γ(2+α)
+        let lambda = 2.0_f64.powf(2.0 + self.velocity_exponent)
+            * gamma_function(1.0 + self.velocity_exponent / 2.0).powi(2) 
+            / gamma_function(2.0 + self.velocity_exponent);
         
         lambda * self.damping_coefficient * omega.powf(self.velocity_exponent) 
             * amplitude.powf(1.0 + self.velocity_exponent)

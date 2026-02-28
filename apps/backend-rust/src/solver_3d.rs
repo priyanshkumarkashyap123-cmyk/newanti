@@ -3134,6 +3134,87 @@ pub fn p_delta_analysis(
         }
     }
 
+    // Distributed loads (including self-weight): total resultant + moment about origin
+    for dl in &all_distributed_loads {
+        if let Some(element) = elements.iter().find(|e| e.id == dl.element_id) {
+            if let (Some(&i_idx), Some(&j_idx)) = (node_map.get(&element.node_i), node_map.get(&element.node_j)) {
+                let ni = &nodes[i_idx];
+                let nj = &nodes[j_idx];
+                let dx = nj.x - ni.x;
+                let dy = nj.y - ni.y;
+                let dz = nj.z - ni.z;
+                let length = (dx*dx + dy*dy + dz*dz).sqrt();
+                if length < 1e-10 { continue; }
+                let sp = dl.start_pos.max(0.0).min(1.0);
+                let ep = dl.end_pos.max(0.0).min(1.0);
+                let load_length = (ep - sp) * length;
+                let total_w = (dl.w_start + dl.w_end) * load_length / 2.0;
+                let w_sum = dl.w_start.abs() + dl.w_end.abs();
+                let load_center_ratio = if w_sum > 1e-12 {
+                    sp + (ep - sp) * (dl.w_start.abs() + 2.0 * dl.w_end.abs()) / (3.0 * w_sum)
+                } else { (sp + ep) / 2.0 };
+                let cx_load = ni.x + load_center_ratio * dx;
+                let cy_load = ni.y + load_center_ratio * dy;
+                let cz_load = ni.z + load_center_ratio * dz;
+                let (gfx, gfy, gfz) = match dl.direction {
+                    LoadDirection::GlobalX => (total_w, 0.0, 0.0),
+                    LoadDirection::GlobalY => (0.0, total_w, 0.0),
+                    LoadDirection::GlobalZ => (0.0, 0.0, total_w),
+                    LoadDirection::LocalX => {
+                        let cx = dx / length; let cy = dy / length; let cz = dz / length;
+                        (total_w * cx, total_w * cy, total_w * cz)
+                    },
+                    LoadDirection::LocalY => {
+                        let t = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+                        (total_w * t[(1, 0)], total_w * t[(1, 1)], total_w * t[(1, 2)])
+                    },
+                    LoadDirection::LocalZ => {
+                        let t = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+                        (total_w * t[(2, 0)], total_w * t[(2, 1)], total_w * t[(2, 2)])
+                    },
+                };
+                sum_applied[0] += gfx;
+                sum_applied[1] += gfy;
+                sum_applied[2] += gfz;
+                sum_applied[3] += cy_load * gfz - cz_load * gfy;
+                sum_applied[4] += cz_load * gfx - cx_load * gfz;
+                sum_applied[5] += cx_load * gfy - cy_load * gfx;
+            }
+        }
+    }
+
+    // Point loads on members: force resultant + moment about origin
+    for pl in &point_loads_on_members {
+        if let Some(element) = elements.iter().find(|e| e.id == pl.element_id) {
+            if let (Some(&ii), Some(&ji)) = (node_map.get(&element.node_i), node_map.get(&element.node_j)) {
+                let ni = &nodes[ii];
+                let nj = &nodes[ji];
+                let dx = nj.x - ni.x;
+                let dy = nj.y - ni.y;
+                let dz = nj.z - ni.z;
+                let length = (dx*dx + dy*dy + dz*dz).sqrt();
+                if length < 1e-10 { continue; }
+                let pos = pl.position.max(0.0).min(1.0);
+                let px = ni.x + pos * dx;
+                let py = ni.y + pos * dy;
+                let pz = ni.z + pos * dz;
+                let t_matrix = transformation_matrix_3d(dx, dy, dz, length, element.beta);
+                let (lx, ly, lz) = decompose_load_direction(&pl.direction, &t_matrix);
+                let gfx = pl.magnitude * (lx * t_matrix[(0,0)] + ly * t_matrix[(1,0)] + lz * t_matrix[(2,0)]);
+                let gfy = pl.magnitude * (lx * t_matrix[(0,1)] + ly * t_matrix[(1,1)] + lz * t_matrix[(2,1)]);
+                let gfz = pl.magnitude * (lx * t_matrix[(0,2)] + ly * t_matrix[(1,2)] + lz * t_matrix[(2,2)]);
+                if !pl.is_moment {
+                    sum_applied[0] += gfx;
+                    sum_applied[1] += gfy;
+                    sum_applied[2] += gfz;
+                    sum_applied[3] += py * gfz - pz * gfy;
+                    sum_applied[4] += pz * gfx - px * gfz;
+                    sum_applied[5] += px * gfy - py * gfx;
+                }
+            }
+        }
+    }
+
     // Sum reaction forces (including moment about origin)
     for (idx, node) in nodes.iter().enumerate() {
         if node.restraints.iter().any(|&r| r) {

@@ -274,7 +274,8 @@ impl SdofBlast {
     
     /// Maximum elastic response (mm) - impulsive
     pub fn impulsive_response(&self, impulse: f64, area: f64) -> f64 {
-        let i = impulse * area / 1000.0; // kN·s
+        // kPa⋅ms × m² = (10³Pa)(10⁻³s)(m²) = Pa⋅s⋅m² = N⋅s
+        let i = impulse * area; // N⋅s
         let omega = 2.0 * PI / self.natural_period() * 1000.0;
         
         i / (self.mass * omega) * 1000.0
@@ -375,9 +376,9 @@ impl BlastMember {
     /// Effective stiffness (kN/m)
     pub fn effective_stiffness(&self, ei: f64) -> f64 {
         match self.support {
-            SupportType::SimpleSpan => 384.0 * ei / (5.0 * self.span.powi(4)),
-            SupportType::FixedFixed => 384.0 * ei / self.span.powi(4),
-            SupportType::Cantilever => 3.0 * ei / self.span.powi(4),
+            SupportType::SimpleSpan => 384.0 * ei / (5.0 * self.span.powi(3)),
+            SupportType::FixedFixed => 384.0 * ei / self.span.powi(3),
+            SupportType::Cantilever => 3.0 * ei / self.span.powi(3),
         }
     }
     

@@ -313,7 +313,9 @@ impl RobustLanczosSolver {
             };
             
             // Orthogonalize against previous vectors
-            let alpha_j = dot(&w, &m_apply(v_j));
+            // Rayleigh quotient for Kx = λMx: α = v^T K v / (v^T M v) = v^T K v
+            // (since v is M-orthonormal, v^T M v = 1)
+            let alpha_j = dot(v_j, &w);
             self.alpha.push(alpha_j);
             
             // w = w - α_j v_j - β_{j-1} v_{j-1}

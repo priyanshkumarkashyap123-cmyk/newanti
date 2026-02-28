@@ -286,7 +286,8 @@ impl AluminumSection {
     pub fn j(&self) -> f64 {
         match self {
             AluminumSection::RectTube { b, h, t } => {
-                2.0 * t.powi(2) * (b - t).powi(2) * (h - t).powi(2) / 
+                // Bredt-Batho: J = 4A²t/s = 2t(b-t)²(h-t)² / (b+h-2t)
+                2.0 * t * (b - t).powi(2) * (h - t).powi(2) / 
                     (b + h - 2.0 * t)
             }
             AluminumSection::RoundTube { d, t } => {

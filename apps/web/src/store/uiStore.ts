@@ -236,6 +236,10 @@ interface UIState {
     asce7SeismicDialog: boolean;
     asce7WindDialog: boolean;
     loadCombinationsDialog: boolean;
+    // Indian Code Load Generation
+    is1893SeismicDialog: boolean;
+    // Section Browser
+    sectionBrowserDialog: boolean;
     // Advanced Analysis & Design dialogs
     advancedAnalysis: boolean;
     designCodes: boolean;
@@ -359,6 +363,10 @@ export const useUIStore = create<UIState>()(
         asce7SeismicDialog: false,
         asce7WindDialog: false,
         loadCombinationsDialog: false,
+        // Indian Code Load Generation
+        is1893SeismicDialog: false,
+        // Section Browser
+        sectionBrowserDialog: false,
         // Advanced Analysis & Design dialogs
         advancedAnalysis: false,
         designCodes: false,
@@ -599,6 +607,8 @@ export const useUIStore = create<UIState>()(
             asce7SeismicDialog: false,
             asce7WindDialog: false,
             loadCombinationsDialog: false,
+            is1893SeismicDialog: false,
+            sectionBrowserDialog: false,
             advancedAnalysis: false,
             designCodes: false,
             connectionDesign: false,

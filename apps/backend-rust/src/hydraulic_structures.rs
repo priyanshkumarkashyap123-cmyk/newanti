@@ -189,7 +189,7 @@ impl GravityDam {
     /// Restoring moment about toe (kN·m/m)
     pub fn restoring_moment(&self) -> f64 {
         let w = self.self_weight();
-        let arm = self.centroid_from_heel();
+        let arm = self.base_width - self.centroid_from_heel();
         
         w * arm
     }

@@ -604,7 +604,8 @@ impl TaperedBeamElement {
             k[6][6] += ea * dn2 * dn2 * weight;
             
             // Bending about Z (in XY plane) - DOFs: v_i, θz_i, v_j, θz_j → indices 1, 5, 7, 11
-            let b_z = [ddh1, ddh2 * l, ddh3, ddh4 * l];
+            // B entries are d²N/dx²: ddh1,ddh3 for displacement DOFs; ddh2,ddh4 already include L factor from shape function
+            let b_z = [ddh1, ddh2, ddh3, ddh4];
             let dof_z = [1, 5, 7, 11];
             for i in 0..4 {
                 for j in 0..4 {
@@ -613,7 +614,7 @@ impl TaperedBeamElement {
             }
             
             // Bending about Y (in XZ plane) - DOFs: w_i, θy_i, w_j, θy_j → indices 2, 4, 8, 10
-            let b_y = [ddh1, -ddh2 * l, ddh3, -ddh4 * l];  // Note: sign change for θy
+            let b_y = [ddh1, -ddh2, ddh3, -ddh4];  // Note: sign change for θy
             let dof_y = [2, 4, 8, 10];
             for i in 0..4 {
                 for j in 0..4 {
