@@ -19,7 +19,13 @@ import { env } from "./config/env.js";
 
 // ESM-compatible require for razorpay CommonJS module
 const require = createRequire(import.meta.url);
-const Razorpay = require("razorpay");
+let Razorpay: any;
+try {
+  Razorpay = require("razorpay");
+} catch {
+  console.warn("⚠️ razorpay package not available - payment features disabled");
+  Razorpay = null;
+}
 
 // ============================================
 // RAZORPAY INITIALIZATION
@@ -29,17 +35,17 @@ const RAZORPAY_KEY_ID = env.RAZORPAY_KEY_ID ?? "";
 const RAZORPAY_KEY_SECRET = env.RAZORPAY_KEY_SECRET ?? "";
 const RAZORPAY_WEBHOOK_SECRET = env.RAZORPAY_WEBHOOK_SECRET ?? "";
 
-// Initialize Razorpay only if credentials are available
-let razorpay: InstanceType<typeof Razorpay> | null = null;
+// Initialize Razorpay only if package & credentials are available
+let razorpay: any | null = null;
 
-if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
+if (Razorpay && RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
   razorpay = new Razorpay({
     key_id: RAZORPAY_KEY_ID,
     key_secret: RAZORPAY_KEY_SECRET,
   });
   console.log("✅ Razorpay initialized (Orders mode)");
 } else {
-  console.warn("⚠️ Missing Razorpay credentials - payment features disabled");
+  console.warn("⚠️ Missing Razorpay package/credentials - payment features disabled");
 }
 
 // ============================================

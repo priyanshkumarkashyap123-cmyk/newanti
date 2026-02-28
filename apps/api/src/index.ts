@@ -51,13 +51,19 @@ import {
 import { checkLockout } from "./middleware/accountLockout.js";
 import { attachResponseHelpers } from "./middleware/response.js";
 import * as Sentry from "@sentry/node";
-import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
-// Initialize Sentry
+// Initialize Sentry (profiling is optional — may not be available in bundled builds)
 if (process.env.SENTRY_DSN) {
+  let integrations: any[] = [];
+  try {
+    const { nodeProfilingIntegration } = await import("@sentry/profiling-node");
+    integrations = [nodeProfilingIntegration()];
+  } catch {
+    console.log("ℹ️  Sentry profiling not available (optional dependency)");
+  }
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    integrations: [nodeProfilingIntegration()],
+    integrations,
     // Performance Monitoring (20% sample to control costs)
     tracesSampleRate: 0.2,
     // Set sampling rate for profiling - this is relative to tracesSampleRate
