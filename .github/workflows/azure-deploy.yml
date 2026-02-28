@@ -83,10 +83,12 @@ jobs:
         working-directory: apps/backend-python
         run: |
           python -m pip install --upgrade pip
+          python -m venv antenv
+          source antenv/bin/activate
           pip install -r requirements.txt
       - name: Create zip package
         working-directory: apps/backend-python
-        run: zip -r ../../python-app.zip .
+        run: zip -r ../../python-app.zip . -x '.venv/*' '__pycache__/*' '*.pyc'
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
