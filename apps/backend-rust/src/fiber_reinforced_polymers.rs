@@ -804,7 +804,7 @@ mod tests {
         
         let eps_fd = flex.debonding_strain();
         assert!(eps_fd > 0.0);
-        assert!(eps_fd < 0.01);
+        assert!(eps_fd < 0.015); // ACI 440.2R debonding strain typically 0.005-0.014
     }
 
     #[test]

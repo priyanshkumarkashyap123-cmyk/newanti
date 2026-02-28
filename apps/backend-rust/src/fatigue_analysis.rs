@@ -777,7 +777,9 @@ mod tests {
     
     #[test]
     fn test_allowable_cycles() {
-        let assessor = FatigueAssessor::new(DetailCategory::Cat71);
+        // Use unit safety factors to test raw S-N curve
+        let assessor = FatigueAssessor::new(DetailCategory::Cat71)
+            .with_safety_factors(1.0, 1.0);
         
         // At reference (71 MPa, 2 million cycles)
         let n_ref = assessor.allowable_cycles(71.0);

@@ -44,6 +44,7 @@ import {
 } from "./AnalysisResultsDashboard";
 import { MemberDetailPanel, type MemberForceData } from "./MemberDetailPanel";
 import { PostProcessingDesignStudio } from "./PostProcessingDesignStudio";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 
 
 // ============================================
@@ -1001,18 +1002,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     }
   };
 
-  // Global Escape key handler for modals
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (showMemberDetail) { setShowMemberDetail(false); return; }
-        if (showDesignStudio) { setShowDesignStudio(false); return; }
-        if (showDashboard) { setShowDashboard(false); return; }
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showMemberDetail, showDesignStudio, showDashboard]);
+  // Dialog handles Escape key natively for all modals
 
   if (!analysisResults) return null;
 
@@ -1160,20 +1150,21 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           )}
         </div>
         {/* Full Results Dashboard Modal - accessible even when collapsed */}
-        {showDashboard && analysisResults && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowDashboard(false); }}>
-            <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-              <AnalysisResultsDashboard
-                results={convertToAnalysisResultsData(
-                  analysisResults,
-                  nodes,
-                  members,
-                )}
-                onClose={() => setShowDashboard(false)}
-              />
-            </div>
-          </div>
-        )}
+        <Dialog open={showDashboard && !!analysisResults} onOpenChange={(open) => !open && setShowDashboard(false)}>
+          <DialogContent className="max-w-[1800px] w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Analysis Results Dashboard</DialogTitle>
+            </DialogHeader>
+            <AnalysisResultsDashboard
+              results={convertToAnalysisResultsData(
+                analysisResults!,
+                nodes,
+                members,
+              )}
+              onClose={() => setShowDashboard(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </>
     );
   }
@@ -1571,9 +1562,12 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
       </div>
 
       {/* Full Results Dashboard Modal */}
-      {showDashboard && analysisResults && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowDashboard(false); }}>
-          <div className="w-[95vw] h-[90vh] max-w-[1800px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <Dialog open={showDashboard && !!analysisResults} onOpenChange={(open) => !open && setShowDashboard(false)}>
+        <DialogContent className="max-w-[1800px] w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Analysis Results Dashboard</DialogTitle>
+          </DialogHeader>
+          {analysisResults && (
             <AnalysisResultsDashboard
               results={convertToAnalysisResultsData(
                 analysisResults,
@@ -1609,9 +1603,9 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 setShowDashboard(false);
               }}
             />
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Post-Processing Design Studio Modal */}
       {showDesignStudio && (
@@ -1619,36 +1613,37 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
       )}
 
       {/* Member Detail Panel Modal */}
-      {showMemberDetail &&
-        selectedMemberId &&
-        selectedMemberForces &&
-        (() => {
-          const memberModel = members.get(selectedMemberId);
-          const actualLength = memberModel
-            ? getMemberLength(memberModel, nodes)
-            : 5;
+      <Dialog open={showMemberDetail && !!selectedMemberId && !!selectedMemberForces} onOpenChange={(open) => !open && setShowMemberDetail(false)}>
+        <DialogContent className="max-w-[900px] w-[90vw] h-[85vh] p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Member Force Details</DialogTitle>
+          </DialogHeader>
+          {showMemberDetail && selectedMemberId && selectedMemberForces &&
+            (() => {
+              const memberModel = members.get(selectedMemberId);
+              const actualLength = memberModel
+                ? getMemberLength(memberModel, nodes)
+                : 5;
 
-          // Classify support type at each end of the selected member
-          const classifySupport = (nodeId: string | undefined): 'free' | 'pin' | 'roller' | 'fixed' => {
-            if (!nodeId) return 'free';
-            const nd = nodes.get(nodeId);
-            if (!nd || !nd.restraints) return 'free';
-            const rest = nd.restraints;
-            const hasTrans = rest.fx || rest.fy || rest.fz;
-            if (!hasTrans) return 'free';
-            const hasMoment = rest.mx || rest.my || rest.mz;
-            if (hasMoment) return 'fixed';
-            // Pin vs roller: roller has only one translational restraint (fy only)
-            const transCount = [rest.fx, rest.fy, rest.fz].filter(Boolean).length;
-            return transCount <= 1 ? 'roller' : 'pin';
-          };
+              // Classify support type at each end of the selected member
+              const classifySupport = (nodeId: string | undefined): 'free' | 'pin' | 'roller' | 'fixed' => {
+                if (!nodeId) return 'free';
+                const nd = nodes.get(nodeId);
+                if (!nd || !nd.restraints) return 'free';
+                const rest = nd.restraints;
+                const hasTrans = rest.fx || rest.fy || rest.fz;
+                if (!hasTrans) return 'free';
+                const hasMoment = rest.mx || rest.my || rest.mz;
+                if (hasMoment) return 'fixed';
+                // Pin vs roller: roller has only one translational restraint (fy only)
+                const transCount = [rest.fx, rest.fy, rest.fz].filter(Boolean).length;
+                return transCount <= 1 ? 'roller' : 'pin';
+              };
 
-          const startSup = classifySupport(memberModel?.startNodeId);
-          const endSup = classifySupport(memberModel?.endNodeId);
+              const startSup = classifySupport(memberModel?.startNodeId);
+              const endSup = classifySupport(memberModel?.endNodeId);
 
-          return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setShowMemberDetail(false); }}>
-              <div className="w-[90vw] h-[85vh] max-w-[900px] bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+              return (
                 <MemberDetailPanel
                   memberId={selectedMemberId}
                   memberForces={selectedMemberForces}
@@ -1679,10 +1674,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                   onClose={() => setShowMemberDetail(false)}
                   onNavigate={handleMemberNavigate}
                 />
-              </div>
-            </div>
-          );
-        })()}
+              );
+            })()}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

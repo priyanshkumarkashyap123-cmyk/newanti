@@ -17,6 +17,7 @@
 
 import React, { ReactNode, forwardRef, HTMLAttributes } from 'react';
 import { useViewport, useBreakpointUp, Breakpoint, BREAKPOINTS } from '@/hooks/useResponsive';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 
 // ============================================================================
 // CONTAINER
@@ -201,7 +202,7 @@ export const Stack = forwardRef<HTMLDivElement, StackProps>(
     const alignClass = align ? `items-${align}` : '';
     const wrapClass = wrap ? 'flex-wrap' : '';
     const widthClass = fullWidth ? 'w-full' : '';
-    const dividerClass = dividers ? 'divide-y divide-slate-700' : '';
+    const dividerClass = dividers ? 'divide-y divide-zinc-300 dark:divide-zinc-700' : '';
 
     return (
       <div
@@ -330,7 +331,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       {sidebarPosition === 'left' && (
         <aside
           className={`
-            bg-slate-900 border-r border-slate-800
+            bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800
             transition-all duration-300
             ${shouldCollapse ? 'w-0 overflow-hidden' : ''}
           `}
@@ -349,7 +350,7 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
       {sidebarPosition === 'right' && (
         <aside
           className={`
-            bg-slate-900 border-l border-slate-800
+            bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800
             transition-all duration-300
             ${shouldCollapse ? 'w-0 overflow-hidden' : ''}
           `}
@@ -359,25 +360,15 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({
         </aside>
       )}
 
-      {/* Mobile overlay */}
-      {isMobile && !isCollapsed && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => onCollapsedChange?.(true)}
-            aria-hidden="true"
-          />
-          <aside
-            className={`
-              fixed inset-y-0 z-50 bg-slate-900
-              ${sidebarPosition === 'left' ? 'left-0' : 'right-0'}
-            `}
-            style={sidebarStyle}
-          >
-            {sidebar}
-          </aside>
-        </>
-      )}
+      {/* Mobile sidebar dialog */}
+      <Dialog open={isMobile && !isCollapsed} onOpenChange={(open) => !open && onCollapsedChange?.(true)}>
+        <DialogContent className="max-w-xs h-[80vh] p-0 overflow-auto">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Navigation Menu</DialogTitle>
+          </DialogHeader>
+          {sidebar}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -414,11 +405,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const { isMobile } = useViewport();
 
   return (
-    <div className={`min-h-screen bg-slate-950 ${className}`}>
+    <div className={`min-h-screen bg-white dark:bg-zinc-950 ${className}`}>
       {/* Header */}
       {header && (
         <header
-          className="fixed top-0 left-0 right-0 z-30 bg-slate-900 border-b border-slate-800"
+          className="fixed top-0 left-0 right-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800"
           style={{ height: headerHeight }}
         >
           {header}
@@ -432,7 +423,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Sidebar */}
         {sidebar && !isMobile && (
           <aside
-            className="fixed left-0 bottom-0 bg-slate-900 border-r border-slate-800 overflow-y-auto"
+            className="fixed left-0 bottom-0 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto"
             style={{
               top: header ? headerHeight : 0,
               width: sidebarWidth,
@@ -457,7 +448,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Footer */}
       {footer && (
         <footer
-          className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900 border-t border-slate-800"
+          className="fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800"
           style={{ marginLeft: sidebar && !isMobile ? sidebarWidth : 0 }}
         >
           {footer}
@@ -585,7 +576,7 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
       {resizable && (
         <div
           className={`
-            flex-shrink-0 bg-slate-800 hover:bg-blue-500 transition-colors
+            flex-shrink-0 bg-zinc-100 dark:bg-zinc-800 hover:bg-blue-500 transition-colors
             ${isHorizontal ? 'w-1 cursor-col-resize' : 'h-1 cursor-row-resize'}
             ${isDragging ? 'bg-blue-500' : ''}
           `}

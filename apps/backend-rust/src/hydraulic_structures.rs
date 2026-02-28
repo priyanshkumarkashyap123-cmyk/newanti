@@ -677,7 +677,10 @@ mod tests {
         let dam = GravityDam::new(50.0);
         let (heel, toe) = dam.base_stresses();
         
-        assert!(toe > heel);
+        // With base_width = 0.85H the restoring moment dominates,
+        // pushing the resultant toward the heel (upstream) side
+        assert!(heel > 0.0 && toe > 0.0); // Both compressive (middle third)
+        assert!(heel > toe); // Wide dam: heel stress governs
     }
 
     #[test]

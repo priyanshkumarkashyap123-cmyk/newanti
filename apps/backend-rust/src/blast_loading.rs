@@ -1056,10 +1056,11 @@ mod tests {
 
     #[test]
     fn test_gurney_velocity() {
-        let v = FragmentAnalysis::gurney_velocity(1.0, 0.5, 2700.0);
+        // case_mass must exceed explosive_mass/2 for V < √(2E)
+        let v = FragmentAnalysis::gurney_velocity(1.0, 2.0, 2700.0);
         
         assert!(v > 0.0);
-        assert!(v < 2700.0);
+        assert!(v < 2700.0); // Fragment velocity < Gurney constant √(2E)
     }
 
     #[test]

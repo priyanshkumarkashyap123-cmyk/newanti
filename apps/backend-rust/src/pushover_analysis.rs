@@ -1038,7 +1038,7 @@ mod tests {
         // Ductile
         let beta_4 = csm.effective_damping(4.0);
         assert!(beta_4 > 0.05);
-        assert!(beta_4 < 0.30); // Reasonable upper bound
+        assert!(beta_4 < 0.40); // ATC-40 EPP: β_eff = 5% + κ×2(μ-1)/(πμ) ≈ 37%
         
         println!("Damping at μ=1: {:.1}%", beta_1 * 100.0);
         println!("Damping at μ=4: {:.1}%", beta_4 * 100.0);
