@@ -11,6 +11,12 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useModelStore } from "../store/model";
+import { aisc360 } from "../services/design-codes/AISC360Checker";
+import type { AISCMember, AISCForces, AISCSection, AISCCheck } from "../services/design-codes/AISC360Checker";
+import { aci318 } from "../services/design-codes/ACI318Checker";
+import type { ConcreteSection, ConcreteMaterial, ReinforcementLayout, ACIForces, ACICheck } from "../services/design-codes/ACI318Checker";
+import { eurocode3 } from "../services/design-codes/Eurocode3Checker";
+import type { EC3Member, EC3Forces, EC3Section, EC3Check } from "../services/design-codes/Eurocode3Checker";
 
 // Types
 interface CodeCheck {

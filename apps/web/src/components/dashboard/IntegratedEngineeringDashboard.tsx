@@ -13,6 +13,7 @@
  * @version 3.0.0
  */
 
+'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

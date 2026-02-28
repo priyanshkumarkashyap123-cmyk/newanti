@@ -519,7 +519,16 @@ impl AmgPreconditioner {
         let r: Vec<f64> = b.iter().zip(ax.iter()).map(|(&bi, &ai)| bi - ai).collect();
         
         // Restrict residual to coarse grid
-        let restriction = self.levels[level].restriction.as_ref().unwrap();
+        let restriction = match self.levels[level].restriction.as_ref() {
+            Some(r) => r,
+            None => {
+                // No restriction matrix — fall back to direct smoothing
+                for _ in 0..100 {
+                    self.smooth(level, b, x);
+                }
+                return;
+            }
+        };
         let nc = restriction.nrows;
         let mut rc = vec![0.0; nc];
         restriction.spmv(&r, &mut rc);
@@ -529,7 +538,16 @@ impl AmgPreconditioner {
         self.v_cycle(level + 1, &rc, &mut ec);
         
         // Prolongate correction to fine grid
-        let prolongation = self.levels[level].prolongation.as_ref().unwrap();
+        let prolongation = match self.levels[level].prolongation.as_ref() {
+            Some(p) => p,
+            None => {
+                // No prolongation matrix — skip correction, just post-smooth
+                for _ in 0..self.num_smooth {
+                    self.smooth(level, b, x);
+                }
+                return;
+            }
+        };
         let mut e = vec![0.0; n];
         prolongation.spmv(&ec, &mut e);
         

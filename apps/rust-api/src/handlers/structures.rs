@@ -146,14 +146,23 @@ pub async fn update_structure(
 
     let now = chrono::Utc::now();
 
+    let nodes_bson = mongodb::bson::to_bson(&req.nodes)
+        .map_err(|e| ApiError::BadRequest(format!("Failed to serialize nodes: {}", e)))?;
+    let members_bson = mongodb::bson::to_bson(&req.members)
+        .map_err(|e| ApiError::BadRequest(format!("Failed to serialize members: {}", e)))?;
+    let loads_bson = mongodb::bson::to_bson(&req.loads)
+        .map_err(|e| ApiError::BadRequest(format!("Failed to serialize loads: {}", e)))?;
+    let supports_bson = mongodb::bson::to_bson(&req.supports)
+        .map_err(|e| ApiError::BadRequest(format!("Failed to serialize supports: {}", e)))?;
+
     let update = doc! {
         "$set": {
             "name": &req.name,
             "description": &req.description,
-            "nodes": mongodb::bson::to_bson(&req.nodes).unwrap_or_default(),
-            "members": mongodb::bson::to_bson(&req.members).unwrap_or_default(),
-            "loads": mongodb::bson::to_bson(&req.loads).unwrap_or_default(),
-            "supports": mongodb::bson::to_bson(&req.supports).unwrap_or_default(),
+            "nodes": nodes_bson,
+            "members": members_bson,
+            "loads": loads_bson,
+            "supports": supports_bson,
             "updated_at": mongodb::bson::DateTime::from_chrono(now),
         }
     };
