@@ -20,6 +20,25 @@
       }
     },
     {
+      "route": "/sw.js",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Service-Worker-Allowed": "/"
+      }
+    },
+    {
+      "route": "/workbox-*.js",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "route": "/registerSW.js",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
       "route": "/index.html",
       "headers": {
         "Cache-Control": "no-cache, no-store, must-revalidate"
@@ -221,6 +240,38 @@
     },
     {
       "route": "/rust-wasm-demo",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/terms-and-conditions",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/refund-cancellation",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/digital-twin",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/verify-email",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/design-hub",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/cloud-storage",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/auth/*",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/worker-test",
       "rewrite": "/index.html"
     }
   ],
