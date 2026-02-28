@@ -3,7 +3,7 @@
  * Modern project hub with BeamLab Branding & New UI System
  */
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { UserButton } from '@clerk/clerk-react';
@@ -11,7 +11,7 @@ import { useAuth, isUsingClerk } from '../providers/AuthProvider';
 import { useUserRegistration } from '../hooks/useUserRegistration';
 import {
     Folder, Plus, Upload, Grid, Search,
-    Layout, Settings, Users, LogOut, FileText
+    Layout, Settings, Users, LogOut, FileText, Loader2, RefreshCw
 } from 'lucide-react';
 
 // New UI System
@@ -21,6 +21,9 @@ import {
 } from '../components/ui';
 
 import { PageTransition, StaggerContainer, StaggerItem } from '../components/ui/PageTransition';
+import { ProjectService, Project as CloudProject } from '../services/ProjectService';
+import { useModelStore } from '../store/model';
+import type { Node, Member } from '../store/model';
 
 // ============================================
 // TYPES
@@ -40,6 +43,45 @@ interface Project {
     status: 'Analyzed' | 'Draft' | 'Final';
 }
 
+/**
+ * Helper: human-readable relative time from an ISO date string
+ */
+function timeAgo(dateStr: string): string {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diffMs = now - then;
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins} min ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    const weeks = Math.floor(days / 7);
+    if (weeks < 5) return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+    return new Date(dateStr).toLocaleDateString();
+}
+
+/**
+ * Convert a cloud project to the dashboard display format
+ */
+function cloudToDisplayProject(cp: CloudProject): Project {
+    const data = cp.data as any;
+    const nodeCount = data?.nodes?.length ?? 0;
+    const memberCount = data?.members?.length ?? 0;
+    const hasResults = !!data?.analysisResults;
+    return {
+        id: cp._id,
+        name: cp.name,
+        type: 'Frame', // default display type
+        lastModified: timeAgo(cp.updatedAt),
+        nodeCount,
+        memberCount,
+        status: hasResults ? 'Analyzed' : 'Draft',
+    };
+}
+
 // ============================================
 // DASHBOARD COMPONENT
 // ============================================
@@ -53,10 +95,84 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     useUserRegistration();
 
     // Contexts
-    const { isSignedIn, user, signOut } = useAuth();
+    const { isSignedIn, user, signOut, getToken } = useAuth();
     const isClerkEnabled = isUsingClerk();
     const userName = isSignedIn && user?.firstName ? user.firstName : 'Engineer';
     const userEmail = isSignedIn && (user as any)?.emailAddresses?.[0]?.emailAddress || 'engineer@beamlab.io';
+
+    // ============================================
+    // REAL PROJECT DATA FROM MONGODB
+    // ============================================
+    const [cloudProjects, setCloudProjects] = useState<CloudProject[]>([]);
+    const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+    const [projectsError, setProjectsError] = useState<string | null>(null);
+    const [isLoadingOne, setIsLoadingOne] = useState<string | null>(null); // Track which project is being opened
+
+    /** Fetch user's projects from the API (MongoDB) */
+    const fetchProjects = useCallback(async () => {
+        if (!isSignedIn) {
+            setCloudProjects([]);
+            return;
+        }
+        setIsLoadingProjects(true);
+        setProjectsError(null);
+        try {
+            const token = await getToken();
+            if (!token) throw new Error('Not authenticated');
+            const projects = await ProjectService.listProjects(token);
+            setCloudProjects(projects);
+        } catch (err) {
+            console.error('[Dashboard] Failed to load projects:', err);
+            setProjectsError('Failed to load projects. Check your connection.');
+        } finally {
+            setIsLoadingProjects(false);
+        }
+    }, [isSignedIn, getToken]);
+
+    // Fetch real projects on mount & when auth changes
+    useEffect(() => {
+        fetchProjects();
+    }, [fetchProjects]);
+
+    /** Open a project: fetch full data from MongoDB, load into store, navigate to editor */
+    const handleOpenProject = useCallback(async (projectId: string) => {
+        if (!isSignedIn) {
+            navigate('/app');
+            return;
+        }
+        setIsLoadingOne(projectId);
+        try {
+            const token = await getToken();
+            if (!token) throw new Error('Not authenticated');
+
+            const fullProject = await ProjectService.getProject(projectId, token);
+            const data = fullProject.data as any;
+
+            if (data) {
+                // Reconstruct Maps from serialised arrays
+                const nodesMap = new Map<string, Node>(data.nodes as [string, Node][]);
+                const membersMap = new Map<string, Member>(data.members as [string, Member][]);
+
+                useModelStore.setState({
+                    projectInfo: { ...(data.projectInfo || {}), cloudId: fullProject._id },
+                    nodes: nodesMap,
+                    members: membersMap,
+                    loads: data.loads || [],
+                    memberLoads: data.memberLoads || [],
+                    analysisResults: null,
+                    selectedIds: new Set(),
+                    isAnalyzing: false,
+                });
+            }
+
+            navigate('/app');
+        } catch (err) {
+            console.error('[Dashboard] Failed to open project:', err);
+            setProjectsError('Failed to open project. Please try again.');
+        } finally {
+            setIsLoadingOne(null);
+        }
+    }, [isSignedIn, getToken, navigate]);
 
     const handleLaunchModule = (moduleId: string) => {
         if (onLaunchModule) onLaunchModule(moduleId);
@@ -64,7 +180,6 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     };
 
     const handleNewProject = () => navigate('/app');
-    const handleOpenProject = (_projectId: string) => navigate('/app');
 
     // Greeting
     const getGreeting = () => {
@@ -74,7 +189,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         return 'Good Evening';
     };
 
-    const filteredProjects = RECENT_PROJECTS.filter(p =>
+    // Convert cloud projects for display & filter
+    const displayProjects: Project[] = cloudProjects.map(cloudToDisplayProject);
+    const filteredProjects = displayProjects.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -209,16 +326,16 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     {/* Stats Row */}
                     <StaggerContainer className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                         <StaggerItem>
-                            <StatCard title="Total Projects" value="7" icon={<Folder className="w-4 h-4" />} color="blue" />
+                            <StatCard title="Total Projects" value={String(cloudProjects.length)} icon={<Folder className="w-4 h-4" />} color="blue" />
                         </StaggerItem>
                         <StaggerItem>
-                            <StatCard title="Active Analyses" value="2" icon={<Grid className="w-4 h-4" />} color="green" />
+                            <StatCard title="Analyzed" value={String(displayProjects.filter(p => p.status === 'Analyzed').length)} icon={<Grid className="w-4 h-4" />} color="green" />
                         </StaggerItem>
                         <StaggerItem>
-                            <StatCard title="Shared With Me" value="1" icon={<Users className="w-4 h-4" />} color="purple" />
+                            <StatCard title="Drafts" value={String(displayProjects.filter(p => p.status === 'Draft').length)} icon={<FileText className="w-4 h-4" />} color="purple" />
                         </StaggerItem>
                         <StaggerItem>
-                            <StatCard title="Storage Used" value="12%" icon={<FileText className="w-4 h-4" />} color="yellow" />
+                            <StatCard title="Shared With Me" value="0" icon={<Users className="w-4 h-4" />} color="yellow" />
                         </StaggerItem>
                     </StaggerContainer>
 
@@ -255,19 +372,39 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
                     {/* Projects Grid */}
                     <TabPanel isActive={activeTab === 'projects'}>
-                        {filteredProjects.length > 0 ? (
+                        {/* Error banner */}
+                        {projectsError && (
+                            <div className="mb-4 flex items-center gap-3 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-red-400 text-sm">
+                                <span>{projectsError}</span>
+                                <button onClick={fetchProjects} className="ml-auto flex items-center gap-1 hover:text-red-300 transition-colors">
+                                    <RefreshCw className="w-4 h-4" /> Retry
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Loading state */}
+                        {isLoadingProjects ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                <Loader2 className="w-8 h-8 animate-spin mb-3" />
+                                <p className="text-sm">Loading your projects...</p>
+                            </div>
+                        ) : filteredProjects.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {filteredProjects.map((project) => (
                                     <motion.div
                                         layout
                                         key={project.id}
                                         onClick={() => handleOpenProject(project.id)}
-                                        className="group bg-slate-50 dark:bg-slate-900/60 border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300"
+                                        className={`group bg-slate-50 dark:bg-slate-900/60 border border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-blue-500/30 hover:shadow-[0_12px_40px_rgba(59,130,246,0.08)] transition-all duration-300 ${isLoadingOne === project.id ? 'opacity-60 pointer-events-none' : ''}`}
                                     >
                                         <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
-                                                {getTypeIcon(project.type)}
-                                            </span>
+                                            {isLoadingOne === project.id ? (
+                                                <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+                                            ) : (
+                                                <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-blue-500/40 transition-colors">
+                                                    {getTypeIcon(project.type)}
+                                                </span>
+                                            )}
                                             <div className="absolute top-3 right-3">
                                                 <Badge variant={
                                                     project.status === 'Final' ? 'success' :
@@ -390,22 +527,12 @@ const MODULE_LAUNCHERS = [
     { id: 'steel-design', title: 'Steel Design', subtitle: 'IS 800 / AISC 360 checks', icon: 'construction', bgColor: 'bg-purple-500/20 text-purple-400' },
 ];
 
-const RECENT_PROJECTS: Project[] = [
-    { id: '1', name: 'G+4 Residential Block – Pune', type: 'Frame', lastModified: '35 min ago', nodeCount: 126, memberCount: 214, status: 'Draft' },
-    { id: '2', name: 'Warehouse Roof Truss – 24 m Span', type: 'Truss', lastModified: '3 hours ago', nodeCount: 18, memberCount: 33, status: 'Analyzed' },
-    { id: '3', name: 'Footbridge – Simply Supported', type: 'Beam', lastModified: 'Yesterday', nodeCount: 6, memberCount: 5, status: 'Analyzed' },
-    { id: '4', name: 'Industrial Portal Frame – 15 m', type: 'Frame', lastModified: '2 days ago', nodeCount: 8, memberCount: 9, status: 'Final' },
-    { id: '5', name: 'Cantilever Retaining Wall Check', type: 'Beam', lastModified: '4 days ago', nodeCount: 4, memberCount: 3, status: 'Analyzed' },
-    { id: '6', name: 'Roof Slab – Two-Way (6×5 m)', type: 'Slab', lastModified: '1 week ago', nodeCount: 25, memberCount: 40, status: 'Final' },
-    { id: '7', name: 'Staircase Waist Slab', type: 'Beam', lastModified: '2 weeks ago', nodeCount: 8, memberCount: 7, status: 'Draft' },
-];
-
 interface SharedProject extends Project {
     sharedBy: string;
 }
 
 const SHARED_PROJECTS: SharedProject[] = [
-    { id: 's1', name: 'Community Hall Frame – Nagpur', type: 'Frame', lastModified: '5 hours ago', nodeCount: 42, memberCount: 68, status: 'Draft', sharedBy: 'Arjun M.' },
+    // Shared projects will also be fetched from API in a future iteration
 ];
 
 const TEMPLATES = [

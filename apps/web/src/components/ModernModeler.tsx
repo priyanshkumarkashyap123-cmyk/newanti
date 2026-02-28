@@ -896,11 +896,12 @@ export const ModernModeler: FC = () => {
     setShowProjectDetails(true);
   }, []);
 
-  // Auto-save project after analysis completes
+  // Save project: localStorage + cloud (if authenticated)
   const handleProjectSave = useCallback(() => {
     saveProjectToStorage();
-    showNotification("success", "Project saved successfully!");
-  }, [showNotification]);
+    // Also persist to cloud/database so the project survives logout
+    handleCloudSave();
+  }, [handleCloudSave]);
 
   // Import new layout components handled at top of file
 

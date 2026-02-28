@@ -1504,46 +1504,47 @@ const PostAnalysisDesignHub: FC = () => {
   }, [selectedMemberIds, memberRows, params, assignedSection, designResults]);
 
   // ============================
-  // OPTIMIZATION — Find lightest passing section
+  // OPTIMIZATION — Find lightest section meeting target utilization
   // ============================
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [targetUtilization, setTargetUtilization] = useState(0.85);
 
   const runOptimization = useCallback(async () => {
     if (designResults.size === 0) return;
     setIsOptimizing(true);
 
+    // Allow UI to update before heavy computation
+    await new Promise(r => setTimeout(r, 50));
+
     const designCode = (params.steelCode === 'AISC360' || params.steelCode === 'BS5950' || params.steelCode === 'AS4100') ? 'AISC360' : 'IS800';
     const grade = STEEL_GRADES.find(g => g.name === params.steelGrade) ?? STEEL_GRADES[0];
 
-    // Get failing or high-utilization members
-    const targets = Array.from(designResults.entries())
-      .filter(([, r]) => r.status === 'FAIL' || r.utilizationRatio > 0.95);
-
-    // Pre-sort sections by weight (once, not per-member)
+    // Filter sections by design-code standard and sort lightest → heaviest
     const sectionsByWeight = [...STEEL_SECTIONS]
       .filter(s => {
         if (params.steelCode === 'IS800') return s.standard === 'IS';
         if (params.steelCode === 'AISC360') return s.standard === 'AISC';
+        if (params.steelCode === 'EC3') return s.standard === 'EU';
+        if (params.steelCode === 'BS5950') return s.standard === 'BS';
         return true;
       })
       .sort((a, b) => a.weight - b.weight);
 
-    // Build weight lookup once
-    const weightMap = new Map(STEEL_SECTIONS.map(s => [s.designation, s.weight]));
-
     const newResults = new Map(designResults);
+    const target = targetUtilization;
 
-    // Client-side optimization — no API needed, instant
-    for (const [memberId, currentResult] of targets) {
+    // Optimize EVERY member — find the lightest section where utilization ≤ target
+    for (const [memberId, currentResult] of designResults.entries()) {
       const row = memberRows.find(r => r.id === memberId);
       if (!row) continue;
 
-      const currentWeight = weightMap.get(currentResult.section) ?? 0;
       const lengthMM = row.length * 1000;
+      let bestSection: (typeof sectionsByWeight)[0] | null = null;
+      let bestResult: ReturnType<typeof clientSideDesignSteel> | null = null;
 
+      // Scan from lightest to heaviest — first section that passes
+      // with utilization ≤ target is the optimal (lightest adequate) one.
       for (const trySection of sectionsByWeight) {
-        if (trySection.weight <= currentWeight) continue;
-
         const cResult = clientSideDesignSteel({
           section: trySection as ClientDesignInput['section'],
           lengthMM,
@@ -1556,24 +1557,52 @@ const PostAnalysisDesignHub: FC = () => {
           code: designCode,
         });
 
-        if (cResult.status === 'PASS') {
-          newResults.set(memberId, {
-            ...currentResult,
-            section: trySection.designation,
-            utilizationRatio: cResult.utilizationRatio,
-            status: 'PASS',
-            governingCheck: cResult.governingCheck,
-            checks: cResult.checks,
-            capacities: cResult.capacities,
-          });
-          break; // Found lightest passing
+        if (cResult.status === 'PASS' && cResult.utilizationRatio <= target) {
+          bestSection = trySection;
+          bestResult = cResult;
+          break; // Lightest section meeting both PASS + target util — done
         }
+      }
+
+      // Fallback: if no section meets the target ratio, pick the lightest
+      // section that at least passes (utilization ≤ 1.0)
+      if (!bestSection) {
+        for (const trySection of sectionsByWeight) {
+          const cResult = clientSideDesignSteel({
+            section: trySection as ClientDesignInput['section'],
+            lengthMM,
+            forces: currentResult.forces,
+            material: { fy: grade.fy, fu: grade.fu, E: 200000 },
+            Ky: params.effectiveLengthFactorY,
+            Kz: params.effectiveLengthFactorZ,
+            Lb_ratio: params.unbracedLengthRatio,
+            Cb: params.Cb,
+            code: designCode,
+          });
+          if (cResult.status === 'PASS') {
+            bestSection = trySection;
+            bestResult = cResult;
+            break;
+          }
+        }
+      }
+
+      if (bestSection && bestResult) {
+        newResults.set(memberId, {
+          ...currentResult,
+          section: bestSection.designation,
+          utilizationRatio: bestResult.utilizationRatio,
+          status: bestResult.status as 'PASS' | 'FAIL',
+          governingCheck: bestResult.governingCheck,
+          checks: bestResult.checks,
+          capacities: bestResult.capacities,
+        });
       }
     }
 
     setDesignResults(newResults);
     setIsOptimizing(false);
-  }, [designResults, memberRows, params, assignedSection]);
+  }, [designResults, memberRows, params, targetUtilization]);
 
   // Memoized weight (avoids O(N×M) find per render)
   const totalWeight = useMemo(() => {
@@ -1990,15 +2019,39 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Target className="w-8 h-8 text-blue-400 mb-3" />
                 <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Target Utilization</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Set a target utilization ratio (e.g. 0.85) and the optimizer will select sections
-                  closest to that ratio for maximum material efficiency.
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                  Set a target utilization ratio. The optimizer picks the lightest section
+                  whose utilization ≤ this target. E.g. 0.85 = 85% of section capacity used.
                 </p>
+                <div className="mb-3">
+                  <input
+                    type="range"
+                    min="0.50"
+                    max="0.99"
+                    step="0.01"
+                    value={targetUtilization}
+                    onChange={e => setTargetUtilization(parseFloat(e.target.value))}
+                    className="w-full accent-blue-500"
+                  />
+                </div>
                 <div className="flex items-center gap-3">
-                  <input type="number" step="0.05" min="0.5" max="0.99" defaultValue="0.85"
-                    className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
+                  <input
+                    type="number"
+                    step="0.05"
+                    min="0.50"
+                    max="0.99"
+                    value={targetUtilization}
+                    onChange={e => {
+                      const v = parseFloat(e.target.value);
+                      if (!isNaN(v) && v >= 0.5 && v <= 0.99) setTargetUtilization(v);
+                    }}
+                    className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
+                  />
                   <span className="text-sm text-slate-600 dark:text-slate-400">ratio</span>
                 </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  {Math.round(targetUtilization * 100)}% utilization → {Math.round((1 - targetUtilization) * 100)}% reserve capacity
+                </p>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">

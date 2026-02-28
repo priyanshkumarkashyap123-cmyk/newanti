@@ -2,7 +2,7 @@
  * ProjectDetailsDialog - Collect project information for reports
  * 
  * Opens when starting a new project or editing project info.
- * Data is saved to model store and used in PDF reports.
+ * Data is saved to model store, localStorage, AND MongoDB (cloud).
  */
 
 import { FC, useState, useEffect } from 'react';
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { useAuth } from '../providers/AuthProvider';
+import { ProjectService } from '../services/ProjectService';
 
 interface ProjectDetailsDialogProps {
     isOpen: boolean;
@@ -29,6 +31,7 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
     const projectInfo = useModelStore((s) => s.projectInfo);
     const setProjectInfo = useModelStore((s) => s.setProjectInfo);
     const clearModel = useModelStore((s) => s.clearModel);
+    const { isSignedIn, getToken } = useAuth();
 
     // Local form state
     const [formData, setFormData] = useState<ProjectInfo>({
@@ -80,7 +83,7 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         // Validate required fields
         const newErrors: { name?: string; engineer?: string } = {};
 
@@ -106,6 +109,47 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
 
         // Save to localStorage
         saveProjectToLocalStorage();
+
+        // ---- Persist to MongoDB (cloud) so the project survives logout ----
+        if (isSignedIn) {
+            try {
+                const token = await getToken();
+                if (token) {
+                    const state = useModelStore.getState();
+                    const projectData = {
+                        projectInfo: formData,
+                        nodes: Array.from(state.nodes.entries()),
+                        members: Array.from(state.members.entries()),
+                        loads: state.loads || [],
+                        memberLoads: state.memberLoads || [],
+                    };
+                    const existingCloudId = state.projectInfo?.cloudId;
+
+                    if (existingCloudId) {
+                        // Update existing project in DB
+                        await ProjectService.updateProject(existingCloudId, {
+                            name: formData.name,
+                            description: formData.description,
+                            data: projectData,
+                        }, token);
+                    } else {
+                        // Create new project in DB
+                        const created = await ProjectService.createProject({
+                            name: formData.name,
+                            description: formData.description,
+                            data: projectData,
+                        }, token);
+                        // Store the cloud ID so future saves update rather than duplicate
+                        useModelStore.setState((s) => ({
+                            projectInfo: { ...s.projectInfo, cloudId: created._id },
+                        }));
+                    }
+                }
+            } catch (err) {
+                // Cloud save failed — localStorage backup is still there
+                console.error('[ProjectDetailsDialog] Cloud save failed:', err);
+            }
+        }
 
         onSave?.();
         onClose();
