@@ -68,12 +68,6 @@ importers:
       '@sentry/profiling-node':
         specifier: ^10.37.0
         version: 10.37.0
-      '@types/query-string':
-        specifier: ^6.3.0
-        version: 6.3.0
-      '@types/uuid':
-        specifier: ^11.0.0
-        version: 11.0.0
       axios:
         specifier: ^1.13.2
         version: 1.13.2
@@ -150,12 +144,18 @@ importers:
       '@types/nodemailer':
         specifier: ^7.0.4
         version: 7.0.4
+      '@types/query-string':
+        specifier: ^6.3.0
+        version: 6.3.0
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
       '@types/swagger-ui-express':
         specifier: ^4.1.8
         version: 4.1.8
+      '@types/uuid':
+        specifier: ^11.0.0
+        version: 11.0.0
       esbuild:
         specifier: ^0.27.2
         version: 0.27.2
@@ -233,24 +233,12 @@ importers:
       '@sentry/react':
         specifier: ^10.37.0
         version: 10.38.0(react@18.3.1)
-      '@sentry/tracing':
-        specifier: ^7.120.4
-        version: 7.120.4
-      '@tailwindcss/postcss':
-        specifier: ^4.1.18
-        version: 4.1.18
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-virtual':
         specifier: ^3.13.18
         version: 3.13.18(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@types/uuid':
-        specifier: ^11.0.0
-        version: 11.0.0
-      autoprefixer:
-        specifier: ^10.4.23
-        version: 10.4.23(postcss@8.5.6)
       axios:
         specifier: ^1.13.2
         version: 1.13.2
@@ -290,9 +278,6 @@ importers:
       mathjs:
         specifier: ^15.1.0
         version: 15.1.0
-      postcss:
-        specifier: ^8.5.6
-        version: 8.5.6
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -317,9 +302,6 @@ importers:
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
-      tailwindcss:
-        specifier: ^4.1.18
-        version: 4.1.18
       three:
         specifier: ^0.170.0
         version: 0.170.0
@@ -384,6 +366,9 @@ importers:
       '@storybook/testing-library':
         specifier: ^0.2.0
         version: 0.2.2
+      '@tailwindcss/postcss':
+        specifier: ^4.1.18
+        version: 4.1.18
       '@testing-library/jest-dom':
         specifier: ^6.4.0
         version: 6.9.1
@@ -405,6 +390,9 @@ importers:
       '@types/three':
         specifier: ^0.170.0
         version: 0.170.0
+      '@types/uuid':
+        specifier: ^11.0.0
+        version: 11.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.52.0
         version: 8.52.0(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
@@ -420,6 +408,9 @@ importers:
       '@webgpu/types':
         specifier: ^0.1.69
         version: 0.1.69
+      autoprefixer:
+        specifier: ^10.4.23
+        version: 10.4.23(postcss@8.5.6)
       axe-core:
         specifier: ^4.8.0
         version: 4.11.1
@@ -438,9 +429,15 @@ importers:
       msw:
         specifier: ^2.4.0
         version: 2.12.7(@types/node@25.0.10)(typescript@5.9.3)
+      postcss:
+        specifier: ^8.5.6
+        version: 8.5.6
       storybook:
         specifier: ^7.6.0
         version: 7.6.21
+      tailwindcss:
+        specifier: ^4.1.18
+        version: 4.1.18
       typedoc:
         specifier: ^0.25.0
         version: 0.25.13(typescript@5.9.3)
@@ -468,6 +465,12 @@ importers:
       vitest:
         specifier: ^4.0.17
         version: 4.0.17(@opentelemetry/api@1.9.0)(@types/node@25.0.10)(@vitest/ui@4.0.17)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.10)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/analysis: {}
+
+  packages/database: {}
+
+  packages/solver: {}
 
   packages/solver-wasm: {}
 
@@ -3514,10 +3517,6 @@ packages:
     resolution: {integrity: sha512-YWIkL6/dnaiQyFiZXJ/nN+NXGv/15z45ia86bE/TMq01CubX/DUOilgsFz0pk2v/pg3tp/U2MskLO9Hz0cnqeg==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/tracing@7.120.4':
-    resolution: {integrity: sha512-Fz5+4XCg3akeoFK+K7g+d7HqGMjmnLoY2eJlpONJmaeT9pXY7yfUyXKZMmMajdE2LxxKJgQ2YKvSCaGVamTjHw==}
-    engines: {node: '>=8'}
-
   '@sentry/babel-plugin-component-annotate@2.23.1':
     resolution: {integrity: sha512-l1z8AvI6k9I+2z49OgvP3SlzB1M0Lw24KtceiJibNaSyQwxsItoT9/XftZ/8BBtkosVmNOTQhL1eUsSkuSv1LA==}
     engines: {node: '>= 14'}
@@ -3584,10 +3583,6 @@ packages:
     resolution: {integrity: sha512-1pubWDZE5y5HZEPMAZERP4fVl2NH3Ihp1A+vMoVkb3Qc66Diqj1WierAnStlZP7tCx0TBa0dK85GTW/ZFYyB9g==}
     engines: {node: '>=18'}
 
-  '@sentry/core@7.120.4':
-    resolution: {integrity: sha512-TXu3Q5kKiq8db9OXGkWyXUbIxMMuttB5vJ031yolOl5T/B69JRyAoKuojLBjRv1XX583gS1rSSoX8YXX7ATFGA==}
-    engines: {node: '>=8'}
-
   '@sentry/node-core@10.37.0':
     resolution: {integrity: sha512-gQXf9764ZlEZQqqIaysxOrpHu2H867WN/G8EsHgaUJxxZMJ4ZMixinuFef+iQUE3la3/2MPoGx0A8AR7vRH9hA==}
     engines: {node: '>=18'}
@@ -3624,18 +3619,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       react: ^16.14.0 || 17.x || 18.x || 19.x
-
-  '@sentry/tracing@7.120.4':
-    resolution: {integrity: sha512-cAtpLh23qW3hoqZJ6c36EvFki5NhFWUSK71ALHefqDXEocMlfDc9I+IGn3B/ola2D2TDEDamCy3x32vctKqOag==}
-    engines: {node: '>=8'}
-
-  '@sentry/types@7.120.4':
-    resolution: {integrity: sha512-cUq2hSSe6/qrU6oZsEP4InMI5VVdD86aypE+ENrQ6eZEVLTCYm1w6XhW1NvIu3UuWh7gZec4a9J7AFpYxki88Q==}
-    engines: {node: '>=8'}
-
-  '@sentry/utils@7.120.4':
-    resolution: {integrity: sha512-zCKpyDIWKHwtervNK2ZlaK8mMV7gVUijAgFeJStH+CU/imcdquizV3pFLlSQYRswG+Lbyd6CT/LGRh3IbtkCFw==}
-    engines: {node: '>=8'}
 
   '@sentry/vite-plugin@2.23.1':
     resolution: {integrity: sha512-avtjtIQ019sZW3FklpmNNsQOnYZjCHpnVxgDGElfZb+AaR4AvtHNlxXLJp+iqEfSK+Xok8MJarJqIgCaWcF40Q==}
@@ -14068,12 +14051,6 @@ snapshots:
       '@sentry-internal/browser-utils': 10.38.0
       '@sentry/core': 10.38.0
 
-  '@sentry-internal/tracing@7.120.4':
-    dependencies:
-      '@sentry/core': 7.120.4
-      '@sentry/types': 7.120.4
-      '@sentry/utils': 7.120.4
-
   '@sentry/babel-plugin-component-annotate@2.23.1': {}
 
   '@sentry/browser@10.38.0':
@@ -14141,11 +14118,6 @@ snapshots:
   '@sentry/core@10.37.0': {}
 
   '@sentry/core@10.38.0': {}
-
-  '@sentry/core@7.120.4':
-    dependencies:
-      '@sentry/types': 7.120.4
-      '@sentry/utils': 7.120.4
 
   '@sentry/node-core@10.37.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.211.0(@opentelemetry/api@1.9.0))(@opentelemetry/resources@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.39.0)':
     dependencies:
@@ -14225,16 +14197,6 @@ snapshots:
       '@sentry/browser': 10.38.0
       '@sentry/core': 10.38.0
       react: 18.3.1
-
-  '@sentry/tracing@7.120.4':
-    dependencies:
-      '@sentry-internal/tracing': 7.120.4
-
-  '@sentry/types@7.120.4': {}
-
-  '@sentry/utils@7.120.4':
-    dependencies:
-      '@sentry/types': 7.120.4
 
   '@sentry/vite-plugin@2.23.1':
     dependencies:
