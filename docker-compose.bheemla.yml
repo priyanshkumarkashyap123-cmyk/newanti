@@ -52,7 +52,7 @@ services:
       - FRONTEND_URL=http://app.beamlabultimate.local:5173
       - ALLOWED_ORIGINS=http://app.beamlabultimate.local:5173,https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173
       - MONGODB_URI=mongodb://admin:beamlab-dev-pass@mongo:27017/beamlab-ultimate?authSource=admin
-      - PYTHON_API_URL=http://python-api:3002
+      - PYTHON_API_URL=http://python-api:8000
     depends_on:
       - mongo
     volumes:

@@ -307,6 +307,8 @@ async def predict_deflection(request: BeamPredictRequest):
     Returns:
         Deflection values at requested positions
     """
+    if not HAS_JAX or not HAS_PINN:
+        raise HTTPException(status_code=503, detail="PINN solver not available (JAX not installed)")
     if request.model_id not in trained_models:
         raise HTTPException(status_code=404, detail=f"Model {request.model_id} not found")
     
@@ -346,6 +348,8 @@ async def compare_pinn_analytical(request: CompareRequest):
     Only works for simply supported beam with uniform load.
     Useful for validating PINN accuracy.
     """
+    if not HAS_JAX or not HAS_PINN:
+        raise HTTPException(status_code=503, detail="PINN solver not available (JAX not installed)")
     beam_config = create_beam_config(request.beam_config)
     
     # Quick training for comparison
