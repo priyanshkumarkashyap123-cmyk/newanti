@@ -1066,18 +1066,19 @@ pub fn solve_pushover(input_val: JsValue) -> JsValue {
         hinges_yielded: p.hinges_yielded,
     }).collect();
 
-    let yield_pt = capacity_curve.yield_point.as_ref().map(|p| PushoverPoint {
-        step: p.step,
-        base_shear: p.base_shear,
-        roof_displacement: p.roof_displacement,
-        hinges_yielded: p.hinges_yielded,
+    // yield_point and ultimate_point are Option<(displacement, base_shear)> tuples
+    let yield_pt = capacity_curve.yield_point.map(|(disp, shear)| PushoverPoint {
+        step: 0,
+        base_shear: shear,
+        roof_displacement: disp,
+        hinges_yielded: 0,
     });
 
-    let ultimate_pt = capacity_curve.ultimate_point.as_ref().map(|p| PushoverPoint {
-        step: p.step,
-        base_shear: p.base_shear,
-        roof_displacement: p.roof_displacement,
-        hinges_yielded: p.hinges_yielded,
+    let ultimate_pt = capacity_curve.ultimate_point.map(|(disp, shear)| PushoverPoint {
+        step: capacity_curve.points.len().saturating_sub(1),
+        base_shear: shear,
+        roof_displacement: disp,
+        hinges_yielded: 0,
     });
 
     let hinge_summary: Vec<HingeSummary> = analyzer.hinges.iter().map(|h| HingeSummary {
