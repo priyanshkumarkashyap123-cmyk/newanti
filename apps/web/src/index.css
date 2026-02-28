@@ -102,9 +102,9 @@
   /* ========================================
      FONTS
      ======================================== */
-  --font-family-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
-  --font-family-body: 'Inter', 'Noto Sans', system-ui, sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-family-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-family-body: "Inter", "Noto Sans", system-ui, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Code", monospace;
 }
 
 /* ============================================
@@ -116,7 +116,15 @@ body {
   width: 100%;
   height: 100%;
   min-height: 100%;
-  font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    "Space Grotesk",
+    "Inter",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -204,11 +212,19 @@ html:not(.dark) .gradient-sidebar {
    ============================================ */
 
 .material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
 }
 
 .material-symbols-outlined.filled {
-  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-variation-settings:
+    "FILL" 1,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
 }
 
 /* ============================================
@@ -263,13 +279,16 @@ select:focus-visible {
 .dark textarea,
 .dark select {
   font-family: inherit;
-  background: rgba(15, 23, 42, 0.80);
+  background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.5rem;
   padding: 0.625rem 0.875rem;
   color: #f1f5f9;
   font-size: 0.875rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .dark input:focus,
@@ -297,7 +316,10 @@ html:not(.dark) select {
   padding: 0.625rem 0.875rem;
   color: #1e293b;
   font-size: 0.875rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 html:not(.dark) input:focus,
@@ -331,7 +353,6 @@ html:not(.dark) textarea::placeholder {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     opacity: 1;
@@ -371,7 +392,6 @@ html:not(.dark) textarea::placeholder {
 }
 
 @keyframes float {
-
   0%,
   100% {
     transform: translateY(0) scale(1);
@@ -451,7 +471,6 @@ html:not(.dark) textarea::placeholder {
 }
 
 @keyframes skeletonPulse {
-
   0%,
   100% {
     opacity: 1;
@@ -569,23 +588,37 @@ html:not(.dark) textarea::placeholder {
 
 /* Shimmer effect for CTA buttons */
 .animate-shimmer {
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 2s ease infinite;
 }
 
 /* Skeleton loading placeholder */
 .skeleton {
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0.1) 50%,
-      rgba(255, 255, 255, 0.05) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease infinite;
   border-radius: 4px;
+}
+
+html:not(.dark) .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.06) 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.06) 100%
+  );
+  background-size: 200% 100%;
 }
 
 /* Animated gradient background */
@@ -596,7 +629,9 @@ html:not(.dark) textarea::placeholder {
 
 /* Interactive card hover lift */
 .hover-lift {
-  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+    box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .hover-lift:hover {
@@ -604,6 +639,12 @@ html:not(.dark) textarea::placeholder {
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.25),
     0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+html:not(.dark) .hover-lift:hover {
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 /* Subtle scale on hover */
@@ -637,7 +678,7 @@ html:not(.dark) textarea::placeholder {
 }
 
 .pulse-dot::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -684,7 +725,9 @@ html:not(.dark) textarea::placeholder {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 0.75rem;
   padding: 1.5rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .dark .card:hover {
@@ -696,7 +739,9 @@ html:not(.dark) .card {
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   padding: 1.5rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 html:not(.dark) .card:hover {
@@ -712,7 +757,7 @@ html:not(.dark) .card:hover {
 }
 
 .dark .card-premium {
-  background: rgba(15, 23, 42, 0.80);
+  background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 1rem;
   padding: 1.5rem;
@@ -731,13 +776,18 @@ html:not(.dark) .card-premium {
 }
 
 .card-premium::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(59, 130, 246, 0.3),
+    transparent
+  );
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -762,7 +812,7 @@ html:not(.dark) .card-premium {
 
 .badge-success {
   background: rgba(34, 197, 94, 0.1);
-  color: #22C55E;
+  color: #22c55e;
 }
 
 .badge-warning {
@@ -772,7 +822,7 @@ html:not(.dark) .card-premium {
 
 .badge-error {
   background: rgba(239, 68, 68, 0.1);
-  color: #EF4444;
+  color: #ef4444;
 }
 
 /* ============================================
@@ -798,7 +848,7 @@ html:not(.dark) .toggle-switch {
 }
 
 .toggle-switch::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 2px;
   left: 2px;
@@ -866,7 +916,7 @@ html:not(.dark) .toggle-switch {
     border-width: 2px;
     border-color: currentColor;
   }
-  
+
   button,
   a {
     text-decoration: underline;
@@ -1038,7 +1088,7 @@ html:not(.dark) .eng-panel-header {
 
 /* Data grid for tabular results */
 .eng-data-grid {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.75rem;
   line-height: 1.5;
 }
@@ -1093,7 +1143,7 @@ html:not(.dark) .eng-data-grid td {
   border: 1px solid rgba(71, 85, 105, 0.4);
   border-radius: 0.25rem;
   padding: 0.125rem 0.375rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.6875rem;
 }
 
@@ -1155,7 +1205,7 @@ html:not(.dark) .eng-tooltip {
 }
 
 .eng-tooltip .value {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   color: #93c5fd;
   font-weight: 600;
 }
@@ -1194,11 +1244,12 @@ html:not(.dark) .eng-tooltip .label {
 /* Professional loading bar for analysis */
 .analysis-progress {
   height: 3px;
-  background: linear-gradient(90deg, 
-    #3b82f6 0%, 
-    #8b5cf6 25%, 
-    #06b6d4 50%, 
-    #10b981 75%, 
+  background: linear-gradient(
+    90deg,
+    #3b82f6 0%,
+    #8b5cf6 25%,
+    #06b6d4 50%,
+    #10b981 75%,
     #3b82f6 100%
   );
   background-size: 300% 100%;
@@ -1213,12 +1264,24 @@ html:not(.dark) .eng-tooltip .label {
 }
 
 /* Engineering diagram colors */
-.diagram-sfd { color: #3b82f6; }
-.diagram-bmd { color: #a855f7; }
-.diagram-afd { color: #f59e0b; }
-.diagram-deflection { color: #10b981; }
-.diagram-positive { color: #22c55e; }
-.diagram-negative { color: #ef4444; }
+.diagram-sfd {
+  color: #3b82f6;
+}
+.diagram-bmd {
+  color: #a855f7;
+}
+.diagram-afd {
+  color: #f59e0b;
+}
+.diagram-deflection {
+  color: #10b981;
+}
+.diagram-positive {
+  color: #22c55e;
+}
+.diagram-negative {
+  color: #ef4444;
+}
 
 /* Professional context menu */
 .eng-context-menu {
@@ -1266,7 +1329,7 @@ html:not(.dark) .eng-context-menu-item:hover {
   margin-left: auto;
   font-size: 0.6875rem;
   color: #64748b;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
 }
 
 .eng-context-menu-separator {
