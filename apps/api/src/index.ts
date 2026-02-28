@@ -211,6 +211,54 @@ app.use(csrfValidationMiddleware);
 // General rate limiting (after CORS so rate-limited responses still have CORS headers)
 app.use(generalRateLimit);
 
+// ============================================
+// PUBLIC ENDPOINTS (before auth middleware so they always work)
+// ============================================
+
+// Root health check
+app.get("/", (_req: Request, res: Response) => {
+  res.send("BeamLab Ultimate API Running");
+});
+
+// Health check (public — must be before auth middleware)
+app.get("/health", async (_req: Request, res: Response) => {
+  let dbStatus = "unknown";
+  try {
+    const mongoose = await import("mongoose");
+    dbStatus =
+      mongoose.default.connection.readyState === 1
+        ? "connected"
+        : "disconnected";
+  } catch {
+    dbStatus = "error";
+  }
+
+  let circuitBreakers: Record<string, unknown> = {};
+  try {
+    const { getAllCircuitStats } = await import("./utils/circuitBreaker.js");
+    circuitBreakers = getAllCircuitStats();
+  } catch {
+    /* not critical */
+  }
+
+  const status = dbStatus === "connected" ? "ok" : "degraded";
+
+  res.status(status === "ok" ? 200 : 503).json({
+    status,
+    service: "BeamLab Ultimate API",
+    version: process.env.npm_package_version || "1.0.0",
+    uptime: Math.floor(process.uptime()),
+    websocket: true,
+    authProvider: isUsingClerk() ? "clerk" : "inhouse",
+    dependencies: { mongodb: dbStatus },
+    circuitBreakers,
+    timestamp: new Date().toISOString(),
+  });
+});
+app.get("/api/health", (_req: Request, res: Response) => {
+  res.redirect("/health");
+});
+
 // Initialize authentication middleware based on provider
 // USE_CLERK=true -> Clerk, otherwise -> in-house JWT
 if (isUsingClerk()) {
@@ -230,11 +278,6 @@ if (!isUsingClerk()) {
   app.use("/api/auth", authRateLimit, checkLockout, authRouter);
   app.use("/api/v1/auth", authRateLimit, checkLockout, authRouter);
 }
-
-// Root health check
-app.get("/", (_req: Request, res: Response) => {
-  res.send("BeamLab Ultimate API Running");
-});
 
 // OpenAPI docs — restrict access in production (require auth header or dev mode)
 const swaggerGuard: RequestHandler = async (req, res, next) => {
@@ -279,48 +322,6 @@ app.use(
   swaggerUi.serve,
   swaggerUi.setup(openApiSpec),
 );
-
-// Health check (public)
-app.get("/health", async (_req: Request, res: Response) => {
-  let dbStatus = "unknown";
-  try {
-    const mongoose = await import("mongoose");
-    dbStatus =
-      mongoose.default.connection.readyState === 1
-        ? "connected"
-        : "disconnected";
-  } catch {
-    dbStatus = "error";
-  }
-
-  // Circuit breaker stats
-  let circuitBreakers: Record<string, unknown> = {};
-  try {
-    const { getAllCircuitStats } = await import("./utils/circuitBreaker.js");
-    circuitBreakers = getAllCircuitStats();
-  } catch {
-    /* not critical */
-  }
-
-  const status = dbStatus === "connected" ? "ok" : "degraded";
-
-  res.ok(
-    {
-      status,
-      service: "BeamLab Ultimate API",
-      version: process.env.npm_package_version || "1.0.0",
-      uptime: Math.floor(process.uptime()),
-      websocket: true,
-      authProvider: isUsingClerk() ? "clerk" : "inhouse",
-      dependencies: {
-        mongodb: dbStatus,
-      },
-      circuitBreakers,
-      timestamp: new Date().toISOString(),
-    },
-    status === "ok" ? 200 : 503,
-  );
-});
 
 // ============================================
 // API v1 ROUTES (versioned for forward compatibility)
