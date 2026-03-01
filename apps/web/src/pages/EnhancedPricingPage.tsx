@@ -735,7 +735,8 @@ export const EnhancedPricingPage: FC = () => {
 
               <button
                 onClick={() => handleGetStarted(plan.id)}
-                className={`w-full py-3 rounded-xl font-semibold transition-all mb-6 ${
+                disabled={paymentLoading}
+                className={`w-full py-3 rounded-xl font-semibold transition-all mb-6 disabled:opacity-50 disabled:cursor-wait ${
                   plan.ctaVariant === "primary"
                     ? "bg-white text-slate-950 hover:bg-slate-100"
                     : plan.ctaVariant === "secondary"
@@ -743,8 +744,12 @@ export const EnhancedPricingPage: FC = () => {
                       : "border-2 border-slate-300 dark:border-slate-700 text-white hover:bg-slate-100 dark:bg-slate-800"
                 }`}
               >
-                {plan.cta}
+                {paymentLoading ? 'Processing...' : plan.cta}
               </button>
+
+              {upgradeError && plan.id !== 'academic' && plan.id !== 'enterprise' && (
+                <p className="text-xs text-red-400 mb-4 text-center">{upgradeError}</p>
+              )}
 
               <ul className="space-y-3 flex-1">
                 {plan.features.map((feature, j) => (

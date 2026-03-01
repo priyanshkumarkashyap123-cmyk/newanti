@@ -131,9 +131,6 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     document.title = 'Dashboard - BeamLab';
   }, []);
 
-  // Register user
-  useUserRegistration();
-
   // Contexts
   const { isSignedIn, user, signOut, getToken } = useAuth();
   const isClerkEnabled = isUsingClerk();
