@@ -101,7 +101,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   };
 
   return (
-    <div className="h-full w-full bg-white dark:bg-slate-950 flex flex-col border-r border-slate-800/60">
+    <div className="h-full w-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-800/60">
       {/* Header */}
       <div className="px-3 py-3 border-b border-slate-800/60 bg-white dark:bg-slate-950">
         <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
@@ -125,10 +125,10 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 aria-label={item.label}
                 aria-current={isActive ? "step" : undefined}
                 className={`
-                    relative group flex items-center gap-2.5 px-2.5 py-2.5 rounded-md text-left transition-all
+                    relative group flex items-center gap-2.5 px-2.5 h-8 rounded-md text-left transition-all
                     ${
                       isActive
-                        ? "bg-blue-600/90 text-slate-900 dark:text-white shadow-lg shadow-blue-900/30"
+                        ? "bg-blue-500/10 text-blue-400 border-l-2 border-blue-500"
                         : "text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:text-slate-700 dark:hover:text-slate-200"
                     }
                 `}
@@ -137,7 +137,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 <div
                   className={`
                     w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-colors flex-shrink-0
-                    ${isActive ? "bg-blue-500 text-white" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
+                    ${isActive ? "bg-blue-500/20 text-blue-400" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
                   `}
                   aria-hidden="true"
                 >
@@ -148,7 +148,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                     {item.label}
                   </span>
                   <span
-                    className={`text-[9px] mt-1 leading-none truncate ${isActive ? "text-blue-200" : "text-slate-600"}`}
+                    className={`text-[12px] mt-1 leading-none truncate ${isActive ? "text-blue-300" : "text-slate-600"}`}
                   >
                     {item.subtext}
                   </span>
@@ -157,7 +157,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 {/* Active Indicator Bar */}
                 {isActive && (
                   <div
-                    className="absolute left-0 w-[3px] h-7 bg-blue-400 rounded-r-full"
+                    className="absolute left-0 w-[2px] h-7 bg-blue-400 rounded-r-full"
                     aria-hidden="true"
                   />
                 )}

@@ -75,7 +75,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogContent className="max-w-md p-0 overflow-hidden" onInteractOutside={(e) => { if (!isComplete && !isError) e.preventDefault(); }}>
+            <DialogContent className="max-w-lg p-0 overflow-hidden" onInteractOutside={(e) => { if (!isComplete && !isError) e.preventDefault(); }}>
                 {/* Header */}
                 <DialogHeader className={`
                     flex items-center justify-between px-6 py-4
@@ -112,7 +112,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                                         ? 'bg-red-500'
                                         : isComplete
                                             ? 'bg-green-500'
-                                            : 'bg-blue-500'
+                                            : 'bg-gradient-to-r from-blue-500 to-purple-500'
                                     }`}
                                 style={{ width: `${progress}%` }}
                             />

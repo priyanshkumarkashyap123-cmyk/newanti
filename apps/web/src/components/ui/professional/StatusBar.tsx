@@ -666,7 +666,7 @@ export const StatusBar: FC<StatusBarProps> = ({
   };
 
   return (
-    <div className="h-7 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between px-2 text-xs select-none">
+    <div className="h-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between px-2 text-xs select-none">
       {/* Left Section - Status & Model Stats */}
       <div className="flex items-center gap-3">
         <StatusIndicator

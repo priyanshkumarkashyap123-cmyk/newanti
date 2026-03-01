@@ -16,9 +16,9 @@ interface DiagramRendererProps {
     showLabels?: boolean;
 }
 
-const FILL_OPACITY = 0.15;  // Light color fill for better contrast
-const FILL_COLOR_MOMENT = '#ff8800';  // Orange
-const FILL_COLOR_SHEAR = '#00aaff';  // Light blue
+const FILL_OPACITY = 0.2;  // Figma §11.2: fill area opacity
+const FILL_COLOR_MOMENT = '#3b82f6';  // Blue per Figma §11.2
+const FILL_COLOR_SHEAR = '#22c55e';  // Green per Figma §11.3
 
 export const DiagramRenderer: FC<DiagramRendererProps> = ({
     memberId,

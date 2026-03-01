@@ -67,10 +67,10 @@ interface DiagramOverlayProps {
 // CONSTANTS
 // ============================================
 
-const POSITIVE_COLOR = new THREE.Color('#ef4444'); // Red - Sagging
-const NEGATIVE_COLOR = new THREE.Color('#3b82f6'); // Blue - Hogging
+const POSITIVE_COLOR = new THREE.Color('#3b82f6'); // Blue - Sagging per Figma §11.2
+const NEGATIVE_COLOR = new THREE.Color('#ef4444'); // Red - Hogging per Figma §11.2
 const NEUTRAL_COLOR = new THREE.Color('#888888');  // Gray - Zero
-const DIAGRAM_OPACITY = 0.6;
+const DIAGRAM_OPACITY = 0.2;
 const SCANNER_LINE_COLOR = '#ffffff';
 const TOOLTIP_BG = 'rgba(0, 0, 0, 0.85)';
 

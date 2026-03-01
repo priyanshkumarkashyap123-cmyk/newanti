@@ -44,7 +44,7 @@ const ViewCube: FC<{ activeView: string; onViewChange: (view: string) => void }>
           onClick={() => onViewChange(v.id)}
           title={v.label}
           className={`
-            w-7 h-7 rounded text-[9px] font-bold
+            w-8 h-8 rounded-md text-[9px] font-bold
             border transition-all duration-100 active:scale-95
             flex items-center justify-center
             ${activeView === v.id
@@ -77,7 +77,7 @@ const CompactBtn: FC<CompactBtnProps> = memo(({ icon: Icon, label, onClick, isAc
     onClick={onClick}
     title={label}
     className={`
-      w-7 h-7 rounded flex items-center justify-center
+      w-8 h-8 rounded-md flex items-center justify-center
       border border-transparent transition-all duration-100
       active:scale-95
       ${isActive

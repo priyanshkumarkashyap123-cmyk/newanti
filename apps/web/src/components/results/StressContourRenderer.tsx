@@ -99,19 +99,15 @@ const STRESS_TYPES: Array<{ id: StressType; label: string; description: string }
     { id: 'utilization', label: 'Utilization', description: 'Stress/Capacity ratio' }
 ];
 
-// Professional engineering color scale (similar to FEA software)
+// Professional engineering color scale (Figma §11.7 rainbow)
 const CONTOUR_COLORS = [
-    { value: 0.0, color: new THREE.Color('#0000ff') },   // Blue - minimum
-    { value: 0.1, color: new THREE.Color('#0066ff') },
-    { value: 0.2, color: new THREE.Color('#00ccff') },   // Cyan
-    { value: 0.3, color: new THREE.Color('#00ffcc') },
-    { value: 0.4, color: new THREE.Color('#00ff66') },   // Green
-    { value: 0.5, color: new THREE.Color('#66ff00') },   // Yellow-green
-    { value: 0.6, color: new THREE.Color('#ccff00') },
-    { value: 0.7, color: new THREE.Color('#ffcc00') },   // Orange
-    { value: 0.8, color: new THREE.Color('#ff6600') },
-    { value: 0.9, color: new THREE.Color('#ff0000') },   // Red
-    { value: 1.0, color: new THREE.Color('#cc0000') }    // Dark red - maximum
+    { value: 0.0,   color: new THREE.Color('#1e3a8a') },   // Dark blue - minimum
+    { value: 0.167, color: new THREE.Color('#2563eb') },   // Blue
+    { value: 0.333, color: new THREE.Color('#06b6d4') },   // Cyan
+    { value: 0.5,   color: new THREE.Color('#22c55e') },   // Green
+    { value: 0.667, color: new THREE.Color('#eab308') },   // Yellow
+    { value: 0.833, color: new THREE.Color('#f97316') },   // Orange
+    { value: 1.0,   color: new THREE.Color('#dc2626') }    // Red - maximum
 ];
 
 const DEFAULT_CONTOUR_INTERVALS = 10;

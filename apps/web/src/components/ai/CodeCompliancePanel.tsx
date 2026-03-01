@@ -43,15 +43,19 @@ const UtilizationBar: React.FC<{ ratio: number; showLabel?: boolean }> = ({ rati
     const percentage = Math.min(ratio * 100, 150);
 
     const getColor = () => {
-        if (ratio <= 0.7) return 'bg-green-500';
-        if (ratio <= 0.9) return 'bg-yellow-500';
+        if (ratio <= 0.3) return 'bg-green-500';
+        if (ratio <= 0.6) return 'bg-blue-500';
+        if (ratio <= 0.8) return 'bg-cyan-500';
+        if (ratio <= 0.9) return 'bg-amber-500';
         if (ratio <= 1.0) return 'bg-orange-500';
         return 'bg-red-500';
     };
 
     const getBgColor = () => {
-        if (ratio <= 0.7) return 'bg-green-900/30';
-        if (ratio <= 0.9) return 'bg-yellow-900/30';
+        if (ratio <= 0.3) return 'bg-green-900/30';
+        if (ratio <= 0.6) return 'bg-blue-900/30';
+        if (ratio <= 0.8) return 'bg-cyan-900/30';
+        if (ratio <= 0.9) return 'bg-amber-900/30';
         if (ratio <= 1.0) return 'bg-orange-900/30';
         return 'bg-red-900/30';
     };

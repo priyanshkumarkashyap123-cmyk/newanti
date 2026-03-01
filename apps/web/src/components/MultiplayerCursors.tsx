@@ -9,6 +9,12 @@ import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 // ============================================
+// CONSTANTS — Figma §16.1 cursor palette
+// ============================================
+
+const CURSOR_PALETTE = ['#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+
+// ============================================
 // TYPES
 // ============================================
 
@@ -71,7 +77,7 @@ const UserCursor: FC<{
             {/* Nametag */}
             {showNametag && (
                 <Html
-                    position={[0, size * 3, 0]}
+                    position={[0, -size * 3, 0]}
                     center
                     distanceFactor={10}
                     zIndexRange={[100, 0]}
@@ -82,14 +88,14 @@ const UserCursor: FC<{
                             padding: '4px 8px',
                             borderRadius: '4px',
                             color: 'white',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             fontWeight: 600,
                             fontFamily: 'Inter, sans-serif',
                             whiteSpace: 'nowrap',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                             userSelect: 'none',
                             pointerEvents: 'none',
-                            transform: 'translateY(-100%)'
+                            transform: 'translateY(8px)'
                         }}
                     >
                         {user.name}

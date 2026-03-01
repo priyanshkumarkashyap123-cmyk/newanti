@@ -92,7 +92,7 @@ const ToolButton = memo<ToolButtonProps>(
     };
 
     const iconSize = {
-      large: "w-5 h-5",
+      large: "w-6 h-6",
       normal: "w-4 h-4",
       compact: "w-3.5 h-3.5",
     };
@@ -121,7 +121,7 @@ const ToolButton = memo<ToolButtonProps>(
         >
           <Icon className={`${iconSize[size]} flex-shrink-0`} />
           {size !== 'compact' && (
-            <span className="text-[9px] whitespace-nowrap text-center leading-tight max-w-[48px] truncate font-medium">
+            <span className="text-[10px] whitespace-nowrap text-center leading-tight max-w-[48px] truncate font-medium">
               {label}
             </span>
           )}
@@ -139,7 +139,7 @@ const ToolGroup = memo<{ label: string; children: ReactNode; className?: string 
   ({ label, children, className = "" }) => (
     <div className={`flex flex-col h-full border-r border-slate-200/30 dark:border-slate-700/30 px-1.5 pb-2.5 pt-1 last:border-r-0 ${className}`}>
       <div className="flex-1 flex items-center gap-0.5">{children}</div>
-      <div className="text-[7px] text-slate-500 text-center uppercase tracking-[0.08em] mt-0.5 select-none font-semibold">
+      <div className="text-[10px] text-slate-500 text-center uppercase tracking-[0.08em] mt-0.5 select-none font-semibold">
         {label}
       </div>
     </div>
@@ -184,12 +184,12 @@ const RIBBON_TABS: { id: Category; label: string; color: string }[] = [
 ];
 
 const TAB_ACTIVE_COLORS: Record<string, string> = {
-  blue: "bg-blue-600/15 text-blue-400 border-blue-500/30",
-  purple: "bg-purple-600/15 text-purple-400 border-purple-500/30",
-  orange: "bg-orange-600/15 text-orange-400 border-orange-500/30",
-  emerald: "bg-emerald-600/15 text-emerald-400 border-emerald-500/30",
-  rose: "bg-rose-600/15 text-rose-400 border-rose-500/30",
-  amber: "bg-amber-600/15 text-amber-400 border-amber-500/30",
+  blue: "bg-slate-800/60 text-blue-400 border-t-2 border-t-blue-500",
+  purple: "bg-slate-800/60 text-purple-400 border-t-2 border-t-purple-500",
+  orange: "bg-slate-800/60 text-orange-400 border-t-2 border-t-orange-500",
+  emerald: "bg-slate-800/60 text-emerald-400 border-t-2 border-t-emerald-500",
+  rose: "bg-slate-800/60 text-rose-400 border-t-2 border-t-rose-500",
+  amber: "bg-slate-800/60 text-amber-400 border-t-2 border-t-amber-500",
 };
 
 /* ─── Main ribbon component ─── */
@@ -453,7 +453,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
           tooltip="Run Linear Static Analysis"
           shortcut="F5"
           size="large"
-          accent={isAnalyzing ? "text-yellow-400 animate-pulse" : "text-emerald-400 hover:text-emerald-300"}
+          accent={isAnalyzing ? "text-yellow-400 animate-pulse" : "bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 shadow-lg shadow-emerald-500/20"}
         />
         <StackedButtons>
           <MiniButton
@@ -554,7 +554,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
                 aria-selected={isActive}
                 onClick={() => setCategory(tab.id)}
                 className={`
-                  px-3 py-1 rounded-md text-[10px] font-bold tracking-wider transition-all duration-150 border
+                  px-3 py-1 rounded-md text-[13px] font-medium tracking-normal transition-all duration-150 border
                   ${isActive
                     ? `${TAB_ACTIVE_COLORS[tab.color]} shadow-sm`
                     : "text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 border-transparent"
@@ -581,7 +581,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
 
       {/* Tools Area */}
       <div
-        className="h-[68px] flex items-center px-1 py-0.5 gap-0 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+        className="h-[100px] flex items-center px-1 py-0.5 gap-0 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
         role="group"
         aria-label={`${activeCategory} tools`}
       >

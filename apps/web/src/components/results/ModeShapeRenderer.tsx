@@ -56,6 +56,9 @@ interface ModeShapeRendererProps {
 // ============================================
 
 const MIN_COLOR = new THREE.Color('#3b82f6'); // Blue - min displacement
+const MID_CYAN_COLOR = new THREE.Color('#06b6d4'); // Cyan
+const MID_GREEN_COLOR = new THREE.Color('#22c55e'); // Green
+const MID_YELLOW_COLOR = new THREE.Color('#eab308'); // Yellow
 const MAX_COLOR = new THREE.Color('#ef4444'); // Red - max displacement
 const ORIGINAL_COLOR = new THREE.Color('#6b7280'); // Gray - original shape
 const ANIMATION_SPEED = 2.0; // Oscillations per second
@@ -93,7 +96,13 @@ const AnimatedMember: FC<AnimatedMemberProps> = ({
     const normalizedDisp = maxDisp > 0 ? avgMag / maxDisp : 0;
     
     const color = useMemo(() => {
-        return MIN_COLOR.clone().lerp(MAX_COLOR, normalizedDisp);
+        // 5-stop gradient: blue → cyan → green → yellow → red per Figma §11.5
+        const stops = [MIN_COLOR, MID_CYAN_COLOR, MID_GREEN_COLOR, MID_YELLOW_COLOR, MAX_COLOR];
+        const t = Math.max(0, Math.min(1, normalizedDisp));
+        const segment = t * (stops.length - 1);
+        const i = Math.min(Math.floor(segment), stops.length - 2);
+        const frac = segment - i;
+        return stops[i]!.clone().lerp(stops[i + 1]!, frac);
     }, [normalizedDisp]);
 
     // Animation
@@ -261,7 +270,12 @@ export const ModeShapeRenderer: FC<ModeShapeRendererProps> = ({
                     if (!pos) return null;
                     const mag = Math.sqrt(d.dx * d.dx + d.dy * d.dy + d.dz * d.dz);
                     const normalizedMag = maxDisplacement > 0 ? mag / maxDisplacement : 0;
-                    const color = MIN_COLOR.clone().lerp(MAX_COLOR, normalizedMag);
+                    // 5-stop gradient: blue → cyan → green → yellow → red
+                    const stops = [MIN_COLOR, MID_CYAN_COLOR, MID_GREEN_COLOR, MID_YELLOW_COLOR, MAX_COLOR];
+                    const t = Math.max(0, Math.min(1, normalizedMag));
+                    const seg = t * (stops.length - 1);
+                    const idx = Math.min(Math.floor(seg), stops.length - 2);
+                    const color = stops[idx]!.clone().lerp(stops[idx + 1]!, seg - idx);
 
                     return (
                         <mesh

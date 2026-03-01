@@ -51,7 +51,7 @@ services:
       - APP_NAME=BeamLab Ultimate API
       - FRONTEND_URL=http://app.beamlabultimate.local:5173
       - ALLOWED_ORIGINS=http://app.beamlabultimate.local:5173,https://beamlabultimate.tech,https://www.beamlabultimate.tech,http://localhost:5173
-      - MONGODB_URI=mongodb://admin:beamlab-dev-pass@mongo:27017/beamlab-ultimate?authSource=admin
+      - MONGODB_URI=mongodb://${MONGO_USER:-admin}:${MONGO_PASSWORD:-changeme}@mongo:27017/beamlab-ultimate?authSource=admin
       - PYTHON_API_URL=http://python-api:8000
     depends_on:
       - mongo
@@ -96,8 +96,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=beamlab-dev-pass
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-changeme}
       - MONGO_INITDB_DATABASE=beamlab-ultimate
     volumes:
       - mongo_data:/data/db
@@ -120,7 +120,7 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
-    command: redis-server --requirepass beamlab-dev-pass
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
     volumes:
       - redis_data:/data
     networks:

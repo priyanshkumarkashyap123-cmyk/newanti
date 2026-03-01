@@ -1033,7 +1033,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+            <DialogContent className="max-w-[720px] max-h-[90vh] overflow-hidden flex flex-col p-0">
                 {/* Header */}
                 <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
                     <div className="flex items-center gap-3">

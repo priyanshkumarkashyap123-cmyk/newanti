@@ -133,7 +133,7 @@ export const KeyboardShortcutsOverlay: FC<KeyboardShortcutsOverlayProps> = memo(
                         {keys.map((key, i) => (
                           <span key={i}>
                             <kbd className="inline-block min-w-[20px] text-center bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 
-                                          text-[10px] font-mono px-1.5 py-0.5 rounded shadow-sm shadow-black/20">
+                                          text-[12px] font-mono px-2 py-0.5 rounded shadow-sm shadow-black/20">
                               {key}
                             </kbd>
                             {i < keys.length - 1 && <span className="text-slate-500 dark:text-slate-600 mx-0.5 text-[10px]">+</span>}

@@ -253,7 +253,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: 400, opacity: 0 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    className="fixed right-0 top-0 bottom-0 w-96 bg-white dark:bg-slate-900 shadow-2xl z-50 flex flex-col border-l border-slate-200 dark:border-slate-700"
+                    className="fixed right-0 top-0 bottom-0 w-[380px] bg-white dark:bg-slate-900 shadow-2xl z-50 flex flex-col border-l border-slate-200 dark:border-slate-700"
                 >
                     {/* Header */}
                     <div className="h-16 bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-between px-4">
@@ -320,7 +320,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                         {/* Message Content */}
                                         <div className={`rounded-2xl px-4 py-3 ${message.role === 'user'
                                                 ? 'bg-blue-600 text-white'
-                                                : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+                                                : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-[3px] border-l-blue-500 text-slate-800 dark:text-slate-200'
                                             }`}>
                                             <div className="text-sm whitespace-pre-wrap">{message.content}</div>
 

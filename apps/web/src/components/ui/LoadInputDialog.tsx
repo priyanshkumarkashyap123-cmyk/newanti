@@ -114,7 +114,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-md p-0 overflow-hidden">
+            <DialogContent className="max-w-lg p-0 overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center gap-2 px-6 py-4 bg-orange-600 text-white rounded-t-lg">
                     <ArrowDown className="w-5 h-5" />

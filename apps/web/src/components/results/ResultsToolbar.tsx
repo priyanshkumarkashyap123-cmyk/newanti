@@ -1232,8 +1232,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                                     flex flex-col items-center gap-1 p-2 rounded-lg transition-all
                                     ${
                                       isActive
-                                        ? "bg-slate-100 dark:bg-slate-800"
-                                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                        ? "bg-slate-100 dark:bg-blue-500 dark:text-white dark:ring-2 dark:ring-blue-400"
+                                        : "hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-slate-400"
                                     }
                                 `}
                   title={diagram.label}
@@ -1262,17 +1262,17 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                   {
                     id: "displacement",
                     label: "Displacement",
-                    gradient: "from-blue-500 to-red-500",
+                    gradient: "from-[#1e3a8a] via-[#06b6d4] via-[#22c55e] via-[#eab308] to-[#dc2626]",
                   },
                   {
                     id: "stress",
                     label: "Stress",
-                    gradient: "from-green-500 to-red-500",
+                    gradient: "from-[#1e3a8a] via-[#06b6d4] via-[#22c55e] via-[#eab308] to-[#dc2626]",
                   },
                   {
                     id: "utilization",
                     label: "Utilization",
-                    gradient: "from-green-500 via-yellow-500 to-red-500",
+                    gradient: "from-[#22c55e] via-[#3b82f6] via-[#f59e0b] via-[#f97316] to-[#ef4444]",
                   },
                 ].map((type) => (
                   <button
@@ -1299,10 +1299,10 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 <div
                   className={`flex-1 h-2 rounded bg-gradient-to-r ${
                     heatmapType === "displacement"
-                      ? "from-blue-500 to-red-500"
+                      ? "from-[#1e3a8a] via-[#22c55e] to-[#dc2626]"
                       : heatmapType === "stress"
-                        ? "from-green-500 to-red-500"
-                        : "from-green-500 via-yellow-500 to-red-500"
+                        ? "from-[#1e3a8a] via-[#22c55e] to-[#dc2626]"
+                        : "from-[#22c55e] via-[#f59e0b] to-[#ef4444]"
                   }`}
                 />
                 <span className="text-[9px] text-slate-500 dark:text-slate-400">High</span>

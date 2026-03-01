@@ -79,7 +79,7 @@ export const ValidationDialog: React.FC<ValidationDialogProps> = ({
                             </>
                         ) : (
                             <>
-                                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                                <AlertTriangle className="h-5 w-5 text-amber-500" />
                                 Structure Validation Warnings
                             </>
                         )}
@@ -95,7 +95,7 @@ export const ValidationDialog: React.FC<ValidationDialogProps> = ({
                     {/* Auto-Fix Results */}
                     {fixResults && fixResults.fixed.length > 0 && (
                         <div className="border border-green-300 bg-green-50 p-4 rounded-lg flex gap-3">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                             <div>
                                 <div className="font-semibold text-green-900 mb-2">Auto-Fix Applied</div>
                                 <div className="text-green-800 text-sm">

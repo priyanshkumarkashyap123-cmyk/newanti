@@ -377,10 +377,10 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
     }
 
     return (
-      <div className="w-72 h-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
+      <div className="w-[280px] h-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
         <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800/60">
           <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-            Inspector
+            Properties
           </h3>
           <button
             onClick={onToggle}
@@ -455,13 +455,13 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
     const selMembers = Array.from(selectedIds).filter(id => id.startsWith("M")).length;
 
     return (
-      <div className="h-7 bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-800/60 flex items-center justify-between px-3 text-[10px] text-slate-500 flex-shrink-0 select-none font-medium">
+      <div className="h-6 bg-white/95 dark:bg-slate-900 backdrop-blur-sm border-t border-slate-800/60 flex items-center justify-between px-3 text-[11px] font-mono text-slate-500 flex-shrink-0 select-none font-medium">
         {/* Left Section — Status + Mode */}
         <div className="flex items-center gap-3">
           {/* Status Indicator */}
           <span className="flex items-center gap-1.5">
             <span
-              className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? "bg-amber-400 animate-pulse" : analysisResults ? "bg-emerald-400" : "bg-blue-400"}`}
+              className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? "bg-amber-400 animate-pulse" : analysisResults ? "bg-emerald-400" : "bg-emerald-400"}`}
             />
             <span className={isAnalyzing ? "text-amber-400" : analysisResults ? "text-emerald-400" : "text-slate-500 dark:text-slate-400"}>
               {isAnalyzing ? "Analyzing..." : analysisResults ? "Results Ready" : "Ready"}
@@ -2936,7 +2936,7 @@ export const ModernModeler: FC = () => {
       <div className="h-screen w-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden relative">
         <MultiplayerUI />
         {/* Top Bar - Compact Header */}
-        <header className="h-9 bg-white/90 dark:bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
+        <header className="h-9 bg-white/90 dark:bg-slate-900 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
           {/* Logo Area */}
           <div className="flex items-center gap-3">
             {/* Mobile Menu Button */}
@@ -2968,7 +2968,7 @@ export const ModernModeler: FC = () => {
 
             <div className="flex items-center gap-2">
               <span className="text-lg text-blue-500">⬡</span>
-              <span className="font-semibold text-sm tracking-tight text-slate-700 dark:text-slate-200">
+              <span className="font-bold text-[20px] tracking-tight text-slate-700 dark:text-slate-200 font-['Space_Grotesk']">
                 BeamLab
               </span>
               <span className="text-[9px] font-bold text-slate-500 tracking-wider">

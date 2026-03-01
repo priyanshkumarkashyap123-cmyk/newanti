@@ -3,6 +3,9 @@
 # Azure publish profiles
 # Build outputs
 # Credential and secret documentation - NEVER COMMIT!
+# Production environment files - NEVER COMMIT!
+apps/web/.env.production
+**/.env.production
 docs/CREDENTIALS_CONFIGURED.md
 docs/GITHUB_SECRETS_COPY_PASTE.txt
 docs/CLERK_SETUP.md

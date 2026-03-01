@@ -32,14 +32,24 @@ interface ReportCustomization {
   
   // Report sections
   include_cover_page: boolean;
+  include_toc: boolean;
   include_input_summary: boolean;
+  include_load_cases: boolean;
+  include_load_combinations: boolean;
+  include_node_displacements: boolean;
+  include_member_forces: boolean;
+  include_reaction_summary: boolean;
   include_analysis_results: boolean;
   include_design_checks: boolean;
   include_diagrams: boolean;
+  include_concrete_design: boolean;
+  include_foundation_design: boolean;
+  include_connection_design: boolean;
   
   // Styling
   primary_color: [number, number, number];  // RGB 0-1
   page_size: 'A4' | 'Letter';
+  format: 'PDF' | 'DOCX' | 'HTML';
 }
 
 interface Props {
@@ -75,14 +85,24 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
     
     // Content defaults (all enabled)
     include_cover_page: true,
+    include_toc: true,
     include_input_summary: true,
+    include_load_cases: true,
+    include_load_combinations: true,
+    include_node_displacements: true,
+    include_member_forces: true,
+    include_reaction_summary: true,
     include_analysis_results: true,
     include_design_checks: true,
     include_diagrams: true,
+    include_concrete_design: false,
+    include_foundation_design: false,
+    include_connection_design: false,
     
     // Style defaults
     primary_color: [0.0, 0.4, 0.8],
-    page_size: 'A4'
+    page_size: 'A4',
+    format: 'PDF' as const
   });
 
   const handleGenerate = async () => {
@@ -334,10 +354,19 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
               
               {[
                 { key: 'include_cover_page' as const, label: 'Cover Page', desc: 'Project details and company branding' },
+                { key: 'include_toc' as const, label: 'Table of Contents', desc: 'Auto-generated page index' },
                 { key: 'include_input_summary' as const, label: 'Input Summary', desc: 'Nodes, members, loads, and supports' },
+                { key: 'include_load_cases' as const, label: 'Load Cases', desc: 'Dead, live, wind, seismic definitions' },
+                { key: 'include_load_combinations' as const, label: 'Load Combinations', desc: 'Factored load combination table' },
+                { key: 'include_node_displacements' as const, label: 'Node Displacements', desc: 'Nodal translations and rotations' },
+                { key: 'include_member_forces' as const, label: 'Member Forces', desc: 'Axial, shear, moment per member' },
+                { key: 'include_reaction_summary' as const, label: 'Reaction Summary', desc: 'Support reactions at each restraint' },
                 { key: 'include_analysis_results' as const, label: 'Analysis Results', desc: 'Displacements, reactions, and forces' },
                 { key: 'include_design_checks' as const, label: 'Design Checks', desc: 'IS 800 code compliance checks' },
-                { key: 'include_diagrams' as const, label: 'Diagrams', desc: 'BMD, SFD, and deflected shapes' }
+                { key: 'include_diagrams' as const, label: 'Diagrams', desc: 'BMD, SFD, and deflected shapes' },
+                { key: 'include_concrete_design' as const, label: 'Concrete Design', desc: 'RC beam/column/slab design per IS 456' },
+                { key: 'include_foundation_design' as const, label: 'Foundation Design', desc: 'Isolated/combined footing checks' },
+                { key: 'include_connection_design' as const, label: 'Connection Design', desc: 'Bolted/welded connection details' },
               ].map(section => (
                 <label
                   key={section.key}
@@ -361,6 +390,26 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
           {/* Style Tab */}
           {activeTab === 'style' && (
             <div className="space-y-5">
+              <div>
+                <label className="block text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  Export Format
+                </label>
+                <div className="flex gap-2">
+                  {(['PDF', 'DOCX', 'HTML'] as const).map(fmt => (
+                    <button
+                      key={fmt}
+                      onClick={() => updateCustomization('format', fmt)}
+                      className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${
+                        customization.format === fmt
+                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                          : 'bg-muted text-muted-foreground hover:bg-accent border border-border/60'
+                      }`}
+                    >
+                      {fmt}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div>
                 <label className="block text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                   Page Size

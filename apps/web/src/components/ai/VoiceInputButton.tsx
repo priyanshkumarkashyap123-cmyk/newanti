@@ -29,9 +29,19 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
             onCommand?.(cmd);
         });
 
+        // Keyboard shortcut: Ctrl+Shift+Space per Figma §14.5
+        const handleKeydown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.shiftKey && e.code === 'Space') {
+                e.preventDefault();
+                voiceInput.toggleListening();
+            }
+        };
+        window.addEventListener('keydown', handleKeydown);
+
         return () => {
             unsubState();
             unsubCommand();
+            window.removeEventListener('keydown', handleKeydown);
         };
     }, [onCommand]);
 

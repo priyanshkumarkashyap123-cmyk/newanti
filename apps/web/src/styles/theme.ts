@@ -364,8 +364,8 @@ export const breakpoints = {
 export const components = {
     button: {
         primary: {
-            bg: colors.primary[600],
-            bgHover: colors.primary[700],
+            bg: colors.primary[500],
+            bgHover: colors.primary[600],
             text: 'white',
         },
         secondary: {

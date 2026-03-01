@@ -142,8 +142,8 @@ body {
   height: 100%;
   min-height: 100%;
   font-family:
-    "Space Grotesk",
     "Inter",
+    "Noto Sans",
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -435,6 +435,12 @@ html:not(.dark) textarea::placeholder {
 @keyframes tooltipIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Voice input waveform animation per Figma §14.5 */
+@keyframes waveform {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
 }
 
 @keyframes fadeIn {

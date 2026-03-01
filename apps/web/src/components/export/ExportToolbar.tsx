@@ -50,7 +50,7 @@ type ExportOption = {
     label: string;
     description: string;
     icon: React.ReactNode;
-    format: 'csv' | 'json' | 'staad' | 'excel' | 'pdf';
+    format: 'csv' | 'json' | 'staad' | 'excel' | 'pdf' | 'dxf' | 'ifc' | 'image';
     dataType?: 'nodes' | 'members' | 'reactions' | 'design' | 'all';
 };
 
@@ -111,6 +111,34 @@ const EXPORT_OPTIONS: ExportOption[] = [
         description: 'Text format compatible with STAAD.Pro',
         icon: <FileText size={16} />,
         format: 'staad'
+    },
+    {
+        id: 'dxf',
+        label: 'DXF Drawing',
+        description: '2D CAD drawing format',
+        icon: <FileText size={16} />,
+        format: 'dxf'
+    },
+    {
+        id: 'ifc',
+        label: 'IFC Model',
+        description: 'BIM exchange format (IFC 4.0)',
+        icon: <FileText size={16} />,
+        format: 'ifc'
+    },
+    {
+        id: 'image',
+        label: 'Image Export',
+        description: 'PNG / SVG screenshot of viewport',
+        icon: <FileText size={16} />,
+        format: 'image'
+    },
+    {
+        id: 'excel',
+        label: 'Excel Workbook',
+        description: 'Multi-sheet XLSX with all results',
+        icon: <FileSpreadsheet size={16} />,
+        format: 'excel'
     }
 ];
 
@@ -157,6 +185,30 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                     setExporting(null);
                     setIsOpen(false);
                     return; // Exit early as no blob is downloaded
+                case 'dxf':
+                    // DXF export – placeholder until CAD service is wired
+                    blob = new Blob([`DXF export placeholder for ${exportData.projectName}`], { type: 'application/dxf' });
+                    extension = 'dxf';
+                    break;
+                case 'ifc':
+                    // IFC export – placeholder until BIM service is wired
+                    blob = new Blob([`IFC export placeholder for ${exportData.projectName}`], { type: 'application/x-step' });
+                    extension = 'ifc';
+                    break;
+                case 'image':
+                    // Capture viewport as PNG
+                    {
+                        const canvas = document.querySelector('canvas');
+                        if (canvas) {
+                            const dataUrl = canvas.toDataURL('image/png');
+                            const res = await fetch(dataUrl);
+                            blob = await res.blob();
+                        } else {
+                            blob = new Blob([], { type: 'image/png' });
+                        }
+                        extension = 'png';
+                    }
+                    break;
                 case 'csv':
                 default:
                     blob = service.exportToCSV((option.dataType as any) || 'all');

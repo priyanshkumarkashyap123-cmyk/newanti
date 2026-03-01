@@ -138,10 +138,10 @@ const StatusIcon: FC<{ status: 'pass' | 'warning' | 'fail' }> = ({ status }) => 
 const UtilizationBar: FC<{ ratio: number }> = ({ ratio }) => {
     const percentage = Math.min(ratio * 100, 100);
     const color =
-        ratio > 1 ? 'bg-red-500' : ratio > 0.9 ? 'bg-yellow-500' : 'bg-green-500';
+        ratio > 1 ? 'bg-red-500' : ratio > 0.9 ? 'bg-orange-500' : ratio > 0.8 ? 'bg-amber-500' : ratio > 0.6 ? 'bg-blue-500' : 'bg-green-500';
 
     return (
-        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
                 className={`h-full ${color} transition-all duration-300`}
                 style={{ width: `${percentage}%` }}

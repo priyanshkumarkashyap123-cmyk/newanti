@@ -107,7 +107,7 @@ export const RightPropertiesPanel: FC<PropertiesPanelProps> = ({
                     return (
                         <div key={idx} className="border-b border-slate-100 dark:border-slate-800">
                             {/* Group Header */}
-                            <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/50 flex items-center gap-2">
+                            <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800 flex items-center gap-2">
                                 <Icon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                     {group.title}
