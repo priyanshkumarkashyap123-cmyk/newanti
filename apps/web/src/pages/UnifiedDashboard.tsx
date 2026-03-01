@@ -646,7 +646,7 @@ export const UnifiedDashboard: FC<{
                     {a.subtitle}
                   </span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-700 group-hover:text-slate-500 transition-colors shrink-0" />
+                <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
             ))}
           </div>
@@ -663,7 +663,7 @@ export const UnifiedDashboard: FC<{
               </h2>
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-600" />
+                  <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
                     placeholder="Search..."
@@ -671,14 +671,14 @@ export const UnifiedDashboard: FC<{
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-48 rounded-lg border border-white/[0.06] bg-white/[0.02] py-1.5 pl-8 pr-3 text-xs text-slate-700 dark:text-slate-300
-                      placeholder-slate-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20
+                      placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20
                       transition-colors"
                   />
                 </div>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-xs text-slate-600 dark:text-slate-400
+                  className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-400
                     focus:outline-none focus:border-blue-500/40"
                 >
                   <option value="all">All</option>
@@ -734,11 +734,11 @@ export const UnifiedDashboard: FC<{
               !projectsError &&
               filteredProjects.length === 0 && (
                 <div className="mt-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[0.08] py-16 text-center">
-                  <FolderOpen className="w-10 h-10 text-slate-700 mb-4" />
-                  <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+                  <FolderOpen className="w-10 h-10 text-slate-400 dark:text-slate-500 mb-4" />
+                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     {searchQuery ? "No matching projects" : "No projects yet"}
                   </h3>
-                  <p className="text-xs text-slate-600 mb-5 max-w-xs">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-5 max-w-xs">
                     {searchQuery
                       ? `Nothing matches "${searchQuery}". Try a different search.`
                       : "Create your first structural analysis project."}
@@ -779,9 +779,9 @@ export const UnifiedDashboard: FC<{
                       <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
                         {t.name}
                       </div>
-                      <div className="text-[10px] text-slate-600">{t.type}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{t.type}</div>
                     </div>
-                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-slate-700 group-hover:text-slate-500 transition-colors" />
+                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
                   </button>
                 ))}
               </div>
@@ -821,7 +821,7 @@ export const UnifiedDashboard: FC<{
             </div>
 
             {/* Version info */}
-            <div className="text-center text-[10px] text-slate-700 py-2">
+            <div className="text-center text-[10px] text-slate-500 dark:text-slate-500 py-2">
               BeamLab Ultimate v2.0 &middot; &copy; {new Date().getFullYear()}
             </div>
           </div>

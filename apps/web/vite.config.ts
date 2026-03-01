@@ -140,7 +140,7 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:3001",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        // Do NOT strip /api — the backend expects the /api prefix on all routes
       },
       "/ws": {
         target: "ws://localhost:3001",

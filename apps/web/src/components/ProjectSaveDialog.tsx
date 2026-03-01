@@ -18,10 +18,9 @@ import {
     Check,
     AlertCircle,
     HardDrive,
-    Download,
-    Upload
+    Download
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -59,6 +58,10 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
     const memberLoads = useModelStore((s) => s.memberLoads);
     const projectInfo = useModelStore((s) => s.projectInfo);
     const updateProjectInfo = useModelStore((s) => s.setProjectInfo);
+    const loadCases = useModelStore((s) => s.loadCases);
+    const loadCombinations = useModelStore((s) => s.loadCombinations);
+    const plates = useModelStore((s) => s.plates);
+    const floorLoads = useModelStore((s) => s.floorLoads);
 
     // State
     const [projects, setProjects] = useState<SavedProject[]>([]);
@@ -168,12 +171,16 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
         setSuccess(null);
 
         try {
-            // Serialize model data
+            // Serialize model data using tuple format [id, value] (consistent with store's loadProject)
             const modelData = {
-                nodes: Array.from(nodes.entries()).map(([nodeId, n]) => ({ nodeId, ...n })),
-                members: Array.from(members.entries()).map(([memberId, m]) => ({ memberId, ...m })),
+                nodes: Array.from(nodes.entries()),
+                members: Array.from(members.entries()),
                 loads,
                 memberLoads: memberLoads || [],
+                loadCases: loadCases || [],
+                loadCombinations: loadCombinations || [],
+                plates: Array.from(plates.entries()),
+                floorLoads: floorLoads || [],
                 projectInfo: { ...projectInfo, name: projectName, description: projectDescription },
             };
 
@@ -247,7 +254,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
             if (isLocal) {
                 // Load from localStorage
                 const stored = JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]');
-                const project = stored.find((p: any) => p.id === projectId);
+                const project = stored.find((p: SavedProject & { data?: unknown }) => p.id === projectId);
                 if (project?.data) {
                     const loaded = useModelStore.getState().loadProject(project.data);
                     if (loaded) {
@@ -280,7 +287,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                     setError('Failed to load project');
                 }
             }
-        } catch (err) {
+        } catch {
             setError('Error loading project');
         } finally {
             setLoading(false);
@@ -294,7 +301,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
         try {
             if (isLocal) {
                 const stored = JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]');
-                const updated = stored.filter((p: any) => p.id !== projectId);
+                const updated = stored.filter((p: SavedProject) => p.id !== projectId);
                 localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
                 setLocalProjects(updated);
                 setSuccess('Project deleted');

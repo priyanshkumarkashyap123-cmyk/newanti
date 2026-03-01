@@ -1043,14 +1043,45 @@ export const ModernModeler: FC = () => {
   );
 
   // Actual analysis execution (called after consent)
+  // Cancel controller for analysis
+  const analysisAbortRef = useRef<AbortController | null>(null);
+
+  const cancelAnalysis = useCallback(() => {
+    if (analysisAbortRef.current) {
+      analysisAbortRef.current.abort();
+    }
+    setIsAnalyzingLocal(false);
+    setIsAnalyzing(false);
+    setShowProgressModal(false);
+    setAnalysisStage("validating");
+    setAnalysisProgress(0);
+  }, []);
+
   const executeAnalysis = useCallback(async () => {
+    const abortController = new AbortController();
+    analysisAbortRef.current = abortController;
+
     setIsAnalyzingLocal(true);
     setIsAnalyzing(true);
     setShowProgressModal(true);
     setAnalysisStage("validating");
-    setAnalysisProgress(10);
+    setAnalysisProgress(5);
     setAnalysisError(undefined);
 
+    // Smooth sub-progress animation for each stage
+    let progressInterval: ReturnType<typeof setInterval> | null = null;
+    const animateProgress = (from: number, to: number, durationMs: number) => {
+      if (progressInterval) clearInterval(progressInterval);
+      let current = from;
+      const step = (to - from) / (durationMs / 50);
+      progressInterval = setInterval(() => {
+        current = Math.min(current + step, to);
+        setAnalysisProgress(Math.round(current));
+        if (current >= to && progressInterval) clearInterval(progressInterval);
+      }, 50);
+    };
+
+    animateProgress(5, 15, 500);
     const startTime = Date.now();
 
     try {
@@ -1123,7 +1154,7 @@ export const ModernModeler: FC = () => {
       // Always try WASM solver first (handles both with and without member loads)
       {
         setAnalysisStage("assembling");
-        setAnalysisProgress(30);
+        animateProgress(15, 40, 800);
 
         // Direction format - Rust WASM expects strings like "local_y", "global_y"
         // The Rust code checks for "local" AND "y" in the string
@@ -1381,7 +1412,7 @@ export const ModernModeler: FC = () => {
         // Use Rust WASM solver (client-side) for frame analysis
         try {
           setAnalysisStage("solving");
-          setAnalysisProgress(50);
+          animateProgress(40, 75, 1200);
 
           modelerLogger.log(
             "[Analysis] Using Rust WASM solver - client-side computation",
@@ -2565,6 +2596,7 @@ export const ModernModeler: FC = () => {
         });
 
         setAnalysisStage("complete");
+        if (progressInterval) clearInterval(progressInterval);
         setAnalysisProgress(100);
         setAnalysisStats({
           nodes: nodes.size,
@@ -2598,9 +2630,12 @@ export const ModernModeler: FC = () => {
         );
       }
     } catch (err) {
+      if (progressInterval) clearInterval(progressInterval);
       setAnalysisStage("error");
       setAnalysisError(err instanceof Error ? err.message : "Unknown error");
     } finally {
+      if (progressInterval) clearInterval(progressInterval);
+      analysisAbortRef.current = null;
       setIsAnalyzingLocal(false);
       setIsAnalyzing(false);
     }
@@ -2654,21 +2689,73 @@ export const ModernModeler: FC = () => {
       useModelStore.getState().deleteSelection();
     };
     const onCopy = () => {
-      // Copy = duplicate selected nodes nearby (offset by 1m in X)
+      // Duplicate selected nodes with a 1m X offset
       const state = useModelStore.getState();
       const sel = state.selectedIds;
-      if (sel.size === 0) return;
-      // Simply log for now — full copy/paste requires clipboard state
-      modelerLogger.log(`[Edit] Copy triggered for ${sel.size} items`);
+      if (sel.size === 0) {
+        showNotification("warning", "Select elements to copy first");
+        return;
+      }
+      const nodeIdMap = new Map<string, string>();
+      // Copy selected nodes with offset
+      for (const id of sel) {
+        const node = state.nodes.get(id);
+        if (node) {
+          const newId = `n${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          state.addNode({ ...node, id: newId, x: node.x + 1 });
+          nodeIdMap.set(id, newId);
+        }
+      }
+      // Copy members between selected nodes
+      for (const [, m] of state.members) {
+        if (sel.has(m.startNodeId) && sel.has(m.endNodeId)) {
+          const newStart = nodeIdMap.get(m.startNodeId);
+          const newEnd = nodeIdMap.get(m.endNodeId);
+          if (newStart && newEnd) {
+            state.addMember({ ...m, id: `m${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, startNodeId: newStart, endNodeId: newEnd });
+          }
+        }
+      }
+      showNotification("success", `Duplicated ${nodeIdMap.size} node(s) with 1m X offset`);
     };
     const onMove = () => {
-      // Switch to select tool so user can drag items
+      // Switch to select tool and notify user to drag
       useModelStore.getState().setTool('select');
-      modelerLogger.log('[Edit] Move mode — drag selected items');
+      showNotification("info", "Select tool activated — drag elements to move them");
     };
     const onSplit = () => {
-      // Split member at midpoint
-      modelerLogger.log('[Edit] Split triggered');
+      // Split selected members at midpoint
+      const state = useModelStore.getState();
+      const sel = state.selectedIds;
+      let splitCount = 0;
+      for (const id of sel) {
+        const member = state.members.get(id);
+        if (!member) continue;
+        const n1 = state.nodes.get(member.startNodeId);
+        const n2 = state.nodes.get(member.endNodeId);
+        if (!n1 || !n2) continue;
+        // Create midpoint node
+        const midId = `n${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        state.addNode({
+          id: midId,
+          x: (n1.x + n2.x) / 2,
+          y: (n1.y + n2.y) / 2,
+          z: ((n1.z ?? 0) + (n2.z ?? 0)) / 2,
+        });
+        // Create two new members
+        const m1Id = `m${Date.now()}-a${Math.random().toString(36).slice(2, 5)}`;
+        const m2Id = `m${Date.now()}-b${Math.random().toString(36).slice(2, 5)}`;
+        state.addMember({ ...member, id: m1Id, startNodeId: member.startNodeId, endNodeId: midId });
+        state.addMember({ ...member, id: m2Id, startNodeId: midId, endNodeId: member.endNodeId });
+        // Remove original member
+        state.removeMember(id);
+        splitCount++;
+      }
+      if (splitCount > 0) {
+        showNotification("success", `Split ${splitCount} member(s) at midpoint`);
+      } else {
+        showNotification("warning", "Select member(s) to split");
+      }
     };
     const onToggleDeformed = () => {
       const s = useModelStore.getState();
@@ -2778,6 +2865,9 @@ export const ModernModeler: FC = () => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      // Don't fire shortcuts when a dialog/modal is open
+      if (document.querySelector('[role="dialog"], [role="alertdialog"], .modal-overlay')) return;
+
       if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
         e.preventDefault();
         setShowShortcuts((prev) => !prev);
@@ -2789,6 +2879,7 @@ export const ModernModeler: FC = () => {
       }
       // Delete key
       if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
         useModelStore.getState().deleteSelection();
       }
       // F key → Fit View
@@ -2961,53 +3052,6 @@ export const ModernModeler: FC = () => {
           Skip to main content
         </a>
         <MultiplayerUI />
-        {/* Top Bar - Compact Header */}
-        <header className="h-9 bg-white/90 dark:bg-slate-900 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
-          {/* Logo Area */}
-          <div className="flex items-center gap-3">
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1 transition-colors"
-              onClick={() =>
-                document.dispatchEvent(new CustomEvent("toggle-sidebar"))
-              }
-              aria-label="Toggle sidebar navigation"
-              aria-expanded={isSidebarOpen}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
-            </button>
-
-            <div className="flex items-center gap-2">
-              <span className="text-lg text-blue-500">⬡</span>
-              <span className="font-bold text-[20px] tracking-tight text-slate-700 dark:text-slate-200 font-['Space_Grotesk']">
-                BeamLab
-              </span>
-              <span className="text-[9px] font-bold text-slate-500 tracking-wider">
-                ULTIMATE
-              </span>
-            </div>
-          </div>
-
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] text-slate-600">v24.01</span>
-          </div>
-        </header>
 
         {/* Main Application Layout (Flex Row) */}
         <div className="flex-1 flex overflow-hidden relative min-h-0">
@@ -3035,7 +3079,7 @@ export const ModernModeler: FC = () => {
           <div className="flex-1 flex flex-col min-w-0">
             {/* Top Ribbon */}
             <div className="flex-shrink-0 z-10">
-              <EngineeringRibbon activeCategory={activeCategory} />
+              <EngineeringRibbon activeCategory={activeCategory} isSidebarOpen={isSidebarOpen} />
             </div>
 
             {/* 3D Canvas Area */}
@@ -3180,6 +3224,7 @@ export const ModernModeler: FC = () => {
               progress={analysisProgress}
               error={analysisError}
               onClose={() => setShowProgressModal(false)}
+              onCancel={cancelAnalysis}
               stats={analysisStats}
             />
           )}

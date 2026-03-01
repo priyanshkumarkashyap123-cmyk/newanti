@@ -32,6 +32,7 @@ interface AnalysisProgressModalProps {
     progress: number; // 0-100
     error?: string;
     onClose: () => void;
+    onCancel?: () => void;
     stats?: {
         nodes: number;
         members: number;
@@ -62,6 +63,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
     progress,
     error,
     onClose,
+    onCancel,
     stats
 }) => {
     const currentStageIndex = STAGES.findIndex(s => s.id === stage);
@@ -86,7 +88,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                             : 'bg-blue-600 text-white'
                     }
                 `}>
-                    <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <DialogTitle className="text-lg font-semibold text-white">
                         {isComplete
                             ? '✓ Analysis Complete'
                             : isError
@@ -220,19 +222,29 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                {(isComplete || isError) && (
+                {(isComplete || isError) ? (
                     <DialogFooter className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700">
                         <Button
                             onClick={onClose}
                             className={`w-full ${isComplete
                                     ? 'bg-green-600 hover:bg-green-700 text-white'
-                                    : 'bg-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 text-white'
+                                    : 'bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-700 text-white'
                                 }`}
                         >
                             {isComplete ? 'View Results' : 'Close'}
                         </Button>
                     </DialogFooter>
-                )}
+                ) : onCancel ? (
+                    <DialogFooter className="px-6 py-3 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700">
+                        <Button
+                            onClick={onCancel}
+                            variant="ghost"
+                            className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                        >
+                            Cancel Analysis
+                        </Button>
+                    </DialogFooter>
+                ) : null}
             </DialogContent>
         </Dialog>
     );

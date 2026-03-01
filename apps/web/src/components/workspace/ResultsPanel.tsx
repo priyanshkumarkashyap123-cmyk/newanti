@@ -4,23 +4,36 @@
  */
 
 import { FC, ReactNode, useState } from 'react';
+import { BarChart3, Loader2 } from 'lucide-react';
 
 export interface ResultsTab {
     id: string;
     label: string;
     content: ReactNode;
     badge?: string | number;
+    icon?: ReactNode;
 }
 
 export interface ResultsPanelProps {
     tabs: ResultsTab[];
     defaultTab?: string;
+    isLoading?: boolean;
 }
 
-export const ResultsPanel: FC<ResultsPanelProps> = ({ tabs, defaultTab }) => {
+export const ResultsPanel: FC<ResultsPanelProps> = ({ tabs, defaultTab, isLoading }) => {
     const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
 
     const activeTabContent = tabs.find(t => t.id === activeTab)?.content;
+
+    if (tabs.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+                <BarChart3 className="w-10 h-10 text-slate-400 dark:text-slate-600 mb-3" />
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No results yet</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Run analysis (F5) to see results here</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full">
@@ -31,17 +44,18 @@ export const ResultsPanel: FC<ResultsPanelProps> = ({ tabs, defaultTab }) => {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`
-                            px-4 h-full text-xs font-semibold transition-colors relative
+                            px-4 h-full text-xs font-semibold transition-colors relative cursor-pointer
                             ${activeTab === tab.id
                                 ? 'text-slate-900 dark:text-white bg-slate-200/30 dark:bg-slate-700/30 border-b-2 border-blue-500'
-                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-200 border-b-2 border-transparent'
+                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 border-b-2 border-transparent'
                             }
                         `}
                     >
                         <span className="flex items-center gap-2">
+                            {tab.icon}
                             {tab.label}
                             {tab.badge !== undefined && (
-                                <span className="bg-slate-600 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded text-[10px]">
+                                <span className="bg-slate-200 text-slate-700 dark:bg-slate-600 dark:text-slate-200 px-1.5 py-0.5 rounded text-[10px] font-bold">
                                     {tab.badge}
                                 </span>
                             )}
@@ -49,14 +63,25 @@ export const ResultsPanel: FC<ResultsPanelProps> = ({ tabs, defaultTab }) => {
                     </button>
                 ))}
                 <div className="flex-1"></div>
-                <button className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400">
+                <button className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400" title="Maximize panel" aria-label="Maximize results panel">
                     <span className="material-symbols-outlined text-[16px]">open_in_full</span>
                 </button>
             </div>
 
             {/* Tab Content */}
             <div className="flex-1 overflow-auto bg-white/50 dark:bg-slate-900/50">
-                {activeTabContent}
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-full py-12">
+                        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                        <span className="ml-2 text-sm text-slate-500 dark:text-slate-400">Computing results...</span>
+                    </div>
+                ) : activeTabContent ? (
+                    activeTabContent
+                ) : (
+                    <div className="flex items-center justify-center h-full py-12">
+                        <p className="text-sm text-slate-400 dark:text-slate-500">Select a tab to view results</p>
+                    </div>
+                )}
             </div>
         </div>
     );

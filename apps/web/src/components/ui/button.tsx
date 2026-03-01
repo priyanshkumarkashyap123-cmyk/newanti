@@ -55,6 +55,14 @@ const rippleCSS = `
 }
 `;
 
+// Inject ripple + animation CSS once at module load (not per-render)
+if (typeof document !== 'undefined' && !document.getElementById(RIPPLE_STYLE_ID)) {
+  const style = document.createElement('style');
+  style.id = RIPPLE_STYLE_ID;
+  style.textContent = rippleCSS;
+  document.head.appendChild(style);
+}
+
 /* ------------------------------------------------------------------ */
 /*  CVA variant map                                                   */
 /* ------------------------------------------------------------------ */
@@ -230,16 +238,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         },
         ref,
     ) => {
-        // Inject ripple + animation CSS once
-        React.useEffect(() => {
-            if (typeof document === 'undefined') return;
-            if (document.getElementById(RIPPLE_STYLE_ID)) return;
-            const style = document.createElement('style');
-            style.id = RIPPLE_STYLE_ID;
-            style.textContent = rippleCSS;
-            document.head.appendChild(style);
-        }, []);
-
         const Comp = asChild ? Slot : 'button';
         const resolvedSize = (size ?? 'default') as string;
         const resolvedVariant = (variant ?? 'default') as string;

@@ -5,7 +5,6 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../providers/AuthProvider';
-import { MASTER_EMAILS } from '../constants/masterUsers';
 
 // ============================================
 // TYPES
@@ -86,23 +85,13 @@ export const TIER_LIMITS: Record<UserTier, TierLimits> = {
 // ============================================
 
 /**
- * Check if email belongs to a master user
- */
-export function isMasterUserEmail(email: string | null | undefined): boolean {
-    if (!email) return false;
-    return MASTER_EMAILS.includes(email.toLowerCase().trim());
-}
-
-/**
- * Get effective tier for a user (master users get enterprise)
+ * Get effective tier — tier is exclusively determined by the backend API.
+ * No client-side overrides to prevent security bypass.
  */
 export function getEffectiveTier(
-    email: string | null | undefined,
+    _email: string | null | undefined,
     storedTier: UserTier = 'free'
 ): UserTier {
-    if (isMasterUserEmail(email)) {
-        return 'enterprise';
-    }
     return storedTier;
 }
 
@@ -128,14 +117,8 @@ export function useTierAccess(): TierAccess {
             setIsLoading(true);
 
             try {
-                // Check if master user
-                if (isMasterUserEmail(userEmail)) {
-                    setTier('enterprise');
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Try to fetch tier from API
+                // Fetch tier exclusively from the backend API.
+                // No client-side master-user override — the backend already handles it.
                 if (isAuthenticated && userEmail) {
                     try {
                         const token = await getToken();
@@ -164,11 +147,9 @@ export function useTierAccess(): TierAccess {
                         if (err instanceof DOMException && err.name === 'AbortError') {
                             return;
                         }
-                        // API not available - use localStorage cache
-                        const cachedTier = localStorage.getItem('beamlab_user_tier');
-                        if (cachedTier && ['free', 'pro', 'enterprise'].includes(cachedTier)) {
-                            setTier(cachedTier as UserTier);
-                        }
+                        // SECURITY: On API failure, always default to 'free'.
+                        // Never trust localStorage for tier — it can be modified via DevTools.
+                        setTier('free');
                     }
                 }
             } finally {
@@ -188,7 +169,7 @@ export function useTierAccess(): TierAccess {
         isFree: effectiveTier === 'free',
         isPro: effectiveTier === 'pro' || effectiveTier === 'enterprise', // Enterprise includes all Pro features
         isEnterprise: effectiveTier === 'enterprise',
-        isMasterUser: isMasterUserEmail(userEmail),
+        isMasterUser: false, // Master user status is determined server-side only
         isAuthenticated,
         isLoading,
         limits,

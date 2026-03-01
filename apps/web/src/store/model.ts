@@ -548,6 +548,143 @@ const serializeMap = (map: Map<any, any>) => {
   return Object.fromEntries(map);
 };
 
+/**
+ * Shared helper — hydrates a SavedProjectData blob into the state shape
+ * expected by useModelStore.setState(). Both the store action `loadProject`
+ * and the standalone `loadProjectFromStorage` delegate to this so logic
+ * only lives in one place.
+ */
+function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null {
+  // Validate essential fields
+  if (
+    !data.projectInfo ||
+    !Array.isArray(data.nodes) ||
+    !Array.isArray(data.members)
+  ) {
+    console.error("Invalid project data structure");
+    return null;
+  }
+
+  // Restore nodes — support both tuple [id, node] and object { nodeId, ...node } formats
+  const nodesMap = new Map<string, Node>();
+  data.nodes.forEach((entry: any) => {
+    let id: string;
+    let node: any;
+    if (Array.isArray(entry) && entry.length >= 2) {
+      [id, node] = entry;
+    } else if (entry && typeof entry === "object" && entry.nodeId) {
+      const { nodeId, ...rest } = entry;
+      id = nodeId;
+      node = rest;
+    } else {
+      return; // skip malformed entry
+    }
+    if (
+      id &&
+      node &&
+      typeof node.x === "number" &&
+      typeof node.y === "number" &&
+      typeof node.z === "number"
+    ) {
+      nodesMap.set(id, node);
+    }
+  });
+
+  // Restore members — support both tuple [id, member] and object { memberId, ...member } formats
+  const membersMap = new Map<string, Member>();
+  data.members.forEach((entry: any) => {
+    let id: string;
+    let member: any;
+    if (Array.isArray(entry) && entry.length >= 2) {
+      [id, member] = entry;
+    } else if (entry && typeof entry === "object" && entry.memberId) {
+      const { memberId, ...rest } = entry;
+      id = memberId;
+      member = rest;
+    } else {
+      return; // skip malformed entry
+    }
+    if (id && member && member.startNodeId && member.endNodeId) {
+      membersMap.set(id, member);
+    }
+  });
+
+  // Calculate next IDs
+  let maxNodeNum = 0;
+  let maxMemberNum = 0;
+  nodesMap.forEach((_, id) => {
+    const match = id?.match?.(/^N(\d+)$/);
+    if (match?.[1]) maxNodeNum = Math.max(maxNodeNum, parseInt(match[1], 10) || 0);
+  });
+  membersMap.forEach((_, id) => {
+    const match = id?.match?.(/^M(\d+)$/);
+    if (match?.[1]) maxMemberNum = Math.max(maxMemberNum, parseInt(match[1], 10) || 0);
+  });
+
+  if (nodesMap.size === 0 && data.nodes.length > 0) {
+    console.warn("No valid nodes loaded from project data");
+  }
+
+  // Restore loads
+  const loads = Array.isArray(data.loads) ? data.loads : [];
+  const memberLoads = Array.isArray(data.memberLoads) ? data.memberLoads : [];
+  const loadCases = Array.isArray((data as any).loadCases) ? (data as any).loadCases : [];
+  const loadCombinations = Array.isArray((data as any).loadCombinations) ? (data as any).loadCombinations : [];
+  const floorLoads = Array.isArray((data as any).floorLoads) ? (data as any).floorLoads : [];
+
+  // Restore plates (may be tuples [id, plate] or objects with .id)
+  const platesMap = new Map<string, Plate>();
+  if (Array.isArray((data as any).plates)) {
+    (data as any).plates.forEach((entry: any) => {
+      if (Array.isArray(entry) && entry.length >= 2) {
+        platesMap.set(entry[0], entry[1]);
+      } else if (entry && typeof entry === 'object' && entry.id) {
+        platesMap.set(entry.id, entry);
+      }
+    });
+  }
+
+  return {
+    nodes: nodesMap,
+    members: membersMap,
+    loads,
+    memberLoads,
+    loadCases,
+    loadCombinations,
+    activeLoadCaseId: null,
+    projectInfo: data.projectInfo
+      ? {
+          ...data.projectInfo,
+          date: data.projectInfo.date ? new Date(data.projectInfo.date) : new Date(),
+        }
+      : undefined,
+    selectedIds: new Set(),
+    analysisResults: null,
+    isAnalyzing: false,
+    nextNodeNumber: maxNodeNum + 1,
+    nextMemberNumber: maxMemberNum + 1,
+    // Restore auxiliary state from saved data
+    plates: platesMap,
+    floorLoads,
+    civilData: new Map(),
+    clipboard: null,
+    nextPlateNumber: 1,
+    showSFD: false,
+    showBMD: false,
+    showAFD: false,
+    showBMDMy: false,
+    showShearZ: false,
+    showStressOverlay: false,
+    showDeflectedShape: false,
+    diagramScale: 0.05,
+    showResults: false,
+    modalResults: null,
+    activeModeIndex: 0,
+    modeAmplitude: 1.0,
+    isAnimating: false,
+  };
+}
+
 export const useModelStore = create<ModelState>()(
   devtools(
     temporal(
@@ -1556,115 +1693,9 @@ export const useModelStore = create<ModelState>()(
 
         loadProject: (data: SavedProjectData) => {
           try {
-            // Validate essential fields
-            if (
-              !data.projectInfo ||
-              !Array.isArray(data.nodes) ||
-              !Array.isArray(data.members)
-            ) {
-              console.error("Invalid project data structure");
-              return false;
-            }
-
-            // Restore nodes with error handling
-            const nodesMap = new Map<string, Node>();
-            data.nodes.forEach(([id, node]) => {
-              if (
-                id &&
-                node &&
-                typeof node.x === "number" &&
-                typeof node.y === "number" &&
-                typeof node.z === "number"
-              ) {
-                nodesMap.set(id, node);
-              }
-            });
-
-            // Restore members with error handling
-            const membersMap = new Map<string, Member>();
-            data.members.forEach(([id, member]) => {
-              if (id && member && member.startNodeId && member.endNodeId) {
-                membersMap.set(id, member);
-              }
-            });
-
-            // Calculate next IDs
-            let maxNodeNum = 0;
-            let maxMemberNum = 0;
-
-            nodesMap.forEach((_, id) => {
-              const match = id?.match?.(/^N(\d+)$/);
-              if (match && match[1]) {
-                maxNodeNum = Math.max(maxNodeNum, parseInt(match[1], 10) || 0);
-              }
-            });
-
-            membersMap.forEach((_, id) => {
-              const match = id?.match?.(/^M(\d+)$/);
-              if (match && match[1]) {
-                maxMemberNum = Math.max(
-                  maxMemberNum,
-                  parseInt(match[1], 10) || 0,
-                );
-              }
-            });
-
-            // Restore loads
-            const loads = Array.isArray(data.loads) ? data.loads : [];
-            const memberLoads = Array.isArray(data.memberLoads)
-              ? data.memberLoads
-              : [];
-            const loadCases = Array.isArray((data as any).loadCases)
-              ? (data as any).loadCases
-              : [];
-            const loadCombinations = Array.isArray(
-              (data as any).loadCombinations,
-            )
-              ? (data as any).loadCombinations
-              : [];
-
-            set({
-              nodes: nodesMap,
-              members: membersMap,
-              loads,
-              memberLoads,
-              loadCases,
-              loadCombinations,
-              activeLoadCaseId: null,
-              projectInfo: data.projectInfo
-                ? {
-                    ...data.projectInfo,
-                    date: data.projectInfo.date
-                      ? new Date(data.projectInfo.date)
-                      : new Date(),
-                  }
-                : undefined,
-              selectedIds: new Set(),
-              analysisResults: null,
-              isAnalyzing: false,
-              nextNodeNumber: maxNodeNum + 1,
-              nextMemberNumber: maxMemberNum + 1,
-              // Reset fields that clearModel resets but were missing here
-              plates: new Map(),
-              floorLoads: [],
-              civilData: new Map(),
-              clipboard: null,
-              nextPlateNumber: 1,
-              showSFD: false,
-              showBMD: false,
-              showAFD: false,
-              showBMDMy: false,
-              showShearZ: false,
-              showStressOverlay: false,
-              showDeflectedShape: false,
-              diagramScale: 0.05,
-              showResults: false,
-              modalResults: null,
-              activeModeIndex: 0,
-              modeAmplitude: 1.0,
-              isAnimating: false,
-            });
-
+            const hydrated = hydrateProjectData(data);
+            if (!hydrated) return false;
+            set(hydrated);
             return true;
           } catch (error) {
             console.error("Error loading project:", error);
@@ -2002,6 +2033,10 @@ export interface SavedProjectData {
   members: [string, Member][];
   loads: NodeLoad[];
   memberLoads: MemberLoad[];
+  loadCases?: LoadCase[];
+  loadCombinations?: LoadCombination[];
+  plates?: [string, Plate][];
+  floorLoads?: FloorLoad[];
   savedAt: string;
 }
 
@@ -2017,6 +2052,10 @@ export const saveProjectToStorage = (): boolean => {
       members: Array.from(state.members.entries()),
       loads: state.loads || [],
       memberLoads: state.memberLoads || [],
+      loadCases: state.loadCases || [],
+      loadCombinations: state.loadCombinations || [],
+      plates: Array.from(state.plates.entries()),
+      floorLoads: state.floorLoads || [],
       savedAt: new Date().toISOString(),
     };
 
@@ -2065,100 +2104,16 @@ export const loadProjectFromStorage = (): boolean => {
     let data: SavedProjectData;
     try {
       data = JSON.parse(stored);
-    } catch (parseError) {
+    } catch {
       console.error("Corrupted localStorage data, clearing...");
       localStorage.removeItem(STORAGE_KEY);
       return false;
     }
 
-    // Validate essential fields
-    if (
-      !data.projectInfo ||
-      !Array.isArray(data.nodes) ||
-      !Array.isArray(data.members)
-    ) {
-      console.error("Invalid project data structure");
-      return false;
-    }
+    const hydrated = hydrateProjectData(data);
+    if (!hydrated) return false;
 
-    const state = useModelStore.getState();
-
-    // Restore nodes with error handling
-    const nodesMap = new Map<string, Node>();
-    try {
-      data.nodes.forEach(([id, node]) => {
-        if (
-          id &&
-          node &&
-          typeof node.x === "number" &&
-          typeof node.y === "number" &&
-          typeof node.z === "number"
-        ) {
-          nodesMap.set(id, node);
-        }
-      });
-    } catch (nodeError) {
-      console.error("Error restoring nodes:", nodeError);
-    }
-
-    // Restore members with error handling
-    const membersMap = new Map<string, Member>();
-    try {
-      data.members.forEach(([id, member]) => {
-        if (id && member && member.startNodeId && member.endNodeId) {
-          membersMap.set(id, member);
-        }
-      });
-    } catch (memberError) {
-      console.error("Error restoring members:", memberError);
-    }
-
-    // Calculate next IDs with safety checks
-    let maxNodeNum = 0;
-    let maxMemberNum = 0;
-
-    try {
-      nodesMap.forEach((_, id) => {
-        const match = id?.match?.(/^N(\d+)$/);
-        if (match && match[1]) {
-          maxNodeNum = Math.max(maxNodeNum, parseInt(match[1], 10) || 0);
-        }
-      });
-
-      membersMap.forEach((_, id) => {
-        const match = id?.match?.(/^M(\d+)$/);
-        if (match && match[1]) {
-          maxMemberNum = Math.max(maxMemberNum, parseInt(match[1], 10) || 0);
-        }
-      });
-    } catch (idError) {
-      console.error("Error calculating next IDs:", idError);
-    }
-
-    // Validate loaded data
-    if (nodesMap.size === 0 && data.nodes.length > 0) {
-      console.warn("No valid nodes loaded");
-    }
-
-    // Update store with loaded data
-    useModelStore.setState({
-      projectInfo: {
-        ...data.projectInfo,
-        date:
-          data.projectInfo.date instanceof Date
-            ? data.projectInfo.date
-            : new Date(data.projectInfo.date || Date.now()),
-      },
-      nodes: nodesMap,
-      members: membersMap,
-      loads: Array.isArray(data.loads) ? data.loads : [],
-      memberLoads: Array.isArray(data.memberLoads) ? data.memberLoads : [],
-      nextNodeNumber: maxNodeNum + 1,
-      nextMemberNumber: maxMemberNum + 1,
-      selectedIds: new Set(),
-      analysisResults: null,
-    });
-
+    useModelStore.setState(hydrated);
     return true;
   } catch (e) {
     console.error("Failed to load project:", e);

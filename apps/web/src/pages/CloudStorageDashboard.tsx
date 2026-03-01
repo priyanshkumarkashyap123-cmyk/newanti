@@ -54,6 +54,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
+import { useAuth } from "../providers/AuthProvider";
 
 // Types
 interface CloudProject {
@@ -95,6 +96,8 @@ interface StorageStats {
 const CloudStorageDashboard: React.FC = () => {
   useEffect(() => { document.title = 'Cloud Storage | BeamLab'; }, []);
 
+  const { isSignedIn, getToken } = useAuth();
+
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedProject, setSelectedProject] = useState<CloudProject | null>(
     null,
@@ -126,16 +129,16 @@ const CloudStorageDashboard: React.FC = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       setIsLoadingProjects(true);
+      setProjectsError(null);
       try {
         const { ProjectService } = await import('../services/ProjectService');
-        // Try to get auth token from Clerk or session
         let token = '';
-        try {
-          const { useAuth } = await import('@clerk/clerk-react');
-          // Can't use hooks outside component, try sessionStorage fallback
-          token = sessionStorage.getItem('__clerk_token') || localStorage.getItem('clerk-token') || '';
-        } catch {
-          // No auth available
+        if (isSignedIn) {
+          try {
+            token = (await getToken()) || '';
+          } catch {
+            // Auth unavailable
+          }
         }
 
         if (token) {
@@ -173,7 +176,7 @@ const CloudStorageDashboard: React.FC = () => {
         }
       } catch (err) {
         console.warn('[CloudStorage] API fetch failed, showing demo projects:', err);
-        setProjectsError('Failed to load projects from cloud. Showing demo data.');
+        setProjectsError('Unable to connect to cloud storage. Showing sample projects for preview.');
       }
 
       // Fallback: demo projects when API is unavailable
@@ -238,7 +241,7 @@ const CloudStorageDashboard: React.FC = () => {
     };
 
     fetchProjects();
-  }, []);
+  }, [isSignedIn, getToken]);
 
   // Format file size
   const formatSize = (bytes: number): string => {

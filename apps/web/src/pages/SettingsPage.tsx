@@ -11,6 +11,8 @@ import {
     Ruler, Keyboard, Bell, CreditCard
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { useAuth } from '../providers/AuthProvider';
+import { useSubscription } from '../hooks/useSubscription';
 
 // ============================================
 // TYPES
@@ -197,20 +199,73 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
 export const SettingsPage: FC = () => {
     const [activeTab, setActiveTab] = useState<TabId>('analysis');
     const navigate = useNavigate();
+    const { signOut, user } = useAuth();
+    const { subscription } = useSubscription();
 
-    // Settings State
-    const [solverEngine, setSolverEngine] = useState('linear_static');
-    const [precision, setPrecision] = useState('double');
-    const [maxIterations, setMaxIterations] = useState('1000');
-    const [tolerance, setTolerance] = useState('1e-6');
-    const [meshDensity, setMeshDensity] = useState(75);
-    const [adaptiveMesh, setAdaptiveMesh] = useState(false);
-    const [parallelProcessing, setParallelProcessing] = useState(true);
-    const [gpuAcceleration, setGpuAcceleration] = useState(true);
-    const [autoSaveResults, setAutoSaveResults] = useState(false);
-    const [generateReport, setGenerateReport] = useState(true);
+    // ============================================
+    // SETTINGS PERSISTENCE via localStorage
+    // ============================================
+    const SETTINGS_KEY = 'beamlab_settings';
+
+    const loadSettings = () => {
+        try {
+            const stored = localStorage.getItem(SETTINGS_KEY);
+            if (stored) return JSON.parse(stored);
+        } catch { /* ignore */ }
+        return null;
+    };
+
+    const savedSettings = loadSettings();
+
+    // Settings State — initialized from localStorage or defaults
+    const [solverEngine, setSolverEngine] = useState(savedSettings?.solverEngine ?? 'linear_static');
+    const [precision, setPrecision] = useState(savedSettings?.precision ?? 'double');
+    const [maxIterations, setMaxIterations] = useState(savedSettings?.maxIterations ?? '1000');
+    const [tolerance, setTolerance] = useState(savedSettings?.tolerance ?? '1e-6');
+    const [meshDensity, setMeshDensity] = useState(savedSettings?.meshDensity ?? 75);
+    const [adaptiveMesh, setAdaptiveMesh] = useState(savedSettings?.adaptiveMesh ?? false);
+    const [parallelProcessing, setParallelProcessing] = useState(savedSettings?.parallelProcessing ?? true);
+    const [gpuAcceleration, setGpuAcceleration] = useState(savedSettings?.gpuAcceleration ?? true);
+    const [autoSaveResults, setAutoSaveResults] = useState(savedSettings?.autoSaveResults ?? false);
+    const [generateReport, setGenerateReport] = useState(savedSettings?.generateReport ?? true);
+    const [settingsSaved, setSettingsSaved] = useState(false);
 
     useEffect(() => { document.title = 'Settings | BeamLab Ultimate'; }, []);
+
+    // Auto-save settings to localStorage whenever they change
+    useEffect(() => {
+        const settings = {
+            solverEngine, precision, maxIterations, tolerance,
+            meshDensity, adaptiveMesh, parallelProcessing, gpuAcceleration,
+            autoSaveResults, generateReport,
+        };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }, [solverEngine, precision, maxIterations, tolerance, meshDensity, adaptiveMesh, parallelProcessing, gpuAcceleration, autoSaveResults, generateReport]);
+
+    const handleSaveSettings = () => {
+        const settings = {
+            solverEngine, precision, maxIterations, tolerance,
+            meshDensity, adaptiveMesh, parallelProcessing, gpuAcceleration,
+            autoSaveResults, generateReport,
+        };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 2000);
+    };
+
+    const handleResetDefaults = () => {
+        setSolverEngine('linear_static');
+        setPrecision('double');
+        setMaxIterations('1000');
+        setTolerance('1e-6');
+        setMeshDensity(75);
+        setAdaptiveMesh(false);
+        setParallelProcessing(true);
+        setGpuAcceleration(true);
+        setAutoSaveResults(false);
+        setGenerateReport(true);
+        localStorage.removeItem(SETTINGS_KEY);
+    };
 
     const getMeshLabel = () => {
         if (meshDensity >= 75) return 'High';
@@ -219,9 +274,16 @@ export const SettingsPage: FC = () => {
         return 'Coarse';
     };
 
-    const handleSignOut = () => {
+    const handleSignOut = async () => {
+        try {
+            await signOut();
+        } catch { /* ignore */ }
         navigate('/');
     };
+
+    // Subscription display helpers
+    const tierLabel = subscription.tier === 'enterprise' ? 'Enterprise' : subscription.tier === 'pro' ? 'Professional' : 'Free';
+    const tierBadge = subscription.tier === 'enterprise' ? '🏢 ENT' : subscription.tier === 'pro' ? '🏆 PRO' : '🆓 FREE';
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex">
@@ -284,13 +346,13 @@ export const SettingsPage: FC = () => {
                         {NAV_ITEMS.find(n => n.id === activeTab)?.label}
                     </h2>
                     <div className="flex gap-3">
-                        <Button variant="outline" size="sm" className="flex items-center gap-2 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+                        <Button variant="outline" size="sm" onClick={handleResetDefaults} className="flex items-center gap-2 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
                             <RotateCcw className="w-4 h-4" />
                             Reset Defaults
                         </Button>
-                        <Button variant="default" size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
-                            <Save className="w-4 h-4" />
-                            Save Changes
+                        <Button variant="default" size="sm" onClick={handleSaveSettings} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+                            {settingsSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                            {settingsSaved ? 'Saved!' : 'Save Changes'}
                         </Button>
                     </div>
                 </header>
@@ -668,55 +730,68 @@ export const SettingsPage: FC = () => {
                             </section>
                         )}
 
-                        {/* Subscription - per Figma §17.6 */}
+                        {/* Subscription - shows real tier from API */}
                         {activeTab === 'subscription' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
                                     <h3 className="text-slate-900 dark:text-white text-lg font-medium">Subscription & Billing</h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your plan and billing information.</p>
                                 </div>
-                                <div className="p-5 rounded-lg border border-slate-700 bg-slate-800">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-lg font-bold text-white">Professional</span>
-                                                <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs font-bold rounded">🏆 PRO</span>
-                                            </div>
-                                            <p className="text-sm text-slate-400 mt-1">● Active · Next billing: Feb 15, 2025</p>
-                                        </div>
-                                        <p className="text-2xl font-bold text-white">₹4,999<span className="text-sm text-slate-400 font-normal">/month</span></p>
+                                {subscription.isLoading ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full" />
+                                        <span className="ml-3 text-slate-400">Loading subscription...</span>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                        {['Unlimited projects', 'All analysis types', 'All design codes', 'AI features (100/day)', 'BIM integration', 'Priority support'].map((f) => (
-                                            <div key={f} className="flex items-center gap-2 text-slate-300">
-                                                <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                                                {f}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div>
-                                    <h4 className="text-sm font-medium text-slate-300 mb-3">Usage This Month</h4>
-                                    <div className="space-y-3">
-                                        {[
-                                            { label: 'AI Queries', used: 47, max: 100, unit: '/day' },
-                                            { label: 'Storage', used: 2.3, max: 50, unit: ' GB' },
-                                            { label: 'Team Members', used: 3, max: 5, unit: '' },
-                                        ].map((u) => (
-                                            <div key={u.label} className="flex items-center gap-3">
-                                                <span className="text-sm text-slate-400 w-28">{u.label}</span>
-                                                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(u.used / u.max) * 100}%` }} />
+                                ) : (
+                                    <>
+                                        <div className="p-5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-lg font-bold text-slate-900 dark:text-white">{tierLabel}</span>
+                                                        <span className={`px-2 py-0.5 text-xs font-bold rounded ${
+                                                            subscription.tier === 'enterprise' ? 'bg-purple-500/20 text-purple-400' :
+                                                            subscription.tier === 'pro' ? 'bg-amber-500/20 text-amber-400' :
+                                                            'bg-slate-500/20 text-slate-400'
+                                                        }`}>{tierBadge}</span>
+                                                    </div>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                                        {subscription.tier === 'free'
+                                                            ? 'Upgrade for unlimited features'
+                                                            : subscription.expiresAt
+                                                              ? `Active · Expires: ${subscription.expiresAt.toLocaleDateString()}`
+                                                              : '● Active'}
+                                                    </p>
                                                 </div>
-                                                <span className="text-xs text-slate-400 w-20 text-right">{u.used}/{u.max}{u.unit}</span>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="flex gap-3 pt-2">
-                                    <Button variant="premium" size="sm">Upgrade to Enterprise →</Button>
-                                    <Button variant="outline" size="sm">Cancel Subscription</Button>
-                                </div>
+                                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                                {[
+                                                    { label: `${subscription.features.maxProjects === -1 ? 'Unlimited' : subscription.features.maxProjects} projects`, ok: true },
+                                                    { label: 'PDF Export', ok: subscription.features.pdfExport },
+                                                    { label: 'AI Assistant', ok: subscription.features.aiAssistant },
+                                                    { label: 'Advanced Design Codes', ok: subscription.features.advancedDesignCodes },
+                                                    { label: `${subscription.features.teamMembers === -1 ? 'Unlimited' : subscription.features.teamMembers} team members`, ok: true },
+                                                    { label: 'Priority Support', ok: subscription.features.prioritySupport },
+                                                ].map((f) => (
+                                                    <div key={f.label} className={`flex items-center gap-2 ${f.ok ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500 line-through'}`}>
+                                                        <Check className={`w-4 h-4 flex-shrink-0 ${f.ok ? 'text-green-500' : 'text-slate-400'}`} />
+                                                        {f.label}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {subscription.tier === 'free' && (
+                                            <div className="flex gap-3 pt-2">
+                                                <Button variant="default" size="sm" onClick={() => navigate('/pricing')}>Upgrade to Pro →</Button>
+                                            </div>
+                                        )}
+                                        {subscription.tier === 'pro' && (
+                                            <div className="flex gap-3 pt-2">
+                                                <Button variant="default" size="sm" onClick={() => navigate('/pricing')}>Upgrade to Enterprise →</Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </section>
                         )}
                     </div>

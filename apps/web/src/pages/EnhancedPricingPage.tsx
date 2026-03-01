@@ -11,6 +11,9 @@
 import React, { FC, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useRazorpayPayment } from '../components/RazorpayPayment';
+import { useAuth } from '../providers/AuthProvider';
+import { useSubscription } from '../hooks/useSubscription';
 import {
   Check,
   X,
@@ -412,6 +415,12 @@ export const EnhancedPricingPage: FC = () => {
   const [showMatrix, setShowMatrix] = useState(false);
   const [marketMode, setMarketMode] = useState<MarketMode>("global");
   const [showPPP, setShowPPP] = useState(false);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
+
+  // Payment integration
+  const { openPayment, loading: paymentLoading } = useRazorpayPayment();
+  const { isSignedIn, user } = useAuth();
+  const { refreshSubscription } = useSubscription();
 
   useEffect(() => { document.title = 'Pricing | BeamLab Ultimate'; }, []);
 
@@ -456,11 +465,40 @@ export const EnhancedPricingPage: FC = () => {
     }
   };
 
-  const handleGetStarted = (planId: string) => {
+  const handleGetStarted = async (planId: string) => {
+    setUpgradeError(null);
+
     if (planId === "enterprise") {
       navigate("/contact?subject=enterprise");
-    } else {
+      return;
+    }
+
+    if (planId === "academic") {
+      // Free plan — just sign up
+      navigate('/sign-up?plan=academic');
+      return;
+    }
+
+    // Pro / Business plans — trigger Razorpay checkout
+    if (!isSignedIn || !user) {
       navigate(`/sign-up?plan=${planId}`);
+      return;
+    }
+
+    try {
+      const success = await openPayment(
+        user.id,
+        user.email || '',
+        billingPeriod
+      );
+      if (success) {
+        await refreshSubscription();
+        navigate('/stream?payment=success');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Payment failed. Please try again.';
+      setUpgradeError(message);
+      console.error('[Pricing] Payment error:', error);
     }
   };
 

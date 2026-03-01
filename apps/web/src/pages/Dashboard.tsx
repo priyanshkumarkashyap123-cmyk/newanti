@@ -58,7 +58,6 @@ import {
   Project as CloudProject,
 } from "../services/ProjectService";
 import { useModelStore } from "../store/model";
-import type { Node, Member } from "../store/model";
 
 // ============================================
 // TYPES
@@ -193,27 +192,20 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         const data = fullProject.data as any;
 
         if (data) {
-          // Reconstruct Maps from serialised arrays
-          const nodesMap = new Map<string, Node>(
-            data.nodes as [string, Node][],
-          );
-          const membersMap = new Map<string, Member>(
-            data.members as [string, Member][],
-          );
-
-          useModelStore.setState({
+          // Use the store's loadProject method — it handles all fields
+          // (nodes, members, loads, loadCases, plates, floorLoads, etc.)
+          // and supports both tuple and object serialization formats.
+          const projectData = {
+            ...data,
             projectInfo: {
               ...(data.projectInfo || {}),
               cloudId: fullProject._id,
             },
-            nodes: nodesMap,
-            members: membersMap,
-            loads: data.loads || [],
-            memberLoads: data.memberLoads || [],
-            analysisResults: null,
-            selectedIds: new Set(),
-            isAnalyzing: false,
-          });
+          };
+          const loaded = useModelStore.getState().loadProject(projectData);
+          if (!loaded) {
+            throw new Error('Failed to parse project data');
+          }
         }
 
         navigate("/app");

@@ -36,6 +36,7 @@ import {
   Sparkles,
   BarChart3,
   Copy,
+  Menu,
   FlipHorizontal,
   RotateCcw,
   Scissors,
@@ -196,9 +197,10 @@ const TAB_ACTIVE_COLORS: Record<string, string> = {
 
 interface RibbonProps {
   activeCategory: Category;
+  isSidebarOpen?: boolean;
 }
 
-export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
+export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSidebarOpen }) => {
   const activeTool = useModelStore((s) => s.activeTool);
   const setTool = useModelStore((s) => s.setTool);
   const isAnalyzing = useModelStore((s) => s.isAnalyzing);
@@ -526,6 +528,16 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
     >
       {/* Title Bar */}
       <div className="h-8 flex items-center justify-between px-3 border-b border-slate-800/60 bg-white/90 dark:bg-slate-950/90">
+        <div className="flex items-center gap-2">
+          {/* Mobile sidebar toggle */}
+          <button
+            className="md:hidden text-slate-400 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-0.5 transition-colors"
+            onClick={() => document.dispatchEvent(new CustomEvent('toggle-sidebar'))}
+            aria-label="Toggle sidebar navigation"
+            aria-expanded={isSidebarOpen ?? false}
+          >
+            <Menu className="w-4 h-4" />
+          </button>
         <Link
           to="/stream"
           className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
@@ -535,9 +547,10 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
           </div>
           <span className="font-bold text-[11px] text-slate-200 tracking-tight">BeamLab</span>
           <span className="px-1.5 py-0.5 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border border-blue-500/20 text-blue-400 text-[7px] font-extrabold rounded tracking-widest">
-            PRO
+            ULTIMATE
           </span>
         </Link>
+        </div>
 
         {/* Category Tabs */}
         <div

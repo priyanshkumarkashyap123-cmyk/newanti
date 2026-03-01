@@ -200,18 +200,10 @@ export const SubscriptionProvider = ({
   const canAccess = useCallback((
     feature: keyof SubscriptionStatus["features"],
   ): boolean => {
-    // If still loading and we have a cached tier, use that
+    // SECURITY: During loading, default to denying access.
+    // Never trust localStorage for subscription decisions — it can be
+    // modified by the user via DevTools.
     if (subscription.isLoading) {
-      const cachedTier = localStorage.getItem(
-        "beamlab_subscription_tier",
-      ) as SubscriptionTier | null;
-      if (cachedTier && cachedTier !== "free") {
-        const cachedFeatures = TIER_FEATURES[cachedTier];
-        const cachedValue = cachedFeatures[feature];
-        if (typeof cachedValue === "boolean") return cachedValue;
-        if (typeof cachedValue === "number") return cachedValue !== 0;
-      }
-      // During loading, default to allowing access to prevent flashing
       return false;
     }
     const value = subscription.features[feature];

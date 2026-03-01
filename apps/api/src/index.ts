@@ -338,6 +338,26 @@ app.use(
 // All routes are available at both /api/... (legacy) and /api/v1/... (versioned)
 // ============================================
 
+// DB readiness guard — reject requests to DB-dependent endpoints before MongoDB is connected
+let dbReady = false;
+const requireDbReady: RequestHandler = (_req, res, next) => {
+  if (dbReady) return next();
+  res.status(503).json({
+    success: false,
+    error: "Service starting up — database is connecting. Please retry in a few seconds.",
+    retryAfterMs: 2000,
+  });
+};
+
+// Apply DB readiness check to all API routes that hit the database
+app.use("/api/v1", requireDbReady);
+app.use("/api/project", requireDbReady);
+app.use("/api/user", requireDbReady);
+app.use("/api/consent", requireDbReady);
+app.use("/api/audit", requireDbReady);
+app.use("/api/ai-sessions", requireDbReady);
+app.use("/api/feedback", requireDbReady);
+
 const authRequired = requireAuth();
 
 // Structural Analysis API (rate limited: 10/min, auth required)
@@ -410,9 +430,10 @@ app.use("/api/feedback", authRequired, crudRateLimit, feedbackRoutes);
 app.use("/api/v1/analytics", analyticsRouter);
 app.use("/api/analytics", analyticsRouter);
 
-// Get users in a project (for multiplayer) - requires auth
+// Get users in a project (for multiplayer) - requires auth + rate limited
 app.get(
   "/api/project/:id/users",
+  crudRateLimit,
   requireAuth(),
   (req: Request, res: Response) => {
     const projectId = req.params["id"] ?? "";
@@ -436,7 +457,8 @@ httpServer.listen(PORT, () => {
   // Connect to MongoDB in background
   connectDB()
     .then(() => {
-      console.log("✅ MongoDB connected successfully");
+      dbReady = true;
+      console.log("✅ MongoDB connected successfully — API routes are now live");
     })
     .catch((err) => {
       console.error("❌ Failed to connect to MongoDB:", err);

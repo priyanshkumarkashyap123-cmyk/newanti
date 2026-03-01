@@ -10,7 +10,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { API_CONFIG } from '../config/env';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from '../providers/AuthProvider';
 
 // ============================================
 // Types matching the backend job response
