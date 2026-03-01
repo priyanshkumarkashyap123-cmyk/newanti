@@ -102,6 +102,7 @@ const UIShowcase = lazy(() =>
     default: module.UIShowcase,
   })),
 );
+const ErrorReportPage = lazy(() => import("./pages/ErrorReportPage"));
 
 // Auth & Info Pages (Lazy Loaded) - All have default exports
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
@@ -471,6 +472,8 @@ function App() {
               <Route path="/demo" element={<ModernModeler />} />
               {/* UI Component Showcase - Phase 13+ Integration Demo */}
               <Route path="/ui-showcase" element={<UIShowcase />} />
+              {/* Codebase Error & Health Report */}
+              <Route path="/error-report" element={<ErrorReportPage />} />
               {/* AI Power Dashboard - NEW C-Suite Analytics */}
               <Route
                 path="/ai-dashboard"
