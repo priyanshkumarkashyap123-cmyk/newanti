@@ -120,12 +120,17 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
                     max={max}
                     step={step}
                     className={cn(
-                        'h-8 w-full rounded-md border bg-white dark:bg-slate-900',
-                        'px-2.5 py-1 text-sm text-right',
+                        // Match Input component dimensions & style
+                        'h-9 w-full rounded-lg border bg-white/90 dark:bg-[rgba(15,23,42,0.8)]',
+                        'px-3 py-2 text-sm text-right',
                         'font-mono text-slate-900 dark:text-slate-100',
-                        'border-slate-200 dark:border-slate-700',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-                        'transition-colors',
+                        // Match Input border treatment
+                        'border-slate-200 dark:border-white/[0.08]',
+                        // Match Input focus style (3px glow ring)
+                        'focus-visible:outline-none focus-visible:border-blue-500 focus-visible:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] focus-visible:bg-white dark:focus-visible:bg-[rgba(15,23,42,0.95)]',
+                        // Disabled
+                        'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800',
+                        'transition-all duration-200',
                         // Hide spin buttons
                         '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
                         unit && 'pr-8',

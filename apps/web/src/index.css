@@ -176,34 +176,6 @@ html:not(.dark) body {
 }
 
 /* ============================================
-   Custom Scrollbar (Dark Theme)
-   ============================================ */
-
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.5);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
-}
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(71, 85, 105, 0.5) transparent;
-}
-
-/* ============================================
    Grid Pattern Background
    ============================================ */
 
@@ -321,13 +293,15 @@ select:focus-visible {
 }
 
 /* ============================================
-   Inputs
+   Inputs (scoped to native/unclassed inputs only)
+   Radix/Tailwind component inputs should NOT
+   be affected by these global styles.
    ============================================ */
 
-/* Dark mode inputs (default when .dark is on html) */
-.dark input,
-.dark textarea,
-.dark select {
+/* Dark mode — only apply to inputs without Tailwind classes */
+.dark input:not([class*="rounded"]):not([role]),
+.dark textarea:not([class*="rounded"]):not([role]),
+.dark select:not([class*="rounded"]):not([role]) {
   font-family: inherit;
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -341,24 +315,24 @@ select:focus-visible {
     background 0.2s ease;
 }
 
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
+.dark input:not([class*="rounded"]):not([role]):focus,
+.dark textarea:not([class*="rounded"]):not([role]):focus,
+.dark select:not([class*="rounded"]):not([role]):focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
   background: rgba(15, 23, 42, 0.95);
   outline: none;
 }
 
-.dark input::placeholder,
-.dark textarea::placeholder {
+.dark input:not([class*="rounded"])::placeholder,
+.dark textarea:not([class*="rounded"])::placeholder {
   color: #64748b;
 }
 
-/* Light mode inputs */
-html:not(.dark) input,
-html:not(.dark) textarea,
-html:not(.dark) select {
+/* Light mode — only apply to inputs without Tailwind classes */
+html:not(.dark) input:not([class*="rounded"]):not([role]),
+html:not(.dark) textarea:not([class*="rounded"]):not([role]),
+html:not(.dark) select:not([class*="rounded"]):not([role]) {
   font-family: inherit;
   background: #ffffff;
   border: 1px solid #d1d5db;
@@ -372,17 +346,17 @@ html:not(.dark) select {
     background 0.2s ease;
 }
 
-html:not(.dark) input:focus,
-html:not(.dark) textarea:focus,
-html:not(.dark) select:focus {
+html:not(.dark) input:not([class*="rounded"]):not([role]):focus,
+html:not(.dark) textarea:not([class*="rounded"]):not([role]):focus,
+html:not(.dark) select:not([class*="rounded"]):not([role]):focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   background: #ffffff;
   outline: none;
 }
 
-html:not(.dark) input::placeholder,
-html:not(.dark) textarea::placeholder {
+html:not(.dark) input:not([class*="rounded"])::placeholder,
+html:not(.dark) textarea:not([class*="rounded"])::placeholder {
   color: #9ca3af;
 }
 
@@ -803,12 +777,6 @@ html:not(.dark) .hover-lift:hover {
   transform: scale(1.02);
 }
 
-/* Selection */
-::selection {
-  background: rgba(43, 124, 238, 0.3);
-  color: #fff;
-}
-
 /* Focus ring for accessibility */
 .focus-ring {
   transition: box-shadow 0.2s ease;
@@ -1043,18 +1011,6 @@ html:not(.dark) .toggle-switch {
   outline: 2px solid #3b82f6;
   outline-offset: 3px;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
-}
-
-/* Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }
 
 /* High contrast mode support */

@@ -21,11 +21,21 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const resolvedRole = role ?? (isInteractive ? 'button' : undefined);
     const resolvedTabIndex = tabIndex ?? (isInteractive ? 0 : undefined);
 
+    const handleKeyDown = isInteractive
+      ? (e: React.KeyboardEvent<HTMLDivElement>) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            (e.currentTarget as HTMLDivElement).click();
+          }
+        }
+      : undefined;
+
     return (
       <div
         ref={ref}
         role={resolvedRole}
         tabIndex={resolvedTabIndex}
+        onKeyDown={handleKeyDown}
         className={cn(
           'rounded-lg border text-slate-800 dark:text-slate-100 transition-all duration-200',
           variantClasses[variant],
@@ -44,7 +54,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex flex-col space-y-1.5 p-5 border-b border-slate-200 dark:border-slate-800', className)}
+    className={cn('flex flex-col space-y-1.5 p-5 border-b border-slate-200 dark:border-slate-700/50', className)}
     {...props}
   />
 ));

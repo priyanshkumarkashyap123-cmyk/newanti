@@ -26,9 +26,9 @@ const switchVariants = cva(
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2',
         'focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950',
         'disabled:cursor-not-allowed disabled:opacity-50',
-        'data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-slate-600',
+        'data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-slate-300 dark:data-[state=unchecked]:bg-slate-600',
         // hover brightness
-        'hover:data-[state=checked]:bg-blue-400 hover:data-[state=unchecked]:bg-slate-500',
+        'hover:data-[state=checked]:bg-blue-400 hover:data-[state=unchecked]:bg-slate-400 dark:hover:data-[state=unchecked]:bg-slate-500',
     ].join(' '),
     {
         variants: {
@@ -50,8 +50,7 @@ const thumbVariants = cva(
         // spring easing for the translate
         'transition-[transform,width] duration-200',
         'motion-safe:[transition-timing-function:cubic-bezier(0.175,0.885,0.32,1.275)]',
-        // active: squish effect
-        'active:scale-95',
+        // Note: pointer-events-none on thumb, squish applies via parent propagation
     ].join(' '),
     {
         variants: {

@@ -17,6 +17,70 @@ export { Button, buttonVariants } from './button';
 // Cards
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card';
 
+// Dialog
+export {
+    Dialog,
+    DialogPortal,
+    DialogOverlay,
+    DialogClose,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogFooter,
+    DialogTitle,
+    DialogDescription,
+} from './dialog';
+
+// Select
+export {
+    Select,
+    SelectGroup,
+    SelectValue,
+    SelectTrigger,
+    SelectContent,
+    SelectLabel,
+    SelectItem,
+    SelectSeparator,
+    SelectScrollUpButton,
+    SelectScrollDownButton,
+} from './select';
+
+// Table
+export {
+    Table,
+    TableHeader,
+    TableBody,
+    TableFooter,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableCaption,
+} from './table';
+
+// Tabs (core Radix)
+export { Tabs as RadixTabs, TabsList, TabsTrigger, TabsContent, tabsListVariants, tabsTriggerVariants } from './tabs';
+
+// Alert
+export { Alert, AlertTitle, AlertDescription, alertVariants } from './alert';
+
+// Badge (core)
+export { Badge as CoreBadge, badgeVariants } from './badge';
+
+// Checkbox
+export { Checkbox, checkboxVariants } from './checkbox';
+
+// Switch
+export { Switch, switchVariants } from './switch';
+
+// Slider
+export { Slider } from './slider';
+
+// Radio Group
+export { RadioGroup, RadioGroupItem } from './radio-group';
+
+// Scroll Area
+export { ScrollArea, ScrollBar } from './scroll-area';
+
 // Data Display - Using DataTable.tsx (uppercase)
 export { DataTable } from './DataTable';
 

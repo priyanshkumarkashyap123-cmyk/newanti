@@ -71,7 +71,7 @@ const tabsTriggerVariants = cva(
     [
         'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-sm font-medium',
         'ring-offset-white dark:ring-offset-slate-950',
-        'transition-all duration-250 ease-in-out',
+        'transition-all duration-200 ease-in-out',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2',
         'disabled:pointer-events-none disabled:opacity-50',
     ].join(' '),

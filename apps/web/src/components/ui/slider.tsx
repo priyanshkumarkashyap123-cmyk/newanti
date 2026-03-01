@@ -42,7 +42,7 @@ const thumbVariants = cva(
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
         'disabled:pointer-events-none disabled:opacity-50',
         'hover:scale-110',
-        'active:scale-125',
+        'active:scale-[1.15]',
     ].join(' '),
     {
         variants: {
@@ -86,10 +86,16 @@ const Slider = React.forwardRef<
                 'group relative flex w-full touch-none select-none items-center',
                 className
             )}
-            onPointerDown={() => setDragging(true)}
-            onPointerUp={() => setDragging(false)}
+            onPointerDown={() => {
+                setDragging(true);
+                const handleUp = () => {
+                    setDragging(false);
+                    window.removeEventListener('pointerup', handleUp);
+                };
+                window.addEventListener('pointerup', handleUp);
+            }}
             onMouseEnter={() => setHovering(true)}
-            onMouseLeave={() => { setHovering(false); setDragging(false); }}
+            onMouseLeave={() => setHovering(false)}
             {...props}
         >
             <SliderPrimitive.Track className={cn(trackVariants({ size }))}>
