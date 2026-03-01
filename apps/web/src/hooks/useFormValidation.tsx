@@ -146,16 +146,17 @@ export function useForm<T extends Record<string, FieldValue>>(
       if (!validationSchema) return null;
 
       try {
-        // Validate full schema and extract field error
-        await validationSchema.parseAsync(values);
-        return null;
-      } catch (error) {
-        if (error instanceof ZodError) {
-          const fieldError = error.errors.find(
-            (e) => e.path[0] === name
-          );
-          return fieldError?.message || null;
+        // Use safeParse to avoid throwing for expected validation errors
+        const result = await validationSchema.safeParseAsync(values);
+        if (result.success) {
+          return null;
         }
+        const fieldError = result.error.errors.find(
+          (e) => e.path[0] === name
+        );
+        return fieldError?.message || null;
+      } catch (error) {
+        // Catch truly unexpected errors (not validation errors)
         return null;
       }
     },

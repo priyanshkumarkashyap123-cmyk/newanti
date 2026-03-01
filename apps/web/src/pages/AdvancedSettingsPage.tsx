@@ -4,7 +4,7 @@
  * Unified interface for all solver and analysis parameters
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Settings,
   Sliders,
@@ -224,6 +224,8 @@ export default function AdvancedSettingsPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   
+  useEffect(() => { document.title = 'Advanced Settings | BeamLab Ultimate'; }, []);
+
   const toggleCategory = useCallback((id: string) => {
     setExpandedCategories(prev => {
       const next = new Set(prev);
@@ -276,7 +278,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.solver.type}
             onChange={(e) => updateSettings('solver', 'type', e.target.value as AnalysisSettings['solver']['type'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="skyline">Skyline (Standard)</option>
             <option value="sparse">Sparse Direct (Recommended)</option>
@@ -290,7 +292,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.solver.matrixStorage}
             onChange={(e) => updateSettings('solver', 'matrixStorage', e.target.value as AnalysisSettings['solver']['matrixStorage'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="full">Full Matrix</option>
             <option value="banded">Banded</option>
@@ -306,7 +308,7 @@ export default function AdvancedSettingsPage() {
             value={settings.solver.tolerance}
             onChange={(e) => updateSettings('solver', 'tolerance', parseFloat(e.target.value))}
             step="1e-10"
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -316,7 +318,7 @@ export default function AdvancedSettingsPage() {
             type="number"
             value={settings.solver.maxIterations}
             onChange={(e) => updateSettings('solver', 'maxIterations', parseInt(e.target.value))}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -325,7 +327,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.solver.preconditioner}
             onChange={(e) => updateSettings('solver', 'preconditioner', e.target.value as AnalysisSettings['solver']['preconditioner'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="jacobi">Jacobi</option>
             <option value="ilu">ILU (Incomplete LU)</option>
@@ -342,7 +344,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('solver', 'parallelCores', parseInt(e.target.value))}
             min={1}
             max={32}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -355,7 +357,7 @@ export default function AdvancedSettingsPage() {
           onChange={(e) => updateSettings('solver', 'gpuAcceleration', e.target.checked)}
           className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
         />
-        <label htmlFor="gpuAccel" className="text-sm text-zinc-900 dark:text-white">Enable GPU Acceleration (WebGPU/WebGL Compute)</label>
+        <label htmlFor="gpuAccel" className="text-sm text-slate-900 dark:text-white">Enable GPU Acceleration (WebGPU/WebGL Compute)</label>
       </div>
     </div>
   );
@@ -372,7 +374,7 @@ export default function AdvancedSettingsPage() {
             min={0.1}
             max={1.0}
             step={0.1}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -385,7 +387,7 @@ export default function AdvancedSettingsPage() {
             min={0.01}
             max={1.0}
             step={0.01}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -396,7 +398,7 @@ export default function AdvancedSettingsPage() {
             value={settings.static.convergenceTolerance}
             onChange={(e) => updateSettings('static', 'convergenceTolerance', parseFloat(e.target.value))}
             step={0.0001}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -408,7 +410,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('static', 'maxLoadSteps', parseInt(e.target.value))}
             min={1}
             max={100}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -422,7 +424,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('static', 'pdelta', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="pdelta" className="text-sm text-zinc-900 dark:text-white">P-Delta Analysis (Geometric Nonlinearity)</label>
+          <label htmlFor="pdelta" className="text-sm text-slate-900 dark:text-white">P-Delta Analysis (Geometric Nonlinearity)</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -433,7 +435,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('static', 'largeDisplacement', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="largeDisp" className="text-sm text-zinc-900 dark:text-white">Large Displacement Analysis</label>
+          <label htmlFor="largeDisp" className="text-sm text-slate-900 dark:text-white">Large Displacement Analysis</label>
         </div>
       </div>
     </div>
@@ -447,7 +449,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.dynamic.integrationMethod}
             onChange={(e) => updateSettings('dynamic', 'integrationMethod', e.target.value as AnalysisSettings['dynamic']['integrationMethod'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="newmark">Newmark-β (Average Acceleration)</option>
             <option value="hht">HHT-α (Numerical Damping)</option>
@@ -461,7 +463,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.dynamic.dampingMethod}
             onChange={(e) => updateSettings('dynamic', 'dampingMethod', e.target.value as AnalysisSettings['dynamic']['dampingMethod'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="rayleigh">Rayleigh Damping</option>
             <option value="modal">Modal Damping</option>
@@ -480,7 +482,7 @@ export default function AdvancedSettingsPage() {
                 step={0.01}
                 min={0}
                 max={0.5}
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
               />
             </div>
             <div>
@@ -492,7 +494,7 @@ export default function AdvancedSettingsPage() {
                 step={0.01}
                 min={0}
                 max={1.0}
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
               />
             </div>
           </>
@@ -508,7 +510,7 @@ export default function AdvancedSettingsPage() {
               step={0.01}
               min={-0.33}
               max={0}
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
             />
           </div>
         )}
@@ -523,7 +525,7 @@ export default function AdvancedSettingsPage() {
               step={0.1}
               min={1.0}
               max={2.0}
-              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
             />
           </div>
         )}
@@ -537,7 +539,7 @@ export default function AdvancedSettingsPage() {
             step={0.01}
             min={0.5}
             max={0.99}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -549,7 +551,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('dynamic', 'frequencyCutoff', parseFloat(e.target.value))}
             min={1}
             max={1000}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -561,7 +563,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('dynamic', 'maxModes', parseInt(e.target.value))}
             min={1}
             max={500}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -576,7 +578,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.modal.eigenSolver}
             onChange={(e) => updateSettings('modal', 'eigenSolver', e.target.value as AnalysisSettings['modal']['eigenSolver'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="subspace">Subspace Iteration</option>
             <option value="lanczos">Lanczos (Recommended)</option>
@@ -593,7 +595,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('modal', 'numModes', parseInt(e.target.value))}
             min={1}
             max={500}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -605,7 +607,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('modal', 'rigidBodyModes', parseInt(e.target.value))}
             min={0}
             max={6}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -617,7 +619,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('modal', 'shiftFrequency', parseFloat(e.target.value))}
             min={0}
             step={0.1}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -629,7 +631,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('modal', 'frequencyRange', [parseFloat(e.target.value), settings.modal.frequencyRange[1]])}
             min={0}
             step={0.1}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -641,7 +643,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('modal', 'frequencyRange', [settings.modal.frequencyRange[0], parseFloat(e.target.value)])}
             min={1}
             step={1}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -654,7 +656,7 @@ export default function AdvancedSettingsPage() {
           onChange={(e) => updateSettings('modal', 'massNormalization', e.target.checked)}
           className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
         />
-        <label htmlFor="massNorm" className="text-sm text-zinc-900 dark:text-white">Mass Normalization of Mode Shapes</label>
+        <label htmlFor="massNorm" className="text-sm text-slate-900 dark:text-white">Mass Normalization of Mode Shapes</label>
       </div>
     </div>
   );
@@ -667,7 +669,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.nonlinear.method}
             onChange={(e) => updateSettings('nonlinear', 'method', e.target.value as AnalysisSettings['nonlinear']['method'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="newton">Newton-Raphson</option>
             <option value="modified-newton">Modified Newton-Raphson</option>
@@ -681,7 +683,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.nonlinear.stiffnessUpdate}
             onChange={(e) => updateSettings('nonlinear', 'stiffnessUpdate', e.target.value as AnalysisSettings['nonlinear']['stiffnessUpdate'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="every-iteration">Every Iteration</option>
             <option value="every-step">Every Load Step</option>
@@ -694,7 +696,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.nonlinear.plasticHingeModel}
             onChange={(e) => updateSettings('nonlinear', 'plasticHingeModel', e.target.value as AnalysisSettings['nonlinear']['plasticHingeModel'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="lumped">Lumped Plasticity</option>
             <option value="fiber">Fiber Section</option>
@@ -711,7 +713,7 @@ export default function AdvancedSettingsPage() {
             step={0.01}
             min={0}
             max={1}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -723,7 +725,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('nonlinear', 'maxLineSearchIterations', parseInt(e.target.value))}
             min={1}
             max={50}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -737,7 +739,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('nonlinear', 'lineSearchEnabled', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="lineSearch" className="text-sm text-zinc-900 dark:text-white">Enable Line Search</label>
+          <label htmlFor="lineSearch" className="text-sm text-slate-900 dark:text-white">Enable Line Search</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -748,7 +750,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('nonlinear', 'adaptiveLoadStepping', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="adaptiveLoad" className="text-sm text-zinc-900 dark:text-white">Adaptive Load Stepping</label>
+          <label htmlFor="adaptiveLoad" className="text-sm text-slate-900 dark:text-white">Adaptive Load Stepping</label>
         </div>
       </div>
     </div>
@@ -762,7 +764,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.designCode.concrete}
             onChange={(e) => updateSettings('designCode', 'concrete', e.target.value as AnalysisSettings['designCode']['concrete'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="IS456">IS 456:2000 (India)</option>
             <option value="ACI318">ACI 318-19 (USA)</option>
@@ -776,7 +778,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.designCode.steel}
             onChange={(e) => updateSettings('designCode', 'steel', e.target.value as AnalysisSettings['designCode']['steel'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="IS800">IS 800:2007 (India)</option>
             <option value="AISC360">AISC 360-22 (USA)</option>
@@ -790,7 +792,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.designCode.seismic}
             onChange={(e) => updateSettings('designCode', 'seismic', e.target.value as AnalysisSettings['designCode']['seismic'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="IS1893">IS 1893:2016 (India)</option>
             <option value="ASCE7">ASCE 7-22 (USA)</option>
@@ -804,7 +806,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.designCode.loadFactorMethod}
             onChange={(e) => updateSettings('designCode', 'loadFactorMethod', e.target.value as AnalysisSettings['designCode']['loadFactorMethod'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="lsd">Limit State Design (LSD)</option>
             <option value="wsd">Working Stress Design (WSD)</option>
@@ -821,7 +823,7 @@ export default function AdvancedSettingsPage() {
             step={0.05}
             min={1.0}
             max={2.0}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -835,7 +837,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('designCode', 'crackingAnalysis', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="cracking" className="text-sm text-zinc-900 dark:text-white">Crack Width Analysis</label>
+          <label htmlFor="cracking" className="text-sm text-slate-900 dark:text-white">Crack Width Analysis</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -846,7 +848,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('designCode', 'deflectionCheck', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="deflection" className="text-sm text-zinc-900 dark:text-white">Serviceability Deflection Check</label>
+          <label htmlFor="deflection" className="text-sm text-slate-900 dark:text-white">Serviceability Deflection Check</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -857,7 +859,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('designCode', 'ductilityCheck', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="ductility" className="text-sm text-zinc-900 dark:text-white">Ductility Compliance Check</label>
+          <label htmlFor="ductility" className="text-sm text-slate-900 dark:text-white">Ductility Compliance Check</label>
         </div>
       </div>
     </div>
@@ -871,7 +873,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.output.forceUnit}
             onChange={(e) => updateSettings('output', 'forceUnit', e.target.value as AnalysisSettings['output']['forceUnit'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="kN">kN</option>
             <option value="N">N</option>
@@ -886,7 +888,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.output.lengthUnit}
             onChange={(e) => updateSettings('output', 'lengthUnit', e.target.value as AnalysisSettings['output']['lengthUnit'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="mm">mm</option>
             <option value="m">m</option>
@@ -901,7 +903,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.output.stressUnit}
             onChange={(e) => updateSettings('output', 'stressUnit', e.target.value as AnalysisSettings['output']['stressUnit'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="MPa">MPa</option>
             <option value="N/mm2">N/mm²</option>
@@ -918,7 +920,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('output', 'significantDigits', parseInt(e.target.value))}
             min={2}
             max={8}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
         
@@ -927,7 +929,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.output.warningLevel}
             onChange={(e) => updateSettings('output', 'warningLevel', e.target.value as AnalysisSettings['output']['warningLevel'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="strict">Strict (All Warnings)</option>
             <option value="moderate">Moderate</option>
@@ -943,7 +945,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('output', 'autoSaveInterval', parseInt(e.target.value))}
             min={1}
             max={30}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -957,7 +959,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('output', 'detailedOutput', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="detailed" className="text-sm text-zinc-900 dark:text-white">Detailed Analysis Output</label>
+          <label htmlFor="detailed" className="text-sm text-slate-900 dark:text-white">Detailed Analysis Output</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -968,7 +970,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('output', 'autoSave', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="autosave" className="text-sm text-zinc-900 dark:text-white">Enable Auto-Save</label>
+          <label htmlFor="autosave" className="text-sm text-slate-900 dark:text-white">Enable Auto-Save</label>
         </div>
       </div>
     </div>
@@ -982,7 +984,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.performance.lodLevel}
             onChange={(e) => updateSettings('performance', 'lodLevel', e.target.value as AnalysisSettings['performance']['lodLevel'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="auto">Auto (Recommended)</option>
             <option value="high">High Quality</option>
@@ -996,7 +998,7 @@ export default function AdvancedSettingsPage() {
           <select
             value={settings.performance.animationQuality}
             onChange={(e) => updateSettings('performance', 'animationQuality', e.target.value as AnalysisSettings['performance']['animationQuality'])}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           >
             <option value="high">High (60 FPS)</option>
             <option value="medium">Medium (30 FPS)</option>
@@ -1013,7 +1015,7 @@ export default function AdvancedSettingsPage() {
             step={10000}
             min={1000}
             max={1000000}
-            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+            className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
           />
         </div>
       </div>
@@ -1027,7 +1029,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('performance', 'useWebGL', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="webgl" className="text-sm text-zinc-900 dark:text-white">Use WebGL Rendering</label>
+          <label htmlFor="webgl" className="text-sm text-slate-900 dark:text-white">Use WebGL Rendering</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -1038,7 +1040,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('performance', 'antialiasing', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="antialiasing" className="text-sm text-zinc-900 dark:text-white">Antialiasing</label>
+          <label htmlFor="antialiasing" className="text-sm text-slate-900 dark:text-white">Antialiasing</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -1049,7 +1051,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('performance', 'shadowsEnabled', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="shadows" className="text-sm text-zinc-900 dark:text-white">Enable Shadows</label>
+          <label htmlFor="shadows" className="text-sm text-slate-900 dark:text-white">Enable Shadows</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -1060,7 +1062,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('performance', 'cacheResults', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="cache" className="text-sm text-zinc-900 dark:text-white">Cache Analysis Results</label>
+          <label htmlFor="cache" className="text-sm text-slate-900 dark:text-white">Cache Analysis Results</label>
         </div>
         
         <div className="flex items-center gap-3">
@@ -1071,7 +1073,7 @@ export default function AdvancedSettingsPage() {
             onChange={(e) => updateSettings('performance', 'streamingMode', e.target.checked)}
             className="w-4 h-4 rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-purple-600"
           />
-          <label htmlFor="streaming" className="text-sm text-zinc-900 dark:text-white">Streaming Mode (Large Models)</label>
+          <label htmlFor="streaming" className="text-sm text-slate-900 dark:text-white">Streaming Mode (Large Models)</label>
         </div>
       </div>
     </div>
@@ -1092,7 +1094,7 @@ export default function AdvancedSettingsPage() {
   };
   
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-6">
@@ -1124,7 +1126,7 @@ export default function AdvancedSettingsPage() {
               
               <button
                 onClick={resetToDefaults}
-                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 Reset
@@ -1176,7 +1178,7 @@ export default function AdvancedSettingsPage() {
                     {category.icon}
                   </div>
                   <div className="text-left">
-                    <h3 className="text-zinc-900 dark:text-white font-semibold">{category.title}</h3>
+                    <h3 className="text-slate-900 dark:text-white font-semibold">{category.title}</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{category.description}</p>
                   </div>
                 </div>
@@ -1199,24 +1201,24 @@ export default function AdvancedSettingsPage() {
         
         {/* Preset Profiles */}
         <div className="mt-8 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Gauge className="w-5 h-5 text-purple-400" />
             Preset Profiles
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
-              <div className="font-medium text-zinc-900 dark:text-white">High Performance</div>
+              <div className="font-medium text-slate-900 dark:text-white">High Performance</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Optimized for speed with GPU acceleration</div>
             </button>
             
             <button className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
-              <div className="font-medium text-zinc-900 dark:text-white">High Accuracy</div>
+              <div className="font-medium text-slate-900 dark:text-white">High Accuracy</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Maximum precision for critical designs</div>
             </button>
             
             <button className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
-              <div className="font-medium text-zinc-900 dark:text-white">Balanced</div>
+              <div className="font-medium text-slate-900 dark:text-white">Balanced</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Good balance of speed and accuracy</div>
             </button>
           </div>

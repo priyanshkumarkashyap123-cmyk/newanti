@@ -294,7 +294,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border-dark">
                 <div>
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">analytics</span>
                         Analysis & Design
                     </h2>
@@ -304,7 +304,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 </div>
                 <button
                     onClick={onClose}
-                    className="text-text-muted hover:text-zinc-900 dark:hover:text-white p-2 transition-colors"
+                    className="text-text-muted hover:text-slate-900 dark:hover:text-white p-2 transition-colors"
                 >
                     <span className="material-symbols-outlined">close</span>
                 </button>
@@ -312,7 +312,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
             {/* Summary Cards */}
             {analysisResults && (
-                <div className="grid grid-cols-4 gap-2 p-4 bg-white/50 dark:bg-zinc-900/50">
+                <div className="grid grid-cols-4 gap-2 p-4 bg-white/50 dark:bg-slate-900/50">
                     <SummaryCard
                         label="Passed"
                         value={designSummary.passed}
@@ -342,12 +342,12 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
             {/* Tabs */}
             <Tabs.Root value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                <Tabs.List className="flex border-b border-border-dark bg-zinc-100/30 dark:bg-zinc-900/30">
+                <Tabs.List className="flex border-b border-border-dark bg-slate-100/30 dark:bg-slate-900/30">
                     <Tabs.Trigger
                         value="forces"
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'forces'
                             ? 'text-primary border-b-2 border-primary'
-                            : 'text-text-muted hover:text-zinc-900 dark:hover:text-white'
+                            : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-[16px] mr-1.5 align-middle">functions</span>
@@ -357,7 +357,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                         value="design"
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'design'
                             ? 'text-primary border-b-2 border-primary'
-                            : 'text-text-muted hover:text-zinc-900 dark:hover:text-white'
+                            : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-[16px] mr-1.5 align-middle">engineering</span>
@@ -367,7 +367,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                         value="sections"
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'sections'
                             ? 'text-primary border-b-2 border-primary'
-                            : 'text-text-muted hover:text-zinc-900 dark:hover:text-white'
+                            : 'text-text-muted hover:text-slate-900 dark:hover:text-white'
                             }`}
                     >
                         <span className="material-symbols-outlined text-[16px] mr-1.5 align-middle">view_column</span>
@@ -388,14 +388,14 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                 return (
                                     <div
                                         key={memberId}
-                                        className={`bg-white dark:bg-zinc-900 rounded-lg p-3 border cursor-pointer transition-all ${selectedMemberId === memberId
+                                        className={`bg-white dark:bg-slate-900 rounded-lg p-3 border cursor-pointer transition-all ${selectedMemberId === memberId
                                             ? 'border-primary'
                                             : 'border-border-dark hover:border-text-muted'
                                             }`}
                                         onClick={() => setSelectedMemberId(memberId)}
                                     >
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-bold text-zinc-900 dark:text-white">Member {memberId}</span>
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">Member {memberId}</span>
                                             <span className="text-xs text-text-muted font-mono">
                                                 L = {((memberLengths.get(memberId) || 0) / 1000).toFixed(2)} m
                                             </span>
@@ -424,7 +424,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                             {Array.from(designResults.entries()).map(([memberId, result]) => (
                                 <div
                                     key={memberId}
-                                    className={`bg-white dark:bg-zinc-900 rounded-lg p-3 border transition-all ${result.overallStatus === 'FAIL'
+                                    className={`bg-white dark:bg-slate-900 rounded-lg p-3 border transition-all ${result.overallStatus === 'FAIL'
                                         ? 'border-red-500/50'
                                         : result.overallStatus === 'WARNING'
                                             ? 'border-yellow-500/50'
@@ -440,7 +440,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                                     {result.overallStatus}
                                                 </StatusBadge>
                                             </div>
-                                            <span className="text-sm font-bold text-zinc-900 dark:text-white">Member {memberId}</span>
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">Member {memberId}</span>
                                         </div>
                                         <span className={`text-sm font-bold font-mono ${result.criticalRatio > 1 ? 'text-red-400' :
                                             result.criticalRatio > 0.9 ? 'text-yellow-400' :
@@ -485,8 +485,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                 <Tabs.Content value="sections" className="flex-1 overflow-auto p-4">
                     <div className="space-y-4">
                         {/* Quick Apply */}
-                        <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-border-dark">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-3">Assign Section & Material</h3>
+                        <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-border-dark">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Assign Section & Material</h3>
 
                             <div className="space-y-3">
                                 <div>
@@ -494,7 +494,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <select
                                         value={defaultSection}
                                         onChange={(e) => setDefaultSection(e.target.value)}
-                                        className="w-full bg-zinc-100 dark:bg-zinc-800 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                        className="w-full bg-slate-100 dark:bg-slate-800 border border-border-dark rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                                     >
                                         {STEEL_SECTIONS.map(s => (
                                             <option key={s.id} value={s.id}>
@@ -509,7 +509,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <select
                                         value={defaultMaterial}
                                         onChange={(e) => setDefaultMaterial(e.target.value)}
-                                        className="w-full bg-zinc-100 dark:bg-zinc-800 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                        className="w-full bg-slate-100 dark:bg-slate-800 border border-border-dark rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                                     >
                                         {MATERIALS_DATABASE.filter(m => m.type === 'steel').map(m => (
                                             <option key={m.id} value={m.id}>
@@ -523,7 +523,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     <button
                                         onClick={applyToSelected}
                                         disabled={selectedIds.size === 0}
-                                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-zinc-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
+                                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
                                     >
                                         Apply ({selectedIds.size})
                                     </button>
@@ -556,7 +556,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                             });
                                             setDesignConfigs(newConfigs);
                                         }}
-                                        className="px-4 py-2 text-sm font-medium rounded-lg bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-600 transition-colors"
+                                        className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors"
                                     >
                                         Apply to All
                                     </button>
@@ -566,8 +566,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
                         {/* Section Properties Display */}
                         {defaultSection && (
-                            <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-border-dark">
-                                <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-3">Section Properties</h3>
+                            <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-border-dark">
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Section Properties</h3>
                                 {(() => {
                                     const section = getSectionById(defaultSection);
                                     if (!section) return null;
@@ -590,8 +590,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                         )}
 
                         {/* Assigned Sections List */}
-                        <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-border-dark">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-3">
+                        <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border border-border-dark">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
                                 Member Assignments ({designConfigs.size}/{members.size})
                             </h3>
                             <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -600,9 +600,9 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                     return (
                                         <div
                                             key={memberId}
-                                            className="flex items-center justify-between py-1.5 px-2 rounded bg-zinc-100/50 dark:bg-zinc-800/50 text-xs"
+                                            className="flex items-center justify-between py-1.5 px-2 rounded bg-slate-100/50 dark:bg-slate-800/50 text-xs"
                                         >
-                                            <span className="text-zinc-900 dark:text-white font-medium">M{memberId}</span>
+                                            <span className="text-slate-900 dark:text-white font-medium">M{memberId}</span>
                                             <span className="text-text-muted">
                                                 {config?.section.name || 'Not assigned'}
                                             </span>
@@ -616,18 +616,18 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             </Tabs.Root>
 
             {/* Footer */}
-            <div className="p-4 border-t border-border-dark bg-white/50 dark:bg-zinc-900/50">
+            <div className="p-4 border-t border-border-dark bg-white/50 dark:bg-slate-900/50">
                 <div className="flex gap-2">
                     <button
                         onClick={handleExportDXF}
-                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-600 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">download</span>
                         DXF
                     </button>
                     <button
                         onClick={handleExportIFC}
-                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white hover:bg-zinc-600 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">domain</span>
                         IFC
@@ -635,7 +635,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                     <button
                         onClick={handleExportPDF}
                         disabled={!analysisResults}
-                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-zinc-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
                         Report
@@ -672,18 +672,18 @@ const SummaryCard: FC<{ label: string; value: string | number; color: string; ic
 };
 
 const ForceValue: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
-    <div className="bg-zinc-100 dark:bg-zinc-800 rounded px-2 py-1">
+    <div className="bg-slate-100 dark:bg-slate-800 rounded px-2 py-1">
         <p className="text-text-muted text-[10px]">{label}</p>
-        <p className={`font-mono font-medium ${value < 0 ? 'text-blue-400' : 'text-zinc-900 dark:text-white'}`}>
+        <p className={`font-mono font-medium ${value < 0 ? 'text-blue-400' : 'text-slate-900 dark:text-white'}`}>
             {value.toFixed(2)} <span className="text-text-muted text-[10px]">{unit}</span>
         </p>
     </div>
 );
 
 const PropertyItem: FC<{ label: string; value: number; unit: string }> = ({ label, value, unit }) => (
-    <div className="bg-zinc-100 dark:bg-zinc-800 rounded px-2 py-1.5">
+    <div className="bg-slate-100 dark:bg-slate-800 rounded px-2 py-1.5">
         <p className="text-text-muted text-[10px]">{label}</p>
-        <p className="text-zinc-900 dark:text-white font-mono text-xs">
+        <p className="text-slate-900 dark:text-white font-mono text-xs">
             {value > 1e5 ? value.toExponential(2) : value.toLocaleString()}
             <span className="text-text-muted text-[10px] ml-0.5">{unit}</span>
         </p>
@@ -695,10 +695,10 @@ const DesignCheckRow: FC<{ check: { checkType: string; ratio: number; status: st
         check.status === 'FAIL' ? 'text-red-400' : 'text-yellow-400';
 
     return (
-        <div className="flex items-center justify-between text-xs py-1 px-2 bg-zinc-100/50 dark:bg-zinc-800/50 rounded">
+        <div className="flex items-center justify-between text-xs py-1 px-2 bg-slate-100/50 dark:bg-slate-800/50 rounded">
             <span className="text-text-muted">{check.checkType}</span>
             <div className="flex items-center gap-2">
-                <div className="w-20 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div className="w-20 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div
                         className={`h-full rounded-full ${check.ratio > 1 ? 'bg-red-500' : check.ratio > 0.9 ? 'bg-yellow-500' : 'bg-green-500'
                             }`}

@@ -5,10 +5,13 @@
  */
 
 import React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Check, ArrowLeft, Lock, Shield } from 'lucide-react';
+import { Eye, EyeOff, Check, ArrowLeft, Lock } from 'lucide-react';
+import { authLogger } from '../lib/logger';
 import { useSignIn } from '@clerk/clerk-react';
+import { Button } from '../components/ui/button';
+import beamLabLogo from '../assets/beamlab_logo.png';
 
 // ============================================
 // PASSWORD STRENGTH CALCULATOR
@@ -67,6 +70,8 @@ export const ResetPasswordPage = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { signIn, isLoaded } = useSignIn();
+
+    useEffect(() => { document.title = 'Reset Password | BeamLab Ultimate'; }, []);
     
     // Get reset code from URL (sent via email link)
     const resetCode = searchParams.get('code');
@@ -103,7 +108,7 @@ export const ResetPasswordPage = () => {
                 setError('Invalid reset link. Please request a new password reset.');
             }
         } catch (err) {
-            console.error('Password reset error:', err);
+            authLogger.error('Password reset error:', err);
             setError(err instanceof Error ? err.message : 'Failed to reset password. Please try again.');
         } finally {
             setIsSubmitting(false);
@@ -111,13 +116,11 @@ export const ResetPasswordPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 flex flex-col">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
             {/* Header */}
-            <header className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-6 py-4 lg:px-10">
-                <Link to="/" className="flex items-center gap-3 text-zinc-900 dark:text-white">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <Shield className="w-5 h-5 text-white" />
-                    </div>
+            <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 lg:px-10">
+                <Link to="/" className="flex items-center gap-3 text-slate-900 dark:text-white">
+                    <img src={beamLabLogo} alt="BeamLab" className="w-8 h-8 rounded-lg" />
                     <h2 className="text-lg font-bold tracking-tight">BeamLab Ultimate</h2>
                 </Link>
                 <Link
@@ -133,16 +136,16 @@ export const ResetPasswordPage = () => {
                 <div className="flex flex-col w-full max-w-[512px]">
                     {/* Heading */}
                     <div className="flex flex-col gap-3 pb-6 text-center sm:text-left">
-                        <h1 className="text-zinc-900 dark:text-white text-3xl sm:text-4xl font-black tracking-tight">
+                        <h1 className="text-slate-900 dark:text-white text-3xl sm:text-4xl font-black tracking-tight">
                             Reset Your Password
                         </h1>
-                        <p className="text-zinc-500 dark:text-zinc-400 text-base">
+                        <p className="text-slate-500 dark:text-slate-400 text-base">
                             Please enter your new password below. Ensure it meets security standards to keep your structural data safe.
                         </p>
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 p-6 sm:p-8">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 sm:p-8">
                         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                             {/* Error Message */}
                             {error && (
@@ -152,27 +155,29 @@ export const ResetPasswordPage = () => {
                             )}
                             {/* New Password Field */}
                             <div className="flex flex-col gap-2">
-                                <label className="text-zinc-900 dark:text-white text-base font-medium">
+                                <label className="text-slate-900 dark:text-white text-base font-medium">
                                     New Password
                                 </label>
                                 <div className="flex w-full items-stretch rounded-lg focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                                     <div className="relative flex-1">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                         <input
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             placeholder="Enter new password"
-                                            className="w-full rounded-l-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none focus:border-blue-500 h-12 pl-12 pr-4 text-base"
+                                            className="w-full rounded-l-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:border-blue-500 h-12 pl-12 pr-4 text-base"
                                         />
                                     </div>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-700 dark:text-zinc-200 transition-colors"
+                                        className="rounded-l-none rounded-r-lg border border-l-0 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 h-12 w-12"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 
@@ -180,7 +185,7 @@ export const ResetPasswordPage = () => {
                             {password && (
                                 <div className="flex flex-col gap-2">
                                     <div className="flex justify-between items-center">
-                                        <p className="text-zinc-700 dark:text-zinc-300 text-xs font-semibold uppercase tracking-wider">
+                                        <p className="text-slate-700 dark:text-slate-300 text-xs font-semibold uppercase tracking-wider">
                                             Password Strength
                                         </p>
                                         <span className={`text-xs font-bold ${strength.label === 'Strong' ? 'text-green-500' :
@@ -189,7 +194,7 @@ export const ResetPasswordPage = () => {
                                             {strength.label}
                                         </span>
                                     </div>
-                                    <div className="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                                    <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
                                         <div
                                             className={`h-full ${strength.color} transition-all duration-300 ease-out`}
                                             style={{ width: `${strength.score}%` }}
@@ -199,8 +204,8 @@ export const ResetPasswordPage = () => {
                             )}
 
                             {/* Requirements Checklist */}
-                            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/50 p-4 border border-zinc-100 dark:border-zinc-700">
-                                <p className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
+                            <div className="rounded-lg bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-700">
+                                <p className="text-sm font-semibold text-slate-900 dark:text-white mb-3">
                                     Password must contain:
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -208,11 +213,11 @@ export const ResetPasswordPage = () => {
                                         <label key={i} className="flex items-center gap-3">
                                             <div className={`relative flex items-center justify-center w-5 h-5 rounded border-2 ${req.met
                                                     ? 'bg-blue-600 border-blue-600'
-                                                    : 'border-zinc-300 dark:border-zinc-600'
+                                                    : 'border-slate-300 dark:border-slate-600'
                                                 }`}>
-                                                {req.met && <Check className="w-3 h-3 text-zinc-900 dark:text-white" />}
+                                                {req.met && <Check className="w-3 h-3 text-white" />}
                                             </div>
-                                            <span className={`text-sm ${req.met ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'
+                                            <span className={`text-sm ${req.met ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'
                                                 }`}>
                                                 {req.label}
                                             </span>
@@ -223,30 +228,32 @@ export const ResetPasswordPage = () => {
 
                             {/* Confirm Password Field */}
                             <div className="flex flex-col gap-2">
-                                <label className="text-zinc-900 dark:text-white text-base font-medium">
+                                <label className="text-slate-900 dark:text-white text-base font-medium">
                                     Confirm New Password
                                 </label>
                                 <div className="flex w-full items-stretch rounded-lg focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
                                     <div className="relative flex-1">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                         <input
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             placeholder="Re-enter new password"
-                                            className={`w-full rounded-l-lg border bg-zinc-50 dark:bg-zinc-900 text-zinc-900 placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none h-12 pl-12 pr-4 text-base ${confirmPassword && !passwordsMatch
+                                            className={`w-full rounded-l-lg border bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none h-12 pl-12 pr-4 text-base ${confirmPassword && !passwordsMatch
                                                     ? 'border-red-500 focus:border-red-500'
-                                                    : 'border-zinc-300 dark:border-zinc-600 focus:border-blue-500'
+                                                    : 'border-slate-300 dark:border-slate-600 focus:border-blue-500'
                                                 }`}
                                         />
                                     </div>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="flex items-center justify-center px-4 rounded-r-lg border border-l-0 border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-700 dark:text-zinc-200 transition-colors"
+                                        className="rounded-l-none rounded-r-lg border border-l-0 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 h-12 w-12"
                                     >
                                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                    </button>
+                                    </Button>
                                 </div>
                                 {confirmPassword && !passwordsMatch && (
                                     <p className="text-red-500 text-sm">Passwords do not match</p>
@@ -254,19 +261,21 @@ export const ResetPasswordPage = () => {
                             </div>
 
                             {/* Submit Button */}
-                            <button
+                            <Button
                                 type="submit"
+                                variant="premium"
+                                size="lg"
+                                className="w-full mt-2"
                                 disabled={strength.score < 75 || !passwordsMatch || isSubmitting}
-                                className="w-full h-12 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-400 disabled:cursor-not-allowed text-white text-base font-bold transition-colors shadow-sm mt-2"
                             >
                                 {isSubmitting ? 'Setting Password...' : 'Set New Password'}
-                            </button>
+                            </Button>
 
                             {/* Back Link */}
                             <div className="flex justify-center pt-2">
                                 <Link
                                     to="/sign-in"
-                                    className="flex items-center gap-2 text-zinc-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-white transition-colors text-sm font-semibold"
+                                    className="flex items-center gap-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-white transition-colors text-sm font-semibold"
                                 >
                                     <ArrowLeft className="w-4 h-4" />
                                     Back to Login

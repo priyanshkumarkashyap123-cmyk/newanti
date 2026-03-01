@@ -249,16 +249,20 @@ app.get("/health", async (_req: Request, res: Response) => {
 
   const status = dbStatus === "connected" ? "ok" : "degraded";
 
+  const isDev = process.env["NODE_ENV"] !== "production";
+
   res.status(status === "ok" ? 200 : 503).json({
     status,
     service: "BeamLab Ultimate API",
-    version: process.env.npm_package_version || "1.0.0",
-    uptime: Math.floor(process.uptime()),
-    websocket: true,
-    authProvider: isUsingClerk() ? "clerk" : "inhouse",
-    dependencies: { mongodb: dbStatus },
-    circuitBreakers,
     timestamp: new Date().toISOString(),
+    ...(isDev && {
+      version: process.env.npm_package_version || "1.0.0",
+      uptime: Math.floor(process.uptime()),
+      websocket: true,
+      authProvider: isUsingClerk() ? "clerk" : "inhouse",
+      dependencies: { mongodb: dbStatus },
+      circuitBreakers,
+    }),
   });
 });
 app.get("/api/health", (_req: Request, res: Response) => {

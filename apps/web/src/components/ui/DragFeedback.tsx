@@ -331,7 +331,7 @@ export const CursorIndicator: FC<CursorIndicatorProps> = ({ mode, label }) => {
         move: <Move className="w-4 h-4" />,
         add: <Plus className="w-4 h-4" />,
         delete: <Trash2 className="w-4 h-4" />,
-        crosshair: <div className="w-3 h-3 border-2 border-zinc-200 dark:border-white rounded-full" />,
+        crosshair: <div className="w-3 h-3 border-2 border-slate-200 dark:border-white rounded-full" />,
     };
 
     const colors = {
@@ -348,7 +348,7 @@ export const CursorIndicator: FC<CursorIndicatorProps> = ({ mode, label }) => {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
         >
-            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-zinc-900 dark:text-white text-xs font-medium shadow-lg`}>
+            <div className={`flex items-center gap-2 px-2 py-1 rounded-lg ${colors[mode]} text-slate-900 dark:text-white text-xs font-medium shadow-lg`}>
                 {icons[mode]}
                 {label && <span>{label}</span>}
             </div>

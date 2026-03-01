@@ -844,7 +844,7 @@ export const BookInterface: React.FC = () => {
             disabled={isAnimating}
             className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 
               bg-amber-500/80 hover:bg-amber-400 rounded-full 
-              flex items-center justify-center text-zinc-900 dark:text-white text-xl
+              flex items-center justify-center text-slate-900 dark:text-white text-xl
               shadow-lg transition-all hover:scale-110 disabled:opacity-50
               disabled:hover:scale-100"
             aria-label="Previous page"
@@ -859,7 +859,7 @@ export const BookInterface: React.FC = () => {
             disabled={isAnimating}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 
               bg-amber-500/80 hover:bg-amber-400 rounded-full 
-              flex items-center justify-center text-zinc-900 dark:text-white text-xl
+              flex items-center justify-center text-slate-900 dark:text-white text-xl
               shadow-lg transition-all hover:scale-110 disabled:opacity-50
               disabled:hover:scale-100"
             aria-label="Next page"

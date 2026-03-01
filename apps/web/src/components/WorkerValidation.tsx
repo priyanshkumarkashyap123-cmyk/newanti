@@ -77,7 +77,7 @@ export function WorkerValidation() {
     };
 
     return (
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 text-zinc-900 dark:text-white font-mono rounded-lg shadow-lg max-w-2xl text-sm">
+        <div className="p-4 bg-gray-50 dark:bg-gray-900 text-slate-900 dark:text-white font-mono rounded-lg shadow-lg max-w-2xl text-sm">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-blue-400">Worker Validation</h3>
                 <button

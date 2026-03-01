@@ -80,7 +80,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                 </svg>
-                <h3 className="font-semibold text-zinc-900 dark:text-white">Sketch to Model</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-white">Sketch to Model</h3>
             </div>
 
             <div className="p-4">
@@ -127,19 +127,19 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
 
                         <div className="grid grid-cols-4 gap-3 mb-4">
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-zinc-900 dark:text-white">{result.nodes.length}</div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.nodes.length}</div>
                                 <div className="text-gray-500 dark:text-gray-400 text-sm">Nodes</div>
                             </div>
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-zinc-900 dark:text-white">{result.members.length}</div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.members.length}</div>
                                 <div className="text-gray-500 dark:text-gray-400 text-sm">Members</div>
                             </div>
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-zinc-900 dark:text-white">{result.nodes.filter(n => n.isSupport).length}</div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.nodes.filter(n => n.isSupport).length}</div>
                                 <div className="text-gray-500 dark:text-gray-400 text-sm">Supports</div>
                             </div>
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center">
-                                <div className="text-2xl font-bold text-zinc-900 dark:text-white">{result.loads.length}</div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{result.loads.length}</div>
                                 <div className="text-gray-500 dark:text-gray-400 text-sm">Loads</div>
                             </div>
                         </div>
@@ -147,7 +147,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 mb-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-gray-500 dark:text-gray-400">Detected Structure</span>
-                                <span className="text-zinc-900 dark:text-white font-medium capitalize">{result.structureType}</span>
+                                <span className="text-slate-900 dark:text-white font-medium capitalize">{result.structureType}</span>
                             </div>
                             <div className="flex items-center justify-between mt-2">
                                 <span className="text-gray-500 dark:text-gray-400">Confidence</span>
@@ -183,7 +183,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                                     setResult(null);
                                     setPreview(null);
                                 }}
-                                className="flex-1 py-2 bg-gray-700 text-zinc-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium"
+                                className="flex-1 py-2 bg-gray-700 text-slate-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium"
                             >
                                 Upload Another
                             </button>

@@ -121,14 +121,14 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                 </DialogHeader>
 
                     {/* Tabs */}
-                    <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+                    <div className="flex border-b border-slate-200 dark:border-slate-800">
                         {(['releases', 'offsets', 'beta'] as const).map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === tab
                                     ? 'text-violet-600 dark:text-violet-400 border-b-2 border-violet-500 bg-violet-500/10'
-                                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                     }`}
                             >
                                 {tab.charAt(0).toUpperCase() + tab.slice(1)} ({tab === 'beta' ? 'Angle' : ''})
@@ -143,16 +143,16 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                                 <div className="grid grid-cols-2 gap-8">
                                     {/* Start Node */}
                                     <div>
-                                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3 border-b border-zinc-300 dark:border-zinc-700 pb-1">Start Node</h3>
+                                        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 border-b border-slate-300 dark:border-slate-700 pb-1">Start Node</h3>
                                         <div className="space-y-2">
                                             {['fx', 'fy', 'fz', 'mx', 'my', 'mz'].map((dof) => (
                                                 <label key={`start-${dof}`} className="flex items-center justify-between group cursor-pointer">
-                                                    <span className="text-sm text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 font-mono uppercase">{dof}</span>
+                                                    <span className="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 font-mono uppercase">{dof}</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={(releases as any)[`${dof}Start`]}
                                                         onChange={(e) => setReleases(prev => ({ ...prev, [`${dof}Start`]: e.target.checked }))}
-                                                        className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
+                                                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-white dark:focus:ring-offset-slate-900"
                                                     />
                                                 </label>
                                             ))}
@@ -161,23 +161,23 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
 
                                     {/* End Node */}
                                     <div>
-                                        <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3 border-b border-zinc-300 dark:border-zinc-700 pb-1">End Node</h3>
+                                        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 border-b border-slate-300 dark:border-slate-700 pb-1">End Node</h3>
                                         <div className="space-y-2">
                                             {['fx', 'fy', 'fz', 'mx', 'my', 'mz'].map((dof) => (
                                                 <label key={`end-${dof}`} className="flex items-center justify-between group cursor-pointer">
-                                                    <span className="text-sm text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 font-mono uppercase">{dof}</span>
+                                                    <span className="text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 font-mono uppercase">{dof}</span>
                                                     <input
                                                         type="checkbox"
                                                         checked={(releases as any)[`${dof}End`]}
                                                         onChange={(e) => setReleases(prev => ({ ...prev, [`${dof}End`]: e.target.checked }))}
-                                                        className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
+                                                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-violet-600 focus:ring-violet-500 focus:ring-offset-white dark:focus:ring-offset-slate-900"
                                                     />
                                                 </label>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 italic">
                                     Checked = Released (Free to move/rotate). Unchecked = Fixed.
                                 </p>
                             </div>
@@ -187,7 +187,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                             <div className="space-y-6">
                                 {/* Start Node Offsets */}
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">Start Node Offsets (Global)</h3>
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Start Node Offsets (Global)</h3>
                                     <div className="grid grid-cols-3 gap-3">
                                         {['x', 'y', 'z'].map((axis) => (
                                             <div key={`start-${axis}`}>
@@ -207,7 +207,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
 
                                 {/* End Node Offsets */}
                                 <div>
-                                    <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">End Node Offsets (Global)</h3>
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">End Node Offsets (Global)</h3>
                                     <div className="grid grid-cols-3 gap-3">
                                         {['x', 'y', 'z'].map((axis) => (
                                             <div key={`end-${axis}`}>
@@ -251,7 +251,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                                         Rotation about the local x-axis. Positive is clockwise when looking from start to end.
                                     </p>
                                 </div>

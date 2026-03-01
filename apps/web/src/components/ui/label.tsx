@@ -1,7 +1,7 @@
 /**
  * Label Component - Compact Form Labels
  * 
- * Uses text-xs with zinc-500 for engineering density.
+ * Uses text-xs with slate-500 for engineering density.
  */
 
 import * as React from 'react';
@@ -19,7 +19,7 @@ const Label = React.forwardRef<
     <LabelPrimitive.Root
         ref={ref}
         className={cn(
-            'text-xs font-medium text-zinc-500 dark:text-zinc-400',
+            'text-xs font-medium text-slate-500 dark:text-slate-400',
             'leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
             className
         )}
@@ -64,7 +64,7 @@ const FormField: React.FC<FormFieldProps> = ({
                 <p className="text-xs text-red-500">{error}</p>
             )}
             {hint && !error && (
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{hint}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{hint}</p>
             )}
         </div>
     );

@@ -40,7 +40,7 @@ import {
 const InfoTip: React.FC<{ text: string }> = ({ text }) => (
   <span className="relative group ml-1 cursor-help">
     <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold">?</span>
-    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-100 dark:bg-gray-800 text-zinc-900 dark:text-white text-xs rounded px-2 py-1 whitespace-nowrap z-50 max-w-xs">
+    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white text-xs rounded px-2 py-1 whitespace-nowrap z-50 max-w-xs">
       {text}
     </span>
   </span>

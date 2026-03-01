@@ -4,7 +4,7 @@
  * Wired to real Rust pushover_analysis.rs via WASM
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Activity,
   TrendingUp,
@@ -55,6 +55,8 @@ export const PushoverAnalysisPage: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
+
+  useEffect(() => { document.title = 'Pushover Analysis | BeamLab Ultimate'; }, []);
 
   // Performance points (FEMA-356)
   const performancePoints: PerformancePoint[] = [
@@ -172,7 +174,7 @@ export const PushoverAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -205,7 +207,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     className={`py-3 px-4 rounded-lg font-medium transition-colors flex flex-col items-center gap-2 ${
                       input.loadPattern === value
                         ? 'bg-gradient-to-br from-amber-600 to-orange-600 text-white shadow-lg'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-750'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
                     }`}
                   >
                     <span className="text-2xl">{icon}</span>
@@ -224,7 +226,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                   <select
                     value={input.targetType}
                     onChange={(e) => updateInput('targetType', e.target.value as TargetType)}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   >
                     <option value="displacement">Displacement</option>
                     <option value="drift">Drift Ratio</option>
@@ -239,7 +241,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     type="number"
                     value={input.targetValue}
                     onChange={(e) => updateInput('targetValue', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -248,7 +250,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     type="number"
                     value={input.numberOfSteps}
                     onChange={(e) => updateInput('numberOfSteps', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -264,7 +266,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     type="number"
                     value={input.maxIterations}
                     onChange={(e) => updateInput('maxIterations', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -274,7 +276,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     step="0.0001"
                     value={input.convergenceTolerance}
                     onChange={(e) => updateInput('convergenceTolerance', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -292,7 +294,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     className="w-5 h-5 bg-slate-100 dark:bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
                   />
                   <div>
-                    <span className="text-zinc-900 dark:text-white font-medium">Geometric Nonlinearity (P-Δ)</span>
+                    <span className="text-slate-900 dark:text-white font-medium">Geometric Nonlinearity (P-Δ)</span>
                     <p className="text-xs text-slate-600 dark:text-slate-400">Include large displacement effects</p>
                   </div>
                 </label>
@@ -304,7 +306,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     className="w-5 h-5 bg-slate-100 dark:bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
                   />
                   <div>
-                    <span className="text-zinc-900 dark:text-white font-medium">Material Nonlinearity</span>
+                    <span className="text-slate-900 dark:text-white font-medium">Material Nonlinearity</span>
                     <p className="text-xs text-slate-600 dark:text-slate-400">Include yielding and plasticity</p>
                   </div>
                 </label>
@@ -319,7 +321,7 @@ export const PushoverAnalysisPage: React.FC = () => {
             >
               {analyzing ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-zinc-200 dark:border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-slate-200 dark:border-white border-t-transparent rounded-full animate-spin" />
                   Running Pushover Analysis...
                 </>
               ) : (
@@ -361,7 +363,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-slate-600 dark:text-slate-400">Steps Completed:</span>
-                      <span className="font-semibold text-zinc-900 dark:text-white">{results.stepsCompleted}/{input.numberOfSteps}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">{results.stepsCompleted}/{input.numberOfSteps}</span>
                     </div>
                   </div>
 
@@ -375,7 +377,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                       {performancePoints.map((point) => (
                         <div key={point.level} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-900/50 rounded">
                           <div>
-                            <span className="text-xs font-medium text-zinc-900 dark:text-white">{point.label}</span>
+                            <span className="text-xs font-medium text-slate-900 dark:text-white">{point.label}</span>
                             <p className="text-xs text-slate-600 dark:text-slate-400">{point.displacement} mm</p>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded ${
@@ -419,15 +421,15 @@ export const PushoverAnalysisPage: React.FC = () => {
                       <div className="space-y-1 text-xs">
                         <div className="flex justify-between">
                           <span className="text-slate-600 dark:text-slate-400">Yielded Elements:</span>
-                          <span className="text-zinc-900 dark:text-white">{results.damage.yieldedElements}</span>
+                          <span className="text-slate-900 dark:text-white">{results.damage.yieldedElements}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-600 dark:text-slate-400">Plastic Hinges:</span>
-                          <span className="text-zinc-900 dark:text-white">{results.damage.plasticHinges}</span>
+                          <span className="text-slate-900 dark:text-white">{results.damage.plasticHinges}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-600 dark:text-slate-400">Max Drift:</span>
-                          <span className="text-zinc-900 dark:text-white">{results.damage.maxDrift?.toFixed(3)}%</span>
+                          <span className="text-slate-900 dark:text-white">{results.damage.maxDrift?.toFixed(3)}%</span>
                         </div>
                       </div>
                     </div>

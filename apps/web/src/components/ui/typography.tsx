@@ -16,19 +16,19 @@ import { FC, HTMLAttributes } from 'react';
 export const typographyVariants = cva('', {
     variants: {
         variant: {
-            h1: 'text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50',
-            h2: 'text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50',
-            h3: 'text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50',
-            h4: 'text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-50',
-            h5: 'text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-50',
-            h6: 'text-xs font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 uppercase',
-            body: 'text-sm text-zinc-700 dark:text-zinc-300',
-            bodySmall: 'text-xs text-zinc-500 dark:text-zinc-400',
-            caption: 'text-[11px] text-zinc-500 dark:text-zinc-400',
-            code: 'text-xs font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded',
-            label: 'text-xs font-medium text-zinc-500 dark:text-zinc-400',
-            value: 'text-sm font-medium text-zinc-900 dark:text-zinc-100 font-mono',
-            unit: 'text-[10px] text-zinc-500 dark:text-zinc-400 ml-0.5'
+            h1: 'text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50',
+            h2: 'text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50',
+            h3: 'text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50',
+            h4: 'text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50',
+            h5: 'text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-50',
+            h6: 'text-xs font-semibold tracking-tight text-slate-900 dark:text-slate-50 uppercase',
+            body: 'text-sm text-slate-700 dark:text-slate-300',
+            bodySmall: 'text-xs text-slate-500 dark:text-slate-400',
+            caption: 'text-[11px] text-slate-500 dark:text-slate-400',
+            code: 'text-xs font-mono bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded',
+            label: 'text-xs font-medium text-slate-500 dark:text-slate-400',
+            value: 'text-sm font-medium text-slate-900 dark:text-slate-100 font-mono',
+            unit: 'text-[10px] text-slate-500 dark:text-slate-400 ml-0.5'
         }
     },
     defaultVariants: {

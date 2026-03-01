@@ -193,7 +193,7 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                     className={`px-3 py-2 rounded text-sm capitalize
                     ${trussType === type
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                         }`}
                                 >
                                     {type}
@@ -231,10 +231,10 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Preview Info */}
-                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded p-3 text-sm">
-                        <div className="text-zinc-500 dark:text-zinc-400">
-                            Estimated: <span className="text-zinc-900 dark:text-white">{panels + 1 + (trussType === 'warren' ? panels : panels + 1)}</span> nodes,
-                            <span className="text-zinc-900 dark:text-white ml-1">{panels * 3 + (trussType === 'warren' ? panels - 1 : panels)}</span> members
+                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded p-3 text-sm">
+                        <div className="text-slate-500 dark:text-slate-400">
+                            Estimated: <span className="text-slate-900 dark:text-white">{panels + 1 + (trussType === 'warren' ? panels : panels + 1)}</span> nodes,
+                            <span className="text-slate-900 dark:text-white ml-1">{panels * 3 + (trussType === 'warren' ? panels - 1 : panels)}</span> members
                         </div>
                     </div>
                 </div>
@@ -361,7 +361,7 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                     className={`px-3 py-2 rounded text-sm capitalize
                     ${archType === type
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                         }`}
                                 >
                                     {type}
@@ -402,9 +402,9 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             type="checkbox"
                             checked={includeHangers}
                             onChange={(e) => setIncludeHangers(e.target.checked)}
-                            className="w-4 h-4 rounded bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600"
+                            className="w-4 h-4 rounded bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
                         />
-                        <span className="text-sm text-zinc-700 dark:text-zinc-300">Include deck with hangers</span>
+                        <span className="text-sm text-slate-700 dark:text-slate-300">Include deck with hangers</span>
                     </label>
                 </div>
 
@@ -501,7 +501,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                 className={`px-3 py-2 rounded text-sm
                   ${frameType === 'portal'
                                         ? 'bg-blue-600 text-white'
-                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                     }`}
                             >
                                 Portal Frame
@@ -511,7 +511,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                 className={`px-3 py-2 rounded text-sm
                   ${frameType === 'multi-story'
                                         ? 'bg-blue-600 text-white'
-                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                     }`}
                             >
                                 Multi-Story
@@ -559,10 +559,10 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                         )}
                     </div>
 
-                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded p-3 text-sm">
-                        <div className="text-zinc-500 dark:text-zinc-400">
-                            Estimated: <span className="text-zinc-900 dark:text-white">{(bays + 1) * (frameType === 'portal' ? 2 : stories + 1)}</span> nodes,
-                            <span className="text-zinc-900 dark:text-white ml-1">{(bays + 1) * (frameType === 'portal' ? 1 : stories) + bays * (frameType === 'portal' ? 1 : stories)}</span> members
+                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded p-3 text-sm">
+                        <div className="text-slate-500 dark:text-slate-400">
+                            Estimated: <span className="text-slate-900 dark:text-white">{(bays + 1) * (frameType === 'portal' ? 2 : stories + 1)}</span> nodes,
+                            <span className="text-slate-900 dark:text-white ml-1">{(bays + 1) * (frameType === 'portal' ? 1 : stories) + bays * (frameType === 'portal' ? 1 : stories)}</span> members
                         </div>
                     </div>
                 </div>
@@ -698,7 +698,7 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                                     className={`px-3 py-2 rounded text-sm capitalize
                     ${arrangement === type
                                             ? 'bg-blue-600 text-white'
-                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                         }`}
                                 >
                                     {type}

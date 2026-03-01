@@ -158,27 +158,27 @@ export const InHouseSignUp: React.FC = () => {
 
     if (!isLoaded) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 dark:from-zinc-900 via-zinc-100 dark:via-zinc-800 to-zinc-50 dark:to-zinc-900">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex bg-gradient-to-br from-zinc-50 dark:from-zinc-900 via-zinc-100 dark:via-zinc-800 to-zinc-50 dark:to-zinc-900">
+        <div className="min-h-screen flex bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
             {/* Left Side - Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 overflow-y-auto">
                 <div className="w-full max-w-md py-8">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center gap-3 mb-8">
                         <span className="text-4xl">⬡</span>
-                        <span className="text-2xl font-bold text-zinc-900 dark:text-white">BeamLab</span>
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white">BeamLab</span>
                     </div>
 
                     {/* Back Link */}
                     <Link
                         to="/"
-                        className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white mb-8 transition-colors"
+                        className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-8 transition-colors"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         <span className="text-sm">Back to home</span>
@@ -186,8 +186,8 @@ export const InHouseSignUp: React.FC = () => {
 
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Create your account</h1>
-                        <p className="text-zinc-500 dark:text-zinc-400">
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create your account</h1>
+                        <p className="text-slate-500 dark:text-slate-400">
                             Already have an account?{' '}
                             <Link to="/sign-in" className="text-blue-400 hover:text-blue-300 transition-colors">
                                 Sign in
@@ -211,17 +211,17 @@ export const InHouseSignUp: React.FC = () => {
                         {/* Name Fields */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label htmlFor="firstName" className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                                <label htmlFor="firstName" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                                     First name
                                 </label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                     <input
                                         id="firstName"
                                         type="text"
                                         value={firstName}
                                         onChange={(e) => setFirstName(e.target.value)}
-                                        className={`w-full pl-11 pr-4 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 border rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.firstName ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-700'
+                                        className={`w-full pl-11 pr-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.firstName ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
                                             }`}
                                         placeholder="John"
                                         disabled={isLoading}
@@ -232,17 +232,17 @@ export const InHouseSignUp: React.FC = () => {
                                 )}
                             </div>
                             <div>
-                                <label htmlFor="lastName" className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                                <label htmlFor="lastName" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                                     Last name
                                 </label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                     <input
                                         id="lastName"
                                         type="text"
                                         value={lastName}
                                         onChange={(e) => setLastName(e.target.value)}
-                                        className={`w-full pl-11 pr-4 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 border rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.lastName ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-700'
+                                        className={`w-full pl-11 pr-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.lastName ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
                                             }`}
                                         placeholder="Doe"
                                         disabled={isLoading}
@@ -256,17 +256,17 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Email Field */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                            <label htmlFor="email" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                                 Email address
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                 <input
                                     id="email"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className={`w-full pl-11 pr-4 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 border rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.email ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-700'
+                                    className={`w-full pl-11 pr-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.email ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
                                         }`}
                                     placeholder="you@example.com"
                                     autoComplete="email"
@@ -280,17 +280,17 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Company Field (Optional) */}
                         <div>
-                            <label htmlFor="company" className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
-                                Company <span className="text-zinc-500 dark:text-zinc-400">(optional)</span>
+                            <label htmlFor="company" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
+                                Company <span className="text-slate-500 dark:text-slate-400">(optional)</span>
                             </label>
                             <div className="relative">
-                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                 <input
                                     id="company"
                                     type="text"
                                     value={company}
                                     onChange={(e) => setCompany(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    className="w-full pl-11 pr-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     placeholder="Your company"
                                     disabled={isLoading}
                                 />
@@ -299,17 +299,17 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Password Field */}
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                                 Password
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                 <input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className={`w-full pl-11 pr-12 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 border rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-700'
+                                    className={`w-full pl-11 pr-12 py-3 bg-slate-100/50 dark:bg-slate-800/50 border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.password ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
                                         }`}
                                     placeholder="••••••••"
                                     autoComplete="new-password"
@@ -318,7 +318,7 @@ export const InHouseSignUp: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -328,7 +328,7 @@ export const InHouseSignUp: React.FC = () => {
                             {password && (
                                 <div className="mt-3 space-y-2">
                                     <div className="flex items-center gap-2">
-                                        <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                                        <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <div
                                                 className={`h-full transition-all ${passwordStrength.color}`}
                                                 style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
@@ -345,9 +345,9 @@ export const InHouseSignUp: React.FC = () => {
                                                 {check.passed ? (
                                                     <CheckCircle2 className="w-3 h-3 text-green-400" />
                                                 ) : (
-                                                    <XCircle className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />
+                                                    <XCircle className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                                                 )}
-                                                <span className={check.passed ? 'text-green-400' : 'text-zinc-500 dark:text-zinc-400'}>
+                                                <span className={check.passed ? 'text-green-400' : 'text-slate-500 dark:text-slate-400'}>
                                                     {check.label}
                                                 </span>
                                             </div>
@@ -363,17 +363,17 @@ export const InHouseSignUp: React.FC = () => {
 
                         {/* Confirm Password Field */}
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                                 Confirm password
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
                                 <input
                                     id="confirmPassword"
                                     type={showConfirmPassword ? 'text' : 'password'}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className={`w-full pl-11 pr-12 py-3 bg-zinc-100/50 dark:bg-zinc-800/50 border rounded-lg text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.confirmPassword ? 'border-red-500' : 'border-zinc-200 dark:border-zinc-700'
+                                    className={`w-full pl-11 pr-12 py-3 bg-slate-100/50 dark:bg-slate-800/50 border rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.confirmPassword ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'
                                         }`}
                                     placeholder="••••••••"
                                     autoComplete="new-password"
@@ -382,7 +382,7 @@ export const InHouseSignUp: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                 >
                                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -399,10 +399,10 @@ export const InHouseSignUp: React.FC = () => {
                                 type="checkbox"
                                 checked={acceptTerms}
                                 onChange={(e) => setAcceptTerms(e.target.checked)}
-                                className="mt-1 w-4 h-4 rounded border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                                className="mt-1 w-4 h-4 rounded border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
                                 disabled={isLoading}
                             />
-                            <label htmlFor="terms" className="ml-2 text-sm text-zinc-500 dark:text-zinc-400">
+                            <label htmlFor="terms" className="ml-2 text-sm text-slate-500 dark:text-slate-400">
                                 I agree to the{' '}
                                 <Link to="/terms" className="text-blue-400 hover:text-blue-300">
                                     Terms of Service
@@ -421,7 +421,7 @@ export const InHouseSignUp: React.FC = () => {
                         <button
                             type="submit"
                             disabled={isLoading || !acceptTerms}
-                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                            className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
                                 <>
@@ -439,7 +439,7 @@ export const InHouseSignUp: React.FC = () => {
             {/* Right Side - Branding */}
             <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 p-12 flex-col justify-between">
                 <div>
-                    <Link to="/" className="flex items-center gap-3 text-zinc-900 dark:text-white">
+                    <Link to="/" className="flex items-center gap-3 text-slate-900 dark:text-white">
                         <span className="text-4xl">⬡</span>
                         <span className="text-2xl font-bold">BeamLab</span>
                         <span className="text-xs font-bold px-2 py-1 bg-white/20 rounded">
@@ -448,32 +448,32 @@ export const InHouseSignUp: React.FC = () => {
                     </Link>
                 </div>
 
-                <div className="text-zinc-900 dark:text-white">
+                <div className="text-slate-900 dark:text-white">
                     <h2 className="text-4xl font-bold mb-4">
                         Start Engineering Smarter
                     </h2>
-                    <p className="text-xl text-zinc-900/80 dark:text-white/80 mb-8">
+                    <p className="text-xl text-slate-900/80 dark:text-white/80 mb-8">
                         Join thousands of structural engineers using BeamLab Ultimate for faster, more accurate designs.
                     </p>
 
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div className="p-4 bg-white/10 rounded-xl">
                             <div className="text-3xl font-bold">10k+</div>
-                            <div className="text-sm text-zinc-900/60 dark:text-white/60">Engineers</div>
+                            <div className="text-sm text-slate-900/60 dark:text-white/60">Engineers</div>
                         </div>
                         <div className="p-4 bg-white/10 rounded-xl">
                             <div className="text-3xl font-bold">50k+</div>
-                            <div className="text-sm text-zinc-900/60 dark:text-white/60">Projects</div>
+                            <div className="text-sm text-slate-900/60 dark:text-white/60">Projects</div>
                         </div>
                         <div className="p-4 bg-white/10 rounded-xl">
                             <div className="text-3xl font-bold">99.9%</div>
-                            <div className="text-sm text-zinc-900/60 dark:text-white/60">Uptime</div>
+                            <div className="text-sm text-slate-900/60 dark:text-white/60">Uptime</div>
                         </div>
                     </div>
                 </div>
 
-                <div className="text-zinc-900/60 dark:text-white/60 text-sm">
-                    © 2025 BeamLab Ultimate. All rights reserved.
+                <div className="text-slate-900/60 dark:text-white/60 text-sm">
+                    © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
                 </div>
             </div>
         </div>

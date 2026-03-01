@@ -395,8 +395,8 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
             onClick={() => setTheme(value)}
             className={`p-2 rounded-md transition-all ${
               theme === value
-                ? 'bg-slate-600 text-zinc-900 dark:text-white'
-                : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                ? 'bg-slate-600 text-slate-900 dark:text-white'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
             title={label}
           >
@@ -410,7 +410,7 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
         <div className="relative">
           <button
             onClick={() => setShowPalette(!showPalette)}
-            className="p-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            className="p-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             title="Accent Color"
           >
             <Palette className="w-4 h-4" />
@@ -429,7 +429,7 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
                     }}
                     className={`w-8 h-8 rounded-full transition-all ${
                       accentColor === value 
-                        ? 'ring-2 ring-zinc-300 dark:ring-white ring-offset-2 ring-offset-slate-800' 
+                        ? 'ring-2 ring-slate-300 dark:ring-white ring-offset-2 ring-offset-slate-800' 
                         : 'hover:scale-110'
                     }`}
                     style={{ backgroundColor: color }}

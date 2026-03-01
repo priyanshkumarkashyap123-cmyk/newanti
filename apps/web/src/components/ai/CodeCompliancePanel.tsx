@@ -65,7 +65,7 @@ const UtilizationBar: React.FC<{ ratio: number; showLabel?: boolean }> = ({ rati
                 />
                 {ratio > 1 && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-xs text-zinc-900 dark:text-white font-bold">OVER</span>
+                        <span className="text-xs text-slate-900 dark:text-white font-bold">OVER</span>
                     </div>
                 )}
             </div>
@@ -116,7 +116,7 @@ const CheckRow: React.FC<{ check: CodeCheck }> = ({ check }) => {
             >
                 {getStatusIcon()}
                 <div className="flex-1 text-left">
-                    <div className="text-zinc-900 dark:text-white font-medium">{check.title}</div>
+                    <div className="text-slate-900 dark:text-white font-medium">{check.title}</div>
                     <div className="text-gray-500 dark:text-gray-400 text-sm">Clause {check.clause}</div>
                 </div>
                 <div className="w-32">
@@ -137,7 +137,7 @@ const CheckRow: React.FC<{ check: CodeCheck }> = ({ check }) => {
                     <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                         <div>
                             <span className="text-gray-500 dark:text-gray-400 block">Demand</span>
-                            <span className="text-zinc-900 dark:text-white font-mono">{check.demand.toFixed(2)} {check.unit}</span>
+                            <span className="text-slate-900 dark:text-white font-mono">{check.demand.toFixed(2)} {check.unit}</span>
                         </div>
                         <div>
                             <span className="text-gray-500 dark:text-gray-400 block">Capacity</span>
@@ -227,7 +227,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
                         />
                     </svg>
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">Code Compliance - {code.replace('_', ' ')}</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">Code Compliance - {code.replace('_', ' ')}</h3>
                 </div>
 
                 {report && (
@@ -251,7 +251,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                 {member && !report && !loading && (
                     <div className="text-center py-8">
                         <div className="mb-4">
-                            <div className="text-zinc-900 dark:text-white font-medium">{member.section.name}</div>
+                            <div className="text-slate-900 dark:text-white font-medium">{member.section.name}</div>
                             <div className="text-gray-500 dark:text-gray-400 text-sm">{member.material.grade} Steel</div>
                         </div>
                         <button
@@ -291,7 +291,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                             </div>
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                                 <div className="text-gray-500 dark:text-gray-400 text-sm">Critical Check</div>
-                                <div className="text-lg font-medium text-zinc-900 dark:text-white truncate">
+                                <div className="text-lg font-medium text-slate-900 dark:text-white truncate">
                                     {report.criticalCheck || 'None'}
                                 </div>
                             </div>
@@ -324,7 +324,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
 // console.log(summary);
                                     alert('Report generated - check console');
                                 }}
-                                className="flex-1 py-2 bg-gray-700 text-zinc-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium"
+                                className="flex-1 py-2 bg-gray-700 text-slate-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium"
                             >
                                 Generate Report
                             </button>

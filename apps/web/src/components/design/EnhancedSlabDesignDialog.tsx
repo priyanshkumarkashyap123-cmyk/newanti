@@ -534,7 +534,7 @@ export function EnhancedSlabDesignDialog({
           x={offsetX + scaledY / 2}
           y={svgHeight - 3}
           textAnchor="middle"
-          className="text-xs fill-zinc-500"
+          className="text-xs fill-slate-500"
         >
           Ly = {input.spanY} mm
         </text>
@@ -542,7 +542,7 @@ export function EnhancedSlabDesignDialog({
           x={12}
           y={offsetY + scaledX / 2}
           textAnchor="middle"
-          className="text-xs fill-zinc-500"
+          className="text-xs fill-slate-500"
           transform={`rotate(-90, 12, ${offsetY + scaledX / 2})`}
         >
           Lx = {input.spanX} mm
@@ -567,7 +567,7 @@ export function EnhancedSlabDesignDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden p-0">
           {/* Header */}
-          <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 space-y-0">
+          <DialogHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 space-y-0">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-amber-500/20">
                 <Layers className="w-5 h-5 text-amber-400" />
@@ -582,7 +582,7 @@ export function EnhancedSlabDesignDialog({
               <select
                 value={designCode}
                 onChange={e => setDesignCode(e.target.value as DesignCode)}
-                className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {Object.entries(CODE_INFO).map(([code, info]) => (
                   <option key={code} value={code}>{info.name}</option>
@@ -592,7 +592,7 @@ export function EnhancedSlabDesignDialog({
           </DialogHeader>
 
           {/* Tabs */}
-          <div className="flex border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex border-b border-slate-200 dark:border-slate-800">
             {[
               { id: 'input', label: 'Input', icon: <Settings className="w-4 h-4" /> },
               { id: 'results', label: 'Results', icon: <FileText className="w-4 h-4" /> },
@@ -604,7 +604,7 @@ export function EnhancedSlabDesignDialog({
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
                   activeTab === tab.id
                     ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-500/5'
-                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
                 }`}
               >
                 {tab.icon}
@@ -619,18 +619,18 @@ export function EnhancedSlabDesignDialog({
               <div className="grid grid-cols-3 gap-6">
                 {/* Geometry */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Square className="w-4 h-4 text-blue-400" />
                     Geometry
                   </h3>
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Slab Type</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Slab Type</label>
                       <select
                         value={input.slabType}
                         onChange={e => updateInput('slabType', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="one-way">One-Way Slab</option>
                         <option value="two-way">Two-Way Slab</option>
@@ -640,51 +640,51 @@ export function EnhancedSlabDesignDialog({
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Span Lx (mm)</label>
+                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Span Lx (mm)</label>
                         <input
                           type="number"
                           value={input.spanX}
                           onChange={e => updateInput('spanX', Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Span Ly (mm)</label>
+                        <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Span Ly (mm)</label>
                         <input
                           type="number"
                           value={input.spanY}
                           onChange={e => updateInput('spanY', Number(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Slab Thickness (mm)</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Slab Thickness (mm)</label>
                       <input
                         type="number"
                         value={input.thickness}
                         onChange={e => updateInput('thickness', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Clear Cover (mm)</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Clear Cover (mm)</label>
                       <input
                         type="number"
                         value={input.clearCover}
                         onChange={e => updateInput('clearCover', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Support Condition</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Support Condition</label>
                       <select
                         value={input.supportCondition}
                         onChange={e => updateInput('supportCondition', e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="simply-supported">Simply Supported</option>
                         <option value="one-edge-continuous">One Edge Continuous</option>
@@ -698,18 +698,18 @@ export function EnhancedSlabDesignDialog({
 
                 {/* Material & Loads */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Layers className="w-4 h-4 text-emerald-400" />
                     Material & Loads
                   </h3>
                   
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Concrete Grade (MPa)</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Concrete Grade (MPa)</label>
                       <select
                         value={input.concreteGrade}
                         onChange={e => updateInput('concreteGrade', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {CONCRETE_GRADES.map(g => (
                           <option key={g} value={g}>M{g}</option>
@@ -718,11 +718,11 @@ export function EnhancedSlabDesignDialog({
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Steel Grade (MPa)</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Steel Grade (MPa)</label>
                       <select
                         value={input.steelGrade}
                         onChange={e => updateInput('steelGrade', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         {STEEL_GRADES.map(g => (
                           <option key={g} value={g}>Fe{g}</option>
@@ -730,37 +730,37 @@ export function EnhancedSlabDesignDialog({
                       </select>
                     </div>
                     
-                    <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Dead Load (kN/m²)</label>
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Dead Load (kN/m²)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={input.deadLoad}
                         onChange={e => updateInput('deadLoad', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <p className="text-xs text-zinc-500 mt-0.5">Excluding self-weight</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Excluding self-weight</p>
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Live Load (kN/m²)</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Live Load (kN/m²)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={input.liveLoad}
                         onChange={e => updateInput('liveLoad', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Floor Finish (kN/m²)</label>
+                      <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Floor Finish (kN/m²)</label>
                       <input
                         type="number"
                         step="0.1"
                         value={input.floorFinish}
                         onChange={e => updateInput('floorFinish', Number(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -768,35 +768,35 @@ export function EnhancedSlabDesignDialog({
 
                 {/* Preview */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Grid className="w-4 h-4 text-purple-400" />
                     Slab Preview
                   </h3>
                   
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700">
                     {renderSlabPlan()}
                   </div>
                   
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 space-y-2">
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">Aspect Ratio (Ly/Lx):</span>
+                      <span className="text-slate-500 dark:text-slate-400">Aspect Ratio (Ly/Lx):</span>
                       <span className={`font-medium ${aspectRatio > 2 ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {aspectRatio.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">Slab Behavior:</span>
+                      <span className="text-slate-500 dark:text-slate-400">Slab Behavior:</span>
                       <span className={`font-medium ${slabBehavior === 'one-way' ? 'text-blue-400' : 'text-emerald-400'}`}>
                         {slabBehavior === 'one-way' ? 'One-Way' : 'Two-Way'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">Self-weight:</span>
-                      <span className="text-zinc-500 dark:text-zinc-400">{(input.thickness / 1000 * 25).toFixed(2)} kN/m²</span>
+                      <span className="text-slate-500 dark:text-slate-400">Self-weight:</span>
+                      <span className="text-slate-500 dark:text-slate-400">{(input.thickness / 1000 * 25).toFixed(2)} kN/m²</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500 dark:text-zinc-400">Total Load:</span>
-                      <span className="text-zinc-900 dark:text-white font-medium">
+                      <span className="text-slate-500 dark:text-slate-400">Total Load:</span>
+                      <span className="text-slate-900 dark:text-white font-medium">
                         {(input.thickness / 1000 * 25 + input.deadLoad + input.liveLoad + input.floorFinish).toFixed(2)} kN/m²
                       </span>
                     </div>
@@ -805,7 +805,7 @@ export function EnhancedSlabDesignDialog({
                   <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
                     <div className="flex items-start gap-2">
                       <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {aspectRatio > 2 
                           ? 'With Ly/Lx > 2, slab behaves as one-way spanning in shorter direction.'
                           : 'With Ly/Lx ≤ 2, slab behaves as two-way with bending in both directions.'}
@@ -831,40 +831,40 @@ export function EnhancedSlabDesignDialog({
                         <h3 className={`text-lg font-semibold ${result.isDesignAdequate ? 'text-emerald-400' : 'text-red-400'}`}>
                           {result.isDesignAdequate ? 'Design Adequate' : 'Design Inadequate'}
                         </h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
                           {result.actualSlabType === 'one-way' ? 'One-Way' : 'Two-Way'} Slab
                         </p>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
-                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Design Moments</h4>
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Design Moments</h4>
                     <div className="space-y-3">
                       <div>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Positive Moments</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Positive Moments</p>
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="p-2 rounded bg-white dark:bg-zinc-900">
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Mx+</p>
-                            <p className="text-lg font-semibold text-zinc-900 dark:text-white">{result.moments.positive.x.toFixed(2)} kN·m/m</p>
+                          <div className="p-2 rounded bg-white dark:bg-slate-900">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Mx+</p>
+                            <p className="text-lg font-semibold text-slate-900 dark:text-white">{result.moments.positive.x.toFixed(2)} kN·m/m</p>
                           </div>
-                          <div className="p-2 rounded bg-white dark:bg-zinc-900">
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">My+</p>
-                            <p className="text-lg font-semibold text-zinc-900 dark:text-white">{result.moments.positive.y.toFixed(2)} kN·m/m</p>
+                          <div className="p-2 rounded bg-white dark:bg-slate-900">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">My+</p>
+                            <p className="text-lg font-semibold text-slate-900 dark:text-white">{result.moments.positive.y.toFixed(2)} kN·m/m</p>
                           </div>
                         </div>
                       </div>
                       {result.moments.negative && (
                         <div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Negative Moments (Support)</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Negative Moments (Support)</p>
                           <div className="grid grid-cols-2 gap-2">
-                            <div className="p-2 rounded bg-white dark:bg-zinc-900">
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400">Mx-</p>
-                              <p className="text-lg font-semibold text-zinc-900 dark:text-white">{result.moments.negative.x.toFixed(2)} kN·m/m</p>
+                            <div className="p-2 rounded bg-white dark:bg-slate-900">
+                              <p className="text-xs text-slate-500 dark:text-slate-400">Mx-</p>
+                              <p className="text-lg font-semibold text-slate-900 dark:text-white">{result.moments.negative.x.toFixed(2)} kN·m/m</p>
                             </div>
-                            <div className="p-2 rounded bg-white dark:bg-zinc-900">
-                              <p className="text-xs text-zinc-500 dark:text-zinc-400">My-</p>
-                              <p className="text-lg font-semibold text-zinc-900 dark:text-white">{result.moments.negative.y.toFixed(2)} kN·m/m</p>
+                            <div className="p-2 rounded bg-white dark:bg-slate-900">
+                              <p className="text-xs text-slate-500 dark:text-slate-400">My-</p>
+                              <p className="text-lg font-semibold text-slate-900 dark:text-white">{result.moments.negative.y.toFixed(2)} kN·m/m</p>
                             </div>
                           </div>
                         </div>
@@ -874,44 +874,44 @@ export function EnhancedSlabDesignDialog({
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className={`p-4 rounded-xl border ${result.deflectionCheck.isAdequate ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                      <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">Deflection Check</h4>
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">{result.deflectionCheck.spanDepthRatio.toFixed(1)}</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">L/d (limit: {result.deflectionCheck.allowableRatio.toFixed(1)})</p>
+                      <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">Deflection Check</h4>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">{result.deflectionCheck.spanDepthRatio.toFixed(1)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">L/d (limit: {result.deflectionCheck.allowableRatio.toFixed(1)})</p>
                     </div>
                     <div className={`p-4 rounded-xl border ${result.shearCheck.isAdequate ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                      <h4 className="text-sm font-medium text-zinc-900 dark:text-white mb-2">Shear Check</h4>
-                      <p className="text-2xl font-bold text-zinc-900 dark:text-white">{result.shearCheck.appliedShear.toFixed(1)} kN/m</p>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Capacity: {result.shearCheck.shearCapacity.toFixed(1)} kN/m</p>
+                      <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">Shear Check</h4>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white">{result.shearCheck.appliedShear.toFixed(1)} kN/m</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Capacity: {result.shearCheck.shearCapacity.toFixed(1)} kN/m</p>
                     </div>
                   </div>
                 </div>
                 
                 {/* Reinforcement */}
                 <div className="space-y-4">
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
-                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Bottom Reinforcement</h4>
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Bottom Reinforcement</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 rounded bg-blue-500/10 border border-blue-500/30">
                         <div className="flex items-center gap-2 mb-2">
                           <ArrowLeftRight className="w-4 h-4 text-blue-400" />
-                          <span className="text-sm font-medium text-zinc-900 dark:text-white">X-Direction</span>
+                          <span className="text-sm font-medium text-slate-900 dark:text-white">X-Direction</span>
                         </div>
-                        <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">
                           {result.reinforcement.bottomX.barDiameter}mm @ {result.reinforcement.bottomX.spacing}mm c/c
                         </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           Ast = {result.reinforcement.bottomX.providedAst.toFixed(0)} mm²/m
                         </p>
                       </div>
                       <div className="p-3 rounded bg-emerald-500/10 border border-emerald-500/30">
                         <div className="flex items-center gap-2 mb-2">
                           <ArrowUpDown className="w-4 h-4 text-emerald-400" />
-                          <span className="text-sm font-medium text-zinc-900 dark:text-white">Y-Direction</span>
+                          <span className="text-sm font-medium text-slate-900 dark:text-white">Y-Direction</span>
                         </div>
-                        <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+                        <p className="text-lg font-semibold text-slate-900 dark:text-white">
                           {result.reinforcement.bottomY.barDiameter}mm @ {result.reinforcement.bottomY.spacing}mm c/c
                         </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           Ast = {result.reinforcement.bottomY.providedAst.toFixed(0)} mm²/m
                         </p>
                       </div>
@@ -919,19 +919,19 @@ export function EnhancedSlabDesignDialog({
                   </div>
                   
                   {(result.reinforcement.topX || result.reinforcement.topY) && (
-                    <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
-                      <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Top Reinforcement (Support)</h4>
+                    <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700">
+                      <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Top Reinforcement (Support)</h4>
                       <div className="grid grid-cols-2 gap-4">
                         {result.reinforcement.topX && (
                           <div className="p-3 rounded bg-amber-500/10 border border-amber-500/30">
                             <div className="flex items-center gap-2 mb-2">
                               <ArrowLeftRight className="w-4 h-4 text-amber-400" />
-                              <span className="text-sm font-medium text-zinc-900 dark:text-white">X-Direction</span>
+                              <span className="text-sm font-medium text-slate-900 dark:text-white">X-Direction</span>
                             </div>
-                            <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+                            <p className="text-lg font-semibold text-slate-900 dark:text-white">
                               {result.reinforcement.topX.barDiameter}mm @ {result.reinforcement.topX.spacing}mm c/c
                             </p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               Ast = {result.reinforcement.topX.providedAst.toFixed(0)} mm²/m
                             </p>
                           </div>
@@ -940,12 +940,12 @@ export function EnhancedSlabDesignDialog({
                           <div className="p-3 rounded bg-purple-500/10 border border-purple-500/30">
                             <div className="flex items-center gap-2 mb-2">
                               <ArrowUpDown className="w-4 h-4 text-purple-400" />
-                              <span className="text-sm font-medium text-zinc-900 dark:text-white">Y-Direction</span>
+                              <span className="text-sm font-medium text-slate-900 dark:text-white">Y-Direction</span>
                             </div>
-                            <p className="text-lg font-semibold text-zinc-900 dark:text-white">
+                            <p className="text-lg font-semibold text-slate-900 dark:text-white">
                               {result.reinforcement.topY.barDiameter}mm @ {result.reinforcement.topY.spacing}mm c/c
                             </p>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                               Ast = {result.reinforcement.topY.providedAst.toFixed(0)} mm²/m
                             </p>
                           </div>
@@ -954,13 +954,13 @@ export function EnhancedSlabDesignDialog({
                     </div>
                   )}
                   
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700">
-                    <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Design Notes</h4>
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Design Notes</h4>
                     <div className="space-y-2">
                       {result.messages.map((msg, i) => (
                         <div key={i} className="flex items-start gap-2 text-sm">
                           <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                          <span className="text-zinc-500 dark:text-zinc-400">{msg}</span>
+                          <span className="text-slate-500 dark:text-slate-400">{msg}</span>
                         </div>
                       ))}
                     </div>
@@ -971,20 +971,20 @@ export function EnhancedSlabDesignDialog({
 
             {activeTab === 'detailing' && result && (
               <div className="flex flex-col items-center gap-6">
-                <div className="p-6 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 w-full max-w-2xl">
-                  <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 text-center">Reinforcement Layout</h4>
+                <div className="p-6 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 w-full max-w-2xl">
+                  <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 text-center">Reinforcement Layout</h4>
                   {renderSlabPlan()}
                   
                   <div className="mt-4 grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-1 bg-blue-500"></div>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         X-dir: {result.reinforcement.bottomX.barDiameter}mm @ {result.reinforcement.bottomX.spacing}mm
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-1 bg-emerald-500"></div>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         Y-dir: {result.reinforcement.bottomY.barDiameter}mm @ {result.reinforcement.bottomY.spacing}mm
                       </span>
                     </div>
@@ -992,17 +992,17 @@ export function EnhancedSlabDesignDialog({
                 </div>
                 
                 <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 text-center">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Slab Thickness</p>
-                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">{input.thickness} mm</p>
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-center">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Slab Thickness</p>
+                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{input.thickness} mm</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 text-center">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Clear Cover</p>
-                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">{input.clearCover} mm</p>
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-center">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Clear Cover</p>
+                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{input.clearCover} mm</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-300 dark:border-zinc-700 text-center">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Effective Depth</p>
-                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">{result.effectiveDepth} mm</p>
+                  <div className="p-4 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 text-center">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Effective Depth</p>
+                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{result.effectiveDepth} mm</p>
                   </div>
                 </div>
               </div>
@@ -1010,7 +1010,7 @@ export function EnhancedSlabDesignDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
             <Button
               variant="outline"
               onClick={() => {

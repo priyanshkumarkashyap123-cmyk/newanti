@@ -177,7 +177,7 @@ export const Spotlight: FC<SpotlightProps> = ({
                         </div>
                         <button
                             onClick={onSkip}
-                            className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -185,7 +185,7 @@ export const Spotlight: FC<SpotlightProps> = ({
 
                     {/* Content */}
                     <div className="p-4">
-                        <h4 className="text-zinc-900 dark:text-white font-bold mb-2">{step.title}</h4>
+                        <h4 className="text-slate-900 dark:text-white font-bold mb-2">{step.title}</h4>
                         <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{step.content}</p>
                     </div>
 
@@ -194,7 +194,7 @@ export const Spotlight: FC<SpotlightProps> = ({
                         <button
                             onClick={handlePrevious}
                             disabled={currentStep === 0}
-                            className="text-sm text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
                             Previous
                         </button>

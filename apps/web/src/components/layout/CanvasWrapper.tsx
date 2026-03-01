@@ -12,12 +12,12 @@ interface CanvasWrapperProps {
 
 export const CanvasWrapper: FC<CanvasWrapperProps> = ({ children }) => {
     return (
-        <div className="relative h-full w-full bg-white dark:bg-zinc-950">
+        <div className="relative h-full w-full bg-white dark:bg-slate-950">
             {/* Canvas Content */}
             {children}
 
             {/* Optional: Corner Info */}
-            <div className="absolute bottom-2 left-2 text-xs text-zinc-500 font-mono select-none pointer-events-none">
+            <div className="absolute bottom-2 left-2 text-xs text-slate-500 font-mono select-none pointer-events-none">
                 3D View
             </div>
         </div>

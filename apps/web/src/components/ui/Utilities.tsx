@@ -162,7 +162,7 @@ export const Avatar: FC<AvatarProps> = ({
                         className="w-full h-full object-cover"
                     />
                 ) : name ? (
-                    <span className="text-zinc-900 dark:text-white">{getInitials(name)}</span>
+                    <span className="text-slate-900 dark:text-white">{getInitials(name)}</span>
                 ) : (
                     <User className="w-1/2 h-1/2 text-slate-500 dark:text-slate-400" />
                 )}
@@ -326,13 +326,13 @@ export const Accordion: FC<AccordionProps> = ({
                     <div key={item.id}>
                         <button
                             onClick={() => toggleItem(item.id)}
-                            className="w-full flex items-center justify-between py-4 text-left hover:text-zinc-900 dark:hover:text-white transition-colors"
+                            className="w-full flex items-center justify-between py-4 text-left hover:text-slate-900 dark:hover:text-white transition-colors"
                         >
                             <div className="flex items-center gap-3">
                                 {item.icon && (
                                     <span className="text-slate-500 dark:text-slate-400">{item.icon}</span>
                                 )}
-                                <span className={`font-medium ${isOpen ? 'text-zinc-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
+                                <span className={`font-medium ${isOpen ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300'}`}>
                                     {item.title}
                                 </span>
                             </div>
@@ -424,7 +424,7 @@ export const EmptyState: FC<EmptyStateProps> = ({
                 {icon}
             </div>
         )}
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{title}</h3>
         {description && (
             <p className="text-slate-500 dark:text-slate-400 max-w-sm mb-6">{description}</p>
         )}

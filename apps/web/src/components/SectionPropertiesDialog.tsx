@@ -201,10 +201,10 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
             <DialogContent className="max-w-[900px] max-h-[90vh] overflow-hidden p-0">
                     {/* Header */}
                     <DialogHeader className="p-4 border-b border-border-dark">
-                            <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-white">
+                            <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">
                                 Section & Material Properties
                             </DialogTitle>
-                            <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">
                                 {memberId ? `Configure properties for Member ${memberId}` : 'Define section and material properties'}
                             </DialogDescription>
                     </DialogHeader>
@@ -219,7 +219,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     onClick={() => setActiveTab('database')}
                                     className={`flex-1 px-4 py-3 text-sm font-medium rounded-none transition-colors ${activeTab === 'database'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
-                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                         }`}
                                 >
                                     <span className="material-symbols-outlined text-[16px] mr-1 align-middle">database</span>
@@ -230,7 +230,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     onClick={() => setActiveTab('calculate')}
                                     className={`flex-1 px-4 py-3 text-sm font-medium rounded-none transition-colors ${activeTab === 'calculate'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
-                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                         }`}
                                 >
                                     <span className="material-symbols-outlined text-[16px] mr-1 align-middle">calculate</span>
@@ -241,7 +241,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     onClick={() => setActiveTab('custom')}
                                     className={`flex-1 px-4 py-3 text-sm font-medium rounded-none transition-colors ${activeTab === 'custom'
                                             ? 'bg-primary/10 text-primary border-b-2 border-primary'
-                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                         }`}
                                 >
                                     <span className="material-symbols-outlined text-[16px] mr-1 align-middle">edit</span>
@@ -254,13 +254,13 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 {activeTab === 'database' && (
                                     <>
                                         <div>
-                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
+                                            <Label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                                                 Section Type
                                             </Label>
                                             <select
                                                 value={selectedSectionType}
                                                 onChange={(e) => setSelectedSectionType(e.target.value as SectionType)}
-                                                className="w-full bg-white dark:bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                                className="w-full bg-white dark:bg-slate-900 border border-border-dark rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                                             >
                                                 {sectionTypes.map(st => (
                                                     <option key={st.type} value={st.type}>{st.label}</option>
@@ -269,13 +269,13 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                         </div>
 
                                         <div>
-                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
+                                            <Label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                                                 Section ({filteredSections.length} available)
                                             </Label>
                                             <select
                                                 value={selectedSectionId}
                                                 onChange={(e) => setSelectedSectionId(e.target.value)}
-                                                className="w-full bg-white dark:bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                                className="w-full bg-white dark:bg-slate-900 border border-border-dark rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                                                 size={8}
                                             >
                                                 {filteredSections.map(s => (
@@ -292,7 +292,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 {activeTab === 'calculate' && (
                                     <>
                                         <div>
-                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
+                                            <Label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                                                 Section Shape
                                             </Label>
                                             <div className="grid grid-cols-3 gap-2">
@@ -303,7 +303,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                         onClick={() => setSectionShape(shape)}
                                                         className={`p-3 h-auto rounded-lg border text-center text-xs font-medium transition-all ${sectionShape === shape
                                                                 ? 'bg-primary/20 border-primary text-primary'
-                                                                : 'bg-white dark:bg-zinc-900 border-border-dark text-zinc-500 dark:text-zinc-400 hover:border-zinc-400 dark:hover:border-zinc-500'
+                                                                : 'bg-white dark:bg-slate-900 border-border-dark text-slate-500 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
                                                             }`}
                                                     >
                                                         <span className="material-symbols-outlined text-[24px] block mb-1">
@@ -316,14 +316,14 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                         </div>
 
                                         <div className="space-y-3">
-                                            <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
+                                            <Label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                                                 Dimensions (mm)
                                             </Label>
 
                                             {sectionShape === 'rectangular' && (
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
-                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Width (b)</Label>
+                                                        <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Width (b)</Label>
                                                         <Input
                                                             type="number"
                                                             value={dimensions.b}
@@ -331,7 +331,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Height (h)</Label>
+                                                        <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Height (h)</Label>
                                                         <Input
                                                             type="number"
                                                             value={dimensions.h}
@@ -343,7 +343,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                                             {sectionShape === 'circular' && (
                                                 <div>
-                                                    <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Diameter (D)</Label>
+                                                    <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Diameter (D)</Label>
                                                     <Input
                                                         type="number"
                                                         value={dimensions.D}
@@ -355,7 +355,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                             {sectionShape === 'I' && (
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
-                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Depth (d)</Label>
+                                                        <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Depth (d)</Label>
                                                         <Input
                                                             type="number"
                                                             value={dimensions.d}
@@ -363,7 +363,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Flange Width (bf)</Label>
+                                                        <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Flange Width (bf)</Label>
                                                         <Input
                                                             type="number"
                                                             value={dimensions.bf}
@@ -371,7 +371,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Flange Thickness (tf)</Label>
+                                                        <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Flange Thickness (tf)</Label>
                                                         <Input
                                                             type="number"
                                                             value={dimensions.tf}
@@ -379,7 +379,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Web Thickness (tw)</Label>
+                                                        <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Web Thickness (tw)</Label>
                                                         <Input
                                                             type="number"
                                                             value={dimensions.tw}
@@ -396,7 +396,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                 {activeTab === 'custom' && (
                                     <div className="space-y-3">
                                         <div>
-                                            <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Section Name</Label>
+                                            <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Section Name</Label>
                                             <Input
                                                 type="text"
                                                 value={customSection.name}
@@ -406,7 +406,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Area (mm²)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Area (mm²)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.A}
@@ -414,7 +414,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Weight (kg/m)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Weight (kg/m)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.weight}
@@ -422,7 +422,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Ix (mm⁴)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Ix (mm⁴)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.Ix}
@@ -430,7 +430,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Iy (mm⁴)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Iy (mm⁴)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.Iy}
@@ -438,7 +438,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Sx (mm³)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Sx (mm³)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.Sx}
@@ -446,7 +446,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">Zx (mm³)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Zx (mm³)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.Zx}
@@ -454,7 +454,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">rx (mm)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">rx (mm)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.rx}
@@ -462,7 +462,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">ry (mm)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">ry (mm)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customSection.ry}
@@ -475,7 +475,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                                 {/* Material Selection */}
                                 <div className="pt-4 border-t border-border-dark">
-                                    <Label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block mb-2">
+                                    <Label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">
                                         Material
                                     </Label>
                                     <div className="flex gap-2 mb-3">
@@ -485,8 +485,8 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 variant={materialType === type ? 'default' : 'secondary'}
                                                 onClick={() => setMaterialType(type)}
                                                 className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${materialType === type
-                                                        ? 'bg-primary text-zinc-900 dark:text-white'
-                                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                                        ? 'bg-primary text-slate-900 dark:text-white'
+                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                                     }`}
                                             >
                                                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -498,7 +498,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                         <select
                                             value={selectedMaterialId}
                                             onChange={(e) => setSelectedMaterialId(e.target.value)}
-                                            className="w-full bg-white dark:bg-zinc-900 border border-border-dark rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                                            className="w-full bg-white dark:bg-slate-900 border border-border-dark rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                                         >
                                             {MATERIALS_DATABASE
                                                 .filter(m => m.type === materialType)
@@ -509,7 +509,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     ) : (
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">E (MPa)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">E (MPa)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customMaterial.E}
@@ -517,7 +517,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                                 />
                                             </div>
                                             <div>
-                                                <Label className="text-xs text-zinc-500 dark:text-zinc-400 block mb-1">fy (MPa)</Label>
+                                                <Label className="text-xs text-slate-500 dark:text-slate-400 block mb-1">fy (MPa)</Label>
                                                 <Input
                                                     type="number"
                                                     value={customMaterial.fy}
@@ -531,8 +531,8 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                         </div>
 
                         {/* Right Panel - Properties Display */}
-                        <div className="flex-1 p-4 overflow-y-auto bg-zinc-50 dark:bg-zinc-900/50">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                        <div className="flex-1 p-4 overflow-y-auto bg-slate-50 dark:bg-slate-900/50">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-primary text-[18px]">info</span>
                                 Section Properties
                             </h3>
@@ -542,7 +542,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     {/* Section Name */}
                                     <div className="bg-primary/10 rounded-lg p-3 text-center">
                                         <p className="text-primary text-lg font-bold">{selectedSection.name}</p>
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-xs">{selectedSection.type}</p>
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs">{selectedSection.type}</p>
                                     </div>
 
                                     {/* Geometric Properties */}
@@ -563,7 +563,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
                                     {/* Dimensions */}
                                     {(selectedSection.d || selectedSection.bf || selectedSection.D) && (
                                         <div className="pt-3 border-t border-border-dark">
-                                            <h4 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-2">Dimensions</h4>
+                                            <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Dimensions</h4>
                                             <div className="grid grid-cols-4 gap-2">
                                                 {selectedSection.d && <PropertyCard label="d" value={selectedSection.d} unit="mm" small />}
                                                 {selectedSection.bf && <PropertyCard label="bf" value={selectedSection.bf} unit="mm" small />}
@@ -578,7 +578,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                                     {/* Material Properties */}
                                     <div className="pt-3 border-t border-border-dark">
-                                        <h4 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-2">Material: {selectedMaterial.name}</h4>
+                                        <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Material: {selectedMaterial.name}</h4>
                                         <div className="grid grid-cols-2 gap-2">
                                             <PropertyCard label="E" value={selectedMaterial.E} unit="MPa" />
                                             {selectedMaterial.fy && <PropertyCard label="fy" value={selectedMaterial.fy} unit="MPa" />}
@@ -595,7 +595,7 @@ export const SectionPropertiesDialog: FC<SectionPropertiesDialogProps> = ({
 
                     {/* Footer */}
                     <DialogFooter className="flex items-center justify-between p-4 border-t border-border-dark sm:justify-between">
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                             Properties will be applied to {memberId ? `Member ${memberId}` : 'selected members'}
                         </p>
                         <div className="flex gap-3">
@@ -635,10 +635,10 @@ const PropertyCard: FC<PropertyCardProps> = ({ label, value, unit, scientific, s
         : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
     return (
-        <div className={`bg-zinc-100 dark:bg-zinc-800 rounded-lg ${small ? 'p-2' : 'p-3'}`}>
-            <p className={`text-zinc-500 dark:text-zinc-400 ${small ? 'text-[10px]' : 'text-xs'} mb-0.5`}>{label}</p>
-            <p className={`text-zinc-900 dark:text-white font-mono ${small ? 'text-xs' : 'text-sm'} font-medium`}>
-                {formattedValue} <span className="text-zinc-500 dark:text-zinc-400 text-[10px]">{unit}</span>
+        <div className={`bg-slate-100 dark:bg-slate-800 rounded-lg ${small ? 'p-2' : 'p-3'}`}>
+            <p className={`text-slate-500 dark:text-slate-400 ${small ? 'text-[10px]' : 'text-xs'} mb-0.5`}>{label}</p>
+            <p className={`text-slate-900 dark:text-white font-mono ${small ? 'text-xs' : 'text-sm'} font-medium`}>
+                {formattedValue} <span className="text-slate-500 dark:text-slate-400 text-[10px]">{unit}</span>
             </p>
         </div>
     );

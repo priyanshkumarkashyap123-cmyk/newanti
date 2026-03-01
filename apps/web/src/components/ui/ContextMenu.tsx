@@ -111,7 +111,7 @@ const MenuItemComponent: FC<{
                         ? 'opacity-40 cursor-not-allowed'
                         : item.danger
                             ? 'hover:bg-red-500/10 text-red-400 hover:text-red-300'
-                            : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white'
+                            : 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }
                 `}
             >

@@ -242,7 +242,7 @@ export const ResultsTable: FC = () => {
                                 key={header.id}
                                 onClick={header.column.getToggleSortingHandler()}
                                 style={{ width: header.getSize() }}
-                                className="bg-slate-50 dark:bg-slate-900 p-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors flex-1"
+                                className="bg-slate-50 dark:bg-slate-900 p-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors flex-1"
                             >
                                 <div className="flex items-center gap-1">
                                     {flexRender(header.column.columnDef.header, header.getContext())}

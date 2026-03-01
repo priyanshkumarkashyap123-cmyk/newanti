@@ -6,9 +6,11 @@
 
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { isUsingClerk, useAuth } from '../providers/AuthProvider';
 import { getErrorMessage } from '../lib/errorHandling';
+import { Button } from '../components/ui/button';
+import { Cpu, ArrowLeft } from 'lucide-react';
 
 export const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
@@ -18,6 +20,8 @@ export const ForgotPasswordPage = () => {
     const navigate = useNavigate();
     const { forgotPassword } = useAuth();
     const isClerkEnabled = isUsingClerk();
+
+    useEffect(() => { document.title = 'Forgot Password | BeamLab Ultimate'; }, []);
 
     // If using Clerk, redirect to Clerk's forgot password
     if (isClerkEnabled) {
@@ -42,21 +46,21 @@ export const ForgotPasswordPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white dark:from-zinc-950 via-zinc-100 dark:via-zinc-900 to-white dark:to-zinc-950 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950 flex items-center justify-center p-4">
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="flex items-center justify-center gap-3 mb-8">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-2xl font-bold text-white">
-                        ⬡
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <Cpu className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                        <span className="text-2xl font-bold text-zinc-900 dark:text-white">BeamLab</span>
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white">BeamLab</span>
                         <span className="ml-2 px-2 py-0.5 text-xs bg-blue-500/20 text-blue-400 rounded">ULTIMATE</span>
                     </div>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
+                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
                     {success ? (
                         // Success State
                         <div className="text-center space-y-4">
@@ -65,32 +69,36 @@ export const ForgotPasswordPage = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Check Your Email</h2>
-                            <p className="text-zinc-500 dark:text-zinc-400">
-                                We've sent a password reset link to <span className="text-zinc-900 dark:text-white font-medium">{email}</span>
+                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Check Your Email</h2>
+                            <p className="text-slate-500 dark:text-slate-400">
+                                We've sent a password reset link to <span className="text-slate-900 dark:text-white font-medium">{email}</span>
                             </p>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">
                                 Didn't receive the email? Check your spam folder or{' '}
-                                <button 
+                                <Button 
+                                    variant="link"
                                     onClick={() => setSuccess(false)} 
-                                    className="text-blue-400 hover:text-blue-300"
+                                    className="text-blue-400 hover:text-blue-300 p-0 h-auto inline"
                                 >
                                     try again
-                                </button>
+                                </Button>
                             </p>
-                            <Link 
-                                to="/sign-in" 
-                                className="block mt-6 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-medium rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="w-full"
+                                onClick={() => navigate('/sign-in')}
                             >
+                                <ArrowLeft className="w-4 h-4" />
                                 Back to Sign In
-                            </Link>
+                            </Button>
                         </div>
                     ) : (
                         // Form State
                         <>
                             <div className="text-center mb-6">
-                                <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Forgot Password?</h2>
-                                <p className="text-zinc-500 dark:text-zinc-400">
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Forgot Password?</h2>
+                                <p className="text-slate-500 dark:text-slate-400">
                                     No worries! Enter your email and we'll send you a reset link.
                                 </p>
                             </div>
@@ -103,23 +111,25 @@ export const ForgotPasswordPage = () => {
                                 )}
 
                                 <div>
-                                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                         Email Address
                                     </label>
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg text-zinc-900 placeholder:text-zinc-500 dark:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="you@example.com"
                                         required
                                     />
                                 </div>
 
-                                <button
+                                <Button
                                     type="submit"
+                                    variant="premium"
+                                    size="lg"
+                                    className="w-full"
                                     disabled={isLoading}
-                                    className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? (
                                         <span className="flex items-center justify-center gap-2">
@@ -132,7 +142,7 @@ export const ForgotPasswordPage = () => {
                                     ) : (
                                         'Send Reset Link'
                                     )}
-                                </button>
+                                </Button>
                             </form>
 
                             <div className="mt-6 text-center">
@@ -148,8 +158,8 @@ export const ForgotPasswordPage = () => {
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-zinc-500 dark:text-zinc-400 text-sm mt-8">
-                    © 2024 BeamLab Ultimate. Professional Structural Analysis.
+                <p className="text-center text-slate-500 dark:text-slate-400 text-sm mt-8">
+                    © {new Date().getFullYear()} BeamLab Ultimate. Professional Structural Analysis.
                 </p>
             </div>
         </div>

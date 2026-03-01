@@ -8,6 +8,7 @@ import { Request, Response, NextFunction, RequestHandler } from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { randomUUID } from "crypto";
+import { isTrustedOrigin } from "../config/cors.js";
 
 // ============================================
 // HTTP SECURITY HEADERS (Helmet)
@@ -206,9 +207,10 @@ export const requestIdMiddleware = (
   res: Response,
   next: NextFunction,
 ) => {
+  const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const existingRequestId = req.get("x-request-id");
   const requestId =
-    existingRequestId && existingRequestId.trim().length > 0
+    existingRequestId && UUID_PATTERN.test(existingRequestId)
       ? existingRequestId
       : randomUUID();
 
@@ -252,18 +254,7 @@ export const secureErrorHandler = (
   // Only reflect origin if it's in the allowed list (avoid open CORS on errors)
   const origin = req.get("origin");
   if (origin) {
-    const normalizeOrigin = (o: string): string => o.trim().replace(/\/+$/, "").toLowerCase();
-    const allowed = [
-      "https://beamlabultimate.tech",
-      "https://www.beamlabultimate.tech",
-      "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
-      "http://localhost:5173",
-      "http://localhost:3000",
-    ];
-    const normalized = normalizeOrigin(origin);
-    const isTrusted = allowed.includes(normalized) ||
-      /^https:\/\/([a-z0-9-]+\.)*beamlabultimate\.tech$/i.test(normalized);
-    if (isTrusted) {
+    if (isTrustedOrigin(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
       res.setHeader("Access-Control-Allow-Credentials", "true");
     }
@@ -272,11 +263,12 @@ export const secureErrorHandler = (
   // Don't expose internal errors to client
   const isDev = process.env["NODE_ENV"] !== "production";
   const requestId = String(res.locals.requestId || "unknown");
+  const statusCode = (err as any).statusCode ?? (err as any).status ?? (res.statusCode >= 400 ? res.statusCode : 500);
 
-  res.status(500).json({
+  res.status(statusCode).json({
     success: false,
     requestId,
-    error: isDev ? err.message : "Internal server error",
+    error: isDev || statusCode < 500 ? err.message : "Internal server error",
     ...(isDev && { stack: err.stack }),
   });
 };

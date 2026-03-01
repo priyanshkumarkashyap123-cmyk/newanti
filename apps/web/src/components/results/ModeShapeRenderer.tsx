@@ -362,7 +362,7 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
                     className={`
                         flex-1 px-2 py-1 text-xs rounded transition-colors
                         ${showOriginal 
-                            ? 'bg-gray-500 text-zinc-900 dark:text-white' 
+                            ? 'bg-gray-500 text-slate-900 dark:text-white' 
                             : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}
                     `}
                 >

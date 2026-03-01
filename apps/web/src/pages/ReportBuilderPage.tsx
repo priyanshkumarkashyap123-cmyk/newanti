@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { ReportBuilder, type ReportConfig } from '@/modules/reports/EngineeringReportGenerator';
 import { FileText, Download, Eye, Settings, Plus, Trash2, GripVertical, Zap } from 'lucide-react';
 import { useModelStore } from '@/store/model';
@@ -38,6 +38,8 @@ export default function ReportBuilderPage() {
     { id: '4', title: 'Member Design', level: 1, content: 'All beams, columns, slabs, and footings designed with adequate safety factors.' },
     { id: '5', title: 'Conclusions', level: 1, content: 'The structure is safe and serviceable under all design load combinations.' },
   ]);
+
+  useEffect(() => { document.title = 'Report Builder | BeamLab Ultimate'; }, []);
 
   const [showPreview, setShowPreview] = useState(false);
   const [newSection, setNewSection] = useState({ title: '', content: '' });
@@ -333,7 +335,7 @@ export default function ReportBuilderPage() {
                           className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-xs resize-none"
                         />
                       </div>
-                      <button onClick={() => removeSection(section.id)} className="p-1 text-red-400 hover:text-red-300">
+                      <button aria-label="Remove section" onClick={() => removeSection(section.id)} className="p-1 text-red-400 hover:text-red-300">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

@@ -34,10 +34,10 @@ export const RangeSlider: FC<RangeSliderProps> = ({
     const percentage = ((value - min) / (max - min)) * 100;
 
     return (
-        <div className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-5">
+        <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                    <label className="text-zinc-900 dark:text-white text-base font-medium">{label}</label>
+                    <label className="text-slate-900 dark:text-white text-base font-medium">{label}</label>
                     <span className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 text-xs font-bold uppercase">
                         {valueLabel}{unit && ` ${unit}`}
                     </span>
@@ -57,7 +57,7 @@ export const RangeSlider: FC<RangeSliderProps> = ({
                         }}
                     />
                 </div>
-                <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 font-mono uppercase">
+                <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-mono uppercase">
                     {labels.map((l, i) => (
                         <span key={i}>{l}</span>
                     ))}

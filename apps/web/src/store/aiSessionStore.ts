@@ -495,7 +495,8 @@ loadAllSessionsFromDB().then(dbSessions => {
     dbSessions.forEach(s => merged.set(s.id, s)); // IndexedDB overwrites
     
     const allSessions = Array.from(merged.values())
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 200);
     
     useAISessionStore.setState({ sessions: allSessions });
   }

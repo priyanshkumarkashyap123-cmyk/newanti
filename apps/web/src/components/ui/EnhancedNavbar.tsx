@@ -175,14 +175,14 @@ export const EnhancedNavbar: FC = () => {
 
   return (
     <>
-      <nav className="fixed top-0 inset-x-0 z-50 h-16 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-zinc-200/5 dark:border-white/5">
+      <nav className="fixed top-0 inset-x-0 z-50 h-16 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.06]">
         <div className="max-w-[1800px] mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
             <div className="w-9 h-9 rounded-lg overflow-hidden shadow-lg group-hover:shadow-blue-500/25 transition-all">
               <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
             </div>
-            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
               BeamLab
             </span>
           </Link>
@@ -195,8 +195,8 @@ export const EnhancedNavbar: FC = () => {
                 onClick={() => setActiveMenu(activeMenu === 'products' ? null : 'products')}
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                   activeMenu === 'products' 
-                    ? 'text-zinc-900 dark:text-white bg-slate-100 dark:bg-slate-800' 
-                    : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                    ? 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800' 
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                 }`}
               >
                 Products
@@ -230,7 +230,7 @@ export const EnhancedNavbar: FC = () => {
                                 </div>
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-zinc-900 dark:text-white">{item.label}</span>
+                                    <span className="text-sm font-medium text-slate-900 dark:text-white">{item.label}</span>
                                     {item.badge && (
                                       <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-500 text-white rounded">
                                         {item.badge}
@@ -254,7 +254,7 @@ export const EnhancedNavbar: FC = () => {
                             <Sparkles className="w-5 h-5 text-blue-400" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white">Try AI Architect</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">Try AI Architect</p>
                             <p className="text-xs text-slate-500 dark:text-slate-400">Generate structures from natural language</p>
                           </div>
                         </div>
@@ -277,8 +277,8 @@ export const EnhancedNavbar: FC = () => {
                 onClick={() => setActiveMenu(activeMenu === 'resources' ? null : 'resources')}
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                   activeMenu === 'resources' 
-                    ? 'text-zinc-900 dark:text-white bg-slate-100 dark:bg-slate-800' 
-                    : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                    ? 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800' 
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                 }`}
               >
                 Resources
@@ -311,7 +311,7 @@ export const EnhancedNavbar: FC = () => {
                                   {item.icon}
                                 </div>
                                 <div>
-                                  <span className="text-sm font-medium text-zinc-900 dark:text-white">{item.label}</span>
+                                  <span className="text-sm font-medium text-slate-900 dark:text-white">{item.label}</span>
                                   <p className="text-xs text-slate-500 dark:text-slate-400">{item.desc}</p>
                                 </div>
                               </Link>
@@ -327,14 +327,14 @@ export const EnhancedNavbar: FC = () => {
 
             <Link
               to="/pricing"
-              className="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-lg transition-all"
+              className="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-lg transition-all"
             >
               Pricing
             </Link>
 
             <Link
               to="/demo"
-              className="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-lg transition-all"
+              className="px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 rounded-lg transition-all"
             >
               Demo
             </Link>
@@ -357,7 +357,7 @@ export const EnhancedNavbar: FC = () => {
             {/* Notifications */}
             {isSignedIn && (
               <div className="relative">
-                <button className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all">
+                <button aria-label="Notifications" className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all">
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
@@ -383,7 +383,7 @@ export const EnhancedNavbar: FC = () => {
                   <div className="flex items-center gap-2">
                     <Link
                       to="/sign-in"
-                      className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                      className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       Sign In
                     </Link>
@@ -404,15 +404,15 @@ export const EnhancedNavbar: FC = () => {
       {/* Search Modal */}
       <Dialog open={searchOpen} onOpenChange={(open) => !open && setSearchOpen(false)}>
         <DialogContent className="max-w-xl p-0 gap-0 top-[20%] translate-y-0">
-              <div className="flex items-center gap-3 p-4 border-b border-zinc-200 dark:border-zinc-800">
-                  <Search className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
+              <div className="flex items-center gap-3 p-4 border-b border-slate-200 dark:border-slate-800">
+                  <Search className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                   <input
                     ref={searchRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search commands, pages, help..."
-                    className="flex-1 bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 outline-none"
+                    className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none"
                     autoFocus
                   />
               </div>
@@ -423,7 +423,7 @@ export const EnhancedNavbar: FC = () => {
                     {filteredSuggestions.map((item, i) => (
                       <button
                         key={i}
-                        className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"
+                        className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                         onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
                       >
                         <div className="flex items-center gap-3">
@@ -434,7 +434,7 @@ export const EnhancedNavbar: FC = () => {
                           <span className="text-sm text-white">{item.label}</span>
                         </div>
                         {item.shortcut && (
-                          <kbd className="px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded">
+                          <kbd className="px-2 py-1 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded">
                             {item.shortcut}
                           </kbd>
                         )}
@@ -442,15 +442,15 @@ export const EnhancedNavbar: FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="p-8 text-center text-zinc-500 dark:text-zinc-400">
+                  <div className="p-8 text-center text-slate-500 dark:text-slate-400">
                     No results found
                   </div>
                 )}
               </div>
                 
-              <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                <span>Press <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">↵</kbd> to select</span>
-                <span>Press <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">ESC</kbd> to close</span>
+              <div className="p-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                <span>Press <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">↵</kbd> to select</span>
+                <span>Press <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">ESC</kbd> to close</span>
               </div>
         </DialogContent>
       </Dialog>

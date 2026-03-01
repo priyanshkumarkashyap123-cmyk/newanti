@@ -8,8 +8,9 @@
  * - Custom events
  * - Page views
  * - User properties
- * - Consent management
  */
+
+import logger from './logger';
 
 // ============================================================================
 // Types
@@ -199,7 +200,7 @@ export function trackEvent(event: AnalyticsEvent): void {
 
   // Log in development
   if (import.meta.env.DEV) {
-    console.log('📊 Analytics Event:', event);
+    logger.log('📊 Analytics Event:', event);
   }
 }
 
@@ -220,7 +221,7 @@ export function trackPageView(data: PageViewData): void {
   }
 
   if (import.meta.env.DEV) {
-    console.log('📊 Page View:', data);
+    logger.log('📊 Page View:', data);
   }
 }
 

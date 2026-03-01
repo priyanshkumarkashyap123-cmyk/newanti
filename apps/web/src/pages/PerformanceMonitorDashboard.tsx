@@ -152,6 +152,8 @@ export default function PerformanceMonitorDashboard() {
   
   const metrics = useSimulatedMetrics(isAnalysisRunning);
 
+  useEffect(() => { document.title = 'Performance Monitor | BeamLab Ultimate'; }, []);
+
   const startAnalysis = useCallback(() => {
     setIsAnalysisRunning(true);
   }, []);
@@ -189,7 +191,7 @@ export default function PerformanceMonitorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -249,7 +251,7 @@ export default function PerformanceMonitorDashboard() {
                 className={`px-4 py-3 font-medium transition-colors flex items-center gap-2 border-b-2 ${
                   selectedTab === tab.id
                     ? 'text-purple-400 border-purple-400'
-                    : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-zinc-900 dark:hover:text-white'
+                    : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {tab.icon}
@@ -268,7 +270,7 @@ export default function PerformanceMonitorDashboard() {
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Analysis Progress</h3>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Analysis Progress</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">Static Analysis - Tower A Model</p>
                   </div>
                   <div className="text-right">
@@ -404,7 +406,7 @@ export default function PerformanceMonitorDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Solver Stats */}
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-purple-400" />
                   Solver Statistics
                 </h3>
@@ -412,19 +414,19 @@ export default function PerformanceMonitorDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">Solver Type</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">Sparse Direct (SuperLU)</span>
+                    <span className="text-slate-900 dark:text-white font-medium">Sparse Direct (SuperLU)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">Matrix Size</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">45,000 × 45,000</span>
+                    <span className="text-slate-900 dark:text-white font-medium">45,000 × 45,000</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">Non-zeros</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">1,245,678</span>
+                    <span className="text-slate-900 dark:text-white font-medium">1,245,678</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">Bandwidth</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">892</span>
+                    <span className="text-slate-900 dark:text-white font-medium">892</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">Condition Number</span>
@@ -432,14 +434,14 @@ export default function PerformanceMonitorDashboard() {
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-slate-600 dark:text-slate-400">Peak Memory</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">{formatMemory(metrics.peakMemory)}</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{formatMemory(metrics.peakMemory)}</span>
                   </div>
                 </div>
               </div>
 
               {/* System Info */}
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-purple-400" />
                   System Configuration
                 </h3>
@@ -447,11 +449,11 @@ export default function PerformanceMonitorDashboard() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">Engine</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">BeamLab Rust WASM</span>
+                    <span className="text-slate-900 dark:text-white font-medium">BeamLab Rust WASM</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">WASM Memory</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">4 GB (Max)</span>
+                    <span className="text-slate-900 dark:text-white font-medium">4 GB (Max)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">GPU Acceleration</span>
@@ -462,7 +464,7 @@ export default function PerformanceMonitorDashboard() {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">Parallel Threads</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">{metrics.threadCount} (Web Workers)</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{metrics.threadCount} (Web Workers)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-slate-200 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">SIMD Support</span>
@@ -473,7 +475,7 @@ export default function PerformanceMonitorDashboard() {
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-slate-600 dark:text-slate-400">Cache</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">IndexedDB (2.1 GB used)</span>
+                    <span className="text-slate-900 dark:text-white font-medium">IndexedDB (2.1 GB used)</span>
                   </div>
                 </div>
               </div>
@@ -484,8 +486,8 @@ export default function PerformanceMonitorDashboard() {
         {selectedTab === 'history' && (
           <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
             <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Recent Analyses</h3>
-              <button className="text-sm text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white flex items-center gap-1">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Analyses</h3>
+              <button className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1">
                 <Download className="w-4 h-4" />
                 Export Log
               </button>
@@ -507,7 +509,7 @@ export default function PerformanceMonitorDashboard() {
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {ANALYSIS_HISTORY.map(analysis => (
                     <tr key={analysis.id} className="hover:bg-slate-100 dark:bg-slate-800/50">
-                      <td className="px-4 py-3 text-zinc-900 dark:text-white">{analysis.name}</td>
+                      <td className="px-4 py-3 text-slate-900 dark:text-white">{analysis.name}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{analysis.type}</td>
                       <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{analysis.elements.toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">
@@ -542,7 +544,7 @@ export default function PerformanceMonitorDashboard() {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Performance Benchmarks</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Performance Benchmarks</h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400">BeamLab WASM Solver Performance</p>
                 </div>
                 <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
@@ -568,7 +570,7 @@ export default function PerformanceMonitorDashboard() {
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     {BENCHMARK_RESULTS.map((result, index) => (
                       <tr key={index} className="hover:bg-slate-100 dark:bg-slate-800/50">
-                        <td className="px-4 py-3 text-zinc-900 dark:text-white font-medium">{result.testName}</td>
+                        <td className="px-4 py-3 text-slate-900 dark:text-white font-medium">{result.testName}</td>
                         <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{result.elements.toLocaleString()}</td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{result.analysisType}</td>
                         <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{formatTime(result.duration)}</td>
@@ -593,7 +595,7 @@ export default function PerformanceMonitorDashboard() {
 
             {/* Comparison Chart */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Speed Comparison</h3>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Speed Comparison</h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">Elements processed per second (higher is better)</p>
               
               <div className="space-y-4">

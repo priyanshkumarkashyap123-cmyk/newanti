@@ -110,14 +110,14 @@ export const DetailingDesignPage: React.FC = () => {
   const selectedModule = MODULES.find(m => m.id === activeModule)!;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-slate-900 dark:text-white">
       {/* Header */}
       <header className="bg-gray-100 dark:bg-gray-800 border-b border-gray-700 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="text-gray-500 hover:text-zinc-900 dark:text-white transition-colors"
+              className="text-gray-500 hover:text-slate-900 dark:text-white transition-colors"
             >
               ← Back
             </button>

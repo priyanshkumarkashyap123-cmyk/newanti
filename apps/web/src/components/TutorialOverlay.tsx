@@ -87,7 +87,7 @@ const ProgressIndicator: FC<{ current: number; total: number }> = ({ current, to
         {Array.from({ length: total }).map((_, i) => (
             <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i < current ? 'w-6 bg-blue-500' : 'w-1.5 bg-zinc-300 dark:bg-zinc-600'
+                className={`h-1.5 rounded-full transition-all duration-300 ${i < current ? 'w-6 bg-blue-500' : 'w-1.5 bg-slate-300 dark:bg-slate-600'
                     }`}
             />
         ))}
@@ -109,7 +109,7 @@ const StepCard: FC<{ step: TutorialStep; isActive: boolean }> = ({ step, isActiv
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                 {step.title}
             </h2>
-            <p className="text-zinc-500 dark:text-zinc-400 text-base md:text-lg max-w-md leading-relaxed">
+            <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg max-w-md leading-relaxed">
                 {step.description}
             </p>
         </div>
@@ -164,7 +164,7 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
                 <div className="p-8 md:p-12">
                     {/* Step Number */}
                     <div className="text-center mb-6">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-sm font-medium">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-medium">
                             Step {currentStep + 1} of {STEPS.length}
                         </span>
                     </div>
@@ -179,11 +179,11 @@ export const TutorialOverlay: FC<TutorialOverlayProps> = ({ isOpen, onClose, onC
                 </div>
 
                 {/* Footer / Navigation */}
-                <DialogFooter className="px-8 py-5 bg-zinc-100 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                <DialogFooter className="px-8 py-5 bg-slate-100 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <Button
                         variant="ghost"
                         onClick={handleSkip}
-                        className="text-zinc-500 dark:text-zinc-400"
+                        className="text-slate-500 dark:text-slate-400"
                     >
                         Skip Tutorial
                     </Button>

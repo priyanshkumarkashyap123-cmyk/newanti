@@ -423,7 +423,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
             {summary.icon}
           </div>
           <div>
-            <h4 className="font-semibold text-zinc-900 dark:text-white">{summary.label}</h4>
+            <h4 className="font-semibold text-slate-900 dark:text-white">{summary.label}</h4>
             <p className="text-xs text-slate-500 dark:text-slate-400">{summary.description}</p>
           </div>
         </div>
@@ -630,7 +630,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Search members..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500"
+            className="w-full pl-10 pr-4 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500"
           />
         </div>
 
@@ -639,7 +639,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+            className="px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
           >
             <option value="all">All Status</option>
             <option value="pass">Passed</option>
@@ -670,7 +670,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
                 <th
                   key={col.key}
                   onClick={() => toggleSort(col.key as keyof MemberResult)}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-zinc-900 dark:hover:text-white"
+                  className="px-4 py-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-900 dark:hover:text-white"
                 >
                   <div className="flex items-center gap-1">
                     {col.label}
@@ -693,7 +693,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
                 className="hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
               >
                 <td className="px-4 py-3">
-                  <div className="font-medium text-zinc-900 dark:text-white">{member.name}</div>
+                  <div className="font-medium text-slate-900 dark:text-white">{member.name}</div>
                   {member.criticalCheck && (
                     <div className="text-xs text-red-400">
                       {member.criticalCheck}
@@ -810,7 +810,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               <LayoutDashboard className="w-8 h-8 text-cyan-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                 Analysis Results
               </h1>
               <p className="text-slate-500 dark:text-slate-400">{projectName}</p>
@@ -825,7 +825,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
             <button
               onClick={onRefresh}
-              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg transition-colors"
+              className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
             >
               <RefreshCw className="w-5 h-5" />
             </button>
@@ -882,19 +882,19 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         {/* Category Sidebar */}
         <div className="col-span-4 space-y-3">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
               Result Categories
             </h2>
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded ${viewMode === "grid" ? "bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
+                className={`p-1.5 rounded ${viewMode === "grid" ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-1.5 rounded ${viewMode === "list" ? "bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
+                className={`p-1.5 rounded ${viewMode === "list" ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -926,7 +926,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                       {selectedSummary.icon}
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                         {selectedSummary.label}
                       </h2>
                       <p className="text-slate-500 dark:text-slate-400">
@@ -935,7 +935,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                     </div>
                   </div>
 
-                  <button aria-label="Maximize" title="Maximize" className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg">
+                  <button aria-label="Maximize" title="Maximize" className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg">
                     <Maximize2 className="w-5 h-5" />
                   </button>
                 </div>

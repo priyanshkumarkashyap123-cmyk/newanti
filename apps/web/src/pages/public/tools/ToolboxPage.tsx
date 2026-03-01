@@ -163,7 +163,7 @@ const ToolCard: FC<{ tool: Tool }> = ({ tool }) => {
 
             {/* Icon */}
             <div className={`w-12 h-12 ${cat.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <Icon className="w-6 h-6 text-zinc-900 dark:text-white" />
+                <Icon className="w-6 h-6 text-slate-900 dark:text-white" />
             </div>
 
             {/* Category tag */}
@@ -172,7 +172,7 @@ const ToolCard: FC<{ tool: Tool }> = ({ tool }) => {
             </div>
 
             {/* Title */}
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-400 transition-colors">
                 {tool.name}
             </h3>
 
@@ -233,14 +233,14 @@ export const ToolboxPage: FC = () => {
 
                         <nav className="hidden md:flex items-center gap-8">
                             <Link to="/tools" className="text-blue-400 font-medium">Tools</Link>
-                            <Link to="/pricing" className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Pricing</Link>
-                            <Link to="/docs" className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Docs</Link>
+                            <Link to="/pricing" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</Link>
+                            <Link to="/docs" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Docs</Link>
                         </nav>
 
                         <div className="flex items-center gap-3">
                             <Link
                                 to="/login"
-                                className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors text-sm"
+                                className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors text-sm"
                             >
                                 Sign In
                             </Link>
@@ -270,7 +270,7 @@ export const ToolboxPage: FC = () => {
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-zinc-900 dark:text-white mb-6">
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white mb-6">
                         Free Engineering
                         <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                             Calculators
@@ -291,7 +291,7 @@ export const ToolboxPage: FC = () => {
                             placeholder="What do you need to calculate?"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-zinc-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                            className="w-full pl-12 pr-4 py-4 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
                         />
                     </div>
                 </div>
@@ -305,7 +305,7 @@ export const ToolboxPage: FC = () => {
                         onClick={() => setSelectedCategory(null)}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${!selectedCategory
                                 ? 'bg-blue-600 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
                     >
                         All Tools
@@ -315,8 +315,8 @@ export const ToolboxPage: FC = () => {
                             key={key}
                             onClick={() => setSelectedCategory(key)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === key
-                                    ? `${color} text-zinc-900 dark:text-white`
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                                    ? `${color} text-slate-900 dark:text-white`
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                         >
                             {label}
@@ -352,7 +352,7 @@ export const ToolboxPage: FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                     <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
                         <div>
-                            <h3 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white mb-3">
+                            <h3 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-3">
                                 Need More Power?
                             </h3>
                             <p className="text-slate-500 dark:text-slate-400 max-w-lg">
@@ -378,12 +378,12 @@ export const ToolboxPage: FC = () => {
                         <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded flex items-center justify-center">
                             <Zap className="w-4 h-4 text-white" />
                         </div>
-                        <span>© 2024 BeamLab. Made for Engineers, by Engineers.</span>
+                        <span>© {new Date().getFullYear()} BeamLab. Made for Engineers, by Engineers.</span>
                     </div>
                     <div className="flex items-center gap-6 text-slate-500 dark:text-slate-400 text-sm">
-                        <Link to="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy</Link>
-                        <Link to="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms</Link>
-                        <Link to="/contact" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</Link>
+                        <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</Link>
+                        <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</Link>
+                        <Link to="/contact" className="hover:text-slate-900 dark:hover:text-white transition-colors">Contact</Link>
                     </div>
                 </div>
             </footer>

@@ -90,7 +90,7 @@ const shortcutCategories: ShortcutCategory[] = [
 // ============================================
 
 const KeyBadge: FC<{ keyName: string }> = ({ keyName }) => (
-    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium rounded border border-zinc-300 dark:border-zinc-700 shadow-sm">
+    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium rounded border border-slate-300 dark:border-slate-700 shadow-sm">
         {keyName}
     </span>
 );
@@ -108,7 +108,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden p-0 gap-0">
-                <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
                             <Keyboard className="w-5 h-5 text-blue-400" />
@@ -125,7 +125,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {shortcutCategories.map((category) => (
                             <div key={category.title}>
-                                <h3 className="flex items-center gap-2 text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-4">
+                                <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
                                     {category.icon}
                                     {category.title}
                                 </h3>
@@ -138,7 +138,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
                                             transition={{ delay: index * 0.02 }}
                                             className="flex items-center justify-between py-2"
                                         >
-                                            <span className="text-zinc-700 dark:text-zinc-300">
+                                            <span className="text-slate-700 dark:text-slate-300">
                                                 {shortcut.description}
                                             </span>
                                             <div className="flex items-center gap-1">
@@ -146,7 +146,7 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
                                                     <span key={i} className="flex items-center gap-1">
                                                         <KeyBadge keyName={key} />
                                                         {i < shortcut.keys.length - 1 && (
-                                                            <span className="text-zinc-500 dark:text-zinc-500 text-xs">+</span>
+                                                            <span className="text-slate-500 dark:text-slate-500 text-xs">+</span>
                                                         )}
                                                     </span>
                                                 ))}
@@ -160,8 +160,8 @@ export const KeyboardShortcuts: FC<KeyboardShortcutsProps> = ({ isOpen, onClose 
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-800 text-center">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 text-center">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
                         Pro tip: Use <KeyBadge keyName="⌘K" /> to quickly search and execute any command
                     </p>
                 </div>

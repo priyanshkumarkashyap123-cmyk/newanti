@@ -262,7 +262,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                 <Bot className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-zinc-900 dark:text-white font-semibold">Engineering Copilot</h2>
+                                <h2 className="text-slate-900 dark:text-white font-semibold">Engineering Copilot</h2>
                                 <p className="text-blue-200 text-xs">IS 800 / AISC 360 Expert</p>
                             </div>
                         </div>
@@ -271,7 +271,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                 variant="ghost"
                                 size="icon"
                                 onClick={clearChat}
-                                className="hover:bg-white/10 text-zinc-900 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                className="hover:bg-white/10 text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white"
                                 title="Clear Chat"
                             >
                                 <RefreshCw className="w-4 h-4" />
@@ -280,7 +280,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                 variant="ghost"
                                 size="icon"
                                 onClick={onClose}
-                                className="hover:bg-white/10 text-zinc-900 dark:text-white hover:text-zinc-900 dark:hover:text-white"
+                                className="hover:bg-white/10 text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white"
                             >
                                 <X className="w-5 h-5" />
                             </Button>
@@ -598,7 +598,7 @@ export const ChatToggle: FC<ChatToggleProps> = ({ onClick, hasNotification }) =>
         >
             <MessageSquare className="w-6 h-6 text-white" />
             {hasNotification && (
-                <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-zinc-200 dark:border-slate-900" />
+                <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-slate-200 dark:border-slate-900" />
             )}
         </Button>
     );

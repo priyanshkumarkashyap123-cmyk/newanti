@@ -299,12 +299,12 @@ const AnnotationMarker: React.FC<AnnotationMarkerProps> = ({ annotation, onClick
                 className="cursor-pointer group"
             >
                 <div 
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-zinc-900 dark:text-white text-xs font-bold shadow-lg group-hover:scale-110 transition-transform"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-slate-900 dark:text-white text-xs font-bold shadow-lg group-hover:scale-110 transition-transform"
                     style={{ backgroundColor: annotation.color }}
                 >
                     !
                 </div>
-                <div className="absolute left-8 top-0 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute left-8 top-0 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                     {annotation.text}
                 </div>
             </div>
@@ -356,7 +356,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
             p-2 rounded-lg transition-all duration-200
             ${active 
                 ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30' 
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600 hover:text-zinc-900 dark:hover:text-white'
+                : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -451,11 +451,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
     return (
         <div className="absolute right-4 top-16 w-72 bg-slate-100 dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
             <div className="flex items-center justify-between px-4 py-3 bg-slate-200/50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-                <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Settings className="w-4 h-4 text-cyan-400" />
                     Display Settings
                 </h3>
-                <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
+                <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                     ×
                 </button>
             </div>
@@ -487,7 +487,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <select
                         value={settings.colorScheme}
                         onChange={(e) => updateSetting('colorScheme', e.target.value as ColorScheme)}
-                        className="w-full mt-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-sm text-zinc-900 dark:text-white border-none focus:ring-2 focus:ring-cyan-500"
+                        className="w-full mt-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-sm text-slate-900 dark:text-white border-none focus:ring-2 focus:ring-cyan-500"
                     >
                         <option value="material">By Material</option>
                         <option value="section">By Section</option>

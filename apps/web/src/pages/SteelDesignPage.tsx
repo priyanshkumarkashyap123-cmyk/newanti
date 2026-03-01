@@ -3,7 +3,7 @@
  * Uses Rust AISC design API for 10x faster design checks
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Play, AlertTriangle } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { 
@@ -22,6 +22,8 @@ export function SteelDesignPage() {
     const [analyzing, setAnalyzing] = useState(false);
     const [results, setResults] = useState<SteelDesignResults[]>([]);
     const [error, setError] = useState<string>('');
+
+    useEffect(() => { document.title = 'Steel Design | BeamLab Ultimate'; }, []);
 
     // Default design parameters
     const [params, setParams] = useState<DesignParameters>({

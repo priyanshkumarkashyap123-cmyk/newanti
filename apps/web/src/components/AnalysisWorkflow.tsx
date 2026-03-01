@@ -139,7 +139,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
     const currentValidation = getValidationMessage(activeStep);
 
     return (
-        <div className="flex flex-col bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex flex-col bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             {/* Workflow Steps */}
             <div className="flex items-center justify-between px-4 py-2">
                 {WORKFLOW_STEPS.map((step, index) => {
@@ -161,7 +161,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                         ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
                                         : isComplete || isPast
                                             ? 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
-                                            : 'text-zinc-500 dark:text-zinc-500'
+                                            : 'text-slate-500 dark:text-slate-500'
                                     }
                                     ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
                                 `}
@@ -172,7 +172,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                         ? 'bg-blue-600 text-white'
                                         : isComplete
                                             ? 'bg-green-600 text-white'
-                                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'
+                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                     }
                                 `}>
                                     {isComplete && !isActive ? (
@@ -182,10 +182,10 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                     )}
                                 </div>
                                 <div className="hidden md:block">
-                                    <div className={`text-sm font-medium ${isActive ? '' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                    <div className={`text-sm font-medium ${isActive ? '' : 'text-slate-500 dark:text-slate-400'}`}>
                                         {step.label}
                                     </div>
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">
                                         {step.description}
                                     </div>
                                 </div>
@@ -197,7 +197,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                                     flex-1 h-0.5 mx-2
                                     ${isPast || isComplete
                                         ? 'bg-green-500'
-                                        : 'bg-zinc-200 dark:bg-zinc-700'
+                                        : 'bg-slate-200 dark:bg-slate-700'
                                     }
                                 `} />
                             )}
@@ -213,13 +213,13 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                         flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ml-4
                         ${stepStatus.analyze && !isAnalyzing
                             ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/25'
-                            : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
                         }
                     `}
                 >
                     {isAnalyzing ? (
                         <>
-                            <div className="w-4 h-4 border-2 border-zinc-200 dark:border-white border-t-transparent rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-slate-200 dark:border-white border-t-transparent rounded-full animate-spin" />
                             <span>Analyzing...</span>
                         </>
                     ) : (

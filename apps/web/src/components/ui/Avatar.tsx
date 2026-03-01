@@ -177,7 +177,7 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
         {showInitials && (
           <div
             className={cn(
-              'w-full h-full flex items-center justify-center text-zinc-900 dark:text-white font-medium',
+              'w-full h-full flex items-center justify-center text-slate-900 dark:text-white font-medium',
               config.text,
               shapeClass,
               bgColor
@@ -327,9 +327,9 @@ export const PresenceAvatar: React.FC<PresenceAvatarProps> = ({
   ...avatarProps
 }) => {
   const presenceIcons = {
-    active: <Check className="w-2 h-2 text-zinc-900 dark:text-white" />,
+    active: <Check className="w-2 h-2 text-slate-900 dark:text-white" />,
     idle: <Clock className="w-2 h-2 text-slate-900" />,
-    offline: <Minus className="w-2 h-2 text-zinc-900 dark:text-white" />,
+    offline: <Minus className="w-2 h-2 text-slate-900 dark:text-white" />,
   };
 
   const presenceColors = {

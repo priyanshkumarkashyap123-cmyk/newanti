@@ -6,9 +6,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { Mail, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { Mail, CheckCircle, AlertCircle, Loader, RefreshCw } from 'lucide-react';
+import { Button } from '../components/ui/button';
 
 export const VerifyEmailPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -19,7 +20,10 @@ export const VerifyEmailPage: React.FC = () => {
     const [verifyError, setVerifyError] = useState<string | null>(null);
     const [isVerifying, setIsVerifying] = useState(false);
     const [isVerified, setIsVerified] = useState(false);
+    const [resendSuccess, setResendSuccess] = useState(false);
     const email = searchParams.get('email') || user?.email || '';
+
+    useEffect(() => { document.title = 'Verify Email | BeamLab Ultimate'; }, []);
 
     // Auto-fill code if provided in URL
     useEffect(() => {
@@ -73,9 +77,8 @@ export const VerifyEmailPage: React.FC = () => {
 
             const data = await response.json();
             if (data.success) {
-                // Show success message
-                setVerifyError(null);
-                alert('Verification code resent. Check your email.');
+                setResendSuccess(true);
+                setTimeout(() => setResendSuccess(false), 5000);
             } else {
                 setVerifyError(data.message || 'Failed to resend code');
             }
@@ -88,10 +91,10 @@ export const VerifyEmailPage: React.FC = () => {
 
     if (isVerified) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-purple-100 dark:via-purple-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8 max-w-md w-full text-center">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-blue-100 dark:via-blue-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl max-w-md w-full text-center">
                     <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">Email Verified!</h2>
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Email Verified!</h2>
                     <p className="text-slate-700 dark:text-slate-300 mb-6">Your email has been successfully verified.</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">Redirecting to dashboard...</p>
                 </div>
@@ -100,25 +103,25 @@ export const VerifyEmailPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-purple-100 dark:via-purple-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-8 max-w-md w-full">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-blue-100 dark:via-blue-900 to-slate-50 dark:to-slate-900 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
-                        <Mail className="w-12 h-12 text-purple-400" />
+                        <Mail className="w-12 h-12 text-blue-400" />
                     </div>
-                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Verify Email</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Verify Email</h1>
                     <p className="text-slate-700 dark:text-slate-300">
                         We sent a verification code to<br />
-                        <span className="font-semibold text-zinc-900 dark:text-white">{email}</span>
+                        <span className="font-semibold text-slate-900 dark:text-white">{email}</span>
                     </p>
                 </div>
 
                 {/* Error */}
                 {(verifyError || error) && (
-                    <div className="mb-6 p-3 bg-red-500/20 border border-red-500/50 rounded-lg flex gap-2">
-                        <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-300">{verifyError || error}</p>
+                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex gap-2">
+                        <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-600 dark:text-red-400">{verifyError || error}</p>
                     </div>
                 )}
 
@@ -136,7 +139,7 @@ export const VerifyEmailPage: React.FC = () => {
                             const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                             setCode(value);
                         }}
-                        className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-white/5 border border-white/20 rounded-lg text-zinc-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 text-center text-2xl tracking-widest bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none transition-colors"
                     />
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
                         Enter the 6-digit code from your email
@@ -144,10 +147,12 @@ export const VerifyEmailPage: React.FC = () => {
                 </div>
 
                 {/* Verify Button */}
-                <button
+                <Button
+                    variant="premium"
+                    size="lg"
+                    className="w-full"
                     onClick={() => handleVerify()}
                     disabled={isVerifying || code.length !== 6}
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                     {isVerifying ? (
                         <>
@@ -157,27 +162,35 @@ export const VerifyEmailPage: React.FC = () => {
                     ) : (
                         'Verify Email'
                     )}
-                </button>
+                </Button>
 
                 {/* Resend Link */}
                 <div className="mt-6 text-center">
+                    {resendSuccess && (
+                        <div className="mb-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                            <p className="text-sm text-green-600 dark:text-green-400 flex items-center justify-center gap-2">
+                                <CheckCircle className="w-4 h-4" />
+                                Verification code resent. Check your email.
+                            </p>
+                        </div>
+                    )}
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Didn't receive the code?</p>
-                    <button
+                    <Button
+                        variant="outline"
                         onClick={handleResend}
                         disabled={isVerifying}
-                        className="text-purple-400 hover:text-purple-300 font-medium disabled:opacity-50 transition-colors"
                     >
                         Resend Code
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Support Link */}
-                <div className="mt-6 pt-6 border-t border-white/10 text-center">
+                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
                     <p className="text-xs text-slate-600 dark:text-slate-400">
                         Need help?{' '}
-                        <a href="/help" className="text-purple-400 hover:text-purple-300">
+                        <Link to="/help" className="text-blue-400 hover:text-blue-300">
                             Contact Support
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

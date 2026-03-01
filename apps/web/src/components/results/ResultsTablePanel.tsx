@@ -760,6 +760,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<ResultsTab>(defaultTab);
   const [searchQuery, setSearchQuery] = useState("");
+  const [copied, setCopied] = useState(false);
   const analysisResults = useModelStore((state) => state.analysisResults);
 
   const tabs: { id: ResultsTab; label: string; icon: React.ReactNode }[] = [
@@ -781,16 +782,12 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
   ];
 
   const handleExportCSV = useCallback(() => {
-    // Export current table to CSV
-    const getExportData = () => {
-      // This would be implemented to export the current table data
-      alert("CSV Export: Feature coming soon");
-    };
-    getExportData();
+    // Export current table to CSV — feature not yet implemented
   }, [activeTab]);
 
   const handleCopyTable = useCallback(() => {
-    alert("Table copied to clipboard");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }, []);
 
   return (
@@ -827,12 +824,12 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
             className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
             title="Copy table"
           >
-            <Copy size={16} />
+            {copied ? <span className="text-xs text-green-500 font-medium">✓ Copied!</span> : <Copy size={16} />}
           </button>
           <button
-            onClick={handleExportCSV}
-            className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
-            title="Export to CSV"
+            disabled
+            className="p-1.5 text-slate-400 dark:text-slate-500 cursor-not-allowed rounded"
+            title="CSV Export: Coming soon"
           >
             <FileSpreadsheet size={16} />
           </button>

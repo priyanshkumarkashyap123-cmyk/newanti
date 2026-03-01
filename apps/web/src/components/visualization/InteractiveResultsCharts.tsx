@@ -183,7 +183,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
                         style={{ backgroundColor: entry.color }}
                     />
                     <span className="text-slate-600 dark:text-slate-300">{entry.name}:</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">
+                    <span className="text-slate-900 dark:text-white font-medium">
                         {formatter ? formatter(entry.value) : entry.value.toFixed(2)} {unit}
                     </span>
                 </div>
@@ -219,7 +219,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
         <div className="flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-2">
                 {icon || <BarChart3 className="w-5 h-5 text-cyan-400" />}
-                <h3 className="font-semibold text-zinc-900 dark:text-white">{title}</h3>
+                <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
             </div>
             
             <div className="flex items-center gap-1">
@@ -253,7 +253,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                 {onExport && (
                     <button
                         onClick={onExport}
-                        className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                         title="Export"
                     >
                         <Download className="w-4 h-4" />
@@ -262,7 +262,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                 {onFullscreen && (
                     <button
                         onClick={onFullscreen}
-                        className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                         title="Fullscreen"
                     >
                         <Maximize2 className="w-4 h-4" />
@@ -456,10 +456,10 @@ export const ForceDiagramChart: React.FC<ForceDiagramChartProps> = ({
             <div className="px-4 py-3 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-4">
                     <span className="text-slate-500 dark:text-slate-400">
-                        Max: <span className="text-zinc-900 dark:text-white font-medium">{maxValue.toFixed(2)} {units[diagramType]}</span>
+                        Max: <span className="text-slate-900 dark:text-white font-medium">{maxValue.toFixed(2)} {units[diagramType]}</span>
                     </span>
                     <span className="text-slate-500 dark:text-slate-400">
-                        Min: <span className="text-zinc-900 dark:text-white font-medium">{minValue.toFixed(2)} {units[diagramType]}</span>
+                        Min: <span className="text-slate-900 dark:text-white font-medium">{minValue.toFixed(2)} {units[diagramType]}</span>
                     </span>
                 </div>
                 <span className="text-slate-500 dark:text-slate-400">

@@ -8,7 +8,7 @@
  * with full property customization and code compliance.
  */
 
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useModelStore } from '../store/model';
@@ -57,6 +57,8 @@ const MaterialsDatabasePage: React.FC = () => {
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { document.title = 'Materials Database | BeamLab Ultimate'; }, []);
 
   // Custom material form state
   const [customName, setCustomName] = useState('');
@@ -355,7 +357,7 @@ const MaterialsDatabasePage: React.FC = () => {
               }`}
           >
             <span className="text-2xl">{cat.icon}</span>
-            <p className="text-zinc-900 dark:text-white text-sm mt-1">{cat.label}</p>
+            <p className="text-slate-900 dark:text-white text-sm mt-1">{cat.label}</p>
             <p className="text-gray-600 dark:text-gray-400 text-xs">{cat.count} items</p>
           </button>
         ))}
@@ -368,14 +370,14 @@ const MaterialsDatabasePage: React.FC = () => {
           placeholder="Search materials by name, grade, or standard..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white placeholder-gray-400"
+          className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-gray-400"
         />
       </div>
 
       {/* Materials Grid */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
             {filteredMaterials.length} Materials Found
           </h3>
           {selectedMaterials.length > 0 && (
@@ -408,7 +410,7 @@ const MaterialsDatabasePage: React.FC = () => {
                             material.type === 'masonry' ? '🧱' : '🔘'}
                   </span>
                   <div>
-                    <h4 className="text-zinc-900 dark:text-white font-medium">{material.name}</h4>
+                    <h4 className="text-slate-900 dark:text-white font-medium">{material.name}</h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">{material.grade}</p>
                   </div>
                 </div>
@@ -420,23 +422,23 @@ const MaterialsDatabasePage: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded">
                   <p className="text-gray-600 dark:text-gray-400 text-xs">E (MPa)</p>
-                  <p className="text-zinc-900 dark:text-white font-medium">{material.properties.E.toLocaleString()}</p>
+                  <p className="text-slate-900 dark:text-white font-medium">{material.properties.E.toLocaleString()}</p>
                 </div>
                 {material.properties.fy && (
                   <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded">
                     <p className="text-gray-600 dark:text-gray-400 text-xs">fy (MPa)</p>
-                    <p className="text-zinc-900 dark:text-white font-medium">{material.properties.fy}</p>
+                    <p className="text-slate-900 dark:text-white font-medium">{material.properties.fy}</p>
                   </div>
                 )}
                 {material.properties.fck && (
                   <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded">
                     <p className="text-gray-600 dark:text-gray-400 text-xs">fck (MPa)</p>
-                    <p className="text-zinc-900 dark:text-white font-medium">{material.properties.fck}</p>
+                    <p className="text-slate-900 dark:text-white font-medium">{material.properties.fck}</p>
                   </div>
                 )}
                 <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded">
                   <p className="text-gray-600 dark:text-gray-400 text-xs">ρ (kg/m³)</p>
-                  <p className="text-zinc-900 dark:text-white font-medium">{material.properties.density}</p>
+                  <p className="text-slate-900 dark:text-white font-medium">{material.properties.density}</p>
                 </div>
               </div>
 
@@ -491,7 +493,7 @@ const MaterialsDatabasePage: React.FC = () => {
   const renderCustomTab = () => (
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <span className="text-2xl">✏️</span>
           Define Custom Material
         </h3>
@@ -499,7 +501,7 @@ const MaterialsDatabasePage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Info */}
           <div className="space-y-4">
-            <h4 className="text-zinc-900 dark:text-white font-medium border-b border-gray-600 pb-2">Basic Information</h4>
+            <h4 className="text-slate-900 dark:text-white font-medium border-b border-gray-600 pb-2">Basic Information</h4>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Material Name</label>
               <input
@@ -507,7 +509,7 @@ const MaterialsDatabasePage: React.FC = () => {
                 placeholder="e.g., High Performance Concrete"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
             <div>
@@ -515,7 +517,7 @@ const MaterialsDatabasePage: React.FC = () => {
               <select
                 value={customType}
                 onChange={(e) => setCustomType(e.target.value as Material['type'])}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               >
                 <option value="concrete">Concrete</option>
                 <option value="steel">Structural Steel</option>
@@ -533,7 +535,7 @@ const MaterialsDatabasePage: React.FC = () => {
                 placeholder="e.g., M60, Fe 600"
                 value={customGrade}
                 onChange={(e) => setCustomGrade(e.target.value)}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
             <div>
@@ -543,14 +545,14 @@ const MaterialsDatabasePage: React.FC = () => {
                 placeholder="e.g., IS 456, ASTM A615"
                 value={customStandard}
                 onChange={(e) => setCustomStandard(e.target.value)}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
           {/* Mechanical Properties */}
           <div className="space-y-4">
-            <h4 className="text-zinc-900 dark:text-white font-medium border-b border-gray-600 pb-2">Mechanical Properties</h4>
+            <h4 className="text-slate-900 dark:text-white font-medium border-b border-gray-600 pb-2">Mechanical Properties</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">E (MPa)</label>
@@ -559,7 +561,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   placeholder="200000"
                   value={customE}
                   onChange={(e) => setCustomE(e.target.value)}
-                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div>
@@ -570,7 +572,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   placeholder="0.3"
                   value={customPoisson}
                   onChange={(e) => setCustomPoisson(e.target.value)}
-                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div>
@@ -580,7 +582,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   placeholder="415"
                   value={customFy}
                   onChange={(e) => setCustomFy(e.target.value)}
-                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div>
@@ -590,7 +592,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   placeholder="485"
                   value={customFu}
                   onChange={(e) => setCustomFu(e.target.value)}
-                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div>
@@ -600,7 +602,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   placeholder="7850"
                   value={customDensity}
                   onChange={(e) => setCustomDensity(e.target.value)}
-                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
               <div>
@@ -610,7 +612,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   placeholder="12e-6"
                   value={customThermal}
                   onChange={(e) => setCustomThermal(e.target.value)}
-                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
                 />
               </div>
             </div>
@@ -622,7 +624,7 @@ const MaterialsDatabasePage: React.FC = () => {
                 placeholder="1.15"
                 value={customGammaM}
                 onChange={(e) => setCustomGammaM(e.target.value)}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
           </div>
@@ -685,7 +687,7 @@ const MaterialsDatabasePage: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
             <span className="text-2xl">📊</span>
             Material Comparison
           </h3>
@@ -708,7 +710,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   <tr className="border-b border-gray-300 dark:border-gray-700">
                     <th className="text-left p-3 text-gray-600 dark:text-gray-400">Property</th>
                     {compareMaterials.map(m => (
-                      <th key={m.id} className="text-center p-3 text-zinc-900 dark:text-white">{m.name}</th>
+                      <th key={m.id} className="text-center p-3 text-slate-900 dark:text-white">{m.name}</th>
                     ))}
                   </tr>
                 </thead>
@@ -729,7 +731,7 @@ const MaterialsDatabasePage: React.FC = () => {
                           ? m.properties[prop.key as keyof typeof m.properties]
                           : m[prop.key as keyof Material];
                         return (
-                          <td key={m.id} className="p-3 text-center text-zinc-900 dark:text-white">
+                          <td key={m.id} className="p-3 text-center text-slate-900 dark:text-white">
                             {value !== undefined ? (
                               typeof value === 'number' ? value.toLocaleString() : String(value)
                             ) : '-'}
@@ -750,7 +752,7 @@ const MaterialsDatabasePage: React.FC = () => {
   const renderImportTab = () => (
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <span className="text-2xl">📥</span>
           Import Materials
         </h3>
@@ -763,7 +765,7 @@ const MaterialsDatabasePage: React.FC = () => {
           ].map((fmt, idx) => (
             <div key={idx} className="p-4 bg-gray-700 rounded-lg text-center hover:bg-gray-600 transition-colors cursor-pointer">
               <span className="text-4xl">{fmt.icon}</span>
-              <p className="text-zinc-900 dark:text-white font-medium mt-2">{fmt.format}</p>
+              <p className="text-slate-900 dark:text-white font-medium mt-2">{fmt.format}</p>
               <p className="text-gray-600 dark:text-gray-400 text-sm">{fmt.ext}</p>
             </div>
           ))}
@@ -804,14 +806,14 @@ const MaterialsDatabasePage: React.FC = () => {
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="text-5xl mb-4">📁</div>
-          <p className="text-zinc-900 dark:text-white font-medium mb-2">Drop material file here</p>
+          <p className="text-slate-900 dark:text-white font-medium mb-2">Drop material file here</p>
           <p className="text-gray-600 dark:text-gray-400 text-sm">or click to browse (.json)</p>
         </div>
       </div>
 
       {/* Export */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📤</span>
           Export Material Library
         </h3>
@@ -927,7 +929,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
         {/* Standards Footer */}
         <div className="mt-8 p-6 bg-gray-100 dark:bg-gray-800/50 rounded-lg border border-gray-300 dark:border-gray-700">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 text-center">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 text-center">
             📜 Supported Standards
           </h3>
           <div className="flex flex-wrap justify-center gap-4">

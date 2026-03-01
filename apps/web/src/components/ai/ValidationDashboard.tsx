@@ -57,7 +57,7 @@ const AccuracyBadge: React.FC<{ accuracy: number }> = ({ accuracy }) => {
     };
 
     return (
-        <div className={`inline-flex items-center px-3 py-1 rounded-full ${getColor()} text-zinc-900 dark:text-white font-semibold`}>
+        <div className={`inline-flex items-center px-3 py-1 rounded-full ${getColor()} text-slate-900 dark:text-white font-semibold`}>
             <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d={accuracy >= 85 ? "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" : "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"}
@@ -84,7 +84,7 @@ const ValidationResultRow: React.FC<{ result: ValidationResult; index: number }>
             >
                 <div className="flex items-center gap-3">
                     <span className="text-gray-500 dark:text-gray-400 text-sm">#{index + 1}</span>
-                    <span className="font-medium text-zinc-900 dark:text-white">{result.testCase}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{result.testCase}</span>
                     <span className="text-gray-500 dark:text-gray-400 text-sm">{result.description}</span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -103,7 +103,7 @@ const ValidationResultRow: React.FC<{ result: ValidationResult; index: number }>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
                             <span className="text-gray-500 dark:text-gray-400 block">Computed Value</span>
-                            <span className="text-zinc-900 dark:text-white font-mono">{result.computed.toFixed(6)}</span>
+                            <span className="text-slate-900 dark:text-white font-mono">{result.computed.toFixed(6)}</span>
                         </div>
                         <div>
                             <span className="text-gray-500 dark:text-gray-400 block">Expected Value</span>
@@ -231,7 +231,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                         />
                     </svg>
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">AI Validation</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">AI Validation</h3>
                 </div>
 
                 {state.status === 'complete' && (
@@ -267,7 +267,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                         <div className="grid grid-cols-3 gap-4 mb-4">
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                                 <div className="text-gray-500 dark:text-gray-400 text-sm">Overall Accuracy</div>
-                                <div className="text-2xl font-bold text-zinc-900 dark:text-white">{state.overallAccuracy.toFixed(1)}%</div>
+                                <div className="text-2xl font-bold text-slate-900 dark:text-white">{state.overallAccuracy.toFixed(1)}%</div>
                             </div>
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                                 <div className="text-gray-500 dark:text-gray-400 text-sm">Tests Passed</div>
@@ -288,7 +288,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                         {/* Toggle Details */}
                         <button
                             onClick={() => setShowDetails(!showDetails)}
-                            className="w-full py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center gap-2"
+                            className="w-full py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2"
                         >
                             {showDetails ? 'Hide Details' : 'Show Details'}
                             <svg className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-180' : ''}`}
@@ -320,7 +320,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
 // console.log(report);
                                     alert('Validation report logged to audit trail');
                                 }}
-                                className="flex-1 py-2 bg-gray-700 text-zinc-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium"
+                                className="flex-1 py-2 bg-gray-700 text-slate-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium"
                             >
                                 Export Report
                             </button>

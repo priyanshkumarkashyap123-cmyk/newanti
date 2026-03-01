@@ -148,14 +148,14 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-              <h3 className="font-semibold text-zinc-900 dark:text-white">
+              <h3 className="font-semibold text-slate-900 dark:text-white">
                 {step === 'type' && 'Send Feedback'}
                 {step === 'form' && feedbackTypes.find(t => t.id === feedbackType)?.label}
                 {step === 'success' && 'Thank You!'}
               </h3>
               <button
                 onClick={handleClose}
-                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -206,7 +206,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                         feedbackType === 'question' ? 'Type your question here...' :
                         'Share your thoughts...'
                       }
-                      className="w-full h-28 px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full h-28 px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"
                     />
                   </div>
 
@@ -246,7 +246,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-zinc-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
@@ -281,7 +281,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                   <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle className="w-8 h-8 text-green-400" />
                   </div>
-                  <h4 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+                  <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                     Feedback Received!
                   </h4>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
@@ -289,7 +289,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                   </p>
                   <button
                     onClick={handleClose}
-                    className="px-6 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-zinc-900 dark:text-white font-medium transition-colors"
+                    className="px-6 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-medium transition-colors"
                   >
                     Close
                   </button>

@@ -122,6 +122,8 @@ export function useTierAccess(): TierAccess {
     const userEmail = user?.email || null;
 
     useEffect(() => {
+        const controller = new AbortController();
+
         const fetchTier = async () => {
             setIsLoading(true);
 
@@ -149,13 +151,17 @@ export function useTierAccess(): TierAccess {
                         const response = await fetch(`${API_URL}/api/user/tier`, {
                             headers,
                             credentials: 'include',
+                            signal: controller.signal,
                         });
 
                         if (response.ok) {
                             const data = await response.json();
                             setTier(data.tier || 'free');
                         }
-                    } catch {
+                    } catch (err) {
+                        if (err instanceof DOMException && err.name === 'AbortError') {
+                            return;
+                        }
                         // API not available - use localStorage cache
                         const cachedTier = localStorage.getItem('beamlab_user_tier');
                         if (cachedTier && ['free', 'pro', 'enterprise'].includes(cachedTier)) {
@@ -169,6 +175,7 @@ export function useTierAccess(): TierAccess {
         };
 
         fetchTier();
+        return () => controller.abort();
     }, [isAuthenticated, userEmail, getToken]);
 
     const effectiveTier = getEffectiveTier(userEmail, tier);

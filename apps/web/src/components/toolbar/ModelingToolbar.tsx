@@ -55,7 +55,7 @@ const ToolButton: FC<ToolButtonProps> = ({
         ${
           isActive
             ? "bg-blue-600 text-white"
-            : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white"
+            : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
         }
       `}
       title={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ""}`}
@@ -65,7 +65,7 @@ const ToolButton: FC<ToolButtonProps> = ({
       <Icon className="w-4 h-4" aria-hidden="true" />
       {showLabel && <span>{tool.label}</span>}
       {tool.shortcut && (
-        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 ml-auto" aria-hidden="true">
+        <span className="text-[10px] text-slate-500 dark:text-slate-400 ml-auto" aria-hidden="true">
           {tool.shortcut}
         </span>
       )}
@@ -107,12 +107,12 @@ const ToolGroupDropdown: FC<ToolGroupDropdownProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         className={`
           flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
-          border border-zinc-200 dark:border-zinc-700 text-sm
+          border border-slate-200 dark:border-slate-700 text-sm
           transition-all duration-150
           ${
             hasActiveTool
               ? "bg-blue-600/20 border-blue-500 text-blue-400"
-              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
           }
         `}
         aria-haspopup="true"
@@ -137,7 +137,7 @@ const ToolGroupDropdown: FC<ToolGroupDropdownProps> = ({
 
           {/* Dropdown Menu */}
           <div
-            className="absolute top-full left-0 mt-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 
+            className="absolute top-full left-0 mt-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
                           rounded-lg shadow-xl z-50 min-w-[200px] py-1"
           >
             {group.tools.map((toolId) => {
@@ -238,7 +238,7 @@ export const ModelingToolbar: FC = () => {
   }
 
   return (
-    <div className="flex items-center gap-1 p-1.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-lg">
+    <div className="flex items-center gap-1 p-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg">
       {/* Quick Access Tools */}
       {QUICK_TOOLS.map((toolId) => {
         const tool = TOOL_DEFINITIONS[toolId];
@@ -254,7 +254,7 @@ export const ModelingToolbar: FC = () => {
               ${
                 activeTool === toolId
                   ? "bg-blue-600 text-white"
-                  : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
               }
             `}
             title={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ""}`}
@@ -265,7 +265,7 @@ export const ModelingToolbar: FC = () => {
         );
       })}
 
-      <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-700 mx-1" />
+      <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
 
       {/* Tool Groups */}
       {MODELING_TOOL_GROUPS.map((group) => (

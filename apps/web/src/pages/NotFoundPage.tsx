@@ -5,21 +5,22 @@
  * redirecting to home (which confuses users and hurts SEO).
  */
 
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Home, LayoutDashboard, Play } from 'lucide-react';
+import { Button } from '../components/ui/button';
 
 export function NotFoundPage() {
+    useEffect(() => {
+        document.title = 'Page Not Found - BeamLab';
+    }, []);
+
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center px-6">
+        <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center px-6">
             <div className="text-center max-w-lg">
                 {/* 404 number */}
                 <h1
-                    className="text-8xl font-bold mb-4"
-                    style={{
-                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                    }}
+                    className="text-8xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent"
                 >
                     404
                 </h1>
@@ -35,27 +36,33 @@ export function NotFoundPage() {
 
                 {/* Action buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Link
-                        to="/"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors no-underline"
-                    >
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>home</span>
-                        Go Home
-                    </Link>
-                    <Link
-                        to="/stream"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors no-underline"
-                    >
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>dashboard</span>
-                        Dashboard
-                    </Link>
-                    <Link
-                        to="/demo"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors no-underline"
-                    >
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>play_arrow</span>
-                        Try Demo
-                    </Link>
+                    <Button asChild variant="premium" size="lg">
+                        <Link
+                            to="/"
+                            className="inline-flex items-center justify-center gap-2 no-underline"
+                        >
+                            <Home className="w-5 h-5" />
+                            Go Home
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg">
+                        <Link
+                            to="/stream"
+                            className="inline-flex items-center justify-center gap-2 no-underline"
+                        >
+                            <LayoutDashboard className="w-5 h-5" />
+                            Dashboard
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg">
+                        <Link
+                            to="/demo"
+                            className="inline-flex items-center justify-center gap-2 no-underline"
+                        >
+                            <Play className="w-5 h-5" />
+                            Try Demo
+                        </Link>
+                    </Button>
                 </div>
 
                 {/* Help text */}

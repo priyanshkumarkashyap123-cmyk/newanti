@@ -51,7 +51,7 @@ export const CompetitiveAdvantage: FC = () => {
           <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
             Why BeamLab?
           </span>
-          <h2 className="text-3xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-5 tracking-[-0.02em]">
+          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-5 tracking-[-0.02em]">
             Built for the Modern Engineer
           </h2>
           <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -82,7 +82,7 @@ export const CompetitiveAdvantage: FC = () => {
 
           {/* BeamLab Advantages */}
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
               BeamLab changes the game
             </h3>
             <div className="grid gap-3">
@@ -188,7 +188,7 @@ export const InteractiveDemo: FC = () => {
           <span className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4">
             See It In Action
           </span>
-          <h2 id="interactive-demo-heading" className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-4">
+          <h2 id="interactive-demo-heading" className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
             Powerful Features, Simple Interface
           </h2>
         </div>
@@ -208,7 +208,7 @@ export const InteractiveDemo: FC = () => {
                     : 'bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
                   }`}
               >
-                <h4 className={`font-semibold mb-1 ${activeDemo === demo.id ? 'text-blue-400' : 'text-zinc-900 dark:text-white'
+                <h4 className={`font-semibold mb-1 ${activeDemo === demo.id ? 'text-blue-400' : 'text-slate-900 dark:text-white'
                   }`}>
                   {demo.title}
                 </h4>
@@ -295,7 +295,7 @@ export const Testimonials: FC = () => {
           <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
             Testimonials
           </span>
-          <h2 className="text-3xl md:text-5xl font-bold text-zinc-900 dark:text-white tracking-[-0.02em]">
+          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-[-0.02em]">
             Loved by Engineers Worldwide
           </h2>
         </div>
@@ -319,12 +319,12 @@ export const Testimonials: FC = () => {
               <div className="flex items-center gap-3">
                 <div className={`relative w-12 h-12`}>
                   <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${t.gradient} blur-sm opacity-50 group-hover:opacity-100 transition-opacity`} />
-                  <div className={`relative w-12 h-12 rounded-full bg-gradient-to-r ${t.gradient} flex items-center justify-center text-zinc-900 dark:text-white font-bold text-sm ring-2 ring-slate-800`}>
+                  <div className={`relative w-12 h-12 rounded-full bg-gradient-to-r ${t.gradient} flex items-center justify-center text-slate-900 dark:text-white font-bold text-sm ring-2 ring-slate-800`}>
                     {t.avatar}
                   </div>
                 </div>
                 <div>
-                  <p className="font-medium text-zinc-900 dark:text-white">{t.author}</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{t.author}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{t.role}, {t.company}</p>
                 </div>
               </div>
@@ -353,7 +353,7 @@ export const SecurityCompliance: FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
-            <h3 className="text-xl font-semibold text-zinc-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
               Enterprise-Grade Security
             </h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
@@ -365,7 +365,7 @@ export const SecurityCompliance: FC = () => {
               <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-950/50 border border-white/[0.06]">
                 <div className="text-slate-500 dark:text-slate-400">{badge.icon}</div>
                 <div>
-                  <p className="text-sm font-medium text-zinc-900 dark:text-white">{badge.label}</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">{badge.label}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">{badge.desc}</p>
                 </div>
               </div>
@@ -391,7 +391,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-6 tracking-[-0.02em]">
+        <h2 id="cta-heading" className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6 tracking-[-0.02em]">
           Ready to modernize your<br />structural workflow?
         </h2>
         <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -405,7 +405,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
           >
             Start Free Trial <ChevronRight className="w-5 h-5" />
           </button>
-          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]">
+          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-slate-900 dark:text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]">
             Schedule Demo
           </button>
         </div>

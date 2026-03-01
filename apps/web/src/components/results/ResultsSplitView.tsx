@@ -98,7 +98,7 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
             {/* Header Bar */}
             <div className="h-12 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
-                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Analysis Results</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Analysis Results</h2>
                     <div className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
                         Analysis Complete
@@ -109,14 +109,14 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                     {/* Panel Toggles */}
                     <button
                         onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={leftPanelOpen ? "Hide Table Panel" : "Show Table Panel"}
                     >
                         {leftPanelOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
                     </button>
                     <button
                         onClick={() => setBottomPanelOpen(!bottomPanelOpen)}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={bottomPanelOpen ? "Hide Control Panel" : "Show Control Panel"}
                     >
                         {bottomPanelOpen ? <PanelBottomClose size={18} /> : <PanelBottomOpen size={18} />}
@@ -126,7 +126,7 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                     
                     <button
                         onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
                     >
                         {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}

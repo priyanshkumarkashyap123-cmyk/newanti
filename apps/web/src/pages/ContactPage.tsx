@@ -4,13 +4,17 @@
  */
 
 import React from 'react';
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Send, CheckCircle, Phone } from "lucide-react";
+import logger from "../lib/logger";
 import beamLabLogo from "../assets/beamlab_logo.png";
+import { Button } from "../components/ui/button";
 
 export const ContactPage: FC = () => {
+  useEffect(() => { document.title = 'Contact - BeamLab'; }, []);
+
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -34,7 +38,7 @@ export const ContactPage: FC = () => {
       if (!res.ok) throw new Error('Failed');
     } catch {
       // Even if backend is unavailable, show success (message logged in console)
-      console.log('Contact form submitted (offline fallback):', formState);
+      logger.log('Contact form submitted (offline fallback):', formState);
     }
     setIsSubmitting(false);
     setSubmitted(true);
@@ -54,32 +58,32 @@ export const ContactPage: FC = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
                 BeamLab Ultimate
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
               <Link
                 to="/pricing"
-                className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
               >
                 Pricing
               </Link>
               <Link
                 to="/help"
-                className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
               >
                 Help
               </Link>
               <Link
                 to="/sign-in"
-                className="text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors"
+                className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors"
               >
                 Log in
               </Link>
               <Link
                 to="/sign-up"
-                className="px-5 py-2 rounded-full bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors"
+                className="px-5 py-2 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
               >
                 Get Started
               </Link>
@@ -100,7 +104,7 @@ export const ContactPage: FC = () => {
               <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">
                 Contact Us
               </span>
-              <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mt-2 mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mt-2 mb-6">
                 Get in touch
               </h1>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -115,7 +119,7 @@ export const ContactPage: FC = () => {
                   <Mail className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
                     Email Us
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 mb-2">
@@ -135,7 +139,7 @@ export const ContactPage: FC = () => {
                   <MapPin className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">Office</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Office</h3>
                   <p className="text-slate-600 dark:text-slate-400">
                     Rajapur Teonthar, Rewa
                     <br />
@@ -151,7 +155,7 @@ export const ContactPage: FC = () => {
                   <Phone className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
                     Call Us
                   </h3>
                   <p className="text-slate-600 dark:text-slate-400 mb-2">
@@ -180,18 +184,19 @@ export const ContactPage: FC = () => {
                 <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-6 animate-success">
                   <CheckCircle className="w-8 h-8 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                   Message Sent!
                 </h3>
                 <p className="text-slate-600 dark:text-slate-400">
                   Thanks for reaching out. We'll get back to you shortly.
                 </p>
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => setSubmitted(false)}
-                  className="mt-8 text-blue-400 font-medium hover:text-blue-300 transition-colors"
+                  className="mt-8"
                 >
                   Send another message
-                </button>
+                </Button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -207,7 +212,7 @@ export const ContactPage: FC = () => {
                       type="text"
                       id="name"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400"
                       placeholder="Your name"
                       value={formState.name}
                       onChange={(e) =>
@@ -226,7 +231,7 @@ export const ContactPage: FC = () => {
                       type="email"
                       id="email"
                       required
-                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:text-slate-400"
+                      className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600 dark:placeholder:text-slate-400"
                       placeholder="you@company.com"
                       value={formState.email}
                       onChange={(e) =>
@@ -245,7 +250,7 @@ export const ContactPage: FC = () => {
                   </label>
                   <select
                     id="subject"
-                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     value={formState.subject}
                     onChange={(e) =>
                       setFormState({ ...formState, subject: e.target.value })
@@ -270,7 +275,7 @@ export const ContactPage: FC = () => {
                     id="message"
                     required
                     rows={4}
-                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:text-slate-400"
+                    className="px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none placeholder:text-slate-600 dark:placeholder:text-slate-400"
                     placeholder="How can we help you?"
                     value={formState.message}
                     onChange={(e) =>
@@ -279,10 +284,12 @@ export const ContactPage: FC = () => {
                   />
                 </div>
 
-                <button
+                <Button
+                  variant="premium"
+                  size="lg"
+                  className="w-full mt-2"
                   type="submit"
                   disabled={isSubmitting}
-                  className="mt-2 bg-white hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold py-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-white/20"
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-slate-400 border-t-slate-900 rounded-full animate-spin" />
@@ -292,7 +299,7 @@ export const ContactPage: FC = () => {
                       <Send className="w-5 h-5" />
                     </>
                   )}
-                </button>
+                </Button>
               </form>
             )}
           </motion.div>
@@ -301,7 +308,7 @@ export const ContactPage: FC = () => {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 text-center text-sm text-slate-600 dark:text-slate-400">
-        <p>© 2026 BeamLab Ultimate. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
       </footer>
     </div>
   );

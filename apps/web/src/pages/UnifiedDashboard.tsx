@@ -306,14 +306,14 @@ const ProjectCard: FC<{
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-2.5">
           <div className="rounded-full bg-white/10 backdrop-blur-sm p-1.5 border border-white/10">
-            <ArrowUpRight className="w-3.5 h-3.5 text-zinc-900 dark:text-white" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-slate-900 dark:text-white" />
           </div>
         </div>
       </div>
 
       {/* Info */}
       <div className="px-3.5 py-3 space-y-2">
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-zinc-900 dark:hover:text-white transition-colors">
+        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-slate-900 dark:hover:text-white transition-colors">
           {project.name}
         </h3>
         <div className="flex items-center gap-2 text-[11px] text-slate-500">
@@ -380,6 +380,8 @@ export const UnifiedDashboard: FC<{
   const [projectsError, setProjectsError] = useState<string | null>(null);
 
   useUserRegistration();
+
+  useEffect(() => { document.title = 'Dashboard | BeamLab Ultimate'; }, []);
 
   const { isSignedIn, user, signOut, getToken } = useAuth();
   const isClerkEnabled = isUsingClerk();
@@ -487,7 +489,7 @@ export const UnifiedDashboard: FC<{
           <div className="flex items-center gap-7">
             <Link to="/" className="flex items-center gap-2.5">
               <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7" />
-              <span className="text-[15px] font-bold tracking-tight text-zinc-900 dark:text-white">
+              <span className="text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
                 BeamLab
               </span>
               <span className="rounded-[5px] bg-blue-500/15 px-1.5 py-[1px] text-[10px] font-bold text-blue-400 leading-tight">
@@ -528,7 +530,7 @@ export const UnifiedDashboard: FC<{
                   key={n.to}
                   to={n.to}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors
-                    ${n.active ? "text-zinc-900 dark:text-white bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.03]"}`}
+                    ${n.active ? "text-slate-900 dark:text-white bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.03]"}`}
                 >
                   {n.icon} {n.label}
                 </Link>
@@ -567,7 +569,7 @@ export const UnifiedDashboard: FC<{
         {/* ---- Welcome Row ---- */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               {greeting}, {userName}
             </h1>
             <p className="mt-1 text-sm text-slate-500">

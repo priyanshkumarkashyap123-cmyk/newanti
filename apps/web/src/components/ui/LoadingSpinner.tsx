@@ -34,7 +34,7 @@ const spinnerVariants = cva(
         success: 'text-emerald-500',
         warning: 'text-amber-500',
         danger: 'text-red-500',
-        white: 'text-zinc-900 dark:text-white',
+        white: 'text-slate-900 dark:text-white',
       },
     },
     defaultVariants: {
@@ -299,7 +299,7 @@ export const EngineeringLoader: React.FC<EngineeringLoaderProps> = ({
     </div>
     
     {/* Message */}
-    <p className="text-zinc-900 dark:text-white font-medium text-center">{message}</p>
+    <p className="text-slate-900 dark:text-white font-medium text-center">{message}</p>
     {subMessage && (
       <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 text-center">{subMessage}</p>
     )}

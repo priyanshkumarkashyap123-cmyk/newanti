@@ -62,9 +62,9 @@ const CubeFaceButton: FC<CubeFaceButtonProps> = ({
                 transition-all duration-150
                 ${isHovered
                     ? 'bg-blue-500 text-white scale-105'
-                    : 'bg-zinc-700/80 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-600'
+                    : 'bg-slate-700/80 text-slate-600 dark:text-slate-300 hover:bg-slate-600'
                 }
-                border border-zinc-600
+                border border-slate-600
             `}
             onMouseEnter={() => onHover(face)}
             onMouseLeave={() => onHover(null)}
@@ -93,8 +93,8 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                 {/* 2D representation of cube faces */}
                 <div className="
                     w-16 h-16 relative
-                    bg-zinc-100/90 dark:bg-zinc-800/90 rounded-lg
-                    border border-zinc-200 dark:border-zinc-700
+                    bg-slate-100/90 dark:bg-slate-800/90 rounded-lg
+                    border border-slate-200 dark:border-slate-700
                     backdrop-blur-sm
                     shadow-lg
                     overflow-hidden
@@ -109,7 +109,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                             transition-colors
                             ${hoveredFace === 'top'
                                 ? 'bg-blue-500 text-white'
-                                : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-600'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600'
                             }
                         `}
                         onMouseEnter={() => setHoveredFace('top')}
@@ -130,7 +130,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                         transition-colors
                         ${hoveredFace === 'back'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-zinc-600 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-500'
+                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('back')}
@@ -149,7 +149,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                         transition-colors
                         ${hoveredFace === 'front'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-zinc-600 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-500'
+                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('front')}
@@ -168,7 +168,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                         transition-colors
                         ${hoveredFace === 'left'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-zinc-600 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-500'
+                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('left')}
@@ -187,7 +187,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                         transition-colors
                         ${hoveredFace === 'right'
                             ? 'bg-blue-500 text-white'
-                            : 'bg-zinc-600 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-500'
+                            : 'bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-500'
                         }
                     `}
                     onMouseEnter={() => setHoveredFace('right')}

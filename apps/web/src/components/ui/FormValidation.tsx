@@ -142,7 +142,7 @@ export const ValidatedInput: FC<ValidatedInputProps> = ({
                     className={`
                         w-full px-4 py-3 pr-12
                         bg-slate-100 dark:bg-slate-800 rounded-lg
-                        text-zinc-900 dark:text-white placeholder:text-slate-400
+                        text-slate-900 dark:text-white placeholder:text-slate-400
                         border-2 transition-colors duration-200
                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950 focus:ring-blue-500
                         disabled:opacity-50 disabled:cursor-not-allowed

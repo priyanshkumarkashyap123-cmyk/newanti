@@ -1123,7 +1123,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             onClick={() => {
               useUIStore.getState().setCategory("MODELING");
             }}
-            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-900 text-blue-300 rounded-lg shadow-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors border border-zinc-200 dark:border-zinc-700"
+            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 text-blue-300 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
             title="Back to Model"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -1131,7 +1131,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           </button>
           <button
             onClick={() => setIsExpanded(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white rounded-lg shadow-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             title="Expand results panel"
           >
             <BarChart2 className="w-4 h-4" />
@@ -1141,7 +1141,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 rounded-lg shadow-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors border border-zinc-200 dark:border-zinc-700"
+              className="p-2 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
               title="Close results toolbar"
               aria-label="Close results toolbar"
             >
@@ -1171,7 +1171,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 w-80 bg-white dark:bg-zinc-900 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <div className="fixed bottom-4 right-4 z-40 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center gap-2">
@@ -1206,7 +1206,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           onClick={() => {
             useUIStore.getState().setCategory("MODELING");
           }}
-          className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-800 transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border-b border-slate-200 dark:border-slate-800 transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
           title="Return to modeling view while keeping results visible"
           aria-label="Back to modeling view"
         >
@@ -1215,8 +1215,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         </button>
 
         {/* Diagram Toggles */}
-        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-          <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
             Diagrams
           </h4>
           <div className="grid grid-cols-6 gap-1">
@@ -1232,17 +1232,17 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                                     flex flex-col items-center gap-1 p-2 rounded-lg transition-all
                                     ${
                                       isActive
-                                        ? "bg-zinc-100 dark:bg-zinc-800"
-                                        : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                                        ? "bg-slate-100 dark:bg-slate-800"
+                                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
                                     }
                                 `}
                   title={diagram.label}
                 >
                   <Icon
-                    className={`w-4 h-4 ${isActive ? diagram.color : "text-zinc-500 dark:text-zinc-400"}`}
+                    className={`w-4 h-4 ${isActive ? diagram.color : "text-slate-500 dark:text-slate-400"}`}
                   />
                   <span
-                    className={`text-[9px] ${isActive ? "text-zinc-900 dark:text-white" : "text-zinc-500 dark:text-zinc-400"}`}
+                    className={`text-[9px] ${isActive ? "text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
                   >
                     {diagram.label}
                   </span>
@@ -1253,8 +1253,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
           {/* Heat Map Type Selector - Show when heatmap is active */}
           {activeDiagram === "heatmap" && (
-            <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-              <h5 className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase">
+            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+              <h5 className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase">
                 Heat Map Type
               </h5>
               <div className="flex gap-1">
@@ -1284,8 +1284,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                                           heatmapType === type.id
                                             ? "bg-gradient-to-r " +
                                               type.gradient +
-                                              " text-zinc-900 dark:text-white shadow-md"
-                                            : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                              " text-slate-900 dark:text-white shadow-md"
+                                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                                         }
                                     `}
                   >
@@ -1295,7 +1295,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               </div>
               {/* Color Scale Legend */}
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-[9px] text-zinc-500 dark:text-zinc-400">Low</span>
+                <span className="text-[9px] text-slate-500 dark:text-slate-400">Low</span>
                 <div
                   className={`flex-1 h-2 rounded bg-gradient-to-r ${
                     heatmapType === "displacement"
@@ -1305,19 +1305,19 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                         : "from-green-500 via-yellow-500 to-red-500"
                   }`}
                 />
-                <span className="text-[9px] text-zinc-500 dark:text-zinc-400">High</span>
+                <span className="text-[9px] text-slate-500 dark:text-slate-400">High</span>
               </div>
             </div>
           )}
         </div>
 
         {/* Scale Slider */}
-        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Scale
             </h4>
-            <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
               {scale}x
             </span>
           </div>
@@ -1327,9 +1327,9 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             max="200"
             value={scale}
             onChange={(e) => handleScaleChange(Number(e.target.value))}
-            className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
           />
-          <div className="flex justify-between text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+          <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-1">
             <span>1x</span>
             <span>100x</span>
             <span>200x</span>
@@ -1337,8 +1337,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         </div>
 
         {/* Animation Controls */}
-        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-          <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
             Animation
           </h4>
           <div className="flex items-center gap-2">
@@ -1367,7 +1367,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             </button>
             <button
               onClick={resetView}
-              className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               title="Reset View"
             >
               <RotateCcw className="w-4 h-4" />
@@ -1376,8 +1376,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         </div>
 
         {/* Quick Stats */}
-        <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-          <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
             Max Values
           </h4>
           <div className="grid grid-cols-2 gap-2">
@@ -1402,7 +1402,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
         {/* Support Reactions Table — NEW: Visible computed reactions */}
         {activeDiagram === "reactions" && supportReactions.length > 0 && (
-          <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 max-h-48 overflow-y-auto scroll-smooth">
+          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 max-h-48 overflow-y-auto scroll-smooth">
             <h4 className="text-xs font-medium text-purple-400 mb-2 uppercase tracking-wider flex items-center gap-1">
               <ArrowDownToLine className="w-3 h-3" />
               Support Reactions ({supportReactions.length} supports)
@@ -1418,49 +1418,49 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                   </div>
                   <div className="grid grid-cols-3 gap-1 text-[9px]">
                     {Math.abs(sr.fx) > 0.001 && (
-                      <div className="text-zinc-500 dark:text-zinc-400">
+                      <div className="text-slate-500 dark:text-slate-400">
                         Fx:{" "}
-                        <span className="font-mono text-zinc-900 dark:text-white">
+                        <span className="font-mono text-slate-900 dark:text-white">
                           {sr.fx.toFixed(2)} kN
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.fy) > 0.001 && (
-                      <div className="text-zinc-500 dark:text-zinc-400">
+                      <div className="text-slate-500 dark:text-slate-400">
                         Fy:{" "}
-                        <span className="font-mono text-zinc-900 dark:text-white">
+                        <span className="font-mono text-slate-900 dark:text-white">
                           {sr.fy.toFixed(2)} kN
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.fz) > 0.001 && (
-                      <div className="text-zinc-500 dark:text-zinc-400">
+                      <div className="text-slate-500 dark:text-slate-400">
                         Fz:{" "}
-                        <span className="font-mono text-zinc-900 dark:text-white">
+                        <span className="font-mono text-slate-900 dark:text-white">
                           {sr.fz.toFixed(2)} kN
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.mx) > 0.001 && (
-                      <div className="text-zinc-500 dark:text-zinc-400">
+                      <div className="text-slate-500 dark:text-slate-400">
                         Mx:{" "}
-                        <span className="font-mono text-zinc-900 dark:text-white">
+                        <span className="font-mono text-slate-900 dark:text-white">
                           {sr.mx.toFixed(2)} kN·m
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.my) > 0.001 && (
-                      <div className="text-zinc-500 dark:text-zinc-400">
+                      <div className="text-slate-500 dark:text-slate-400">
                         My:{" "}
-                        <span className="font-mono text-zinc-900 dark:text-white">
+                        <span className="font-mono text-slate-900 dark:text-white">
                           {sr.my.toFixed(2)} kN·m
                         </span>
                       </div>
                     )}
                     {Math.abs(sr.mz) > 0.001 && (
-                      <div className="text-zinc-500 dark:text-zinc-400">
+                      <div className="text-slate-500 dark:text-slate-400">
                         Mz:{" "}
-                        <span className="font-mono text-zinc-900 dark:text-white">
+                        <span className="font-mono text-slate-900 dark:text-white">
                           {sr.mz.toFixed(2)} kN·m
                         </span>
                       </div>
@@ -1473,8 +1473,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         )}
 
         {/* Export Results */}
-        <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800">
-          <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+        <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
             Export Results
           </h4>
           <div className="flex flex-col gap-2">
@@ -1507,7 +1507,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
         {/* Next Steps — Advanced Tools */}
         <div className="px-4 py-3">
-          <h4 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
             Next Steps
           </h4>
           <div className="flex flex-col gap-2">

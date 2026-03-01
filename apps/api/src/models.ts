@@ -137,7 +137,11 @@ const UserSchema = new Schema<IUser>({
     },
     activityLog: {
         type: [ActivityLogSchema],
-        default: []
+        default: [],
+        validate: {
+            validator: (arr: unknown[]) => arr.length <= 200,
+            message: 'Activity log cannot exceed 200 entries'
+        }
     },
     // Tier usage tracking
     nodeCount: {
@@ -322,7 +326,8 @@ const UserModelSchema = new Schema<IUserModel>({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false
     },
     firstName: {
         type: String,

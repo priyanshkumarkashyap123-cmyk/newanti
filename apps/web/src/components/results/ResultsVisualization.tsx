@@ -194,7 +194,7 @@ const SummaryCard: React.FC<{
       </div>
     )}
     <div className="flex items-start gap-3">
-      <div className={`rounded-lg ${color} p-2.5 text-zinc-900 dark:text-white`}>
+      <div className={`rounded-lg ${color} p-2.5 text-slate-900 dark:text-white`}>
         {icon}
       </div>
       <div className="flex-1">

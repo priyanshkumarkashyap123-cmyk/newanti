@@ -291,31 +291,31 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                         onClick={() => setFormat('dxf')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'dxf'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
                                             }`}
                                     >
-                                        <FileText className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                                        <span className="text-xs text-zinc-700 dark:text-zinc-300">DXF</span>
+                                        <FileText className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs text-slate-700 dark:text-slate-300">DXF</span>
                                     </button>
                                     <button
                                         onClick={() => setFormat('staad')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'staad'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
                                             }`}
                                     >
-                                        <FileCode className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                                        <span className="text-xs text-zinc-700 dark:text-zinc-300">STAAD .std</span>
+                                        <FileCode className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs text-slate-700 dark:text-slate-300">STAAD .std</span>
                                     </button>
                                     <button
                                         onClick={() => setFormat('json')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'json'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
                                             }`}
                                     >
-                                        <FileCode className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                                        <span className="text-xs text-zinc-700 dark:text-zinc-300">JSON</span>
+                                        <FileCode className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs text-slate-700 dark:text-slate-300">JSON</span>
                                     </button>
                                 </>
                             ) : (
@@ -324,31 +324,31 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                         onClick={() => setFormat('staad')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'staad'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
                                             }`}
                                     >
-                                        <FileCode className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                                        <span className="text-xs text-zinc-700 dark:text-zinc-300">STAAD .std</span>
+                                        <FileCode className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs text-slate-700 dark:text-slate-300">STAAD .std</span>
                                     </button>
                                     <button
                                         onClick={() => setFormat('ifc')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'ifc'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
                                             }`}
                                     >
-                                        <Box className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                                        <span className="text-xs text-zinc-700 dark:text-zinc-300">IFC JSON</span>
+                                        <Box className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs text-slate-700 dark:text-slate-300">IFC JSON</span>
                                     </button>
                                     <button
                                         onClick={() => setFormat('json')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'json'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
-                                                : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
                                             }`}
                                     >
-                                        <FileCode className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
-                                        <span className="text-xs text-zinc-700 dark:text-zinc-300">JSON</span>
+                                        <FileCode className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs text-slate-700 dark:text-slate-300">JSON</span>
                                     </button>
                                 </>
                             )}
@@ -360,14 +360,14 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                         <>
                             {/* File Drop Zone */}
                             <div
-                                className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg p-8 text-center hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors cursor-pointer bg-zinc-50 dark:bg-transparent"
+                                className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-8 text-center hover:border-emerald-500 dark:hover:border-emerald-500 transition-colors cursor-pointer bg-slate-50 dark:bg-transparent"
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                <Upload className="w-10 h-10 text-zinc-500 dark:text-zinc-400 mx-auto mb-3" />
-                                <p className="text-zinc-600 dark:text-zinc-400">
-                                    Click to select a <span className="font-medium text-zinc-900 dark:text-white">.{format}</span> file
+                                <Upload className="w-10 h-10 text-slate-500 dark:text-slate-400 mx-auto mb-3" />
+                                <p className="text-slate-600 dark:text-slate-400">
+                                    Click to select a <span className="font-medium text-slate-900 dark:text-white">.{format}</span> file
                                 </p>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">or drag and drop</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">or drag and drop</p>
                             </div>
                             <input
                                 ref={fileInputRef}
@@ -379,19 +379,19 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
 
                             {/* Preview */}
                             {importedNodes.length > 0 && (
-                                <div className="p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg">
+                                <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Eye className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                                        <span className="text-sm font-medium text-zinc-900 dark:text-white">Preview</span>
+                                        <span className="text-sm font-medium text-slate-900 dark:text-white">Preview</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div>
-                                            <span className="text-zinc-500 dark:text-zinc-400">Nodes:</span>
-                                            <span className="text-zinc-900 dark:text-white ml-2">{importedNodes.length}</span>
+                                            <span className="text-slate-500 dark:text-slate-400">Nodes:</span>
+                                            <span className="text-slate-900 dark:text-white ml-2">{importedNodes.length}</span>
                                         </div>
                                         <div>
-                                            <span className="text-zinc-500 dark:text-zinc-400">Members:</span>
-                                            <span className="text-zinc-900 dark:text-white ml-2">{importedMembers.length}</span>
+                                            <span className="text-slate-500 dark:text-slate-400">Members:</span>
+                                            <span className="text-slate-900 dark:text-white ml-2">{importedMembers.length}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -401,19 +401,19 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
 
                     {/* Export Section */}
                     {mode === 'export' && (
-                        <div className="p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg">
+                        <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                             <div className="flex items-center gap-2 mb-3">
                                 <Box className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Current Model</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-white">Current Model</span>
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <span className="text-zinc-500 dark:text-zinc-400">Nodes:</span>
-                                    <span className="text-zinc-900 dark:text-white ml-2">{nodes.size}</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Nodes:</span>
+                                    <span className="text-slate-900 dark:text-white ml-2">{nodes.size}</span>
                                 </div>
                                 <div>
-                                    <span className="text-zinc-500 dark:text-zinc-400">Members:</span>
-                                    <span className="text-zinc-900 dark:text-white ml-2">{members.size}</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Members:</span>
+                                    <span className="text-slate-900 dark:text-white ml-2">{members.size}</span>
                                 </div>
                             </div>
                         </div>

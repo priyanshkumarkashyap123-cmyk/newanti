@@ -1220,7 +1220,7 @@ export function SlopeStabilityAnalyzer() {
                     onClick={() => setMethod(m.id as typeof method)}
                     className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
                       method === m.id
-                        ? 'bg-stone-600 text-zinc-900 dark:text-white'
+                        ? 'bg-stone-600 text-slate-900 dark:text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -1302,7 +1302,7 @@ export function SlopeStabilityAnalyzer() {
 
             <button
               onClick={analyze}
-              className="w-full py-3 bg-stone-600 text-zinc-900 dark:text-white rounded-lg font-semibold hover:bg-stone-700"
+              className="w-full py-3 bg-stone-600 text-slate-900 dark:text-white rounded-lg font-semibold hover:bg-stone-700"
             >
               🔬 Analyze Stability
             </button>

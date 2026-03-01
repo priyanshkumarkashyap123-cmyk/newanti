@@ -4,7 +4,7 @@
  * Merged with Enhanced features (v3.0)
  */
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, Variants } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
@@ -23,6 +23,7 @@ import {
   Terminal,
 } from "lucide-react";
 import beamLabLogo from "../assets/beamlab_logo.png";
+import { Button } from "../components/ui/button";
 
 // Animation variants
 const fadeInUp: Variants = {
@@ -45,6 +46,10 @@ const staggerContainer: Variants = {
 export const LandingPage: FC = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = 'BeamLab Ultimate – Professional Structural Analysis Platform';
+  }, []);
   const { isSignedIn, isLoaded, signOut } = useAuth();
   const isClerkEnabled = isUsingClerk();
 
@@ -62,21 +67,24 @@ export const LandingPage: FC = () => {
     if (isSignedIn) {
       return (
         <div className="flex items-center gap-4">
-          <button
+          <Button
             onClick={() => navigate("/app")}
-            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-all shadow-lg shadow-blue-500/20"
+            variant="default"
+            size="sm"
+            className="hidden md:flex gap-2"
           >
             Go to App <ArrowRight className="w-4 h-4" />
-          </button>
+          </Button>
           {isClerkEnabled ? (
             <UserButton afterSignOutUrl="/" />
           ) : (
-            <button
+            <Button
               onClick={() => signOut()}
-              className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              variant="ghost"
+              size="sm"
             >
               Sign Out
-            </button>
+            </Button>
           )}
         </div>
       );
@@ -86,17 +94,16 @@ export const LandingPage: FC = () => {
       <div className="flex items-center gap-4">
         <Link
           to="/sign-in"
-          className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative group"
+          className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors relative group"
         >
           Log in
           <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full" />
         </Link>
-        <Link
-          to="/sign-up"
-          className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-slate-950 text-sm font-bold hover:bg-blue-50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
-        >
-          Get Started
-        </Link>
+        <Button asChild variant="premium" size="default">
+          <Link to="/sign-up" className="flex items-center gap-2">
+            Get Started
+          </Link>
+        </Button>
       </div>
     );
   };
@@ -139,25 +146,25 @@ export const LandingPage: FC = () => {
               <div className="flex items-center gap-8">
                 <a
                   href="#features"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Features
                 </a>
                 <a
                   href="#pricing"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Pricing
                 </a>
                 <Link
                   to="/help"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Docs
                 </Link>
                 <Link
                   to="/demo"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Demo
                 </Link>
@@ -170,8 +177,10 @@ export const LandingPage: FC = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={
                 mobileMenuOpen
@@ -186,7 +195,7 @@ export const LandingPage: FC = () => {
               ) : (
                 <Menu className="w-5 h-5" aria-hidden="true" />
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -201,28 +210,28 @@ export const LandingPage: FC = () => {
             <a
               href="#features"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Features
             </a>
             <a
               href="#pricing"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Pricing
             </a>
             <Link
               to="/help"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Docs
             </Link>
             <Link
               to="/demo"
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               Demo
             </Link>
@@ -230,16 +239,18 @@ export const LandingPage: FC = () => {
             <div className="space-y-3">
               <Link
                 to="/sign-in"
-                className="block text-center text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="block text-center text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 Log in
               </Link>
-              <button
+              <Button
                 onClick={handleGetStarted}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold text-white shadow-lg shadow-blue-500/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                variant="premium"
+                size="lg"
+                className="w-full"
               >
                 Get Started Free
-              </button>
+              </Button>
             </div>
           </nav>
         )}
@@ -328,23 +339,26 @@ export const LandingPage: FC = () => {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 px-4"
             >
-              <button
+              <Button
                 onClick={handleGetStarted}
-                className="group relative w-full sm:w-auto h-14 px-10 rounded-full bg-white text-slate-950 font-bold text-base hover:bg-blue-50 transition-all shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_40px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2.5 overflow-hidden active:scale-[0.98]"
+                variant="premium"
+                size="xl"
+                className="w-full sm:w-auto group"
               >
-                <span className="relative z-10 flex items-center gap-2">
-                  Start Analyzing Free{" "}
+                <span className="flex items-center gap-2.5">
+                  Start Analyzing Free
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/60 to-transparent -translate-x-full group-hover:animate-shimmer" />
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => navigate("/demo")}
-                className="group w-full sm:w-auto h-14 px-8 rounded-full bg-white/[0.04] backdrop-blur-md border border-white/10 text-zinc-900 dark:text-white font-medium hover:bg-white/[0.08] hover:border-white/20 transition-all flex items-center justify-center gap-2.5 active:scale-[0.98]"
+                variant="glass"
+                size="xl"
+                className="w-full sm:w-auto group"
               >
-                <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />{" "}
+                <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
                 View Live Demo
-              </button>
+              </Button>
             </motion.div>
           </div>
         </section>
@@ -397,7 +411,7 @@ export const LandingPage: FC = () => {
               >
                 Pricing
               </motion.span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-5 px-4 tracking-[-0.02em]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-5 px-4 tracking-[-0.02em]">
                 Simple, Transparent Pricing
               </h2>
               <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">
@@ -416,7 +430,7 @@ export const LandingPage: FC = () => {
                   transition={{ delay: index * 0.1 }}
                   className={`relative flex flex-col rounded-2xl sm:rounded-3xl p-6 sm:p-8 ${
                     tier.popular
-                      ? "bg-slate-50 dark:bg-slate-900/90 border-2 border-blue-500/40 shadow-[0_0_60px_rgba(59,130,246,0.12)] lg:scale-105 z-10 backdrop-blur-sm"
+                      ? "bg-slate-50 dark:bg-slate-900/90 border-2 border-blue-500/50 shadow-[0_0_80px_rgba(59,130,246,0.15)] lg:scale-105 z-10 backdrop-blur-sm"
                       : "bg-white dark:bg-slate-950/80 border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
                   }`}
                 >
@@ -427,14 +441,14 @@ export const LandingPage: FC = () => {
                   )}
                   <div className="mb-6">
                     <h3
-                      className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? "text-zinc-900 dark:text-white" : "text-slate-700 dark:text-slate-200"}`}
+                      className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? "text-slate-900 dark:text-white" : "text-slate-700 dark:text-slate-200"}`}
                     >
                       {tier.name}
                     </h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{tier.description}</p>
                   </div>
                   <div className="mb-6 sm:mb-8">
-                    <span className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">
+                    <span className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">
                       {tier.price}
                     </span>
                     {tier.period && (
@@ -444,16 +458,14 @@ export const LandingPage: FC = () => {
                     )}
                   </div>
 
-                  <button
+                  <Button
                     onClick={handleGetStarted}
-                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all mb-6 sm:mb-8 ${
-                      tier.popular
-                        ? "bg-white text-slate-950 hover:bg-slate-100 shadow-lg"
-                        : "bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700"
-                    }`}
+                    variant={tier.popular ? "premium" : "outline"}
+                    size="lg"
+                    className="w-full mb-6 sm:mb-8"
                   >
                     {tier.cta}
-                  </button>
+                  </Button>
 
                   <ul className="space-y-3 sm:space-y-4 flex-1">
                     {tier.features.map((feature) => (
@@ -492,7 +504,7 @@ export const LandingPage: FC = () => {
                     aria-hidden="true"
                   />
                 </div>
-                <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                <span className="text-xl font-bold text-slate-900 dark:text-white">
                   BeamLab Ultimate
                 </span>
               </div>
@@ -504,7 +516,7 @@ export const LandingPage: FC = () => {
               <div className="flex gap-4">
                 <a
                   href="https://github.com"
-                  className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
                   aria-label="GitHub"
                 >
                   <svg
@@ -517,7 +529,7 @@ export const LandingPage: FC = () => {
                 </a>
                 <a
                   href="https://twitter.com"
-                  className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
+                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
                   aria-label="Twitter"
                 >
                   <svg
@@ -532,14 +544,14 @@ export const LandingPage: FC = () => {
             </div>
 
             <div>
-              <h3 className="font-bold text-zinc-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
                 Product
               </h3>
               <ul className="space-y-1 text-sm">
                 <li>
                   <a
                     href="#features"
-                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Features
                   </a>
@@ -547,7 +559,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <a
                     href="#pricing"
-                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Pricing
                   </a>
@@ -555,7 +567,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/help"
-                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Documentation
                   </Link>
@@ -563,7 +575,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/demo"
-                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Live Demo
                   </Link>
@@ -572,14 +584,14 @@ export const LandingPage: FC = () => {
             </div>
 
             <div>
-              <h3 className="font-bold text-zinc-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
                 Legal
               </h3>
               <ul className="space-y-1 text-sm">
                 <li>
                   <Link
                     to="/privacy"
-                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Privacy Policy
                   </Link>
@@ -587,7 +599,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/terms"
-                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Terms of Service
                   </Link>
@@ -595,7 +607,7 @@ export const LandingPage: FC = () => {
                 <li>
                   <Link
                     to="/contact"
-                    className="text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors inline-block py-1.5"
+                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
                   >
                     Contact Us
                   </Link>
@@ -634,14 +646,14 @@ const FeatureCard = ({
 }) => (
   <motion.div
     variants={fadeInUp}
-    className="relative p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-white/[0.06] hover:border-blue-500/30 transition-all duration-300 group h-full flex flex-col hover-lift focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 focus-within:ring-offset-slate-950 overflow-hidden"
+    className="relative p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-white/[0.06] hover:border-blue-500/40 transition-all duration-300 group h-full flex flex-col hover-lift focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 focus-within:ring-offset-slate-950 overflow-hidden hover:shadow-lg hover:shadow-blue-500/5"
   >
     {/* Top gradient accent */}
     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     <div className="w-11 h-11 rounded-xl bg-blue-500/[0.08] border border-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/15 group-hover:border-blue-500/20 group-hover:text-blue-400 text-slate-600 dark:text-slate-400 transition-all duration-300 flex-shrink-0">
       {icon}
     </div>
-    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2.5 tracking-[-0.01em]">
+    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2.5 tracking-[-0.01em]">
       {title}
     </h3>
     <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[0.8125rem] mb-6 flex-grow">

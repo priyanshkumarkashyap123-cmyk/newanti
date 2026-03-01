@@ -13,7 +13,7 @@
  * - apps/backend-rust/src/dynamics.rs
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Activity,
   Waves,
@@ -109,6 +109,8 @@ export const ModalAnalysisPage: React.FC = () => {
   const [results, setResults] = useState<ModalResults | null>(null);
   const [error, setError] = useState<string>('');
   const [selectedMode, setSelectedMode] = useState<number>(1);
+
+  useEffect(() => { document.title = 'Modal Analysis | BeamLab Ultimate'; }, []);
 
   const validateInputs = useCallback((): string | null => {
     if (input.numModes < 1) return 'Number of modes must be at least 1';
@@ -297,7 +299,7 @@ export const ModalAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -357,7 +359,7 @@ export const ModalAnalysisPage: React.FC = () => {
                     className={`py-3 px-4 rounded-lg font-medium transition-all flex flex-col items-center gap-1 ${
                       input.solver === value
                         ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg ring-2 ring-indigo-500/50'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-750'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
                     }`}
                   >
                     <span className="text-sm">{label}</span>
@@ -382,7 +384,7 @@ export const ModalAnalysisPage: React.FC = () => {
                     max="100"
                     value={input.numModes}
                     onChange={(e) => updateInput('numModes', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 <div>
@@ -390,7 +392,7 @@ export const ModalAnalysisPage: React.FC = () => {
                   <select
                     value={input.massType}
                     onChange={(e) => updateInput('massType', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
                   >
                     <option value="lumped">Lumped Mass</option>
                     <option value="consistent">Consistent Mass</option>
@@ -401,7 +403,7 @@ export const ModalAnalysisPage: React.FC = () => {
                   <select
                     value={input.tolerance}
                     onChange={(e) => updateInput('tolerance', parseFloat(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
                   >
                     <option value={1e-6}>1e-6 (Fast)</option>
                     <option value={1e-8}>1e-8 (Normal)</option>
@@ -417,7 +419,7 @@ export const ModalAnalysisPage: React.FC = () => {
                     max="1000"
                     value={input.maxIterations}
                     onChange={(e) => updateInput('maxIterations', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
                   />
                 </div>
               </div>
@@ -449,7 +451,7 @@ export const ModalAnalysisPage: React.FC = () => {
             {results && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Waves className="w-4 h-4 text-indigo-400" />
                     Mode Results
                   </h3>
@@ -492,7 +494,7 @@ export const ModalAnalysisPage: React.FC = () => {
                               : 'hover:bg-slate-100 dark:bg-slate-800/50'
                           }`}
                         >
-                          <td className="py-2 px-3 text-zinc-900 dark:text-white font-medium">{mode.modeNumber}</td>
+                          <td className="py-2 px-3 text-slate-900 dark:text-white font-medium">{mode.modeNumber}</td>
                           <td className="py-2 px-3 text-right text-emerald-400">{mode.period.toFixed(4)}</td>
                           <td className="py-2 px-3 text-right text-slate-700 dark:text-slate-300">{mode.frequency.toFixed(3)}</td>
                           <td className="py-2 px-3 text-right text-blue-400">{(mode.participationX * 100).toFixed(1)}</td>
@@ -557,7 +559,7 @@ export const ModalAnalysisPage: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Computation Time:</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">{results.performanceMs.toFixed(2)} ms</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{results.performanceMs.toFixed(2)} ms</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Iterations:</span>

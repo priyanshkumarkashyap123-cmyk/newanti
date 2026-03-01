@@ -11,6 +11,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { API_CONFIG } from "../config/env";
+import logger from "../lib/logger";
 
 // ============================================
 // TYPES
@@ -125,7 +126,7 @@ export function useMultiplayer(config: MultiplayerConfig) {
 
     // Handle connection
     socket.on("connect", () => {
-      console.log("🔌 Connected to multiplayer server");
+      logger.log("🔌 Connected to multiplayer server");
       setState((prev) => ({ ...prev, isConnected: true }));
     });
 
@@ -165,7 +166,7 @@ export function useMultiplayer(config: MultiplayerConfig) {
           remoteUsers: usersMap,
           projectVersion: data.version,
         }));
-        console.log(
+        logger.log(
           `📂 Joined project: ${data.projectId} with ${data.users.length} users`,
         );
       },
@@ -187,7 +188,7 @@ export function useMultiplayer(config: MultiplayerConfig) {
           return { ...prev, remoteUsers: newUsers };
         });
         config.onUserJoined?.(newUser);
-        console.log(`👤 ${data.name} joined`);
+        logger.log(`👤 ${data.name} joined`);
       },
     );
 
@@ -199,7 +200,7 @@ export function useMultiplayer(config: MultiplayerConfig) {
         return { ...prev, remoteUsers: newUsers };
       });
       config.onUserLeft?.(data.userId);
-      console.log(`👋 ${data.name} left`);
+      logger.log(`👋 ${data.name} left`);
     });
 
     // Handle server updates (node/member changes from other users)
@@ -253,7 +254,7 @@ export function useMultiplayer(config: MultiplayerConfig) {
 
     // Handle disconnection
     socket.on("disconnect", () => {
-      console.log("❌ Disconnected from multiplayer server");
+      logger.log("❌ Disconnected from multiplayer server");
       setState((prev) => ({ ...prev, isConnected: false }));
     });
 

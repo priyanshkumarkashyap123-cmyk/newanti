@@ -104,7 +104,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                     >
                         <AlertTriangle className="w-8 h-8 text-red-400" />
                     </motion.div>
-                    <h1 className="text-2xl font-bold text-zinc-900 dark:text-white text-center">
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white text-center">
                         Something went wrong
                     </h1>
                     <p className="text-red-300/70 text-center mt-2 text-sm">
@@ -161,7 +161,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                                 </span>
                                 <button
                                     onClick={copyError}
-                                    className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                                    className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                                 >
                                     {copied ? (
                                         <>

@@ -4,7 +4,7 @@
  * Matches industry standards for connection design
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -385,6 +385,8 @@ export default function ConnectionDesignDatabase() {
   const [savedConnections, setSavedConnections] = useState<Set<string>>(new Set());
   const [showDesignMode, setShowDesignMode] = useState(false);
   
+  useEffect(() => { document.title = 'Connection Design | BeamLab Ultimate'; }, []);
+
   // Design mode inputs
   const [designInput, setDesignInput] = useState<DesignInput>({
     momentDemand: 150,
@@ -483,7 +485,7 @@ export default function ConnectionDesignDatabase() {
   const displayConnections = showDesignMode ? suitableConnections : filteredConnections;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -531,7 +533,7 @@ export default function ConnectionDesignDatabase() {
             {showDesignMode ? (
               /* Design Mode Input */
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-purple-400" />
                   Design Requirements
                 </h3>
@@ -543,7 +545,7 @@ export default function ConnectionDesignDatabase() {
                       type="number"
                       value={designInput.momentDemand}
                       onChange={(e) => setDesignInput(d => ({ ...d, momentDemand: parseFloat(e.target.value) || 0 }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
                     />
                   </div>
                   
@@ -553,7 +555,7 @@ export default function ConnectionDesignDatabase() {
                       type="number"
                       value={designInput.shearDemand}
                       onChange={(e) => setDesignInput(d => ({ ...d, shearDemand: parseFloat(e.target.value) || 0 }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
                     />
                   </div>
                   
@@ -563,7 +565,7 @@ export default function ConnectionDesignDatabase() {
                       type="number"
                       value={designInput.axialDemand}
                       onChange={(e) => setDesignInput(d => ({ ...d, axialDemand: parseFloat(e.target.value) || 0 }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
                     />
                   </div>
                   
@@ -572,7 +574,7 @@ export default function ConnectionDesignDatabase() {
                     <select
                       value={designInput.category}
                       onChange={(e) => setDesignInput(d => ({ ...d, category: e.target.value as ConnectionCategory | 'all' }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-zinc-900 dark:text-white"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white"
                     >
                       <option value="all">All Types</option>
                       {Object.entries(CATEGORY_INFO).map(([key, info]) => (
@@ -600,7 +602,7 @@ export default function ConnectionDesignDatabase() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search connections..."
-                      className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                     />
                   </div>
                 </div>
@@ -614,7 +616,7 @@ export default function ConnectionDesignDatabase() {
                       className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex items-center gap-3 ${
                         selectedCategory === 'all'
                           ? 'bg-purple-600 text-white'
-                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-zinc-900 dark:hover:text-white'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <Layers className="w-4 h-4" />
@@ -633,7 +635,7 @@ export default function ConnectionDesignDatabase() {
                           className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex items-center gap-3 ${
                             selectedCategory === key
                               ? 'bg-purple-600 text-white'
-                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-zinc-900 dark:hover:text-white'
+                              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         >
                           <span className={info.color}>{info.icon}</span>
@@ -676,7 +678,7 @@ export default function ConnectionDesignDatabase() {
           {/* Center Panel - Connection List */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                 {showDesignMode ? 'Suitable Connections' : 'Connection Library'}
               </h2>
               <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -708,7 +710,7 @@ export default function ConnectionDesignDatabase() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-medium text-zinc-900 dark:text-white truncate">{conn.name}</h3>
+                          <h3 className="font-medium text-slate-900 dark:text-white truncate">{conn.name}</h3>
                           {conn.prequalified && (
                             <span className="flex-shrink-0 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs rounded-full flex items-center gap-1">
                               <CheckCircle className="w-3 h-3" />
@@ -758,7 +760,7 @@ export default function ConnectionDesignDatabase() {
                           className={`p-2 rounded-lg transition-colors ${
                             savedConnections.has(conn.id)
                               ? 'text-yellow-400 bg-yellow-500/20'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800'
                           }`}
                         >
                           {savedConnections.has(conn.id) ? (
@@ -802,13 +804,13 @@ export default function ConnectionDesignDatabase() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => exportConnection(selectedConnection)}
-                        className="p-2 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800 rounded-lg"
+                        className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800 rounded-lg"
                         title="Export"
                       >
                         <Download className="w-4 h-4" />
                       </button>
                       <button
-                        className="p-2 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800 rounded-lg"
+                        className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800 rounded-lg"
                         title="Copy"
                       >
                         <Copy className="w-4 h-4" />
@@ -816,7 +818,7 @@ export default function ConnectionDesignDatabase() {
                     </div>
                   </div>
                   
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                     {selectedConnection.name}
                   </h3>
                   
@@ -848,17 +850,17 @@ export default function ConnectionDesignDatabase() {
                     {selectedConnection.momentCapacity > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-600 dark:text-slate-400">Moment Capacity</span>
-                        <span className="text-zinc-900 dark:text-white font-medium">{selectedConnection.momentCapacity} kNm</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{selectedConnection.momentCapacity} kNm</span>
                       </div>
                     )}
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Shear Capacity</span>
-                      <span className="text-zinc-900 dark:text-white font-medium">{selectedConnection.shearCapacity} kN</span>
+                      <span className="text-slate-900 dark:text-white font-medium">{selectedConnection.shearCapacity} kN</span>
                     </div>
                     {selectedConnection.axialCapacity > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-600 dark:text-slate-400">Axial Capacity</span>
-                        <span className="text-zinc-900 dark:text-white font-medium">{selectedConnection.axialCapacity} kN</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{selectedConnection.axialCapacity} kN</span>
                       </div>
                     )}
                   </div>
@@ -870,24 +872,24 @@ export default function ConnectionDesignDatabase() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Plate Thickness</span>
-                      <span className="text-zinc-900 dark:text-white">{selectedConnection.plateThickness} mm</span>
+                      <span className="text-slate-900 dark:text-white">{selectedConnection.plateThickness} mm</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Bolt Diameter</span>
-                      <span className="text-zinc-900 dark:text-white">{selectedConnection.boltDiameter} mm</span>
+                      <span className="text-slate-900 dark:text-white">{selectedConnection.boltDiameter} mm</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Bolt Grade</span>
-                      <span className="text-zinc-900 dark:text-white">{selectedConnection.boltGrade}</span>
+                      <span className="text-slate-900 dark:text-white">{selectedConnection.boltGrade}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Number of Bolts</span>
-                      <span className="text-zinc-900 dark:text-white">{selectedConnection.numBolts}</span>
+                      <span className="text-slate-900 dark:text-white">{selectedConnection.numBolts}</span>
                     </div>
                     {selectedConnection.weldSize && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-600 dark:text-slate-400">Weld Size</span>
-                        <span className="text-zinc-900 dark:text-white">{selectedConnection.weldSize} mm</span>
+                        <span className="text-slate-900 dark:text-white">{selectedConnection.weldSize} mm</span>
                       </div>
                     )}
                     <div className="flex justify-between text-sm">

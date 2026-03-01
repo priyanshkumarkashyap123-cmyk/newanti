@@ -37,11 +37,19 @@ export function getAllowedOrigins(): string[] {
   ).map(normalizeOrigin);
 }
 
+/** Cached set of allowed origins (built once) */
+let _allowedOriginSet: Set<string> | null = null;
+function getAllowedOriginSet(): Set<string> {
+  if (!_allowedOriginSet) {
+    _allowedOriginSet = new Set(getAllowedOrigins());
+  }
+  return _allowedOriginSet;
+}
+
 /** Check if an origin matches the allowed set (exact match or *.beamlabultimate.tech wildcard) */
 export function isTrustedOrigin(origin: string): boolean {
   const normalized = normalizeOrigin(origin);
-  const allowedSet = new Set(getAllowedOrigins());
-  if (allowedSet.has(normalized)) return true;
-  // Allow any *.beamlabultimate.tech subdomain
-  return normalized.endsWith(".beamlabultimate.tech");
+  if (getAllowedOriginSet().has(normalized)) return true;
+  // Allow any *.beamlabultimate.tech subdomain (strict regex to prevent bypass)
+  return /^https:\/\/[a-z0-9-]+\.beamlabultimate\.tech$/.test(normalized);
 }

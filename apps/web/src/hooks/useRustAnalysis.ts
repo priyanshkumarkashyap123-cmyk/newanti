@@ -210,11 +210,18 @@ export function useAnalysisJob() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
 
-  // Cleanup WebSocket on unmount
+  // Cleanup WebSocket and polling on unmount
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       wsRef.current?.close();
+      if (pollingRef.current) {
+        clearTimeout(pollingRef.current);
+        pollingRef.current = null;
+      }
     };
   }, []);
 
@@ -271,8 +278,10 @@ export function useAnalysisJob() {
 
   const startPolling = useCallback((id: string) => {
     const poll = async () => {
+      if (!isMountedRef.current) return;
       try {
         const st = await rustApi.getJobStatus(id);
+        if (!isMountedRef.current) return;
         setStatus(st.status);
         setProgress({
           type: "job_progress",
@@ -288,10 +297,12 @@ export function useAnalysisJob() {
           setError(st.error || "Job failed");
           setLoading(false);
         } else {
-          setTimeout(poll, 2000);
+          pollingRef.current = setTimeout(poll, 2000);
         }
       } catch {
-        setTimeout(poll, 5000);
+        if (isMountedRef.current) {
+          pollingRef.current = setTimeout(poll, 5000);
+        }
       }
     };
     poll();

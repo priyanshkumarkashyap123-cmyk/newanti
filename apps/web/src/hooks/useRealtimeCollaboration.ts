@@ -32,6 +32,7 @@ export function useRealtimeCollaboration() {
 
         return () => {
             unsubscribe();
+            realtime.disconnect();
         };
     }, []);
 

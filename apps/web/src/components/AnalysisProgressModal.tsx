@@ -86,7 +86,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                             : 'bg-blue-600 text-white'
                     }
                 `}>
-                    <DialogTitle className="text-lg font-semibold text-zinc-900 dark:text-white">
+                    <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">
                         {isComplete
                             ? '✓ Analysis Complete'
                             : isError
@@ -103,10 +103,10 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                     {/* Progress Bar */}
                     <div className="mb-6">
                         <div className="flex justify-between text-sm mb-2">
-                            <span className="text-zinc-500 dark:text-zinc-400">Progress</span>
-                            <span className="font-medium text-zinc-900 dark:text-white">{Math.round(progress)}%</span>
+                            <span className="text-slate-500 dark:text-slate-400">Progress</span>
+                            <span className="font-medium text-slate-900 dark:text-white">{Math.round(progress)}%</span>
                         </div>
-                        <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden relative">
+                        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative">
                             <div
                                 className={`h-full transition-all duration-500 rounded-full ${isError
                                         ? 'bg-red-500'
@@ -155,7 +155,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                                                 ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600'
                                                 : isErrorStage
                                                     ? 'bg-red-100 dark:bg-red-900/50 text-red-600'
-                                                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
+                                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                                         }
                                     `}>
                                         {isPast || isComplete ? (
@@ -176,7 +176,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                                                 ? isError
                                                     ? 'text-red-700 dark:text-red-400 font-medium'
                                                     : 'text-blue-700 dark:text-blue-400 font-medium'
-                                                : 'text-zinc-500 dark:text-zinc-400'
+                                                : 'text-slate-500 dark:text-slate-400'
                                         }
                                     `}>
                                         {stageItem.label}
@@ -198,20 +198,20 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                         <div className="mt-5 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl">
                             <h3 className="text-sm font-semibold text-green-700 dark:text-green-400 mb-3">Analysis Summary</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg shadow-sm">
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Nodes</div>
-                                    <div className="text-xl font-bold text-zinc-900 dark:text-white">{stats.nodes}</div>
+                                <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">Nodes</div>
+                                    <div className="text-xl font-bold text-slate-900 dark:text-white">{stats.nodes}</div>
                                 </div>
-                                <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg shadow-sm">
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Members</div>
-                                    <div className="text-xl font-bold text-zinc-900 dark:text-white">{stats.members}</div>
+                                <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">Members</div>
+                                    <div className="text-xl font-bold text-slate-900 dark:text-white">{stats.members}</div>
                                 </div>
-                                <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg shadow-sm">
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">DOF</div>
-                                    <div className="text-xl font-bold text-zinc-900 dark:text-white">{stats.dof}</div>
+                                <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">DOF</div>
+                                    <div className="text-xl font-bold text-slate-900 dark:text-white">{stats.dof}</div>
                                 </div>
-                                <div className="p-3 bg-white dark:bg-zinc-800 rounded-lg shadow-sm">
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400">Time</div>
+                                <div className="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">Time</div>
                                     <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{stats.timeMs}ms</div>
                                 </div>
                             </div>
@@ -221,12 +221,12 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
 
                 {/* Footer */}
                 {(isComplete || isError) && (
-                    <DialogFooter className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700">
+                    <DialogFooter className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700">
                         <Button
                             onClick={onClose}
                             className={`w-full ${isComplete
                                     ? 'bg-green-600 hover:bg-green-700 text-white'
-                                    : 'bg-zinc-600 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-white'
+                                    : 'bg-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 text-white'
                                 }`}
                         >
                             {isComplete ? 'View Results' : 'Close'}

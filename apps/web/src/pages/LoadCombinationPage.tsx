@@ -3,7 +3,7 @@
  * Auto-generate load combinations for seismic, wind, gravity loads
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Wind,
   Weight,
@@ -46,6 +46,8 @@ export const LoadCombinationPage: React.FC = () => {
   
   const [combinations, setCombinations] = useState<Combination[]>([]);
   const [generating, setGenerating] = useState(false);
+
+  useEffect(() => { document.title = 'Load Combinations | BeamLab Ultimate'; }, []);
 
   const loadTypeIcons: Record<LoadType, any> = {
     dead: Weight,
@@ -318,7 +320,7 @@ export const LoadCombinationPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -351,7 +353,7 @@ export const LoadCombinationPage: React.FC = () => {
                     className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                       designCode === code
                         ? 'bg-blue-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     {label}
@@ -384,14 +386,14 @@ export const LoadCombinationPage: React.FC = () => {
                         type="text"
                         value={loadCase.name}
                         onChange={(e) => updateLoadCase(loadCase.id, { name: e.target.value })}
-                        className="flex-1 px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="flex-1 px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                         placeholder="Load case name"
                       />
                       
                       <select
                         value={loadCase.type}
                         onChange={(e) => updateLoadCase(loadCase.id, { type: e.target.value as LoadType })}
-                        className="px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
+                        className="px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                       >
                         <option value="dead">Dead</option>
                         <option value="live">Live</option>
@@ -422,7 +424,7 @@ export const LoadCombinationPage: React.FC = () => {
             >
               {generating ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-zinc-200 dark:border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-slate-200 dark:border-white border-t-transparent rounded-full animate-spin" />
                   Generating...
                 </>
               ) : (
@@ -461,7 +463,7 @@ export const LoadCombinationPage: React.FC = () => {
                   {combinations.map((combo) => (
                     <div key={combo.id} className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-zinc-900 dark:text-white text-sm">{combo.name}</h4>
+                        <h4 className="font-semibold text-slate-900 dark:text-white text-sm">{combo.name}</h4>
                         <span className={`text-xs px-2 py-1 rounded ${
                           combo.type === 'ULS' ? 'bg-red-900/30 text-red-300' : 'bg-green-900/30 text-green-300'
                         }`}>

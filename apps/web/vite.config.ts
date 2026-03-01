@@ -55,13 +55,7 @@ const securityHeaders = {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      babel: {
-        plugins: [
-          ["@babel/plugin-transform-react-jsx", { runtime: "automatic" }],
-        ],
-      },
-    }),
+    react(),
     wasm(),
     topLevelAwait(),
     VitePWA({
@@ -128,6 +122,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    dedupe: ["react", "react-dom", "react-router-dom", "three"],
   },
   server: {
     port: 5173,
@@ -168,7 +163,7 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: process.env.NODE_ENV !== "production",
     minify: "esbuild",
-    target: "esnext",
+    target: "es2022",
     chunkSizeWarningLimit: 1200,
     // Disable modulepreload polyfill to prevent eager loading of lazy chunks
     modulePreload: {
@@ -193,10 +188,15 @@ export default defineConfig({
       output: {
         manualChunks: {
           "react-vendor": ["react", "react-dom"],
+          "router-vendor": ["react-router-dom"],
           "three-vendor": ["three", "@react-three/fiber", "@react-three/drei"],
           "animation-vendor": ["framer-motion"],
           "chart-vendor": ["recharts"],
           "clerk-vendor": ["@clerk/clerk-react"],
+          "icons-vendor": ["lucide-react"],
+          "math-vendor": ["mathjs"],
+          "export-vendor": ["jspdf", "jspdf-autotable", "xlsx"],
+          "editor-vendor": ["@monaco-editor/react"],
         },
       },
     },

@@ -325,7 +325,7 @@ const CategorySwitcher: FC = memo(() => {
                                 ${
                                   isActive
                                     ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                                    : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800"
                                 }
                             `}
             >
@@ -336,7 +336,7 @@ const CategorySwitcher: FC = memo(() => {
         })}
       </div>
 
-      <div className="mx-2 h-6 w-px bg-zinc-100 dark:bg-zinc-800" />
+      <div className="mx-2 h-6 w-px bg-slate-100 dark:bg-slate-800" />
 
       {/* Direct Structure Gallery Button */}
       <button
@@ -367,7 +367,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
         <div className="w-10 h-full bg-white dark:bg-slate-950 border-l border-slate-800/60 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none">
           <button
             onClick={onToggle}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title="Show Properties"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -384,7 +384,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
           </h3>
           <button
             onClick={onToggle}
-            className="p-1 text-slate-500 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+            className="p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
             title="Hide Properties"
           >
             <ChevronRight className="w-4 h-4" />
@@ -2933,7 +2933,7 @@ export const ModernModeler: FC = () => {
       userName={user?.firstName || "Guest"}
       onServerUpdate={handleServerUpdate}
     >
-      <div className="h-screen w-screen flex flex-col bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white overflow-hidden relative">
+      <div className="h-screen w-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden relative">
         <MultiplayerUI />
         {/* Top Bar - Compact Header */}
         <header className="h-9 bg-white/90 dark:bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
@@ -2941,7 +2941,7 @@ export const ModernModeler: FC = () => {
           <div className="flex items-center gap-3">
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1 transition-colors"
+              className="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-1 transition-colors"
               onClick={() =>
                 document.dispatchEvent(new CustomEvent("toggle-sidebar"))
               }
@@ -3014,7 +3014,7 @@ export const ModernModeler: FC = () => {
 
             {/* 3D Canvas Area */}
             <div
-              className="flex-1 bg-white dark:bg-zinc-950 relative min-h-0"
+              className="flex-1 bg-white dark:bg-slate-950 relative min-h-0"
               onContextMenu={(e) => {
                 // Determine what was clicked and show appropriate context menu
                 const selectedId =
@@ -3477,7 +3477,7 @@ export const ModernModeler: FC = () => {
               <AIArchitectPanel />
               <button
                 onClick={() => setShowAIArchitect(false)}
-                className="absolute top-3 right-3 p-1 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100/80 dark:bg-zinc-800/80 rounded-lg z-50"
+                className="absolute top-3 right-3 p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-slate-800/80 rounded-lg z-50"
                 title="Close AI Architect"
               >
                 ✕
@@ -3537,7 +3537,7 @@ export const ModernModeler: FC = () => {
               <div className="relative w-[95vw] max-w-5xl h-[85vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-emerald-600/10 to-cyan-600/10">
                   <div>
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                       Generative Design / Topology Optimization
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -3569,7 +3569,7 @@ export const ModernModeler: FC = () => {
               <div className="relative w-[95vw] max-w-6xl h-[90vh] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl flex flex-col overflow-hidden">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-red-600/10 to-orange-600/10">
                   <div>
-                    <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                       Seismic Design Studio
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">

@@ -387,14 +387,14 @@ const ResizeHandle: FC<ResizeHandleProps> = ({ direction, onResize, onResizeEnd 
           ? 'w-1 cursor-col-resize hover:w-1.5'
           : 'h-1 cursor-row-resize hover:h-1.5'
         }
-        bg-zinc-200/30 dark:bg-zinc-700/30 hover:bg-blue-500/50
+        bg-slate-200/30 dark:bg-slate-700/30 hover:bg-blue-500/50
         transition-all duration-150
       `}
     >
       <div
         className={`
           ${isHorizontal ? 'w-0.5 h-8' : 'w-8 h-0.5'}
-          rounded-full bg-zinc-600 group-hover:bg-blue-400
+          rounded-full bg-slate-600 group-hover:bg-blue-400
           transition-colors
         `}
       />
@@ -435,19 +435,19 @@ const PanelHeader: FC<PanelHeaderProps> = ({
       className={`
         flex items-center h-8 px-2 gap-2
         ${isActive 
-          ? 'bg-zinc-700/80 border-b border-blue-500/50' 
-          : 'bg-zinc-100/80 dark:bg-zinc-800/80 border-b border-zinc-200/50 dark:border-zinc-700/50'}
+          ? 'bg-slate-700/80 border-b border-blue-500/50' 
+          : 'bg-slate-100/80 dark:bg-slate-800/80 border-b border-slate-200/50 dark:border-slate-700/50'}
         cursor-grab active:cursor-grabbing
         select-none transition-colors
       `}
       onMouseDown={onDragStart}
     >
       {/* Drag Handle */}
-      <GripVertical className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />
+      <GripVertical className="w-3 h-3 text-slate-500 dark:text-slate-400" />
 
       {/* Icon & Title */}
-      {Icon && <Icon className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400" />}
-      <span className="flex-1 text-xs font-medium text-zinc-700 dark:text-zinc-200 truncate">
+      {Icon && <Icon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />}
+      <span className="flex-1 text-xs font-medium text-slate-700 dark:text-slate-200 truncate">
         {config.title}
       </span>
 
@@ -456,7 +456,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         {config.collapsible && (
           <button
             onClick={onCollapse}
-            className="p-1 rounded hover:bg-zinc-600/50 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-slate-600/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             title={state.collapsed ? 'Expand' : 'Collapse'}
           >
             {state.collapsed ? (
@@ -471,8 +471,8 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         <button
           onClick={onPin}
           className={`
-            p-1 rounded hover:bg-zinc-600/50 transition-colors
-            ${state.pinned ? 'text-blue-400' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'}
+            p-1 rounded hover:bg-slate-600/50 transition-colors
+            ${state.pinned ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}
           `}
           title={state.pinned ? 'Unpin (Auto-hide)' : 'Pin'}
         >
@@ -487,7 +487,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-1 rounded hover:bg-zinc-600/50 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-slate-600/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <MoreVertical className="w-3 h-3" />
           </button>
@@ -498,12 +498,12 @@ const PanelHeader: FC<PanelHeaderProps> = ({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="absolute right-0 top-full mt-1 w-40 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl z-50 py-1"
+                className="absolute right-0 top-full mt-1 w-40 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 py-1"
               >
                 {config.floatable && (
                   <button
                     onClick={() => { onFloat?.(); setMenuOpen(false); }}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   >
                     <Square className="w-3 h-3" />
                     Float Window
@@ -511,31 +511,31 @@ const PanelHeader: FC<PanelHeaderProps> = ({
                 )}
                 <button
                   onClick={() => setMenuOpen(false)}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   <Columns className="w-3 h-3" />
                   Dock Left
                 </button>
                 <button
                   onClick={() => setMenuOpen(false)}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   <Columns className="w-3 h-3" />
                   Dock Right
                 </button>
                 <button
                   onClick={() => setMenuOpen(false)}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   <Rows className="w-3 h-3" />
                   Dock Bottom
                 </button>
                 {config.closable && (
                   <>
-                    <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+                    <div className="h-px bg-slate-200 dark:bg-slate-700 my-1" />
                     <button
                       onClick={() => { onClose?.(); setMenuOpen(false); }}
-                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
                       <X className="w-3 h-3" />
                       Close
@@ -551,7 +551,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         {config.closable && (
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-red-600/30 text-zinc-500 dark:text-zinc-400 hover:text-red-400 transition-colors"
+            className="p-1 rounded hover:bg-red-600/30 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
             title="Close"
           >
             <X className="w-3 h-3" />
@@ -634,7 +634,7 @@ export const DockablePanel: FC<DockablePanelProps> = ({
 
   return (
     <div
-      className="flex flex-col h-full bg-white dark:bg-zinc-900 overflow-hidden"
+      className="flex flex-col h-full bg-white dark:bg-slate-900 overflow-hidden"
       onClick={() => setActivePanel(id)}
     >
       <PanelHeader
@@ -696,7 +696,7 @@ export const DockContainer: FC<DockContainerProps> = ({ position, children }) =>
   return (
     <div
       className={`
-        flex bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800
+        flex bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800
         ${isHorizontal 
           ? `flex-col w-full border-t ${collapsed ? 'h-8' : ''}` 
           : `flex-row h-full ${position === 'left' ? 'border-r' : 'border-l'} ${collapsed ? 'w-8' : ''}`}
@@ -707,12 +707,12 @@ export const DockContainer: FC<DockContainerProps> = ({ position, children }) =>
       <div
         className={`
           flex items-center justify-center
-          ${isHorizontal ? 'h-8 w-full border-b border-zinc-200 dark:border-zinc-800' : 'w-8 h-full border-r border-zinc-200 dark:border-zinc-800'}
-          bg-zinc-850 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800
+          ${isHorizontal ? 'h-8 w-full border-b border-slate-200 dark:border-slate-800' : 'w-8 h-full border-r border-slate-200 dark:border-slate-800'}
+          bg-slate-850 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800
         `}
         onClick={() => collapseDock(position, !collapsed)}
       >
-        <CollapseIcon className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+        <CollapseIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
       </div>
 
       {/* Content */}
@@ -759,7 +759,7 @@ export const PanelTabBar: FC<PanelTabBarProps> = ({
   configs
 }) => {
   return (
-    <div className="flex items-center h-8 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 overflow-x-auto">
+    <div className="flex items-center h-8 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
       {panels.map((id) => {
         const config = configs.get(id);
         if (!config) return null;
@@ -772,11 +772,11 @@ export const PanelTabBar: FC<PanelTabBarProps> = ({
             onClick={() => onSelect(id)}
             className={`
               flex items-center gap-1.5 px-3 h-full
-              border-r border-zinc-200 dark:border-zinc-700
+              border-r border-slate-200 dark:border-slate-700
               transition-colors text-xs
               ${isActive
-                ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white border-b-2 border-blue-500'
-                : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'}
+                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white border-b-2 border-blue-500'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}
             `}
           >
             {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -832,8 +832,8 @@ export const FloatingPanel: FC<FloatingPanelProps> = ({ id, children }) => {
       }}
       onClick={() => setActivePanel(id)}
       className={`
-        fixed z-50 bg-white dark:bg-zinc-900 border rounded-lg shadow-2xl overflow-hidden
-        ${isActive ? 'border-blue-500/50' : 'border-zinc-200 dark:border-zinc-700'}
+        fixed z-50 bg-white dark:bg-slate-900 border rounded-lg shadow-2xl overflow-hidden
+        ${isActive ? 'border-blue-500/50' : 'border-slate-200 dark:border-slate-700'}
       `}
       style={{ width: state.width, minHeight: 100 }}
     >

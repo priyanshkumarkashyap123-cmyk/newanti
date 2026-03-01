@@ -4,7 +4,7 @@
  * UI/UX Polish: Matches landing page dark theme for consistency
  */
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useRazorpayPayment } from '../components/RazorpayPayment';
@@ -12,6 +12,7 @@ import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { CheckCircle, X, HelpCircle, ChevronRight } from 'lucide-react';
 import beamLabLogo from '../assets/beamlab_logo.png';
+import { Button } from '../components/ui/button';
 
 // ============================================
 // PRICING DATA
@@ -119,6 +120,8 @@ const FAQ_ITEMS = [
 // ============================================
 
 export const PricingPage: FC = () => {
+    useEffect(() => { document.title = 'Pricing - BeamLab'; }, []);
+
     const navigate = useNavigate();
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
     const [upgradeError, setUpgradeError] = useState<string | null>(null);
@@ -180,7 +183,7 @@ export const PricingPage: FC = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-500/30">
             {/* Navbar - Dark Theme Matching Landing Page */}
-            <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
+            <nav className="fixed top-0 inset-x-0 z-50 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
@@ -188,7 +191,7 @@ export const PricingPage: FC = () => {
                             <div className="relative w-9 h-9 flex items-center justify-center rounded-lg shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
                                 <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                             </div>
-                            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">
+                            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 whitespace-nowrap">
                                 BeamLab Ultimate
                             </span>
                         </Link>
@@ -196,16 +199,16 @@ export const PricingPage: FC = () => {
                         {/* Desktop Links */}
                         <div className="hidden md:flex items-center justify-center flex-1 px-8">
                             <div className="flex items-center gap-8">
-                                <Link to="/#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1">
+                                <Link to="/#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
                                     Features
                                 </Link>
-                                <Link to="/pricing" className="text-sm font-bold text-zinc-900 dark:text-white transition-colors px-2 py-1">
+                                <Link to="/pricing" className="text-sm font-bold text-slate-900 dark:text-white transition-colors px-2 py-1">
                                     Pricing
                                 </Link>
-                                <Link to="/help" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1">
+                                <Link to="/help" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
                                     Docs
                                 </Link>
-                                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors px-2 py-1">
+                                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
                                     Demo
                                 </Link>
                             </div>
@@ -213,7 +216,7 @@ export const PricingPage: FC = () => {
 
                         {/* Auth - Right aligned */}
                         <div className="flex items-center gap-4">
-                            <Link to="/sign-in" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white transition-colors relative group">
+                            <Link to="/sign-in" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors relative group">
                                 Log in
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full" />
                             </Link>
@@ -247,7 +250,7 @@ export const PricingPage: FC = () => {
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4"
+                        className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-4"
                     >
                         Engineering-grade precision,<br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400">
@@ -271,19 +274,23 @@ export const PricingPage: FC = () => {
                         className="flex justify-center mb-12"
                     >
                         <div className="flex h-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 w-full max-w-sm">
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setBillingPeriod('monthly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all ${billingPeriod === 'monthly'
-                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-zinc-900 dark:text-white'
+                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white'
                                     : 'text-slate-600 hover:text-slate-700 dark:text-slate-300'
                                     }`}
                             >
                                 Monthly
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setBillingPeriod('yearly')}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${billingPeriod === 'yearly'
-                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-zinc-900 dark:text-white'
+                                    ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white'
                                     : 'text-slate-600 hover:text-slate-700 dark:text-slate-300'
                                     }`}
                             >
@@ -291,7 +298,7 @@ export const PricingPage: FC = () => {
                                 <span className="bg-green-500/20 text-green-400 text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider">
                                     Save 20%
                                 </span>
-                            </button>
+                            </Button>
                         </div>
                     </motion.div>
                 </div>
@@ -328,30 +335,27 @@ export const PricingPage: FC = () => {
 
                                 {/* Header */}
                                 <div className="mb-6">
-                                    <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? 'text-zinc-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
+                                    <h3 className={`text-xl sm:text-2xl font-bold mb-2 ${tier.popular ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-200'}`}>
                                         {tier.name}
                                     </h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400">{tier.description}</p>
                                 </div>
                                 <div className="mb-6 sm:mb-8">
-                                    <span className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-white">{getPrice(tier)}</span>
+                                    <span className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">{getPrice(tier)}</span>
                                     {tier.period && <span className="text-slate-600 dark:text-slate-400 ml-1">{tier.period}</span>}
                                 </div>
 
                                 {/* CTA Button */}
-                                <button
+                                <Button
                                     onClick={() => handleUpgradeClick(tier)}
                                     disabled={paymentLoading && tier.name === 'Pro'}
-                                    className={`group w-full py-3 rounded-xl font-bold text-sm transition-all mb-6 sm:mb-8 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-wait ${tier.popular
-                                        ? 'bg-white text-slate-950 hover:bg-slate-100 shadow-lg hover:shadow-xl'
-                                        : tier.name === 'Enterprise'
-                                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500'
-                                            : 'bg-slate-100 dark:bg-slate-800 text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-                                        }`}
+                                    variant={tier.popular ? 'premium' : 'outline'}
+                                    size="lg"
+                                    className="w-full mb-6 sm:mb-8"
                                 >
                                     {paymentLoading && tier.name === 'Pro' ? 'Processing...' : tier.cta}
                                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </button>
+                                </Button>
 
                                 {/* Features */}
                                 <ul className="space-y-3 sm:space-y-4 flex-1">
@@ -386,7 +390,7 @@ export const PricingPage: FC = () => {
                         <span className="inline-block text-blue-400 text-sm font-semibold uppercase tracking-wider mb-4">
                             FAQ
                         </span>
-                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white mb-4">Frequently Asked Questions</h2>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Frequently Asked Questions</h2>
                         <p className="text-slate-600 dark:text-slate-400">Everything you need to know about pricing and billing.</p>
                     </motion.div>
 
@@ -400,7 +404,7 @@ export const PricingPage: FC = () => {
                                 transition={{ delay: i * 0.05 }}
                                 className="flex flex-col gap-2"
                             >
-                                <h5 className="font-bold text-zinc-900 dark:text-white text-lg flex items-center gap-2">
+                                <h5 className="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
                                     <HelpCircle className="w-5 h-5 text-blue-400" />
                                     {item.question}
                                 </h5>
@@ -420,14 +424,14 @@ export const PricingPage: FC = () => {
                         <div className="w-9 h-9 flex items-center justify-center rounded-lg overflow-hidden">
                             <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                         </div>
-                        <span className="text-xl font-bold text-zinc-900 dark:text-white">BeamLab Ultimate</span>
+                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
                     </div>
                     <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
-                        <Link to="/privacy" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Terms of Service</Link>
-                        <a href="mailto:support@beamlabultimate.tech" className="hover:text-zinc-900 dark:hover:text-white transition-colors">Support</a>
+                        <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>
+                        <a href="mailto:support@beamlabultimate.tech" className="hover:text-slate-900 dark:hover:text-white transition-colors">Support</a>
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">© 2026 BeamLab Ultimate. All rights reserved.</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
                 </div>
             </footer>
         </div>

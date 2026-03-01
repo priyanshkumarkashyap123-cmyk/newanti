@@ -264,7 +264,7 @@ export const AIDesignWizard: React.FC<{
             {/* Progress Header */}
             <div className="bg-gray-100 dark:bg-gray-800 px-4 py-3 border-b border-gray-700">
                 <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>🧙‍♂️</span>
                         AI Design Wizard
                     </h2>
@@ -292,7 +292,7 @@ export const AIDesignWizard: React.FC<{
             {/* Step Content */}
             <div className="p-6">
                 <div className="mb-6">
-                    <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-1">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
                         {currentStepConfig.title}
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400">{currentStepConfig.description}</p>
@@ -371,7 +371,7 @@ export const AIDesignWizard: React.FC<{
                 <button
                     onClick={prevStep}
                     disabled={currentStepIndex === 0}
-                    className="px-4 py-2 bg-gray-700 text-zinc-900 dark:text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-gray-700 text-slate-900 dark:text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     ← Previous
                 </button>

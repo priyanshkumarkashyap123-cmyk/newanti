@@ -14,7 +14,7 @@
  * - apps/backend-rust/src/nonlinear_solver_framework.rs
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   TrendingUp,
   AlertTriangle,
@@ -104,6 +104,8 @@ export const NonlinearAnalysisPage: React.FC = () => {
   const [results, setResults] = useState<NonlinearResult | null>(null);
   const [error, setError] = useState<string>('');
   const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => { document.title = 'Nonlinear Analysis | BeamLab Ultimate'; }, []);
 
   const validateInputs = useCallback((): string | null => {
     if (input.loadSteps < 1) return 'Number of load steps must be at least 1';
@@ -326,7 +328,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -385,7 +387,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                     className={`py-3 px-4 rounded-lg font-medium transition-all flex flex-col items-center gap-1 ${
                       input.nonlinearType === value
                         ? 'bg-gradient-to-br from-amber-600 to-red-600 text-white shadow-lg ring-2 ring-amber-500/50'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-750'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
                     }`}
                   >
                     <span className="text-sm">{label}</span>
@@ -414,7 +416,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg text-sm transition-all ${
                         input.geometricMethod === value
                           ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <div className="font-medium">{label}</div>
@@ -444,7 +446,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                     className={`py-2 px-3 rounded-lg text-sm transition-all ${
                       input.solutionMethod === value
                         ? 'bg-green-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <div className="font-medium">{label}</div>
@@ -462,7 +464,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                     min="1"
                     value={input.loadSteps}
                     onChange={(e) => updateInput('loadSteps', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 <div>
@@ -472,7 +474,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                     min="5"
                     value={input.maxIterationsPerStep}
                     onChange={(e) => updateInput('maxIterationsPerStep', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 <div>
@@ -480,7 +482,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                   <select
                     value={input.convergenceTolerance}
                     onChange={(e) => updateInput('convergenceTolerance', parseFloat(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-zinc-900 dark:text-white text-sm"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm"
                   >
                     <option value={1e-4}>1e-4 (Coarse)</option>
                     <option value={1e-6}>1e-6 (Normal)</option>
@@ -505,7 +507,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
             {results && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Activity className="w-4 h-4 text-amber-400" />
                     Analysis Results
                   </h3>
@@ -534,7 +536,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                   <div className="space-y-3">
                     <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-3">
                       <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Max Displacement</div>
-                      <div className="text-xl font-bold text-zinc-900 dark:text-white">
+                      <div className="text-xl font-bold text-slate-900 dark:text-white">
                         {Math.max(...results.displacement).toFixed(2)} mm
                       </div>
                     </div>
@@ -624,7 +626,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Total Time:</span>
-                    <span className="text-zinc-900 dark:text-white font-medium">{results.performanceMs.toFixed(0)} ms</span>
+                    <span className="text-slate-900 dark:text-white font-medium">{results.performanceMs.toFixed(0)} ms</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Per Step:</span>

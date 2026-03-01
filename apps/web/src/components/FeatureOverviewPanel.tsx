@@ -116,23 +116,23 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col overflow-hidden p-0">
                 {/* Header */}
-                <DialogHeader className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-gradient-to-r from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-800">
+                <DialogHeader className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
                             <Sparkles className="w-6 h-6 text-blue-500 dark:text-blue-400" />
                         </div>
                         <div>
-                            <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">What Can You Do?</DialogTitle>
-                            <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">Explore all BeamLab capabilities</DialogDescription>
+                            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">What Can You Do?</DialogTitle>
+                            <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">Explore all BeamLab capabilities</DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
 
                 {/* Keyboard Shortcut Hint */}
-                <div className="px-6 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800/50">
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="px-6 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/50">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                         💡 <span className="font-medium">Pro tip:</span> Press{' '}
-                        <kbd className="px-1.5 py-0.5 bg-zinc-200 dark:bg-zinc-700 rounded text-zinc-600 dark:text-zinc-300">⌘K</kbd>{' '}
+                        <kbd className="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300">⌘K</kbd>{' '}
                         anytime to quickly search and access any feature
                     </p>
                 </div>
@@ -140,7 +140,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                 {/* Content */}
                 <div className="flex h-[calc(85vh-180px)]">
                     {/* Section Tabs */}
-                    <div className="w-56 border-r border-zinc-200 dark:border-zinc-800 p-3 space-y-1">
+                    <div className="w-56 border-r border-slate-200 dark:border-slate-800 p-3 space-y-1">
                         {sections.map((section) => (
                             <button
                                 key={section.title}
@@ -153,7 +153,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                     w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all
                                     ${activeSection === section.title.toLowerCase().replace(' ', '-')
                                         ? `${section.bgColor} ${section.color} border ${section.borderColor}`
-                                        : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-700 dark:text-zinc-200'
+                                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200'
                                     }
                                 `}
                             >
@@ -188,7 +188,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                                 flex items-start gap-3 p-4 rounded-xl border transition-all text-left group
                                                 ${item.action
                                                     ? `${section.bgColor} ${section.borderColor} hover:brightness-110 cursor-pointer`
-                                                    : 'bg-zinc-100 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/50'
+                                                    : 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/50'
                                                 }
                                             `}
                                         >
@@ -197,7 +197,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium text-zinc-900 dark:text-white">{item.label}</span>
+                                                    <span className="font-medium text-slate-900 dark:text-white">{item.label}</span>
                                                     {item.isPro && (
                                                         <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">
                                                             <Crown className="w-2.5 h-2.5" />
@@ -205,10 +205,10 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                                         </span>
                                                     )}
                                                 </div>
-                                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{item.description}</p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{item.description}</p>
                                             </div>
                                             {item.action && (
-                                                <ChevronRight className="w-4 h-4 text-zinc-500 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             )}
                                         </button>
                                     ))}
@@ -218,11 +218,11 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
 
                         {!activeSection && (
                             <div className="flex flex-col items-center justify-center h-full text-center">
-                                <Sparkles className="w-16 h-16 text-zinc-500 dark:text-zinc-500 mb-4" />
-                                <h3 className="text-lg font-semibold text-zinc-600 dark:text-zinc-300 mb-2">
+                                <Sparkles className="w-16 h-16 text-slate-500 dark:text-slate-500 mb-4" />
+                                <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-300 mb-2">
                                     Select a Category
                                 </h3>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
+                                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
                                     Choose a category from the left to explore available features
                                 </p>
                             </div>
@@ -231,8 +231,8 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                 </div>
 
                 {/* Footer */}
-                <DialogFooter className="px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
+                <DialogFooter className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/50 flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
                             <Crown className="w-3 h-3 text-amber-500" />
                             PRO features require upgrade

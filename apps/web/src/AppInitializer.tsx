@@ -13,6 +13,7 @@ import {
   ReactNode,
 } from "react";
 import { useLocation } from "react-router-dom";
+import logger from "./lib/logger";
 import { beamlab, errorHandler, ERROR_CODES } from "./services/ServiceRegistry";
 
 // ============================================
@@ -93,12 +94,12 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   });
 
   const initialize = async () => {
-    console.log("[BeamLab] 🚀 Initializing application...");
+    logger.log("[BeamLab] 🚀 Initializing application...");
 
     try {
       // 1. Initialize error handling listeners
       errorHandler.onError((error) => {
-        console.error(`[${error.code}] ${error.userMessage}`);
+        logger.error(`[${error.code}] ${error.userMessage}`);
 
         // Show toast for user-facing errors
         if (error.severity === "error" || error.severity === "critical") {
@@ -127,9 +128,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         loading: false,
       }));
 
-      console.log("[BeamLab] ✅ Application initialized successfully");
+      logger.log("[BeamLab] ✅ Application initialized successfully");
     } catch (error) {
-      console.error("[BeamLab] ❌ Initialization failed:", error);
+      logger.error("[BeamLab] ❌ Initialization failed:", error);
 
       setState((prev) => ({
         ...prev,
@@ -240,20 +241,20 @@ function registerGlobalHandlers() {
   window.addEventListener(
     "keydown",
     (e) => {
-      // Ctrl+S - Save
-      if (e.ctrlKey && e.key === "s") {
+      // Ctrl+S / Cmd+S - Save
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent("app:save"));
       }
-      // Ctrl+Z - Undo
-      if (e.ctrlKey && e.key === "z") {
+      // Ctrl+Z / Cmd+Z - Undo
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent("app:undo"));
       }
-      // Ctrl+Shift+Z or Ctrl+Y - Redo
+      // Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y / Cmd+Y - Redo
       if (
-        (e.ctrlKey && e.shiftKey && e.key === "z") ||
-        (e.ctrlKey && e.key === "y")
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z") ||
+        ((e.ctrlKey || e.metaKey) && e.key === "y")
       ) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent("app:redo"));
@@ -267,7 +268,7 @@ function registerGlobalHandlers() {
     { signal },
   );
 
-  console.log("[BeamLab] Global event handlers registered");
+  logger.log("[BeamLab] Global event handlers registered");
 }
 
 // ============================================

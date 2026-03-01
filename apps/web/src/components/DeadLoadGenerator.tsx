@@ -184,17 +184,17 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                     {/* Self-Weight Option */}
-                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
+                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
                         <Label className="flex items-start gap-3 cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={includeSelfWeight}
                                 onChange={(e) => setIncludeSelfWeight(e.target.checked)}
-                                className="w-5 h-5 mt-0.5 rounded border-2 border-zinc-300 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-700 checked:bg-blue-500 checked:border-blue-500"
+                                className="w-5 h-5 mt-0.5 rounded border-2 border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
                             />
                             <div className="flex-1">
-                                <div className="font-semibold text-zinc-900 dark:text-white">Include Member Self-Weight</div>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                                <div className="font-semibold text-slate-900 dark:text-white">Include Member Self-Weight</div>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                                     Automatically calculate and apply weight of all structural members based on
                                     section properties (steel density: 7850 kg/m³)
                                 </p>
@@ -203,14 +203,14 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                     </div>
 
                     {/* Floor Load */}
-                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-4 border border-zinc-200 dark:border-zinc-700">
-                        <div className="font-semibold text-zinc-900 dark:text-white mb-3">Additional Floor Load</div>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
+                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                        <div className="font-semibold text-slate-900 dark:text-white mb-3">Additional Floor Load</div>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
                             Apply uniform floor load to horizontal members (slabs, beams)
                         </p>
                         <div className="space-y-3">
                             <div>
-                                <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+                                <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                                     Floor Load Intensity (kN/m²)
                                 </Label>
                                 <Input
@@ -267,7 +267,7 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
                                     type="checkbox"
                                     checked={applyToSelection}
                                     onChange={(e) => setApplyToSelection(e.target.checked)}
-                                    className="w-5 h-5 mt-0.5 rounded border-2 border-blue-600 bg-zinc-200 dark:bg-zinc-700 checked:bg-blue-500 checked:border-blue-500"
+                                    className="w-5 h-5 mt-0.5 rounded border-2 border-blue-600 bg-slate-200 dark:bg-slate-700 checked:bg-blue-500 checked:border-blue-500"
                                 />
                                 <div className="flex-1">
                                     <div className="font-semibold text-blue-700 dark:text-blue-300">Apply to Selection Only</div>

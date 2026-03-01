@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { 
   IFC_STRUCTURAL_TYPES, 
   IFCParser, 
@@ -20,6 +20,8 @@ export default function BIMIntegrationPage() {
   const [clashResults, setClashResults] = useState<ClashResult[]>([]);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => { document.title = 'BIM Integration | BeamLab Ultimate'; }, []);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -139,9 +139,9 @@ export const DesignCodeResultsPanel: FC = () => {
     };
 
     return (
-        <div className="h-full flex flex-col bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-200">
+        <div className="h-full flex flex-col bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200">
             {/* Header */}
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                         <FileText className="w-5 h-5 text-blue-400" />
@@ -165,7 +165,7 @@ export const DesignCodeResultsPanel: FC = () => {
                             onClick={() => setSelectedCode(code)}
                             className={`px-3 py-1 rounded text-xs ${selectedCode === code
                                     ? 'bg-blue-600 text-white'
-                                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {code}
@@ -177,7 +177,7 @@ export const DesignCodeResultsPanel: FC = () => {
             {/* Results */}
             <div className="flex-1 overflow-y-auto p-4">
                 {results.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-zinc-500 dark:text-zinc-400">
+                    <div className="flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400">
                         <FileText className="w-12 h-12 opacity-30 mb-4" />
                         <p className="text-sm">Run design checks to see results</p>
                         <p className="text-xs mt-1">{model.members.size} members in model</p>
@@ -190,30 +190,30 @@ export const DesignCodeResultsPanel: FC = () => {
                                 <div className="text-xl font-bold text-green-400">
                                     {results.filter(r => r.overallStatus === 'PASS').length}
                                 </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">PASS</div>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400">PASS</div>
                             </div>
                             <div className="p-3 bg-yellow-500/10 rounded border border-yellow-500/20 text-center">
                                 <div className="text-xl font-bold text-yellow-400">
                                     {results.filter(r => r.overallStatus === 'WARNING').length}
                                 </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">WARNING</div>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400">WARNING</div>
                             </div>
                             <div className="p-3 bg-red-500/10 rounded border border-red-500/20 text-center">
                                 <div className="text-xl font-bold text-red-400">
                                     {results.filter(r => r.overallStatus === 'FAIL').length}
                                 </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">FAIL</div>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400">FAIL</div>
                             </div>
                         </div>
 
                         {/* Member results */}
                         {results.map(result => (
-                            <div key={result.memberId} className="bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800">
+                            <div key={result.memberId} className="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800">
                                 <button
                                     onClick={() => setExpandedMember(
                                         expandedMember === result.memberId ? null : result.memberId
                                     )}
-                                    className="w-full p-3 flex items-center justify-between hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50"
+                                    className="w-full p-3 flex items-center justify-between hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
                                 >
                                     <div className="flex items-center gap-3">
                                         {getStatusIcon(result.overallStatus)}
@@ -231,7 +231,7 @@ export const DesignCodeResultsPanel: FC = () => {
                                 </button>
 
                                 {expandedMember === result.memberId && (
-                                    <div className="px-3 pb-3 space-y-1 border-t border-zinc-200 dark:border-zinc-800">
+                                    <div className="px-3 pb-3 space-y-1 border-t border-slate-200 dark:border-slate-800">
                                         {result.checks.map((check, idx) => (
                                             <div
                                                 key={idx}
@@ -239,8 +239,8 @@ export const DesignCodeResultsPanel: FC = () => {
                                             >
                                                 <div className="flex items-center gap-2">
                                                     {getStatusIcon(check.status)}
-                                                    <span className="text-zinc-600 dark:text-zinc-300">{check.title}</span>
-                                                    <span className="text-zinc-500">({check.clause})</span>
+                                                    <span className="text-slate-600 dark:text-slate-300">{check.title}</span>
+                                                    <span className="text-slate-500">({check.clause})</span>
                                                 </div>
                                                 <span className={getUtilColor(check.ratio)}>
                                                     {(check.ratio * 100).toFixed(1)}%

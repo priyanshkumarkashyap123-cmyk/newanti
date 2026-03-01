@@ -207,7 +207,7 @@ export default function RCSlabDesigner() {
                 <Grid className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">RC Slab Designer</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">RC Slab Designer</h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400">One-way, two-way & flat slab design</p>
               </div>
             </div>
@@ -221,7 +221,7 @@ export default function RCSlabDesigner() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab
                       ? 'bg-teal-500 text-white shadow-lg'
-                      : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-600/50'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50'
                   }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -368,7 +368,7 @@ export default function RCSlabDesigner() {
                     <div className="p-4 bg-slate-700/30 rounded-lg">
                       <div className="flex justify-between">
                         <span className="text-slate-500 dark:text-slate-400">Self Weight (auto)</span>
-                        <span className="text-zinc-900 dark:text-white font-medium">
+                        <span className="text-slate-900 dark:text-white font-medium">
                           {(formData.D / 1000 * 25).toFixed(2)} kN/m²
                         </span>
                       </div>
@@ -415,7 +415,7 @@ export default function RCSlabDesigner() {
                       <select
                         value={formData.concreteGrade}
                         onChange={(e) => handleChange('concreteGrade', e.target.value)}
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                       >
                         {concreteGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -429,7 +429,7 @@ export default function RCSlabDesigner() {
                       <select
                         value={formData.steelGrade}
                         onChange={(e) => handleChange('steelGrade', e.target.value)}
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                       >
                         {steelGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -447,7 +447,7 @@ export default function RCSlabDesigner() {
                   whileTap={{ scale: 0.98 }}
                   onClick={runDesign}
                   disabled={isCalculating}
-                  className="w-full py-4 bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 rounded-xl text-zinc-900 dark:text-white font-bold text-lg shadow-lg shadow-teal-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full py-4 bg-gradient-to-r from-teal-500 via-emerald-500 to-green-500 rounded-xl text-slate-900 dark:text-white font-bold text-lg shadow-lg shadow-teal-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {isCalculating ? (
                     <>
@@ -506,7 +506,7 @@ function InputCard({ title, icon, children }: { title: string; icon: React.React
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="text-teal-400">{icon}</div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
       </div>
       {children}
     </div>
@@ -534,7 +534,7 @@ function CollapsibleSection({
       >
         <div className="flex items-center gap-3">
           <div className="text-teal-400">{icon}</div>
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
         </div>
         {isExpanded ? (
           <ChevronUp className="w-5 h-5 text-slate-500 dark:text-slate-400" />
@@ -580,7 +580,7 @@ function InputField({
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           disabled={disabled}
-          className={`w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+          className={`w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 ${
             disabled ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         />
@@ -605,7 +605,7 @@ function SlabPreview({ formData }: { formData: SlabFormData }) {
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Slab Plan View</h3>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Slab Plan View</h3>
       <svg viewBox={`0 0 ${svgSize} ${svgSize}`} className="w-full h-64 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl">
         {/* Grid */}
         <defs>
@@ -752,11 +752,11 @@ function SlabPreview({ formData }: { formData: SlabFormData }) {
 function AspectRatioCard({ data }: { data: { ratio: string; type: string; isOneWay: boolean } }) {
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Aspect Ratio Analysis</h3>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Aspect Ratio Analysis</h3>
       <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
         <div>
           <p className="text-slate-500 dark:text-slate-400 text-sm">Ly/Lx Ratio</p>
-          <p className="text-3xl font-bold text-zinc-900 dark:text-white">{data.ratio}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white">{data.ratio}</p>
         </div>
         <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
           data.isOneWay
@@ -795,19 +795,19 @@ function LoadSummary({ formData }: { formData: SlabFormData }) {
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Load Summary</h3>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Load Summary</h3>
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400">Self Weight</span>
-          <span className="text-zinc-900 dark:text-white font-medium">{selfWeight.toFixed(2)} kN/m²</span>
+          <span className="text-slate-900 dark:text-white font-medium">{selfWeight.toFixed(2)} kN/m²</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400">Total Dead Load</span>
-          <span className="text-zinc-900 dark:text-white font-medium">{totalDL.toFixed(2)} kN/m²</span>
+          <span className="text-slate-900 dark:text-white font-medium">{totalDL.toFixed(2)} kN/m²</span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400">Live Load</span>
-          <span className="text-zinc-900 dark:text-white font-medium">{formData.LL.toFixed(2)} kN/m²</span>
+          <span className="text-slate-900 dark:text-white font-medium">{formData.LL.toFixed(2)} kN/m²</span>
         </div>
         <div className="flex justify-between p-3 bg-teal-500/20 rounded-lg border border-teal-500/30">
           <span className="text-teal-300">Factored Load (wu)</span>
@@ -842,7 +842,7 @@ function SlabResultsPanel({ result }: { result: SlabDesignResult }) {
             <AlertTriangle className="w-12 h-12 text-red-400" />
           )}
           <div>
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               {isDesignOk ? 'Design OK' : 'Design Needs Revision'}
             </h2>
             <p className="text-slate-600 dark:text-slate-300">
@@ -900,7 +900,7 @@ function SlabResultsPanel({ result }: { result: SlabDesignResult }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-zinc-900 dark:text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-slate-900 dark:text-white font-medium flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -930,7 +930,7 @@ function ResultCard({
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
           status === 'pass'
             ? 'bg-emerald-500/20 text-emerald-400'
@@ -948,7 +948,7 @@ function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-slate-500 dark:text-slate-400 text-sm">{label}</span>
-      <span className="text-zinc-900 dark:text-white font-medium">{value}</span>
+      <span className="text-slate-900 dark:text-white font-medium">{value}</span>
     </div>
   );
 }
@@ -956,7 +956,7 @@ function ResultRow({ label, value }: { label: string; value: string }) {
 function SlabReinforcementLayout({ result }: { result: SlabDesignResult }) {
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-6">Reinforcement Layout</h3>
+      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Reinforcement Layout</h3>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bottom Reinforcement */}
@@ -1049,28 +1049,28 @@ function SlabReinforcementLayout({ result }: { result: SlabDesignResult }) {
           </thead>
           <tbody>
             <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">A1</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">Short Span (X)</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">Bottom</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">10ø</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">150 mm</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">{result.geometry?.Ly || 5000} mm</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">A1</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">Short Span (X)</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">Bottom</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">10ø</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">150 mm</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">{result.geometry?.Ly || 5000} mm</td>
             </tr>
             <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">B1</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">Long Span (Y)</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">Bottom</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">8ø</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">150 mm</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">{result.geometry?.Lx || 4000} mm</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">B1</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">Long Span (Y)</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">Bottom</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">8ø</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">150 mm</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">{result.geometry?.Lx || 4000} mm</td>
             </tr>
             <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">A2</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">Short Span (X)</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">Top (Support)</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">10ø</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">150 mm</td>
-              <td className="py-3 px-4 text-zinc-900 dark:text-white">{((result.geometry?.Ly || 5000) * 0.3).toFixed(0)} mm</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">A2</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">Short Span (X)</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">Top (Support)</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">10ø</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">150 mm</td>
+              <td className="py-3 px-4 text-slate-900 dark:text-white">{((result.geometry?.Ly || 5000) * 0.3).toFixed(0)} mm</td>
             </tr>
           </tbody>
         </table>

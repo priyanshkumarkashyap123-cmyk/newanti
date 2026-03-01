@@ -46,20 +46,20 @@ export const Tabs: FC<TabsProps> = ({
         default: {
             container: 'bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl',
             tab: 'rounded-lg',
-            active: 'bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white shadow',
-            inactive: 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white',
+            active: 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white shadow',
+            inactive: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white',
         },
         pills: {
             container: 'gap-2',
             tab: 'rounded-full',
             active: 'bg-blue-600 text-white',
-            inactive: 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-zinc-900 dark:hover:text-white',
+            inactive: 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white',
         },
         underline: {
             container: 'border-b border-slate-200 dark:border-slate-700',
             tab: '',
-            active: 'text-zinc-900 dark:text-white border-b-2 border-blue-500 -mb-px',
-            inactive: 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white',
+            active: 'text-slate-900 dark:text-white border-b-2 border-blue-500 -mb-px',
+            inactive: 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white',
         },
     };
 
@@ -160,14 +160,14 @@ export const Breadcrumbs: FC<BreadcrumbsProps> = ({
                         <button
                             onClick={item.onClick}
                             className={`
-                                hover:text-zinc-900 dark:hover:text-white transition-colors
-                                ${isLast ? 'text-zinc-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}
+                                hover:text-slate-900 dark:hover:text-white transition-colors
+                                ${isLast ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}
                             `}
                         >
                             {item.label}
                         </button>
                     ) : (
-                        <span className={isLast ? 'text-zinc-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}>
+                        <span className={isLast ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500 dark:text-slate-400'}>
                             {item.label}
                         </span>
                     )}
@@ -236,7 +236,7 @@ export const Pagination: FC<PaginationProps> = ({
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
                 <ChevronLeft className="w-5 h-5" />
             </button>
@@ -256,7 +256,7 @@ export const Pagination: FC<PaginationProps> = ({
                             w-10 h-10 rounded-lg font-medium transition-colors
                             ${currentPage === page
                                 ? 'bg-blue-600 text-white'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
                             }
                         `}
                     >
@@ -269,7 +269,7 @@ export const Pagination: FC<PaginationProps> = ({
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
                 <ChevronRight className="w-5 h-5" />
             </button>
@@ -328,9 +328,9 @@ export const Stepper: FC<StepperProps> = ({
                                     `}
                                 >
                                     {isCompleted ? (
-                                        <Check className="w-4 h-4 text-zinc-900 dark:text-white" />
+                                        <Check className="w-4 h-4 text-slate-900 dark:text-white" />
                                     ) : (
-                                        <span className={`text-sm font-medium ${isCurrent ? 'text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        <span className={`text-sm font-medium ${isCurrent ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                             {index + 1}
                                         </span>
                                     )}
@@ -342,7 +342,7 @@ export const Stepper: FC<StepperProps> = ({
 
                             {/* Content */}
                             <div className="pt-1">
-                                <p className={`font-medium ${isCurrent ? 'text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                <p className={`font-medium ${isCurrent ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                     {step.label}
                                 </p>
                                 {step.description && (
@@ -378,15 +378,15 @@ export const Stepper: FC<StepperProps> = ({
                                 className="w-8 h-8 rounded-full flex items-center justify-center"
                             >
                                 {isCompleted ? (
-                                    <Check className="w-4 h-4 text-zinc-900 dark:text-white" />
+                                    <Check className="w-4 h-4 text-slate-900 dark:text-white" />
                                 ) : (
-                                    <span className={`text-sm font-medium ${isCurrent ? 'text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    <span className={`text-sm font-medium ${isCurrent ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                         {index + 1}
                                     </span>
                                 )}
                             </motion.div>
                             <div className="hidden sm:block">
-                                <p className={`text-sm font-medium ${isCurrent ? 'text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                <p className={`text-sm font-medium ${isCurrent ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                     {step.label}
                                 </p>
                             </div>
@@ -437,7 +437,7 @@ export const SegmentedControl: FC<SegmentedControlProps> = ({
                     className={`
                         relative flex items-center gap-2 font-medium rounded-md transition-colors
                         ${sizeClasses[size]}
-                        ${value === option.value ? 'text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'}
+                        ${value === option.value ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}
                     `}
                 >
                     {option.icon}

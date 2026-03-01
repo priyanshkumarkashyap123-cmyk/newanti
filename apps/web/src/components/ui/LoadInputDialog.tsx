@@ -124,10 +124,10 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 {/* Content */}
                 <div className="px-6 py-4">
                     {/* Target Info */}
-                    <div className="mb-4 p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
-                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="mb-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
                             Applying to: {' '}
-                            <span className="font-medium text-zinc-900 dark:text-white">
+                            <span className="font-medium text-slate-900 dark:text-white">
                                 {targetNodeId ? `Node ${targetNodeId}` : targetMemberId ? `Member ${targetMemberId}` : 'Select target'}
                             </span>
                         </span>
@@ -135,7 +135,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Load Type */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+                        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                             Load Type
                         </h3>
                         <div className="grid grid-cols-3 gap-2">
@@ -153,13 +153,13 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         ${type.disabled
                                             ? 'opacity-50 cursor-not-allowed'
                                             : loadType === type.id
-                                                ? 'border-orange-500 bg-orange-900/30 text-zinc-900 dark:text-white'
-                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
+                                                ? 'border-orange-500 bg-orange-900/30 text-slate-900 dark:text-white'
+                                                : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300'
                                         }
                                     `}
                                 >
                                     <span className="text-xl">{type.icon}</span>
-                                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{type.label}</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">{type.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -168,7 +168,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Direction */}
                     {loadType !== 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+                            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                                 Direction
                             </h3>
                             <div className="grid grid-cols-4 gap-2">
@@ -182,8 +182,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                             className={`
                                                 flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all
                                                 ${direction === dir
-                                                    ? 'border-orange-500 bg-orange-900/30 text-zinc-900 dark:text-white'
-                                                    : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
+                                                    ? 'border-orange-500 bg-orange-900/30 text-slate-900 dark:text-white'
+                                                    : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300'
                                                 }
                                             `}
                                         >
@@ -199,7 +199,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     {/* Moment Direction */}
                     {loadType === 'moment' && (
                         <div className="mb-6">
-                            <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+                            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                                 Rotation
                             </h3>
                             <div className="grid grid-cols-2 gap-2">
@@ -210,8 +210,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         className={`
                                             flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all
                                             ${direction === dir
-                                                ? 'border-orange-500 bg-orange-900/30 text-zinc-900 dark:text-white'
-                                                : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 text-zinc-700 dark:text-zinc-300'
+                                                ? 'border-orange-500 bg-orange-900/30 text-slate-900 dark:text-white'
+                                                : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 text-slate-700 dark:text-slate-300'
                                             }
                                         `}
                                     >
@@ -225,7 +225,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
                     {/* Magnitude */}
                     <div className="mb-6">
-                        <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
+                        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                             Magnitude
                         </h3>
                         <div className="flex items-center gap-2">
@@ -234,9 +234,9 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 step="1"
                                 value={magnitude}
                                 onChange={(e) => setMagnitude(e.target.value)}
-                                className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                className="flex-1 px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             />
-                            <span className="text-zinc-500 dark:text-zinc-400 font-medium">
+                            <span className="text-slate-500 dark:text-slate-400 font-medium">
                                 {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                             </span>
                         </div>
@@ -250,7 +250,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         px-3 py-1 text-xs rounded transition-colors
                                         ${magnitude === val.toString()
                                             ? 'bg-orange-500 text-white'
-                                            : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300'
+                                            : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                                         }
                                     `}
                                 >
@@ -261,14 +261,14 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                     </div>
 
                     {/* Preview */}
-                    <div className="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+                    <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
                         <div className="flex items-center justify-center gap-3">
                             <DirIcon className={`w-8 h-8 text-orange-500 ${direction === 'ccw' ? 'scale-x-[-1]' : ''}`} />
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+                                <div className="text-2xl font-bold text-slate-900 dark:text-white">
                                     {magnitude} {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                                 </div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <div className="text-xs text-slate-500 dark:text-slate-400">
                                     {dirConfig.label}
                                 </div>
                             </div>
@@ -277,7 +277,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 </div>
 
                 {/* Footer */}
-                <DialogFooter className="px-6 py-4 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-300 dark:border-zinc-700">
+                <DialogFooter className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-300 dark:border-slate-700">
                     <Button variant="outline" onClick={onClose}>Cancel</Button>
                     <Button
                         onClick={handleSubmit}

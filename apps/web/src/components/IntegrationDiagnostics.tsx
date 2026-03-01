@@ -125,7 +125,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
         <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
             <DialogContent className="max-w-lg p-0">
                 {/* Header */}
-                <DialogHeader className="flex flex-row items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-700">
+                <DialogHeader className="flex flex-row items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-2">
                         {overallHealthy ? (
                             <CheckCircle2 className="w-4 h-4 text-green-500 dark:text-green-400" />
@@ -134,7 +134,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                         ) : (
                             <AlertTriangle className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
                         )}
-                        <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-white">
+                        <DialogTitle className="text-sm font-semibold text-slate-900 dark:text-white">
                             Integration Diagnostics
                         </DialogTitle>
                     </div>
@@ -156,25 +156,25 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                     {results.map((r) => (
                         <div
                             key={r.name}
-                            className="flex items-center justify-between p-3 bg-zinc-100 dark:bg-zinc-800/60 rounded-lg border border-zinc-200 dark:border-zinc-700/50"
+                            className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700/50"
                         >
                             <div className="flex items-center gap-3 min-w-0">
                                 <StatusIcon status={r.status} />
                                 <div className="min-w-0">
-                                    <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">{r.name}</p>
-                                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate font-mono">{r.url}</p>
+                                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{r.name}</p>
+                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">{r.url}</p>
                                 </div>
                             </div>
                             <div className="flex flex-col items-end ml-3 flex-shrink-0">
                                 {r.status === 'loading' ? (
-                                    <Loader2 className="w-4 h-4 text-zinc-500 dark:text-zinc-400 animate-spin" />
+                                    <Loader2 className="w-4 h-4 text-slate-500 dark:text-slate-400 animate-spin" />
                                 ) : (
                                     <>
                                         <span className={`text-xs font-mono ${latencyColor(r.latencyMs)}`}>
                                             {r.latencyMs !== null ? `${r.latencyMs} ms` : '—'}
                                         </span>
                                         {r.version && (
-                                            <span className="text-[10px] text-zinc-500 dark:text-zinc-500">{r.version}</span>
+                                            <span className="text-[10px] text-slate-500 dark:text-slate-500">{r.version}</span>
                                         )}
                                         {r.detail && r.status !== 'healthy' && (
                                             <span className="text-[10px] text-yellow-500 dark:text-yellow-400 max-w-[140px] truncate">
@@ -191,7 +191,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                 {/* Dependency cross-check */}
                 {pyDeps && (
                     <div className="px-5 pb-4">
-                        <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mb-1.5">Python → Backends Cross-Check</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-500 mb-1.5">Python → Backends Cross-Check</p>
                         <div className="flex gap-3 text-xs">
                             <span className="flex items-center gap-1">
                                 <span className={`w-1.5 h-1.5 rounded-full ${pyDeps.node === 'ok' ? 'bg-green-400' : 'bg-red-400'}`} />
@@ -206,7 +206,7 @@ export const IntegrationDiagnostics: FC<IntegrationDiagnosticsProps> = memo(({ o
                 )}
 
                 {/* Footer */}
-                <div className="px-5 py-2.5 border-t border-zinc-200 dark:border-zinc-700 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-500">
+                <div className="px-5 py-2.5 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-500">
                     <span>Auto-refresh every 30 s in status bar</span>
                     <span>
                         {overallHealthy
@@ -228,14 +228,14 @@ IntegrationDiagnostics.displayName = 'IntegrationDiagnostics';
 // ============================================
 
 const StatusIcon: FC<{ status: ServiceResult['status'] }> = ({ status }) => {
-    if (status === 'loading') return <Loader2 className="w-5 h-5 text-zinc-500 dark:text-zinc-400 animate-spin" />;
+    if (status === 'loading') return <Loader2 className="w-5 h-5 text-slate-500 dark:text-slate-400 animate-spin" />;
     if (status === 'healthy') return <CheckCircle2 className="w-5 h-5 text-green-500 dark:text-green-400" />;
     if (status === 'degraded') return <AlertTriangle className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />;
     return <XCircle className="w-5 h-5 text-red-500 dark:text-red-400" />;
 };
 
 function latencyColor(ms: number | null): string {
-    if (ms === null) return 'text-zinc-500 dark:text-zinc-500';
+    if (ms === null) return 'text-slate-500 dark:text-slate-500';
     if (ms < 100) return 'text-green-500 dark:text-green-400';
     if (ms < 300) return 'text-yellow-500 dark:text-yellow-400';
     return 'text-red-500 dark:text-red-400';

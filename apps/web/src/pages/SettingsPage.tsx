@@ -3,12 +3,13 @@
  * Dark theme with sidebar navigation and analysis preferences
  */
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Settings, Monitor, BarChart2, User, LogOut, ChevronDown,
     Cpu, Zap, Save, RotateCcw, Check, HardDrive
 } from 'lucide-react';
+import { Button } from '../components/ui/button';
 
 // ============================================
 // TYPES
@@ -46,18 +47,18 @@ interface ToggleProps {
 }
 
 const Toggle: FC<ToggleProps> = ({ enabled, onChange, label, description, statusText }) => (
-    <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 p-5">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-5">
         <div className="flex items-start gap-4">
-            <div className="p-3 rounded bg-zinc-200/30 dark:bg-zinc-700/30 text-zinc-900 dark:text-white">
+            <div className="p-3 rounded bg-slate-200/30 dark:bg-slate-700/30 text-slate-900 dark:text-white">
                 <Cpu className="w-5 h-5" />
             </div>
             <div className="flex flex-col gap-1">
-                <p className="text-zinc-900 dark:text-white text-base font-bold">{label}</p>
-                {description && <p className="text-zinc-500 dark:text-zinc-400 text-sm">{description}</p>}
+                <p className="text-slate-900 dark:text-white text-base font-bold">{label}</p>
+                {description && <p className="text-slate-500 dark:text-slate-400 text-sm">{description}</p>}
                 {statusText && (
                     <div className="flex items-center gap-2 mt-1">
                         <span className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">{statusText}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{statusText}</span>
                     </div>
                 )}
             </div>
@@ -71,7 +72,7 @@ const Toggle: FC<ToggleProps> = ({ enabled, onChange, label, description, status
             />
             <div className={`
                 w-11 h-6 rounded-full peer 
-                ${enabled ? 'bg-blue-600' : 'bg-zinc-600'}
+                ${enabled ? 'bg-blue-600' : 'bg-slate-600'}
                 peer-focus:outline-none
                 after:content-[''] after:absolute after:top-[2px] 
                 ${enabled ? 'after:right-[2px]' : 'after:left-[2px]'}
@@ -96,18 +97,18 @@ interface SelectProps {
 
 const Select: FC<SelectProps> = ({ label, value, onChange, options }) => (
     <div className="flex flex-col gap-2">
-        <label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">{label}</label>
+        <label className="text-slate-500 dark:text-slate-400 text-sm font-medium">{label}</label>
         <div className="relative">
             <select
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full appearance-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white h-12 px-4 pr-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
+                className="w-full appearance-none rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white h-12 px-4 pr-10 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm"
             >
                 {options.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400 pointer-events-none" />
         </div>
     </div>
 );
@@ -127,14 +128,14 @@ interface InputProps {
 
 const Input: FC<InputProps> = ({ label, value, onChange, type = 'text', placeholder, readOnly }) => (
     <div className="flex flex-col gap-2">
-        <label className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">{label}</label>
+        <label className="text-slate-500 dark:text-slate-400 text-sm font-medium">{label}</label>
         <input
             type={type}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             readOnly={readOnly}
-            className={`w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 h-12 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder:text-zinc-500 dark:text-zinc-400 ${readOnly ? 'text-zinc-500 dark:text-zinc-400 cursor-default' : ''}`}
+            className={`w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white h-12 px-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm placeholder:text-slate-500 dark:placeholder:text-slate-400 ${readOnly ? 'text-slate-500 dark:text-slate-400 cursor-default' : ''}`}
         />
     </div>
 );
@@ -154,10 +155,10 @@ interface SliderProps {
 }
 
 const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, valueLabel }) => (
-    <div className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg p-5">
+    <div className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg p-5">
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <label className="text-zinc-900 dark:text-white text-base font-medium">{label}</label>
+                <label className="text-slate-900 dark:text-white text-base font-medium">{label}</label>
                 <span className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 text-xs font-bold uppercase">
                     {valueLabel}
                 </span>
@@ -169,13 +170,13 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
                     max={max}
                     value={value}
                     onChange={(e) => onChange(Number(e.target.value))}
-                    className="w-full h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full appearance-none cursor-pointer accent-blue-500"
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500"
                     style={{
                         background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${value}%, #3f3f46 ${value}%, #3f3f46 100%)`
                     }}
                 />
             </div>
-            <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 font-mono uppercase">
+            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-mono uppercase">
                 {labels.map((l, i) => (
                     <span key={i}>{l}</span>
                 ))}
@@ -204,6 +205,8 @@ export const SettingsPage: FC = () => {
     const [autoSaveResults, setAutoSaveResults] = useState(false);
     const [generateReport, setGenerateReport] = useState(true);
 
+    useEffect(() => { document.title = 'Settings | BeamLab Ultimate'; }, []);
+
     const getMeshLabel = () => {
         if (meshDensity >= 75) return 'High';
         if (meshDensity >= 50) return 'Normal';
@@ -216,70 +219,74 @@ export const SettingsPage: FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white flex">
+        <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex">
             {/* Sidebar */}
-            <aside className="w-72 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+            <aside className="w-72 flex-shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
                 {/* App Header */}
-                <div className="p-6 border-b border-zinc-200 dark:border-zinc-800/50">
+                <div className="p-6 border-b border-slate-200 dark:border-slate-800/50">
                     <Link to="/" className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg">B</div>
                         <div>
-                            <h1 className="text-white text-lg font-bold leading-none tracking-tight">BeamLab</h1>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-xs font-normal mt-1">Ultimate Edition v4.2.0</p>
+                            <h1 className="text-slate-900 dark:text-white text-lg font-bold leading-none tracking-tight">BeamLab</h1>
+                            <p className="text-slate-500 dark:text-slate-400 text-xs font-normal mt-1">Ultimate Edition v4.2.0</p>
                         </div>
                     </Link>
                 </div>
 
                 {/* Navigation */}
                 <nav className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-1">
-                    <div className="px-3 mb-2 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Settings</div>
+                    <div className="px-3 mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Settings</div>
                     {NAV_ITEMS.map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;
                         return (
-                            <button
+                            <Button
                                 key={item.id}
+                                variant="ghost"
+                                size="default"
                                 onClick={() => setActiveTab(item.id)}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded transition-colors w-full text-left ${isActive
-                                        ? 'bg-blue-600/10 border border-blue-600/20 text-zinc-900 dark:text-white'
-                                        : 'hover:bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                                className={`w-full justify-start gap-3 px-3 py-2.5 rounded transition-colors text-left ${isActive
+                                        ? 'bg-blue-600/10 border border-blue-600/20 text-slate-900 dark:text-white'
+                                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                             >
                                 <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : ''}`} />
                                 <p className="text-sm font-medium">{item.label}</p>
-                            </button>
+                            </Button>
                         );
                     })}
                 </nav>
 
                 {/* Sign Out */}
-                <div className="p-4 border-t border-zinc-200 dark:border-zinc-800/50">
-                    <button
+                <div className="p-4 border-t border-slate-200 dark:border-slate-800/50">
+                    <Button
+                        variant="ghost"
+                        size="default"
                         onClick={handleSignOut}
-                        className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors w-full px-2 py-2"
+                        className="w-full justify-start gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-2 py-2"
                     >
                         <LogOut className="w-5 h-5" />
                         Sign Out
-                    </button>
+                    </Button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col h-screen overflow-hidden bg-white dark:bg-zinc-900 relative">
+            <main className="flex-1 flex flex-col h-screen overflow-hidden bg-white dark:bg-slate-900 relative">
                 {/* Header */}
-                <header className="flex-shrink-0 h-16 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-8 bg-white dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-10">
-                    <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                <header className="flex-shrink-0 h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 bg-white dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                         {NAV_ITEMS.find(n => n.id === activeTab)?.label}
                     </h2>
                     <div className="flex gap-3">
-                        <button className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-sm font-medium hover:bg-zinc-100 dark:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="flex items-center gap-2 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
                             <RotateCcw className="w-4 h-4" />
                             Reset Defaults
-                        </button>
-                        <button className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all flex items-center gap-2">
+                        </Button>
+                        <Button variant="default" size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
                             <Save className="w-4 h-4" />
                             Save Changes
-                        </button>
+                        </Button>
                     </div>
                 </header>
 
@@ -291,9 +298,9 @@ export const SettingsPage: FC = () => {
                             <>
                                 {/* Solver Configuration */}
                                 <section className="flex flex-col gap-5">
-                                    <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Solver Configuration</h3>
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Configure the core computational engine parameters.</p>
+                                    <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                        <h3 className="text-slate-900 dark:text-white text-lg font-medium">Solver Configuration</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Configure the core computational engine parameters.</p>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <Select
@@ -337,9 +344,9 @@ export const SettingsPage: FC = () => {
 
                                 {/* Meshing */}
                                 <section className="flex flex-col gap-5 pt-4">
-                                    <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Meshing & Discretization</h3>
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Control the density and quality of the finite element mesh.</p>
+                                    <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                        <h3 className="text-slate-900 dark:text-white text-lg font-medium">Meshing & Discretization</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control the density and quality of the finite element mesh.</p>
                                     </div>
                                     <Slider
                                         label="Global Mesh Density"
@@ -360,9 +367,9 @@ export const SettingsPage: FC = () => {
 
                                 {/* Hardware */}
                                 <section className="flex flex-col gap-5 pt-4">
-                                    <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Performance & Hardware</h3>
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Manage computational resources and hardware acceleration.</p>
+                                    <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                        <h3 className="text-slate-900 dark:text-white text-lg font-medium">Performance & Hardware</h3>
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage computational resources and hardware acceleration.</p>
                                     </div>
                                     <Toggle
                                         enabled={parallelProcessing}
@@ -381,32 +388,32 @@ export const SettingsPage: FC = () => {
 
                                 {/* Output */}
                                 <section className="flex flex-col gap-5 pt-4">
-                                    <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                        <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Output Handling</h3>
+                                    <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                        <h3 className="text-slate-900 dark:text-white text-lg font-medium">Output Handling</h3>
                                     </div>
                                     <div className="grid grid-cols-1 gap-4">
-                                        <label className="flex items-center p-4 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 cursor-pointer hover:border-blue-500/50 transition-colors">
+                                        <label className="flex items-center p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 cursor-pointer hover:border-blue-500/50 transition-colors">
                                             <input
                                                 type="checkbox"
                                                 checked={autoSaveResults}
                                                 onChange={(e) => setAutoSaveResults(e.target.checked)}
-                                                className="w-5 h-5 rounded border-zinc-600 bg-white dark:bg-zinc-900 text-blue-600 focus:ring-blue-500"
+                                                className="w-5 h-5 rounded border-slate-600 bg-white dark:bg-slate-900 text-blue-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="block text-sm font-medium text-zinc-900 dark:text-white">Auto-save Intermediate Results</span>
-                                                <span className="block text-xs text-zinc-500 dark:text-zinc-400">Save state after each iteration step (uses more disk space)</span>
+                                                <span className="block text-sm font-medium text-slate-900 dark:text-white">Auto-save Intermediate Results</span>
+                                                <span className="block text-xs text-slate-500 dark:text-slate-400">Save state after each iteration step (uses more disk space)</span>
                                             </div>
                                         </label>
-                                        <label className="flex items-center p-4 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 cursor-pointer hover:border-blue-500/50 transition-colors">
+                                        <label className="flex items-center p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 cursor-pointer hover:border-blue-500/50 transition-colors">
                                             <input
                                                 type="checkbox"
                                                 checked={generateReport}
                                                 onChange={(e) => setGenerateReport(e.target.checked)}
-                                                className="w-5 h-5 rounded border-zinc-600 bg-white dark:bg-zinc-900 text-blue-600 focus:ring-blue-500"
+                                                className="w-5 h-5 rounded border-slate-600 bg-white dark:bg-slate-900 text-blue-600 focus:ring-blue-500"
                                             />
                                             <div className="ml-3">
-                                                <span className="block text-sm font-medium text-zinc-900 dark:text-white">Generate Analysis Report</span>
-                                                <span className="block text-xs text-zinc-500 dark:text-zinc-400">Create PDF summary after analysis completes</span>
+                                                <span className="block text-sm font-medium text-slate-900 dark:text-white">Generate Analysis Report</span>
+                                                <span className="block text-xs text-slate-500 dark:text-slate-400">Create PDF summary after analysis completes</span>
                                             </div>
                                         </label>
                                     </div>
@@ -416,9 +423,9 @@ export const SettingsPage: FC = () => {
 
                         {activeTab === 'general' && (
                             <section className="flex flex-col gap-5">
-                                <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                    <h3 className="text-zinc-900 dark:text-white text-lg font-medium">General Settings</h3>
-                                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Configure basic application preferences.</p>
+                                <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium">General Settings</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Configure basic application preferences.</p>
                                 </div>
                                 <Select
                                     label="Language"
@@ -444,9 +451,9 @@ export const SettingsPage: FC = () => {
 
                         {activeTab === 'display' && (
                             <section className="flex flex-col gap-5">
-                                <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                    <h3 className="text-zinc-900 dark:text-white text-lg font-medium">Display Settings</h3>
-                                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Customize the visual appearance.</p>
+                                <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium">Display Settings</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Customize the visual appearance.</p>
                                 </div>
                                 <Select
                                     label="Theme"
@@ -469,15 +476,15 @@ export const SettingsPage: FC = () => {
 
                         {activeTab === 'profile' && (
                             <section className="flex flex-col gap-5">
-                                <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2">
-                                    <h3 className="text-zinc-900 dark:text-white text-lg font-medium">User Profile</h3>
-                                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Manage your account information.</p>
+                                <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium">User Profile</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your account information.</p>
                                 </div>
-                                <div className="flex items-center gap-4 p-4 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800">
+                                <div className="flex items-center gap-4 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
                                     <div>
-                                        <p className="text-white font-bold">User</p>
-                                        <p className="text-zinc-500 dark:text-zinc-400 text-sm">user@beamlab.com</p>
+                                        <p className="text-slate-900 dark:text-white font-bold">User</p>
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm">user@beamlab.com</p>
                                     </div>
                                 </div>
                                 <Input

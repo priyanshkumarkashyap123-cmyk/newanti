@@ -6,7 +6,7 @@
  * - Uses apps/web/src/api/design.ts API client (designFoundation)
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Layers,
   Download,
@@ -82,6 +82,8 @@ export const FoundationDesignPage: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
+
+  useEffect(() => { document.title = 'Foundation Design | BeamLab Ultimate'; }, []);
 
   // Input validation
   const validateInputs = useCallback((): string | null => {
@@ -307,7 +309,7 @@ export const FoundationDesignPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -343,7 +345,7 @@ export const FoundationDesignPage: React.FC = () => {
                         className={`py-3 px-4 rounded-lg font-medium transition-colors flex flex-col items-center gap-2 ${
                           input.type === value
                             ? 'bg-gradient-to-br from-amber-600 to-orange-600 text-white shadow-lg'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-750'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
                         }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -362,7 +364,7 @@ export const FoundationDesignPage: React.FC = () => {
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         input.code === 'IS456'
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       IS 456
@@ -372,7 +374,7 @@ export const FoundationDesignPage: React.FC = () => {
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         input.code === 'ACI318'
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       ACI 318
@@ -392,7 +394,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.axialLoad}
                     onChange={(e) => updateInput('axialLoad', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -401,7 +403,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.momentX}
                     onChange={(e) => updateInput('momentX', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -410,7 +412,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.momentY}
                     onChange={(e) => updateInput('momentY', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -419,7 +421,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.shearX}
                     onChange={(e) => updateInput('shearX', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -428,7 +430,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.shearY}
                     onChange={(e) => updateInput('shearY', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -447,7 +449,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.columnWidth}
                     onChange={(e) => updateInput('columnWidth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -456,7 +458,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.columnDepth}
                     onChange={(e) => updateInput('columnDepth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 
@@ -469,7 +471,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.footingLength}
                     onChange={(e) => updateInput('footingLength', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -478,7 +480,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.footingWidth}
                     onChange={(e) => updateInput('footingWidth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -487,7 +489,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.footingDepth}
                     onChange={(e) => updateInput('footingDepth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -496,7 +498,7 @@ export const FoundationDesignPage: React.FC = () => {
                     type="number"
                     value={input.cover}
                     onChange={(e) => updateInput('cover', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -514,7 +516,7 @@ export const FoundationDesignPage: React.FC = () => {
                       type="number"
                       value={input.bearingCapacity}
                       onChange={(e) => updateInput('bearingCapacity', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
+                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
                     />
                   </div>
                   <div>
@@ -523,7 +525,7 @@ export const FoundationDesignPage: React.FC = () => {
                       type="number"
                       value={input.soilDensity}
                       onChange={(e) => updateInput('soilDensity', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
+                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -538,7 +540,7 @@ export const FoundationDesignPage: React.FC = () => {
                     <select
                       value={input.fck}
                       onChange={(e) => updateInput('fck', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-purple-500 focus:outline-none"
+                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-purple-500 focus:outline-none"
                     >
                       <option value="20">M20 / 3000 psi</option>
                       <option value="25">M25 / 3600 psi</option>
@@ -551,7 +553,7 @@ export const FoundationDesignPage: React.FC = () => {
                     <select
                       value={input.fy}
                       onChange={(e) => updateInput('fy', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm focus:border-purple-500 focus:outline-none"
+                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-purple-500 focus:outline-none"
                     >
                       <option value="415">Fe 415 / Grade 60</option>
                       <option value="500">Fe 500 / Grade 75</option>
@@ -569,7 +571,7 @@ export const FoundationDesignPage: React.FC = () => {
             >
               {analyzing ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-zinc-200 dark:border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-slate-200 dark:border-white border-t-transparent rounded-full animate-spin" />
                   Analyzing Foundation...
                 </>
               ) : (
@@ -616,7 +618,7 @@ export const FoundationDesignPage: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-slate-600 dark:text-slate-400">Utilization:</span>
-                      <span className="font-semibold text-zinc-900 dark:text-white">{(results.utilization * 100).toFixed(1)}%</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">{(results.utilization * 100).toFixed(1)}%</span>
                     </div>
                   </div>
 
@@ -627,15 +629,15 @@ export const FoundationDesignPage: React.FC = () => {
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span className="text-slate-600 dark:text-slate-400">Max Pressure:</span>
-                          <span className="text-zinc-900 dark:text-white">{results.bearingPressure.max.toFixed(2)} kN/m²</span>
+                          <span className="text-slate-900 dark:text-white">{results.bearingPressure.max.toFixed(2)} kN/m²</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-600 dark:text-slate-400">Min Pressure:</span>
-                          <span className="text-zinc-900 dark:text-white">{results.bearingPressure.min.toFixed(2)} kN/m²</span>
+                          <span className="text-slate-900 dark:text-white">{results.bearingPressure.min.toFixed(2)} kN/m²</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-600 dark:text-slate-400">Allowable:</span>
-                          <span className="text-zinc-900 dark:text-white">{input.bearingCapacity} kN/m²</span>
+                          <span className="text-slate-900 dark:text-white">{input.bearingCapacity} kN/m²</span>
                         </div>
                       </div>
                     </div>

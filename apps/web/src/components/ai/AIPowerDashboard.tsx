@@ -84,7 +84,7 @@ const MetricCardDisplay: FC<{ metric: MetricCard }> = ({ metric }) => {
         )}
       </div>
       <div className="mt-3">
-        <div className="text-2xl font-bold text-zinc-900 dark:text-white">{metric.value}</div>
+        <div className="text-2xl font-bold text-slate-900 dark:text-white">{metric.value}</div>
         <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{metric.label}</div>
         {metric.changeLabel && (
           <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{metric.changeLabel}</div>
@@ -215,7 +215,7 @@ export const AIPowerDashboard: FC = () => {
             <BarChart3 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">AI Performance Dashboard</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">AI Performance Dashboard</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">Real-time analytics and insights</p>
           </div>
         </div>
@@ -319,7 +319,7 @@ export const AIPowerDashboard: FC = () => {
 
         {/* Trust Indicators */}
         <div className="bg-gradient-to-r from-violet-600/10 to-cyan-600/10 rounded-xl border border-violet-500/30 p-4">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-400" />
             AI Trust Score
           </h3>

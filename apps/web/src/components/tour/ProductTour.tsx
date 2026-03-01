@@ -216,7 +216,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           </div>
 
           {/* Content */}
-          <h3 className="text-xl font-bold text-zinc-900 dark:text-white text-center mb-2">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white text-center mb-2">
             {step.title}
           </h3>
           <p className="text-slate-500 dark:text-slate-400 text-center mb-4 leading-relaxed">
@@ -263,7 +263,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           {/* Close button */}
           <button
             onClick={handleSkip}
-            className="absolute top-4 right-4 p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

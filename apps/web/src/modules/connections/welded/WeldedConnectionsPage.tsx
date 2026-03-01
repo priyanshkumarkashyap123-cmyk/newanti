@@ -128,7 +128,7 @@ export function WeldedConnectionsPage() {
                 value="fillet"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
                            text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
+                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
               >
                 <Square className="w-4 h-4" />
@@ -138,7 +138,7 @@ export function WeldedConnectionsPage() {
                 value="groove"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
                            text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
+                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
               >
                 <Grid3X3 className="w-4 h-4" />
@@ -148,7 +148,7 @@ export function WeldedConnectionsPage() {
                 value="baseplate"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
                            text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
+                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
               >
                 <Anchor className="w-4 h-4" />
@@ -183,7 +183,7 @@ export function WeldedConnectionsPage() {
       <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-            <p>© 2025 Structural Engineering Suite. Professional use only.</p>
+            <p>© {new Date().getFullYear()} Structural Engineering Suite. Professional use only.</p>
             <div className="flex items-center gap-4">
               <span>Design Codes: AWS D1.1-2020, AISC 360-22, EN 1993-1-8</span>
             </div>
@@ -835,12 +835,12 @@ function BasePlatePanel() {
 
       <Tabs.Root defaultValue="input">
         <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600">
             <Calculator className="w-4 h-4 inline mr-2" />
             Design Input
           </Tabs.Trigger>
-          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600">
             <FileText className="w-4 h-4 inline mr-2" />
             Results

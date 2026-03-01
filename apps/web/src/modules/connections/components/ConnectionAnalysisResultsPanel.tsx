@@ -242,9 +242,9 @@ export const ConnectionAnalysisResultsPanel: React.FC<ConnectionAnalysisResultsP
             result.isAdequate ? 'bg-green-500' : 'bg-red-500'
           }`}>
             {result.isAdequate ? (
-              <CheckCircle className="w-5 h-5 text-zinc-900 dark:text-white" />
+              <CheckCircle className="w-5 h-5 text-slate-900 dark:text-white" />
             ) : (
-              <XCircle className="w-5 h-5 text-zinc-900 dark:text-white" />
+              <XCircle className="w-5 h-5 text-slate-900 dark:text-white" />
             )}
           </div>
           <div>

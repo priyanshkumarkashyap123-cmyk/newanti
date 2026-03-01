@@ -24,6 +24,8 @@ export default function VisualizationHubPage() {
   const [scale, setScale] = useState(1);
   const animationRef = useRef<number | null>(null);
 
+  useEffect(() => { document.title = 'Visualization Hub | BeamLab Ultimate'; }, []);
+
   // Build member list for selector
   const memberList = useMemo(() => {
     const list: { id: string; label: string; length: number }[] = [];

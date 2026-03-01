@@ -138,7 +138,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
     return createPortal(
         <div
             ref={toolbarRef}
-            className="fixed z-[9999] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-3 animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[9999] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl p-3 animate-in fade-in zoom-in-95 duration-150"
             style={{
                 left: Math.min(position.x, window.innerWidth - 400),
                 top: Math.min(position.y, window.innerHeight - 300),
@@ -146,13 +146,13 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
             }}
         >
             {/* Header */}
-            <div className="flex items-center justify-between px-1 pb-2 mb-2 border-b border-zinc-200 dark:border-zinc-700">
-                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Quick Commands</span>
+            <div className="flex items-center justify-between px-1 pb-2 mb-2 border-b border-slate-200 dark:border-slate-700">
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Quick Commands</span>
                 <button
                     onClick={onClose}
-                    className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded transition-colors"
+                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
                 >
-                    <X className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />
+                    <X className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                 </button>
             </div>
 
@@ -163,7 +163,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
                     if (!cmds || cmds.length === 0) return null;
                     return (
                         <div key={g.key}>
-                            <div className="text-[9px] font-semibold uppercase tracking-wider text-zinc-500 mb-1 px-1">
+                            <div className="text-[9px] font-semibold uppercase tracking-wider text-slate-500 mb-1 px-1">
                                 {g.label}
                             </div>
                             <div className="flex flex-wrap gap-1">
@@ -183,14 +183,14 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
                                                 min-w-[64px] transition-all duration-150
                                                 ${selectedIndex === index
                                                     ? 'bg-blue-600 text-white'
-                                                    : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300'
+                                                    : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
                                                 }
                                             `}
                                         >
                                             <div className="w-4 h-4">{cmd.icon}</div>
                                             <span className="text-[10px] font-medium whitespace-nowrap">{cmd.label}</span>
                                             {cmd.shortcut && (
-                                                <span className={`text-[9px] ${selectedIndex === index ? 'text-blue-200' : 'text-zinc-500'}`}>{cmd.shortcut}</span>
+                                                <span className={`text-[9px] ${selectedIndex === index ? 'text-blue-200' : 'text-slate-500'}`}>{cmd.shortcut}</span>
                                             )}
                                         </button>
                                     );
@@ -202,8 +202,8 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
             </div>
 
             {/* Footer hint */}
-            <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-700 text-center">
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-center">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
                     Arrow keys to navigate • Enter to select • Esc to close
                 </span>
             </div>

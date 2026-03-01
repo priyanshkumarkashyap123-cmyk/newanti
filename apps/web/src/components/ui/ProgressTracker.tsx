@@ -240,7 +240,7 @@ export function ProgressCard({
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{state.title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{state.title}</h3>
         <StatusBadge status={state.status} />
       </div>
 
@@ -248,7 +248,7 @@ export function ProgressCard({
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-slate-500 dark:text-slate-400">Overall Progress</span>
-          <span className="text-sm font-medium text-zinc-900 dark:text-white">
+          <span className="text-sm font-medium text-slate-900 dark:text-white">
             {state.overallProgress}%
           </span>
         </div>
@@ -296,7 +296,7 @@ export function ProgressCard({
         {state.canPause && state.status === 'running' && onPause && (
           <button
             onClick={onPause}
-            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white 
+            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white 
                        border border-slate-600 hover:border-slate-500 rounded-lg transition-colors"
           >
             Pause
@@ -433,14 +433,14 @@ export function ProgressModal({
         {/* Progress bar */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm text-slate-500 dark:text-slate-400">
               {state.steps[state.currentStepIndex]?.label || 'Processing...'}
             </span>
-            <span className="text-sm font-medium text-zinc-900 dark:text-white">
+            <span className="text-sm font-medium text-slate-900 dark:text-white">
               {state.overallProgress}%
             </span>
           </div>
-          <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+          <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full transition-all duration-300',
@@ -450,7 +450,7 @@ export function ProgressModal({
             />
           </div>
           {state.estimatedTimeRemaining && state.status === 'running' && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 text-center">
               About {formatTimeRemaining(state.estimatedTimeRemaining)} remaining
             </p>
           )}
@@ -458,7 +458,7 @@ export function ProgressModal({
 
         {/* Current step message */}
         {state.steps[state.currentStepIndex]?.message && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center mb-4">
+          <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-4">
             {state.steps[state.currentStepIndex]?.message}
           </p>
         )}
@@ -533,7 +533,7 @@ export function BackgroundTaskIndicator({
         <div className="absolute bottom-full right-0 mb-2 w-80 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
                         rounded-lg shadow-xl overflow-hidden">
           <div className="p-3 border-b border-slate-200 dark:border-slate-700">
-            <h3 className="text-sm font-medium text-zinc-900 dark:text-white">Background Tasks</h3>
+            <h3 className="text-sm font-medium text-slate-900 dark:text-white">Background Tasks</h3>
           </div>
           <div className="max-h-64 overflow-y-auto">
             {runningTasks.map((task) => (
@@ -543,7 +543,7 @@ export function BackgroundTaskIndicator({
                 className="w-full p-3 text-left hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-200/50 dark:border-slate-700/50 last:border-b-0"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                  <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
                     {task.title}
                   </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -606,7 +606,7 @@ export function InlineProgress({
       {showLabel && (
         <div className="flex items-center justify-between mb-1">
           {label && <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>}
-          <span className="text-sm font-medium text-zinc-900 dark:text-white">{Math.round(progress)}%</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-white">{Math.round(progress)}%</span>
         </div>
       )}
       <div className={cn('bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden', sizes[size])}>
@@ -679,7 +679,7 @@ export function CircularProgressIndicator({
       </svg>
       {showLabel && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-semibold text-zinc-900 dark:text-white">
+          <span className="text-sm font-semibold text-slate-900 dark:text-white">
             {Math.round(progress)}%
           </span>
         </div>

@@ -249,7 +249,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             <FileText className="w-4 h-4 text-cyan-400" />
                         </div>
                         <div className="leading-tight">
-                            <span className="text-zinc-900 dark:text-white font-semibold text-sm truncate max-w-[220px] block">
+                            <span className="text-slate-900 dark:text-white font-semibold text-sm truncate max-w-[220px] block">
                                 {reportName}
                             </span>
                             <span className="text-[10px] text-slate-500 font-mono tracking-wide">
@@ -263,7 +263,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage <= 1}
-                            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30"
+                            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -273,13 +273,13 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                             onChange={e => handlePageChange(parseInt(e.target.value) || 1)}
                             min={1}
                             max={totalPages}
-                            className="w-10 text-center bg-transparent text-zinc-900 dark:text-white text-xs font-medium focus:outline-none"
+                            className="w-10 text-center bg-transparent text-slate-900 dark:text-white text-xs font-medium focus:outline-none"
                         />
                         <span className="text-slate-500 text-xs font-medium">/ {totalPages}</span>
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage >= totalPages}
-                            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30"
+                            className="p-0.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -288,13 +288,13 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
                 {/* Centre — zoom + tools */}
                 <div className="flex items-center gap-1">
-                    <button onClick={handleZoomOut} disabled={zoom <= 50} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
+                    <button onClick={handleZoomOut} disabled={zoom <= 50} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
                         <ZoomOut className="w-4 h-4" />
                     </button>
-                    <button onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="min-w-[48px] px-2 py-1 text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-xs font-semibold tabular-nums">
+                    <button onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="min-w-[48px] px-2 py-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md text-xs font-semibold tabular-nums">
                         {zoom}%
                     </button>
-                    <button onClick={handleZoomIn} disabled={zoom >= 200} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
+                    <button onClick={handleZoomIn} disabled={zoom >= 200} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md disabled:opacity-30">
                         <ZoomIn className="w-4 h-4" />
                     </button>
 
@@ -323,7 +323,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                     </button>
                     <button
                         onClick={() => setShowThumbnails(!showThumbnails)}
-                        className={`p-1.5 rounded-md transition-colors ${showThumbnails ? 'bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+                        className={`p-1.5 rounded-md transition-colors ${showThumbnails ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
                         title="Toggle thumbnails"
                     >
                         <Eye className="w-4 h-4" />
@@ -332,22 +332,22 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
 
                 {/* Right — actions */}
                 <div className="flex items-center gap-1">
-                    <button onClick={handleCopyLink} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Copy link">
+                    <button onClick={handleCopyLink} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Copy link">
                         {linkCopied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
                     </button>
-                    <button onClick={onPrint} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Print">
+                    <button onClick={onPrint} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Print">
                         <Printer className="w-4 h-4" />
                     </button>
-                    <button onClick={onDownload} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Download">
+                    <button onClick={onDownload} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Download">
                         <Download className="w-4 h-4" />
                     </button>
-                    <button onClick={() => onShare?.('link')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Share">
+                    <button onClick={() => onShare?.('link')} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title="Share">
                         <Share2 className="w-4 h-4" />
                     </button>
 
                     <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1" />
 
-                    <button onClick={handleToggleFullscreen} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>
+                    <button onClick={handleToggleFullscreen} className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md" title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}>
                         {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                     </button>
 
@@ -368,10 +368,10 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Search in document…"
-                        className="flex-1 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white px-3 py-1.5 rounded-md text-sm border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
+                        className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-1.5 rounded-md text-sm border border-slate-200 dark:border-slate-700 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/40"
                         autoFocus
                     />
-                    <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
+                    <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -433,7 +433,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                     <div className="w-72 bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col">
                         <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2">
                             <MessageSquare className="w-4 h-4 text-cyan-400" />
-                            <h3 className="text-zinc-900 dark:text-white text-sm font-semibold tracking-wide">Annotations</h3>
+                            <h3 className="text-slate-900 dark:text-white text-sm font-semibold tracking-wide">Annotations</h3>
                             <span className="ml-auto text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full font-medium">
                                 {annotations.filter(a => a.page === currentPage).length}
                             </span>
@@ -454,7 +454,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                                         .filter(a => a.page === currentPage)
                                         .map(ann => (
                                             <div key={ann.id} className="p-3 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300/60 dark:border-slate-700/60">
-                                                <p className="text-zinc-900 dark:text-white text-sm leading-relaxed">{ann.text}</p>
+                                                <p className="text-slate-900 dark:text-white text-sm leading-relaxed">{ann.text}</p>
                                                 <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-500">
                                                     <span className="font-medium">{ann.author}</span>
                                                     <span>&middot;</span>
@@ -483,7 +483,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
                                 className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
                                     currentPage === page
                                         ? 'bg-amber-500 text-white'
-                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-zinc-900 dark:hover:text-white border border-slate-300/60 dark:border-slate-700/60'
+                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-300/60 dark:border-slate-700/60'
                                 }`}
                             >
                                 {page}

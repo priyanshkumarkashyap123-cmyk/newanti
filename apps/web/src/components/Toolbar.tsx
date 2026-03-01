@@ -45,7 +45,7 @@ const ToolBtn = memo<ToolBtnProps>(({
     const variantClasses: Record<string, string> = {
         default: isActive
             ? 'bg-blue-600/20 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-500/10'
-            : 'bg-slate-100/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/60 hover:text-zinc-900 dark:hover:text-white hover:border-slate-600/60',
+            : 'bg-slate-100/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white hover:border-slate-600/60',
         primary: isActive
             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
             : 'bg-blue-600/80 text-white border-blue-500/60 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/30',
@@ -290,7 +290,7 @@ export const Toolbar: FC = () => {
                         onClick={() => undo()}
                         disabled={pastStates.length === 0}
                         title="Undo (Ctrl+Z)"
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                         <Undo2 className="w-4 h-4" />
                     </button>
@@ -298,7 +298,7 @@ export const Toolbar: FC = () => {
                         onClick={() => redo()}
                         disabled={futureStates.length === 0}
                         title="Redo (Ctrl+Shift+Z)"
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-700/60 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                         <Redo2 className="w-4 h-4" />
                     </button>

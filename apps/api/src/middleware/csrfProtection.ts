@@ -13,37 +13,35 @@
 
 import { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
+import { isTrustedOrigin } from "../config/cors.js";
 
 const CSRF_COOKIE = "csrf_token";
 const CSRF_HEADER = "x-csrf-token";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
-const ALLOWED_ORIGINS = [
-  "https://beamlabultimate.tech",
-  "https://www.beamlabultimate.tech",
-  "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
-  "http://localhost:5173",
-  "http://localhost:3000",
-];
-
 /**
- * Issue a CSRF cookie on every response so the client always has a token to echo back.
+ * Issue a CSRF cookie so the client always has a token to echo back.
+ * Only generates a new token if the client doesn't already have one,
+ * preventing the double-submit pattern from breaking on rapid requests.
  */
 export function csrfCookieMiddleware(
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): void {
-  // Generate a fresh token for every response (rotate on each page load)
-  const token = randomUUID();
+  // Reuse existing cookie token if present; only mint a new one when missing
+  const existing = req.cookies?.[CSRF_COOKIE];
+  if (!existing) {
+    const token = randomUUID();
 
-  res.cookie(CSRF_COOKIE, token, {
-    httpOnly: false, // Client JS must read it to send in the header
-    secure: true,
-    sameSite: "none", // Required for cross-origin (frontend & API on different domains)
-    path: "/",
-    maxAge: 60 * 60 * 1000, // 1 hour
-  });
+    res.cookie(CSRF_COOKIE, token, {
+      httpOnly: false, // Client JS must read it to send in the header
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none", // Required for cross-origin (frontend & API on different domains)
+      path: "/",
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+  }
 
   next();
 }
@@ -75,7 +73,7 @@ export function csrfValidationMiddleware(
   const referer = req.get("referer");
 
   if (origin) {
-    if (!ALLOWED_ORIGINS.includes(origin)) {
+    if (!isTrustedOrigin(origin)) {
       console.warn(`[CSRF] Blocked request from disallowed origin: ${origin}`);
       res.status(403).json({
         success: false,
@@ -86,7 +84,7 @@ export function csrfValidationMiddleware(
   } else if (referer) {
     try {
       const refOrigin = new URL(referer).origin;
-      if (!ALLOWED_ORIGINS.includes(refOrigin)) {
+      if (!isTrustedOrigin(refOrigin)) {
         console.warn(
           `[CSRF] Blocked request from disallowed referer: ${referer}`,
         );

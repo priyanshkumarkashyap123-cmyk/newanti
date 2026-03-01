@@ -65,7 +65,7 @@ const AccuracyBadge: React.FC<{ accuracy: number; label: string }> = ({ accuracy
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-500 dark:text-gray-400 text-sm">{label}</span>
-                <span className={`px-2 py-0.5 rounded text-xs font-medium text-zinc-900 dark:text-white ${getColor()}`}>
+                <span className={`px-2 py-0.5 rounded text-xs font-medium text-slate-900 dark:text-white ${getColor()}`}>
                     {accuracy.toFixed(1)}%
                 </span>
             </div>
@@ -91,14 +91,14 @@ const ResultRow: React.FC<{ result: ValidationResult }> = ({ result }) => {
         <div className="flex items-center justify-between py-2 border-b border-gray-700 last:border-0">
             <div className="flex items-center gap-2">
                 <span className={`text-lg ${passedColor}`}>{passedIcon}</span>
-                <span className="text-zinc-900 dark:text-white text-sm">{result.testCase}</span>
+                <span className="text-slate-900 dark:text-white text-sm">{result.testCase}</span>
             </div>
             <div className="flex items-center gap-4 text-sm">
                 <span className="text-gray-500 dark:text-gray-400">
-                    Exp: <span className="text-zinc-900 dark:text-white font-mono">{result.expected.toFixed(4)}</span>
+                    Exp: <span className="text-slate-900 dark:text-white font-mono">{result.expected.toFixed(4)}</span>
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">
-                    Comp: <span className="text-zinc-900 dark:text-white font-mono">{result.computed.toFixed(4)}</span>
+                    Comp: <span className="text-slate-900 dark:text-white font-mono">{result.computed.toFixed(4)}</span>
                 </span>
                 <span className={`font-mono ${result.accuracy.percentage >= 99 ? 'text-green-400' : 'text-yellow-400'}`}>
                     {result.accuracy.percentage.toFixed(2)}%
@@ -217,7 +217,7 @@ export const ConnectedValidationDashboard: React.FC<ConnectedValidationDashboard
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                     </svg>
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">AI Validation Dashboard</h3>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">AI Validation Dashboard</h3>
                     {analysisResults && (
                         <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">
                             Live Data
@@ -270,7 +270,7 @@ export const ConnectedValidationDashboard: React.FC<ConnectedValidationDashboard
                             <AccuracyBadge accuracy={stats.minAccuracy} label="Min Accuracy" />
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                                 <span className="text-gray-500 dark:text-gray-400 text-sm block">Max Error</span>
-                                <span className="text-xl font-bold text-zinc-900 dark:text-white">{stats.maxError.toExponential(2)}</span>
+                                <span className="text-xl font-bold text-slate-900 dark:text-white">{stats.maxError.toExponential(2)}</span>
                             </div>
                         </div>
 
@@ -280,11 +280,11 @@ export const ConnectedValidationDashboard: React.FC<ConnectedValidationDashboard
                                 <div className="flex gap-6">
                                     <div>
                                         <span className="text-gray-500 dark:text-gray-400">Nodes:</span>
-                                        <span className="text-zinc-900 dark:text-white ml-2">{analysisResults.nodes.length}</span>
+                                        <span className="text-slate-900 dark:text-white ml-2">{analysisResults.nodes.length}</span>
                                     </div>
                                     <div>
                                         <span className="text-gray-500 dark:text-gray-400">Members:</span>
-                                        <span className="text-zinc-900 dark:text-white ml-2">{analysisResults.members.length}</span>
+                                        <span className="text-slate-900 dark:text-white ml-2">{analysisResults.members.length}</span>
                                     </div>
                                     <div>
                                         <span className="text-gray-500 dark:text-gray-400">Converged:</span>
@@ -298,7 +298,7 @@ export const ConnectedValidationDashboard: React.FC<ConnectedValidationDashboard
 
                         {/* Results list */}
                         <div className="bg-gray-100/50 dark:bg-gray-800/50 rounded-lg p-3 max-h-64 overflow-y-auto">
-                            <h4 className="text-zinc-900 dark:text-white font-medium mb-2">Validation Results</h4>
+                            <h4 className="text-slate-900 dark:text-white font-medium mb-2">Validation Results</h4>
                             {validationResults.map((result, idx) => (
                                 <ResultRow key={idx} result={result} />
                             ))}

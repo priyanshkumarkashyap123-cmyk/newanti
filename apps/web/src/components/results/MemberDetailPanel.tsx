@@ -240,23 +240,23 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
+        <div className="flex flex-col h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => onNavigate?.('prev')}
-                        className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
                     <div>
                         <h2 className="text-lg font-semibold">Member {memberId}</h2>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{sectionId} • L = {memberLength.toFixed(2)}m</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{sectionId} • L = {memberLength.toFixed(2)}m</p>
                     </div>
                     <button
                         onClick={() => onNavigate?.('next')}
-                        className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                        className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
                         <ChevronRight className="w-5 h-5" />
                     </button>
@@ -265,17 +265,17 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                     <select
                         value={designCode}
                         onChange={(e) => setDesignCode(e.target.value as any)}
-                        className="px-2 py-1 text-sm bg-zinc-200 dark:bg-zinc-700 border border-zinc-600 rounded"
+                        className="px-2 py-1 text-sm bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded"
                     >
                         <option value="IS800">IS 800:2007</option>
                         <option value="IS456">IS 456:2000</option>
                         <option value="EC3">Eurocode 3</option>
                         <option value="AISC360">AISC 360</option>
                     </select>
-                    <button aria-label="Download" title="Download" className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700">
+                    <button aria-label="Download" title="Download" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
                         <Download className="w-4 h-4" />
                     </button>
-                    <button onClick={onClose} aria-label="Close" title="Close" className="p-1.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700">
+                    <button onClick={onClose} aria-label="Close" title="Close" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -294,7 +294,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             designResult.overallStatus === 'WARNING' ? 'Check Required' : 'Design Failed'}
                     </span>
                 </div>
-                <span className="text-sm text-zinc-600 dark:text-zinc-300">
+                <span className="text-sm text-slate-600 dark:text-slate-300">
                     Max Utilization: <strong className={getStatusColor(designResult.overallStatus).text}>
                         {(designResult.overallUtilization * 100).toFixed(1)}%
                     </strong>
@@ -311,7 +311,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             onClick={() => setActiveDiagram(type)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeDiagram === type
                                 ? 'bg-blue-600 text-white'
-                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {type === 'ALL' ? 'All Diagrams' : type}
@@ -329,20 +329,20 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         { label: 'Moment Z', value: memberForces.momentZ, unit: 'kN·m', color: 'text-purple-400' },
                         { label: 'Torsion', value: memberForces.torsion, unit: 'kN·m', color: 'text-orange-400' },
                     ].map(item => (
-                        <div key={item.label} className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{item.label}</div>
+                        <div key={item.label} className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-center">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{item.label}</div>
                             <div className={`text-lg font-bold font-mono ${item.color}`}>
                                 {item.value.toFixed(2)}
                             </div>
-                            <div className="text-xs text-zinc-500">{item.unit}</div>
+                            <div className="text-xs text-slate-500">{item.unit}</div>
                         </div>
                     ))}
                 </div>
 
                 {/* Force Diagrams */}
                 {diagramData && (
-                    <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">
+                    <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
                             {activeDiagram === 'ALL' ? 'Combined Force Diagrams' :
                                 activeDiagram === 'SFD' ? 'Shear Force Diagram' :
                                     activeDiagram === 'BMD' ? 'Bending Moment Diagram' :
@@ -366,7 +366,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             </h3>
                             <button
                                 onClick={() => setShowSectionCut(false)}
-                                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                             >
                                 Hide
                             </button>
@@ -375,7 +375,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         {/* Position Slider */}
                         <div className="mb-4">
                             <div className="flex items-center justify-between mb-2">
-                                <label className="text-xs text-zinc-500 dark:text-zinc-400">Position along member</label>
+                                <label className="text-xs text-slate-500 dark:text-slate-400">Position along member</label>
                                 <span className="text-sm font-mono text-blue-400">
                                     x = {sectionCutForces.x.toFixed(3)} m ({(sectionCutPosition * 100).toFixed(1)}%)
                                 </span>
@@ -387,9 +387,9 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                 step="0.01"
                                 value={sectionCutPosition}
                                 onChange={(e) => setSectionCutPosition(parseFloat(e.target.value))}
-                                className="w-full h-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
-                            <div className="flex justify-between text-xs text-zinc-500 mt-1">
+                            <div className="flex justify-between text-xs text-slate-500 mt-1">
                                 <span>Start (0)</span>
                                 <span>Mid (L/2)</span>
                                 <span>End (L)</span>
@@ -408,12 +408,12 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                 { label: 'Deflection Y', value: sectionCutForces.deflectionY, unit: 'mm', color: 'text-cyan-400' },
                                 { label: 'Deflection Z', value: sectionCutForces.deflectionZ, unit: 'mm', color: 'text-cyan-400' },
                             ].map(item => (
-                                <div key={item.label} className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-3 text-center">
-                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{item.label}</div>
+                                <div key={item.label} className="bg-white/50 dark:bg-slate-900/50 rounded-lg p-3 text-center">
+                                    <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{item.label}</div>
                                     <div className={`text-base font-bold font-mono ${item.color}`}>
                                         {item.value.toFixed(3)}
                                     </div>
-                                    <div className="text-xs text-zinc-500">{item.unit}</div>
+                                    <div className="text-xs text-slate-500">{item.unit}</div>
                                 </div>
                             ))}
                         </div>
@@ -422,12 +422,12 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
 
                 {/* Design Checks */}
                 {showDesign && (
-                    <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
+                    <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Design Checks ({designCode})</h3>
+                            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Design Checks ({designCode})</h3>
                             <button
                                 onClick={() => setShowDesign(false)}
-                                className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                                className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                             >
                                 Hide
                             </button>
@@ -437,7 +437,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             {designResult.checks.map((check) => (
                                 <div
                                     key={check.name}
-                                    className={`flex items-center justify-between p-3 rounded-lg bg-white dark:bg-zinc-900 border-l-3 ${getStatusColor(check.status).border
+                                    className={`flex items-center justify-between p-3 rounded-lg bg-white dark:bg-slate-900 border-l-3 ${getStatusColor(check.status).border
                                         }`}
                                     style={{ borderLeftWidth: '3px' }}
                                 >
@@ -448,13 +448,13 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                                 {check.status}
                                             </span>
                                         </div>
-                                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">{check.description}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{check.description}</div>
                                         {check.formula && (
-                                            <div className="text-xs text-zinc-500 mt-1 font-mono">{check.formula}</div>
+                                            <div className="text-xs text-slate-500 mt-1 font-mono">{check.formula}</div>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3 ml-4">
-                                        <div className="w-24 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                                        <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <div
                                                 className={`h-full rounded-full transition-all ${check.utilization <= 0.7 ? 'bg-green-500' :
                                                     check.utilization <= 0.9 ? 'bg-yellow-500' :
@@ -480,24 +480,24 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
 
                 {/* Reinforcement Design (for concrete) */}
                 {designResult.reinforcement && (
-                    <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">Reinforcement Design</h3>
+                    <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Reinforcement Design</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white dark:bg-zinc-900 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Main Reinforcement</div>
+                            <div className="bg-white dark:bg-slate-900 rounded-lg p-3">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Main Reinforcement</div>
                                 <div className="text-lg font-bold text-blue-400">
                                     {designResult.reinforcement.mainBars.count} × Ø{designResult.reinforcement.mainBars.diameter}
                                 </div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                     Area: {designResult.reinforcement.mainBars.area.toFixed(0)} mm² ({designResult.reinforcement.mainBars.ratio.toFixed(2)}%)
                                 </div>
                             </div>
-                            <div className="bg-white dark:bg-zinc-900 rounded-lg p-3">
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Stirrups/Ties</div>
+                            <div className="bg-white dark:bg-slate-900 rounded-lg p-3">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Stirrups/Ties</div>
                                 <div className="text-lg font-bold text-purple-400">
                                     Ø{designResult.reinforcement.stirrups.diameter} @ {designResult.reinforcement.stirrups.spacing}mm
                                 </div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                     {designResult.reinforcement.stirrups.legs}-legged stirrups
                                 </div>
                             </div>
@@ -509,7 +509,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                 {designResult.recommendations && designResult.recommendations.length > 0 && (
                     <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                         <h3 className="text-sm font-medium text-blue-400 mb-2">💡 Recommendations</h3>
-                        <ul className="text-sm text-zinc-600 dark:text-zinc-300 space-y-1">
+                        <ul className="text-sm text-slate-600 dark:text-slate-300 space-y-1">
                             {designResult.recommendations.map((rec, i) => (
                                 <li key={i} className="flex items-start gap-2">
                                     <span className="text-blue-400">•</span>

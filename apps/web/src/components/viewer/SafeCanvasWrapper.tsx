@@ -131,7 +131,7 @@ export class CanvasErrorBoundary extends Component<SafeCanvasWrapperProps, Error
                     : 'Something went wrong while rendering the 3D view. This is usually a temporary glitch — click Retry to resume.';
 
             return (
-                <div className="flex flex-col items-center justify-center h-full bg-gray-50 dark:bg-gray-900 text-zinc-900 dark:text-white p-8">
+                <div className="flex flex-col items-center justify-center h-full bg-gray-50 dark:bg-gray-900 text-slate-900 dark:text-white p-8">
                     <div className="max-w-lg text-center">
                         <div className="text-6xl mb-4">🏗️</div>
                         <h2 className="text-2xl font-bold mb-4">
@@ -276,7 +276,7 @@ export const PerformanceWarning: React.FC = () => {
         }`}>
             <div className="flex justify-between items-start">
                 <div>
-                    <h4 className="font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         {isExtreme || memoryStatus === 'critical' ? '⚠️ Performance Warning' : '📊 Large Model'}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
@@ -291,7 +291,7 @@ export const PerformanceWarning: React.FC = () => {
                 </div>
                 <button
                     onClick={() => setDismissed(true)}
-                    className="text-gray-500 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white"
+                    className="text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
                 >
                     ✕
                 </button>

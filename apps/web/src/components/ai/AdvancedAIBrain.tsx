@@ -444,7 +444,7 @@ export const AdvancedAIBrain: FC = () => {
         <motion.span
           initial={{ opacity: 0, x: 10 }}
           whileHover={{ opacity: 1, x: 0 }}
-          className="absolute right-full mr-3 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white text-sm font-medium rounded-lg whitespace-nowrap"
+          className="absolute right-full mr-3 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-medium rounded-lg whitespace-nowrap"
         >
           AI Assistant
         </motion.span>
@@ -469,20 +469,20 @@ export const AdvancedAIBrain: FC = () => {
             <Brain className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">AI Assistant</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">AI Assistant</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">Structural Engineering Expert</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setIsExpanded(false)}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -530,7 +530,7 @@ export const AdvancedAIBrain: FC = () => {
                 <div className="flex items-center gap-2 mt-1">
                   <button
                     onClick={() => copyToClipboard(message.content, message.id)}
-                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     {copiedId === message.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                   </button>
@@ -580,7 +580,7 @@ export const AdvancedAIBrain: FC = () => {
               onKeyDown={handleKeyDown}
               placeholder="Describe what you want to build..."
               rows={1}
-              className="w-full px-4 py-3 pr-24 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl resize-none outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+              className="w-full px-4 py-3 pr-24 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl resize-none outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
               style={{ minHeight: '48px', maxHeight: '120px' }}
             />
             <div className="absolute right-2 bottom-2 flex items-center gap-1">
@@ -590,7 +590,7 @@ export const AdvancedAIBrain: FC = () => {
                   className={`p-2 rounded-lg transition-colors ${
                     isListening 
                       ? 'bg-red-500/20 text-red-400' 
-                      : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                   }`}
                 >
                   {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}

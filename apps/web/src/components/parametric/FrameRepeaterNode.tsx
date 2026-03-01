@@ -20,7 +20,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-zinc-900 dark:text-white text-sm font-medium flex items-center gap-2"
+                className="px-3 py-2 text-slate-900 dark:text-white text-sm font-medium flex items-center gap-2"
                 style={{ backgroundColor: NODE_COLORS.transform }}
             >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -59,7 +59,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
                         min={1}
                         max={50}
                         onChange={(e) => handleChange('repeatCount', parseInt(e.target.value) || 1)}
-                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
+                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
                     />
                 </div>
 
@@ -72,7 +72,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
                         min={0.1}
                         step={0.5}
                         onChange={(e) => handleChange('spacing', parseFloat(e.target.value) || 1)}
-                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
+                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
                     />
                     <span className="text-gray-500 text-xs">m</span>
                 </div>

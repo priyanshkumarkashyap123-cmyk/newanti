@@ -186,7 +186,7 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
                     )}
                     {status.state === 'complete' && <CheckCircle size={16} className="text-green-400" />}
                     {status.state === 'error' && <XCircle size={16} className="text-red-400" />}
-                    <span className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <span className="text-sm font-medium text-slate-900 dark:text-white">
                         {status.state === 'running' ? 'Analysis in Progress' :
                          status.state === 'complete' ? 'Analysis Complete' :
                          status.state === 'error' ? 'Analysis Failed' : ''}
@@ -232,7 +232,7 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
                         key={phase.id}
                         className={`flex items-center gap-1 text-xs ${
                             idx < currentIndex ? 'text-cyan-400' :
-                            idx === currentIndex ? 'text-zinc-900 dark:text-white font-medium' :
+                            idx === currentIndex ? 'text-slate-900 dark:text-white font-medium' :
                             'text-slate-500 dark:text-slate-400'
                         }`}
                     >

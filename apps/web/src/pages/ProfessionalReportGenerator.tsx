@@ -4,7 +4,7 @@
  * PDF export with calculation sheets, diagrams, and code compliance
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { sanitizeHTML } from '../lib/sanitize';
 import {
   FileText,
@@ -265,6 +265,8 @@ export default function ProfessionalReportGenerator() {
   // Preview state
   const [showPreview, setShowPreview] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
+
+  useEffect(() => { document.title = 'Report Generator | BeamLab Ultimate'; }, []);
 
   // Apply template
   const applyTemplate = useCallback((templateId: string) => {
@@ -624,7 +626,7 @@ export default function ProfessionalReportGenerator() {
   }, [projectInfo, reportPreview, paperSize, orientation]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -642,7 +644,7 @@ export default function ProfessionalReportGenerator() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowPreview(!showPreview)}
-                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-zinc-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
               >
                 {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 {showPreview ? 'Hide Preview' : 'Preview'}
@@ -676,7 +678,7 @@ export default function ProfessionalReportGenerator() {
           <div className="lg:col-span-1 space-y-6">
             {/* Template Selection */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-purple-400" />
                 Report Template
               </h3>
@@ -684,7 +686,7 @@ export default function ProfessionalReportGenerator() {
               <select
                 value={selectedTemplate}
                 onChange={(e) => applyTemplate(e.target.value)}
-                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white mb-4"
+                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white mb-4"
               >
                 {REPORT_TEMPLATES.map(template => (
                   <option key={template.id} value={template.id}>
@@ -700,7 +702,7 @@ export default function ProfessionalReportGenerator() {
 
             {/* Project Information */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-purple-400" />
                 Project Information
               </h3>
@@ -712,7 +714,7 @@ export default function ProfessionalReportGenerator() {
                     type="text"
                     value={projectInfo.projectName}
                     onChange={(e) => setProjectInfo(p => ({ ...p, projectName: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 
@@ -723,7 +725,7 @@ export default function ProfessionalReportGenerator() {
                       type="text"
                       value={projectInfo.projectNumber}
                       onChange={(e) => setProjectInfo(p => ({ ...p, projectNumber: e.target.value }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                     />
                   </div>
                   <div>
@@ -732,7 +734,7 @@ export default function ProfessionalReportGenerator() {
                       type="text"
                       value={projectInfo.revision}
                       onChange={(e) => setProjectInfo(p => ({ ...p, revision: e.target.value }))}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                     />
                   </div>
                 </div>
@@ -743,7 +745,7 @@ export default function ProfessionalReportGenerator() {
                     type="text"
                     value={projectInfo.client}
                     onChange={(e) => setProjectInfo(p => ({ ...p, client: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 
@@ -753,7 +755,7 @@ export default function ProfessionalReportGenerator() {
                     type="text"
                     value={projectInfo.location}
                     onChange={(e) => setProjectInfo(p => ({ ...p, location: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 
@@ -763,7 +765,7 @@ export default function ProfessionalReportGenerator() {
                     type="text"
                     value={projectInfo.engineer}
                     onChange={(e) => setProjectInfo(p => ({ ...p, engineer: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                   />
                 </div>
                 
@@ -773,7 +775,7 @@ export default function ProfessionalReportGenerator() {
                     type="date"
                     value={projectInfo.date}
                     onChange={(e) => setProjectInfo(p => ({ ...p, date: e.target.value }))}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-white text-sm"
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-900 dark:text-white text-sm"
                   />
                 </div>
               </div>
@@ -781,7 +783,7 @@ export default function ProfessionalReportGenerator() {
 
             {/* Output Settings */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-purple-400" />
                 Output Settings
               </h3>
@@ -797,7 +799,7 @@ export default function ProfessionalReportGenerator() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                           outputFormat === fmt
                             ? 'bg-purple-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {fmt.toUpperCase()}
@@ -816,7 +818,7 @@ export default function ProfessionalReportGenerator() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                           paperSize === size
                             ? 'bg-purple-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {size}
@@ -835,7 +837,7 @@ export default function ProfessionalReportGenerator() {
                         className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
                           orientation === orient
                             ? 'bg-purple-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
                         {orient}
@@ -850,7 +852,7 @@ export default function ProfessionalReportGenerator() {
           {/* Center Panel - Sections */}
           <div className="lg:col-span-1 space-y-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-purple-400" />
                 Report Sections
               </h3>
@@ -874,19 +876,19 @@ export default function ProfessionalReportGenerator() {
                             : 'bg-transparent border-slate-500'
                         }`}
                       >
-                        {section.enabled && <CheckCircle className="w-3 h-3 text-zinc-900 dark:text-white" />}
+                        {section.enabled && <CheckCircle className="w-3 h-3 text-slate-900 dark:text-white" />}
                       </button>
                       
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           {SECTION_DEFINITIONS[section.type].icon}
-                          <span className="text-sm font-medium text-zinc-900 dark:text-white">{section.title}</span>
+                          <span className="text-sm font-medium text-slate-900 dark:text-white">{section.title}</span>
                         </div>
                       </div>
                       
                       <button
                         onClick={() => toggleExpand(section.id)}
-                        className="p-1 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+                        className="p-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                       >
                         {section.expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </button>
@@ -927,7 +929,7 @@ export default function ProfessionalReportGenerator() {
                                   type="text"
                                   value={String(value)}
                                   onChange={(e) => updateSectionOption(section.id, key, e.target.value)}
-                                  className="flex-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded px-2 py-1 text-zinc-900 dark:text-white text-sm"
+                                  className="flex-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded px-2 py-1 text-slate-900 dark:text-white text-sm"
                                   placeholder={key}
                                 />
                               )}

@@ -345,7 +345,7 @@ const AnimatedNode: FC<AnimatedNodeProps> = ({
                     center
                     style={{ pointerEvents: 'none' }}
                 >
-                    <div className="bg-black/80 text-zinc-900 dark:text-white text-xs px-1.5 py-0.5 rounded whitespace-nowrap">
+                    <div className="bg-black/80 text-slate-900 dark:text-white text-xs px-1.5 py-0.5 rounded whitespace-nowrap">
                         {(magnitude * 1000).toFixed(2)} mm
                     </div>
                 </Html>
@@ -504,7 +504,7 @@ export const DeflectionControls: FC<DeflectionControlsProps> = ({
 }) => {
     return (
         <div className="bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg p-4 space-y-4">
-            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Deflection Animation</h4>
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Deflection Animation</h4>
 
             {/* Scale control */}
             <div>

@@ -177,7 +177,7 @@ const FormatCard: React.FC<FormatCardProps> = ({ format, selected, onSelect }) =
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                    <span className="font-medium text-zinc-900 dark:text-white">{format.name}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{format.name}</span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">{format.extension}</span>
                     {format.beta && (
                         <span className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/20 text-amber-400 rounded">
@@ -218,7 +218,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
     
     return (
         <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Export Options
             </h4>
@@ -231,7 +231,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
                     <select
                         value={options.precision}
                         onChange={(e) => updateOption('precision', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500"
+                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500"
                     >
                         <option value={2}>2 decimals</option>
                         <option value={3}>3 decimals</option>
@@ -247,7 +247,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
                         <select
                             value={options.coordinateSystem}
                             onChange={(e) => updateOption('coordinateSystem', e.target.value as any)}
-                            className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500"
+                            className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500"
                         >
                             <option value="global">Global (World)</option>
                             <option value="local">Local (Member)</option>
@@ -263,7 +263,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({ options, category, onChange
                         <select
                             value={options.scale}
                             onChange={(e) => updateOption('scale', parseFloat(e.target.value))}
-                            className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500"
+                            className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500"
                         >
                             <option value={1}>1:1</option>
                             <option value={0.001}>mm to m (÷1000)</option>
@@ -393,7 +393,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="font-medium text-zinc-900 dark:text-white truncate">{job.name}</span>
+                        <span className="font-medium text-slate-900 dark:text-white truncate">{job.name}</span>
                         <span className="text-xs text-slate-500 dark:text-slate-400">{job.format.extension}</span>
                     </div>
                     
@@ -433,7 +433,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                     {(job.status === 'pending' || job.status === 'processing') && (
                         <button
                             onClick={onCancel}
-                            className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-600 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                            className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -531,7 +531,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
         <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Header */}
             <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Download className="w-6 h-6 text-cyan-400" />
                     Export Manager
                 </h2>
@@ -555,7 +555,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                                     w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors
                                     ${activeCategory === key 
                                         ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' 
-                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-zinc-900 dark:hover:text-white'
+                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                                     }
                                 `}
                             >
@@ -604,7 +604,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                 <div className="flex-1 p-6">
                     {/* Format Selection */}
                     <div className="mb-6">
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                             Select {CATEGORY_INFO[activeCategory].label} Format
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
@@ -652,7 +652,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                         
                         {selectedFormat && (
                             <span className="text-sm text-slate-500 dark:text-slate-400">
-                                Output: <span className="text-zinc-900 dark:text-white">{projectName}{selectedFormat.extension}</span>
+                                Output: <span className="text-slate-900 dark:text-white">{projectName}{selectedFormat.extension}</span>
                             </span>
                         )}
                     </div>
@@ -662,7 +662,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
             {/* Export Jobs */}
             {jobs.length > 0 && (
                 <div className="border-t border-slate-200 dark:border-slate-800 p-6">
-                    <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                         <Folder className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                         Export Queue
                     </h3>

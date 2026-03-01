@@ -667,7 +667,7 @@ Welcome to the **most powerful AI** in structural engineering!
             <Brain className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               Power AI
               <span className="px-2 py-0.5 bg-gradient-to-r from-violet-500 to-cyan-500 rounded text-[10px] font-bold">
                 PRO
@@ -691,7 +691,7 @@ Welcome to the **most powerful AI** in structural engineering!
           </button>
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+            className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
             {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
           </button>

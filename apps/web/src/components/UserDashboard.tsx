@@ -83,7 +83,7 @@ const getActionIcon = (action: string) => {
         case 'analysis_run': return <BarChart3 className="w-4 h-4 text-green-400" />;
         case 'export_pdf': return <FileText className="w-4 h-4 text-purple-400" />;
         case 'project_create': return <TrendingUp className="w-4 h-4 text-yellow-400" />;
-        default: return <Zap className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />;
+        default: return <Zap className="w-4 h-4 text-slate-500 dark:text-slate-400" />;
     }
 };
 
@@ -147,15 +147,15 @@ export const UserDashboard: FC = () => {
 
     if (!isSignedIn) {
         return (
-            <div className="p-6 bg-white dark:bg-zinc-900 rounded-xl">
-                <p className="text-zinc-500 dark:text-zinc-400 text-center">Sign in to view your dashboard</p>
+            <div className="p-6 bg-white dark:bg-slate-900 rounded-xl">
+                <p className="text-slate-500 dark:text-slate-400 text-center">Sign in to view your dashboard</p>
             </div>
         );
     }
 
     if (loading) {
         return (
-            <div className="p-6 bg-white dark:bg-zinc-900 rounded-xl flex items-center justify-center">
+            <div className="p-6 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
             </div>
         );
@@ -163,7 +163,7 @@ export const UserDashboard: FC = () => {
 
     if (error || !data) {
         return (
-            <div className="p-6 bg-white dark:bg-zinc-900 rounded-xl">
+            <div className="p-6 bg-white dark:bg-slate-900 rounded-xl">
                 <p className="text-red-400 text-center">{error || 'Failed to load dashboard'}</p>
             </div>
         );
@@ -176,18 +176,18 @@ export const UserDashboard: FC = () => {
             {/* Tier Status Card */}
             <div className={`p-6 rounded-xl border ${isPro
                 ? 'bg-gradient-to-r from-purple-900/50 to-blue-900/50 border-purple-500/30'
-                : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
                 }`}>
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${isPro ? 'bg-purple-500/20' : 'bg-zinc-100 dark:bg-zinc-800'}`}>
-                            <Crown className={`w-6 h-6 ${isPro ? 'text-purple-400' : 'text-zinc-500 dark:text-zinc-400'}`} />
+                        <div className={`p-2 rounded-lg ${isPro ? 'bg-purple-500/20' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                            <Crown className={`w-6 h-6 ${isPro ? 'text-purple-400' : 'text-slate-500 dark:text-slate-400'}`} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                                 {isPro ? 'Pro Plan' : 'Free Plan'}
                             </h2>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
                                 {isPro
                                     ? 'Unlimited access to all features'
                                     : 'Upgrade for unlimited analyses'
@@ -206,31 +206,31 @@ export const UserDashboard: FC = () => {
 
                 {/* Usage Limits for Free Tier */}
                 {!isPro && (
-                    <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                         <div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Daily Analyses</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Daily Analyses</div>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                                <span className="text-xl font-bold text-slate-900 dark:text-white">
                                     {data.stats.dailyAnalysisRemaining}
                                 </span>
-                                <span className="text-zinc-500 dark:text-zinc-400">/ {data.limits.maxAnalysisPerDay}</span>
+                                <span className="text-slate-500 dark:text-slate-400">/ {data.limits.maxAnalysisPerDay}</span>
                             </div>
                         </div>
                         <div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Max Nodes</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Max Nodes</div>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                                <span className="text-xl font-bold text-slate-900 dark:text-white">
                                     {data.limits.maxNodes}
                                 </span>
                             </div>
                         </div>
                         <div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Projects</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Projects</div>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                                <span className="text-xl font-bold text-slate-900 dark:text-white">
                                     {data.stats.projectCount}
                                 </span>
-                                <span className="text-zinc-500 dark:text-zinc-400">/ {data.limits.maxProjects}</span>
+                                <span className="text-slate-500 dark:text-slate-400">/ {data.limits.maxProjects}</span>
                             </div>
                         </div>
                     </div>
@@ -239,54 +239,54 @@ export const UserDashboard: FC = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-2 mb-2">
                         <BarChart3 className="w-4 h-4 text-green-400" />
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">Total Analyses</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Total Analyses</span>
                     </div>
-                    <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
                         {data.stats.totalAnalysisRuns}
                     </div>
                 </div>
 
-                <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-2 mb-2">
                         <Download className="w-4 h-4 text-purple-400" />
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">PDF Exports</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">PDF Exports</span>
                     </div>
-                    <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
                         {data.stats.totalExports}
                     </div>
                 </div>
 
-                <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-2 mb-2">
                         <Clock className="w-4 h-4 text-blue-400" />
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400">Last Login</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">Last Login</span>
                     </div>
-                    <div className="text-sm font-medium text-zinc-900 dark:text-white">
+                    <div className="text-sm font-medium text-slate-900 dark:text-white">
                         {formatDate(data.stats.lastLogin)}
                     </div>
                 </div>
             </div>
 
             {/* Recent Activity */}
-            <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-4">Recent Activity</h3>
+            <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-4">Recent Activity</h3>
 
                 {data.recentActivity.length === 0 ? (
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm">No activity yet</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">No activity yet</p>
                 ) : (
                     <div className="space-y-3">
                         {data.recentActivity.slice(0, 5).map((activity, index) => (
                             <div key={index} className="flex items-center gap-3">
                                 {getActionIcon(activity.action)}
                                 <div className="flex-1">
-                                    <span className="text-sm text-zinc-900 dark:text-white">
+                                    <span className="text-sm text-slate-900 dark:text-white">
                                         {getActionLabel(activity.action)}
                                     </span>
                                 </div>
-                                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
                                     {formatDate(activity.timestamp)}
                                 </span>
                             </div>
@@ -297,8 +297,8 @@ export const UserDashboard: FC = () => {
 
             {/* Pro Features Preview */}
             {!isPro && (
-                <div className="p-4 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                    <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-4">
+                <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase mb-4">
                         Pro Features
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -312,7 +312,7 @@ export const UserDashboard: FC = () => {
                         ].map((feature, i) => (
                             <div key={i} className="flex items-center gap-2 text-sm">
                                 {feature.icon}
-                                <span className="text-zinc-500 dark:text-zinc-400">{feature.label}</span>
+                                <span className="text-slate-500 dark:text-slate-400">{feature.label}</span>
                             </div>
                         ))}
                     </div>

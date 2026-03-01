@@ -118,7 +118,7 @@ const ResultCard: FC<{
                 </div>
 
                 <div className="flex items-end gap-2">
-                    <span className="text-3xl font-bold text-zinc-900 dark:text-white tabular-nums">
+                    <span className="text-3xl font-bold text-slate-900 dark:text-white tabular-nums">
                         {animatedValue.toFixed(result.value % 1 === 0 ? 0 : 2)}
                     </span>
                     <span className="text-sm text-slate-500 dark:text-slate-400 mb-1">
@@ -181,7 +181,7 @@ export const ResultsReveal: FC<ResultsRevealProps> = ({
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4 }}
-                        className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2"
+                        className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"
                     >
                         <Activity className="w-5 h-5 text-blue-400" />
                         {title}

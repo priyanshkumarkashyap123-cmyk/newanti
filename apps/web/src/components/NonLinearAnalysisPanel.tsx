@@ -143,7 +143,7 @@ export function NonLinearAnalysisPanel({ onRunAnalysis, isAnalyzing = false }: N
                 >
                     {isAnalyzing ? (
                         <div className="flex items-center gap-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-zinc-200 dark:border-white border-t-transparent"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-slate-200 dark:border-white border-t-transparent"></div>
                             Solving...
                         </div>
                     ) : (

@@ -581,20 +581,20 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
                     {/* Header */}
-                    <DialogHeader className="p-4 border-b border-zinc-200 dark:border-zinc-700">
+                    <DialogHeader className="p-4 border-b border-slate-200 dark:border-slate-700">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-orange-500/20 rounded-lg">
                                 <Train className="w-6 h-6 text-orange-400" />
                             </div>
                             <div>
-                                <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">Railway Bridge Design</DialogTitle>
-                                <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">IRS Bridge Rules • MBG/HM Loading</DialogDescription>
+                                <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">Railway Bridge Design</DialogTitle>
+                                <DialogDescription className="text-sm text-slate-500 dark:text-slate-400">IRS Bridge Rules • MBG/HM Loading</DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
 
                     {/* Tabs */}
-                    <div className="flex border-b border-zinc-200 dark:border-zinc-700">
+                    <div className="flex border-b border-slate-200 dark:border-slate-700">
                         {[
                             { id: 'design', label: 'Bridge Design', icon: Ruler },
                             { id: 'loads', label: 'Railway Loads', icon: Train },
@@ -606,7 +606,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all
                                     ${activeTab === tab.id
                                         ? 'text-orange-400 border-b-2 border-orange-400 bg-orange-500/10'
-                                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                     }`}
                             >
                                 <tab.icon className="w-4 h-4" />
@@ -620,14 +620,14 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                         {activeTab === 'design' && (
                             <div className="space-y-6">
                                 {/* Bridge Geometry */}
-                                <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                         <Ruler className="w-4 h-4 text-orange-400" />
                                         Bridge Geometry
                                     </h3>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Span (m)</Label>
+                                            <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Span (m)</Label>
                                             <Input
                                                 type="number"
                                                 value={config.span}
@@ -635,7 +635,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                             />
                                         </div>
                                         <div>
-                                            <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Height (m)</Label>
+                                            <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Height (m)</Label>
                                             <Input
                                                 type="number"
                                                 value={config.height}
@@ -643,7 +643,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                             />
                                         </div>
                                         <div>
-                                            <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Number of Panels</Label>
+                                            <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Number of Panels</Label>
                                             <Input
                                                 type="number"
                                                 value={config.numPanels}
@@ -651,7 +651,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                             />
                                         </div>
                                         <div>
-                                            <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Track Gauge (m)</Label>
+                                            <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Track Gauge (m)</Label>
                                             <Input
                                                 type="number"
                                                 value={config.gaugeWidth}
@@ -663,8 +663,8 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                 </div>
 
                                 {/* Loading Standard */}
-                                <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                         <Train className="w-4 h-4 text-orange-400" />
                                         Loading Standard
                                     </h3>
@@ -676,41 +676,41 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                                 className={`p-3 rounded-lg border-2 transition-all text-left
                                                     ${config.loadingStandard === std
                                                         ? 'border-orange-500 bg-orange-500/10'
-                                                        : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500'
+                                                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
                                                     }`}
                                             >
-                                                <p className="text-sm font-medium text-zinc-900 dark:text-white">{LOADING_STANDARDS[std].name}</p>
-                                                <p className="text-xs text-zinc-500 dark:text-zinc-400">{LOADING_STANDARDS[std].description}</p>
+                                                <p className="text-sm font-medium text-slate-900 dark:text-white">{LOADING_STANDARDS[std].name}</p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">{LOADING_STANDARDS[std].description}</p>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
 
                                 {/* Bridge Type */}
-                                <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Deck Type</h3>
+                                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Deck Type</h3>
                                     <div className="flex gap-3">
                                         <button
                                             onClick={() => setConfig({ ...config, bridgeType: 'open_deck' })}
                                             className={`flex-1 p-3 rounded-lg border-2 transition-all
                                                 ${config.bridgeType === 'open_deck'
                                                     ? 'border-orange-500 bg-orange-500/10'
-                                                    : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500'
+                                                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
                                                 }`}
                                         >
-                                            <p className="text-sm font-medium text-zinc-900 dark:text-white">Open Deck</p>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Rails on sleepers</p>
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white">Open Deck</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Rails on sleepers</p>
                                         </button>
                                         <button
                                             onClick={() => setConfig({ ...config, bridgeType: 'ballasted_deck' })}
                                             className={`flex-1 p-3 rounded-lg border-2 transition-all
                                                 ${config.bridgeType === 'ballasted_deck'
                                                     ? 'border-orange-500 bg-orange-500/10'
-                                                    : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500'
+                                                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
                                                 }`}
                                         >
-                                            <p className="text-sm font-medium text-zinc-900 dark:text-white">Ballasted Deck</p>
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Rails on ballast</p>
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white">Ballasted Deck</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Rails on ballast</p>
                                         </button>
                                     </div>
                                 </div>
@@ -720,56 +720,56 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                         {activeTab === 'loads' && (
                             <div className="space-y-4">
                                 {/* Calculated Loads Summary */}
-                                <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+                                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                         <Calculator className="w-4 h-4 text-orange-400" />
                                         Calculated Loads (IRS Bridge Rules)
                                     </h3>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-white dark:bg-zinc-900/50 p-3 rounded-lg">
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">EUDL for BM</p>
-                                            <p className="text-lg font-bold text-zinc-900 dark:text-white">{eudl.bm.toFixed(1)} <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">kN/m</span></p>
+                                        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-lg">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">EUDL for BM</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white">{eudl.bm.toFixed(1)} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">kN/m</span></p>
                                         </div>
-                                        <div className="bg-white dark:bg-zinc-900/50 p-3 rounded-lg">
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">EUDL for SF</p>
-                                            <p className="text-lg font-bold text-zinc-900 dark:text-white">{eudl.sf.toFixed(1)} <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">kN/m</span></p>
+                                        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-lg">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">EUDL for SF</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white">{eudl.sf.toFixed(1)} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">kN/m</span></p>
                                         </div>
-                                        <div className="bg-white dark:bg-zinc-900/50 p-3 rounded-lg">
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Impact Factor (CDA)</p>
+                                        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-lg">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Impact Factor (CDA)</p>
                                             <p className="text-lg font-bold text-orange-400">{(cda * 100).toFixed(1)}%</p>
                                         </div>
-                                        <div className="bg-white dark:bg-zinc-900/50 p-3 rounded-lg">
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Factored Live Load</p>
-                                            <p className="text-lg font-bold text-zinc-900 dark:text-white">{factoredLoad.toFixed(1)} <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">kN/m</span></p>
+                                        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-lg">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Factored Live Load</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white">{factoredLoad.toFixed(1)} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">kN/m</span></p>
                                         </div>
-                                        <div className="bg-white dark:bg-zinc-900/50 p-3 rounded-lg">
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Longitudinal Force</p>
-                                            <p className="text-lg font-bold text-zinc-900 dark:text-white">{longForce.toFixed(1)} <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">kN</span></p>
+                                        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-lg">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Longitudinal Force</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white">{longForce.toFixed(1)} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">kN</span></p>
                                         </div>
-                                        <div className="bg-white dark:bg-zinc-900/50 p-3 rounded-lg">
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400">Racking Force</p>
-                                            <p className="text-lg font-bold text-zinc-900 dark:text-white">{rackingForce.toFixed(1)} <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">kN</span></p>
+                                        <div className="bg-white dark:bg-slate-900/50 p-3 rounded-lg">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Racking Force</p>
+                                            <p className="text-lg font-bold text-slate-900 dark:text-white">{rackingForce.toFixed(1)} <span className="text-sm font-normal text-slate-500 dark:text-slate-400">kN</span></p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Axle Load Diagram */}
-                                <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Axle Load Pattern ({config.loadingStandard})</h3>
-                                    <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 overflow-x-auto">
+                                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Axle Load Pattern ({config.loadingStandard})</h3>
+                                    <div className="bg-white dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
                                         <div className="flex items-end gap-1 min-w-max">
                                             {LOADING_STANDARDS[config.loadingStandard].axleLoads.map((axle, i) => (
                                                 <div key={i} className="flex flex-col items-center">
-                                                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-1">{axle.load}kN</span>
+                                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mb-1">{axle.load}kN</span>
                                                     <div
                                                         className={`w-3 ${axle.type === 'locomotive' ? 'bg-orange-500' : 'bg-blue-500'} rounded-t`}
                                                         style={{ height: `${axle.load / 5}px` }}
                                                     />
-                                                    <div className="w-6 h-1 bg-zinc-300 dark:bg-zinc-600 rounded" />
+                                                    <div className="w-6 h-1 bg-slate-300 dark:bg-slate-600 rounded" />
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+                                        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-2">
                                             <span>0m</span>
                                             <span>{LOADING_STANDARDS[config.loadingStandard].totalLength.toFixed(1)}m</span>
                                         </div>
@@ -777,11 +777,11 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                     <div className="flex gap-4 mt-3 text-xs">
                                         <div className="flex items-center gap-2">
                                             <div className="w-3 h-3 bg-orange-500 rounded" />
-                                            <span className="text-zinc-500 dark:text-zinc-400">Locomotive</span>
+                                            <span className="text-slate-500 dark:text-slate-400">Locomotive</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="w-3 h-3 bg-blue-500 rounded" />
-                                            <span className="text-zinc-500 dark:text-zinc-400">Wagon</span>
+                                            <span className="text-slate-500 dark:text-slate-400">Wagon</span>
                                         </div>
                                     </div>
                                 </div>
@@ -792,7 +792,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                         <Info className="w-4 h-4" />
                                         IRS Code References
                                     </h3>
-                                    <ul className="text-xs text-zinc-600 dark:text-zinc-300 space-y-1">
+                                    <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
                                         <li>• IRS Bridge Rules (Revised 2008) - Clause 2.4.1: Impact Factor</li>
                                         <li>• IRS Bridge Rules - Appendix III: EUDL Tables</li>
                                         <li>• IRS Bridge Rules - Clause 2.8: Longitudinal Forces</li>
@@ -819,7 +819,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                         <p className={`font-semibold ${designResults.passesDesign ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                             {designResults.passesDesign ? 'Design OK' : 'Design Check Failed'}
                                         </p>
-                                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">
                                             Utilization: {(designResults.utilization * 100).toFixed(1)}%
                                         </p>
                                     </div>
@@ -827,23 +827,23 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
 
                                 {/* Results Grid */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Max Axial Force</p>
-                                        <p className="text-xl font-bold text-zinc-900 dark:text-white">{(designResults.maxAxialForce / 1000).toFixed(1)} <span className="text-sm font-normal">MN</span></p>
+                                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Max Axial Force</p>
+                                        <p className="text-xl font-bold text-slate-900 dark:text-white">{(designResults.maxAxialForce / 1000).toFixed(1)} <span className="text-sm font-normal">MN</span></p>
                                     </div>
-                                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Max Bending Moment</p>
-                                        <p className="text-xl font-bold text-zinc-900 dark:text-white">{(designResults.maxBendingMoment / 1000).toFixed(1)} <span className="text-sm font-normal">MN·m</span></p>
+                                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Max Bending Moment</p>
+                                        <p className="text-xl font-bold text-slate-900 dark:text-white">{(designResults.maxBendingMoment / 1000).toFixed(1)} <span className="text-sm font-normal">MN·m</span></p>
                                     </div>
-                                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Max Deflection</p>
-                                        <p className="text-xl font-bold text-zinc-900 dark:text-white">{(designResults.maxDeflection * 1000).toFixed(1)} <span className="text-sm font-normal">mm</span></p>
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Limit: L/800 = {(config.span / 0.8).toFixed(1)} mm</p>
+                                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Max Deflection</p>
+                                        <p className="text-xl font-bold text-slate-900 dark:text-white">{(designResults.maxDeflection * 1000).toFixed(1)} <span className="text-sm font-normal">mm</span></p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Limit: L/800 = {(config.span / 0.8).toFixed(1)} mm</p>
                                     </div>
-                                    <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl p-4">
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Critical Member</p>
+                                    <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Critical Member</p>
                                         <p className="text-xl font-bold text-orange-400">{designResults.criticalMember}</p>
-                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Top Chord at mid-span</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Top Chord at mid-span</p>
                                     </div>
                                 </div>
                             </div>
@@ -851,15 +851,15 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
 
                         {activeTab === 'results' && !designResults && (
                             <div className="text-center py-12">
-                                <Train className="w-16 h-16 text-zinc-500 dark:text-zinc-500 mx-auto mb-4" />
-                                <p className="text-zinc-500 dark:text-zinc-400">Generate the bridge first to see results</p>
+                                <Train className="w-16 h-16 text-slate-500 dark:text-slate-500 mx-auto mb-4" />
+                                <p className="text-slate-500 dark:text-slate-400">Generate the bridge first to see results</p>
                             </div>
                         )}
                     </div>
 
                     {/* Footer */}
-                    <DialogFooter className="flex items-center justify-between p-4 border-t border-zinc-200 dark:border-zinc-700 sm:justify-between">
-                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <DialogFooter className="flex items-center justify-between p-4 border-t border-slate-200 dark:border-slate-700 sm:justify-between">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                             35m Span • {config.numPanels} Panels • {config.loadingStandard} Loading
                         </div>
                         <div className="flex gap-3">

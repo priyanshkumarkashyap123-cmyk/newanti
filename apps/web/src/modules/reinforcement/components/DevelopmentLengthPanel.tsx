@@ -154,7 +154,7 @@ export function DevelopmentLengthPanel() {
         <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
           <Tabs.Trigger 
             value="input"
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <Calculator className="w-4 h-4 inline mr-2" />
@@ -162,7 +162,7 @@ export function DevelopmentLengthPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="results"
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <FileText className="w-4 h-4 inline mr-2" />
@@ -170,7 +170,7 @@ export function DevelopmentLengthPanel() {
           </Tabs.Trigger>
           <Tabs.Trigger 
             value="table"
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                        data-[state=active]:text-green-600 data-[state=active]:border-green-600"
           >
             <Table className="w-4 h-4 inline mr-2" />

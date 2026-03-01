@@ -79,7 +79,7 @@ export const ProgressRing: FC<ProgressRingProps> = ({
             </svg>
             {showLabel && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-bold text-zinc-900 dark:text-white">
+                    <span className="text-xl font-bold text-slate-900 dark:text-white">
                         {Math.round(animatedProgress)}%
                     </span>
                     {label && (
@@ -127,7 +127,7 @@ export const ProgressBar: FC<ProgressBarProps> = ({
                 <div className="flex items-center justify-between text-sm">
                     {label && <span className="text-slate-500 dark:text-slate-400">{label}</span>}
                     {showValue && (
-                        <span className="text-zinc-900 dark:text-white font-medium">{Math.round(progress)}%</span>
+                        <span className="text-slate-900 dark:text-white font-medium">{Math.round(progress)}%</span>
                     )}
                 </div>
             )}
@@ -203,7 +203,7 @@ export const StatCard: FC<StatCardProps> = ({
             </div>
 
             <div className="flex items-end gap-2 mb-1">
-                <span className="text-3xl font-bold text-zinc-900 dark:text-white">{value}</span>
+                <span className="text-3xl font-bold text-slate-900 dark:text-white">{value}</span>
                 {subtitle && (
                     <span className="text-sm text-slate-500 dark:text-slate-400 mb-1">{subtitle}</span>
                 )}
@@ -442,7 +442,7 @@ export const Gauge: FC<GaugeProps> = ({
 
             {/* Value Display */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center">
-                <div className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
                     {value.toFixed(0)}
                     {unit && <span className="text-sm text-slate-500 dark:text-slate-400 ml-1">{unit}</span>}
                 </div>

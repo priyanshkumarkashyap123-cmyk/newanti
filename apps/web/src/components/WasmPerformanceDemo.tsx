@@ -216,13 +216,13 @@ export function WasmPerformanceDemo() {
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {results.map((result, idx) => (
                                 <tr key={idx} className="bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-4 py-3 text-zinc-900 dark:text-white font-mono">
+                                    <td className="px-4 py-3 text-slate-900 dark:text-white font-mono">
                                         {result.dof} DOF
                                     </td>
-                                    <td className="px-4 py-3 text-zinc-900 dark:text-white font-mono">
+                                    <td className="px-4 py-3 text-slate-900 dark:text-white font-mono">
                                         {result.time.toFixed(2)} ms
                                     </td>
-                                    <td className="px-4 py-3 text-zinc-900 dark:text-white">
+                                    <td className="px-4 py-3 text-slate-900 dark:text-white">
                                         {getPerformanceRating(result.time)}
                                     </td>
                                     <td className="px-4 py-3">
@@ -241,7 +241,7 @@ export function WasmPerformanceDemo() {
 
             {/* Info Box */}
             <div className="mt-6 p-4 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg">
-                <h3 className="text-zinc-900 dark:text-white font-semibold mb-2">💡 Why This Matters</h3>
+                <h3 className="text-slate-900 dark:text-white font-semibold mb-2">💡 Why This Matters</h3>
                 <ul className="text-slate-600 dark:text-slate-300 space-y-2 text-sm">
                     <li>✅ <strong>Zero Server Load:</strong> All computation happens in your browser</li>
                     <li>✅ <strong>Instant Results:</strong> No network latency, no queuing</li>
@@ -254,23 +254,23 @@ export function WasmPerformanceDemo() {
             {/* Technical Details */}
             {isInitialized && (
                 <div className="mt-4 p-4 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg">
-                    <h3 className="text-zinc-900 dark:text-white font-semibold mb-2">🔧 Technical Stack</h3>
+                    <h3 className="text-slate-900 dark:text-white font-semibold mb-2">🔧 Technical Stack</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p className="text-slate-500 dark:text-slate-400">Solver:</p>
-                            <p className="text-zinc-900 dark:text-white font-mono">Rust + nalgebra</p>
+                            <p className="text-slate-900 dark:text-white font-mono">Rust + nalgebra</p>
                         </div>
                         <div>
                             <p className="text-slate-500 dark:text-slate-400">Parallelism:</p>
-                            <p className="text-zinc-900 dark:text-white font-mono">Rayon (multi-core)</p>
+                            <p className="text-slate-900 dark:text-white font-mono">Rayon (multi-core)</p>
                         </div>
                         <div>
                             <p className="text-slate-500 dark:text-slate-400">Runtime:</p>
-                            <p className="text-zinc-900 dark:text-white font-mono">WebAssembly</p>
+                            <p className="text-slate-900 dark:text-white font-mono">WebAssembly</p>
                         </div>
                         <div>
                             <p className="text-slate-500 dark:text-slate-400">Graphics:</p>
-                            <p className="text-zinc-900 dark:text-white font-mono">WebGPU ready</p>
+                            <p className="text-slate-900 dark:text-white font-mono">WebGPU ready</p>
                         </div>
                     </div>
                 </div>

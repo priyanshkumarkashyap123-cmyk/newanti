@@ -37,9 +37,9 @@ export const COLORS = {
   compBarStroke: '#9a3412',   // orange-800
   stirrup: '#3b82f6',         // blue-500 — stirrups/ties
   stirrupFill: 'none',
-  dimension: '#a1a1aa',       // zinc-400 — dimension lines/text
+  dimension: '#a1a1aa',       // slate-400 — dimension lines/text
   dimTick: '#a1a1aa',
-  leader: '#71717a',          // zinc-500
+  leader: '#71717a',          // slate-500
   cover: '#22d3ee',           // cyan-400 — cover arrows
   centerline: '#6366f1',      // indigo-400
   sectionCut: '#f43f5e',      // rose-500

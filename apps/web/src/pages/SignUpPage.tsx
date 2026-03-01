@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { ClerkLoaded, ClerkLoading, SignUp } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Cpu, Rocket, Shield, Zap } from 'lucide-react';
+import { Button } from '../components/ui/button';
 
 export const SignUpPage = () => {
     useEffect(() => { document.title = 'Sign Up | BeamLab Ultimate'; }, []);
@@ -30,7 +31,7 @@ export const SignUpPage = () => {
                             <Cpu className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">BeamLab</span>
+                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">BeamLab</span>
                             <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full tracking-wide">ULTIMATE</span>
                         </div>
                     </Link>
@@ -55,7 +56,7 @@ export const SignUpPage = () => {
                                     <Zap className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-zinc-900 dark:text-white">Instant Access</h3>
+                                    <h3 className="font-semibold text-slate-900 dark:text-white">Instant Access</h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">No downloads required. Works directly in your browser.</p>
                                 </div>
                             </div>
@@ -64,7 +65,7 @@ export const SignUpPage = () => {
                                     <Shield className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-zinc-900 dark:text-white">Enterprise Security</h3>
+                                    <h3 className="font-semibold text-slate-900 dark:text-white">Enterprise Security</h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Your data is encrypted and backed up automatically.</p>
                                 </div>
                             </div>
@@ -73,7 +74,7 @@ export const SignUpPage = () => {
                                     <Rocket className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-zinc-900 dark:text-white">Always Up to Date</h3>
+                                    <h3 className="font-semibold text-slate-900 dark:text-white">Always Up to Date</h3>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Get the latest analysis codes and features instantly.</p>
                                 </div>
                             </div>
@@ -97,12 +98,12 @@ export const SignUpPage = () => {
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                             <Cpu className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
+                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
                     </div>
 
                     {/* Header */}
                     <div className="text-center lg:text-left space-y-2">
-                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">Create Account</h2>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Create Account</h2>
                         <p className="text-slate-600 dark:text-slate-400">
                             Get started with your free workspace today
                         </p>
@@ -134,7 +135,7 @@ export const SignUpPage = () => {
                                         headerTitle: 'hidden',
                                         headerSubtitle: 'hidden',
                                         formFieldLabel: 'text-slate-700 dark:text-slate-300 font-medium text-sm',
-                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-zinc-900 placeholder:text-slate-600 dark:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
                                         formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
                                         footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
                                         identityPreviewText: 'text-slate-700 dark:text-slate-300',

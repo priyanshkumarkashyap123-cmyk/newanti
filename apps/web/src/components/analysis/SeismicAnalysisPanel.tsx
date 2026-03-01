@@ -57,7 +57,7 @@ export const SeismicAnalysisPanel: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Seismic Response Spectrum</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Seismic Response Spectrum</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">IS 1893 / Eurocode 8 code-based seismic response analysis</p>
           </div>
         </div>
@@ -137,7 +137,7 @@ export const SeismicAnalysisPanel: React.FC = () => {
       <button
         onClick={runAnalysis}
         disabled={loading}
-        className={`w-full py-3 px-6 rounded-lg font-semibold text-zinc-900 dark:text-white transition-all duration-200 ${
+        className={`w-full py-3 px-6 rounded-lg font-semibold text-slate-900 dark:text-white transition-all duration-200 ${
           loading
             ? 'bg-slate-200 dark:bg-slate-700 cursor-not-allowed opacity-60'
             : 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 shadow-lg shadow-red-900/30 hover:shadow-red-800/40'
@@ -171,7 +171,7 @@ export const SeismicAnalysisPanel: React.FC = () => {
       {/* Results */}
       {result && (
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white border-b border-slate-200/50 dark:border-slate-700/50 pb-2">Analysis Results</h3>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200/50 dark:border-slate-700/50 pb-2">Analysis Results</h3>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

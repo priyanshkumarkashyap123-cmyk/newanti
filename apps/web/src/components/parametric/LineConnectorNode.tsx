@@ -22,7 +22,7 @@ const LineConnectorNode: FC<NodeProps<LineConnectorData>> = ({ data, isConnectab
         >
             {/* Header */}
             <div
-                className="px-3 py-2 text-zinc-900 dark:text-white text-sm font-medium"
+                className="px-3 py-2 text-slate-900 dark:text-white text-sm font-medium"
                 style={{ backgroundColor: NODE_COLORS.geometry }}
             >
                 {data.label || 'Line Connector'}
@@ -66,7 +66,7 @@ const LineConnectorNode: FC<NodeProps<LineConnectorData>> = ({ data, isConnectab
                         min={1}
                         max={50}
                         onChange={handleDivisionsChange}
-                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-sm rounded border border-slate-600 focus:border-purple-500 focus:outline-none"
+                        className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm rounded border border-slate-600 focus:border-purple-500 focus:outline-none"
                     />
                 </div>
             </div>

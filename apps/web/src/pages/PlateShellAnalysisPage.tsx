@@ -12,7 +12,7 @@
  * with a TypeScript fallback for simple problems.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ArrowLeft,
   Grid3X3,
@@ -288,6 +288,8 @@ export const PlateShellAnalysisPage: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activePanel, setActivePanel] = useState<'geometry' | 'material' | 'mesh' | 'loads' | 'boundary'>('geometry');
 
+  useEffect(() => { document.title = 'Plate & Shell Analysis | BeamLab Ultimate'; }, []);
+
   // Total DOF
   const totalNodes = (mesh.nx + 1) * (mesh.ny + 1);
   const totalElements = mesh.nx * mesh.ny * (mesh.type === 'triangle' ? 2 : 1);
@@ -378,14 +380,14 @@ export const PlateShellAnalysisPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4 mb-2">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -420,7 +422,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                   className={`flex-1 px-2 py-2 rounded-lg text-xs font-medium capitalize transition-colors ${
                     activePanel === panel
                       ? 'bg-blue-600 text-white'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800'
                   }`}
                 >
                   {panel}
@@ -431,7 +433,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             {/* ──── Geometry Panel ──── */}
             {activePanel === 'geometry' && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Maximize2 className="w-4 h-4 text-violet-400" />
                   Plate Geometry
                 </h3>
@@ -461,7 +463,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                           className="mt-1 accent-violet-500"
                         />
                         <div>
-                          <span className="text-sm text-zinc-900 dark:text-white group-hover:text-violet-300 transition-colors">{opt.label}</span>
+                          <span className="text-sm text-slate-900 dark:text-white group-hover:text-violet-300 transition-colors">{opt.label}</span>
                           <p className="text-xs text-slate-500">{opt.desc}</p>
                         </div>
                       </label>
@@ -474,7 +476,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             {/* ──── Material Panel ──── */}
             {activePanel === 'material' && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Layers className="w-4 h-4 text-violet-400" />
                   Material Properties
                 </h3>
@@ -483,7 +485,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                   <select
                     value={materialPreset}
                     onChange={e => setMaterialPreset(e.target.value as MaterialPreset)}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-white
+                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white
                                focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none transition-colors"
                   >
                     {Object.entries(MATERIAL_PRESETS).map(([k, v]) => (
@@ -504,13 +506,13 @@ export const PlateShellAnalysisPage: React.FC = () => {
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg">
                       <span className="text-slate-500">Flexural Rigidity</span>
-                      <p className="text-zinc-900 dark:text-white font-mono mt-1">
+                      <p className="text-slate-900 dark:text-white font-mono mt-1">
                         {(material.E * Math.pow(geometry.thickness, 3) / (12 * (1 - material.nu * material.nu)) / 1e9).toFixed(2)} ×10⁹ N·mm
                       </p>
                     </div>
                     <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg">
                       <span className="text-slate-500">t/L ratio</span>
-                      <p className="text-zinc-900 dark:text-white font-mono mt-1">
+                      <p className="text-slate-900 dark:text-white font-mono mt-1">
                         1/{Math.round(Math.min(geometry.Lx, geometry.Ly) / geometry.thickness)}
                         <span className="text-xs ml-1 text-slate-500">
                           {geometry.thickness / Math.min(geometry.Lx, geometry.Ly) < 0.05 ? '(thin)' : '(thick)'}
@@ -525,7 +527,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             {/* ──── Mesh Panel ──── */}
             {activePanel === 'mesh' && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Grid3X3 className="w-4 h-4 text-violet-400" />
                   Mesh Configuration
                 </h3>
@@ -549,7 +551,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-xs font-medium transition-colors ${
                           mesh.type === opt.value
                             ? 'bg-violet-600/20 border-violet-500/50 text-violet-300'
-                            : 'bg-slate-100 dark:bg-slate-800 border-slate-600 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:border-slate-500'
+                            : 'bg-slate-100 dark:bg-slate-800 border-slate-600 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500'
                         }`}
                       >
                         <opt.icon className="w-5 h-5" />
@@ -561,15 +563,15 @@ export const PlateShellAnalysisPage: React.FC = () => {
                 <div className="pt-3 border-t border-slate-300 dark:border-slate-700 grid grid-cols-3 gap-3 text-xs text-center">
                   <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg">
                     <span className="text-slate-500">Nodes</span>
-                    <p className="text-zinc-900 dark:text-white font-mono mt-1">{totalNodes}</p>
+                    <p className="text-slate-900 dark:text-white font-mono mt-1">{totalNodes}</p>
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg">
                     <span className="text-slate-500">Elements</span>
-                    <p className="text-zinc-900 dark:text-white font-mono mt-1">{totalElements}</p>
+                    <p className="text-slate-900 dark:text-white font-mono mt-1">{totalElements}</p>
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg">
                     <span className="text-slate-500">DOF</span>
-                    <p className="text-zinc-900 dark:text-white font-mono mt-1">{totalDOF}</p>
+                    <p className="text-slate-900 dark:text-white font-mono mt-1">{totalDOF}</p>
                   </div>
                 </div>
               </div>
@@ -578,7 +580,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             {/* ──── Loads Panel ──── */}
             {activePanel === 'loads' && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <ZapIcon className="w-4 h-4 text-violet-400" />
                   Applied Loads
                 </h3>
@@ -602,7 +604,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                           updated[idx] = {...load, type: e.target.value as LoadType};
                           setLoads(updated);
                         }}
-                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-white outline-none"
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none"
                       >
                         <option value="uniform-pressure">Uniform Pressure</option>
                         <option value="point-load">Point Load</option>
@@ -640,7 +642,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                 ))}
                 <button
                   onClick={() => setLoads([...loads, { type: 'uniform-pressure', magnitude: 5 }])}
-                  className="w-full py-2 border border-dashed border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:border-slate-500 transition-colors text-sm"
+                  className="w-full py-2 border border-dashed border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors text-sm"
                 >
                   + Add Load Case
                 </button>
@@ -650,7 +652,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             {/* ──── Boundary Panel ──── */}
             {activePanel === 'boundary' && (
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
-                <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Box className="w-4 h-4 text-violet-400" />
                   Boundary Conditions
                 </h3>
@@ -665,7 +667,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                     <select
                       value={boundary[edge.key]}
                       onChange={e => setBoundary({...boundary, [edge.key]: e.target.value as EdgeCondition})}
-                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-white outline-none"
+                      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none"
                     >
                       {edgeOptions.map(o => (
                         <option key={o.value} value={o.value}>{o.label}</option>
@@ -738,7 +740,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       resultView === tab.key
                         ? 'bg-violet-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     {tab.label}
@@ -815,7 +817,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                 {/* Nodal displacement table (top 10 max) */}
                 <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
                   <div className="px-5 py-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                       <BarChart3 className="w-4 h-4 text-violet-400" />
                       Peak Displacements (Top 10)
                     </h3>
@@ -831,7 +833,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                         a.href = url; a.download = 'plate_displacements.csv'; a.click();
                         URL.revokeObjectURL(url);
                       }}
-                      className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                      className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
                       Export All
@@ -859,8 +861,8 @@ export const PlateShellAnalysisPage: React.FC = () => {
                             return (
                               <tr key={n.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:bg-slate-800/50">
                                 <td className="px-4 py-2 text-violet-400 font-mono">{n.id}</td>
-                                <td className="px-4 py-2 text-right text-zinc-900 dark:text-white font-mono">{n.x.toFixed(1)}</td>
-                                <td className="px-4 py-2 text-right text-zinc-900 dark:text-white font-mono">{n.y.toFixed(1)}</td>
+                                <td className="px-4 py-2 text-right text-slate-900 dark:text-white font-mono">{n.x.toFixed(1)}</td>
+                                <td className="px-4 py-2 text-right text-slate-900 dark:text-white font-mono">{n.y.toFixed(1)}</td>
                                 <td className="px-4 py-2 text-right text-cyan-400 font-mono">{n.w.toFixed(4)}</td>
                                 <td className="px-4 py-2 text-right text-slate-700 dark:text-slate-300">{Ldelta < 100000 ? `L/${Ldelta}` : '-'}</td>
                               </tr>
@@ -901,7 +903,7 @@ const InputField: React.FC<{
       onChange={e => onChange(Number(e.target.value))}
       min={min}
       step={step}
-      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-white
+      className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white
                  focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none transition-colors"
     />
   </div>

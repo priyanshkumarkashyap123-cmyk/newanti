@@ -8,7 +8,7 @@
  * - Supports beam, column, and slab design
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { 
   Calculator, 
   FileText, 
@@ -146,6 +146,8 @@ export const ConcreteDesignPage: React.FC = () => {
     liveLoad: 2.5,
     supportType: 'simply-supported'
   });
+
+  useEffect(() => { document.title = 'Concrete Design | BeamLab Ultimate'; }, []);
 
   // Input validation before API call
   const validateInputs = useCallback((): string | null => {
@@ -513,7 +515,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.span}
               onChange={(e) => setBeamInput({...beamInput, span: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -522,7 +524,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.width}
               onChange={(e) => setBeamInput({...beamInput, width: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -531,7 +533,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.depth}
               onChange={(e) => setBeamInput({...beamInput, depth: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -540,7 +542,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.effectiveDepth}
               onChange={(e) => setBeamInput({...beamInput, effectiveDepth: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -549,7 +551,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.cover}
               onChange={(e) => setBeamInput({...beamInput, cover: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
         </div>
@@ -564,7 +566,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <select
               value={beamInput.fck}
               onChange={(e) => setBeamInput({...beamInput, fck: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             >
               <option value="20">M20 / 3000 psi</option>
               <option value="25">M25 / 3600 psi</option>
@@ -578,7 +580,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <select
               value={beamInput.fy}
               onChange={(e) => setBeamInput({...beamInput, fy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             >
               <option value="415">Fe 415 / Grade 60</option>
               <option value="500">Fe 500 / Grade 75</option>
@@ -598,7 +600,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.deadLoad}
               onChange={(e) => setBeamInput({...beamInput, deadLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -607,7 +609,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.liveLoad}
               onChange={(e) => setBeamInput({...beamInput, liveLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div className="col-span-2 md:col-span-1" />
@@ -617,7 +619,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.Mu}
               onChange={(e) => setBeamInput({...beamInput, Mu: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -626,7 +628,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={beamInput.Vu}
               onChange={(e) => setBeamInput({...beamInput, Vu: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
         </div>
@@ -649,7 +651,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.width}
               onChange={(e) => setColumnInput({...columnInput, width: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -658,7 +660,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.depth}
               onChange={(e) => setColumnInput({...columnInput, depth: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -667,7 +669,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.height}
               onChange={(e) => setColumnInput({...columnInput, height: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -676,7 +678,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.effectiveLength}
               onChange={(e) => setColumnInput({...columnInput, effectiveLength: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -685,7 +687,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.cover}
               onChange={(e) => setColumnInput({...columnInput, cover: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
         </div>
@@ -700,7 +702,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <select
               value={columnInput.fck}
               onChange={(e) => setColumnInput({...columnInput, fck: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             >
               <option value="20">M20 / 3000 psi</option>
               <option value="25">M25 / 3600 psi</option>
@@ -714,7 +716,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <select
               value={columnInput.fy}
               onChange={(e) => setColumnInput({...columnInput, fy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             >
               <option value="415">Fe 415 / Grade 60</option>
               <option value="500">Fe 500 / Grade 75</option>
@@ -734,7 +736,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.Pu}
               onChange={(e) => setColumnInput({...columnInput, Pu: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -743,7 +745,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.Mux}
               onChange={(e) => setColumnInput({...columnInput, Mux: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -752,7 +754,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={columnInput.Muy}
               onChange={(e) => setColumnInput({...columnInput, Muy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
         </div>
@@ -775,7 +777,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={slabInput.lx}
               onChange={(e) => setSlabInput({...slabInput, lx: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -784,7 +786,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={slabInput.ly}
               onChange={(e) => setSlabInput({...slabInput, ly: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -793,7 +795,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={slabInput.thickness}
               onChange={(e) => setSlabInput({...slabInput, thickness: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -802,7 +804,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={slabInput.cover}
               onChange={(e) => setSlabInput({...slabInput, cover: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -810,7 +812,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <select
               value={slabInput.supportType}
               onChange={(e) => setSlabInput({...slabInput, supportType: e.target.value as any})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             >
               <option value="simply-supported">Simply Supported</option>
               <option value="fixed">Fixed</option>
@@ -829,7 +831,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <select
               value={slabInput.fck}
               onChange={(e) => setSlabInput({...slabInput, fck: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             >
               <option value="20">M20 / 3000 psi</option>
               <option value="25">M25 / 3600 psi</option>
@@ -843,7 +845,7 @@ export const ConcreteDesignPage: React.FC = () => {
             <select
               value={slabInput.fy}
               onChange={(e) => setSlabInput({...slabInput, fy: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             >
               <option value="415">Fe 415 / Grade 60</option>
               <option value="500">Fe 500 / Grade 75</option>
@@ -863,7 +865,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={slabInput.deadLoad}
               onChange={(e) => setSlabInput({...slabInput, deadLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
           <div>
@@ -872,7 +874,7 @@ export const ConcreteDesignPage: React.FC = () => {
               type="number"
               value={slabInput.liveLoad}
               onChange={(e) => setSlabInput({...slabInput, liveLoad: Number(e.target.value)})}
-              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-zinc-900 dark:text-white text-sm"
+              className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
           </div>
         </div>
@@ -908,7 +910,7 @@ export const ConcreteDesignPage: React.FC = () => {
               </div>
               <div>
                 <span className="text-slate-600 dark:text-slate-400">Utilization:</span>
-                <span className="ml-2 font-semibold text-zinc-900 dark:text-white">{(results.utilization * 100).toFixed(1)}%</span>
+                <span className="ml-2 font-semibold text-slate-900 dark:text-white">{(results.utilization * 100).toFixed(1)}%</span>
               </div>
             </div>
           </div>
@@ -973,7 +975,7 @@ export const ConcreteDesignPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -1001,7 +1003,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         designCode === 'IS456'
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       IS 456:2000
@@ -1011,7 +1013,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         designCode === 'ACI318'
                           ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       ACI 318-19
@@ -1027,7 +1029,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'beam'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <Box className="w-5 h-5" />
@@ -1038,7 +1040,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'column'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <Columns className="w-5 h-5" />
@@ -1049,7 +1051,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'slab'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <Square className="w-5 h-5" />
@@ -1072,7 +1074,7 @@ export const ConcreteDesignPage: React.FC = () => {
               >
                 {analyzing ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-zinc-200 dark:border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-slate-200 dark:border-white border-t-transparent rounded-full animate-spin" />
                     Analyzing...
                   </>
                 ) : (

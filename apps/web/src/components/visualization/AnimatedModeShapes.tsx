@@ -318,7 +318,7 @@ export const AnimatedModeShapes: React.FC<{
     <div className="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-700 flex items-center justify-between">
-        <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+        <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
           <span>🎬</span>
           Animated Mode Shapes
         </h3>
@@ -333,7 +333,7 @@ export const AnimatedModeShapes: React.FC<{
           </button>
           <button
             onClick={exportImage}
-            className="px-3 py-1 bg-gray-700 text-zinc-900 dark:text-white rounded text-sm hover:bg-gray-600"
+            className="px-3 py-1 bg-gray-700 text-slate-900 dark:text-white rounded text-sm hover:bg-gray-600"
           >
             📷 Export
           </button>
@@ -388,7 +388,7 @@ export const AnimatedModeShapes: React.FC<{
             }
             className="flex-1"
           />
-          <span className="text-zinc-900 dark:text-white text-sm w-10">
+          <span className="text-slate-900 dark:text-white text-sm w-10">
             {settings.amplitudeScale}x
           </span>
         </div>
@@ -407,7 +407,7 @@ export const AnimatedModeShapes: React.FC<{
             }
             className="flex-1"
           />
-          <span className="text-zinc-900 dark:text-white text-sm w-10">{settings.speed}x</span>
+          <span className="text-slate-900 dark:text-white text-sm w-10">{settings.speed}x</span>
         </div>
 
         {/* Options */}

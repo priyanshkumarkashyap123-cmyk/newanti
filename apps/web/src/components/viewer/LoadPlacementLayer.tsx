@@ -563,9 +563,9 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
             {/* Instruction tooltip */}
             {isLoadToolActive && !hoveredMemberId && (
                 <Html position={[0, 2, 0]} center>
-                    <div className="bg-white/90 dark:bg-zinc-900/90 text-zinc-900 dark:text-white px-4 py-2 rounded-lg text-sm shadow-xl border border-zinc-200 dark:border-zinc-700">
+                    <div className="bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-white px-4 py-2 rounded-lg text-sm shadow-xl border border-slate-200 dark:border-slate-700">
                         <div className="font-medium mb-1">🎯 Load Placement Mode</div>
-                        <div className="text-zinc-500 dark:text-zinc-400 text-xs">
+                        <div className="text-slate-500 dark:text-slate-400 text-xs">
                             • Hover over a member to preview<br />
                             • Click to place point load<br />
                             • Drag to create UDL region

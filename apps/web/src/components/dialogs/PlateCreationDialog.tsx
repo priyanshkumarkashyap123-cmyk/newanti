@@ -118,12 +118,12 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                             <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
                         )}
                         <div>
-                            <div className="text-sm font-medium text-zinc-900 dark:text-white">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">
                                 {isValidSelection
                                     ? '4 nodes selected ✓'
                                     : `Select exactly 4 nodes (${selectedNodeIds.length}/4 selected)`}
                             </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                 {isValidSelection
                                     ? `Nodes: ${selectedNodeIds.join(', ')}`
                                     : 'Select nodes in counter-clockwise order in the viewport'}
@@ -133,7 +133,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
 
                     {/* Thickness */}
                     <div>
-                        <Label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                        <Label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                             Plate Thickness
                         </Label>
                         <div className="flex items-center gap-3">
@@ -145,13 +145,13 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                                 min={10}
                                 className="flex-1"
                             />
-                            <span className="text-sm text-zinc-500 dark:text-zinc-400 w-12">mm</span>
+                            <span className="text-sm text-slate-500 dark:text-slate-400 w-12">mm</span>
                         </div>
                     </div>
 
                     {/* Material */}
                     <div>
-                        <Label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                        <Label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">
                             Material
                         </Label>
                         <div className="grid grid-cols-4 gap-2">
@@ -171,9 +171,9 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
 
                     {/* Custom Material Properties */}
                     {materialType === 'custom' && (
-                        <div className="grid grid-cols-2 gap-4 p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                        <div className="grid grid-cols-2 gap-4 p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
                             <div>
-                                <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Young's Modulus (E)</Label>
+                                <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Young's Modulus (E)</Label>
                                 <div className="flex items-center gap-2">
                                     <Input
                                         type="number"
@@ -181,11 +181,11 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                                         onChange={(e) => setCustomE(parseFloat(e.target.value) * 1e6 || 200e6)}
                                         className="flex-1 text-sm"
                                     />
-                                    <span className="text-xs text-zinc-500 dark:text-zinc-400">GPa</span>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">GPa</span>
                                 </div>
                             </div>
                             <div>
-                                <Label className="block text-xs text-zinc-500 dark:text-zinc-400 mb-1">Poisson's Ratio (ν)</Label>
+                                <Label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Poisson's Ratio (ν)</Label>
                                 <Input
                                     type="number"
                                     value={customNu}
@@ -201,7 +201,7 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
 
                     {/* Material Info */}
                     {materialType !== 'custom' && (
-                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                             E = {(material.E / 1e6).toFixed(0)} GPa, ν = {material.nu}
                         </div>
                     )}
@@ -213,9 +213,9 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                                 type="checkbox"
                                 checked={applyPressure}
                                 onChange={(e) => setApplyPressure(e.target.checked)}
-                                className="w-4 h-4 rounded bg-zinc-200 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600 text-purple-600"
+                                className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-purple-600"
                             />
-                            <span className="text-sm text-zinc-600 dark:text-zinc-300">Apply Surface Pressure</span>
+                            <span className="text-sm text-slate-600 dark:text-slate-300">Apply Surface Pressure</span>
                         </label>
 
                         {applyPressure && (
@@ -226,14 +226,14 @@ export const PlateCreationDialog: FC<PlateCreationDialogProps> = ({ isOpen, onCl
                                     onChange={(e) => setPressure(parseFloat(e.target.value) || 0)}
                                     className="flex-1"
                                 />
-                                <span className="text-sm text-zinc-500 dark:text-zinc-400">kN/m²</span>
+                                <span className="text-sm text-slate-500 dark:text-slate-400">kN/m²</span>
                             </div>
                         )}
                     </div>
                 </div>
 
                 <DialogFooter className="flex items-center justify-between sm:justify-between">
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
                         Plate elements use MITC4 formulation
                     </div>
                     <div className="flex gap-2">

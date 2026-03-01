@@ -333,14 +333,14 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Selection Info */}
-                    <div className="p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg flex items-center gap-3">
+                    <div className="p-3 bg-slate-100 dark:bg-slate-800/50 rounded-lg flex items-center gap-3">
                         <Layers className="w-5 h-5 text-violet-500 dark:text-violet-400" />
                         <div className="text-sm">
-                            <span className="text-zinc-500 dark:text-zinc-400">Selected Nodes: </span>
-                            <span className="font-medium text-zinc-900 dark:text-white">
+                            <span className="text-slate-500 dark:text-slate-400">Selected Nodes: </span>
+                            <span className="font-medium text-slate-900 dark:text-white">
                                 {Array.from(selectedIds).filter((id: string) => nodes.has(id)).length}
                             </span>
-                            <span className="text-zinc-500 dark:text-zinc-400 ml-2">
+                            <span className="text-slate-500 dark:text-slate-400 ml-2">
                                 {meshType === 'plate' ? '(Need 4 for corners)' : '(Min 3 for boundary)'}
                             </span>
                         </div>
@@ -400,10 +400,10 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
 
                     {/* Triangulation Options */}
                     {meshType === 'triangulate' && (
-                        <div className="p-4 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg text-center">
+                        <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg text-center">
                             <Triangle className="w-10 h-10 text-violet-500 dark:text-violet-400 mx-auto mb-3" />
-                            <p className="text-zinc-700 dark:text-zinc-300">Select boundary nodes in order (CCW)</p>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                            <p className="text-slate-700 dark:text-slate-300">Select boundary nodes in order (CCW)</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                                 Constrained Delaunay Triangulation
                             </p>
                         </div>
@@ -414,20 +414,20 @@ export const MeshingPanel: FC<MeshingPanelProps> = ({ isOpen, onClose }) => {
                         <div className="p-3 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
                                 <Box className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Mesh Generated</span>
+                                <span className="text-sm font-medium text-slate-900 dark:text-white">Mesh Generated</span>
                             </div>
                             <div className="grid grid-cols-3 gap-4 text-sm">
                                 <div>
-                                    <span className="text-zinc-500 dark:text-zinc-400">Nodes:</span>
-                                    <span className="text-zinc-900 dark:text-white ml-2">{meshResult.nodes}</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Nodes:</span>
+                                    <span className="text-slate-900 dark:text-white ml-2">{meshResult.nodes}</span>
                                 </div>
                                 <div>
-                                    <span className="text-zinc-500 dark:text-zinc-400">Elements:</span>
-                                    <span className="text-zinc-900 dark:text-white ml-2">{meshResult.elements}</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Elements:</span>
+                                    <span className="text-slate-900 dark:text-white ml-2">{meshResult.elements}</span>
                                 </div>
                                 <div>
-                                    <span className="text-zinc-500 dark:text-zinc-400">Type:</span>
-                                    <span className="text-zinc-900 dark:text-white ml-2">{meshResult.type}</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Type:</span>
+                                    <span className="text-slate-900 dark:text-white ml-2">{meshResult.type}</span>
                                 </div>
                             </div>
                         </div>

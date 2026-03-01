@@ -64,7 +64,7 @@ const ControlButton: FC<ControlButtonProps> = ({
             ${size === 'sm' ? 'w-8 h-8' : 'w-10 h-10'}
             ${isActive
                 ? 'bg-blue-600 text-white'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
             }
             ${disabled ? 'opacity-40 cursor-not-allowed' : ''}
         `}
@@ -253,7 +253,7 @@ export const ViewportControls: FC<ViewportControlsProps> = ({
             {/* Expand/Collapse */}
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-xs flex items-center justify-center gap-1 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700"
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs flex items-center justify-center gap-1 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700"
             >
                 {isExpanded ? 'Less' : 'More'}
                 <motion.span

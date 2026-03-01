@@ -536,12 +536,12 @@ const authStoreCreator: StateCreator<AuthState> = (set, get) => ({
       return null;
     }
 
-    // Auto-refresh if expired - fire refresh but return null
-    // to signal callers that the token is not usable
+    // Auto-refresh if expired - fire refresh in background but return
+    // the near-expired token so callers can proceed. The API interceptor
+    // should handle 401 retries once the refresh completes.
     if (isTokenExpired(tokens.expiresAt)) {
       get().refreshSession();
-      // Return null for expired tokens so callers don't use stale credentials
-      return null;
+      return tokens.accessToken;
     }
 
     return tokens.accessToken;

@@ -86,7 +86,7 @@ export function ReinforcementDesignPage() {
                 value="stirrups"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
                            text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
+                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
               >
                 <ArrowLeftRight className="w-4 h-4" />
@@ -96,7 +96,7 @@ export function ReinforcementDesignPage() {
                 value="development"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
                            text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
+                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
               >
                 <Ruler className="w-4 h-4" />
@@ -106,7 +106,7 @@ export function ReinforcementDesignPage() {
                 value="lapsplice"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
                            text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white
+                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-orange-600 data-[state=active]:border-orange-600"
               >
                 <Link2 className="w-4 h-4" />
@@ -141,7 +141,7 @@ export function ReinforcementDesignPage() {
       <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-            <p>© 2025 Structural Engineering Suite. Professional use only.</p>
+            <p>© {new Date().getFullYear()} Structural Engineering Suite. Professional use only.</p>
             <div className="flex items-center gap-4">
               <span>Design Codes: ACI 318-19, EN 1992-1-1, IS 456:2000</span>
             </div>
@@ -263,17 +263,17 @@ function LapSplicePanel() {
       
       <Tabs.Root defaultValue="input" className="w-full">
         <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <Calculator className="w-4 h-4 inline mr-2" />
             Input
           </Tabs.Trigger>
-          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <FileText className="w-4 h-4 inline mr-2" />
             Results
           </Tabs.Trigger>
-          <Tabs.Trigger value="table" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-zinc-900 dark:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="table" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-purple-600 data-[state=active]:border-purple-600">
             <Table className="w-4 h-4 inline mr-2" />
             Quick Reference

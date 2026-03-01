@@ -728,7 +728,7 @@ const SummaryTab: FC<{
   }) => (
     <th
       onClick={() => toggleSort(k)}
-      className={`px-3 py-2 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider cursor-pointer hover:text-zinc-800 dark:text-zinc-200 select-none whitespace-nowrap ${className ?? ""}`}
+      className={`px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-800 dark:text-slate-200 select-none whitespace-nowrap ${className ?? ""}`}
     >
       <span className="inline-flex items-center gap-1">
         {label}
@@ -740,46 +740,46 @@ const SummaryTab: FC<{
   return (
     <div className="flex flex-col h-full">
       {/* KPI Banner */}
-      <div className="flex items-center gap-4 px-5 py-3 border-b border-zinc-300/60 dark:border-zinc-700/60 bg-zinc-100/50 dark:bg-zinc-800/50">
+      <div className="flex items-center gap-4 px-5 py-3 border-b border-slate-300/60 dark:border-slate-700/60 bg-slate-100/50 dark:bg-slate-800/50">
         <div className="flex items-center gap-2">
           <div
             className={`w-2.5 h-2.5 rounded-full ${statusColors.PASS.dot}`}
           />
-          <span className="text-sm text-zinc-700 dark:text-zinc-300">{passCount} Pass</span>
+          <span className="text-sm text-slate-700 dark:text-slate-300">{passCount} Pass</span>
         </div>
         <div className="flex items-center gap-2">
           <div
             className={`w-2.5 h-2.5 rounded-full ${statusColors.WARNING.dot}`}
           />
-          <span className="text-sm text-zinc-700 dark:text-zinc-300">{warnCount} Warning</span>
+          <span className="text-sm text-slate-700 dark:text-slate-300">{warnCount} Warning</span>
         </div>
         <div className="flex items-center gap-2">
           <div
             className={`w-2.5 h-2.5 rounded-full ${statusColors.FAIL.dot}`}
           />
-          <span className="text-sm text-zinc-700 dark:text-zinc-300">{failCount} Fail</span>
+          <span className="text-sm text-slate-700 dark:text-slate-300">{failCount} Fail</span>
         </div>
-        <div className="ml-auto flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="ml-auto flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <span>{rows.length} members</span>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-3 px-5 py-2 border-b border-zinc-300/40 dark:border-zinc-700/40 bg-zinc-100/30 dark:bg-zinc-800/30">
+      <div className="flex items-center gap-3 px-5 py-2 border-b border-slate-300/40 dark:border-slate-700/40 bg-slate-100/30 dark:bg-slate-800/30">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
           <input
             type="text"
             placeholder="Search members..."
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full pl-8 pr-3 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as any)}
-          className="text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md px-2 py-1.5 text-zinc-700 dark:text-zinc-300"
+          className="text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md px-2 py-1.5 text-slate-700 dark:text-slate-300"
         >
           <option value="all">All Statuses</option>
           <option value="PASS">Pass Only</option>
@@ -791,10 +791,10 @@ const SummaryTab: FC<{
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-zinc-100 dark:bg-zinc-800 z-10">
+          <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
             <tr>
               <SortHeader label="Member" k="id" />
-              <th className="px-3 py-2 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Type
               </th>
               <SortHeader label="Length (m)" k="length" />
@@ -806,15 +806,15 @@ const SummaryTab: FC<{
                 k="utilization"
                 className="min-w-[160px]"
               />
-              <th className="px-3 py-2 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Governing
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {sorted.map((row) => {
               const sc = statusColors[row.status];
               const isSelected = selectedId === row.id;
@@ -822,29 +822,29 @@ const SummaryTab: FC<{
                 <tr
                   key={row.id}
                   onClick={() => onSelectMember(row.id)}
-                  className={`cursor-pointer transition-colors ${isSelected ? "bg-blue-100/30 dark:bg-blue-900/30 border-l-2 border-l-blue-500" : "hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60"}`}
+                  className={`cursor-pointer transition-colors ${isSelected ? "bg-blue-100/30 dark:bg-blue-900/30 border-l-2 border-l-blue-500" : "hover:bg-slate-100/60 dark:hover:bg-slate-800/60"}`}
                 >
-                  <td className="px-3 py-2.5 font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                  <td className="px-3 py-2.5 font-mono font-medium text-slate-800 dark:text-slate-200">
                     {row.label}
                   </td>
-                  <td className="px-3 py-2.5 text-zinc-500 dark:text-zinc-400 capitalize">
+                  <td className="px-3 py-2.5 text-slate-500 dark:text-slate-400 capitalize">
                     {row.materialType}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
                     {row.length.toFixed(2)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
                     {fmtForce(row.maxAxial)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
                     {fmtForce(row.maxShearY)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-slate-700 dark:text-slate-300">
                     {fmtForce(row.maxMomentZ)}
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${utilizationColor(row.utilization)}`}
                           style={{
@@ -873,7 +873,7 @@ const SummaryTab: FC<{
                       {row.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-zinc-500 dark:text-zinc-400 max-w-[120px] truncate">
+                  <td className="px-3 py-2.5 text-xs text-slate-500 dark:text-slate-400 max-w-[120px] truncate">
                     {row.governing}
                   </td>
                 </tr>
@@ -882,7 +882,7 @@ const SummaryTab: FC<{
           </tbody>
         </table>
         {sorted.length === 0 && (
-          <div className="py-12 text-center text-zinc-500 text-sm">
+          <div className="py-12 text-center text-slate-500 text-sm">
             No members match the filters.
           </div>
         )}
@@ -935,13 +935,13 @@ const RCBeamTab: FC<{
 
   if (concreteRows.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-zinc-500">
+      <div className="flex items-center justify-center h-full text-slate-500">
         <div className="text-center space-y-3 max-w-xs">
-          <div className="w-16 h-16 mx-auto rounded-full bg-zinc-100/60 dark:bg-zinc-800/60 flex items-center justify-center">
-            <Building2 className="w-8 h-8 text-zinc-500 opacity-50" />
+          <div className="w-16 h-16 mx-auto rounded-full bg-slate-100/60 dark:bg-slate-800/60 flex items-center justify-center">
+            <Building2 className="w-8 h-8 text-slate-500 opacity-50" />
           </div>
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">No Concrete Members Found</p>
-          <p className="text-xs text-zinc-500 leading-relaxed">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No Concrete Members Found</p>
+          <p className="text-xs text-slate-500 leading-relaxed">
             This model does not contain any members with concrete material properties.
             Assign a concrete material type (e.g., M20, M25) to one or more members to enable RC beam design.
           </p>
@@ -953,8 +953,8 @@ const RCBeamTab: FC<{
   return (
     <div className="flex h-full">
       {/* Member Sidebar */}
-      <div className="w-56 border-r border-zinc-300/60 dark:border-zinc-700/60 bg-zinc-100/40 dark:bg-zinc-800/40 flex flex-col">
-        <div className="px-3 py-2 border-b border-zinc-300/40 dark:border-zinc-700/40 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="w-56 border-r border-slate-300/60 dark:border-slate-700/60 bg-slate-100/40 dark:bg-slate-800/40 flex flex-col">
+        <div className="px-3 py-2 border-b border-slate-300/40 dark:border-slate-700/40 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           Concrete Members ({concreteRows.length})
         </div>
         <div className="flex-1 overflow-auto scroll-smooth">
@@ -962,14 +962,14 @@ const RCBeamTab: FC<{
             <button
               key={r.id}
               onClick={() => onSelectMember(r.id)}
-              className={`w-full text-left px-3 py-2 text-sm border-b border-zinc-200/60 dark:border-zinc-800/60 transition-colors ${
+              className={`w-full text-left px-3 py-2 text-sm border-b border-slate-200/60 dark:border-slate-800/60 transition-colors ${
                 r.id === activeMember?.id
                   ? "bg-blue-900/30 text-blue-300 border-l-2 border-l-blue-400"
-                  : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/40 dark:hover:bg-zinc-700/40 border-l-2 border-l-transparent"
+                  : "text-slate-700 dark:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-700/40 border-l-2 border-l-transparent"
               }`}
             >
               <div className="font-mono font-medium truncate">{r.label}</div>
-              <div className="text-xs text-zinc-500 truncate">
+              <div className="text-xs text-slate-500 truncate">
                 M = {Math.abs(r.maxMomentZ).toFixed(1)} kN·m, V ={" "}
                 {Math.abs(r.maxShearY).toFixed(1)} kN
               </div>
@@ -985,10 +985,10 @@ const RCBeamTab: FC<{
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                   RC Beam Design — Member {activeMember.label}
                 </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   L = {activeMember.length.toFixed(2)} m
                 </p>
               </div>
@@ -996,7 +996,7 @@ const RCBeamTab: FC<{
                 <select
                   value={designCode}
                   onChange={(e) => setDesignCode(e.target.value as any)}
-                  className="text-sm bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 text-zinc-700 dark:text-zinc-300"
+                  className="text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300"
                 >
                   <option value="IS456">IS 456:2000</option>
                   <option value="ACI318">ACI 318-19</option>
@@ -1005,13 +1005,13 @@ const RCBeamTab: FC<{
             </div>
 
             {/* Input Parameters */}
-            <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
-              <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
+              <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                 Material & Section Parameters
               </h4>
               <div className="grid grid-cols-5 gap-4">
                 <div>
-                  <label className="text-xs text-zinc-500">
+                  <label className="text-xs text-slate-500">
                     f'c / fck (MPa)
                   </label>
                   <input
@@ -1020,22 +1020,22 @@ const RCBeamTab: FC<{
                     min={15}
                     max={100}
                     onChange={(e) => setFck(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded text-zinc-800 dark:text-zinc-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500">fy (MPa)</label>
+                  <label className="text-xs text-slate-500">fy (MPa)</label>
                   <input
                     type="number"
                     value={fy}
                     min={250}
                     max={600}
                     onChange={(e) => setFy(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded text-zinc-800 dark:text-zinc-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500">
+                  <label className="text-xs text-slate-500">
                     Clear cover (mm)
                   </label>
                   <input
@@ -1044,22 +1044,22 @@ const RCBeamTab: FC<{
                     min={20}
                     max={75}
                     onChange={(e) => setCover(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded text-zinc-800 dark:text-zinc-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500">Width b (mm)</label>
+                  <label className="text-xs text-slate-500">Width b (mm)</label>
                   <input
                     type="number"
                     value={beamB}
                     min={150}
                     max={1000}
                     onChange={(e) => setBeamB(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded text-zinc-800 dark:text-zinc-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-zinc-500">
+                  <label className="text-xs text-slate-500">
                     Total Depth D (mm)
                   </label>
                   <input
@@ -1068,40 +1068,40 @@ const RCBeamTab: FC<{
                     min={200}
                     max={2000}
                     onChange={(e) => setBeamD(+e.target.value)}
-                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded text-zinc-800 dark:text-zinc-200"
+                    className="w-full mt-1 px-2 py-1.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded text-slate-800 dark:text-slate-200"
                   />
                 </div>
               </div>
             </div>
 
             {/* Applied Forces */}
-            <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
-              <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
+              <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                 Applied Forces (Factored)
               </h4>
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-zinc-900 rounded-lg p-3 text-center">
-                  <div className="text-xs text-zinc-500 mb-1">Mu (Moment)</div>
+                <div className="bg-white dark:bg-slate-900 rounded-lg p-3 text-center">
+                  <div className="text-xs text-slate-500 mb-1">Mu (Moment)</div>
                   <div className="text-xl font-bold font-mono text-purple-400">
                     {Math.abs(activeMember.maxMomentZ).toFixed(2)}
                   </div>
-                  <div className="text-xs text-zinc-500">kN·m</div>
+                  <div className="text-xs text-slate-500">kN·m</div>
                 </div>
-                <div className="bg-white dark:bg-zinc-900 rounded-lg p-3 text-center">
-                  <div className="text-xs text-zinc-500 mb-1">Vu (Shear)</div>
+                <div className="bg-white dark:bg-slate-900 rounded-lg p-3 text-center">
+                  <div className="text-xs text-slate-500 mb-1">Vu (Shear)</div>
                   <div className="text-xl font-bold font-mono text-blue-400">
                     {Math.abs(activeMember.maxShearY).toFixed(2)}
                   </div>
-                  <div className="text-xs text-zinc-500">kN</div>
+                  <div className="text-xs text-slate-500">kN</div>
                 </div>
-                <div className="bg-white dark:bg-zinc-900 rounded-lg p-3 text-center">
-                  <div className="text-xs text-zinc-500 mb-1">Nu (Axial)</div>
+                <div className="bg-white dark:bg-slate-900 rounded-lg p-3 text-center">
+                  <div className="text-xs text-slate-500 mb-1">Nu (Axial)</div>
                   <div
                     className={`text-xl font-bold font-mono ${activeMember.maxAxial >= 0 ? "text-green-400" : "text-red-400"}`}
                   >
                     {activeMember.maxAxial.toFixed(2)}
                   </div>
-                  <div className="text-xs text-zinc-500">kN</div>
+                  <div className="text-xs text-slate-500">kN</div>
                 </div>
               </div>
             </div>
@@ -1109,8 +1109,8 @@ const RCBeamTab: FC<{
             {rcResult && (
               <>
                 {/* Flexure Design Results */}
-                <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
-                  <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
+                  <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                     Flexure Design
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-bold ${
@@ -1125,15 +1125,15 @@ const RCBeamTab: FC<{
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           A<sub>s,required</sub>
                         </span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.flexure.As_required.toFixed(1)} mm²
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           A<sub>s,provided</sub>
                         </span>
                         <span className="font-mono text-blue-400 font-bold">
@@ -1141,48 +1141,48 @@ const RCBeamTab: FC<{
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           A<sub>s,min</sub>
                         </span>
-                        <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                        <span className="font-mono text-slate-700 dark:text-slate-300">
                           {rcResult.flexure.As_min.toFixed(1)} mm²
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           A<sub>s,max</sub>
                         </span>
-                        <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                        <span className="font-mono text-slate-700 dark:text-slate-300">
                           {rcResult.flexure.As_max.toFixed(1)} mm²
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">Reinforcement</span>
+                        <span className="text-slate-500 dark:text-slate-400">Reinforcement</span>
                         <span className="font-mono text-emerald-400 font-bold">
                           {rcResult.flexure.numBars} – Ø
                           {rcResult.flexure.barSize}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">Steel ratio ρ</span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="text-slate-500 dark:text-slate-400">Steel ratio ρ</span>
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {(rcResult.flexure.rho * 100).toFixed(3)} %
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">N.A. depth c</span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="text-slate-500 dark:text-slate-400">N.A. depth c</span>
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.flexure.c.toFixed(1)} mm
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">Comp. block a</span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="text-slate-500 dark:text-slate-400">Comp. block a</span>
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.flexure.a.toFixed(1)} mm
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-sm border-t border-zinc-300/40 dark:border-zinc-700/40 pt-2">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                      <div className="flex items-center justify-between text-sm border-t border-slate-300/40 dark:border-slate-700/40 pt-2">
+                        <span className="text-slate-500 dark:text-slate-400">
                           φM<sub>n</sub> (Capacity)
                         </span>
                         <span className="font-mono text-emerald-400 font-bold">
@@ -1190,7 +1190,7 @@ const RCBeamTab: FC<{
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           M<sub>u</sub> / φM<sub>n</sub>
                         </span>
                         <span
@@ -1207,7 +1207,7 @@ const RCBeamTab: FC<{
                       </div>
                     </div>
                     {/* Cross-section SVG */}
-                    <div className="flex flex-col items-center justify-center bg-zinc-50/50 dark:bg-zinc-900/50 rounded-lg p-2">
+                    <div className="flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-900/50 rounded-lg p-2">
                       <RCBeamCrossSection
                         b={beamB}
                         d={beamD}
@@ -1219,7 +1219,7 @@ const RCBeamTab: FC<{
                         stirrupDia={parseInt(rcResult.shear.stirrupSize) || 8}
                         topBars={{ count: 2, diameter: 12 }}
                       />
-                      <div className="text-xs text-zinc-500 mt-1 text-center">
+                      <div className="text-xs text-slate-500 mt-1 text-center">
                         Cross-Section Detail
                       </div>
                     </div>
@@ -1227,8 +1227,8 @@ const RCBeamTab: FC<{
                 </div>
 
                 {/* Shear Design Results */}
-                <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
-                  <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
+                  <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                     Shear Design
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-bold ${
@@ -1244,68 +1244,68 @@ const RCBeamTab: FC<{
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           V<sub>u</sub> (Applied)
                         </span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.shear.Vu.toFixed(2)} kN
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           φV<sub>c</sub> (Concrete)
                         </span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.shear.phi_Vc.toFixed(2)} kN
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-slate-500 dark:text-slate-400">
                           V<sub>s,required</sub>
                         </span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.shear.Vs_required.toFixed(2)} kN
                         </span>
                       </div>
-                      <div className="flex items-center justify-between text-sm border-t border-zinc-300/40 dark:border-zinc-700/40 pt-2">
-                        <span className="text-zinc-500 dark:text-zinc-400">Stirrup Size</span>
+                      <div className="flex items-center justify-between text-sm border-t border-slate-300/40 dark:border-slate-700/40 pt-2">
+                        <span className="text-slate-500 dark:text-slate-400">Stirrup Size</span>
                         <span className="font-mono text-blue-400 font-bold">
                           Ø{rcResult.shear.stirrupSize}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">Spacing</span>
+                        <span className="text-slate-500 dark:text-slate-400">Spacing</span>
                         <span className="font-mono text-blue-400 font-bold">
                           {rcResult.shear.spacing} mm c/c
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">Max Spacing</span>
-                        <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                        <span className="text-slate-500 dark:text-slate-400">Max Spacing</span>
+                        <span className="font-mono text-slate-700 dark:text-slate-300">
                           {rcResult.shear.maxSpacing} mm
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-zinc-500 dark:text-zinc-400">No. of Legs</span>
-                        <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                        <span className="text-slate-500 dark:text-slate-400">No. of Legs</span>
+                        <span className="font-mono text-slate-800 dark:text-slate-200">
                           {rcResult.shear.numLegs}
                         </span>
                       </div>
                     </div>
                     {/* Shear capacity visual */}
-                    <div className="bg-white/50 dark:bg-zinc-900/50 rounded-lg p-4 flex flex-col justify-center">
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">
+                    <div className="bg-white/50 dark:bg-slate-900/50 rounded-lg p-4 flex flex-col justify-center">
+                      <div className="text-xs text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">
                         Shear Capacity Breakdown
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                             <span>Concrete (φVc)</span>
                             <span className="font-mono">
                               {rcResult.shear.phi_Vc.toFixed(1)} kN
                             </span>
                           </div>
-                          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-cyan-500 rounded-full"
                               style={{
@@ -1315,14 +1315,14 @@ const RCBeamTab: FC<{
                           </div>
                         </div>
                         <div>
-                          <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                             <span>Steel (φVs)</span>
                             <span className="font-mono">
                               {(rcResult.shear.Vs_required * 0.75).toFixed(1)}{" "}
                               kN
                             </span>
                           </div>
-                          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-blue-500 rounded-full"
                               style={{
@@ -1331,14 +1331,14 @@ const RCBeamTab: FC<{
                             />
                           </div>
                         </div>
-                        <div className="border-t border-zinc-300/60 dark:border-zinc-700/60 pt-2">
-                          <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-1">
+                        <div className="border-t border-slate-300/60 dark:border-slate-700/60 pt-2">
+                          <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
                             <span>Demand (Vu)</span>
                             <span className="font-mono text-amber-400">
                               {rcResult.shear.Vu.toFixed(1)} kN
                             </span>
                           </div>
-                          <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-amber-500/60 rounded-full"
                               style={{ width: "100%" }}
@@ -1357,23 +1357,23 @@ const RCBeamTab: FC<{
                   </h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-xs text-zinc-500 mb-1">
+                      <div className="text-xs text-slate-500 mb-1">
                         IS 456 Notation
                       </div>
-                      <div className="font-mono text-zinc-900 dark:text-zinc-100 bg-zinc-50/60 dark:bg-zinc-900/60 rounded px-3 py-2">
+                      <div className="font-mono text-slate-900 dark:text-slate-100 bg-slate-50/60 dark:bg-slate-900/60 rounded px-3 py-2">
                         {rcResult.summaryIS}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-zinc-500 mb-1">
+                      <div className="text-xs text-slate-500 mb-1">
                         ACI Notation
                       </div>
-                      <div className="font-mono text-zinc-900 dark:text-zinc-100 bg-zinc-50/60 dark:bg-zinc-900/60 rounded px-3 py-2">
+                      <div className="font-mono text-slate-900 dark:text-slate-100 bg-slate-50/60 dark:bg-slate-900/60 rounded px-3 py-2">
                         {rcResult.summaryACI}
                       </div>
                     </div>
                   </div>
-                  <div className="mt-3 text-sm font-mono text-emerald-400 bg-zinc-50/60 dark:bg-zinc-900/60 rounded px-3 py-2">
+                  <div className="mt-3 text-sm font-mono text-emerald-400 bg-slate-50/60 dark:bg-slate-900/60 rounded px-3 py-2">
                     {rcResult.reinforcementString}
                   </div>
                 </div>
@@ -1405,7 +1405,7 @@ const SteelDesignTab: FC<{
 
   if (steelRows.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-zinc-500">
+      <div className="flex items-center justify-center h-full text-slate-500">
         <div className="text-center space-y-2">
           <Columns3 className="w-12 h-12 mx-auto opacity-30" />
           <p>No steel members found in the model.</p>
@@ -1420,8 +1420,8 @@ const SteelDesignTab: FC<{
   return (
     <div className="flex h-full">
       {/* Member Sidebar */}
-      <div className="w-56 border-r border-zinc-300/60 dark:border-zinc-700/60 bg-zinc-100/40 dark:bg-zinc-800/40 flex flex-col">
-        <div className="px-3 py-2 border-b border-zinc-300/40 dark:border-zinc-700/40 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="w-56 border-r border-slate-300/60 dark:border-slate-700/60 bg-slate-100/40 dark:bg-slate-800/40 flex flex-col">
+        <div className="px-3 py-2 border-b border-slate-300/40 dark:border-slate-700/40 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
           Steel Members ({steelRows.length})
         </div>
         <div className="flex-1 overflow-auto">
@@ -1431,10 +1431,10 @@ const SteelDesignTab: FC<{
               <button
                 key={r.id}
                 onClick={() => onSelectMember(r.id)}
-                className={`w-full text-left px-3 py-2 text-sm border-b border-zinc-200/60 dark:border-zinc-800/60 transition-colors ${
+                className={`w-full text-left px-3 py-2 text-sm border-b border-slate-200/60 dark:border-slate-800/60 transition-colors ${
                   r.id === activeMember?.id
                     ? "bg-blue-900/30 text-blue-300 border-l-2 border-l-blue-400"
-                    : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/40 dark:hover:bg-zinc-700/40 border-l-2 border-l-transparent"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-700/40 border-l-2 border-l-transparent"
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -1443,7 +1443,7 @@ const SteelDesignTab: FC<{
                     {(r.utilization * 100).toFixed(0)}%
                   </span>
                 </div>
-                <div className="mt-0.5 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div className="mt-0.5 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${utilizationColor(r.utilization)}`}
                     style={{ width: `${Math.min(r.utilization * 100, 100)}%` }}
@@ -1461,10 +1461,10 @@ const SteelDesignTab: FC<{
           <>
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                   Steel Design — Member {activeMember.label}
                 </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   L = {activeMember.length.toFixed(2)} m •{" "}
                   {activeMember.sectionType}
                 </p>
@@ -1510,13 +1510,13 @@ const SteelDesignTab: FC<{
               ].map((f) => (
                 <div
                   key={f.label}
-                  className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-3 text-center border border-zinc-300/40 dark:border-zinc-700/40"
+                  className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-3 text-center border border-slate-300/40 dark:border-slate-700/40"
                 >
-                  <div className="text-xs text-zinc-500">{f.label}</div>
+                  <div className="text-xs text-slate-500">{f.label}</div>
                   <div className={`text-xl font-bold font-mono ${f.color}`}>
                     {fmtForce(f.value)}
                   </div>
-                  <div className="text-xs text-zinc-500">
+                  <div className="text-xs text-slate-500">
                     kN{f.label.includes("Moment") ? "·m" : ""}
                   </div>
                 </div>
@@ -1524,8 +1524,8 @@ const SteelDesignTab: FC<{
             </div>
 
             {/* Design Checks */}
-            <div className="bg-zinc-100/60 dark:bg-zinc-800/60 rounded-xl p-4 border border-zinc-300/40 dark:border-zinc-700/40">
-              <h4 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
+            <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
+              <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                 Design Checks
               </h4>
               <div className="space-y-2">
@@ -1534,7 +1534,7 @@ const SteelDesignTab: FC<{
                   return (
                     <div
                       key={i}
-                      className="bg-white dark:bg-zinc-900 rounded-lg p-3 border-l-[3px]"
+                      className="bg-white dark:bg-slate-900 rounded-lg p-3 border-l-[3px]"
                       style={{
                         borderLeftColor:
                           check.status === "PASS"
@@ -1546,7 +1546,7 @@ const SteelDesignTab: FC<{
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
                             {check.name}
                           </span>
                           <span
@@ -1556,7 +1556,7 @@ const SteelDesignTab: FC<{
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-28 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                          <div className="w-28 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${utilizationColor(check.utilization)}`}
                               style={{
@@ -1571,11 +1571,11 @@ const SteelDesignTab: FC<{
                           </span>
                         </div>
                       </div>
-                      <div className="text-xs text-zinc-500 mt-1">
+                      <div className="text-xs text-slate-500 mt-1">
                         {check.description}
                       </div>
                       {check.formula && (
-                        <div className="text-xs text-zinc-600 mt-0.5 font-mono">
+                        <div className="text-xs text-slate-600 mt-0.5 font-mono">
                           {check.formula}
                         </div>
                       )}
@@ -1592,7 +1592,7 @@ const SteelDesignTab: FC<{
                   <h4 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2">
                     Recommendations
                   </h4>
-                  <ul className="text-sm text-zinc-700 dark:text-zinc-300 space-y-1">
+                  <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
                     {activeMember.designResult.recommendations.map((rec, i) => (
                       <li key={i} className="flex items-start gap-2">
                         <span className="text-blue-400 mt-0.5">•</span>
@@ -1640,143 +1640,143 @@ const SectionPropertiesTab: FC<{
       case "L-ANGLE":
         return <Plus className="w-4 h-4 text-orange-400" />;
       default:
-        return <Box className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />;
+        return <Box className="w-4 h-4 text-slate-500 dark:text-slate-400" />;
     }
   };
 
   return (
     <div className="flex-1 overflow-auto">
       <table className="w-full text-sm">
-        <thead className="sticky top-0 bg-zinc-100 dark:bg-zinc-800 z-10">
+        <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
           <tr>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider w-8"></th>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-8"></th>
+            <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Member
             </th>
-            <th className="px-3 py-2.5 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Section
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Length (m)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               A (m²)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               I<sub>z</sub> (m⁴)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               I<sub>y</sub> (m⁴)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               J (m⁴)
             </th>
-            <th className="px-3 py-2.5 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               E (kN/m²)
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {memberList.map(({ id, m, length }) => {
             const isExpanded = expandedId === id;
             return (
               <Fragment key={id}>
                 <tr
                   onClick={() => setExpandedId(isExpanded ? null : id)}
-                  className="cursor-pointer hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60 transition-colors"
+                  className="cursor-pointer hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-colors"
                 >
-                  <td className="px-3 py-2.5 text-zinc-500">
+                  <td className="px-3 py-2.5 text-slate-500">
                     {isExpanded ? (
                       <ChevronDown className="w-4 h-4" />
                     ) : (
                       <ChevronRight className="w-4 h-4" />
                     )}
                   </td>
-                  <td className="px-3 py-2.5 font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                  <td className="px-3 py-2.5 font-mono font-medium text-slate-800 dark:text-slate-200">
                     M{id}
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
                       {sectionIcon(m.sectionType)}
-                      <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-[160px]" title={m.sectionType ?? "Default"}>
+                      <span className="text-slate-700 dark:text-slate-300 truncate max-w-[160px]" title={m.sectionType ?? "Default"}>
                         {m.sectionType ?? "Default"}
                       </span>
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {length.toFixed(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {(m.A ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {(m.I ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {(m.Iy ?? m.I ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {(m.J ?? 0).toExponential(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {(m.E ?? 200e6).toExponential(2)}
                   </td>
                 </tr>
                 {/* Expanded detail row */}
                 {isExpanded && (
-                  <tr className="bg-zinc-100/40 dark:bg-zinc-800/40">
+                  <tr className="bg-slate-100/40 dark:bg-slate-800/40">
                     <td colSpan={9} className="px-6 py-4">
                       <div className="grid grid-cols-3 gap-6">
                         {/* Geometric Properties */}
                         <div>
-                          <h5 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2.5">
+                          <h5 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
                             Geometric Properties
                           </h5>
                           <div className="space-y-1.5 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">Area (A)</span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="text-slate-500">Area (A)</span>
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {(m.A ?? 0).toExponential(4)} m²
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">
+                              <span className="text-slate-500">
                                 I<sub>z</sub> (Major)
                               </span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {(m.I ?? 0).toExponential(4)} m⁴
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">
+                              <span className="text-slate-500">
                                 I<sub>y</sub> (Minor)
                               </span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {(m.Iy ?? m.I ?? 0).toExponential(4)} m⁴
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">J (Torsion)</span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="text-slate-500">J (Torsion)</span>
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {(m.J ?? 0).toExponential(4)} m⁴
                               </span>
                             </div>
                             {m.A && m.I ? (
                               <>
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">
+                                  <span className="text-slate-500">
                                     r<sub>z</sub> (Gyration)
                                   </span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {(Math.sqrt(m.I / m.A) * 1000).toFixed(1)}{" "}
                                     mm
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">
+                                  <span className="text-slate-500">
                                     Z<sub>z</sub> (Elastic)
                                   </span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {(() => {
                                       const d = m.dimensions;
                                       const depth =
@@ -1801,86 +1801,86 @@ const SectionPropertiesTab: FC<{
 
                         {/* Section Dimensions */}
                         <div>
-                          <h5 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2.5">
+                          <h5 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
                             Section Dimensions
                           </h5>
                           {m.dimensions ? (
                             <div className="space-y-1.5 text-sm">
                               {m.dimensions.height != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">Height</span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="text-slate-500">Height</span>
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.height} mm
                                   </span>
                                 </div>
                               )}
                               {m.dimensions.width != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">Width</span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="text-slate-500">Width</span>
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.width} mm
                                   </span>
                                 </div>
                               )}
                               {m.dimensions.webThickness != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">
+                                  <span className="text-slate-500">
                                     Web t<sub>w</sub>
                                   </span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.webThickness} mm
                                   </span>
                                 </div>
                               )}
                               {m.dimensions.flangeThickness != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">
+                                  <span className="text-slate-500">
                                     Flange t<sub>f</sub>
                                   </span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.flangeThickness} mm
                                   </span>
                                 </div>
                               )}
                               {m.dimensions.rectWidth != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">Width b</span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="text-slate-500">Width b</span>
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.rectWidth} mm
                                   </span>
                                 </div>
                               )}
                               {m.dimensions.rectHeight != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">Depth d</span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="text-slate-500">Depth d</span>
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.rectHeight} mm
                                   </span>
                                 </div>
                               )}
                               {m.dimensions.diameter != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">
+                                  <span className="text-slate-500">
                                     Diameter
                                   </span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.diameter} mm
                                   </span>
                                 </div>
                               )}
                               {m.dimensions.thickness != null && (
                                 <div className="flex justify-between">
-                                  <span className="text-zinc-500">
+                                  <span className="text-slate-500">
                                     Thickness
                                   </span>
-                                  <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                  <span className="font-mono text-slate-800 dark:text-slate-200">
                                     {m.dimensions.thickness} mm
                                   </span>
                                 </div>
                               )}
                             </div>
                           ) : (
-                            <p className="text-xs text-zinc-500 italic">
+                            <p className="text-xs text-slate-500 italic">
                               No explicit dimensions set — using computed A, I.
                             </p>
                           )}
@@ -1888,45 +1888,45 @@ const SectionPropertiesTab: FC<{
 
                         {/* Material Properties */}
                         <div>
-                          <h5 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2.5">
+                          <h5 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
                             Material Properties
                           </h5>
                           <div className="space-y-1.5 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">Material</span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200 capitalize">
+                              <span className="text-slate-500">Material</span>
+                              <span className="font-mono text-slate-800 dark:text-slate-200 capitalize">
                                 {(m.E ?? 200e6) < 50e6 ? "concrete" : "steel"}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">E (Elastic)</span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="text-slate-500">E (Elastic)</span>
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {((m.E ?? 200e6) / 1e6).toFixed(0)} GPa
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">G (Shear)</span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="text-slate-500">G (Shear)</span>
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {((m.G ?? 77e6) / 1e6).toFixed(0)} GPa
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">ρ (Density)</span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="text-slate-500">ρ (Density)</span>
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {m.rho ?? 7850} kg/m³
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-zinc-500">
+                              <span className="text-slate-500">
                                 β (Rotation)
                               </span>
-                              <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                              <span className="font-mono text-slate-800 dark:text-slate-200">
                                 {m.betaAngle ?? 0}°
                               </span>
                             </div>
                             {m.releases && (
                               <div className="flex justify-between">
-                                <span className="text-zinc-500">Releases</span>
+                                <span className="text-slate-500">Releases</span>
                                 <span className="font-mono text-amber-400 text-xs">
                                   {[
                                     m.releases.startMoment && "Mz-start",
@@ -2010,19 +2010,19 @@ const DeflectionCheckTab: FC<{
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-4 px-5 py-3 border-b border-zinc-300/60 dark:border-zinc-700/60 bg-zinc-100/50 dark:bg-zinc-800/50">
+      <div className="flex items-center gap-4 px-5 py-3 border-b border-slate-300/60 dark:border-slate-700/60 bg-slate-100/50 dark:bg-slate-800/50">
         <div className="flex items-center gap-2">
           <Ruler className="w-4 h-4 text-blue-400" />
-          <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+          <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
             Deflection Compliance
           </span>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <label className="text-xs text-zinc-500 dark:text-zinc-400">Limit: L /</label>
+          <label className="text-xs text-slate-500 dark:text-slate-400">Limit: L /</label>
           <select
             value={limitRatio}
             onChange={(e) => setLimitRatio(+e.target.value)}
-            className="text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 text-zinc-700 dark:text-zinc-300"
+            className="text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300"
           >
             <option value={180}>180 (floor, live)</option>
             <option value={240}>240 (floor, total)</option>
@@ -2039,59 +2039,59 @@ const DeflectionCheckTab: FC<{
       </div>
       <div className="flex-1 overflow-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-zinc-100 dark:bg-zinc-800 z-10">
+          <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
             <tr>
-              <th className="px-3 py-2 text-left text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+              <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                 Member
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                 Span (m)
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                 Max Defl (mm)
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                 Allowable (mm)
               </th>
-              <th className="px-3 py-2 text-right text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+              <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                 Actual L/δ
               </th>
-              <th className="px-3 py-2 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase min-w-[140px]">
+              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase min-w-[140px]">
                 Ratio
               </th>
-              <th className="px-3 py-2 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+              <th className="px-3 py-2 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
                 Status
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {deflectionData.map((d) => {
               const sc = statusColors[d.status];
               return (
                 <tr
                   key={d.id}
-                  className="hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60 transition-colors"
+                  className="hover:bg-slate-100/60 dark:hover:bg-slate-800/60 transition-colors"
                 >
-                  <td className="px-3 py-2.5 font-mono text-zinc-800 dark:text-zinc-200">
+                  <td className="px-3 py-2.5 font-mono text-slate-800 dark:text-slate-200">
                     {d.label}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {d.length.toFixed(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {d.deflMM.toFixed(3)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {d.allowableMM.toFixed(2)}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-right text-zinc-700 dark:text-zinc-300">
+                  <td className="px-3 py-2.5 font-mono text-right text-slate-700 dark:text-slate-300">
                     {d.actualSpanRatio === Infinity
                       ? "∞"
                       : `L/${d.actualSpanRatio.toFixed(0)}`}
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${utilizationColor(d.ratio)}`}
                           style={{ width: `${Math.min(d.ratio * 100, 100)}%` }}
@@ -2367,7 +2367,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           </DialogHeader>
           <div className="text-center py-4">
             <AlertTriangle className="w-12 h-12 mx-auto text-amber-400 mb-4" />
-            <p className="text-zinc-700 dark:text-zinc-300 mb-2">No analysis results available.</p>
+            <p className="text-slate-700 dark:text-slate-300 mb-2">No analysis results available.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>Close</Button>
@@ -2384,20 +2384,20 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
           <DialogTitle>Post-Processing Design Studio</DialogTitle>
         </DialogHeader>
         {/* Title Bar */}
-        <div className="flex items-center justify-between px-5 py-3 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-300 dark:border-zinc-700/60 shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700/60 shrink-0">
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-blue-400" />
-            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
               Post-Processing Design Studio
             </h2>
-            <span className="text-xs text-zinc-500 bg-zinc-200 dark:bg-zinc-700/50 px-2 py-0.5 rounded-full">
+            <span className="text-xs text-slate-500 bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-full">
               {designRows.length} members
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-lg text-zinc-700 dark:text-zinc-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg text-slate-700 dark:text-slate-200 transition-colors"
             >
               <Download className="w-4 h-4" />
               Export Report
@@ -2406,7 +2406,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
         </div>
 
       {/* Tab Bar */}
-      <div className="flex items-center gap-1 px-5 py-1.5 bg-zinc-100/60 dark:bg-zinc-800/60 border-b border-zinc-300/40 dark:border-zinc-700/40 shrink-0 overflow-x-auto">
+      <div className="flex items-center gap-1 px-5 py-1.5 bg-slate-100/60 dark:bg-slate-800/60 border-b border-slate-300/40 dark:border-slate-700/40 shrink-0 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -2414,7 +2414,7 @@ export const PostProcessingDesignStudio: FC<DesignStudioProps> = ({
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white shadow"
-                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
+                : "text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
             }`}
           >
             {tab.icon}

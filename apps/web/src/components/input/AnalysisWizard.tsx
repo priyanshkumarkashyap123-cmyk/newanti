@@ -807,7 +807,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <div>
-                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Analysis Setup Wizard</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Analysis Setup Wizard</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                         Step {state.currentStep + 1} of {steps.length}: {currentStep.title}
                     </p>
@@ -833,7 +833,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                                     idx < state.currentStep 
                                         ? 'text-cyan-400 cursor-pointer' 
                                         : idx === state.currentStep 
-                                            ? 'text-zinc-900 dark:text-white' 
+                                            ? 'text-slate-900 dark:text-white' 
                                             : 'text-slate-500 dark:text-slate-400 cursor-default'
                                 }`}
                             >

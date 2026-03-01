@@ -207,10 +207,10 @@ const IssueCard: React.FC<{
     <div className={`bg-slate-100 dark:bg-slate-800 p-3 rounded border-l-4 ${getSeverityBorderColor(issue.severity)} shadow-sm`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-zinc-800 dark:text-zinc-100">{issue.message}</p>
+          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{issue.message}</p>
           
           {issue.affected_elements && issue.affected_elements.length > 0 && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               <span className="font-medium">Affected:</span>{' '}
               {issue.affected_elements.slice(0, 5).join(', ')}
               {issue.affected_elements.length > 5 && ` (+${issue.affected_elements.length - 5} more)`}

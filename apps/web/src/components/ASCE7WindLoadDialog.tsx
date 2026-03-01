@@ -119,6 +119,7 @@ const ASCE7WindLoadDialog: React.FC = () => {
     const [activeTab, setActiveTab] = useState('parameters');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<ASCE7WindResult | null>(null);
+    const [calcStatus, setCalcStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const [params, setParams] = useState<ASCE7WindParams>({
         city: 'Custom',
@@ -206,7 +207,7 @@ const ASCE7WindLoadDialog: React.FC = () => {
 
         } catch (error: unknown) {
             console.error(error);
-            alert(`Calculation Failed: ${getErrorMessage(error, 'Unknown error')}`);
+            setCalcStatus({ type: 'error', text: `Calculation Failed: ${getErrorMessage(error, 'Unknown error')}` });
         } finally {
             setLoading(false);
         }
@@ -215,8 +216,11 @@ const ASCE7WindLoadDialog: React.FC = () => {
     const handleApply = () => {
         // Apply logic here
 // console.log('Applying wind loads:', result);
-        alert("Wind Loads generated (see console). Nodal application pending integration.");
-        setModal('asce7WindDialog', false);
+        setCalcStatus({ type: 'success', text: 'Wind Loads generated. Nodal application pending integration.' });
+        setTimeout(() => {
+            setCalcStatus(null);
+            setModal('asce7WindDialog', false);
+        }, 1500);
     };
 
     return (
@@ -494,6 +498,14 @@ const ASCE7WindLoadDialog: React.FC = () => {
                         )}
                     </TabsContent>
                 </Tabs>
+
+                {calcStatus && (
+                    <div className={`p-3 rounded-lg text-sm font-medium ${
+                        calcStatus.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    }`}>
+                        {calcStatus.type === 'success' ? '✓' : '✗'} {calcStatus.text}
+                    </div>
+                )}
 
                 <DialogFooter className="gap-2">
                     <Button variant="outline" onClick={() => setModal('asce7WindDialog', false)}>

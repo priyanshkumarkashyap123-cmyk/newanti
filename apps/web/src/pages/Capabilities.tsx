@@ -6,9 +6,10 @@
  * clickable navigation to specific app sections.
  */
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+import { Button } from '../components/ui/button';
 import {
     Sparkles,
     Brain,
@@ -345,8 +346,8 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
             className="group relative cursor-pointer"
         >
             <div className="
-                bg-white dark:bg-zinc-900/50 backdrop-blur-md
-                border border-zinc-200 dark:border-zinc-800 hover:border-blue-500/50
+                bg-white dark:bg-slate-900/50 backdrop-blur-md
+                border border-slate-200 dark:border-slate-800 hover:border-blue-500/50
                 rounded-2xl p-6
                 transition-all duration-300
                 hover:shadow-lg hover:shadow-blue-500/10
@@ -361,7 +362,7 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
                             Available
                         </span>
                     ) : (
-                        <span className="px-2 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-xs font-medium">
+                        <span className="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-medium">
                             Coming Soon
                         </span>
                     )}
@@ -381,17 +382,17 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 pr-20">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 pr-20">
                     {feature.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed flex-grow">
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed flex-grow">
                     {feature.description}
                 </p>
 
                 {/* Launch Button */}
-                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800/50">
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800/50">
                     <div className={`
                         flex items-center justify-between
                         ${feature.color}
@@ -419,6 +420,8 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
 // ============================================
 
 export const Capabilities: FC = () => {
+    useEffect(() => { document.title = 'Capabilities - BeamLab'; }, []);
+
     const [activeCategory, setActiveCategory] = useState<Category>('all');
     const navigate = useNavigate();
 
@@ -428,30 +431,31 @@ export const Capabilities: FC = () => {
         : FEATURES.filter(f => f.category === activeCategory);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950">
+        <div className="min-h-screen bg-white dark:bg-slate-950">
             {/* Navigation Header */}
-            <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/80 backdrop-blur-md">
+            <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                             <Zap className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
+                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <Link to="/pricing" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">
+                        <Link to="/pricing" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">
                             Pricing
                         </Link>
-                        <Link to="/help" className="text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm font-medium transition-colors">
+                        <Link to="/help" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">
                             Help
                         </Link>
-                        <button
+                        <Button
+                            variant="default"
+                            size="sm"
                             onClick={() => navigate('/app')}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors"
                         >
                             <Play className="w-4 h-4" />
                             Open App
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </header>
@@ -466,18 +470,18 @@ export const Capabilities: FC = () => {
                     >
                         <Link
                             to="/"
-                            className="inline-flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white text-sm mb-6 transition-colors"
+                            className="inline-flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm mb-6 transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
                             Back to Home
                         </Link>
-                        <h2 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-4">
+                        <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
                             Engineering{' '}
                             <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                                 Superpowers
                             </span>
                         </h2>
-                        <p className="text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto">
+                        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
                             Click any feature to jump directly into the tool.
                             Powered by AI and built for speed.
                         </p>
@@ -491,20 +495,15 @@ export const Capabilities: FC = () => {
                         className="flex flex-wrap justify-center gap-2 mb-12"
                     >
                         {CATEGORIES.map((cat) => (
-                            <button
+                            <Button
                                 key={cat.id}
+                                variant={activeCategory === cat.id ? 'secondary' : 'ghost'}
+                                size="sm"
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`
-                                    px-5 py-2.5 rounded-full text-sm font-medium
-                                    transition-all duration-300
-                                    ${activeCategory === cat.id
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                                        : 'bg-zinc-100 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
-                                    }
-                                `}
+                                className="rounded-full"
                             >
                                 {cat.label}
-                            </button>
+                            </Button>
                         ))}
                     </motion.div>
 
@@ -534,38 +533,25 @@ export const Capabilities: FC = () => {
                         transition={{ delay: 0.5 }}
                         className="text-center mt-16"
                     >
-                        <p className="text-zinc-500 dark:text-zinc-400 mb-4">Ready to supercharge your workflow?</p>
+                        <p className="text-slate-500 dark:text-slate-400 mb-4">Ready to supercharge your workflow?</p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button
+                            <Button
+                                variant="premium"
                                 onClick={() => navigate('/app')}
-                                className="
-                                    px-8 py-3 
-                                    bg-gradient-to-r from-blue-600 to-purple-600
-                                    hover:from-blue-500 hover:to-purple-500
-                                    text-white font-semibold rounded-full
-                                    shadow-lg shadow-blue-600/30
-                                    transition-all duration-300
-                                    hover:scale-105
-                                    flex items-center justify-center gap-2
-                                "
+                                className="rounded-full"
                             >
                                 <Play className="w-5 h-5" />
                                 Start Modeling Now
-                            </button>
-                            <Link
-                                to="/pricing"
-                                className="
-                                    px-8 py-3 
-                                    bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700
-                                    text-zinc-900 dark:text-white font-semibold rounded-full
-                                    border border-zinc-300 dark:border-zinc-700
-                                    transition-all duration-300
-                                    flex items-center justify-center gap-2
-                                "
-                            >
-                                View Pricing
-                                <ExternalLink className="w-4 h-4" />
-                            </Link>
+                            </Button>
+                            <Button asChild variant="outline" className="rounded-full">
+                                <Link
+                                    to="/pricing"
+                                    className="flex items-center justify-center gap-2"
+                                >
+                                    View Pricing
+                                    <ExternalLink className="w-4 h-4" />
+                                </Link>
+                            </Button>
                         </div>
                     </motion.div>
                 </div>

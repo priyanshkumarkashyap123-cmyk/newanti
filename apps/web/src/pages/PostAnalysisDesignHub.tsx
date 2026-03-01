@@ -345,7 +345,7 @@ const UtilizationBar = memo<{ ratio: number; wide?: boolean }>(({ ratio, wide })
       className={`h-full rounded-full ${utilizationBg(ratio)}`}
     />
     {wide && (
-      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-zinc-900 dark:text-white mix-blend-difference">
+      <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-900 dark:text-white mix-blend-difference">
         {(ratio * 100).toFixed(1)}%
       </span>
     )}
@@ -358,10 +358,10 @@ const StatCard = memo<{ label: string; value: string | number; icon: React.React
   ({ label, value, icon, color }) => (
     <div className={`bg-gradient-to-br ${color} rounded-xl p-4 border border-white/10`}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-zinc-900/70 dark:text-white/70 text-sm">{label}</span>
-        <div className="text-zinc-900/50 dark:text-white/50">{icon}</div>
+        <span className="text-slate-900/70 dark:text-white/70 text-sm">{label}</span>
+        <div className="text-slate-900/50 dark:text-white/50">{icon}</div>
       </div>
-      <div className="text-2xl font-bold text-zinc-900 dark:text-white">{value}</div>
+      <div className="text-2xl font-bold text-slate-900 dark:text-white">{value}</div>
     </div>
   )
 );
@@ -511,7 +511,7 @@ const DesignParametersPanel: FC<{
 
   return (
     <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-      <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
         <SlidersHorizontal className="w-4 h-4 text-blue-400" />
         Design Parameters
       </h3>
@@ -706,7 +706,7 @@ const SectionAssignmentPanel: FC<{
     <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between text-sm font-semibold text-zinc-900 dark:text-white"
+        className="w-full flex items-center justify-between text-sm font-semibold text-slate-900 dark:text-white"
       >
         <span className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-emerald-400" />
@@ -772,7 +772,7 @@ const MemberDetailPanel: FC<{
   >
     <div className="sticky top-0 bg-slate-50 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 px-6 py-4 flex items-center justify-between z-10">
       <div>
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{result.memberName}</h3>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{result.memberName}</h3>
         <p className="text-xs text-slate-600 dark:text-slate-400">{result.code} — {result.section}</p>
       </div>
       <button onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
@@ -803,7 +803,7 @@ const MemberDetailPanel: FC<{
 
       {/* Member Forces */}
       <div>
-        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Design Forces</h4>
+        <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Design Forces</h4>
         <div className="grid grid-cols-2 gap-2">
           {[
             ['Axial (N)', result.forces.N, 'kN'],
@@ -823,7 +823,7 @@ const MemberDetailPanel: FC<{
       {/* Capacities */}
       {result.capacities && (
         <div>
-          <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">Member Capacities</h4>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Member Capacities</h4>
           <div className="grid grid-cols-2 gap-2">
             {[
               ['Tension', result.capacities.tension, 'kN'],
@@ -842,7 +842,7 @@ const MemberDetailPanel: FC<{
 
       {/* Clause-by-Clause Checks */}
       <div>
-        <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
+        <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">
           Clause-by-Clause Checks ({result.checks.length})
         </h4>
         <div className="space-y-2">
@@ -925,7 +925,7 @@ const ConnectionDesignTab: FC<{
         {/* Left: Parameters */}
         <div className="space-y-4">
           <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <Wrench className="w-4 h-4 text-blue-400" />
               Connection Parameters
             </h3>
@@ -960,7 +960,7 @@ const ConnectionDesignTab: FC<{
 
         {/* Middle: Support Selection */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
             Support Reactions
           </h3>
@@ -995,7 +995,7 @@ const ConnectionDesignTab: FC<{
 
         {/* Right: Result */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-4 h-4 text-emerald-400" />
             Design Result
           </h3>
@@ -1113,7 +1113,7 @@ const FoundationDesignTab: FC<{
         {/* Parameters */}
         <div className="space-y-4">
           <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-blue-400" />
               Foundation Parameters
             </h3>
@@ -1164,7 +1164,7 @@ const FoundationDesignTab: FC<{
 
         {/* Support Selection */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
             Select Support Node
           </h3>
@@ -1194,7 +1194,7 @@ const FoundationDesignTab: FC<{
 
         {/* Result */}
         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Shield className="w-4 h-4 text-emerald-400" />
             Foundation Design
           </h3>
@@ -1625,7 +1625,7 @@ const PostAnalysisDesignHub: FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-zinc-900 dark:text-white">
+    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
       <header className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
         <div className="max-w-[1600px] mx-auto px-6 py-3">
@@ -1637,7 +1637,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="flex items-center gap-3">
                 <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7" />
                 <div>
-                  <h1 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <h1 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     Design Hub
                     <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-xs font-bold">POST-ANALYSIS</span>
                   </h1>
@@ -1711,7 +1711,7 @@ const PostAnalysisDesignHub: FC = () => {
 
             {/* Design Codes Available */}
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Available Design Codes</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Available Design Codes</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 {DESIGN_CODES.map(code => (
                   <button
@@ -1743,38 +1743,38 @@ const PostAnalysisDesignHub: FC = () => {
 
             {/* Quick Actions */}
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <button onClick={() => { selectAll(true); setActiveTab('steel'); }}
                   className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Columns className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design All Steel</h3>
-                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Check all members</p>
+                  <p className="text-sm text-slate-900/70 dark:text-white/70">Check all members</p>
                 </button>
                 <button onClick={() => setActiveTab('connections')}
                   className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Wrench className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design Connections</h3>
-                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Bolted & welded joints</p>
+                  <p className="text-sm text-slate-900/70 dark:text-white/70">Bolted & welded joints</p>
                 </button>
                 <button onClick={() => setActiveTab('foundations')}
                   className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Building2 className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design Foundations</h3>
-                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Footings from reactions</p>
+                  <p className="text-sm text-slate-900/70 dark:text-white/70">Footings from reactions</p>
                 </button>
                 <button onClick={() => setActiveTab('optimization')}
                   className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Zap className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Optimize Sections</h3>
-                  <p className="text-sm text-zinc-900/70 dark:text-white/70">Find lightest passing</p>
+                  <p className="text-sm text-slate-900/70 dark:text-white/70">Find lightest passing</p>
                 </button>
               </div>
             </div>
 
             {/* Member Table */}
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">All Members</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">All Members</h2>
               {hasAnalysis && memberRows.length === 0 ? (
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8">
                   <div className="space-y-3 animate-pulse">
@@ -1861,7 +1861,7 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Steel Member Design</h2>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Steel Member Design</h2>
                     <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
                       {STEEL_CODES.find(c => c.id === params.steelCode)?.name}
                     </span>
@@ -1900,7 +1900,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <DesignParametersPanel params={params} onChange={setParams} material="concrete" />
 
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-blue-400" />
                     Concrete Section
                   </h3>
@@ -1924,7 +1924,7 @@ const PostAnalysisDesignHub: FC = () => {
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Quick Design</h3>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Design</h3>
                   <div className="space-y-2">
                     <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
                       <span className="text-sm text-slate-700 dark:text-slate-200">RC Beam Designer</span>
@@ -1948,7 +1948,7 @@ const PostAnalysisDesignHub: FC = () => {
 
               <div className="lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Concrete Member Design</h2>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Concrete Member Design</h2>
                   <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
                     {CONCRETE_CODES.find(c => c.id === params.concreteCode)?.name}
                   </span>
@@ -1995,7 +1995,7 @@ const PostAnalysisDesignHub: FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Zap className="w-8 h-8 text-amber-400 mb-3" />
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Auto-Optimize</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Auto-Optimize</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Automatically find the lightest section that passes all design checks for each member.
                   Iterates through the section database from lightest to heaviest.
@@ -2018,7 +2018,7 @@ const PostAnalysisDesignHub: FC = () => {
 
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Target className="w-8 h-8 text-blue-400 mb-3" />
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Target Utilization</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Target Utilization</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
                   Set a target utilization ratio. The optimizer picks the lightest section
                   whose utilization ≤ this target. E.g. 0.85 = 85% of section capacity used.
@@ -2056,7 +2056,7 @@ const PostAnalysisDesignHub: FC = () => {
 
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Award className="w-8 h-8 text-emerald-400 mb-3" />
-                <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Weight Summary</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Weight Summary</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Total structural steel weight based on current section assignments.
                 </p>
@@ -2070,7 +2070,7 @@ const PostAnalysisDesignHub: FC = () => {
             {/* Optimization results table */}
             {designResults.size > 0 && (
               <div>
-                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Design Results After Optimization</h2>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Design Results After Optimization</h2>
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                   <MemberDesignTable
                     rows={memberRows}
@@ -2089,7 +2089,7 @@ const PostAnalysisDesignHub: FC = () => {
         {activeTab === 'report' && (
           <div className="space-y-6">
             <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Design Report
               </h2>
@@ -2101,7 +2101,7 @@ const PostAnalysisDesignHub: FC = () => {
                   {/* Report Header */}
                   <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-6 font-mono text-sm">
                     <div className="text-center mb-6">
-                      <h3 className="text-lg font-bold text-zinc-900 dark:text-white">STRUCTURAL DESIGN REPORT</h3>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">STRUCTURAL DESIGN REPORT</h3>
                       <p className="text-slate-600 dark:text-slate-400">Generated by BeamLab Ultimate</p>
                       <p className="text-slate-500 text-xs">{new Date().toLocaleString()}</p>
                     </div>

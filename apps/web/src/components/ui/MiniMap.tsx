@@ -83,7 +83,7 @@ export const MiniMap: FC<MiniMapProps> = ({
                 onClick={() => setIsExpanded(true)}
                 className={`
                     w-10 h-10 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700 
-                    flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors
+                    flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors
                     ${className}
                 `}
             >
@@ -106,7 +106,7 @@ export const MiniMap: FC<MiniMapProps> = ({
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400">MINIMAP</span>
                 <button
                     onClick={() => setIsExpanded(false)}
-                    className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                    className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
                     <Minimize2 className="w-3 h-3" />
                 </button>
@@ -224,7 +224,7 @@ export const ViewportStatusBar: FC<ViewportStatusBarProps> = ({
         {/* Mode */}
         <div className="flex items-center gap-2">
             <span className="text-slate-500 dark:text-slate-400">Mode:</span>
-            <span className="text-zinc-900 dark:text-white font-medium">{mode}</span>
+            <span className="text-slate-900 dark:text-white font-medium">{mode}</span>
         </div>
 
         <div className="w-px h-4 bg-slate-200 dark:bg-slate-700" />
@@ -307,7 +307,7 @@ export const FloatingToolbar: FC<FloatingToolbarProps> = ({
                     w-9 h-9 rounded-lg flex items-center justify-center transition-colors
                     ${item.isActive
                         ? 'bg-blue-600 text-white'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                     }
                 `}
             >

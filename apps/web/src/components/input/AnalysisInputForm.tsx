@@ -290,7 +290,7 @@ export const NumberInput: FC<NumberInputProps> = ({
                     <span className="group relative">
                         <HelpCircle size={12} className="text-slate-500 dark:text-slate-400" />
                         <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 
-                                       bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-xs rounded whitespace-nowrap
+                                       bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-xs rounded whitespace-nowrap
                                        opacity-0 group-hover:opacity-100 transition-opacity z-10">
                             {hint}
                         </span>
@@ -681,7 +681,7 @@ export const AnalysisProgress: FC<AnalysisProgressProps> = ({
     return (
         <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-zinc-900 dark:text-white">Analysis Progress</h4>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Analysis Progress</h4>
                 {onCancel && stage !== 'complete' && stage !== 'error' && (
                     <button
                         onClick={onCancel}

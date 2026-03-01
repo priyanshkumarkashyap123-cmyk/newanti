@@ -146,7 +146,8 @@ export class RazorpayBillingService {
       .update(body)
       .digest("hex");
 
-    return expectedSignature === signature;
+    if (expectedSignature.length !== signature.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(expectedSignature, 'hex'), Buffer.from(signature, 'hex'));
   }
 
   /**
@@ -164,7 +165,8 @@ export class RazorpayBillingService {
       .update(body)
       .digest("hex");
 
-    return expectedSignature === signature;
+    if (expectedSignature.length !== signature.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(expectedSignature, 'hex'), Buffer.from(signature, 'hex'));
   }
 
   /**
@@ -419,8 +421,7 @@ razorpayRouter.post(
       });
     } catch (error) {
       console.error("Create subscription/order error:", error);
-      const message = error instanceof Error ? error.message : "Unknown error";
-      res.status(500).json({ success: false, message });
+      res.status(500).json({ success: false, message: "Failed to create order. Please try again later." });
     }
   },
 );
@@ -532,8 +533,7 @@ razorpayRouter.post(
       res.json(result);
     } catch (error) {
       console.error("Webhook error:", error);
-      const message = error instanceof Error ? error.message : "Unknown error";
-      res.status(400).json({ message });
+      res.status(400).json({ message: "Webhook processing failed" });
     }
   },
 );

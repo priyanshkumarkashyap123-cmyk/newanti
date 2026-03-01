@@ -56,7 +56,7 @@ const AuditEntryRow: React.FC<{ entry: AuditEntry }> = ({ entry }) => {
             case 'user_override': return 'text-orange-400';
             case 'export': return 'text-pink-400';
             case 'session': return 'text-slate-500 dark:text-slate-400';
-            default: return 'text-zinc-500 dark:text-zinc-400';
+            default: return 'text-slate-500 dark:text-slate-400';
         }
     };
 
@@ -69,10 +69,10 @@ const AuditEntryRow: React.FC<{ entry: AuditEntry }> = ({ entry }) => {
     };
 
     return (
-        <div className="border border-zinc-300 dark:border-zinc-700 rounded-lg overflow-hidden mb-2">
+        <div className="border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden mb-2">
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="w-full px-4 py-3 flex items-center gap-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-750 transition-colors"
+                className="w-full px-4 py-3 flex items-center gap-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors"
             >
                 <span className="text-xl">{getTypeIcon()}</span>
                 <div className="flex-1 text-left">
@@ -84,11 +84,11 @@ const AuditEntryRow: React.FC<{ entry: AuditEntry }> = ({ entry }) => {
                             <span className="text-xs bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded">AI</span>
                         )}
                     </div>
-                    <div className="text-zinc-900 dark:text-white text-sm">{entry.action}</div>
+                    <div className="text-slate-900 dark:text-white text-sm">{entry.action}</div>
                 </div>
-                <span className="text-zinc-500 dark:text-zinc-500 text-xs">{formatTime(entry.timestamp)}</span>
+                <span className="text-slate-500 dark:text-slate-500 text-xs">{formatTime(entry.timestamp)}</span>
                 <svg
-                    className={`w-5 h-5 text-zinc-500 dark:text-zinc-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-slate-500 dark:text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -96,21 +96,21 @@ const AuditEntryRow: React.FC<{ entry: AuditEntry }> = ({ entry }) => {
             </button>
 
             {expanded && (
-                <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-850 border-t border-zinc-300 dark:border-zinc-700 text-sm">
+                <div className="px-4 py-3 bg-slate-50 dark:bg-slate-850 border-t border-slate-300 dark:border-slate-700 text-sm">
                     <div className="mb-2">
-                        <span className="text-zinc-500 dark:text-zinc-400">Details: </span>
-                        <span className="text-zinc-700 dark:text-zinc-300">{entry.details}</span>
+                        <span className="text-slate-500 dark:text-slate-400">Details: </span>
+                        <span className="text-slate-700 dark:text-slate-300">{entry.details}</span>
                     </div>
                     {entry.confidence !== undefined && (
                         <div className="mb-2">
-                            <span className="text-zinc-500 dark:text-zinc-400">Confidence: </span>
-                            <span className="text-zinc-900 dark:text-white">{(entry.confidence * 100).toFixed(0)}%</span>
+                            <span className="text-slate-500 dark:text-slate-400">Confidence: </span>
+                            <span className="text-slate-900 dark:text-white">{(entry.confidence * 100).toFixed(0)}%</span>
                         </div>
                     )}
                     {entry.metadata && (
                         <div className="mt-2">
-                            <span className="text-zinc-500 dark:text-zinc-400 block mb-1">Metadata:</span>
-                            <pre className="bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 p-2 rounded text-xs overflow-x-auto">
+                            <span className="text-slate-500 dark:text-slate-400 block mb-1">Metadata:</span>
+                            <pre className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 p-2 rounded text-xs overflow-x-auto">
                                 {JSON.stringify(entry.metadata, null, 2)}
                             </pre>
                         </div>
@@ -174,17 +174,17 @@ export const AuditTrailViewer: React.FC<AuditTrailViewerProps> = ({
     // ==========================================
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-300 dark:border-zinc-700 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-300 dark:border-zinc-700 flex items-center justify-between">
+            <div className="px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                     </svg>
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">Audit Trail</h3>
-                    <span className="text-zinc-500 dark:text-zinc-400 text-sm">({entries.length} entries)</span>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">Audit Trail</h3>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">({entries.length} entries)</span>
                 </div>
                 <button
                     onClick={() => setShowExportDialog(true)}
@@ -195,27 +195,27 @@ export const AuditTrailViewer: React.FC<AuditTrailViewerProps> = ({
             </div>
 
             {/* Stats Bar */}
-            <div className="px-4 py-2 bg-zinc-50 dark:bg-zinc-850 border-b border-zinc-300 dark:border-zinc-700 flex gap-4 text-xs">
+            <div className="px-4 py-2 bg-slate-50 dark:bg-slate-850 border-b border-slate-300 dark:border-slate-700 flex gap-4 text-xs">
                 <div>
-                    <span className="text-zinc-500 dark:text-zinc-400">Total: </span>
-                    <span className="text-zinc-900 dark:text-white">{stats.total}</span>
+                    <span className="text-slate-500 dark:text-slate-400">Total: </span>
+                    <span className="text-slate-900 dark:text-white">{stats.total}</span>
                 </div>
                 <div>
-                    <span className="text-zinc-500 dark:text-zinc-400">AI Decisions: </span>
+                    <span className="text-slate-500 dark:text-slate-400">AI Decisions: </span>
                     <span className="text-cyan-400">{stats.aiGenerated}</span>
                 </div>
                 <div>
-                    <span className="text-zinc-500 dark:text-zinc-400">Overrides: </span>
+                    <span className="text-slate-500 dark:text-slate-400">Overrides: </span>
                     <span className="text-orange-400">{stats.userOverrides}</span>
                 </div>
             </div>
 
             {/* Filter */}
-            <div className="px-4 py-2 border-b border-zinc-300 dark:border-zinc-700">
+            <div className="px-4 py-2 border-b border-slate-300 dark:border-slate-700">
                 <select
                     value={typeFilter}
                     onChange={e => setTypeFilter(e.target.value as any)}
-                    className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white"
+                    className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white"
                 >
                     {typeOptions.map(opt => (
                         <option key={opt} value={opt}>
@@ -228,7 +228,7 @@ export const AuditTrailViewer: React.FC<AuditTrailViewerProps> = ({
             {/* Entries List */}
             <div className="p-4 max-h-96 overflow-y-auto">
                 {entries.length === 0 ? (
-                    <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                         <p>No audit entries yet</p>
                         <p className="text-sm mt-2">Actions will be logged as you work</p>
                     </div>
@@ -249,7 +249,7 @@ export const AuditTrailViewer: React.FC<AuditTrailViewerProps> = ({
 
                     <div className="space-y-4">
                         <div>
-                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm block mb-1">Engineer Name</Label>
+                            <Label className="text-slate-500 dark:text-slate-400 text-sm block mb-1">Engineer Name</Label>
                             <Input
                                 type="text"
                                 value={engineerName}
@@ -259,7 +259,7 @@ export const AuditTrailViewer: React.FC<AuditTrailViewerProps> = ({
                         </div>
 
                         <div>
-                            <Label className="text-zinc-500 dark:text-zinc-400 text-sm block mb-1">License Number</Label>
+                            <Label className="text-slate-500 dark:text-slate-400 text-sm block mb-1">License Number</Label>
                             <Input
                                 type="text"
                                 value={licenseNumber}

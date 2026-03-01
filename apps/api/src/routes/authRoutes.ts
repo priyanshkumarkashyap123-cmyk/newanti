@@ -206,22 +206,42 @@ const getProviderErrorDetails = (error: unknown): unknown => {
 };
 
 /**
+ * Shape expected by sanitizeUser — avoids `any` while staying
+ * compatible with both Mongoose documents and plain objects.
+ */
+interface SanitizableUser {
+  _id?: { toString(): string };
+  id?: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  emailVerified?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  role?: string;
+  subscriptionTier?: string;
+  company?: string;
+  phone?: string;
+}
+
+/**
  * Sanitize user object for response (remove sensitive fields)
  */
-const sanitizeUser = (user: any) => {
+const sanitizeUser = (user: SanitizableUser) => {
   return {
-    id: user._id?.toString() || user.id,
+    id: user._id?.toString() ?? user.id ?? null,
     email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    avatarUrl: user.avatarUrl,
-    emailVerified: user.emailVerified,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    role: user.role,
-    subscriptionTier: user.subscriptionTier,
-    company: user.company,
-    phone: user.phone,
+    firstName: user.firstName ?? null,
+    lastName: user.lastName ?? null,
+    avatarUrl: user.avatarUrl ?? null,
+    emailVerified: user.emailVerified ?? null,
+    createdAt: user.createdAt ?? null,
+    updatedAt: user.updatedAt ?? null,
+    role: user.role ?? null,
+    subscriptionTier: user.subscriptionTier ?? null,
+    company: user.company ?? null,
+    phone: user.phone ?? null,
   };
 };
 
@@ -817,17 +837,29 @@ router.post("/refresh", async (req: Request, res: Response) => {
       role: user.role,
     });
 
-    // Optionally rotate refresh token
+    // Atomically rotate refresh token — the `token: refreshToken` condition
+    // ensures only the first concurrent request wins the race.
     const newRefreshToken = generateRefreshToken({ id: user._id.toString() });
-    await RefreshTokenModel.updateOne(
-      { _id: storedToken._id },
+    const rotationResult = await RefreshTokenModel.findOneAndUpdate(
+      { _id: storedToken._id, token: refreshToken },
       {
         $set: {
           token: newRefreshToken,
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
       },
+      { new: true },
     );
+
+    if (!rotationResult) {
+      // Another request already consumed this token — potential replay attack.
+      // Revoke all tokens for this user as a precaution.
+      await RefreshTokenModel.deleteMany({ userId: decoded.userId });
+      return res.status(401).json({
+        success: false,
+        message: "Refresh token already used — all sessions revoked",
+      });
+    }
 
     res.json({
       success: true,

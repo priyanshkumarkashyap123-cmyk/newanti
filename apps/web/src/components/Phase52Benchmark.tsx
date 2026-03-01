@@ -67,7 +67,7 @@ export const Phase52Benchmark: React.FC = () => {
     return (
         <div className="bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-6 space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Activity className="w-6 h-6 text-purple-400" />
                     Phase 52: Industry Parity Verification
                 </h3>

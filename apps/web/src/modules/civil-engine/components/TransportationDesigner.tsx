@@ -249,7 +249,7 @@ function HighwayDesignPanel() {
                                 }
                             );
                         }}
-                        className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-900"
+                        className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-900"
                     >
                         📄 Export Design Report
                     </button>
@@ -300,13 +300,13 @@ function PavementDesignPanel() {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setParams({ ...params, type: 'flexible' })}
-                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'flexible' ? 'bg-gray-100 dark:bg-gray-800 text-zinc-900 dark:text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200'}`}
+                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'flexible' ? 'bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200'}`}
                             >
                                 Flexible (Bitumen)
                             </button>
                             <button
                                 onClick={() => setParams({ ...params, type: 'rigid' })}
-                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'rigid' ? 'bg-gray-100 dark:bg-gray-800 text-zinc-900 dark:text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200'}`}
+                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'rigid' ? 'bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200'}`}
                             >
                                 Rigid (Concrete)
                             </button>
@@ -401,7 +401,7 @@ function PavementDesignPanel() {
                                     'bg-yellow-100', // Sub-base
                                 ];
                                 // Simple color cycling
-                                const color = layer.material.includes('BC') || layer.material.includes('PQC') ? 'bg-gray-100 dark:bg-gray-800 text-zinc-900 dark:text-white' :
+                                const color = layer.material.includes('BC') || layer.material.includes('PQC') ? 'bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white' :
                                     layer.material.includes('DBM') || layer.material.includes('DLC') ? 'bg-gray-600 text-white' :
                                         layer.material.includes('WMM') ? 'bg-gray-400 text-white' :
                                             'bg-amber-100 text-amber-900';

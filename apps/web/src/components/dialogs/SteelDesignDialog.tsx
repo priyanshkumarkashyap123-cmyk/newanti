@@ -96,7 +96,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                 <Columns3 className="w-5 h-5 text-blue-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   Steel Design Studio
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -156,7 +156,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
               {activeTab === "column" && (
                 <div className="text-center py-12 space-y-4">
                   <Columns3 className="w-16 h-16 text-blue-400 mx-auto opacity-60" />
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                     Steel Column Design
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
@@ -174,7 +174,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
               {activeTab === "slab" && (
                 <div className="text-center py-12 space-y-4">
                   <LayoutGrid className="w-16 h-16 text-blue-400 mx-auto opacity-60" />
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                     Composite Slab Design
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">

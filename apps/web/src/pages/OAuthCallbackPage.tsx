@@ -3,6 +3,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { API_CONFIG } from '../config/env';
 import { getErrorMessage } from '../lib/errorHandling';
+import { authLogger } from '../lib/logger';
+import { Button } from '../components/ui/button';
 
 const OAuthCallbackPage = () => {
     const { provider } = useParams<{ provider: string }>();
@@ -10,6 +12,8 @@ const OAuthCallbackPage = () => {
     const navigate = useNavigate();
     const { setUser, setTokens } = useAuthStore();
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => { document.title = 'Authenticating... | BeamLab Ultimate'; }, []);
 
     useEffect(() => {
         const handleCallback = async () => {
@@ -44,7 +48,7 @@ const OAuthCallbackPage = () => {
                     setError(data.message || 'Authentication failed');
                 }
             } catch (err: unknown) {
-                console.error('OAuth callback error:', err);
+                authLogger.error('OAuth callback error:', err);
                 setError(getErrorMessage(err, 'Authentication failed'));
             }
         };
@@ -54,27 +58,24 @@ const OAuthCallbackPage = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
+            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
                 <div className="text-center">
                     <h2 className="text-xl font-bold text-red-500 mb-2">Login Failed</h2>
-                    <p className="text-zinc-500 dark:text-zinc-400 mb-4">{error}</p>
-                    <button
-                        onClick={() => navigate('/sign-in')}
-                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                    >
+                    <p className="text-slate-500 dark:text-slate-400 mb-4">{error}</p>
+                    <Button variant="outline" onClick={() => navigate('/sign-in')}>
                         Return to Sign In
-                    </button>
+                    </Button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
             <div className="text-center">
-                <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto mb-4" />
+                <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
                 <h2 className="text-xl font-bold mb-2">Authenticating...</h2>
-                <p className="text-zinc-500 dark:text-zinc-400">Please wait while we log you in via {provider}.</p>
+                <p className="text-slate-500 dark:text-slate-400">Please wait while we log you in via {provider}.</p>
             </div>
         </div>
     );

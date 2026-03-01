@@ -261,7 +261,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
                     <div className={`mb-2 ${selected === key ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'}`}>
                         {template.icon}
                     </div>
-                    <h4 className="font-medium text-zinc-900 dark:text-white text-sm mb-1">{template.name}</h4>
+                    <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-1">{template.name}</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{template.description}</p>
                     <div className="mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300/70 dark:border-slate-700/70">
                         ~{template.estimatedPages} pages
@@ -366,14 +366,14 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                             </button>
                             
                             <div className="flex-1">
-                                <h4 className="text-sm font-medium text-zinc-900 dark:text-white">{section.title}</h4>
+                                <h4 className="text-sm font-medium text-slate-900 dark:text-white">{section.title}</h4>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">{section.description}</p>
                             </div>
                             
                             {section.subsections && section.subsections.length > 0 && (
                                 <button
                                     onClick={() => toggleExpanded(section.id)}
-                                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
+                                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                                 >
                                     {expandedSections.has(section.id) 
                                         ? <ChevronDown className="w-4 h-4" />
@@ -431,7 +431,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.projectName}
                     onChange={(e) => updateField('projectName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Enter project name"
                 />
             </div>
@@ -442,7 +442,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.projectNumber || ''}
                     onChange={(e) => updateField('projectNumber', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="e.g., PRJ-2026-001"
                 />
             </div>
@@ -453,7 +453,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.clientName || ''}
                     onChange={(e) => updateField('clientName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Client organization"
                 />
             </div>
@@ -463,7 +463,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                 <select
                     value={projectInfo.designCode}
                     onChange={(e) => updateField('designCode', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                 >
                     <option value="IS 456:2000">IS 456:2000 (Concrete)</option>
                     <option value="IS 800:2007">IS 800:2007 (Steel)</option>
@@ -481,7 +481,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.engineerName || ''}
                     onChange={(e) => updateField('engineerName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Engineer name"
                 />
             </div>
@@ -492,7 +492,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.checkerName || ''}
                     onChange={(e) => updateField('checkerName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Checker name"
                 />
             </div>
@@ -503,7 +503,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     value={projectInfo.description || ''}
                     onChange={(e) => updateField('description', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
                     placeholder="Brief project description..."
                 />
             </div>
@@ -687,7 +687,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
         <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Header */}
             <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <FileText className="w-6 h-6 text-cyan-400" />
                     Professional Report Generator
                 </h2>
@@ -736,7 +736,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 1: Template Selection */}
                 {activeStep === 1 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Select Report Template</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Select Report Template</h3>
                         <TemplateSelector
                             selected={config.template}
                             onSelect={handleTemplateChange}
@@ -747,7 +747,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 2: Project Info */}
                 {activeStep === 2 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Project Information</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Project Information</h3>
                         <ProjectInfoForm
                             projectInfo={config.projectInfo}
                             onChange={(info) => setConfig(prev => ({ ...prev, projectInfo: info }))}
@@ -758,7 +758,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 3: Section Configuration */}
                 {activeStep === 3 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Configure Sections</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Configure Sections</h3>
                         <SectionConfigurator
                             sections={config.sections}
                             onSectionsChange={(sections) => setConfig(prev => ({ ...prev, sections }))}
@@ -770,7 +770,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {activeStep === 4 && (
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Output Options</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Output Options</h3>
                             
                             {/* Format Selection */}
                             <div>
@@ -862,7 +862,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                         
                         {/* Preview */}
                         <div>
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Preview</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Preview</h3>
                             <ReportPreview config={config} />
                         </div>
                     </div>

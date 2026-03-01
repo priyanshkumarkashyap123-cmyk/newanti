@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
@@ -32,9 +32,23 @@ export function useToast() {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
     const [toasts, setToasts] = useState<Toast[]>([]);
+    const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+    // Clear all timers on unmount
+    useEffect(() => {
+        return () => {
+            timersRef.current.forEach((timer) => clearTimeout(timer));
+            timersRef.current.clear();
+        };
+    }, []);
 
     const removeToast = useCallback((id: string) => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
+        const timer = timersRef.current.get(id);
+        if (timer) {
+            clearTimeout(timer);
+            timersRef.current.delete(id);
+        }
     }, []);
 
     const addToast = useCallback(({ type, title, message, duration = 5000 }: Omit<Toast, 'id'>) => {
@@ -42,9 +56,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         setToasts((prev) => [...prev, { id, type, title, message, duration }]);
 
         if (duration > 0) {
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 removeToast(id);
             }, duration);
+            timersRef.current.set(id, timer);
         }
     }, [removeToast]);
 
@@ -94,12 +109,12 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
             <div className="flex items-start gap-3">
                 {icons[toast.type]}
                 <div className="flex-1 pt-0.5">
-                    {toast.title && <h4 className="text-sm font-semibold text-zinc-900 dark:text-white mb-1">{toast.title}</h4>}
+                    {toast.title && <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">{toast.title}</h4>}
                     <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{toast.message}</p>
                 </div>
                 <button
                     onClick={onClose}
-                    className="text-slate-500 hover:text-zinc-900 dark:text-white transition-colors"
+                    className="text-slate-500 hover:text-slate-900 dark:text-white transition-colors"
                 >
                     <X className="w-4 h-4" />
                 </button>

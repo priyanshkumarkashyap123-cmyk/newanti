@@ -486,16 +486,16 @@ export const BeamCalculator: FC = () => {
                             <span className="text-white font-bold">BeamLab</span>
                         </Link>
                         <span className="text-slate-500">/</span>
-                        <Link to="/tools" className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white text-sm">Tools</Link>
+                        <Link to="/tools" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm">Tools</Link>
                         <span className="text-slate-500">/</span>
-                        <span className="text-zinc-900 dark:text-white text-sm font-medium">Beam Calculator</span>
+                        <span className="text-slate-900 dark:text-white text-sm font-medium">Beam Calculator</span>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white p-2">
+                        <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
                             <Share2 className="w-5 h-5" />
                         </button>
-                        <button className="text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white p-2">
+                        <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
                             <Download className="w-5 h-5" />
                         </button>
                     </div>
@@ -505,7 +505,7 @@ export const BeamCalculator: FC = () => {
             <main className="max-w-6xl mx-auto px-4 py-8">
                 {/* Title */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">Simple Beam Calculator</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Simple Beam Calculator</h1>
                     <p className="text-slate-500 dark:text-slate-400">
                         Calculate reactions, shear force, bending moment, and deflection for simply supported beams.
                     </p>
@@ -516,7 +516,7 @@ export const BeamCalculator: FC = () => {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Beam Properties */}
                         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-                            <h3 className="text-zinc-900 dark:text-white font-medium mb-4 flex items-center gap-2">
+                            <h3 className="text-slate-900 dark:text-white font-medium mb-4 flex items-center gap-2">
                                 <Settings className="w-4 h-4" />
                                 Beam Properties
                             </h3>
@@ -527,7 +527,7 @@ export const BeamCalculator: FC = () => {
                                         type="number"
                                         value={model.length}
                                         onChange={(e) => setModel({ ...model, length: parseFloat(e.target.value) || 1 })}
-                                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none"
                                     />
                                 </div>
                                 <div>
@@ -536,7 +536,7 @@ export const BeamCalculator: FC = () => {
                                         type="number"
                                         value={model.E}
                                         onChange={(e) => setModel({ ...model, E: parseFloat(e.target.value) || 200 })}
-                                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none"
                                     />
                                 </div>
                                 <div>
@@ -545,7 +545,7 @@ export const BeamCalculator: FC = () => {
                                         type="number"
                                         value={model.I}
                                         onChange={(e) => setModel({ ...model, I: parseFloat(e.target.value) || 1000 })}
-                                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none"
+                                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none"
                                     />
                                 </div>
                             </div>
@@ -586,7 +586,7 @@ export const BeamCalculator: FC = () => {
                     {/* Right: Quick Results */}
                     <div className="space-y-4">
                         <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4">
-                            <h3 className="text-zinc-900 dark:text-white font-medium mb-4">Quick Results</h3>
+                            <h3 className="text-slate-900 dark:text-white font-medium mb-4">Quick Results</h3>
 
                             {results ? (
                                 <div className="space-y-3">
@@ -594,7 +594,7 @@ export const BeamCalculator: FC = () => {
                                     <div className="bg-slate-200/50 dark:bg-slate-700/50 rounded-lg p-3">
                                         <div className="text-slate-500 dark:text-slate-400 text-xs mb-1">Reactions</div>
                                         {results.reactions.map((r, i) => (
-                                            <div key={i} className="text-zinc-900 dark:text-white text-sm">
+                                            <div key={i} className="text-slate-900 dark:text-white text-sm">
                                                 R{i + 1} = <span className="text-green-400 font-mono">{r.Fy.toFixed(2)} kN</span>
                                             </div>
                                         ))}
@@ -640,7 +640,7 @@ export const BeamCalculator: FC = () => {
                 {/* Result Charts */}
                 {results && (
                     <div className="mt-8 space-y-4">
-                        <h3 className="text-zinc-900 dark:text-white font-medium">Diagrams</h3>
+                        <h3 className="text-slate-900 dark:text-white font-medium">Diagrams</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <DiagramChart
                                 data={results.shearForce.map(p => ({ x: p.x, y: p.V }))}
@@ -674,7 +674,7 @@ export const BeamCalculator: FC = () => {
                 {results && (
                     <div className="mt-12 bg-gradient-to-r from-blue-900/40 to-purple-900/40 border border-blue-800/50 rounded-2xl p-8 text-center">
                         <Box className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                        <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                             Need to analyze a frame?
                         </h3>
                         <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto">

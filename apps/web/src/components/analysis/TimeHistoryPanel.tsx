@@ -47,7 +47,7 @@ export const TimeHistoryPanel: React.FC = () => {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Time-History Analysis</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Time-History Analysis</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">Newmark-beta / Wilson-theta integration for dynamic response</p>
           </div>
         </div>
@@ -107,7 +107,7 @@ export const TimeHistoryPanel: React.FC = () => {
       <button
         onClick={runAnalysis}
         disabled={loading}
-        className={`w-full py-3 px-6 rounded-lg font-semibold text-zinc-900 dark:text-white transition-all duration-200 ${
+        className={`w-full py-3 px-6 rounded-lg font-semibold text-slate-900 dark:text-white transition-all duration-200 ${
           loading
             ? 'bg-slate-200 dark:bg-slate-700 cursor-not-allowed opacity-60'
             : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-lg shadow-blue-900/30 hover:shadow-blue-800/40'
@@ -141,7 +141,7 @@ export const TimeHistoryPanel: React.FC = () => {
       {/* Results */}
       {result && (
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white border-b border-slate-200/50 dark:border-slate-700/50 pb-2">Dynamic Response Results</h3>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-200/50 dark:border-slate-700/50 pb-2">Dynamic Response Results</h3>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -83,8 +83,8 @@ const NodeLabel: FC<NodeLabelProps> = ({ node, maxDistance }) => {
                 <div className={`
                     px-1.5 py-0.5 rounded text-[10px] font-mono font-medium
                     ${node.isSupport
-                        ? 'bg-green-500/90 text-zinc-900 dark:text-white'
-                        : 'bg-blue-500/90 text-zinc-900 dark:text-white'
+                        ? 'bg-green-500/90 text-slate-900 dark:text-white'
+                        : 'bg-blue-500/90 text-slate-900 dark:text-white'
                     }
                     shadow-sm backdrop-blur-sm
                     whitespace-nowrap
@@ -127,7 +127,7 @@ const LoadLabel: FC<LoadLabelProps> = ({ load }) => {
         >
             <div className="pointer-events-none select-none">
                 <div className="
-                    bg-black/80 text-zinc-900 dark:text-white text-[10px] px-1 py-0.5 rounded
+                    bg-black/80 text-slate-900 dark:text-white text-[10px] px-1 py-0.5 rounded
                     backdrop-blur-sm shadow-sm
                     font-mono whitespace-nowrap
                 ">

@@ -140,7 +140,7 @@ export const SustainabilityGauge: FC<SustainabilityGaugeProps> = ({
         <div className={`bg-slate-100 dark:bg-slate-800 rounded-xl p-5 ${className}`}>
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-zinc-900 dark:text-white font-semibold text-lg">Sustainability Rating</h3>
+                <h3 className="text-slate-900 dark:text-white font-semibold text-lg">Sustainability Rating</h3>
                 <div
                     className="text-3xl font-bold px-4 py-1 rounded-lg"
                     style={{
@@ -175,14 +175,14 @@ export const SustainabilityGauge: FC<SustainabilityGaugeProps> = ({
             <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-200/50 dark:bg-slate-700/50 rounded-lg p-3">
                     <div className="text-gray-500 dark:text-gray-400 text-xs uppercase mb-1">Total Embodied Carbon</div>
-                    <div className="text-zinc-900 dark:text-white font-bold text-xl">
+                    <div className="text-slate-900 dark:text-white font-bold text-xl">
                         {formatCO2e(totalCO2e)}
                     </div>
                 </div>
                 {buildingIntensity !== undefined && (
                     <div className="bg-slate-200/50 dark:bg-slate-700/50 rounded-lg p-3">
                         <div className="text-gray-500 dark:text-gray-400 text-xs uppercase mb-1">Carbon Intensity</div>
-                        <div className="text-zinc-900 dark:text-white font-bold text-xl">
+                        <div className="text-slate-900 dark:text-white font-bold text-xl">
                             {buildingIntensity.toFixed(0)} <span className="text-sm font-normal">kgCO₂e/m²</span>
                         </div>
                     </div>
@@ -195,7 +195,7 @@ export const SustainabilityGauge: FC<SustainabilityGaugeProps> = ({
                 <div className="flex items-center gap-3">
                     <span className="text-2xl">🚗</span>
                     <div>
-                        <div className="text-zinc-900 dark:text-white font-semibold">
+                        <div className="text-slate-900 dark:text-white font-semibold">
                             {formatKm(totalCO2e / 0.21)} km
                         </div>
                         <div className="text-gray-500 text-xs">driving in an average car</div>
@@ -237,7 +237,7 @@ export const CarbonBreakdown: FC<CarbonBreakdownProps> = ({
 
     return (
         <div className={`bg-slate-100 dark:bg-slate-800 rounded-xl p-5 ${className}`}>
-            <h3 className="text-zinc-900 dark:text-white font-semibold text-lg mb-4">Carbon by Material</h3>
+            <h3 className="text-slate-900 dark:text-white font-semibold text-lg mb-4">Carbon by Material</h3>
 
             {/* Stacked bar */}
             <div className="h-8 rounded-lg overflow-hidden flex mb-4">
@@ -269,7 +269,7 @@ export const CarbonBreakdown: FC<CarbonBreakdownProps> = ({
                             <span className="text-gray-500 dark:text-gray-400 text-sm">
                                 {formatCO2e(data.totalCO2e)}
                             </span>
-                            <span className="text-zinc-900 dark:text-white font-medium text-sm w-16 text-right">
+                            <span className="text-slate-900 dark:text-white font-medium text-sm w-16 text-right">
                                 {data.percentage.toFixed(1)}%
                             </span>
                         </div>

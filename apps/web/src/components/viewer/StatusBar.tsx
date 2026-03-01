@@ -32,10 +32,10 @@ export const CanvasStatusBar: FC<StatusBarProps> = ({
     return (
         <div className="
             absolute bottom-0 left-0 right-0 h-6
-            bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm
-            border-t border-zinc-200 dark:border-zinc-800
+            bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm
+            border-t border-slate-200 dark:border-slate-800
             flex items-center justify-between
-            px-3 text-[11px] text-zinc-500 dark:text-zinc-400
+            px-3 text-[11px] text-slate-500 dark:text-slate-400
             z-40 pointer-events-none
         ">
             {/* Left: Cursor Position */}
@@ -53,7 +53,7 @@ export const CanvasStatusBar: FC<StatusBarProps> = ({
                         </span>
                     </div>
                 ) : (
-                    <span className="text-zinc-500 dark:text-zinc-400">Move cursor to see coordinates</span>
+                    <span className="text-slate-500 dark:text-slate-400">Move cursor to see coordinates</span>
                 )}
             </div>
 
@@ -68,7 +68,7 @@ export const CanvasStatusBar: FC<StatusBarProps> = ({
 
             {/* Right: Settings */}
             <div className="flex items-center gap-4">
-                <span className={gridSnap ? 'text-green-400' : 'text-zinc-500'}>
+                <span className={gridSnap ? 'text-green-400' : 'text-slate-500'}>
                     Snap: {gridSnap ? 'ON' : 'OFF'}
                 </span>
                 <span>Units: m</span>
@@ -91,9 +91,9 @@ export const ZoomIndicator: FC = () => {
     return (
         <div className="
             absolute bottom-8 right-4 z-40
-            bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm
+            bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-sm
             px-2 py-1 rounded
-            text-[10px] text-zinc-500 dark:text-zinc-400 font-mono
+            text-[10px] text-slate-500 dark:text-slate-400 font-mono
             pointer-events-none
         ">
             {zoomPercent}%

@@ -8,6 +8,19 @@
 import nodemailer from 'nodemailer';
 
 // ============================================
+// HTML ESCAPE UTILITY
+// ============================================
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ============================================
 // EMAIL SERVICE CONFIGURATION
 // ============================================
 
@@ -56,7 +69,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="content">
-                                <p>Hello ${name || 'User'},</p>
+                                <p>Hello ${escapeHtml(name || 'User')},</p>
                                 <p>Welcome to BeamLab! Please verify your email address to complete your registration.</p>
                                 
                                 <div class="code-box">
@@ -115,7 +128,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="content">
-                                <p>Hello ${name || 'User'},</p>
+                                <p>Hello ${escapeHtml(name || 'User')},</p>
                                 <p>We received a request to reset your BeamLab password. Click the button below to create a new password:</p>
                                 
                                 <div style="text-align: center;">
@@ -171,7 +184,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="content">
-                                <p>Welcome to BeamLab, ${name || 'User'}!</p>
+                                <p>Welcome to BeamLab, ${escapeHtml(name || 'User')}!</p>
                                 <p>We're excited to have you on board. BeamLab is a professional structural analysis platform designed for engineers.</p>
                                 
                                 <div class="feature">
@@ -234,7 +247,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="content">
-                                <p>Hello ${name || 'User'},</p>
+                                <p>Hello ${escapeHtml(name || 'User')},</p>
                                 <p>Please confirm your new email address using the code below:</p>
                                 
                                 <div class="code-box">

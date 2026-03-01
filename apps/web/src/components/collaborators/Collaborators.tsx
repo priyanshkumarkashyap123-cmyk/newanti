@@ -20,7 +20,7 @@ export const Collaborators: React.FC<CollaboratorsProps> = ({ users, currentUser
                     content={`${user.name} ${user.isActive ? '(Active)' : '(Idle)'}`}
                 >
                     <div
-                        className="w-8 h-8 rounded-full border-2 border-slate-900 flex items-center justify-center text-xs font-bold text-zinc-900 dark:text-white shadow-lg transition-transform hover:scale-110 hover:z-10"
+                        className="w-8 h-8 rounded-full border-2 border-slate-900 flex items-center justify-center text-xs font-bold text-slate-900 dark:text-white shadow-lg transition-transform hover:scale-110 hover:z-10"
                         style={{ backgroundColor: user.color }}
                     >
                         {user.name.charAt(0).toUpperCase()}

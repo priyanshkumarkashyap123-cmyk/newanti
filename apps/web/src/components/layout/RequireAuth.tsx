@@ -12,8 +12,9 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
 
     if (!isLoaded) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-white dark:bg-zinc-950">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center min-h-screen bg-white dark:bg-slate-950" role="status" aria-label="Loading">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" aria-hidden="true"></div>
+                <span className="sr-only">Loading authentication...</span>
             </div>
         );
     }

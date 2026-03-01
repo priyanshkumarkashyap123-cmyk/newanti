@@ -306,7 +306,7 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
           </button>
           <button
             onClick={onPrint || (() => window.print())}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white text-sm font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             <Printer className="h-4 w-4" />
             Print
@@ -522,7 +522,7 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
         <div className="border border-slate-300 rounded-sm overflow-hidden text-[11px] mb-8">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white">
+              <tr className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white">
                 <th className="px-3 py-2 font-bold">Clause</th>
                 <th className="px-3 py-2 font-bold">Check Description</th>
                 <th className="px-3 py-2 font-bold text-center">Required</th>

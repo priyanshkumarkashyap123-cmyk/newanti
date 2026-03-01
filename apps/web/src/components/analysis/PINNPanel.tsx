@@ -72,37 +72,37 @@ export const PINNPanel: FC = () => {
     };
 
     return (
-        <div className="h-full flex flex-col bg-white dark:bg-zinc-950 p-4 space-y-6 text-zinc-700 dark:text-zinc-200">
+        <div className="h-full flex flex-col bg-white dark:bg-slate-950 p-4 space-y-6 text-slate-700 dark:text-slate-200">
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+            <div className="flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
                 <div className="p-2 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg">
                     <Brain className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                    <h2 className="text-sm font-bold text-zinc-900 dark:text-white">AI Physics Engine</h2>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">Train Neural Networks to solve beams</p>
+                    <h2 className="text-sm font-bold text-slate-900 dark:text-white">AI Physics Engine</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Train Neural Networks to solve beams</p>
                 </div>
             </div>
 
             {/* Config */}
             <div className="space-y-4">
-                <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Configuration</h3>
+                <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Configuration</h3>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
-                        <label className="text-[10px] text-zinc-500 dark:text-zinc-400">Length (m)</label>
+                        <label className="text-[10px] text-slate-500 dark:text-slate-400">Length (m)</label>
                         <input
                             type="number"
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs text-zinc-900 dark:text-white"
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs text-slate-900 dark:text-white"
                             value={beamLength}
                             onChange={(e) => setBeamLength(Number(e.target.value))}
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] text-zinc-500 dark:text-zinc-400">Load (N/m)</label>
+                        <label className="text-[10px] text-slate-500 dark:text-slate-400">Load (N/m)</label>
                         <input
                             type="number"
-                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs text-zinc-900 dark:text-white"
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded px-2 py-1 text-xs text-slate-900 dark:text-white"
                             value={loadMag}
                             onChange={(e) => setLoadMag(Number(e.target.value))}
                         />
@@ -110,15 +110,15 @@ export const PINNPanel: FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                    <label className="text-[10px] text-zinc-500 dark:text-zinc-400">Training Epochs (Complexity)</label>
+                    <label className="text-[10px] text-slate-500 dark:text-slate-400">Training Epochs (Complexity)</label>
                     <input
                         type="range"
                         min="500" max="5000" step="500"
-                        className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer"
+                        className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
                         value={epochs}
                         onChange={(e) => setEpochs(Number(e.target.value))}
                     />
-                    <div className="flex justify-between text-[10px] text-zinc-500">
+                    <div className="flex justify-between text-[10px] text-slate-500">
                         <span>Fast (500)</span>
                         <span className="text-purple-400">{epochs}</span>
                         <span>Accurate (5000)</span>
@@ -129,7 +129,7 @@ export const PINNPanel: FC = () => {
                     onClick={startTraining}
                     disabled={training}
                     className={`w-full py-2 rounded text-xs font-bold flex items-center justify-center gap-2 transition-all ${training
-                            ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed'
                             : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/20'
                         }`}
                 >
@@ -154,31 +154,31 @@ export const PINNPanel: FC = () => {
                         <CheckCircle className="w-4 h-4 text-green-400" />
                         <div>
                             <div className="text-xs font-bold text-green-400">Model Trained Successfully</div>
-                            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">ID: {modelId}</div>
+                            <div className="text-[10px] text-slate-500 dark:text-slate-400">ID: {modelId}</div>
                         </div>
                     </div>
 
                     {prediction && (
                         <div className="space-y-2">
-                            <h3 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
                                 <BarChart className="w-3 h-3" />
                                 Instant Prediction
                             </h3>
                             <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div className="p-2 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800 text-center">
-                                    <div className="text-zinc-500 dark:text-zinc-400 text-[10px]">Max Deflection</div>
+                                <div className="p-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 text-center">
+                                    <div className="text-slate-500 dark:text-slate-400 text-[10px]">Max Deflection</div>
                                     <div className="font-mono text-purple-400 text-sm">
                                         {(prediction.max_deflection * 1000).toFixed(2)} mm
                                     </div>
                                 </div>
-                                <div className="p-2 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800 text-center">
-                                    <div className="text-zinc-500 dark:text-zinc-400 text-[10px]">Inference Time</div>
+                                <div className="p-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 text-center">
+                                    <div className="text-slate-500 dark:text-slate-400 text-[10px]">Inference Time</div>
                                     <div className="font-mono text-blue-400 text-sm">
                                         {prediction.inference_time_ms.toFixed(3)} ms
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 italic mt-2">
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 italic mt-2">
                                 * This result was predicted by a 3-layer neural network, not FEM.
                             </p>
                         </div>

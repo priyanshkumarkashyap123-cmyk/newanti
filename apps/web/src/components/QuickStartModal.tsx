@@ -132,12 +132,12 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                     <div className="grid grid-cols-3 gap-3 mb-6">
                         <button
                             onClick={handleNewProject}
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
                         >
-                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
-                                <Plus className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-blue-600" />
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                                <Plus className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-blue-600" />
                             </div>
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">New Project</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">New Project</span>
                         </button>
 
                         {/* Resume Last Project - only show if saved project exists */}
@@ -154,22 +154,22 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             </button>
                         ) : (
                             <button
-                                className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
+                                className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
                             >
-                                <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
-                                    <FileText className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-green-600" />
+                                <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
+                                    <FileText className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-green-600" />
                                 </div>
-                                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Open File</span>
+                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Open File</span>
                             </button>
                         )}
 
                         <button
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
                         >
-                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
-                                <Play className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-purple-600" />
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
+                                <Play className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-purple-600" />
                             </div>
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Tutorial</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tutorial</span>
                         </button>
 
                         <button
@@ -177,12 +177,12 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                 onClose();
                                 onOpenWizard?.();
                             }}
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all group"
                         >
-                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition-colors">
-                                <Building2 className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-orange-600" />
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-orange-100 dark:group-hover:bg-orange-900/50 transition-colors">
+                                <Building2 className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-orange-600" />
                             </div>
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Structure Wizard</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Structure Wizard</span>
                         </button>
 
                         <button
@@ -190,12 +190,12 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                 onClose();
                                 onOpenFoundation?.();
                             }}
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-amber-500 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all group"
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-amber-500 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all group"
                         >
-                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
-                                <Layers className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-amber-600" />
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 transition-colors">
+                                <Layers className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-amber-600" />
                             </div>
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Foundation Design</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Foundation Design</span>
                         </button>
 
                         <button
@@ -203,20 +203,20 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                 onClose();
                                 onOpenLoads?.();
                             }}
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 hover:border-cyan-500 dark:hover:border-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all group"
+                            className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all group"
                         >
-                            <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
-                                <Weight className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-cyan-600" />
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 transition-colors">
+                                <Weight className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-cyan-600" />
                             </div>
-                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">IS 875 Loads</span>
+                            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">IS 875 Loads</span>
                         </button>
                     </div>
 
                     {/* Divider */}
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-700" />
-                        <span className="text-sm text-zinc-500 dark:text-zinc-400">or start from a template</span>
-                        <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-700" />
+                        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                        <span className="text-sm text-slate-500 dark:text-slate-400">or start from a template</span>
+                        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
                     </div>
 
                     {/* Sample Structures */}
@@ -230,7 +230,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                     flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all
                                     ${selectedSample?.id === sample.id
                                         ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                        : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600'
+                                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                                     }
                                 `}
                             >
@@ -238,16 +238,16 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                     w-12 h-12 rounded-lg flex items-center justify-center text-2xl
                                     ${selectedSample?.id === sample.id
                                         ? 'bg-blue-100 dark:bg-blue-900/50'
-                                        : 'bg-zinc-100 dark:bg-zinc-800'
+                                        : 'bg-slate-100 dark:bg-slate-800'
                                     }
                                 `}>
                                     {sample.icon}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium text-zinc-900 dark:text-white">
+                                    <h4 className="font-medium text-slate-900 dark:text-white">
                                         {sample.name}
                                     </h4>
-                                    <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
                                         {sample.description}
                                     </p>
                                 </div>
@@ -255,7 +255,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                     w-4 h-4 flex-shrink-0
                                     ${selectedSample?.id === sample.id
                                         ? 'text-blue-500'
-                                        : 'text-zinc-600 dark:text-zinc-500'
+                                        : 'text-slate-600 dark:text-slate-500'
                                     }
                                 `} />
                             </button>
@@ -266,8 +266,8 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                 {/* Footer */}
                 {selectedSample && (
                     <DialogFooter className="flex items-center justify-between sm:justify-between">
-                        <div className="text-sm text-zinc-500 dark:text-zinc-400">
-                            <span className="font-medium text-zinc-700 dark:text-zinc-300">{selectedSample.name}</span>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-medium text-slate-700 dark:text-slate-300">{selectedSample.name}</span>
                             {' · '}
                             {selectedSample.nodes.length} nodes, {selectedSample.members.length} members
                         </div>

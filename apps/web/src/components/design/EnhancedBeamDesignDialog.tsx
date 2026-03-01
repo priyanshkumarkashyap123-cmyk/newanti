@@ -218,7 +218,7 @@ const InputField: React.FC<InputFieldProps> = ({
       {tooltip && (
         <div className="group relative">
           <Info className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white text-xs rounded-lg z-50">
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs rounded-lg z-50">
             {tooltip}
           </div>
         </div>
@@ -578,7 +578,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
           <select
             value={code}
             onChange={e => setCode(e.target.value as DesignCode)}
-            className="px-4 py-2 bg-white/20 text-zinc-900 dark:text-white rounded-lg text-sm font-medium border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+            className="px-4 py-2 bg-white/20 text-slate-900 dark:text-white rounded-lg text-sm font-medium border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
           >
             {CODE_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value} className="text-slate-700 dark:text-slate-200">

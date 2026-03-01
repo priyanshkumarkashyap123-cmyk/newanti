@@ -94,7 +94,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             className={cn(
               'w-full rounded-lg border bg-slate-100 dark:bg-slate-800 px-3 py-2.5',
-              'text-sm text-zinc-900 dark:text-white placeholder:text-slate-400',
+              'text-sm text-slate-900 dark:text-white placeholder:text-slate-400',
               'focus:outline-none focus:ring-2 focus:ring-offset-0',
               'transition-colors duration-200',
               'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-200 dark:disabled:bg-slate-900',
@@ -113,7 +113,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -191,7 +191,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           id={id}
           className={cn(
             'w-full rounded-lg border bg-slate-100 dark:bg-slate-800 px-3 py-2.5',
-            'text-sm text-zinc-900 dark:text-white placeholder:text-slate-400',
+            'text-sm text-slate-900 dark:text-white placeholder:text-slate-400',
             'focus:outline-none focus:ring-2 focus:ring-offset-0',
             'transition-colors duration-200 min-h-[100px]',
             resize === 'none' && 'resize-none',
@@ -268,7 +268,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             id={id}
             className={cn(
               'w-full rounded-lg border bg-slate-100 dark:bg-slate-800 px-3 py-2.5 pr-10',
-              'text-sm text-zinc-900 dark:text-white appearance-none cursor-pointer',
+              'text-sm text-slate-900 dark:text-white appearance-none cursor-pointer',
               'focus:outline-none focus:ring-2 focus:ring-offset-0',
               'transition-colors duration-200',
               error
@@ -357,7 +357,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               animate={{ scale: checked ? 1 : 0 }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
-              <Check className="w-3 h-3 text-zinc-900 dark:text-white" />
+              <Check className="w-3 h-3 text-slate-900 dark:text-white" />
             </motion.div>
           </div>
         </div>
@@ -366,7 +366,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             htmlFor={id}
             className={cn(
               'text-sm font-medium cursor-pointer',
-              disabled ? 'text-slate-500 dark:text-slate-400 cursor-not-allowed' : 'text-zinc-900 dark:text-white'
+              disabled ? 'text-slate-500 dark:text-slate-400 cursor-not-allowed' : 'text-slate-900 dark:text-white'
             )}
           >
             {label}
@@ -448,7 +448,7 @@ export const Switch: React.FC<SwitchProps> = ({
               htmlFor={id}
               className={cn(
                 'text-sm font-medium cursor-pointer',
-                disabled ? 'text-slate-500 dark:text-slate-400 cursor-not-allowed' : 'text-zinc-900 dark:text-white'
+                disabled ? 'text-slate-500 dark:text-slate-400 cursor-not-allowed' : 'text-slate-900 dark:text-white'
               )}
             >
               {label}
@@ -522,7 +522,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             disabled={disabled || (min !== undefined && value <= min)}
             className={cn(
               'px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-r-0 border-slate-600 rounded-l-lg',
-              'text-zinc-900 dark:text-white hover:bg-slate-600 transition-colors',
+              'text-slate-900 dark:text-white hover:bg-slate-600 transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
@@ -540,7 +540,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             step={step}
             className={cn(
               'flex-1 border-y bg-slate-100 dark:bg-slate-800 px-3 py-2.5 text-center',
-              'text-sm text-zinc-900 dark:text-white',
+              'text-sm text-slate-900 dark:text-white',
               'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500',
               '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
               error ? 'border-red-500' : 'border-slate-600',
@@ -560,7 +560,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             className={cn(
               'px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-l-0 border-slate-600',
               unit ? '' : 'rounded-r-lg',
-              'text-zinc-900 dark:text-white hover:bg-slate-600 transition-colors',
+              'text-slate-900 dark:text-white hover:bg-slate-600 transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}
           >
@@ -657,7 +657,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
               />
             </div>
             <div className="ml-3">
-              <span className="text-sm font-medium text-zinc-900 dark:text-white">{option.label}</span>
+              <span className="text-sm font-medium text-slate-900 dark:text-white">{option.label}</span>
               {option.description && (
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{option.description}</p>
               )}

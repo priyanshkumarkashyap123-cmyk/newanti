@@ -8,7 +8,7 @@
  * SAP2000 BIM Exchange, and RAM Structural System BIM capabilities.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { IFCParser } from '@/modules/bim/BIMIntegrationEngine';
 
@@ -73,6 +73,7 @@ interface ExportJob {
 
 const BIMExportEnhanced: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'export' | 'import' | 'mapping' | 'history'>('export');
+  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   
   const [exportSettings, setExportSettings] = useState<ExportSettings>({
     format: 'IFC4',
@@ -194,6 +195,8 @@ const BIMExportEnhanced: React.FC = () => {
     },
   ]);
 
+  useEffect(() => { document.title = 'BIM Export | BeamLab Ultimate'; }, []);
+
   const supportedFormats = [
     { id: 'IFC4', name: 'IFC 4.0', icon: '🏗️', description: 'Industry Foundation Classes 4.0 - Latest stable standard' },
     { id: 'IFC4.3', name: 'IFC 4.3', icon: '🏗️', description: 'IFC 4.3 with infrastructure extensions' },
@@ -277,7 +280,8 @@ const BIMExportEnhanced: React.FC = () => {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
-      alert('Export failed. Please check the console for details.');
+      setStatusMsg({ type: 'error', text: 'Export failed. Please check the console for details.' });
+      setTimeout(() => setStatusMsg(null), 5000);
     }
   };
 
@@ -301,16 +305,17 @@ const BIMExportEnhanced: React.FC = () => {
           const model = parser.parse(text);
           const members = model?.structuralModel?.members || [];
           if (members.length > 0) {
-            alert(`Successfully imported ${members.length} structural members from ${file.name}.\n\nMembers found:\n${members.slice(0, 5).map((m) => `- ${m.name} (${m.type})`).join('\n')}${members.length > 5 ? `\n... and ${members.length - 5} more` : ''}`);
+            setStatusMsg({ type: 'success', text: `Successfully imported ${members.length} structural members from ${file.name}.` });
           } else {
-            alert(`File parsed (schema: ${model?.schema || 'unknown'}) but no structural members found. The file may not contain IFC structural elements.`);
+            setStatusMsg({ type: 'error', text: `File parsed (schema: ${model?.schema || 'unknown'}) but no structural members found.` });
           }
         } else {
-          alert(`File "${file.name}" loaded (${(file.size / 1024).toFixed(1)} KB). Processing ${importSettings.format} format...`);
+          setStatusMsg({ type: 'success', text: `File "${file.name}" loaded (${(file.size / 1024).toFixed(1)} KB). Processing ${importSettings.format} format...` });
         }
       } catch (err) {
         console.error('Import error:', err);
-        alert('Import failed. Please check if the file format is correct.');
+        setStatusMsg({ type: 'error', text: 'Import failed. Please check if the file format is correct.' });
+        setTimeout(() => setStatusMsg(null), 5000);
       }
     };
     input.click();
@@ -320,7 +325,7 @@ const BIMExportEnhanced: React.FC = () => {
     <div className="space-y-6">
       {/* Format Selection */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📤</span>
           Export Format
         </h3>
@@ -337,7 +342,7 @@ const BIMExportEnhanced: React.FC = () => {
             >
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">{format.icon}</span>
-                <span className="text-zinc-900 dark:text-white font-medium">{format.name}</span>
+                <span className="text-slate-900 dark:text-white font-medium">{format.name}</span>
               </div>
               <p className="text-xs text-gray-600 dark:text-gray-400">{format.description}</p>
             </button>
@@ -347,7 +352,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Export Content Options */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📋</span>
           Export Content
         </h3>
@@ -374,7 +379,7 @@ const BIMExportEnhanced: React.FC = () => {
                   className="w-5 h-5 rounded border-gray-500 text-green-500 focus:ring-green-500"
                 />
                 <div>
-                  <p className="text-zinc-900 dark:text-white font-medium">{option.label}</p>
+                  <p className="text-slate-900 dark:text-white font-medium">{option.label}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">{option.desc}</p>
                 </div>
               </div>
@@ -385,7 +390,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Geometry Options */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🎯</span>
           Geometry & Representation
         </h3>
@@ -395,7 +400,7 @@ const BIMExportEnhanced: React.FC = () => {
             <select
               value={exportSettings.memberRepresentation}
               onChange={(e) => setExportSettings({ ...exportSettings, memberRepresentation: e.target.value as ExportSettings['memberRepresentation'] })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
             >
               <option value="centerline">Centerline (Analytical)</option>
               <option value="solid">Solid Geometry (3D)</option>
@@ -407,7 +412,7 @@ const BIMExportEnhanced: React.FC = () => {
             <select
               value={exportSettings.coordinateSystem}
               onChange={(e) => setExportSettings({ ...exportSettings, coordinateSystem: e.target.value as ExportSettings['coordinateSystem'] })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
             >
               <option value="project">Project Origin</option>
               <option value="global">Global (Survey Point)</option>
@@ -419,7 +424,7 @@ const BIMExportEnhanced: React.FC = () => {
             <select
               value={exportSettings.exportScope}
               onChange={(e) => setExportSettings({ ...exportSettings, exportScope: e.target.value as ExportSettings['exportScope'] })}
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
             >
               <option value="entire">Entire Model</option>
               <option value="selection">Selection Only</option>
@@ -432,7 +437,7 @@ const BIMExportEnhanced: React.FC = () => {
       {/* IFC-specific Settings */}
       {(exportSettings.format === 'IFC4' || exportSettings.format === 'IFC4.3' || exportSettings.format === 'IFC2x3') && (
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-2xl">🏗️</span>
             IFC-Specific Settings
           </h3>
@@ -466,7 +471,7 @@ const BIMExportEnhanced: React.FC = () => {
                   ...exportSettings,
                   ifcSettings: { ...exportSettings.ifcSettings, classificationSystem: e.target.value as any }
                 })}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               >
                 {classificationSystems.map((sys) => (
                   <option key={sys.id} value={sys.id}>
@@ -482,7 +487,7 @@ const BIMExportEnhanced: React.FC = () => {
       {/* Revit-specific Settings */}
       {exportSettings.format === 'RVT' && (
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-2xl">🔷</span>
             Revit-Specific Settings
           </h3>
@@ -510,6 +515,15 @@ const BIMExportEnhanced: React.FC = () => {
         </div>
       )}
 
+      {/* Status Message */}
+      {statusMsg && (
+        <div className={`p-3 rounded-lg text-sm font-medium ${
+          statusMsg.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+        }`}>
+          {statusMsg.type === 'success' ? '✓' : '✗'} {statusMsg.text}
+        </div>
+      )}
+
       {/* Export Button */}
       <div className="flex justify-end">
         <button
@@ -527,7 +541,7 @@ const BIMExportEnhanced: React.FC = () => {
     <div className="space-y-6">
       {/* Import Format */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📥</span>
           Import Format
         </h3>
@@ -542,7 +556,7 @@ const BIMExportEnhanced: React.FC = () => {
                   : 'border-gray-600 bg-gray-700 hover:border-gray-500'
               }`}
             >
-              <span className="text-zinc-900 dark:text-white font-medium">{format}</span>
+              <span className="text-slate-900 dark:text-white font-medium">{format}</span>
             </button>
           ))}
         </div>
@@ -550,7 +564,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Import Options */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">⚙️</span>
           Import Options
         </h3>
@@ -580,7 +594,7 @@ const BIMExportEnhanced: React.FC = () => {
               <select
                 value={importSettings.sectionMapping}
                 onChange={(e) => setImportSettings({ ...importSettings, sectionMapping: e.target.value as ImportSettings['sectionMapping'] })}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               >
                 <option value="automatic">Automatic (Best Match)</option>
                 <option value="manual">Manual Assignment</option>
@@ -592,7 +606,7 @@ const BIMExportEnhanced: React.FC = () => {
               <select
                 value={importSettings.materialAssignment}
                 onChange={(e) => setImportSettings({ ...importSettings, materialAssignment: e.target.value as ImportSettings['materialAssignment'] })}
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               >
                 <option value="automatic">Automatic Detection</option>
                 <option value="manual">Manual Assignment</option>
@@ -607,7 +621,7 @@ const BIMExportEnhanced: React.FC = () => {
                 onChange={(e) => setImportSettings({ ...importSettings, toleranceForMerge: parseFloat(e.target.value) })}
                 step="0.001"
                 min="0"
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-zinc-900 dark:text-white"
+                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
               />
             </div>
           </div>
@@ -616,17 +630,26 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* File Upload Area */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📁</span>
           Select File
         </h3>
         <div className="border-2 border-dashed border-gray-600 rounded-lg p-12 text-center hover:border-green-500 transition-colors cursor-pointer">
           <div className="text-5xl mb-4">📂</div>
-          <p className="text-zinc-900 dark:text-white font-medium mb-2">Drop {importSettings.format} file here</p>
+          <p className="text-slate-900 dark:text-white font-medium mb-2">Drop {importSettings.format} file here</p>
           <p className="text-gray-600 dark:text-gray-400 text-sm">or click to browse</p>
           <input type="file" className="hidden" accept=".ifc,.rvt,.dwg,.sat,.step,.stp" />
         </div>
       </div>
+
+      {/* Status Message */}
+      {statusMsg && (
+        <div className={`p-3 rounded-lg text-sm font-medium ${
+          statusMsg.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+        }`}>
+          {statusMsg.type === 'success' ? '✓' : '✗'} {statusMsg.text}
+        </div>
+      )}
 
       {/* Import Button */}
       <div className="flex justify-end">
@@ -645,7 +668,7 @@ const BIMExportEnhanced: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span className="text-2xl">🔗</span>
             Entity Mapping Rules
           </h3>
@@ -692,8 +715,8 @@ const BIMExportEnhanced: React.FC = () => {
                   </td>
                   <td className="p-3">
                     <div className="flex gap-2">
-                      <button className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">✏️</button>
-                      <button className="p-2 text-red-400 hover:bg-red-900/30 rounded">🗑️</button>
+                      <button aria-label="Edit" className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">✏️</button>
+                      <button aria-label="Delete" className="p-2 text-red-400 hover:bg-red-900/30 rounded">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -705,7 +728,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Section Mapping */}
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📏</span>
           Section Profile Mapping
         </h3>
@@ -739,7 +762,7 @@ const BIMExportEnhanced: React.FC = () => {
   const renderHistoryTab = () => (
     <div className="space-y-6">
       <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <span className="text-2xl">📜</span>
           Export/Import History
         </h3>
@@ -756,7 +779,7 @@ const BIMExportEnhanced: React.FC = () => {
                     {job.format.includes('IFC') ? '🏗️' : job.format === 'RVT' ? '🔷' : '🔶'}
                   </span>
                   <div>
-                    <h4 className="text-zinc-900 dark:text-white font-medium">{job.name}</h4>
+                    <h4 className="text-slate-900 dark:text-white font-medium">{job.name}</h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">{job.format} • {job.createdAt}</p>
                   </div>
                 </div>
@@ -857,7 +880,7 @@ const BIMExportEnhanced: React.FC = () => {
 
         {/* Industry Standards Footer */}
         <div className="mt-8 p-6 bg-gray-100 dark:bg-gray-800/50 rounded-lg border border-gray-300 dark:border-gray-700">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 text-center">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 text-center">
             🏆 Industry Standards Compliance
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">

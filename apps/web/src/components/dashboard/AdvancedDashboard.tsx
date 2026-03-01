@@ -168,7 +168,7 @@ const StatCard: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${color} p-5 text-zinc-900 dark:text-white shadow-lg`}
+    className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${color} p-5 text-slate-900 dark:text-white shadow-lg`}
   >
     <div className="flex items-center justify-between">
       <div>
@@ -350,7 +350,7 @@ const QuickActionButton: React.FC<{
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
-    className={`flex items-center gap-4 w-full rounded-xl border-2 border-transparent bg-gradient-to-r ${color} p-4 text-left text-zinc-900 dark:text-white shadow-md transition-all hover:shadow-lg`}
+    className={`flex items-center gap-4 w-full rounded-xl border-2 border-transparent bg-gradient-to-r ${color} p-4 text-left text-slate-900 dark:text-white shadow-md transition-all hover:shadow-lg`}
   >
     <div className="rounded-lg bg-white/20 p-3">
       {icon}

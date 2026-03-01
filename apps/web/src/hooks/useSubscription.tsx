@@ -7,6 +7,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   createContext,
   useContext,
   ReactNode,
@@ -196,7 +197,7 @@ export const SubscriptionProvider = ({
     return () => controller.abort();
   }, [isSignedIn, userId, fetchSubscription]);
 
-  const canAccess = (
+  const canAccess = useCallback((
     feature: keyof SubscriptionStatus["features"],
   ): boolean => {
     // If still loading and we have a cached tier, use that
@@ -217,23 +218,28 @@ export const SubscriptionProvider = ({
     if (typeof value === "boolean") return value;
     if (typeof value === "number") return value !== 0;
     return false;
-  };
+  }, [subscription.isLoading, subscription.features]);
 
-  const requiresUpgrade = (
+  const requiresUpgrade = useCallback((
     feature: keyof SubscriptionStatus["features"],
   ): boolean => {
     return !canAccess(feature);
-  };
+  }, [canAccess]);
 
-  const refreshSubscription = async () => {
+  const refreshSubscription = useCallback(async () => {
     setSubscription((prev) => ({ ...prev, isLoading: true }));
     await fetchSubscription();
-  };
+  }, [fetchSubscription]);
+
+  const contextValue = useMemo(() => ({
+    subscription,
+    canAccess,
+    requiresUpgrade,
+    refreshSubscription,
+  }), [subscription, canAccess, requiresUpgrade, refreshSubscription]);
 
   return (
-    <SubscriptionContext.Provider
-      value={{ subscription, canAccess, requiresUpgrade, refreshSubscription }}
-    >
+    <SubscriptionContext.Provider value={contextValue}>
       {children}
     </SubscriptionContext.Provider>
   );

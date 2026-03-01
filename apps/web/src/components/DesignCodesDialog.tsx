@@ -282,9 +282,9 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             )}
 
             {/* Checks Info */}
-            <div className="mt-4 p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Design Checks</div>
-                <div className="grid grid-cols-2 gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Design Checks</div>
+                <div className="grid grid-cols-2 gap-1 text-xs text-slate-500 dark:text-slate-400">
                     <div>✓ Bearing capacity</div>
                     <div>✓ One-way shear</div>
                     <div>✓ Punching shear</div>
@@ -336,21 +336,21 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
 
                         {/* Connection Types */}
                         <div className="mt-4 grid grid-cols-2 gap-2">
-                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                 <div className="font-medium text-sm">Bolted Shear</div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Fin plate, angles</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Fin plate, angles</div>
                             </div>
-                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                 <div className="font-medium text-sm">Moment End Plate</div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Extended, flush</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Extended, flush</div>
                             </div>
-                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                 <div className="font-medium text-sm">Welded</div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Fillet, butt</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Fillet, butt</div>
                             </div>
-                            <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                 <div className="font-medium text-sm">Base Plate</div>
-                                <div className="text-xs text-zinc-500 dark:text-zinc-400">Anchor bolts</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400">Anchor bolts</div>
                             </div>
                         </div>
                     </div>
@@ -367,7 +367,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
             <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
                     {/* Header */}
-                    <DialogHeader className="flex flex-row items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700 space-y-0">
+                    <DialogHeader className="flex flex-row items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 space-y-0">
                         <div className="flex items-center gap-2">
                             <FileCheck className="w-5 h-5 text-green-500" />
                             <DialogTitle className="font-semibold text-lg">Design Code Checks</DialogTitle>
@@ -380,7 +380,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                         </div>
                         <DialogDescription className="sr-only">Structural design code compliance checks</DialogDescription>
                         <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300">
+                            <Button variant="ghost" size="sm" className="flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300">
                                 <Download className="w-4 h-4" />
                                 Export Report
                             </Button>
@@ -390,7 +390,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                     {/* Content */}
                     <div className="flex flex-1 overflow-hidden">
                         {/* Sidebar */}
-                        <div className="w-64 border-r border-zinc-200 dark:border-zinc-700 overflow-y-auto">
+                        <div className="w-64 border-r border-slate-200 dark:border-slate-700 overflow-y-auto">
                             {DESIGN_OPTIONS.map((option) => {
                                 const Icon = option.icon;
                                 const isActive = activeTab === option.id;
@@ -402,20 +402,20 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                                         className={`
                                             w-full flex items-center gap-3 p-3 text-left transition-all
                                             ${isActive
-                                                ? 'bg-zinc-100 dark:bg-zinc-800 border-r-2 border-blue-500'
-                                                : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'}
+                                                ? 'bg-slate-100 dark:bg-slate-800 border-r-2 border-blue-500'
+                                                : 'hover:bg-slate-50 dark:hover:bg-slate-800'}
                                         `}
                                     >
-                                        <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'text-zinc-500 dark:text-zinc-400'}`} />
+                                        <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : 'text-slate-500 dark:text-slate-400'}`} />
                                         <div className="flex-1 min-w-0">
                                             <div className={`text-sm font-medium ${isActive ? 'text-blue-600 dark:text-blue-400' : ''}`}>
                                                 {option.name}
                                             </div>
-                                            <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                                 {option.codes.join(', ')}
                                             </div>
                                         </div>
-                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-zinc-600 dark:text-zinc-500'}`} />
+                                        <ChevronRight className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-slate-600 dark:text-slate-500'}`} />
                                     </button>
                                 );
                             })}

@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Cpu, CheckCircle } from 'lucide-react';
+import { Button } from '../components/ui/button';
 
 export const SignInPage = () => {
     useEffect(() => { document.title = 'Sign In | BeamLab Ultimate'; }, []);
@@ -39,7 +40,7 @@ export const SignInPage = () => {
                             <Cpu className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">BeamLab</span>
+                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">BeamLab</span>
                             <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full tracking-wide">ULTIMATE</span>
                         </div>
                     </Link>
@@ -78,15 +79,15 @@ export const SignInPage = () => {
                     {/* Stats */}
                     <div className="grid grid-cols-3 gap-8 py-8 border-t border-slate-200 dark:border-slate-800/50">
                         <div>
-                            <div className="text-3xl font-bold text-zinc-900 dark:text-white">10K+</div>
+                            <div className="text-3xl font-bold text-slate-900 dark:text-white">10K+</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Users</div>
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-zinc-900 dark:text-white">99.9%</div>
+                            <div className="text-3xl font-bold text-slate-900 dark:text-white">99.9%</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Uptime</div>
                         </div>
                         <div>
-                            <div className="text-3xl font-bold text-zinc-900 dark:text-white">24/7</div>
+                            <div className="text-3xl font-bold text-slate-900 dark:text-white">24/7</div>
                             <div className="text-xs text-slate-600 dark:text-slate-400 uppercase tracking-wider mt-1">Support</div>
                         </div>
                     </div>
@@ -101,12 +102,12 @@ export const SignInPage = () => {
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                             <Cpu className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-white">BeamLab Ultimate</span>
+                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
                     </div>
 
                     {/* Header */}
                     <div className="text-center lg:text-left space-y-2">
-                        <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">Welcome Back</h2>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Welcome Back</h2>
                         <p className="text-slate-600 dark:text-slate-400">
                             Enter your credentials to access your workspace
                         </p>
@@ -134,7 +135,7 @@ export const SignInPage = () => {
                                         headerTitle: 'hidden', // We have our own header
                                         headerSubtitle: 'hidden',
                                         formFieldLabel: 'text-slate-700 dark:text-slate-300 font-medium text-sm',
-                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-zinc-900 placeholder:text-slate-600 dark:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
+                                        formFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all',
                                         formButtonPrimary: 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-2.5 rounded-lg shadow-lg shadow-blue-500/20 transition-all',
                                         footerActionLink: 'text-blue-400 hover:text-blue-300 font-medium',
                                         identityPreviewText: 'text-slate-700 dark:text-slate-300',
@@ -144,7 +145,7 @@ export const SignInPage = () => {
                                         dividerLine: 'bg-slate-100 dark:bg-slate-800',
                                         dividerText: 'text-slate-600 dark:text-slate-400 uppercase text-xs tracking-wider bg-slate-50 dark:bg-slate-900 px-2',
                                         formFieldInputShowPasswordButton: 'text-slate-600 hover:text-slate-700 dark:text-slate-300',
-                                        otpCodeFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-zinc-900 dark:text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
+                                        otpCodeFieldInput: 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-center font-mono font-bold text-lg focus:ring-blue-500',
                                         footer: 'bg-slate-50 dark:bg-slate-900/50 p-6 border-t border-slate-200 dark:border-slate-800'
                                     },
                                     layout: {

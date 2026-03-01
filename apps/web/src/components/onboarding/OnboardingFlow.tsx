@@ -150,7 +150,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
       {/* Skip Button */}
       <button
         onClick={handleSkip}
-        className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm"
+        className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm"
       >
         Skip for now <X className="w-4 h-4" />
       </button>
@@ -193,7 +193,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3">
               {steps[currentStep].title}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-lg mb-10">
@@ -214,7 +214,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
               currentStep === 0
                 ? 'text-slate-500 cursor-not-allowed'
-                : 'text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             <ArrowLeft className="w-4 h-4" /> Back
@@ -306,7 +306,7 @@ const RoleStep: FC<{
             {role.icon}
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-zinc-900 dark:text-white">{role.label}</p>
+            <p className="font-semibold text-slate-900 dark:text-white">{role.label}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">{role.desc}</p>
           </div>
           {preferences.role === role.id && (
@@ -343,7 +343,7 @@ const ExperienceStep: FC<{
           }`}
         >
           <div className="flex justify-between items-start mb-2">
-            <p className="font-semibold text-zinc-900 dark:text-white">{level.label}</p>
+            <p className="font-semibold text-slate-900 dark:text-white">{level.label}</p>
             {preferences.experience === level.id && (
               <CheckCircle2 className="w-5 h-5 text-blue-500" />
             )}
@@ -432,7 +432,7 @@ const DesignCodesStep: FC<{
           }`}
         >
           <div className="flex justify-between items-start">
-            <p className="font-semibold text-zinc-900 dark:text-white text-sm">{code.label}</p>
+            <p className="font-semibold text-slate-900 dark:text-white text-sm">{code.label}</p>
             {preferences.designCodes.includes(code.id) && (
               <CheckCircle2 className="w-4 h-4 text-blue-500" />
             )}

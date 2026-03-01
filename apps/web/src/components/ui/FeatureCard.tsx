@@ -104,7 +104,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
                     w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg
                     transition-all duration-200 border
                     ${disabled
-                        ? 'opacity-50 cursor-not-allowed bg-zinc-100/30 dark:bg-zinc-800/30 border-zinc-300/30 dark:border-zinc-700/30'
+                        ? 'opacity-50 cursor-not-allowed bg-slate-100/30 dark:bg-slate-800/30 border-slate-300/30 dark:border-slate-700/30'
                         : `${colors.bg} ${colors.hover} ${colors.border} ${colors.text}`
                     }
                 `}
@@ -116,7 +116,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
                     <Crown className="w-3 h-3 text-amber-500 flex-shrink-0" />
                 )}
                 {shortcut && (
-                    <kbd className="ml-auto text-[10px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">
+                    <kbd className="ml-auto text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
                         {shortcut}
                     </kbd>
                 )}
@@ -133,7 +133,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
                     w-full flex flex-col gap-2 p-4 text-left rounded-xl
                     transition-all duration-200 border group
                     ${disabled
-                        ? 'opacity-50 cursor-not-allowed bg-zinc-100/30 dark:bg-zinc-800/30 border-zinc-300/30 dark:border-zinc-700/30'
+                        ? 'opacity-50 cursor-not-allowed bg-slate-100/30 dark:bg-slate-800/30 border-slate-300/30 dark:border-slate-700/30'
                         : `${colors.bg} ${colors.hover} ${colors.border}`
                     }
                 `}
@@ -156,11 +156,11 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
                 </div>
                 <div>
                     <h4 className={`font-semibold ${colors.text}`}>{title}</h4>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">{description}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{description}</p>
                 </div>
                 {shortcut && (
-                    <div className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
-                        Shortcut: <kbd className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded">{shortcut}</kbd>
+                    <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                        Shortcut: <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">{shortcut}</kbd>
                     </div>
                 )}
             </button>
@@ -176,7 +176,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
                 w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg
                 transition-all duration-200 border group
                 ${disabled
-                    ? 'opacity-50 cursor-not-allowed bg-zinc-100/30 dark:bg-zinc-800/30 border-zinc-300/30 dark:border-zinc-700/30'
+                    ? 'opacity-50 cursor-not-allowed bg-slate-100/30 dark:bg-slate-800/30 border-slate-300/30 dark:border-slate-700/30'
                     : `${colors.bg} ${colors.hover} ${colors.border}`
                 }
             `}
@@ -191,9 +191,9 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
                         <Crown className="w-3 h-3 text-amber-500 flex-shrink-0" />
                     )}
                 </div>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 truncate block">{description}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 truncate block">{description}</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <ChevronRight className="w-4 h-4 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
     );
 };
@@ -220,18 +220,18 @@ export const FeatureGroup: React.FC<FeatureGroupProps> = ({
     const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
     return (
-        <div className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
+        <div className="border-b border-slate-200 dark:border-slate-800 last:border-b-0">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
             >
                 <ChevronRight
-                    className={`w-4 h-4 text-zinc-500 dark:text-zinc-400 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+                    className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform ${isOpen ? 'rotate-90' : ''}`}
                 />
-                {icon && <span className="text-zinc-500 dark:text-zinc-400">{icon}</span>}
+                {icon && <span className="text-slate-500 dark:text-slate-400">{icon}</span>}
                 <span>{title}</span>
                 {badge !== undefined && badge > 0 && (
-                    <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 rounded">
+                    <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded">
                         {badge}
                     </span>
                 )}

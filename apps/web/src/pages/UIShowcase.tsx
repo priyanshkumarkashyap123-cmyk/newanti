@@ -3,7 +3,7 @@
  * Demonstrates usage of the new BeamLab UI component library
  */
 
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     Folder, Settings, Bell, User, Zap,
@@ -48,6 +48,8 @@ export const UIShowcase: FC = () => {
     const confirm = useConfirm();
     const { toast } = useAppNotifications();
 
+    useEffect(() => { document.title = 'UI Showcase | BeamLab Ultimate'; }, []);
+
     // Demo data
     const sparklineData = [10, 25, 15, 30, 20, 45, 35, 50, 40, 60];
 
@@ -78,7 +80,7 @@ export const UIShowcase: FC = () => {
                         className="mb-6"
                     />
 
-                    <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-2">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
                         UI Component Library
                     </h1>
                     <p className="text-slate-600 dark:text-slate-400 mb-8">
@@ -136,7 +138,7 @@ export const UIShowcase: FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Badges & Avatars */}
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Badges & Avatars</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Badges & Avatars</h3>
 
                             <div className="flex flex-wrap gap-2 mb-6">
                                 <Badge variant="success" dot>Active</Badge>
@@ -165,7 +167,7 @@ export const UIShowcase: FC = () => {
 
                         {/* Progress Indicators */}
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Progress</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Progress</h3>
 
                             <div className="flex items-center gap-6 mb-6">
                                 <ProgressRing progress={75} color="green" label="Tasks" />
@@ -183,7 +185,7 @@ export const UIShowcase: FC = () => {
                 <TabPanel isActive={activeTab === 'data'}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Sparkline Charts</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Sparkline Charts</h3>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <span className="text-slate-600 dark:text-slate-400">Analysis Time</span>
@@ -197,7 +199,7 @@ export const UIShowcase: FC = () => {
                         </div>
 
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Tooltips</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Tooltips</h3>
                             <div className="flex gap-4">
                                 <Tooltip content="Top tooltip" position="top">
                                     <Button variant="outline">Top</Button>
@@ -217,7 +219,7 @@ export const UIShowcase: FC = () => {
                 <TabPanel isActive={activeTab === 'overlays'}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Dialogs</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Dialogs</h3>
                             <div className="flex flex-wrap gap-3">
                                 <Button onClick={modal.open}>Open Modal</Button>
                                 <Button variant="outline" onClick={drawer.open}>Open Drawer</Button>
@@ -227,7 +229,7 @@ export const UIShowcase: FC = () => {
                         </div>
 
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Toast Notifications</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Toast Notifications</h3>
                             <div className="flex flex-wrap gap-3">
                                 <Button size="sm" onClick={() => toast.success('Success!', 'Operation completed.')}>
                                     Success
@@ -250,7 +252,7 @@ export const UIShowcase: FC = () => {
                 <TabPanel isActive={activeTab === 'navigation'}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Stepper</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Stepper</h3>
                             <Stepper
                                 steps={[
                                     { id: 'setup', label: 'Setup', description: 'Configure project' },
@@ -273,7 +275,7 @@ export const UIShowcase: FC = () => {
                         </div>
 
                         <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Pagination</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Pagination</h3>
                             <Pagination
                                 currentPage={currentPage}
                                 totalPages={10}
@@ -283,7 +285,7 @@ export const UIShowcase: FC = () => {
                     </div>
 
                     <div className="mt-6 p-6 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
-                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Accordion</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Accordion</h3>
                         <Accordion
                             items={[
                                 { id: '1', title: 'What is BeamLab?', content: 'BeamLab is a next-generation structural engineering platform.' },
@@ -344,7 +346,7 @@ export const UIShowcase: FC = () => {
                                 onClick={sheet.close}
                                 className="p-4 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                             >
-                                <span className="text-zinc-900 dark:text-white font-medium">{action}</span>
+                                <span className="text-slate-900 dark:text-white font-medium">{action}</span>
                             </button>
                         ))}
                     </div>

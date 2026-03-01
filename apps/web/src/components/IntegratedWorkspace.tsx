@@ -203,7 +203,7 @@ export const IntegratedWorkspace: FC = () => {
                         onClick={runAnalysis}
                         disabled={analyzing || model.members.size === 0}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-all ${analyzing
-                                ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
+                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
                                 : 'bg-blue-600 hover:bg-blue-500 text-white'
                             }`}
                     >
@@ -220,7 +220,7 @@ export const IntegratedWorkspace: FC = () => {
                         onClick={toggleVoice}
                         className={`p-2 rounded-lg transition-all ${voiceActive
                                 ? 'bg-red-600 text-white animate-pulse'
-                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         title={voiceActive ? 'Stop Voice' : 'Start Voice'}
                     >
@@ -228,7 +228,7 @@ export const IntegratedWorkspace: FC = () => {
                     </button>
 
                     {/* Collaborators */}
-                    <div className="px-3 py-2 bg-zinc-100/80 dark:bg-zinc-800/80 rounded-lg flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                    <div className="px-3 py-2 bg-slate-100/80 dark:bg-slate-800/80 rounded-lg flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                         <Users className="w-4 h-4" />
                         <span>{collaborators + 1} online</span>
                     </div>
@@ -236,30 +236,30 @@ export const IntegratedWorkspace: FC = () => {
 
                 {/* Results Summary */}
                 {analysisResult && analysisResult.status === 'complete' && (
-                    <div className="absolute top-4 right-4 z-10 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
+                    <div className="absolute top-4 right-4 z-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg p-4 border border-slate-200 dark:border-slate-800">
                         <div className="flex items-center gap-2 mb-3">
                             <CheckCircle className="w-4 h-4 text-green-400" />
-                            <span className="text-sm font-bold text-zinc-900 dark:text-white">Analysis Complete</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-white">Analysis Complete</span>
                         </div>
                         <div className="grid grid-cols-3 gap-4 text-center">
                             <div>
                                 <div className="text-lg font-mono text-blue-400">
                                     {(analysisResult.maxDisplacement * 1000).toFixed(1)}mm
                                 </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">Max Deflection</div>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400">Max Deflection</div>
                             </div>
                             <div>
                                 <div className={`text-lg font-mono ${analysisResult.utilizationMax > 0.9 ? 'text-red-400' : 'text-green-400'
                                     }`}>
                                     {(analysisResult.utilizationMax * 100).toFixed(0)}%
                                 </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">Max Utilization</div>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400">Max Utilization</div>
                             </div>
                             <div>
                                 <div className="text-lg font-mono text-green-400">
                                     ✓ OK
                                 </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">Status</div>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400">Status</div>
                             </div>
                         </div>
                     </div>
@@ -269,7 +269,7 @@ export const IntegratedWorkspace: FC = () => {
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2" style={{ top: analysisResult ? 140 : 16 }}>
                     <button
                         onClick={() => setActivePanel(activePanel === 'design' ? null : 'design')}
-                        className={`p-2 rounded-lg ${activePanel === 'design' ? 'bg-blue-600 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
+                        className={`p-2 rounded-lg ${activePanel === 'design' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                             }`}
                         title="Design Checks"
                     >
@@ -277,7 +277,7 @@ export const IntegratedWorkspace: FC = () => {
                     </button>
                     <button
                         onClick={() => setActivePanel(activePanel === 'validation' ? null : 'validation')}
-                        className={`p-2 rounded-lg ${activePanel === 'validation' ? 'bg-emerald-600 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
+                        className={`p-2 rounded-lg ${activePanel === 'validation' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                             }`}
                         title="Validation"
                     >
@@ -285,7 +285,7 @@ export const IntegratedWorkspace: FC = () => {
                     </button>
                     <button
                         onClick={generateReport}
-                        className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                         title="Generate Report"
                     >
                         <Download className="w-4 h-4" />
@@ -295,7 +295,7 @@ export const IntegratedWorkspace: FC = () => {
 
             {/* Right Panel */}
             {activePanel && (
-                <div className="w-96 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+                <div className="w-96 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
                     {activePanel === 'design' && <DesignCodeResultsPanel />}
                     {activePanel === 'validation' && <ValidationDashboard />}
                 </div>

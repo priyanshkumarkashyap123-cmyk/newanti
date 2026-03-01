@@ -156,7 +156,6 @@ router.post("/", authRequired, async (req: Request, res: Response) => {
     // Add to user's project list
     await User.findByIdAndUpdate(user._id, {
       $push: { projects: project._id },
-      $inc: { totalAnalysisRuns: 1 },
     });
 
     return res.json({

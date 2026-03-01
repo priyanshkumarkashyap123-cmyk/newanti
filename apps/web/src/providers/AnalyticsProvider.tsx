@@ -300,13 +300,17 @@ export const useAnalytics = (): AnalyticsContextType => {
  */
 export const useTrackMount = (
   eventName: string,
-  properties?: Record<string, any>,
+  properties?: Record<string, unknown>,
 ) => {
   const { track } = useAnalytics();
+  const trackedRef = useRef(false);
 
   useEffect(() => {
-    track(eventName, properties);
-  }, []);
+    if (!trackedRef.current) {
+      trackedRef.current = true;
+      track(eventName, properties);
+    }
+  }, [track, eventName, properties]);
 };
 
 /**

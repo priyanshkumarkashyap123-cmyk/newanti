@@ -310,7 +310,7 @@ const StressMember: FC<StressMemberProps> = ({
                     center
                     style={{ pointerEvents: 'none' }}
                 >
-                    <div className="bg-black/90 text-zinc-900 dark:text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    <div className="bg-black/90 text-slate-900 dark:text-white text-xs px-2 py-1 rounded whitespace-nowrap">
                         <div className="font-bold">{memberId}</div>
                         <div>Max: {maxStress.toFixed(1)} MPa</div>
                         <div>Util: {((maxStress / capacity) * 100).toFixed(1)}%</div>
@@ -722,7 +722,7 @@ export const StressContourPanel: FC<StressContourPanelProps> = ({
         <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Layers className="w-5 h-5 text-cyan-500" />
                     Stress Contours
                 </h3>

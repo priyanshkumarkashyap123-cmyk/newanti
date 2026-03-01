@@ -21,9 +21,9 @@ module.exports = {
             
             // URLs to test
             url: [
-                'http://localhost:5173/',
-                'http://localhost:5173/dashboard',
-                'http://localhost:5173/sign-in',
+                'http://localhost/',
+                'http://localhost/dashboard',
+                'http://localhost/sign-in',
             ],
             
             // Number of runs per URL

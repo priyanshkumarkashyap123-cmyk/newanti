@@ -26,14 +26,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label 
                         htmlFor={inputId}
-                        className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-1.5"
+                        className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5"
                     >
                         {label}
                     </label>
                 )}
                 <div className="relative flex items-center">
                     {leftIcon && (
-                        <div className="absolute left-2 text-zinc-500 dark:text-zinc-400 pointer-events-none" aria-hidden="true">
+                        <div className="absolute left-2 text-slate-500 dark:text-slate-400 pointer-events-none" aria-hidden="true">
                             {leftIcon}
                         </div>
                     )}
@@ -44,18 +44,18 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         aria-describedby={errorId}
                         className={cn(
                             // Base styles - compact height
-                            'h-9 w-full rounded-md border bg-white dark:bg-zinc-900',
+                            'h-9 w-full rounded-md border bg-white dark:bg-slate-900',
                             'px-3 py-2 text-sm',
                             // Font
-                            'font-mono text-zinc-900 dark:text-zinc-100',
+                            'font-mono text-slate-900 dark:text-slate-100',
                             // Placeholder
-                            'placeholder:text-zinc-400 dark:placeholder:text-zinc-500',
+                            'placeholder:text-slate-400 dark:placeholder:text-slate-500',
                             // Focus - enhanced visibility
-                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950',
                             // Border
-                            'border-zinc-200 dark:border-zinc-700',
+                            'border-slate-200 dark:border-slate-700',
                             // Disabled
-                            'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-zinc-100 dark:disabled:bg-zinc-800',
+                            'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800',
                             // Error state
                             error && 'border-red-500 focus-visible:ring-red-500',
                             // Icon padding
@@ -69,7 +69,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         {...props}
                     />
                     {rightIcon && (
-                        <div className="absolute right-2 text-zinc-500 dark:text-zinc-400 pointer-events-none" aria-hidden="true">
+                        <div className="absolute right-2 text-slate-500 dark:text-slate-400 pointer-events-none" aria-hidden="true">
                             {rightIcon}
                         </div>
                     )}
@@ -120,10 +120,10 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
                     max={max}
                     step={step}
                     className={cn(
-                        'h-8 w-full rounded-md border bg-white dark:bg-zinc-900',
+                        'h-8 w-full rounded-md border bg-white dark:bg-slate-900',
                         'px-2.5 py-1 text-sm text-right',
-                        'font-mono text-zinc-900 dark:text-zinc-100',
-                        'border-zinc-200 dark:border-zinc-700',
+                        'font-mono text-slate-900 dark:text-slate-100',
+                        'border-slate-200 dark:border-slate-700',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
                         'transition-colors',
                         // Hide spin buttons
@@ -134,7 +134,7 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
                     {...props}
                 />
                 {unit && (
-                    <span className="absolute right-2 text-xs text-zinc-500 dark:text-zinc-400 pointer-events-none">
+                    <span className="absolute right-2 text-xs text-slate-500 dark:text-slate-400 pointer-events-none">
                         {unit}
                     </span>
                 )}

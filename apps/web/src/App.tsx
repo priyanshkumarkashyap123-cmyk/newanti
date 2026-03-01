@@ -275,9 +275,9 @@ import { AnalyticsProvider } from "./providers/AnalyticsProvider";
 // Loading Component
 import { DashboardSkeleton } from "./components/ui/DashboardSkeleton";
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900">
+  <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900" role="status" aria-live="polite">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+      <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" aria-hidden="true"></div>
       <p className="text-slate-500 dark:text-slate-400 text-sm font-medium animate-pulse">
         Loading Module...
       </p>
@@ -285,8 +285,7 @@ const PageLoader = () => (
   </div>
 );
 
-// Performance Testing Utility - Load grid generator globally
-import "./utils/generateTestGrid";
+// Performance Testing Utility - already imported at top of file
 
 // ============================================
 // ERROR BOUNDARY

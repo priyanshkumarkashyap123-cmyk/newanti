@@ -10,6 +10,8 @@
  * - Push notifications readiness
  */
 
+import logger from './logger';
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -43,7 +45,7 @@ export function register(config?: ServiceWorkerConfig): void {
         // Development: check if SW exists
         checkValidServiceWorker(swUrl, config);
         navigator.serviceWorker.ready.then(() => {
-          console.log('[SW] Running in localhost development mode');
+          logger.log('[SW] Running in localhost development mode');
         });
       } else {
         // Production: register SW
@@ -70,11 +72,11 @@ function registerValidSW(swUrl: string, config?: ServiceWorkerConfig): void {
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
               // New content is available
-              console.log('[SW] New content available; please refresh.');
+              logger.log('[SW] New content available; please refresh.');
               config?.onUpdate?.(registration);
             } else {
               // Content is cached for offline use
-              console.log('[SW] Content cached for offline use.');
+              logger.log('[SW] Content cached for offline use.');
               config?.onSuccess?.(registration);
             }
           }
@@ -82,7 +84,7 @@ function registerValidSW(swUrl: string, config?: ServiceWorkerConfig): void {
       };
     })
     .catch((error) => {
-      console.error('[SW] Registration failed:', error);
+      logger.error('[SW] Registration failed:', error);
       config?.onError?.(error);
     });
 }
@@ -107,7 +109,7 @@ function checkValidServiceWorker(swUrl: string, config?: ServiceWorkerConfig): v
       }
     })
     .catch(() => {
-      console.log('[SW] No internet connection found. App is running in offline mode.');
+      logger.log('[SW] No internet connection found. App is running in offline mode.');
     });
 }
 
@@ -122,7 +124,7 @@ export function unregister(): void {
         registration.unregister();
       })
       .catch((error) => {
-        console.error('[SW] Unregistration error:', error);
+        logger.error('[SW] Unregistration error:', error);
       });
   }
 }
@@ -152,7 +154,7 @@ export async function clearAllCaches(): Promise<void> {
     await Promise.all(
       cacheNames.map((cacheName) => caches.delete(cacheName))
     );
-    console.log('[SW] All caches cleared');
+    logger.log('[SW] All caches cleared');
   }
 }
 
@@ -319,7 +321,7 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
         </div>
         <button
           onClick={onDismiss}
-          className="text-blue-200 hover:text-zinc-900 dark:text-white"
+          className="text-blue-200 hover:text-slate-900 dark:text-white"
           aria-label="Dismiss"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

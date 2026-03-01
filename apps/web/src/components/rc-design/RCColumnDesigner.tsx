@@ -202,7 +202,7 @@ export default function RCColumnDesigner() {
                 <Columns className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                   RC Column Designer
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -220,7 +220,7 @@ export default function RCColumnDesigner() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     activeTab === tab
                       ? "bg-purple-500 text-white shadow-lg"
-                      : "text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-600/50"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600/50"
                   }`}
                 >
                   {tab === "interaction"
@@ -396,7 +396,7 @@ export default function RCColumnDesigner() {
                         onChange={(e) =>
                           handleChange("endConditionX", e.target.value)
                         }
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                       >
                         <option value="fixed-fixed">
                           Fixed-Fixed (k=0.65)
@@ -419,7 +419,7 @@ export default function RCColumnDesigner() {
                         onChange={(e) =>
                           handleChange("endConditionY", e.target.value)
                         }
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                       >
                         <option value="fixed-fixed">
                           Fixed-Fixed (k=0.65)
@@ -443,7 +443,7 @@ export default function RCColumnDesigner() {
                         }
                         className="w-5 h-5 rounded bg-slate-600 border-slate-500 text-purple-500 focus:ring-purple-500"
                       />
-                      <label htmlFor="braced" className="text-zinc-900 dark:text-white">
+                      <label htmlFor="braced" className="text-slate-900 dark:text-white">
                         Braced Column (No lateral sway)
                       </label>
                     </div>
@@ -467,7 +467,7 @@ export default function RCColumnDesigner() {
                         onChange={(e) =>
                           handleChange("concreteGrade", e.target.value)
                         }
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                       >
                         {concreteGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -485,7 +485,7 @@ export default function RCColumnDesigner() {
                         onChange={(e) =>
                           handleChange("steelGrade", e.target.value)
                         }
-                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                       >
                         {steelGrades.map((grade) => (
                           <option key={grade.grade} value={grade.grade}>
@@ -503,7 +503,7 @@ export default function RCColumnDesigner() {
                   whileTap={{ scale: 0.98 }}
                   onClick={runDesign}
                   disabled={isCalculating}
-                  className="w-full py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 rounded-xl text-zinc-900 dark:text-white font-bold text-lg shadow-lg shadow-purple-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 rounded-xl text-slate-900 dark:text-white font-bold text-lg shadow-lg shadow-purple-500/25 flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {isCalculating ? (
                     <>
@@ -581,7 +581,7 @@ function InputCard({
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="text-purple-400">{icon}</div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
       </div>
       {children}
     </div>
@@ -609,7 +609,7 @@ function CollapsibleSection({
       >
         <div className="flex items-center gap-3">
           <div className="text-purple-400">{icon}</div>
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
         </div>
         {isExpanded ? (
           <ChevronUp className="w-5 h-5 text-slate-500 dark:text-slate-400" />
@@ -655,7 +655,7 @@ function InputField({
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
           disabled={disabled}
-          className={`w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+          className={`w-full bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-16 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 ${
             disabled ? "opacity-50 cursor-not-allowed" : ""
           }`}
         />
@@ -750,7 +750,7 @@ function ColumnPreview({
 
     return (
       <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <Square className="w-4 h-4 text-purple-400" /> Column Cross-Section
         </h3>
         <svg
@@ -1145,7 +1145,7 @@ function ColumnPreview({
 
     return (
       <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <Circle className="w-4 h-4 text-purple-400" /> Column Cross-Section
         </h3>
         <svg
@@ -1349,13 +1349,13 @@ function SlendernessPreview({
 }) {
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
         Slenderness Check
       </h3>
       <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
         <div>
           <p className="text-slate-500 dark:text-slate-400 text-sm">Slenderness Ratio (λ)</p>
-          <p className="text-3xl font-bold text-zinc-900 dark:text-white">{data.lambda}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white">{data.lambda}</p>
         </div>
         <div
           className={`px-4 py-2 rounded-lg text-sm font-medium ${
@@ -1399,23 +1399,23 @@ function LoadingSummary({ formData }: { formData: ColumnFormData }) {
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Quick Summary</h3>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick Summary</h3>
       <div className="space-y-3">
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400">Cross-sectional Area</span>
-          <span className="text-zinc-900 dark:text-white font-medium">
+          <span className="text-slate-900 dark:text-white font-medium">
             {(area / 1e6).toFixed(4)} m²
           </span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400">Axial Stress</span>
-          <span className="text-zinc-900 dark:text-white font-medium">
+          <span className="text-slate-900 dark:text-white font-medium">
             {stress.toFixed(2)} MPa
           </span>
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400">Eccentricity (ex)</span>
-          <span className="text-zinc-900 dark:text-white font-medium">
+          <span className="text-slate-900 dark:text-white font-medium">
             {formData.Pu !== 0
               ? ((formData.Mux / formData.Pu) * 1000).toFixed(1)
               : "∞"}{" "}
@@ -1424,7 +1424,7 @@ function LoadingSummary({ formData }: { formData: ColumnFormData }) {
         </div>
         <div className="flex justify-between p-3 bg-slate-700/30 rounded-lg">
           <span className="text-slate-500 dark:text-slate-400">Eccentricity (ey)</span>
-          <span className="text-zinc-900 dark:text-white font-medium">
+          <span className="text-slate-900 dark:text-white font-medium">
             {formData.Pu !== 0
               ? ((formData.Muy / formData.Pu) * 1000).toFixed(1)
               : "∞"}{" "}
@@ -1464,7 +1464,7 @@ function ColumnResultsPanel({ result }: { result: ColumnDesignResult }) {
             <AlertTriangle className="w-12 h-12 text-red-400" />
           )}
           <div>
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               {isDesignOk ? "Design OK" : "Design Needs Revision"}
             </h2>
             <p className="text-slate-600 dark:text-slate-300">
@@ -1475,7 +1475,7 @@ function ColumnResultsPanel({ result }: { result: ColumnDesignResult }) {
           </div>
           <div className="ml-auto text-right">
             <p className="text-sm text-slate-500 dark:text-slate-400">Utilization Ratio</p>
-            <p className="text-3xl font-bold text-zinc-900 dark:text-white">
+            <p className="text-3xl font-bold text-slate-900 dark:text-white">
               {(result.utilizationRatio * 100).toFixed(1)}%
             </p>
           </div>
@@ -1558,7 +1558,7 @@ function ColumnResultsPanel({ result }: { result: ColumnDesignResult }) {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-zinc-900 dark:text-white font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-slate-200 dark:bg-slate-700 rounded-xl text-slate-900 dark:text-white font-medium flex items-center gap-2"
         >
           <FileText className="w-5 h-5" />
           Export Report
@@ -1594,7 +1594,7 @@ function ResultCard({
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}
         >
@@ -1610,7 +1610,7 @@ function ResultRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-slate-500 dark:text-slate-400 text-sm">{label}</span>
-      <span className="text-zinc-900 dark:text-white font-medium">{value}</span>
+      <span className="text-slate-900 dark:text-white font-medium">{value}</span>
     </div>
   );
 }
@@ -1663,7 +1663,7 @@ function InteractionDiagram({ result }: { result: ColumnDesignResult }) {
 
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
-      <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-6">
+      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
         P-M Interaction Diagram
       </h3>
 
@@ -1807,17 +1807,17 @@ function InteractionDiagram({ result }: { result: ColumnDesignResult }) {
       <div className="mt-6 grid grid-cols-3 gap-4">
         <div className="p-4 bg-slate-700/30 rounded-lg text-center">
           <p className="text-slate-500 dark:text-slate-400 text-sm">Max Axial Capacity</p>
-          <p className="text-xl font-bold text-zinc-900 dark:text-white">{Pu_max.toFixed(0)} kN</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{Pu_max.toFixed(0)} kN</p>
         </div>
         <div className="p-4 bg-slate-700/30 rounded-lg text-center">
           <p className="text-slate-500 dark:text-slate-400 text-sm">Max Moment Capacity</p>
-          <p className="text-xl font-bold text-zinc-900 dark:text-white">
+          <p className="text-xl font-bold text-slate-900 dark:text-white">
             {Mu_max.toFixed(0)} kN-m
           </p>
         </div>
         <div className="p-4 bg-slate-700/30 rounded-lg text-center">
           <p className="text-slate-500 dark:text-slate-400 text-sm">Safety Factor</p>
-          <p className="text-xl font-bold text-zinc-900 dark:text-white">
+          <p className="text-xl font-bold text-slate-900 dark:text-white">
             {result.utilizationRatio > 0
               ? (1 / result.utilizationRatio).toFixed(2)
               : "∞"}

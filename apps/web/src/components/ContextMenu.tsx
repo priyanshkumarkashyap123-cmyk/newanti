@@ -100,7 +100,7 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
 
     const renderMenuItem = (item: ContextMenuItem, index: number) => {
         if (item.type === 'divider') {
-            return <div key={index} className="my-1 h-px bg-zinc-200 dark:bg-zinc-700" />;
+            return <div key={index} className="my-1 h-px bg-slate-200 dark:bg-slate-700" />;
         }
 
         const isHovered = hoveredSubmenu === item.id;
@@ -121,31 +121,31 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
                         w-full flex items-center gap-3 px-3 py-2 text-left text-sm
                         transition-colors duration-75 rounded
                         ${item.disabled
-                            ? 'text-zinc-500 dark:text-zinc-400 cursor-not-allowed'
+                            ? 'text-slate-500 dark:text-slate-400 cursor-not-allowed'
                             : item.danger
                                 ? 'text-red-400 hover:bg-red-500/20'
-                                : 'text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                : 'text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }
                     `}
                 >
-                    <span className="w-4 h-4 flex-shrink-0 text-zinc-500 dark:text-zinc-400">
+                    <span className="w-4 h-4 flex-shrink-0 text-slate-500 dark:text-slate-400">
                         {item.icon}
                     </span>
                     <span className="flex-1">{item.label}</span>
                     {item.shortcut && (
-                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 ml-4">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 ml-4">
                             {item.shortcut}
                         </span>
                     )}
                     {item.submenu && (
-                        <ChevronRight className="w-3 h-3 text-zinc-500 dark:text-zinc-400" />
+                        <ChevronRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                     )}
                 </button>
 
                 {/* Submenu */}
                 {item.submenu && isHovered && (
                     <div
-                        className="absolute left-full top-0 ml-1 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl py-1 min-w-[160px]"
+                        className="absolute left-full top-0 ml-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[160px]"
                         onMouseEnter={() => setHoveredSubmenu(item.id || null)}
                         onMouseLeave={() => setHoveredSubmenu(null)}
                     >
@@ -161,7 +161,7 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
     return createPortal(
         <div
             ref={menuRef}
-            className="fixed z-[9999] bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl py-1 min-w-[200px] animate-in fade-in zoom-in-95 duration-100"
+            className="fixed z-[9999] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl py-1 min-w-[200px] animate-in fade-in zoom-in-95 duration-100"
             style={{
                 left: adjustedPosition.x,
                 top: adjustedPosition.y,

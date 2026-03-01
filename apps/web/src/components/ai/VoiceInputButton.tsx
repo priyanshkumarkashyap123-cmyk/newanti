@@ -45,7 +45,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
                 onClick={() => voiceInput.toggleListening()}
                 className={`relative p-3 rounded-full transition-all ${state.isListening
                     ? 'bg-red-500 text-white animate-pulse'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-zinc-900 dark:hover:text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-slate-900 dark:hover:text-white'
                     } ${className}`}
                 title={state.isListening ? 'Stop listening' : 'Start voice input'}
                 aria-label={state.isListening ? 'Stop listening' : 'Start voice input'}
@@ -71,7 +71,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
             {/* Command feedback */}
             {showFeedback && lastCommand && (
-                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-zinc-900 dark:text-white text-sm px-3 py-1 rounded-lg shadow-lg">
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white text-sm px-3 py-1 rounded-lg shadow-lg">
                     "{lastCommand}"
                 </div>
             )}
@@ -122,7 +122,7 @@ export const VoiceCommandPanel: React.FC<{
                             d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                         />
                     </svg>
-                    <span className="font-semibold text-zinc-900 dark:text-white">Voice Commands</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">Voice Commands</span>
                     {state.isListening && (
                         <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded animate-pulse">
                             Listening...
