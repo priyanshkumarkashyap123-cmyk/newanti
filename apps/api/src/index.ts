@@ -251,7 +251,9 @@ app.get("/health", async (_req: Request, res: Response) => {
 
   const isDev = process.env["NODE_ENV"] !== "production";
 
-  res.status(status === "ok" ? 200 : 503).json({
+  // Always return 200 so Azure health probes don't restart the container.
+  // The actual dependency status is reported in the JSON body.
+  res.status(200).json({
     status,
     service: "BeamLab Ultimate API",
     timestamp: new Date().toISOString(),
