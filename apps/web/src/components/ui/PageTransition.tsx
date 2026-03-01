@@ -1,9 +1,13 @@
 /**
  * PageTransition Component
  * Wraps page content with smooth enter/exit animations using Framer Motion
+ *
+ * Enhancement per Figma §22.7:
+ *   - Respects prefers-reduced-motion via useReducedMotion()
+ *   - Falls back to instant transition when motion is reduced
  */
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { FC, ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -35,14 +39,21 @@ const pageVariants = {
     },
 };
 
+const reducedVariants = {
+    initial: { opacity: 1 },
+    animate: { opacity: 1 },
+    exit: { opacity: 1 },
+};
+
 export const PageTransition: FC<PageTransitionProps> = ({ children, className = '' }) => {
     const location = useLocation();
+    const prefersReducedMotion = useReducedMotion();
 
     return (
         <AnimatePresence mode="wait">
             <motion.div
                 key={location.pathname}
-                variants={pageVariants}
+                variants={prefersReducedMotion ? reducedVariants : pageVariants}
                 initial="initial"
                 animate="animate"
                 exit="exit"
@@ -64,16 +75,19 @@ interface FadeInProps {
     className?: string;
 }
 
-export const FadeIn: FC<FadeInProps> = ({ children, delay = 0, className = '' }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
-        className={className}
-    >
-        {children}
-    </motion.div>
-);
+export const FadeIn: FC<FadeInProps> = ({ children, delay = 0, className = '' }) => {
+    const reduced = useReducedMotion();
+    return (
+        <motion.div
+            initial={reduced ? undefined : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={reduced ? { duration: 0 } : { duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
+            className={className}
+        >
+            {children}
+        </motion.div>
+    );
+};
 
 /**
  * StaggerContainer & StaggerItem
@@ -145,16 +159,19 @@ export const ScaleOnHover: FC<ScaleOnHoverProps> = ({
     children,
     scale = 1.02,
     className = '',
-}) => (
-    <motion.div
-        whileHover={{ scale }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ duration: 0.15 }}
-        className={className}
-    >
-        {children}
-    </motion.div>
-);
+}) => {
+    const reduced = useReducedMotion();
+    return (
+        <motion.div
+            whileHover={reduced ? undefined : { scale }}
+            whileTap={reduced ? undefined : { scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className={className}
+        >
+            {children}
+        </motion.div>
+    );
+};
 
 /**
  * SlideIn Component

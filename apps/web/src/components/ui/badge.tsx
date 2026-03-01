@@ -1,5 +1,11 @@
 /**
  * Badge Component - Status Badge
+ *
+ * Enhancements per Figma §2.8 & §21:
+ *   - forwardRef for composability
+ *   - Size variants (sm / default / lg)
+ *   - Pulse animation on dot indicator
+ *   - role="status" when used as a live indicator
  */
 
 import * as React from 'react';
@@ -7,7 +13,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 const badgeVariants = cva(
-    'inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-blue-400',
+    'inline-flex items-center rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-blue-400',
     {
         variants: {
             variant: {
@@ -27,9 +33,15 @@ const badgeVariants = cva(
                 info:
                     'border-transparent bg-blue-500/20 text-blue-700 dark:text-blue-400 hover:bg-blue-500/30',
             },
+            size: {
+                sm: 'px-1.5 py-px text-[10px]',
+                default: 'px-2 py-0.5 text-[11px]',
+                lg: 'px-2.5 py-1 text-xs',
+            },
         },
         defaultVariants: {
             variant: 'default',
+            size: 'default',
         },
     }
 );
@@ -39,19 +51,43 @@ export interface BadgeProps
         VariantProps<typeof badgeVariants> {
     /** Show a 6px colored dot indicator */
     dot?: boolean;
+    /** Animate the dot with a ping/pulse */
+    dotPulse?: boolean;
     /** Color for the dot (CSS class or Tailwind color) */
     dotColor?: string;
     /** Show a dismiss/close button */
     onDismiss?: () => void;
     /** Optional icon before text */
     icon?: React.ReactNode;
+    /** When true, renders with role="status" for live updates */
+    live?: boolean;
 }
 
-function Badge({ className, variant, dot, dotColor, onDismiss, icon, children, ...props }: BadgeProps) {
-    return (
-        <div className={cn(badgeVariants({ variant }), 'gap-1.5', className)} {...props}>
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+    ({ className, variant, size, dot, dotPulse, dotColor, onDismiss, icon, live, children, ...props }, ref) => (
+        <div
+            ref={ref}
+            role={live ? 'status' : undefined}
+            className={cn(badgeVariants({ variant, size }), 'gap-1.5', className)}
+            {...props}
+        >
             {dot && (
-                <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', dotColor || 'bg-current')} />
+                <span className="relative flex-shrink-0 flex h-1.5 w-1.5">
+                    {dotPulse && (
+                        <span
+                            className={cn(
+                                'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
+                                dotColor || 'bg-current'
+                            )}
+                        />
+                    )}
+                    <span
+                        className={cn(
+                            'relative inline-flex h-1.5 w-1.5 rounded-full',
+                            dotColor || 'bg-current'
+                        )}
+                    />
+                </span>
             )}
             {icon && <span className="flex-shrink-0">{icon}</span>}
             {children}
@@ -68,7 +104,8 @@ function Badge({ className, variant, dot, dotColor, onDismiss, icon, children, .
                 </button>
             )}
         </div>
-    );
-}
+    )
+);
+Badge.displayName = 'Badge';
 
 export { Badge, badgeVariants };

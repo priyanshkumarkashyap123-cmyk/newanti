@@ -9,12 +9,16 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> { }
 export function Skeleton({ className, ...props }: SkeletonProps) {
     return (
         <div
+            role="status"
+            aria-label="Loading"
             className={cn(
                 "animate-pulse rounded-md bg-slate-100/50 dark:bg-slate-800/50",
                 className
             )}
             {...props}
-        />
+        >
+            <span className="sr-only">Loading...</span>
+        </div>
     );
 }
 

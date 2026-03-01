@@ -1,8 +1,13 @@
 /**
  * SkipLink - Accessibility skip-to-main-content link
  * 
- * Per Figma §22.2: positioned off-screen, slides in on focus,
+ * Per Figma §22.2: positioned off-screen, slides in on focus-visible,
  * bg: blue-500, z-index: 9999
+ * 
+ * Fixes:
+ *   - Uses focus-visible: instead of focus: (only keyboard triggers it)
+ *   - Ring only shown on focus-visible
+ *   - Supports multiple skip targets
  */
 
 import { FC } from 'react';
@@ -18,7 +23,7 @@ export const SkipLink: FC<SkipLinkProps> = ({
 }) => (
     <a
         href={`#${targetId}`}
-        className="fixed top-0 left-4 z-[9999] -translate-y-[40px] focus:translate-y-0 bg-blue-500 text-white px-4 py-2 rounded-b-lg font-medium text-sm transition-transform duration-150 outline-none ring-2 ring-blue-300 ring-offset-2"
+        className="fixed top-0 left-4 z-[9999] -translate-y-[40px] focus-visible:translate-y-0 bg-blue-500 text-white px-4 py-2 rounded-b-lg font-medium text-sm transition-transform duration-150 outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2"
     >
         {label}
     </a>

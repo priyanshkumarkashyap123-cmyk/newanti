@@ -4,7 +4,7 @@
  */
 
 import { FC, ReactNode, useCallback, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from './dialog';
 
 // ============================================
 // Types
@@ -62,6 +62,10 @@ export const Modal: FC<ModalProps> = ({
                 onInteractOutside={closeOnBackdrop ? undefined : (e) => e.preventDefault()}
                 onEscapeKeyDown={closeOnEscape ? undefined : (e) => e.preventDefault()}
             >
+                {/* Provide a visually-hidden title when none supplied so Radix doesn't warn */}
+                {!title && !description && (
+                    <DialogTitle className="sr-only">Dialog</DialogTitle>
+                )}
                 {(title || description) && (
                     <DialogHeader>
                         {title && <DialogTitle>{title}</DialogTitle>}
@@ -203,8 +207,8 @@ export const ConfirmModal: FC<ConfirmModalProps> = ({
                         <IconComponent className={`w-5 h-5 ${config.color}`} />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
-                        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+                        <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">{title}</DialogTitle>
+                        <DialogDescription className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</DialogDescription>
                     </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
@@ -269,8 +273,8 @@ export const AlertModal: FC<AlertModalProps> = ({
                         <IconComponent className={`w-5 h-5 ${config.color}`} />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
-                        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+                        <DialogTitle className="text-lg font-semibold text-slate-900 dark:text-white">{title}</DialogTitle>
+                        <DialogDescription className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</DialogDescription>
                     </div>
                 </div>
                 <div className="flex justify-end mt-6">

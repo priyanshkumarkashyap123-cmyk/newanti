@@ -211,7 +211,19 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
       [multiSelect, effectiveSelectedIds, onSelect, onMultiSelect]
     );
 
-    // Keyboard navigation
+    // Keyboard navigation – skip disabled items
+    const nextEnabledIdx = useCallback((current: number, direction: 1 | -1): number => {
+      const len = filteredItems.length;
+      if (len === 0) return -1;
+      let idx = (current + direction + len) % len;
+      let attempts = 0;
+      while (filteredItems[idx].disabled && attempts < len) {
+        idx = (idx + direction + len) % len;
+        attempts++;
+      }
+      return idx;
+    }, [filteredItems]);
+
     const handleKeyDown = useCallback(
       (e: KeyboardEvent) => {
         if (!isOpen) {
@@ -229,15 +241,19 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
             break;
           case 'ArrowDown':
             e.preventDefault();
-            setFocusedIndex((prev) =>
-              prev < filteredItems.length - 1 ? prev + 1 : 0
-            );
+            setFocusedIndex((prev) => nextEnabledIdx(prev, 1));
             break;
           case 'ArrowUp':
             e.preventDefault();
-            setFocusedIndex((prev) =>
-              prev > 0 ? prev - 1 : filteredItems.length - 1
-            );
+            setFocusedIndex((prev) => nextEnabledIdx(prev, -1));
+            break;
+          case 'Home':
+            e.preventDefault();
+            setFocusedIndex(nextEnabledIdx(-1, 1));
+            break;
+          case 'End':
+            e.preventDefault();
+            setFocusedIndex(nextEnabledIdx(0, -1));
             break;
           case 'Enter':
           case ' ':
@@ -251,7 +267,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
             break;
         }
       },
-      [isOpen, focusedIndex, filteredItems, handleSelect]
+      [isOpen, focusedIndex, filteredItems, handleSelect, nextEnabledIdx]
     );
 
     // Click outside handler
@@ -356,6 +372,7 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
                       menuClassName
                     )}
                     role="listbox"
+                    aria-activedescendant={focusedIndex >= 0 && filteredItems[focusedIndex] ? `dropdown-item-${filteredItems[focusedIndex].id}` : undefined}
                     onKeyDown={handleKeyDown}
                   >
                     {/* Search */}
@@ -450,6 +467,7 @@ const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
   return (
     <div className="relative" ref={itemRef}>
       <div
+        id={`dropdown-item-${item.id}`}
         onClick={handleClick}
         onMouseEnter={() => {
           onMouseEnter();

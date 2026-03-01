@@ -8,6 +8,10 @@
  *   lg:      48×26px, thumb 22px
  * 
  * Colors: off = slate-600, on = blue-500, thumb = always white
+ * Enhancements (Figma §21):
+ *   - Hover brightness on track
+ *   - Spring bounce on thumb via CSS
+ *   - Active scale-down on thumb
  */
 
 import * as React from 'react';
@@ -16,7 +20,16 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 const switchVariants = cva(
-    'peer inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-slate-600',
+    [
+        'peer inline-flex shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm',
+        'transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2',
+        'focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        'data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-slate-600',
+        // hover brightness
+        'hover:data-[state=checked]:bg-blue-400 hover:data-[state=unchecked]:bg-slate-500',
+    ].join(' '),
     {
         variants: {
             size: {
@@ -32,7 +45,14 @@ const switchVariants = cva(
 );
 
 const thumbVariants = cva(
-    'pointer-events-none block rounded-full bg-white shadow-lg ring-0 transition-transform duration-200',
+    [
+        'pointer-events-none block rounded-full bg-white shadow-lg ring-0',
+        // spring easing for the translate
+        'transition-[transform,width] duration-200',
+        'motion-safe:[transition-timing-function:cubic-bezier(0.175,0.885,0.32,1.275)]',
+        // active: squish effect
+        'active:scale-95',
+    ].join(' '),
     {
         variants: {
             size: {

@@ -453,14 +453,14 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
   const remainingTimeRef = useRef<number>(toast.duration || DEFAULT_DURATION);
   const [reducedMotion, setReducedMotion] = useState(false);
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     if (!toast.dismissible && toast.type !== 'loading') return;
     
     setIsExiting(true);
     setTimeout(() => {
       onDismiss();
     }, reducedMotion ? 0 : 200);
-  };
+  }, [toast.dismissible, toast.type, onDismiss, reducedMotion]);
 
   const handleMouseEnter = () => {
     if (toast.pauseOnHover) {
@@ -518,6 +518,13 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
       `}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && toast.dismissible) {
+          e.stopPropagation();
+          handleDismiss();
+        }
+      }}
+      tabIndex={toast.dismissible ? 0 : undefined}
     >
       <div className="p-4">
         <div className="flex items-start gap-3">

@@ -18,10 +18,15 @@ interface DragHandleProps {
 
 export const DragHandle: FC<DragHandleProps> = ({ className = '' }) => (
     <div
+        role="button"
+        tabIndex={0}
+        aria-roledescription="Drag handle"
+        aria-label="Press Space to start dragging, use Arrow keys to reorder"
         className={`
             flex items-center justify-center w-6 h-6 rounded
             text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700
             cursor-grab active:cursor-grabbing transition-colors
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1
             ${className}
         `}
     >
@@ -126,6 +131,8 @@ export const DropZone: FC<DropZoneProps> = ({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            aria-dropeffect={isOver && canDrop ? 'move' : 'none'}
+            aria-label="Drop zone"
             className={`
                 relative transition-all duration-200
                 ${isOver && canDrop ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900' : ''}
@@ -315,14 +322,22 @@ interface CursorIndicatorProps {
 
 export const CursorIndicator: FC<CursorIndicatorProps> = ({ mode, label }) => {
     const [position, setPosition] = useState({ x: 0, y: 0 });
+    const rafRef = useRef<number>(0);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            setPosition({ x: e.clientX, y: e.clientY });
+            // Throttle via rAF to avoid setState on every pixel
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = requestAnimationFrame(() => {
+                setPosition({ x: e.clientX, y: e.clientY });
+            });
         };
 
         window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            cancelAnimationFrame(rafRef.current);
+        };
     }, []);
 
     if (mode === 'default') return null;
