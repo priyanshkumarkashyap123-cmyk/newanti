@@ -108,6 +108,7 @@ const CloudStorageDashboard: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
 
   const [projects, setProjects] = useState<CloudProject[]>([]);
 
@@ -172,6 +173,7 @@ const CloudStorageDashboard: React.FC = () => {
         }
       } catch (err) {
         console.warn('[CloudStorage] API fetch failed, showing demo projects:', err);
+        setProjectsError('Failed to load projects from cloud. Showing demo data.');
       }
 
       // Fallback: demo projects when API is unavailable
@@ -522,7 +524,32 @@ const CloudStorageDashboard: React.FC = () => {
         </div>
 
         {/* Projects Grid/List */}
-        {viewMode === "grid" ? (
+        {projectsError && (
+          <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+            <span className="text-sm text-amber-700 dark:text-amber-300">{projectsError}</span>
+          </div>
+        )}
+        {isLoadingProjects ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+            <p className="text-sm text-slate-500 dark:text-slate-400">Loading your projects…</p>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+            <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-full">
+              <FolderOpen className="w-10 h-10 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300">
+              {searchQuery ? 'No matching projects' : 'No projects yet'}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+              {searchQuery
+                ? `No projects match "${searchQuery}". Try a different search.`
+                : 'Create your first project to get started with cloud storage.'}
+            </p>
+          </div>
+        ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredProjects.map((project) => {
               const Icon = getProjectIcon(project.type);
