@@ -133,7 +133,9 @@ export const UserDashboard: FC = () => {
                 if (result.success) {
                     setData(result.data);
                 } else {
-                    setError(result.error || 'Unknown error');
+                    // Handle envelope error: { error: { code, message } }
+                    const errMsg = typeof result.error === 'object' ? result.error?.message : result.error;
+                    setError(errMsg || 'Unknown error');
                 }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load data');

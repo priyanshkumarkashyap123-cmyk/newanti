@@ -109,7 +109,9 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                     });
                     if (projRes.ok) {
                         const projData = await projRes.json();
-                        setProjects(projData.projects || []);
+                        // Unwrap API envelope: { success, data: { projects }, requestId, ts }
+                        const payload = projData?.data ?? projData;
+                        setProjects(payload.projects || []);
                     }
                 } catch {
                     // Cloud projects unavailable - that's ok
@@ -213,7 +215,9 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
 
                     if (res.ok) {
                         const data = await res.json();
-                        setProjects(prev => [data.project, ...prev]);
+                        // Unwrap API envelope
+                        const payload = data?.data ?? data;
+                        setProjects(prev => [payload.project, ...prev]);
                         setSuccess('Project saved to cloud + local!');
                     } else {
                         setSuccess('Project saved locally! (Cloud save requires Pro tier)');
@@ -263,7 +267,9 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
 
                 if (res.ok) {
                     const data = await res.json();
-                    const loaded = useModelStore.getState().loadProject(data.project.data);
+                    // Unwrap API envelope
+                    const payload = data?.data ?? data;
+                    const loaded = useModelStore.getState().loadProject(payload.project.data);
                     if (loaded) {
                         setSuccess('Project loaded!');
                         onClose();

@@ -384,9 +384,11 @@ export const useAISessionStore = create<AISessionState>()(
           });
 
           if (!response.ok) throw new Error('Sync failed');
-          const data = await response.json();
+          const raw = await response.json();
+          // Unwrap API envelope: { success, data: { synced, results }, requestId, ts }
+          const data = raw?.data ?? raw;
 
-          if (data.success && data.results) {
+          if (data.results) {
             // Update sessions with cloud IDs
             set(state => ({
               sessions: state.sessions.map(s => {
@@ -417,9 +419,11 @@ export const useAISessionStore = create<AISessionState>()(
           });
 
           if (!response.ok) throw new Error('Load from cloud failed');
-          const data = await response.json();
+          const raw = await response.json();
+          // Unwrap API envelope
+          const data = raw?.data ?? raw;
 
-          if (data.success && data.sessions) {
+          if (data.sessions) {
             const { sessions: localSessions } = get();
             const localCloudIds = new Set(localSessions.map(s => s.cloudId).filter(Boolean));
             

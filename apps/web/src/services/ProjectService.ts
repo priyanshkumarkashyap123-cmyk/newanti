@@ -82,11 +82,15 @@ export const ProjectService = {
 
             if (!response.ok) {
                 const err = await response.json().catch(() => ({}));
-                throw new Error(err.error || 'Failed to create project');
+                // Handle envelope error: { error: { code, message } }
+                const errMsg = typeof err.error === 'object' ? err.error?.message : err.error;
+                throw new Error(errMsg || 'Failed to create project');
             }
 
             const data = await response.json();
-            return data.project;
+            // Unwrap API envelope: { success, data: { project }, requestId, ts }
+            const payload = data?.data ?? data;
+            return payload.project;
         } catch (error) {
             console.error('[ProjectService] createProject failed:', error);
             throw error instanceof Error ? error : new Error('Failed to create project');
@@ -112,11 +116,15 @@ export const ProjectService = {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update project');
+                const err = await response.json().catch(() => ({}));
+                const errMsg = typeof err.error === 'object' ? err.error?.message : err.error;
+                throw new Error(errMsg || 'Failed to update project');
             }
 
             const data = await response.json();
-            return data.project;
+            // Unwrap API envelope: { success, data: { project }, requestId, ts }
+            const payload = data?.data ?? data;
+            return payload.project;
         } catch (error) {
             console.error('[ProjectService] updateProject failed:', error);
             throw error instanceof Error ? error : new Error('Failed to update project');

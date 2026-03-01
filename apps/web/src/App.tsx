@@ -5,6 +5,9 @@
 
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
+import { ScrollToTop } from "./components/ScrollToTop";
+import { BackToTopButton } from "./components/BackToTopButton";
+import { CookieConsent } from "./components/CookieConsent";
 
 // Eagerly loaded critical components (Landing, Auth)
 import { LandingPage } from "./pages/LandingPage";
@@ -311,6 +314,7 @@ function App() {
       <AnalyticsProvider>
         <ToastProvider>
           <Suspense fallback={<PageLoader />}>
+            <ScrollToTop />
             <main id="main-content">
             <Routes>
               {/* Landing Page */}
@@ -870,6 +874,8 @@ function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
             </main>
+            <BackToTopButton />
+            <CookieConsent />
           </Suspense>
         </ToastProvider>
       </AnalyticsProvider>

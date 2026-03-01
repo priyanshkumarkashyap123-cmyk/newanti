@@ -65,9 +65,19 @@ export async function fetchWithTimeout<T>(
                         errorData = { error: `HTTP ${response.status}` };
                     }
 
+                    // Handle both old string errors and new envelope { error: { code, message } }
+                    let errorMsg: string;
+                    if (typeof errorData?.error === 'object' && errorData.error?.message) {
+                        errorMsg = errorData.error.message;
+                    } else if (typeof errorData?.error === 'string') {
+                        errorMsg = errorData.error;
+                    } else {
+                        errorMsg = errorData?.message || `Request failed with status ${response.status}`;
+                    }
+
                     return {
                         success: false,
-                        error: errorData.error || errorData.message || `Request failed with status ${response.status}`,
+                        error: errorMsg,
                         status: response.status,
                     };
                 }
@@ -77,7 +87,13 @@ export async function fetchWithTimeout<T>(
                 const contentType = response.headers.get('content-type');
 
                 if (contentType?.includes('application/json')) {
-                    data = await response.json();
+                    const raw = await response.json();
+                    // Auto-unwrap API envelope: { success, data, requestId, ts }
+                    if (raw && typeof raw === 'object' && 'requestId' in raw && 'success' in raw && 'data' in raw) {
+                        data = raw.data as T;
+                    } else {
+                        data = raw as T;
+                    }
                 } else {
                     data = (await response.text()) as unknown as T;
                 }

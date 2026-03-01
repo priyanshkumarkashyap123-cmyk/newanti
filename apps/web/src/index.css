@@ -141,6 +141,7 @@ body {
   width: 100%;
   height: 100%;
   min-height: 100%;
+  scroll-behavior: smooth;
   font-family:
     "Inter",
     "Noto Sans",
@@ -1649,4 +1650,61 @@ html:not(.dark) .eng-context-menu-item:hover {
 
 html:not(.dark) .eng-context-menu-separator {
   background: #e2e8f0;
+}
+
+/* ============================================
+   Selection Highlight
+   ============================================ */
+::selection {
+  background-color: rgba(59, 130, 246, 0.25);
+  color: inherit;
+}
+
+/* ============================================
+   Focus-visible Ring (global)
+   ============================================ */
+:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Scrollbar Styling (Webkit / Chrome / Edge / Safari)
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.3);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.5);
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.4);
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.6);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
+}
+
+html:not(.dark) * {
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
 }

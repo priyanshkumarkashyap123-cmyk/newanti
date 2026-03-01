@@ -156,7 +156,9 @@ export function useTierAccess(): TierAccess {
 
                         if (response.ok) {
                             const data = await response.json();
-                            setTier(data.tier || 'free');
+                            // Unwrap API envelope: { success, data: { tier, limits }, requestId, ts }
+                            const payload = data?.data ?? data;
+                            setTier(payload.tier || 'free');
                         }
                     } catch (err) {
                         if (err instanceof DOMException && err.name === 'AbortError') {

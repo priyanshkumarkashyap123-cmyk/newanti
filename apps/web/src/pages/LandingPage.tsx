@@ -387,7 +387,7 @@ export const LandingPage: FC = () => {
               </Button>
             </motion.div>
 
-            {/* Hero Image / App Preview */}
+            {/* Hero Image / App Preview — Animated UI Mock */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
@@ -395,18 +395,105 @@ export const LandingPage: FC = () => {
               className="mt-16 relative max-w-5xl mx-auto"
             >
               <div className="rounded-xl border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.4)] overflow-hidden bg-slate-900/80 backdrop-blur-sm">
-                <div className="aspect-[16/9] bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 flex items-center justify-center relative">
-                  {/* App screenshot placeholder — grid pattern */}
-                  <div className="absolute inset-0 grid-pattern opacity-30" />
-                  <div className="relative text-center z-10">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-blue-500/20 border border-blue-500/20 flex items-center justify-center">
-                      <Layers className="w-10 h-10 text-blue-400" />
-                    </div>
-                    <p className="text-slate-400 text-sm">3D Structural Analysis Workspace</p>
-                    <p className="text-slate-500 text-xs mt-1">Real-time FEA with BMD, SFD & Deformation Visualization</p>
+                {/* Window chrome */}
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-800/80 border-b border-white/[0.06]">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500/70" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/70" />
                   </div>
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-500/5 via-transparent to-violet-500/5 pointer-events-none" />
+                  <div className="flex-1 flex justify-center">
+                    <div className="bg-slate-700/60 rounded-md px-4 py-1 text-[11px] text-slate-400 font-mono">
+                      beamlab.app/workspace
+                    </div>
+                  </div>
+                </div>
+                {/* App body */}
+                <div className="aspect-[16/9] bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 flex relative overflow-hidden">
+                  {/* Sidebar mock */}
+                  <div className="w-14 bg-slate-800/60 border-r border-white/[0.04] flex flex-col items-center py-3 gap-3">
+                    {[Layers, FileText, Shield, Cpu].map((Icon, i) => (
+                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-blue-500/20 text-blue-400' : 'text-slate-600 hover:text-slate-400'} transition-colors`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                    ))}
+                  </div>
+                  {/* Main viewport */}
+                  <div className="flex-1 relative">
+                    <div className="absolute inset-0 grid-pattern opacity-20" />
+                    {/* Animated beam visualization */}
+                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 450" fill="none" aria-hidden="true">
+                      {/* Grid */}
+                      <defs>
+                        <pattern id="hero-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(148,163,184,0.06)" strokeWidth="0.5" />
+                        </pattern>
+                      </defs>
+                      <rect width="800" height="450" fill="url(#hero-grid)" />
+                      {/* Beam structure */}
+                      <motion.line x1="150" y1="250" x2="650" y2="250" stroke="#3b82f6" strokeWidth="3" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.8, duration: 1.2, ease: "easeInOut" }} />
+                      {/* Supports */}
+                      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}>
+                        <polygon points="150,255 140,275 160,275" fill="#3b82f6" opacity="0.6" />
+                        <polygon points="650,255 640,275 660,275" fill="#3b82f6" opacity="0.6" />
+                        <line x1="135" y1="275" x2="165" y2="275" stroke="#3b82f6" strokeWidth="1.5" opacity="0.4" />
+                        <line x1="635" y1="275" x2="665" y2="275" stroke="#3b82f6" strokeWidth="1.5" opacity="0.4" />
+                      </motion.g>
+                      {/* Load arrows */}
+                      <motion.g initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.8, duration: 0.5 }}>
+                        {[250, 350, 400, 450, 550].map((x, i) => (
+                          <g key={i}>
+                            <line x1={x} y1="170" x2={x} y2="245" stroke="#f59e0b" strokeWidth="1.5" opacity="0.7" />
+                            <polygon points={`${x-4},245 ${x+4},245 ${x},252`} fill="#f59e0b" opacity="0.7" />
+                          </g>
+                        ))}
+                        <text x="400" y="160" textAnchor="middle" className="text-[11px]" fill="#f59e0b" opacity="0.8">UDL = 25 kN/m</text>
+                      </motion.g>
+                      {/* BMD curve (parabola) */}
+                      <motion.path
+                        d="M 150 320 Q 250 290 400 280 Q 550 290 650 320"
+                        stroke="#a78bfa"
+                        strokeWidth="2"
+                        fill="rgba(167,139,250,0.08)"
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        transition={{ delay: 2.2, duration: 1 }}
+                      />
+                      <motion.text x="400" y="275" textAnchor="middle" className="text-[10px]" fill="#a78bfa" opacity="0.7" initial={{ opacity: 0 }} animate={{ opacity: 0.7 }} transition={{ delay: 3 }}>BMD</motion.text>
+                      {/* Dimension labels */}
+                      <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }}>
+                        <text x="400" y="340" textAnchor="middle" className="text-[10px]" fill="#64748b">L = 6.0 m</text>
+                        <line x1="150" y1="330" x2="650" y2="330" stroke="#475569" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.3" />
+                      </motion.g>
+                    </svg>
+                    {/* Results panel overlay */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 2.8, duration: 0.5 }}
+                      className="absolute top-4 right-4 w-48 bg-slate-800/90 backdrop-blur-md rounded-lg border border-white/[0.08] p-3 text-[11px]"
+                    >
+                      <div className="text-blue-400 font-semibold mb-2 text-xs">Analysis Results</div>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Max Moment</span>
+                          <span className="text-slate-300 font-mono">112.5 kN·m</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Max Shear</span>
+                          <span className="text-slate-300 font-mono">75.0 kN</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Deflection</span>
+                          <span className="text-emerald-400 font-mono">2.4 mm ✓</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Unity Check</span>
+                          <span className="text-emerald-400 font-mono">0.72 ✓</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
                 </div>
               </div>
               {/* Shadow glow beneath */}

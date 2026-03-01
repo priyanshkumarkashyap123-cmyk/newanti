@@ -345,7 +345,10 @@ export const Bridge = {
         method: "GET",
       });
       if (!response.ok) return [];
-      return await response.json();
+      const raw = await response.json();
+      // Unwrap API envelope: { success, data: { projects }, requestId, ts }
+      const payload = raw?.data ?? raw;
+      return payload.projects || (Array.isArray(payload) ? payload : []);
     } catch (e) {
       console.error("[Bridge] Failed to list projects", e);
       return [];
@@ -363,7 +366,10 @@ export const Bridge = {
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
+      const raw = await response.json();
+      // Unwrap API envelope
+      const payload = raw?.data ?? raw;
+      return payload.project || payload;
     } catch (e) {
       console.error("[Bridge] Failed to save project", e);
       return null;
@@ -379,7 +385,10 @@ export const Bridge = {
         method: "GET",
       });
       if (!response.ok) return null;
-      return await response.json();
+      const raw = await response.json();
+      // Unwrap API envelope
+      const payload = raw?.data ?? raw;
+      return payload.project || payload;
     } catch (e) {
       console.error("[Bridge] Failed to load project", e);
       return null;
