@@ -357,6 +357,7 @@ app.use("/api/consent", requireDbReady);
 app.use("/api/audit", requireDbReady);
 app.use("/api/ai-sessions", requireDbReady);
 app.use("/api/feedback", requireDbReady);
+app.use("/api/auth", requireDbReady);
 
 const authRequired = requireAuth();
 

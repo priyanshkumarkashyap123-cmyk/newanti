@@ -17,6 +17,7 @@ import { aiValidation, AccuracyMetrics } from './AIValidationService';
 import { auditTrail, AuditEntry } from './AuditTrailService';
 import { codeCompliance, IS800Checker, SteelSection, SteelMaterial, MemberForces, ComplianceReport } from './CodeComplianceEngine';
 import { connectionDesign, ConnectionDesign, ConnectionForces } from './ConnectionDesignService';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -926,8 +927,7 @@ Provide detailed reasoning with formulas shown.`;
    * Used automatically in production mode.
    */
   private async callGeminiViaProxy(prompt: string, systemPrompt?: string): Promise<string> {
-    const apiBaseUrl = import.meta.env.VITE_API_URL ||
-      (import.meta.env.PROD ? 'https://api.beamlabultimate.tech' : 'http://localhost:3001');
+    const apiBaseUrl = API_CONFIG.baseUrl;
 
     const message = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
 

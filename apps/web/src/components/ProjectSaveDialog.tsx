@@ -150,7 +150,8 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
     const saveToLocalStorage = (project: SavedProject) => {
         try {
             const existing = JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]') as SavedProject[];
-            const updated = [project, ...existing.filter(p => p.id !== project.id)].slice(0, 50);
+            // Deduplicate by both id AND name — prevents duplicate entries on repeated saves
+            const updated = [project, ...existing.filter(p => p.id !== project.id && p.name !== project.name)].slice(0, 50);
             localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
             setLocalProjects(updated);
         } catch (e) {
@@ -365,7 +366,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                 {/* Tabs */}
                 <div className="flex border-b border-slate-200 dark:border-slate-800">
                     <button
-                        onClick={() => setActiveTab('save')}
+                        onClick={() => { setActiveTab('save'); setError(null); setSuccess(null); }}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'save'
                             ? 'text-blue-400 border-b-2 border-blue-500'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -375,7 +376,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                         Save Project
                     </button>
                     <button
-                        onClick={() => setActiveTab('load')}
+                        onClick={() => { setActiveTab('load'); setError(null); setSuccess(null); }}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'load'
                             ? 'text-blue-400 border-b-2 border-blue-500'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'

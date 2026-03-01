@@ -8,7 +8,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
-import { useUserRegistration } from "../hooks/useUserRegistration";
 import {
   Folder,
   Plus,
