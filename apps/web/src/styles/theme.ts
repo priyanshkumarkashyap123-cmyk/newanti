@@ -132,14 +132,14 @@ export const semanticColors = {
     text: {
         primary: colors.neutral[100],    // Main text
         secondary: colors.neutral[300],  // Secondary text (Figma: #cbd5e1)
-        muted: colors.neutral[500],      // Disabled/muted text
+        muted: colors.neutral[400],      // Disabled/muted text (#94a3b8 per Figma §1.3)
         inverse: colors.neutral[900],    // Text on light backgrounds
         accent: colors.primary[400],     // Links, highlights
     },
 
     // Border Colors
     border: {
-        default: colors.neutral[800],
+        default: colors.neutral[600],    // #475569 per Figma §1.3
         light: colors.neutral[700],
         focus: colors.primary[500],
         error: colors.error[500],

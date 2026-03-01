@@ -17,7 +17,7 @@ export const Tooltip: FC<TooltipProps> = ({
     description,
     children,
     side = 'top',
-    delay = 500,
+    delay = 800,
     className = ''
 }) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -125,7 +125,7 @@ export const Tooltip: FC<TooltipProps> = ({
                     <div className="flex items-center gap-2">
                         <span className="font-medium">{content}</span>
                         {shortcut && (
-                            <kbd className="bg-slate-600 border border-slate-500 px-1.5 py-0.5 rounded text-[10px] text-slate-300 font-mono">
+                            <kbd className="bg-slate-600 border border-slate-500 px-1.5 py-0.5 rounded text-[11px] text-slate-300 font-mono">
                                 {shortcut}
                             </kbd>
                         )}

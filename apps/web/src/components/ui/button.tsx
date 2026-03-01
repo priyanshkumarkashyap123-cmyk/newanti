@@ -62,7 +62,7 @@ const rippleCSS = `
 const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5',
-        'rounded-lg text-sm font-medium',
+        'rounded-md text-sm font-medium',
         'transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -119,12 +119,10 @@ const buttonVariants = cva(
                 /* ---- premium variants ---- */
                 premium: [
                     'text-white font-semibold',
-                    'bg-gradient-to-r from-blue-600 via-violet-600 to-blue-600',
-                    'bg-[length:200%_100%]',
+                    'bg-[linear-gradient(135deg,#f59e0b,#d97706)]',
                     'hover:brightness-110',
-                    'shadow-md shadow-violet-500/30 hover:shadow-lg hover:shadow-violet-500/40',
-                    'focus-visible:ring-violet-500',
-                    '[animation:shimmer_3s_linear_infinite]',
+                    'shadow-md shadow-amber-500/30 hover:shadow-lg hover:shadow-amber-500/40',
+                    'focus-visible:ring-amber-500',
                 ].join(' '),
                 glow: [
                     'bg-slate-900 dark:bg-slate-800 text-white',
@@ -149,7 +147,7 @@ const buttonVariants = cva(
                 xs: 'h-7 px-2.5 text-xs rounded-md',
                 sm: 'h-8 px-3 text-xs',
                 default: 'h-9 px-4 py-2',
-                lg: 'h-11 px-6 text-base',
+                lg: 'h-11 px-6 text-base rounded-lg',
                 xl: 'h-14 px-10 text-lg rounded-2xl',
                 icon: 'h-9 w-9 p-0',
                 'icon-sm': 'h-7 w-7 p-0 rounded-md',

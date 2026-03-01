@@ -141,7 +141,7 @@ export const LandingPage: FC = () => {
       <nav
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/90 dark:bg-slate-950/80 backdrop-blur-2xl backdrop-saturate-150 border-b border-slate-200/60 dark:border-white/[0.06]'
+            ? 'bg-white/90 dark:bg-slate-950/80 backdrop-blur-xl backdrop-saturate-150 border-b border-slate-200/60 dark:border-white/[0.06]'
             : 'bg-transparent border-b border-transparent'
         }`}
         role="navigation"
@@ -172,25 +172,25 @@ export const LandingPage: FC = () => {
               <div className="flex items-center gap-8">
                 <a
                   href="#features"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Features
                 </a>
                 <a
                   href="#pricing"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Pricing
                 </a>
                 <Link
                   to="/help"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Docs
                 </Link>
                 <Link
                   to="/demo"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
                 >
                   Demo
                 </Link>
@@ -694,44 +694,44 @@ export const LandingPage: FC = () => {
             {/* Product */}
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Product</h3>
-              <ul className="space-y-1 text-sm">
-                <li><a href="#features" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Features</a></li>
-                <li><a href="#pricing" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Pricing</a></li>
-                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Documentation</Link></li>
-                <li><Link to="/demo" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Live Demo</Link></li>
-                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Downloads</Link></li>
+              <ul className="space-y-1 text-[13px]">
+                <li><a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Features</a></li>
+                <li><a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Pricing</a></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Documentation</Link></li>
+                <li><Link to="/demo" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Live Demo</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Downloads</Link></li>
               </ul>
             </div>
 
             {/* Resources */}
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Resources</h3>
-              <ul className="space-y-1 text-sm">
-                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">API Reference</Link></li>
-                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Changelog</Link></li>
-                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Community</Link></li>
-                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Tutorials</Link></li>
+              <ul className="space-y-1 text-[13px]">
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">API Reference</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Changelog</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Community</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Tutorials</Link></li>
               </ul>
             </div>
 
             {/* Company */}
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Company</h3>
-              <ul className="space-y-1 text-sm">
-                <li><Link to="/about" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">About</Link></li>
-                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Contact</Link></li>
-                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Blog</Link></li>
-                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Careers</Link></li>
+              <ul className="space-y-1 text-[13px]">
+                <li><Link to="/about" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">About</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Contact</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Blog</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Careers</Link></li>
               </ul>
             </div>
 
             {/* Legal */}
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Legal</h3>
-              <ul className="space-y-1 text-sm">
-                <li><Link to="/privacy" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Terms of Service</Link></li>
-                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Contact Us</Link></li>
+              <ul className="space-y-1 text-[13px]">
+                <li><Link to="/privacy" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Terms of Service</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Contact Us</Link></li>
               </ul>
             </div>
           </div>

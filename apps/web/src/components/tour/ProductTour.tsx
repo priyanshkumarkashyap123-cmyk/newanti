@@ -163,7 +163,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-slate-100/80 dark:bg-slate-950/80 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={handleSkip}
         />
 
@@ -188,7 +188,7 @@ export const ProductTour: FC<ProductTourProps> = ({ isOpen, onClose, onComplete 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className={`absolute bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-w-md p-6 ${
+          className={`absolute bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-w-[320px] p-6 ${
             highlightRect 
               ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
               : 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'

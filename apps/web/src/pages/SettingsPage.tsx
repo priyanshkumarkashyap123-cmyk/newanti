@@ -76,8 +76,8 @@ const Toggle: FC<ToggleProps> = ({ enabled, onChange, label, description, status
                 className="sr-only peer"
             />
             <div className={`
-                w-11 h-6 rounded-full peer 
-                ${enabled ? 'bg-blue-600' : 'bg-slate-600'}
+                w-10 h-[22px] rounded-full peer 
+                ${enabled ? 'bg-blue-500' : 'bg-slate-600'}
                 peer-focus:outline-none
                 after:content-[''] after:absolute after:top-[2px] 
                 ${enabled ? 'after:right-[2px]' : 'after:left-[2px]'}
@@ -226,7 +226,7 @@ export const SettingsPage: FC = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex">
             {/* Sidebar */}
-            <aside className="w-72 flex-shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            <aside className="w-60 flex-shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
                 {/* App Header */}
                 <div className="p-6 border-b border-slate-200 dark:border-slate-800/50">
                     <Link to="/" className="flex items-center gap-3">
@@ -251,8 +251,8 @@ export const SettingsPage: FC = () => {
                                 size="default"
                                 onClick={() => setActiveTab(item.id)}
                                 className={`w-full justify-start gap-3 px-3 py-2.5 rounded transition-colors text-left ${isActive
-                                        ? 'bg-blue-600/10 border border-blue-600/20 text-slate-900 dark:text-white'
-                                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                        ? 'bg-blue-600/10 border-l-2 border-blue-500 text-slate-900 dark:text-white'
+                                        : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent'
                                     }`}
                             >
                                 <Icon className={`w-5 h-5 ${isActive ? 'text-blue-500' : ''}`} />

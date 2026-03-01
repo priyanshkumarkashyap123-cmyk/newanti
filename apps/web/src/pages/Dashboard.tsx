@@ -283,7 +283,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
       {/* ================================================
                 SIDEBAR (Updated with Avatar)
                 ================================================ */}
-      <aside className="w-64 bg-slate-50 dark:bg-slate-900/80 border-r border-white/[0.06] flex flex-col backdrop-blur-xl">
+      <aside className="w-[220px] bg-slate-50 dark:bg-slate-900/80 border-r border-white/[0.06] flex flex-col backdrop-blur-xl">
         <div className="h-16 flex items-center px-6 border-b border-white/[0.06]">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20">
@@ -310,8 +310,8 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                                 w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
                                 ${
                                   activeTab === tab.id
-                                    ? "bg-blue-500/[0.12] text-blue-400 border border-blue-500/20 shadow-sm"
-                                    : "text-slate-600 dark:text-slate-400 hover:bg-white/[0.04] hover:text-slate-700 dark:hover:text-slate-200 border border-transparent"
+                                    ? "bg-blue-500/[0.12] text-blue-400 border-l-2 border-blue-500 shadow-sm"
+                                    : "text-slate-600 dark:text-slate-400 hover:bg-white/[0.04] hover:text-slate-700 dark:hover:text-slate-200 border-l-2 border-transparent"
                                 }
                             `}
             >

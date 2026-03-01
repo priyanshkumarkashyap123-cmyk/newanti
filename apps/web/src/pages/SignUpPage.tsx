@@ -92,7 +92,7 @@ export const SignUpPage = () => {
 
             {/* Right Side - Sign Up Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950 overflow-y-auto">
-                <div className="w-full max-w-md space-y-8 my-auto">
+                <div className="w-full max-w-[400px] space-y-8 my-auto">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
