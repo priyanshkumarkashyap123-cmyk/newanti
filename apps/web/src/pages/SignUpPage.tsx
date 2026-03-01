@@ -103,9 +103,9 @@ export const SignUpPage = () => {
 
                     {/* Header */}
                     <div className="text-center lg:text-left space-y-2">
-                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Create Account</h2>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Create Your Account</h2>
                         <p className="text-slate-600 dark:text-slate-400">
-                            Get started with your free workspace today
+                            Start analyzing structures for free
                         </p>
                     </div>
 

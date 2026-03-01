@@ -2,11 +2,12 @@
  * LandingPage - BeamLab Ultimate Landing Page
  * Premium Dark SaaS homepage with vibrant gradients
  * Merged with Enhanced features (v3.0)
+ * Updated to match Figma spec 03_LANDING_MARKETING
  */
 
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, useInView } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
 import {
@@ -21,9 +22,25 @@ import {
   Cpu,
   Play,
   Terminal,
+  Users,
+  Cloud,
+  Box,
+  FileText,
+  Building,
+  Database,
+  Smartphone,
+  Linkedin,
+  Youtube,
 } from "lucide-react";
 import beamLabLogo from "../assets/beamlab_logo.png";
 import { Button } from "../components/ui/button";
+import {
+  CompetitiveAdvantage,
+  InteractiveDemo,
+  Testimonials,
+  CTABanner,
+  PerformanceMetrics,
+} from "../components/marketing/FeatureShowcase";
 
 // Animation variants
 const fadeInUp: Variants = {
@@ -46,9 +63,14 @@ const staggerContainer: Variants = {
 export const LandingPage: FC = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     document.title = 'BeamLab Ultimate – Professional Structural Analysis Platform';
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   const { isSignedIn, isLoaded, signOut } = useAuth();
   const isClerkEnabled = isUsingClerk();
@@ -115,9 +137,13 @@ export const LandingPage: FC = () => {
         Skip to main content
       </a>
 
-      {/* Navbar */}
+      {/* Navbar - transparent at top, blurred on scroll */}
       <nav
-        className="fixed top-0 inset-x-0 z-50 border-b border-white/[0.06] bg-white dark:bg-slate-950/80 backdrop-blur-2xl backdrop-saturate-150"
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-white/90 dark:bg-slate-950/80 backdrop-blur-2xl backdrop-saturate-150 border-b border-slate-200/60 dark:border-white/[0.06]'
+            : 'bg-transparent border-b border-transparent'
+        }`}
         role="navigation"
         aria-label="Main navigation"
       >
@@ -313,12 +339,12 @@ export const LandingPage: FC = () => {
               variants={fadeInUp}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] xl:text-[5rem] font-extrabold tracking-[-0.02em] mb-8 leading-[1.08]"
             >
-              Structural Analysis <br className="hidden sm:block" />
+              The Future of Structural <br className="hidden sm:block" />
               <span
                 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-cyan-400 animate-gradient"
                 style={{ backgroundSize: "200% auto" }}
               >
-                Reimagined for Web
+                Engineering is Here
               </span>
             </motion.h1>
 
@@ -328,9 +354,9 @@ export const LandingPage: FC = () => {
               variants={fadeInUp}
               className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-12 leading-relaxed px-4"
             >
-              Professional-grade FEA in your browser — no install, no license
-              servers. Full support reactions, 3D frame analysis with biaxial
-              bending, member releases, P-Delta, and AI-powered design.
+              Professional-grade structural analysis and design platform.
+              STAAD.Pro level power, browser-native. AI-powered. Cloud-first.
+              Indian standards built-in.
             </motion.p>
 
             <motion.div
@@ -360,6 +386,66 @@ export const LandingPage: FC = () => {
                 View Live Demo
               </Button>
             </motion.div>
+
+            {/* Hero Image / App Preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="mt-16 relative max-w-5xl mx-auto"
+            >
+              <div className="rounded-xl border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.4)] overflow-hidden bg-slate-900/80 backdrop-blur-sm">
+                <div className="aspect-[16/9] bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 flex items-center justify-center relative">
+                  {/* App screenshot placeholder — grid pattern */}
+                  <div className="absolute inset-0 grid-pattern opacity-30" />
+                  <div className="relative text-center z-10">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-blue-500/20 border border-blue-500/20 flex items-center justify-center">
+                      <Layers className="w-10 h-10 text-blue-400" />
+                    </div>
+                    <p className="text-slate-400 text-sm">3D Structural Analysis Workspace</p>
+                    <p className="text-slate-500 text-xs mt-1">Real-time FEA with BMD, SFD & Deformation Visualization</p>
+                  </div>
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-500/5 via-transparent to-violet-500/5 pointer-events-none" />
+                </div>
+              </div>
+              {/* Shadow glow beneath */}
+              <div className="absolute -bottom-4 left-8 right-8 h-8 bg-blue-500/10 blur-2xl rounded-full" />
+            </motion.div>
+
+            {/* Animated Stats Bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
+            >
+              {STATS.map((stat, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</div>
+                  <div className="text-xs text-slate-400">{stat.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Trust Bar */}
+        <section className="py-12 border-y border-slate-200/60 dark:border-white/[0.04] bg-slate-50/50 dark:bg-slate-900/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-8">
+              Trusted by engineers at
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+              {TRUST_LOGOS.map((logo, i) => (
+                <span
+                  key={i}
+                  className="text-slate-400/50 hover:text-slate-300 transition-all duration-300 text-lg font-semibold tracking-wide cursor-default select-none"
+                >
+                  {logo}
+                </span>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -376,7 +462,7 @@ export const LandingPage: FC = () => {
                 Features
               </motion.span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400 px-4 tracking-[-0.02em]">
-                Everything Engineers Need
+                Everything You Need for Structural Engineering
               </h2>
               <p className="mt-5 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">
                 Professional-grade structural analysis tools powered by modern
@@ -399,6 +485,53 @@ export const LandingPage: FC = () => {
           </div>
         </section>
 
+        {/* Comparison Table */}
+        <section className="py-24 sm:py-32 bg-slate-50/50 dark:bg-slate-900/20">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-14">
+              <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
+                Compare
+              </span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-[-0.02em]">
+                Why Engineers Switch to BeamLab
+              </h2>
+            </div>
+            <div className="overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-white/[0.06]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-800/60">
+                    <th className="text-left py-4 px-6 font-semibold text-slate-900 dark:text-white">Feature</th>
+                    <th className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">STAAD.Pro</th>
+                    <th className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">ETABS</th>
+                    <th className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">SkyCiv</th>
+                    <th className="text-center py-4 px-4 font-semibold text-blue-400">BeamLab</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200/60 dark:divide-white/[0.06]">
+                  {COMPARISON_DATA.map((row, i) => (
+                    <tr key={i} className="bg-white dark:bg-slate-950/50 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                      <td className="py-3 px-6 font-medium text-slate-700 dark:text-slate-300">{row.feature}</td>
+                      <td className="text-center py-3 px-4">{row.staad}</td>
+                      <td className="text-center py-3 px-4">{row.etabs}</td>
+                      <td className="text-center py-3 px-4">{row.skyciv}</td>
+                      <td className="text-center py-3 px-4">{row.beamlab}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* Interactive Demo */}
+        <InteractiveDemo />
+
+        {/* Testimonials */}
+        <Testimonials />
+
+        {/* Performance Metrics */}
+        <PerformanceMetrics />
+
         {/* Pricing Section */}
         <section id="pricing" className="py-24 sm:py-32 bg-slate-50 dark:bg-slate-900/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -414,10 +547,35 @@ export const LandingPage: FC = () => {
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-5 px-4 tracking-[-0.02em]">
                 Simple, Transparent Pricing
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed mb-8">
                 Choose the perfect plan for your engineering needs. All plans
                 include core analysis features.
               </p>
+
+              {/* Monthly / Yearly Toggle */}
+              <div className="inline-flex items-center bg-slate-200 dark:bg-slate-800 rounded-full p-1">
+                <button
+                  onClick={() => setBillingCycle('monthly')}
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                    billingCycle === 'monthly'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingCycle('yearly')}
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                    billingCycle === 'yearly'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                      : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  Yearly
+                  <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-semibold">Save 20%</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
@@ -449,12 +607,15 @@ export const LandingPage: FC = () => {
                   </div>
                   <div className="mb-6 sm:mb-8">
                     <span className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">
-                      {tier.price}
+                      {tier.price === "₹0" ? "₹0" : billingCycle === 'yearly' ? tier.yearlyPrice : tier.price}
                     </span>
                     {tier.period && (
                       <span className="text-slate-600 dark:text-slate-400 ml-1">
-                        /{tier.period}
+                        /{billingCycle === 'yearly' && tier.price !== "₹0" ? 'mo' : tier.period}
                       </span>
+                    )}
+                    {billingCycle === 'yearly' && tier.price !== "₹0" && (
+                      <span className="block text-xs text-emerald-400 mt-1">Billed annually</span>
                     )}
                   </div>
 
@@ -483,146 +644,104 @@ export const LandingPage: FC = () => {
                 </motion.div>
               ))}
             </div>
+
+            <div className="text-center mt-10">
+              <Link to="/pricing" className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors inline-flex items-center gap-1">
+                View Full Feature Comparison <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </section>
+
+        {/* CTA Banner */}
+        <CTABanner onGetStarted={handleGetStarted} />
       </main>
 
       {/* Footer */}
       <footer
-        className="border-t border-white/[0.06] py-14 sm:py-20 bg-white dark:bg-slate-950"
+        className="border-t border-slate-200/60 dark:border-white/[0.06] py-14 sm:py-20 bg-slate-50 dark:bg-slate-900"
         role="contentinfo"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+            {/* Brand Column */}
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-9 h-9 flex items-center justify-center rounded-lg overflow-hidden">
-                  <img
-                    src={beamLabLogo}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    aria-hidden="true"
-                  />
+                  <img src={beamLabLogo} alt="" className="w-full h-full object-cover" aria-hidden="true" />
                 </div>
-                <span className="text-xl font-bold text-slate-900 dark:text-white">
-                  BeamLab Ultimate
-                </span>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
               </div>
               <p className="text-slate-600 dark:text-slate-400 text-sm max-w-sm leading-relaxed mb-6">
-                Professional structural analysis software, reimagined for the
-                modern web. Fast, accurate, and accessible anywhere — no
-                installation required.
+                Professional structural analysis software, reimagined for the modern web. Fast, accurate, and accessible anywhere — no installation required.
               </p>
               <div className="flex gap-4">
-                <a
-                  href="https://github.com"
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
-                  aria-label="GitHub"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                  </svg>
+                <a href="https://github.com" className="text-slate-400 hover:text-slate-100 transition-colors p-1" aria-label="GitHub">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 </a>
-                <a
-                  href="https://twitter.com"
-                  className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-1"
-                  aria-label="Twitter"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-                  </svg>
+                <a href="https://twitter.com" className="text-slate-400 hover:text-slate-100 transition-colors p-1" aria-label="Twitter">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                </a>
+                <a href="https://linkedin.com" className="text-slate-400 hover:text-slate-100 transition-colors p-1" aria-label="LinkedIn">
+                  <Linkedin className="w-5 h-5" />
+                </a>
+                <a href="https://youtube.com" className="text-slate-400 hover:text-slate-100 transition-colors p-1" aria-label="YouTube">
+                  <Youtube className="w-5 h-5" />
                 </a>
               </div>
             </div>
 
+            {/* Product */}
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
-                Product
-              </h3>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Product</h3>
               <ul className="space-y-1 text-sm">
-                <li>
-                  <a
-                    href="#features"
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
-                  >
-                    Features
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#pricing"
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
-                  >
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    to="/help"
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
-                  >
-                    Documentation
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/demo"
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
-                  >
-                    Live Demo
-                  </Link>
-                </li>
+                <li><a href="#features" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Features</a></li>
+                <li><a href="#pricing" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Pricing</a></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Documentation</Link></li>
+                <li><Link to="/demo" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Live Demo</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Downloads</Link></li>
               </ul>
             </div>
 
+            {/* Resources */}
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">
-                Legal
-              </h3>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Resources</h3>
               <ul className="space-y-1 text-sm">
-                <li>
-                  <Link
-                    to="/privacy"
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/terms"
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
-                  >
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/contact"
-                    className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5"
-                  >
-                    Contact Us
-                  </Link>
-                </li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">API Reference</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Changelog</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Community</Link></li>
+                <li><Link to="/help" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Tutorials</Link></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Company</h3>
+              <ul className="space-y-1 text-sm">
+                <li><Link to="/about" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">About</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Contact</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Blog</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Careers</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Legal</h3>
+              <ul className="space-y-1 text-sm">
+                <li><Link to="/privacy" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Terms of Service</Link></li>
+                <li><Link to="/contact" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Contact Us</Link></li>
               </ul>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-600 dark:text-slate-400 text-sm">
-              © {new Date().getFullYear()} BeamLab Ultimate. All rights
-              reserved.
+              © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
             </p>
             <p className="text-slate-600 dark:text-slate-400 text-xs">
-              Made with ❤️ for structural engineers worldwide
+              Made with ❤️ in India
             </p>
           </div>
         </div>
@@ -632,6 +751,27 @@ export const LandingPage: FC = () => {
 };
 
 // --- DATA & COMPONENTS ---
+
+const STATS = [
+  { value: "200+", label: "Engineering Features" },
+  { value: "10K+", label: "Members Supported" },
+  { value: "< 1s", label: "Analysis Time" },
+  { value: "99.9%", label: "Uptime" },
+];
+
+const TRUST_LOGOS = ["L&T", "Tata Projects", "AECOM", "Jacobs", "Arup", "Mott MacDonald"];
+
+const COMPARISON_DATA = [
+  { feature: "Web-based (No Install)", staad: "❌", etabs: "❌", skyciv: "✅", beamlab: "✨" },
+  { feature: "AI-Powered Design", staad: "❌", etabs: "❌", skyciv: "❌", beamlab: "✨" },
+  { feature: "Indian Design Codes", staad: "✅", etabs: "✅", skyciv: "⚠️", beamlab: "✅" },
+  { feature: "Real-time Collaboration", staad: "❌", etabs: "❌", skyciv: "✅", beamlab: "✨" },
+  { feature: "Free Tier Available", staad: "❌", etabs: "❌", skyciv: "⚠️", beamlab: "✅" },
+  { feature: "3D FEM Analysis", staad: "✅", etabs: "✅", skyciv: "✅", beamlab: "✅" },
+  { feature: "Nonlinear (P-Delta)", staad: "✅", etabs: "✅", skyciv: "⚠️", beamlab: "✅" },
+  { feature: "Steel & RC Design", staad: "✅", etabs: "✅", skyciv: "✅", beamlab: "✅" },
+  { feature: "Starting Price", staad: "₹2L+/yr", etabs: "₹3L+/yr", skyciv: "$59/mo", beamlab: "₹0 Free" },
+];
 
 const FeatureCard = ({
   icon,
@@ -726,6 +866,42 @@ const FEATURES = [
     icon: <Cpu className="w-6 h-6" />,
     bullets: ["10K+ members", "Sparse matrix solvers", "WebGPU acceleration"],
   },
+  {
+    title: "Indian Design Codes",
+    desc: "Built-in IS 800, IS 456, IS 1893 seismic, and IS 875 wind codes. Design checks run automatically with every analysis.",
+    icon: <FileText className="w-6 h-6" />,
+    bullets: ["IS 800 steel design", "IS 456 RC design", "IS 1893 seismic"],
+  },
+  {
+    title: "Real-time Collaboration",
+    desc: "Work on the same model simultaneously with live cursors, comments, and version history. No file merging needed.",
+    icon: <Users className="w-6 h-6" />,
+    bullets: ["Live multi-user editing", "Comments & annotations", "Version history"],
+  },
+  {
+    title: "Cloud Native",
+    desc: "Auto-save, cloud backup, and access from any device. Your projects are always safe and always available.",
+    icon: <Cloud className="w-6 h-6" />,
+    bullets: ["Auto-save & backup", "Access anywhere", "No data loss"],
+  },
+  {
+    title: "BIM Integration",
+    desc: "Import and export IFC, Revit, and Tekla formats. Bi-directional sync keeps your structural model in sync with architectural BIM.",
+    icon: <Building className="w-6 h-6" />,
+    bullets: ["IFC import/export", "Revit sync", "STAAD import"],
+  },
+  {
+    title: "Section Database",
+    desc: "800+ steel sections from IS, AISC, and European standards. Custom sections with arbitrary polygon support.",
+    icon: <Database className="w-6 h-6" />,
+    bullets: ["IS sections built-in", "AISC & EU sections", "Custom profiles"],
+  },
+  {
+    title: "Works on Any Device",
+    desc: "Fully responsive layout works on desktop, tablet, and mobile. Review results on-site from your phone.",
+    icon: <Smartphone className="w-6 h-6" />,
+    bullets: ["Desktop & tablet", "Mobile review mode", "Touch-optimized"],
+  },
 ];
 
 const PRICING_TIERS = [
@@ -733,6 +909,7 @@ const PRICING_TIERS = [
     name: "Academic & Hobbyist",
     description: "Perfect for students and learning the fundamentals",
     price: "₹0",
+    yearlyPrice: "₹0",
     period: "forever",
     features: [
       "Up to 3 active projects",
@@ -748,6 +925,7 @@ const PRICING_TIERS = [
     name: "Professional",
     description: "For independent practicing structural engineers",
     price: "₹999",
+    yearlyPrice: "₹799",
     period: "month",
     features: [
       "Unlimited projects & storage",
@@ -761,9 +939,10 @@ const PRICING_TIERS = [
     popular: true,
   },
   {
-    name: "Business",
+    name: "Enterprise",
     description: "For growing engineering firms and consultancies",
     price: "₹1,999",
+    yearlyPrice: "₹1,599",
     period: "month",
     features: [
       "Everything in Professional",
@@ -772,7 +951,7 @@ const PRICING_TIERS = [
       "Centralized admin dashboard",
       "REST API access for automation",
     ],
-    cta: "Start Business Trial",
+    cta: "Contact Sales",
     popular: false,
   },
 ];

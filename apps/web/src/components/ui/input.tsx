@@ -26,7 +26,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 {label && (
                     <label 
                         htmlFor={inputId}
-                        className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5"
+                        className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1"
                     >
                         {label}
                     </label>
@@ -43,26 +43,26 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                         aria-invalid={error}
                         aria-describedby={errorId}
                         className={cn(
-                            // Base styles - compact height
-                            'h-9 w-full rounded-md border bg-white dark:bg-slate-900',
-                            'px-3 py-2 text-sm',
+                            // Base styles - 8px radius, semi-transparent bg per Figma §2.2
+                            'h-9 w-full rounded-lg border bg-white/90 dark:bg-[rgba(15,23,42,0.8)]',
+                            'px-3.5 py-2.5 text-sm',
                             // Font
                             'font-mono text-slate-900 dark:text-slate-100',
                             // Placeholder
                             'placeholder:text-slate-400 dark:placeholder:text-slate-500',
-                            // Focus - enhanced visibility
-                            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950',
-                            // Border
-                            'border-slate-200 dark:border-slate-700',
+                            // Focus — 3px glow ring per Figma, bg becomes more opaque
+                            'focus-visible:outline-none focus-visible:border-blue-500 focus-visible:shadow-[0_0_0_3px_rgba(59,130,246,0.12)] focus-visible:bg-white dark:focus-visible:bg-[rgba(15,23,42,0.95)]',
+                            // Border — white alpha in dark mode per Figma
+                            'border-slate-200 dark:border-white/[0.08]',
                             // Disabled
                             'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-slate-800',
-                            // Error state
-                            error && 'border-red-500 focus-visible:ring-red-500',
+                            // Error state with shake animation
+                            error && 'border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.12)] animate-[inputShake_300ms_ease-out]',
                             // Icon padding
                             leftIcon && 'pl-9',
                             rightIcon && 'pr-9',
                             // Transition
-                            'transition-all duration-150',
+                            'transition-all duration-200',
                             className
                         )}
                         ref={ref}
@@ -75,7 +75,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     )}
                 </div>
                 {errorMessage && (
-                    <p id={errorId} className="mt-1.5 text-sm text-red-400 flex items-center gap-1" role="alert">
+                    <p id={errorId} className="mt-1 text-[11px] text-red-400 flex items-center gap-1" role="alert">
                         {errorMessage}
                     </p>
                 )}

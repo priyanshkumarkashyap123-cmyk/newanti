@@ -22,6 +22,19 @@ import {
   FileText,
   Loader2,
   RefreshCw,
+  Bell,
+  Star,
+  Trash2,
+  BarChart3,
+  FileSpreadsheet,
+  MoreVertical,
+  List,
+  LayoutGrid,
+  BookOpen,
+  Bot,
+  Calculator,
+  Building2,
+  Construction,
 } from "lucide-react";
 
 // New UI System
@@ -112,6 +125,8 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("projects");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     document.title = 'Dashboard - BeamLab';
@@ -285,7 +300,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           </Link>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
@@ -304,8 +319,30 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               {tab.label}
             </Button>
           ))}
+
+          {/* Favorites & Trash - per Figma §5.1 */}
+          <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent">
+            <Star className="w-4 h-4" />
+            Favorites
+          </Button>
+          <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent">
+            <Trash2 className="w-4 h-4" />
+            Trash
+          </Button>
+
           <div className="pt-4 mt-4 border-t border-white/[0.06]">
             <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+              <BarChart3 className="w-4 h-4" />
+              Analytics
+            </Button>
+            <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+              <FileSpreadsheet className="w-4 h-4" />
+              Reports
+            </Button>
+          </div>
+
+          <div className="pt-4 mt-4 border-t border-white/[0.06]">
+            <Button variant="ghost" onClick={() => navigate('/settings')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
               <Settings className="w-4 h-4" />
               Settings
             </Button>
@@ -318,6 +355,17 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             </Link>
           </div>
         </nav>
+
+        {/* New Project button fixed at bottom - per Figma §5.1 */}
+        <div className="px-3 pb-2">
+          <Button
+            onClick={handleNewProject}
+            className="w-full gap-2 shadow-lg shadow-blue-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            New Project
+          </Button>
+        </div>
 
         <div className="p-4 border-t border-white/[0.06] bg-white dark:bg-slate-950/40">
           <div className="flex items-center gap-3">
@@ -370,6 +418,70 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Grid/List Toggle - per Figma §5.1 */}
+            <div className="flex items-center border border-slate-200 dark:border-white/[0.08] rounded-lg overflow-hidden">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 transition-colors ${viewMode === "grid" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
+                title="Grid view"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 transition-colors ${viewMode === "list" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
+                title="List view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Notification Bell - per Figma §5.6 */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative h-9 w-9 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
+                  3
+                </span>
+              </Button>
+
+              {/* Notification Dropdown */}
+              {showNotifications && (
+                <div className="absolute right-0 top-11 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Notifications</h3>
+                    <button className="text-xs text-blue-400 hover:text-blue-300">Mark All ✓</button>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    <div className="px-4 py-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Today</div>
+                    {[
+                      { color: "bg-green-500", text: "Analysis completed", detail: "Office Bldg — 2h ago" },
+                      { color: "bg-amber-500", text: "Design warning", detail: "M5 utilization 0.95 — 3h ago" },
+                      { color: "bg-blue-500", text: "Shared with you", detail: "Priya shared \"Tower\" — 5h ago" },
+                    ].map((n, i) => (
+                      <div key={i} className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer border-l-3 border-transparent hover:border-blue-500 transition-colors">
+                        <div className="flex items-start gap-2.5">
+                          <div className={`w-2 h-2 rounded-full ${n.color} mt-1.5 flex-shrink-0`} />
+                          <div>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">{n.text}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{n.detail}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700">
+                    <button className="text-xs text-blue-400 hover:text-blue-300 w-full text-center">View All Notifications →</button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Button variant="outline" size="sm" className="gap-2">
               <Upload className="w-4 h-4" />
               Import
@@ -454,9 +566,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           {/* Quick Start */}
           <div className="mb-10">
             <h2 className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-4">
-              Quick Start
+              Quick Actions
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
               {MODULE_LAUNCHERS.map((module) => (
                 <Button
                   key={module.id}
@@ -518,6 +630,8 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 <p className="text-sm">Loading your projects...</p>
               </div>
             ) : filteredProjects.length > 0 ? (
+              <>
+              {viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProjects.map((project) => (
                   <motion.div
@@ -534,7 +648,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                           {getTypeIcon(project.type)}
                         </span>
                       )}
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 flex items-center gap-2">
                         <Badge
                           variant={
                             project.status === "Final"
@@ -547,6 +661,14 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                           {project.status}
                         </Badge>
                       </div>
+                      {/* Context Menu Button - per Figma §5.2 */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); }}
+                        className="absolute top-3 left-3 w-7 h-7 rounded-md bg-slate-900/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-300 hover:text-white hover:bg-slate-900/80"
+                        title="Project actions"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">
@@ -581,6 +703,42 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                   </span>
                 </Button>
               </div>
+              ) : (
+              /* List View - per Figma §5.5 */
+              <div className="border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden">
+                <div className="grid grid-cols-[1fr_120px_80px_120px_40px] gap-4 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-white/[0.06]">
+                  <span>Name</span>
+                  <span>Type</span>
+                  <span>Members</span>
+                  <span>Last Modified</span>
+                  <span></span>
+                </div>
+                {filteredProjects.map((project, i) => (
+                  <div
+                    key={project.id}
+                    onClick={() => handleOpenProject(project.id)}
+                    className={`grid grid-cols-[1fr_120px_80px_120px_40px] gap-4 px-4 py-3 items-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors text-sm ${
+                      i % 2 === 1 ? "bg-slate-50/50 dark:bg-slate-900/30" : ""
+                    } ${isLoadingOne === project.id ? "opacity-60 pointer-events-none" : ""}`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="material-symbols-outlined text-xl text-slate-500">{getTypeIcon(project.type)}</span>
+                      <span className="font-medium text-slate-900 dark:text-white truncate">{project.name}</span>
+                      <Badge variant={project.status === "Analyzed" ? "info" : "outline"} className="flex-shrink-0">
+                        {project.status}
+                      </Badge>
+                    </div>
+                    <span className="text-slate-500">{project.type}</span>
+                    <span className="text-slate-500">{project.memberCount}</span>
+                    <span className="text-slate-500 text-xs">{project.lastModified}</span>
+                    <button onClick={(e) => { e.stopPropagation(); }} className="text-slate-400 hover:text-white">
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              )}
+              </>
             ) : (
               <EmptyState
                 title="No projects yet"
@@ -672,6 +830,13 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             )}
           </TabPanel>
         </PageTransition>
+
+        {/* Bottom Bar - per Figma §5.1 */}
+        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-white/[0.06] flex items-center justify-between px-6 text-xs text-slate-500">
+          <span>Plan: Professional</span>
+          <span>Storage: {cloudProjects.length > 0 ? `${(cloudProjects.length * 0.5).toFixed(1)}` : "0"}/5 GB</span>
+          <Link to="/settings" className="text-blue-400 hover:text-blue-300">Upgrade Plan →</Link>
+        </footer>
       </main>
     </div>
   );
@@ -690,25 +855,53 @@ const MODULE_LAUNCHERS = [
     bgColor: "bg-blue-500/20 text-blue-400",
   },
   {
-    id: "beam",
-    title: "Beam Tool",
-    subtitle: "Continuous & cantilever beams",
-    icon: "straighten",
+    id: "truss",
+    title: "New Truss",
+    subtitle: "Pratt, Warren, Howe trusses",
+    icon: "grid_on",
+    bgColor: "bg-cyan-500/20 text-cyan-400",
+  },
+  {
+    id: "building",
+    title: "New Building",
+    subtitle: "Multi-storey RC/Steel buildings",
+    icon: "apartment",
+    bgColor: "bg-indigo-500/20 text-indigo-400",
+  },
+  {
+    id: "ai-generate",
+    title: "AI Generate",
+    subtitle: "Describe → auto-model",
+    icon: "smart_toy",
+    bgColor: "bg-purple-500/20 text-purple-400",
+  },
+  {
+    id: "import",
+    title: "Import",
+    subtitle: "STAAD, IFC, DXF, E2K",
+    icon: "upload_file",
     bgColor: "bg-orange-500/20 text-orange-400",
   },
   {
-    id: "rc-design",
-    title: "RC Design",
-    subtitle: "IS 456 / ACI 318 checks",
-    icon: "apartment",
+    id: "template",
+    title: "Template",
+    subtitle: "Start from a template",
+    icon: "content_copy",
+    bgColor: "bg-teal-500/20 text-teal-400",
+  },
+  {
+    id: "quick-calc",
+    title: "Quick Calc",
+    subtitle: "Beam, section, connection",
+    icon: "calculate",
     bgColor: "bg-green-500/20 text-green-400",
   },
   {
-    id: "steel-design",
-    title: "Steel Design",
-    subtitle: "IS 800 / AISC 360 checks",
-    icon: "construction",
-    bgColor: "bg-purple-500/20 text-purple-400",
+    id: "docs",
+    title: "Docs",
+    subtitle: "Guides & documentation",
+    icon: "menu_book",
+    bgColor: "bg-slate-500/20 text-slate-400",
   },
 ];
 

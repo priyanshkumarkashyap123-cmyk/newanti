@@ -7,7 +7,8 @@ import { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Settings, Monitor, BarChart2, User, LogOut, ChevronDown,
-    Cpu, Zap, Save, RotateCcw, Check, HardDrive
+    Cpu, Zap, Save, RotateCcw, Check, HardDrive,
+    Ruler, Keyboard, Bell, CreditCard
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 
@@ -15,7 +16,7 @@ import { Button } from '../components/ui/button';
 // TYPES
 // ============================================
 
-type TabId = 'general' | 'display' | 'analysis' | 'profile';
+type TabId = 'general' | 'display' | 'analysis' | 'profile' | 'units' | 'shortcuts' | 'notifications' | 'subscription';
 
 interface NavItem {
     id: TabId;
@@ -28,10 +29,14 @@ interface NavItem {
 // ============================================
 
 const NAV_ITEMS: NavItem[] = [
+    { id: 'profile', label: 'Profile', icon: User },
     { id: 'general', label: 'General', icon: Settings },
-    { id: 'display', label: 'Display', icon: Monitor },
+    { id: 'units', label: 'Units & Precision', icon: Ruler },
+    { id: 'display', label: 'Appearance', icon: Monitor },
+    { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: Keyboard },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'analysis', label: 'Analysis Preferences', icon: BarChart2 },
-    { id: 'profile', label: 'User Profile', icon: User },
+    { id: 'subscription', label: 'Subscription', icon: CreditCard },
 ];
 
 // ============================================
@@ -493,6 +498,225 @@ export const SettingsPage: FC = () => {
                                     onChange={() => { }}
                                     placeholder="Your name"
                                 />
+                                <Input
+                                    label="Role"
+                                    value="Structural Engineer"
+                                    onChange={() => { }}
+                                    placeholder="Your role"
+                                />
+                                <Input
+                                    label="Organization"
+                                    value=""
+                                    onChange={() => { }}
+                                    placeholder="Company name"
+                                />
+                                <Input
+                                    label="License No."
+                                    value=""
+                                    onChange={() => { }}
+                                    placeholder="SE-2024-XXXX"
+                                />
+                            </section>
+                        )}
+
+                        {/* Units & Precision - per Figma §17.3 */}
+                        {activeTab === 'units' && (
+                            <section className="flex flex-col gap-5">
+                                <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium">Units & Precision</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Configure measurement units for your projects.</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium text-slate-400">Preset:</span>
+                                    {['SI (Metric)', 'Imperial', 'MKS', 'Custom'].map((preset) => (
+                                        <label key={preset} className="flex items-center gap-1.5 text-sm text-slate-300 cursor-pointer">
+                                            <input type="radio" name="unitPreset" defaultChecked={preset === 'SI (Metric)'}
+                                                className="accent-blue-500" />
+                                            {preset}
+                                        </label>
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Select label="Length" value="m" onChange={() => { }} options={[
+                                        { value: 'm', label: 'meters (m)' },
+                                        { value: 'mm', label: 'millimeters (mm)' },
+                                        { value: 'ft', label: 'feet (ft)' },
+                                        { value: 'in', label: 'inches (in)' },
+                                    ]} />
+                                    <Select label="Section Dimensions" value="mm" onChange={() => { }} options={[
+                                        { value: 'mm', label: 'millimeters (mm)' },
+                                        { value: 'cm', label: 'centimeters (cm)' },
+                                        { value: 'in', label: 'inches (in)' },
+                                    ]} />
+                                    <Select label="Force" value="kN" onChange={() => { }} options={[
+                                        { value: 'kN', label: 'kilonewtons (kN)' },
+                                        { value: 'N', label: 'newtons (N)' },
+                                        { value: 'kip', label: 'kips' },
+                                        { value: 'kgf', label: 'kgf' },
+                                    ]} />
+                                    <Select label="Moment" value="kNm" onChange={() => { }} options={[
+                                        { value: 'kNm', label: 'kN·m' },
+                                        { value: 'kNmm', label: 'kN·mm' },
+                                        { value: 'kipft', label: 'kip·ft' },
+                                    ]} />
+                                    <Select label="Stress" value="MPa" onChange={() => { }} options={[
+                                        { value: 'MPa', label: 'MPa (N/mm²)' },
+                                        { value: 'kPa', label: 'kPa' },
+                                        { value: 'psi', label: 'psi' },
+                                        { value: 'ksi', label: 'ksi' },
+                                    ]} />
+                                    <Select label="Temperature" value="C" onChange={() => { }} options={[
+                                        { value: 'C', label: '°C' },
+                                        { value: 'F', label: '°F' },
+                                    ]} />
+                                </div>
+                                <div className="border-t border-slate-700 pt-4">
+                                    <h4 className="text-sm font-medium text-slate-300 mb-3">Display Format</h4>
+                                    <div className="flex flex-col gap-2">
+                                        {['1,234.56 (comma thousands)', '1.234,56 (European)', '1234.56 (no separator)'].map((fmt, i) => (
+                                            <label key={fmt} className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+                                                <input type="radio" name="numFormat" defaultChecked={i === 0} className="accent-blue-500" />
+                                                {fmt}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <Button variant="outline" size="sm">Reset to Default</Button>
+                                    <Button size="sm">Save</Button>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Keyboard Shortcuts - per Figma §17.5 */}
+                        {activeTab === 'shortcuts' && (
+                            <section className="flex flex-col gap-5">
+                                <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium">Keyboard Shortcuts</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Customize your keyboard shortcuts.</p>
+                                </div>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-sm font-medium text-slate-400">Preset:</span>
+                                    {['Default', 'STAAD-like', 'AutoCAD-like'].map((preset) => (
+                                        <label key={preset} className="flex items-center gap-1.5 text-sm text-slate-300 cursor-pointer">
+                                            <input type="radio" name="shortcutPreset" defaultChecked={preset === 'Default'} className="accent-blue-500" />
+                                            {preset}
+                                        </label>
+                                    ))}
+                                </div>
+                                {[
+                                    { category: 'General', shortcuts: [
+                                        { action: 'Save', key: '⌘S' },
+                                        { action: 'Undo', key: '⌘Z' },
+                                        { action: 'Redo', key: '⌘⇧Z' },
+                                        { action: 'Delete', key: '⌫' },
+                                        { action: 'Select All', key: '⌘A' },
+                                        { action: 'Command Palette', key: '⌘K' },
+                                    ]},
+                                    { category: 'Modeling', shortcuts: [
+                                        { action: 'Add Node', key: 'N' },
+                                        { action: 'Add Member', key: 'M' },
+                                        { action: 'Add Support', key: 'S' },
+                                        { action: 'Add Load', key: 'L' },
+                                        { action: 'Move', key: 'G' },
+                                        { action: 'Rotate', key: 'R' },
+                                    ]},
+                                    { category: 'View', shortcuts: [
+                                        { action: 'Zoom to Fit', key: 'F' },
+                                        { action: 'Top View', key: 'Numpad 7' },
+                                        { action: 'Front View', key: 'Numpad 1' },
+                                        { action: 'Toggle Wireframe', key: 'W' },
+                                    ]},
+                                    { category: 'Analysis', shortcuts: [
+                                        { action: 'Run Analysis', key: 'F5' },
+                                        { action: 'Show BMD', key: 'B' },
+                                        { action: 'Show SFD', key: 'V' },
+                                        { action: 'Show Deformed', key: 'D' },
+                                    ]},
+                                ].map((group) => (
+                                    <div key={group.category}>
+                                        <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{group.category}</h4>
+                                        <div className="border border-slate-700 rounded-lg overflow-hidden">
+                                            {group.shortcuts.map((s, i) => (
+                                                <div key={s.action} className={`flex items-center justify-between px-4 py-2.5 text-sm ${i > 0 ? 'border-t border-slate-700' : ''}`}>
+                                                    <span className="text-slate-300">{s.action}</span>
+                                                    <kbd className="px-2 py-0.5 bg-slate-800 border border-slate-600 rounded text-xs text-slate-300 font-mono">{s.key}</kbd>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                                <div className="flex justify-end gap-3 pt-4">
+                                    <Button variant="outline" size="sm">Reset All</Button>
+                                    <Button variant="outline" size="sm">Export Shortcuts</Button>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Notifications - per Figma §17 */}
+                        {activeTab === 'notifications' && (
+                            <section className="flex flex-col gap-5">
+                                <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium">Notifications</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control how you receive notifications.</p>
+                                </div>
+                                <Toggle enabled={true} onChange={() => { }} label="Analysis Completed" description="Get notified when an analysis run finishes." />
+                                <Toggle enabled={true} onChange={() => { }} label="Design Warnings" description="Receive alerts for elements exceeding utilization limits." />
+                                <Toggle enabled={true} onChange={() => { }} label="Shared Projects" description="Get notified when someone shares a project with you." />
+                                <Toggle enabled={false} onChange={() => { }} label="Product Updates" description="Receive emails about new features and updates." />
+                                <Toggle enabled={false} onChange={() => { }} label="Marketing Emails" description="Occasional tips, case studies, and offers." />
+                            </section>
+                        )}
+
+                        {/* Subscription - per Figma §17.6 */}
+                        {activeTab === 'subscription' && (
+                            <section className="flex flex-col gap-5">
+                                <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-medium">Subscription & Billing</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your plan and billing information.</p>
+                                </div>
+                                <div className="p-5 rounded-lg border border-slate-700 bg-slate-800">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg font-bold text-white">Professional</span>
+                                                <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs font-bold rounded">🏆 PRO</span>
+                                            </div>
+                                            <p className="text-sm text-slate-400 mt-1">● Active · Next billing: Feb 15, 2025</p>
+                                        </div>
+                                        <p className="text-2xl font-bold text-white">₹4,999<span className="text-sm text-slate-400 font-normal">/month</span></p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        {['Unlimited projects', 'All analysis types', 'All design codes', 'AI features (100/day)', 'BIM integration', 'Priority support'].map((f) => (
+                                            <div key={f} className="flex items-center gap-2 text-slate-300">
+                                                <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                                                {f}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-medium text-slate-300 mb-3">Usage This Month</h4>
+                                    <div className="space-y-3">
+                                        {[
+                                            { label: 'AI Queries', used: 47, max: 100, unit: '/day' },
+                                            { label: 'Storage', used: 2.3, max: 50, unit: ' GB' },
+                                            { label: 'Team Members', used: 3, max: 5, unit: '' },
+                                        ].map((u) => (
+                                            <div key={u.label} className="flex items-center gap-3">
+                                                <span className="text-sm text-slate-400 w-28">{u.label}</span>
+                                                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(u.used / u.max) * 100}%` }} />
+                                                </div>
+                                                <span className="text-xs text-slate-400 w-20 text-right">{u.used}/{u.max}{u.unit}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <Button variant="premium" size="sm">Upgrade to Enterprise →</Button>
+                                    <Button variant="outline" size="sm">Cancel Subscription</Button>
+                                </div>
                             </section>
                         )}
                     </div>

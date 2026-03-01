@@ -63,8 +63,8 @@ const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5',
         'rounded-lg text-sm font-medium',
-        'transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]',
-        'active:scale-[0.97]',
+        'transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
+        'hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
         'focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950',
         'disabled:pointer-events-none disabled:opacity-50',
@@ -78,14 +78,14 @@ const buttonVariants = cva(
             variant: {
                 /* ---- core ---- */
                 default: [
-                    'bg-blue-600 text-white hover:bg-blue-500',
+                    'bg-blue-600 text-white hover:bg-blue-700',
                     'shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/30',
-                    'focus-visible:ring-blue-500',
+                    'focus-visible:ring-blue-400',
                 ].join(' '),
                 destructive: [
-                    'bg-red-600 text-white hover:bg-red-500',
+                    'bg-red-600 text-white hover:bg-red-700',
                     'shadow-sm shadow-red-500/25',
-                    'focus-visible:ring-red-500',
+                    'focus-visible:ring-red-400',
                 ].join(' '),
                 outline: [
                     'border border-slate-300 dark:border-white/[0.1] bg-transparent',
@@ -112,9 +112,9 @@ const buttonVariants = cva(
                     'focus-visible:ring-blue-400',
                 ].join(' '),
                 success: [
-                    'bg-emerald-600 text-white hover:bg-emerald-500',
+                    'bg-emerald-500 text-white hover:bg-emerald-600',
                     'shadow-sm shadow-emerald-500/25',
-                    'focus-visible:ring-emerald-500',
+                    'focus-visible:ring-emerald-400',
                 ].join(' '),
                 /* ---- premium variants ---- */
                 premium: [
@@ -152,6 +152,7 @@ const buttonVariants = cva(
                 lg: 'h-11 px-6 text-base',
                 xl: 'h-14 px-10 text-lg rounded-2xl',
                 icon: 'h-9 w-9 p-0',
+                'icon-sm': 'h-7 w-7 p-0 rounded-md',
             },
         },
         defaultVariants: {

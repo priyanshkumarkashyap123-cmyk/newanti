@@ -131,7 +131,7 @@ export const semanticColors = {
     // Text Colors
     text: {
         primary: colors.neutral[100],    // Main text
-        secondary: colors.neutral[400],  // Secondary text
+        secondary: colors.neutral[300],  // Secondary text (Figma: #cbd5e1)
         muted: colors.neutral[500],      // Disabled/muted text
         inverse: colors.neutral[900],    // Text on light backgrounds
         accent: colors.primary[400],     // Links, highlights
@@ -165,14 +165,15 @@ export const semanticColors = {
         shear: colors.error[500],
     },
 
-    // Structural Element Colors
+    // Structural Element Colors (aligned with Figma spec)
     elements: {
-        node: colors.primary[500],
+        node: '#22d3ee',                 // Cyan (Figma: node-color)
         nodeSelected: colors.accent[500],
-        member: colors.neutral[400],
+        member: colors.neutral[400],     // #94a3b8
         memberSelected: colors.primary[400],
-        support: colors.success[500],
-        load: colors.error[400],
+        support: '#f59e0b',              // Gold (Figma: support-color)
+        load: '#ef4444',                 // Red (Figma: load-color)
+        selected: colors.primary[500],   // Blue (Figma: selected-color)
     },
 } as const;
 
@@ -182,9 +183,9 @@ export const semanticColors = {
 
 export const typography = {
     fontFamily: {
-        sans: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        sans: '"Inter", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         mono: '"JetBrains Mono", "Fira Code", Consolas, monospace',
-        display: '"Cal Sans", "Inter", sans-serif',
+        display: '"Space Grotesk", "Inter", system-ui, sans-serif',
     },
 
     fontSize: {
@@ -208,8 +209,35 @@ export const typography = {
 
     lineHeight: {
         tight: '1.25',
+        snug: '1.35',
         normal: '1.5',
         relaxed: '1.75',
+    },
+
+    // Composite type presets (Figma spec)
+    presets: {
+        'display-xl': { size: '3rem', weight: '700', lineHeight: '1.1', letterSpacing: '-0.02em' },
+        'display-lg': { size: '2.25rem', weight: '700', lineHeight: '1.15', letterSpacing: '-0.02em' },
+        'display-md': { size: '1.875rem', weight: '600', lineHeight: '1.2', letterSpacing: '-0.01em' },
+        h1: { size: '1.5rem', weight: '600', lineHeight: '1.3', letterSpacing: '-0.01em' },
+        h2: { size: '1.25rem', weight: '600', lineHeight: '1.35', letterSpacing: '-0.01em' },
+        h3: { size: '1.125rem', weight: '600', lineHeight: '1.4', letterSpacing: '-0.005em' },
+        h4: { size: '1rem', weight: '600', lineHeight: '1.4', letterSpacing: '0' },
+        h5: { size: '0.875rem', weight: '600', lineHeight: '1.4', letterSpacing: '0' },
+        h6: { size: '0.75rem', weight: '600', lineHeight: '1.5', letterSpacing: '0.05em' },
+        body: { size: '0.875rem', weight: '400', lineHeight: '1.5', letterSpacing: '0' },
+        'body-sm': { size: '0.75rem', weight: '400', lineHeight: '1.5', letterSpacing: '0' },
+        caption: { size: '0.6875rem', weight: '400', lineHeight: '1.4', letterSpacing: '0.01em' },
+        code: { size: '0.75rem', weight: '400', lineHeight: '1.5', letterSpacing: '0' },
+        label: { size: '0.75rem', weight: '500', lineHeight: '1.3', letterSpacing: '0.02em' },
+        value: { size: '0.875rem', weight: '500', lineHeight: '1.3', letterSpacing: '0' },
+        unit: { size: '0.625rem', weight: '400', lineHeight: '1.2', letterSpacing: '0.02em' },
+        button: { size: '0.875rem', weight: '500', lineHeight: '1', letterSpacing: '0.01em' },
+        'button-sm': { size: '0.75rem', weight: '500', lineHeight: '1', letterSpacing: '0.01em' },
+        tab: { size: '0.8125rem', weight: '500', lineHeight: '1', letterSpacing: '0.01em' },
+        menu: { size: '0.8125rem', weight: '400', lineHeight: '1.4', letterSpacing: '0' },
+        tooltip: { size: '0.75rem', weight: '400', lineHeight: '1.4', letterSpacing: '0' },
+        'status-bar': { size: '0.6875rem', weight: '400', lineHeight: '1', letterSpacing: '0' },
     },
 } as const;
 
@@ -247,7 +275,7 @@ export const spacing = {
 
 export const borderRadius = {
     none: '0',
-    sm: '0.125rem',   // 2px
+    sm: '0.25rem',    // 4px (Figma spec)
     default: '0.25rem', // 4px
     md: '0.375rem',   // 6px
     lg: '0.5rem',     // 8px
@@ -263,15 +291,17 @@ export const borderRadius = {
 
 export const shadows = {
     none: 'none',
-    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    sm: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
     default: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-    md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-    xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+    md: '0 4px 6px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)',
+    lg: '0 10px 15px rgba(0,0,0,0.15), 0 4px 6px rgba(0,0,0,0.10)',
+    xl: '0 20px 25px rgba(0,0,0,0.18), 0 8px 10px rgba(0,0,0,0.12)',
     '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-    inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
-    glow: '0 0 20px rgba(59, 130, 246, 0.5)',
-    glowAccent: '0 0 20px rgba(168, 85, 247, 0.5)',
+    inner: 'inset 0 2px 4px rgba(0,0,0,0.06)',
+    glow: '0 0 20px rgba(59, 130, 246, 0.3)',
+    glowAccent: '0 0 20px rgba(168, 85, 247, 0.3)',
+    glowSuccess: '0 0 20px rgba(34, 197, 94, 0.3)',
+    glowError: '0 0 20px rgba(239, 68, 68, 0.3)',
 } as const;
 
 // ============================================
@@ -280,7 +310,7 @@ export const shadows = {
 
 export const transitions = {
     duration: {
-        fast: '150ms',
+        fast: '100ms',     // Figma spec: 100ms
         default: '200ms',
         slow: '300ms',
         slower: '500ms',
@@ -290,7 +320,8 @@ export const transitions = {
         easeIn: 'ease-in',
         easeOut: 'ease-out',
         easeInOut: 'ease-in-out',
-        spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',  // Figma spec spring
+        smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
     },
 } as const;
 
@@ -303,12 +334,13 @@ export const zIndex = {
     base: 0,
     dropdown: 10,
     sticky: 20,
-    fixed: 30,
-    modalBackdrop: 40,
-    modal: 50,
-    popover: 60,
-    tooltip: 70,
-    toast: 80,
+    overlay: 30,         // Figma: z-overlay
+    modal: 40,           // Figma: z-modal = 40
+    popover: 50,         // Figma: z-popover = 50
+    toast: 60,           // Figma: z-toast = 60
+    command: 70,         // Figma: z-command = 70
+    tooltip: 80,
+    max: 100,            // Figma: z-max = 100
 } as const;
 
 // ============================================
@@ -320,7 +352,9 @@ export const breakpoints = {
     md: '768px',
     lg: '1024px',
     xl: '1280px',
+    wide: '1440px',    // Figma: wide breakpoint
     '2xl': '1536px',
+    ultra: '1920px',   // Figma: ultra breakpoint
 } as const;
 
 // ============================================

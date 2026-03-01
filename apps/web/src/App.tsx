@@ -13,6 +13,7 @@ import { SignUpPage } from "./pages/SignUpPage";
 import { RequireAuth } from "./components/layout/RequireAuth";
 import "./App.css";
 import "./utils/generateTestGrid";
+import { SkipLink } from "./components/ui/SkipLink";
 
 // Lazy loaded components (Code Splitting)
 const Dashboard = lazy(() =>
@@ -217,6 +218,8 @@ const SensitivityOptimizationDashboard = lazy(
 );
 const OAuthCallbackPage = lazy(() => import("./pages/OAuthCallbackPage"));
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
+const AccountLockedPage = lazy(() => import("./pages/AccountLockedPage"));
+const LinkExpiredPage = lazy(() => import("./pages/LinkExpiredPage"));
 const Visualization3DEngine = lazy(
   () => import("./pages/Visualization3DEngine"),
 );
@@ -376,9 +379,11 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <SkipLink />
       <AnalyticsProvider>
         <ToastProvider>
           <Suspense fallback={<PageLoader />}>
+            <main id="main-content">
             <Routes>
               {/* Landing Page */}
               <Route path="/" element={<LandingPage />} />
@@ -409,6 +414,8 @@ function App() {
               {/* Custom Auth Pages */}
               <Route path="/sign-in/*" element={<SignInPage />} />
               <Route path="/sign-up/*" element={<SignUpPage />} />
+              <Route path="/account-locked" element={<AccountLockedPage />} />
+              <Route path="/link-expired" element={<LinkExpiredPage />} />
               {/* Settings Page */}
               {/* Settings Page */}
               <Route
@@ -930,6 +937,7 @@ function App() {
               {/* Fallback - Show proper 404 page */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
+            </main>
           </Suspense>
         </ToastProvider>
       </AnalyticsProvider>

@@ -1,43 +1,129 @@
 /**
  * Tabs Component - Tab Navigation
  * Based on Radix UI Tabs primitive
+ * 
+ * Variants per Figma §2.8:
+ *   pill:     Rounded bg pill (default, current behavior)
+ *   line:     Underline indicator, transparent bg
+ *   enclosed: Card-style with colored top border
+ * 
+ * Sizes per Figma §2.8:
+ *   sm:      28px
+ *   default: 32px
+ *   lg:      40px
  */
 
 import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 const Tabs = TabsPrimitive.Root;
 
+/* ------------------------------------------------------------------ */
+/*  TabsList variants                                                 */
+/* ------------------------------------------------------------------ */
+
+const tabsListVariants = cva(
+    'inline-flex items-center justify-center text-slate-500 dark:text-slate-400',
+    {
+        variants: {
+            variant: {
+                pill: 'rounded-lg bg-slate-100 dark:bg-slate-800 p-1 gap-0.5',
+                line: 'border-b border-slate-200 dark:border-slate-800 gap-0',
+                enclosed: 'bg-transparent gap-0',
+            },
+            size: {
+                sm: 'h-7',
+                default: 'h-8',
+                lg: 'h-10',
+            },
+        },
+        defaultVariants: {
+            variant: 'pill',
+            size: 'default',
+        },
+    }
+);
+
+interface TabsListProps
+    extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>,
+        VariantProps<typeof tabsListVariants> {}
+
 const TabsList = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.List>,
-    React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
+    TabsListProps
+>(({ className, variant, size, ...props }, ref) => (
     <TabsPrimitive.List
         ref={ref}
-        className={cn(
-            'inline-flex h-9 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 p-1 text-slate-500 dark:text-slate-400',
-            className
-        )}
+        className={cn(tabsListVariants({ variant, size }), className)}
+        data-variant={variant ?? 'pill'}
         {...props}
     />
 ));
 TabsList.displayName = TabsPrimitive.List.displayName;
 
+/* ------------------------------------------------------------------ */
+/*  TabsTrigger variants                                              */
+/* ------------------------------------------------------------------ */
+
+const tabsTriggerVariants = cva(
+    [
+        'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 text-sm font-medium',
+        'ring-offset-white dark:ring-offset-slate-950',
+        'transition-all duration-250 ease-in-out',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2',
+        'disabled:pointer-events-none disabled:opacity-50',
+    ].join(' '),
+    {
+        variants: {
+            variant: {
+                pill: [
+                    'rounded-md',
+                    'data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950',
+                    'data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50',
+                    'data-[state=active]:shadow',
+                ].join(' '),
+                line: [
+                    'rounded-none border-b-2 border-transparent -mb-px',
+                    'data-[state=active]:border-blue-500 data-[state=active]:text-blue-500',
+                    'hover:text-slate-700 dark:hover:text-slate-200',
+                ].join(' '),
+                enclosed: [
+                    'rounded-t-md border border-transparent -mb-px',
+                    'data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900',
+                    'data-[state=active]:border-slate-200 dark:data-[state=active]:border-slate-700',
+                    'data-[state=active]:border-b-white dark:data-[state=active]:border-b-slate-900',
+                    'data-[state=active]:border-t-2 data-[state=active]:border-t-blue-500',
+                    'data-[state=active]:text-slate-900 dark:data-[state=active]:text-white',
+                ].join(' '),
+            },
+        },
+        defaultVariants: {
+            variant: 'pill',
+        },
+    }
+);
+
+interface TabsTriggerProps
+    extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>,
+        VariantProps<typeof tabsTriggerVariants> {}
+
 const TabsTrigger = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.Trigger>,
-    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
+    TabsTriggerProps
+>(({ className, variant, ...props }, ref) => (
     <TabsPrimitive.Trigger
         ref={ref}
-        className={cn(
-            'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-950 data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50 data-[state=active]:shadow dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300',
-            className
-        )}
+        className={cn(tabsTriggerVariants({ variant }), className)}
         {...props}
     />
 ));
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+
+/* ------------------------------------------------------------------ */
+/*  TabsContent                                                       */
+/* ------------------------------------------------------------------ */
 
 const TabsContent = React.forwardRef<
     React.ElementRef<typeof TabsPrimitive.Content>,
@@ -46,7 +132,7 @@ const TabsContent = React.forwardRef<
     <TabsPrimitive.Content
         ref={ref}
         className={cn(
-            'mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300',
+            'mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:ring-offset-slate-950',
             className
         )}
         {...props}
@@ -54,4 +140,4 @@ const TabsContent = React.forwardRef<
 ));
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants, tabsTriggerVariants };
