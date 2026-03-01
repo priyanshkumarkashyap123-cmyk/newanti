@@ -265,6 +265,7 @@ import { ProjectService, Project } from "../services/ProjectService";
 import { mapBackendAnalysisError } from "../services/ErrorHandlingService";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { JobHistoryPanel } from "./ui/JobHistoryPanel";
+import { SyncStatus } from "../lib/offlineSync";
 
 // Multiplayer
 import {
@@ -563,6 +564,11 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
             <span className="text-slate-600">Zoom:</span>{" "}
             <span className="text-slate-500 dark:text-slate-400 font-mono">{zoomLevel}%</span>
           </span>
+
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+
+          {/* Sync Status — offline queue indicator */}
+          <SyncStatus className="text-[11px]" />
 
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 

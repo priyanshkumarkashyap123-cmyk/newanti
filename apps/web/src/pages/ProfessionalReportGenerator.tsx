@@ -710,7 +710,7 @@ export default function ProfessionalReportGenerator() {
               <button
                 onClick={generateReport}
                 disabled={generatingReport}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {generatingReport ? (
                   <>
@@ -736,7 +736,7 @@ export default function ProfessionalReportGenerator() {
             {/* Template Selection */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-purple-400" />
+                <BookOpen className="w-5 h-5 text-cyan-400" />
                 Report Template
               </h3>
               
@@ -760,7 +760,7 @@ export default function ProfessionalReportGenerator() {
             {/* Project Information */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-purple-400" />
+                <Building2 className="w-5 h-5 text-cyan-400" />
                 Project Information
               </h3>
               
@@ -841,7 +841,7 @@ export default function ProfessionalReportGenerator() {
             {/* Output Settings */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-purple-400" />
+                <Settings className="w-5 h-5 text-cyan-400" />
                 Output Settings
               </h3>
               
@@ -855,7 +855,7 @@ export default function ProfessionalReportGenerator() {
                         onClick={() => setOutputFormat(fmt)}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                           outputFormat === fmt
-                            ? 'bg-purple-600 text-white'
+                            ? 'bg-cyan-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
@@ -874,7 +874,7 @@ export default function ProfessionalReportGenerator() {
                         onClick={() => setPaperSize(size)}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                           paperSize === size
-                            ? 'bg-purple-600 text-white'
+                            ? 'bg-cyan-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
@@ -893,7 +893,7 @@ export default function ProfessionalReportGenerator() {
                         onClick={() => setOrientation(orient)}
                         className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
                           orientation === orient
-                            ? 'bg-purple-600 text-white'
+                            ? 'bg-cyan-600 text-white'
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                         }`}
                       >
@@ -910,7 +910,7 @@ export default function ProfessionalReportGenerator() {
           <div className="lg:col-span-1 space-y-4">
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-purple-400" />
+                <Layers className="w-5 h-5 text-cyan-400" />
                 Report Sections
               </h3>
               
@@ -929,7 +929,7 @@ export default function ProfessionalReportGenerator() {
                         onClick={() => toggleSection(section.id)}
                         className={`w-5 h-5 rounded border flex items-center justify-center ${
                           section.enabled
-                            ? 'bg-purple-600 border-purple-600'
+                            ? 'bg-cyan-600 border-cyan-600'
                             : 'bg-transparent border-slate-500'
                         }`}
                       >
@@ -975,7 +975,7 @@ export default function ProfessionalReportGenerator() {
                                     type="checkbox"
                                     checked={value}
                                     onChange={(e) => updateSectionOption(section.id, key, e.target.checked)}
-                                    className="rounded border-slate-600 bg-slate-200 dark:bg-slate-700 text-purple-600"
+                                    className="rounded border-slate-600 bg-slate-200 dark:bg-slate-700 text-cyan-600"
                                   />
                                   <span className="text-slate-700 dark:text-slate-300 capitalize">
                                     {key.replace(/([A-Z])/g, ' $1').trim()}
