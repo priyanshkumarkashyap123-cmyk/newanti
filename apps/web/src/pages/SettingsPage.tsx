@@ -346,13 +346,13 @@ export const SettingsPage: FC = () => {
                         {NAV_ITEMS.find(n => n.id === activeTab)?.label}
                     </h2>
                     <div className="flex gap-3">
-                        <Button variant="outline" size="sm" onClick={handleResetDefaults} className="flex items-center gap-2 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+                        <Button variant="outline" size="sm" className="flex items-center gap-2 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
                             <RotateCcw className="w-4 h-4" />
                             Reset Defaults
                         </Button>
-                        <Button variant="default" size="sm" onClick={handleSaveSettings} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
-                            {settingsSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-                            {settingsSaved ? 'Saved!' : 'Save Changes'}
+                        <Button variant="default" size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+                            <Save className="w-4 h-4" />
+                            Save Changes
                         </Button>
                     </div>
                 </header>
@@ -730,68 +730,55 @@ export const SettingsPage: FC = () => {
                             </section>
                         )}
 
-                        {/* Subscription - shows real tier from API */}
+                        {/* Subscription - per Figma §17.6 */}
                         {activeTab === 'subscription' && (
                             <section className="flex flex-col gap-5">
                                 <div className="border-b border-slate-300 dark:border-slate-700 pb-2">
                                     <h3 className="text-slate-900 dark:text-white text-lg font-medium">Subscription & Billing</h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Manage your plan and billing information.</p>
                                 </div>
-                                {subscription.isLoading ? (
-                                    <div className="flex items-center justify-center py-12">
-                                        <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full" />
-                                        <span className="ml-3 text-slate-400">Loading subscription...</span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="p-5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-lg font-bold text-slate-900 dark:text-white">{tierLabel}</span>
-                                                        <span className={`px-2 py-0.5 text-xs font-bold rounded ${
-                                                            subscription.tier === 'enterprise' ? 'bg-purple-500/20 text-purple-400' :
-                                                            subscription.tier === 'pro' ? 'bg-amber-500/20 text-amber-400' :
-                                                            'bg-slate-500/20 text-slate-400'
-                                                        }`}>{tierBadge}</span>
-                                                    </div>
-                                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                                        {subscription.tier === 'free'
-                                                            ? 'Upgrade for unlimited features'
-                                                            : subscription.expiresAt
-                                                              ? `Active · Expires: ${subscription.expiresAt.toLocaleDateString()}`
-                                                              : '● Active'}
-                                                    </p>
-                                                </div>
+                                <div className="p-5 rounded-lg border border-slate-700 bg-slate-800">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-lg font-bold text-white">Professional</span>
+                                                <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs font-bold rounded">🏆 PRO</span>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2 text-sm">
-                                                {[
-                                                    { label: `${subscription.features.maxProjects === -1 ? 'Unlimited' : subscription.features.maxProjects} projects`, ok: true },
-                                                    { label: 'PDF Export', ok: subscription.features.pdfExport },
-                                                    { label: 'AI Assistant', ok: subscription.features.aiAssistant },
-                                                    { label: 'Advanced Design Codes', ok: subscription.features.advancedDesignCodes },
-                                                    { label: `${subscription.features.teamMembers === -1 ? 'Unlimited' : subscription.features.teamMembers} team members`, ok: true },
-                                                    { label: 'Priority Support', ok: subscription.features.prioritySupport },
-                                                ].map((f) => (
-                                                    <div key={f.label} className={`flex items-center gap-2 ${f.ok ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500 line-through'}`}>
-                                                        <Check className={`w-4 h-4 flex-shrink-0 ${f.ok ? 'text-green-500' : 'text-slate-400'}`} />
-                                                        {f.label}
-                                                    </div>
-                                                ))}
-                                            </div>
+                                            <p className="text-sm text-slate-400 mt-1">● Active · Next billing: Feb 15, 2025</p>
                                         </div>
-                                        {subscription.tier === 'free' && (
-                                            <div className="flex gap-3 pt-2">
-                                                <Button variant="default" size="sm" onClick={() => navigate('/pricing')}>Upgrade to Pro →</Button>
+                                        <p className="text-2xl font-bold text-white">₹4,999<span className="text-sm text-slate-400 font-normal">/month</span></p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                        {['Unlimited projects', 'All analysis types', 'All design codes', 'AI features (100/day)', 'BIM integration', 'Priority support'].map((f) => (
+                                            <div key={f} className="flex items-center gap-2 text-slate-300">
+                                                <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                                                {f}
                                             </div>
-                                        )}
-                                        {subscription.tier === 'pro' && (
-                                            <div className="flex gap-3 pt-2">
-                                                <Button variant="default" size="sm" onClick={() => navigate('/pricing')}>Upgrade to Enterprise →</Button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-medium text-slate-300 mb-3">Usage This Month</h4>
+                                    <div className="space-y-3">
+                                        {[
+                                            { label: 'AI Queries', used: 47, max: 100, unit: '/day' },
+                                            { label: 'Storage', used: 2.3, max: 50, unit: ' GB' },
+                                            { label: 'Team Members', used: 3, max: 5, unit: '' },
+                                        ].map((u) => (
+                                            <div key={u.label} className="flex items-center gap-3">
+                                                <span className="text-sm text-slate-400 w-28">{u.label}</span>
+                                                <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${(u.used / u.max) * 100}%` }} />
+                                                </div>
+                                                <span className="text-xs text-slate-400 w-20 text-right">{u.used}/{u.max}{u.unit}</span>
                                             </div>
-                                        )}
-                                    </>
-                                )}
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <Button variant="premium" size="sm">Upgrade to Enterprise →</Button>
+                                    <Button variant="outline" size="sm">Cancel Subscription</Button>
+                                </div>
                             </section>
                         )}
                     </div>

@@ -110,14 +110,10 @@ export function csrfValidationMiddleware(
   const cookieToken = req.cookies?.[CSRF_COOKIE];
   const headerToken = req.get(CSRF_HEADER);
 
-  // In non-production, be lenient when cookies aren't available (http, not https)
-  // SECURITY WARNING: Ensure NODE_ENV=production is always set in deployed environments
-  if (process.env.NODE_ENV !== "production") {
-    if (process.env.NODE_ENV === undefined) {
-      console.warn(
-        "[CSRF] WARNING: NODE_ENV is not set — CSRF validation skipped. Set NODE_ENV=production in production!",
-      );
-    }
+  // Only skip CSRF validation when explicitly in development or test mode.
+  // If NODE_ENV is unset, we default to enforcing CSRF to avoid accidental bypass in production.
+  const nodeEnv = process.env.NODE_ENV;
+  if (nodeEnv === "development" || nodeEnv === "test") {
     return next();
   }
 

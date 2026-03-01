@@ -146,8 +146,15 @@ export class RazorpayBillingService {
       .update(body)
       .digest("hex");
 
-    if (expectedSignature.length !== signature.length) return false;
-    return crypto.timingSafeEqual(Buffer.from(expectedSignature, 'hex'), Buffer.from(signature, 'hex'));
+    try {
+      const expectedBuf = Buffer.from(expectedSignature, 'hex');
+      const signatureBuf = Buffer.from(signature, 'hex');
+      if (expectedBuf.length !== signatureBuf.length) return false;
+      return crypto.timingSafeEqual(expectedBuf, signatureBuf);
+    } catch {
+      // Invalid hex string or other encoding issue
+      return false;
+    }
   }
 
   /**
@@ -165,8 +172,14 @@ export class RazorpayBillingService {
       .update(body)
       .digest("hex");
 
-    if (expectedSignature.length !== signature.length) return false;
-    return crypto.timingSafeEqual(Buffer.from(expectedSignature, 'hex'), Buffer.from(signature, 'hex'));
+    try {
+      const expectedBuf = Buffer.from(expectedSignature, 'hex');
+      const signatureBuf = Buffer.from(signature, 'hex');
+      if (expectedBuf.length !== signatureBuf.length) return false;
+      return crypto.timingSafeEqual(expectedBuf, signatureBuf);
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -508,9 +521,12 @@ razorpayRouter.post(
     }
 
     try {
-      // req.body is a Buffer when using express.raw()
-      const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : 
-                      (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+      // Prefer raw body saved by the verify callback in express.json(), then Buffer from express.raw(),
+      // then fall back to JSON.stringify (may differ in key ordering from original payload).
+      const rawBody = (req as any).rawBody
+        ? (req as any).rawBody.toString('utf8')
+        : Buffer.isBuffer(req.body) ? req.body.toString('utf8')
+        : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
       const isValid = RazorpayBillingService.verifyWebhookSignature(
         rawBody,
         signature,

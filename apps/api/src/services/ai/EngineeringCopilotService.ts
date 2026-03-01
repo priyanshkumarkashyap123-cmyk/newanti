@@ -120,7 +120,9 @@ Provide practical, implementable solutions with clear trade-off analysis.`
 // ============================================
 
 export class EngineeringCopilotService {
-    private conversationHistory: ChatMessage[] = [];
+    // Per-session conversation history to avoid cross-user data leakage.
+    // Each session/user should create their own instance or use sessionId-scoped history.
+    private conversations: Map<string, ChatMessage[]> = new Map();
     private designCode: 'is800' | 'aisc360' | 'general' = 'is800';
 
     constructor(designCode?: 'is800' | 'aisc360' | 'general') {
@@ -129,14 +131,23 @@ export class EngineeringCopilotService {
         }
     }
 
+    /** Get or create conversation history for a session */
+    private getConversation(sessionId: string = 'default'): ChatMessage[] {
+        if (!this.conversations.has(sessionId)) {
+            this.conversations.set(sessionId, []);
+        }
+        return this.conversations.get(sessionId)!;
+    }
+
     /**
      * Analyze a failed member and generate fix suggestions
      */
-    async analyzeFailedMember(memberData: FailedMemberData): Promise<CopilotResponse> {
+    async analyzeFailedMember(memberData: FailedMemberData, sessionId?: string): Promise<CopilotResponse> {
         const prompt = this.constructAnalysisPrompt(memberData);
+        const history = this.getConversation(sessionId);
 
         // Add to conversation history
-        this.conversationHistory.push({
+        history.push({
             id: this.generateId(),
             role: 'user',
             content: prompt,
@@ -148,7 +159,7 @@ export class EngineeringCopilotService {
         const response = await this.generateAIResponse(memberData);
 
         // Add response to history
-        this.conversationHistory.push({
+        history.push({
             id: this.generateId(),
             role: 'assistant',
             content: JSON.stringify(response),
@@ -535,17 +546,21 @@ Review the suggestions below for practical fixing options.`;
     }
 
     /**
-     * Get conversation history
+     * Get conversation history for a session
      */
-    getHistory(): ChatMessage[] {
-        return [...this.conversationHistory];
+    getHistory(sessionId?: string): ChatMessage[] {
+        return [...this.getConversation(sessionId)];
     }
 
     /**
-     * Clear conversation history
+     * Clear conversation history for a session (or all sessions)
      */
-    clearHistory(): void {
-        this.conversationHistory = [];
+    clearHistory(sessionId?: string): void {
+        if (sessionId) {
+            this.conversations.delete(sessionId);
+        } else {
+            this.conversations.clear();
+        }
     }
 
     /**

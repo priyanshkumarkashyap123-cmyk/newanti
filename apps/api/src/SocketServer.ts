@@ -114,11 +114,12 @@ class SocketRateLimiter {
     private windows: Map<string, { count: number; windowStart: number }> = new Map();
     /** Limits: { eventType → maxPerSecond } */
     private limits: Record<string, number>;
+    private cleanupTimer: ReturnType<typeof setInterval>;
 
     constructor(limits: Record<string, number>) {
         this.limits = limits;
         // Purge stale entries every 30s to prevent memory leak
-        setInterval(() => {
+        this.cleanupTimer = setInterval(() => {
             const now = Date.now();
             for (const [key, val] of this.windows) {
                 if (now - val.windowStart > 5000) {
@@ -126,6 +127,7 @@ class SocketRateLimiter {
                 }
             }
         }, 30_000);
+        this.cleanupTimer.unref();
     }
 
     /** Returns true if event should be ALLOWED, false if rate-limited */
@@ -158,6 +160,11 @@ class SocketRateLimiter {
             }
         }
     }
+
+    /** Stop the cleanup interval (used during graceful shutdown) */
+    destroy(): void {
+        clearInterval(this.cleanupTimer);
+    }
 }
 
 export class SocketServer {
@@ -165,6 +172,7 @@ export class SocketServer {
     private users: Map<string, User> = new Map();
     private projects: Map<string, ProjectState> = new Map();
     private colorIndex: number = 0;
+    private userCounter: number = 0;
     private rateLimiter: SocketRateLimiter;
 
     constructor(httpServer: HTTPServer) {
@@ -239,7 +247,7 @@ export class SocketServer {
             const user: User = {
                 id: socket.id,
                 socketId: socket.id,
-                name: `User ${this.users.size + 1}`,
+                name: `User ${++this.userCounter}`,
                 color: this.getNextColor(),
                 projectId: null,
                 lastActivity: new Date()
@@ -583,6 +591,10 @@ export class SocketServer {
                 const project = this.projects.get(user.projectId);
                 if (project) {
                     project.users.delete(user.id);
+                    // Clean up empty project entries to prevent unbounded Map growth
+                    if (project.users.size === 0) {
+                        this.projects.delete(user.projectId);
+                    }
                 }
                 this.broadcastUserLeft(socket, user.projectId, user);
             }
@@ -621,6 +633,7 @@ export class SocketServer {
      * Used during shutdown to ensure clients receive disconnect events.
      */
     public close(): void {
+        this.rateLimiter.destroy();
         this.io.disconnectSockets(true);
         this.io.close();
     }

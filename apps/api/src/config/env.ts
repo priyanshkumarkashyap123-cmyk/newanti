@@ -84,18 +84,24 @@ if (!result.success) {
  * Typed, validated environment variables.
  * Access via `env.PORT`, `env.MONGODB_URI`, etc.
  */
-export const env = result.success
-  ? result.data
-  : envSchema.parse({
-      ...process.env,
-      // Provide safe dev defaults when validation fails in dev mode
-      NODE_ENV: process.env.NODE_ENV || "development",
-      PORT: process.env.PORT || "3001",
-      MONGODB_URI:
-        process.env.MONGODB_URI || "mongodb://localhost:27017/beamlab",
-      FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:5173",
-      PYTHON_API_URL: process.env.PYTHON_API_URL || "http://localhost:8000",
-      RUST_API_URL: process.env.RUST_API_URL || "http://localhost:8080",
-    });
+// In dev mode, re-parse with safe defaults so the process never crashes.
+// Use safeParse again to avoid throwing if user-provided values are still invalid.
+function buildDevFallback(): z.infer<typeof envSchema> {
+  const devOverrides: Record<string, string> = {
+    NODE_ENV: process.env.NODE_ENV || "development",
+    PORT: process.env.PORT || "3001",
+    MONGODB_URI:
+      process.env.MONGODB_URI || "mongodb://localhost:27017/beamlab",
+    FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:5173",
+    PYTHON_API_URL: process.env.PYTHON_API_URL || "http://localhost:8000",
+    RUST_API_URL: process.env.RUST_API_URL || "http://localhost:8080",
+  };
+  const retry = envSchema.safeParse({ ...process.env, ...devOverrides });
+  if (retry.success) return retry.data;
+  // Final fallback — return hardcoded safe defaults so the server always boots
+  return envSchema.parse(devOverrides);
+}
+
+export const env = result.success ? result.data : buildDevFallback();
 
 export type Env = z.infer<typeof envSchema>;

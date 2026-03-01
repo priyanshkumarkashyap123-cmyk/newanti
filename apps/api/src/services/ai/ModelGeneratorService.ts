@@ -87,19 +87,29 @@ Output the raw JSON object directly. Do not wrap in code blocks or add any text.
 export class ModelGeneratorService {
     private openai: OpenAI | null = null;
     private model: string = 'gpt-4-turbo-preview';
+    private _openaiInitAttempted = false;
 
     constructor() {
-        const apiKey = process.env['OPENAI_API_KEY'];
-        if (apiKey) {
-            this.openai = new OpenAI({ apiKey });
+        // Defer OpenAI init to first use so env vars set after module load still work
+    }
+
+    /** Lazy-init OpenAI client on first use */
+    private getOpenAI(): OpenAI | null {
+        if (!this._openaiInitAttempted) {
+            this._openaiInitAttempted = true;
+            const apiKey = process.env['OPENAI_API_KEY'];
+            if (apiKey) {
+                this.openai = new OpenAI({ apiKey });
+            }
         }
+        return this.openai;
     }
 
     /**
      * Generate a structural model from a natural language prompt
      */
     async generate(request: GenerationRequest): Promise<GenerationResult> {
-        if (!this.openai) {
+        if (!this.getOpenAI()) {
             // Fallback to demo generation if no API key
             return this.generateDemo(request);
         }
@@ -124,7 +134,7 @@ export class ModelGeneratorService {
             }
 
             // Call OpenAI API
-            const response = await this.openai.chat.completions.create({
+            const response = await this.getOpenAI()!.chat.completions.create({
                 model: this.model,
                 messages: [
                     { role: 'system', content: SYSTEM_PROMPT },

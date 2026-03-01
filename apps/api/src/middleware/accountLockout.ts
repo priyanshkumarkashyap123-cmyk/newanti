@@ -24,7 +24,8 @@ const DECAY_WINDOW_MS = 60 * 60 * 1000; // Reset counter after 1 hour of no fail
 const lockoutStore = new Map<string, LockoutEntry>();
 
 // Periodic cleanup (every 5 minutes)
-setInterval(() => {
+// Use .unref() so this timer doesn't prevent the process from exiting during graceful shutdown.
+const lockoutCleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of lockoutStore.entries()) {
     // Remove entries that have expired lockout AND no recent failures
@@ -36,6 +37,7 @@ setInterval(() => {
     }
   }
 }, 5 * 60 * 1000);
+lockoutCleanupInterval.unref();
 
 /**
  * Extract lockout key from the request.

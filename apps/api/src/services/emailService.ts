@@ -89,7 +89,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="footer">
-                                <p>© 2025 BeamLab. All rights reserved.</p>
+                                <p>© ${new Date().getFullYear()} BeamLab. All rights reserved.</p>
                                 <p><a href="${FRONTEND_URL}" style="color: #7c3aed; text-decoration: none;">beamlabultimate.tech</a></p>
                             </div>
                         </div>
@@ -146,7 +146,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="footer">
-                                <p>© 2025 BeamLab. All rights reserved.</p>
+                                <p>© ${new Date().getFullYear()} BeamLab. All rights reserved.</p>
                                 <p><a href="${FRONTEND_URL}" style="color: #7c3aed; text-decoration: none;">beamlabultimate.tech</a></p>
                             </div>
                         </div>
@@ -209,7 +209,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="footer">
-                                <p>© 2025 BeamLab. All rights reserved.</p>
+                                <p>© ${new Date().getFullYear()} BeamLab. All rights reserved.</p>
                                 <p><a href="${FRONTEND_URL}" style="color: #7c3aed; text-decoration: none;">beamlabultimate.tech</a></p>
                             </div>
                         </div>
@@ -261,7 +261,7 @@ const emailTemplates = {
                             </div>
                             
                             <div class="footer">
-                                <p>© 2025 BeamLab. All rights reserved.</p>
+                                <p>© ${new Date().getFullYear()} BeamLab. All rights reserved.</p>
                                 <p><a href="${FRONTEND_URL}" style="color: #7c3aed; text-decoration: none;">beamlabultimate.tech</a></p>
                             </div>
                         </div>

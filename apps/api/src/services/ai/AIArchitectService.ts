@@ -113,7 +113,7 @@ export class AIArchitectService {
                 return this.generateFallback(userPrompt);
             }
 
-            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
             console.log(`[AIArchitect] Generating for: "${userPrompt.substring(0, 50)}..."`);
 

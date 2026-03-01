@@ -207,7 +207,17 @@ app.use(requestLoggerWithId);
 // Attach res.ok() / res.fail() unified envelope helpers
 app.use(attachResponseHelpers);
 
-app.use(express.json({ limit: "10mb" })); // Limit payload size
+// Save raw body buffer for webhook signature verification (Razorpay, Stripe, etc.)
+// The `verify` callback runs BEFORE json parsing, giving us the original bytes.
+app.use(express.json({
+  limit: "10mb",
+  verify: (req: any, _res, buf) => {
+    // Only save raw body for webhook routes to avoid unnecessary memory usage
+    if (req.url?.includes('/webhook')) {
+      req.rawBody = buf;
+    }
+  },
+}));
 app.use(cookieParser()); // Parse cookies for CSRF double-submit pattern
 
 // CSRF protection (issues cookie + validates on state-changing requests)
@@ -360,6 +370,7 @@ app.use("/api/audit", requireDbReady);
 app.use("/api/ai-sessions", requireDbReady);
 app.use("/api/feedback", requireDbReady);
 app.use("/api/auth", requireDbReady);
+app.use("/api/billing", requireDbReady);
 
 const authRequired = requireAuth();
 
