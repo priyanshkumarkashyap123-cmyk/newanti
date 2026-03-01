@@ -911,7 +911,7 @@ const CodeComplianceChecker: React.FC = () => {
           setComplianceReport({
             projectName: `Model (${members.size} members, ${nodes.size} nodes)`,
             checkDate: new Date().toISOString().split("T")[0],
-            engineer: "BeamLab Engine",
+            engineer: "BeamLab Ultimate",
             totalChecks: results.length,
             passed,
             failed,

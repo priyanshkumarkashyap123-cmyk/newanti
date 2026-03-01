@@ -28,6 +28,7 @@ const COLORS = {
     memberDefault: new THREE.Color(0x6b7280),    // Gray
     memberHover: new THREE.Color(0x00ffff),      // Cyan
     memberSelected: new THREE.Color(0xfbbf24),   // Amber
+    memberError: new THREE.Color(0xef4444),      // Red (analysis error)
 };
 
 const MEMBER_RADIUS = 0.05;
@@ -88,6 +89,7 @@ export const InstancedMembersRenderer: React.FC = () => {
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
     const selectedIds = useModelStore((state) => state.selectedIds);
+    const errorElementIds = useModelStore((state) => state.errorElementIds);
     const selectMember = useModelStore((state) => state.selectMember);
     
     const { raycaster, camera } = useThree();
@@ -203,7 +205,11 @@ export const InstancedMembersRenderer: React.FC = () => {
         const colorArray = new Float32Array(instanceCount * 3);
         for (let i = 0; i < instanceCount; i++) {
             const id = instanceGeometry[i].id;
-            const color = selectedIds.has(id) ? COLORS.memberSelected : COLORS.memberDefault;
+            const color = selectedIds.has(id)
+                ? COLORS.memberSelected
+                : errorElementIds.has(id)
+                    ? COLORS.memberError
+                    : COLORS.memberDefault;
             colorArray[i * 3 + 0] = color.r;
             colorArray[i * 3 + 1] = color.g;
             colorArray[i * 3 + 2] = color.b;
@@ -218,7 +224,7 @@ export const InstancedMembersRenderer: React.FC = () => {
             (mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute).array = colorArray;
             mesh.geometry.attributes.instanceColor.needsUpdate = true;
         }
-    }, [instanceGeometry, instanceCount, selectedIds]);
+    }, [instanceGeometry, instanceCount, selectedIds, errorElementIds]);
     
     // ============================================
     // HOVER EFFECT (update color on hover) - throttled for large models
@@ -235,7 +241,11 @@ export const InstancedMembersRenderer: React.FC = () => {
         if (!colorAttribute) return;
         
         instanceGeometry.forEach((data, i) => {
-            let color = selectedIds.has(data.id) ? COLORS.memberSelected : COLORS.memberDefault;
+            let color = selectedIds.has(data.id)
+                ? COLORS.memberSelected
+                : errorElementIds.has(data.id)
+                    ? COLORS.memberError
+                    : COLORS.memberDefault;
             
             // Override with hover color if hovered
             if (hoveredInstanceId === i) {
@@ -247,7 +257,7 @@ export const InstancedMembersRenderer: React.FC = () => {
         
         colorAttribute.needsUpdate = true;
         
-    }, [hoveredInstanceId, instanceGeometry, selectedIds]);
+    }, [hoveredInstanceId, instanceGeometry, selectedIds, errorElementIds]);
     
     // ============================================
     // RAYCASTING FOR SELECTION

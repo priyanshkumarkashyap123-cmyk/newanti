@@ -573,7 +573,7 @@ const APIIntegrationDashboard: React.FC = () => {
         
         <div className="mb-6">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Base URL: <code className="text-cyan-400 bg-gray-700 px-2 py-1 rounded">https://api.beamlab.io/v1</code>
+            Base URL: <code className="text-cyan-400 bg-gray-700 px-2 py-1 rounded">https://api.beamlabultimate.tech/v1</code>
           </p>
           <div className="flex gap-4">
             <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
@@ -629,7 +629,7 @@ const APIIntegrationDashboard: React.FC = () => {
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
           <pre className="text-sm text-gray-700 dark:text-gray-300">
 {`// Run structural analysis via API
-const response = await fetch('https://api.beamlab.io/v1/projects/123/analyze', {
+const response = await fetch('https://api.beamlabultimate.tech/v1/projects/123/analyze', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer bl_prod_xxxx',

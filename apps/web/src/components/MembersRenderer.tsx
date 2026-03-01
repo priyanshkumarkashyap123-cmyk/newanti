@@ -45,6 +45,7 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
     const selectedIds = useModelStore((state) => state.selectedIds);
+    const errorElementIds = useModelStore((state) => state.errorElementIds);
     const select = useModelStore((state) => state.select);
     const renderMode3D = useUIStore((state) => state.renderMode3D);
 
@@ -168,6 +169,8 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
             let color = '#b8b8b8'; // Steel gray default
             if (selectedIds.has(member.id)) {
                 color = '#3b82f6'; // Blue for selected
+            } else if (errorElementIds.has(member.id)) {
+                color = '#ef4444'; // Red for error element
             } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
                 color = '#' + getUtilizationColor(utilizationMap.get(member.id) ?? 0).getHexString();
             }
@@ -184,7 +187,7 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
         }
 
         return memberDatas;
-    }, [members, nodes, selectedIds, effectiveDisplayMode, colorMode, utilizationMap]);
+    }, [members, nodes, selectedIds, errorElementIds, effectiveDisplayMode, colorMode, utilizationMap]);
 
     // Separate members into line-display and section-display groups (for non-3D modes)
     const { lineMembers, sectionMembers } = useMemo(() => {
@@ -220,6 +223,8 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
                 let color = '#00aaff';
                 if (selectedIds.has(member.id)) {
                     color = '#ff00ff';
+                } else if (errorElementIds.has(member.id)) {
+                    color = '#ef4444';
                 } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
                     color = '#' + getUtilizationColor(utilizationMap.get(member.id) ?? 0).getHexString();
                 }
@@ -236,7 +241,7 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
         }
 
         return { lineMembers: lines, sectionMembers: sections };
-    }, [members, nodes, selectedIds, effectiveDisplayMode, colorMode, utilizationMap]);
+    }, [members, nodes, selectedIds, errorElementIds, effectiveDisplayMode, colorMode, utilizationMap]);
 
     // Update instanced mesh for simple cylinder section members
     useLayoutEffect(() => {
@@ -279,6 +284,8 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
 
                 if (selectedIds.has(member.id)) {
                     color.set('#ff00ff');
+                } else if (errorElementIds.has(member.id)) {
+                    color.set('#ef4444');
                 } else if (colorMode === 'UTILIZATION' && memberColors.has(member.id)) {
                     color.copy(memberColors.get(member.id)!);
                 } else {
@@ -294,7 +301,7 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
         meshRef.current.instanceMatrix.needsUpdate = true;
         if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
 
-    }, [members, nodes, selectedIds, colorMode, memberColors, utilizationMap, sectionMembers]);
+    }, [members, nodes, selectedIds, errorElementIds, colorMode, memberColors, utilizationMap, sectionMembers]);
 
     if (members.size === 0) return null;
 

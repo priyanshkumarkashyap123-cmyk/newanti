@@ -42,7 +42,7 @@ export function useUserRegistration() {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        email: user.email || 'unknown@beamlab.com'
+                        email: user.email || 'unknown@beamlabultimate.tech'
                     }),
                     signal: controller.signal
                 });

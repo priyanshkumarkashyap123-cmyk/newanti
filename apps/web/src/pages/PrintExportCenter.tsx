@@ -434,7 +434,7 @@ const PrintExportCenter: React.FC = () => {
 h2{color:#2b6cb0;margin-top:20px}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid #ccc;padding:6px 10px;text-align:right}
 th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pass{color:green}.fail{color:red}
 .header{display:flex;justify-content:space-between;align-items:center}.meta{color:#718096;font-size:0.9em}</style></head><body>`;
-      html += `<div class="header"><h1>Structural Analysis Report</h1><div class="meta">Generated: ${new Date().toLocaleDateString()}<br>BeamLab Engineering</div></div>`;
+      html += `<div class="header"><h1>Structural Analysis Report</h1><div class="meta">Generated: ${new Date().toLocaleDateString()}<br>BeamLab Ultimate</div></div>`;
       html += `<h2>Model Summary</h2><p>Nodes: ${nodes.size} | Members: ${members.size}</p>`;
 
       // Nodes table

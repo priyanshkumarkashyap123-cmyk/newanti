@@ -176,8 +176,8 @@ export class ReportGenerator {
       revision = '00',
       classification = 'CONFIDENTIAL',
       date = new Date(),
-      companyName = 'BeamLab Engineering',
-      companyAddress = 'www.beamlab.io',
+      companyName = 'BeamLab Ultimate',
+      companyAddress = 'beamlabultimate.tech',
     } = options;
 
     // Store metadata for headers/footers
@@ -394,7 +394,7 @@ export class ReportGenerator {
       startY: y,
       head: [['Name', 'Role', 'Organisation', 'Copies']],
       body: [
-        [engineerName || '—', 'Structural Engineer', 'BeamLab Engineering', '1 (electronic)'],
+        [engineerName || '—', 'Structural Engineer', 'BeamLab Ultimate', '1 (electronic)'],
       ],
       theme: 'grid',
       headStyles: {
@@ -800,7 +800,7 @@ export class ReportGenerator {
       this.doc.setFontSize(6.5);
       this.doc.setFont('helvetica', 'normal');
       this.doc.setTextColor(...THEME.textMuted);
-      this.doc.text(`© ${new Date().getFullYear()} BeamLab Engineering`, pw - this.margin, y, { align: 'right' });
+      this.doc.text(`© ${new Date().getFullYear()} BeamLab Ultimate`, pw - this.margin, y, { align: 'right' });
     }
   }
 
@@ -3756,7 +3756,7 @@ export class ReportGenerator {
     this.doc.setProperties({
       title: `${this.projectTitle} — Structural Analysis Report`,
       subject: 'Structural Engineering Analysis Report',
-      author: this.preparedBy || 'BeamLab Engineering',
+      author: this.preparedBy || 'BeamLab Ultimate',
       creator: 'BeamLab Ultimate',
       keywords: 'structural analysis, engineering, report, BeamLab',
     });

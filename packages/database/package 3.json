@@ -1,0 +1,7 @@
+{
+  "name": "@beamlab/database",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BeamLab database schemas and Prisma client",
+  "main": "prisma/schema.prisma"
+}

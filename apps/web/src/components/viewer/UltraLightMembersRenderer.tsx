@@ -115,6 +115,7 @@ const COLORS = {
     memberDefault: new THREE.Color(0x6b7280),
     memberHover: new THREE.Color(0x00ffff),
     memberSelected: new THREE.Color(0xfbbf24),
+    memberError: new THREE.Color(0xef4444), // Red (analysis error)
     memberBulk: new THREE.Color(0x4a5568), // Neutral color for massive models
 };
 
@@ -179,6 +180,7 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
     const members = useModelStore((state) => state.members);
     const nodes = useModelStore((state) => state.nodes);
     const selectedIds = useModelStore((state) => state.selectedIds);
+    const errorElementIds = useModelStore((state) => state.errorElementIds);
     const selectMember = useModelStore((state) => state.selectMember);
     
     const { camera, raycaster } = useThree();
@@ -275,7 +277,8 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
                     // Set color if enabled
                     if (colorArray && config.enablePerInstanceColor) {
                         const isSelected = selectedIds.has(id);
-                        const color = isSelected ? COLORS.memberSelected : COLORS.memberDefault;
+                        const isError = errorElementIds.has(id);
+                        const color = isSelected ? COLORS.memberSelected : isError ? COLORS.memberError : COLORS.memberDefault;
                         colorArray[currentIndex * 3 + 0] = color.r;
                         colorArray[currentIndex * 3 + 1] = color.g;
                         colorArray[currentIndex * 3 + 2] = color.b;
@@ -319,7 +322,7 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
         return () => {
             setIsInitialized(false);
         };
-    }, [members, nodes, effectiveCount, config, selectedIds]);
+    }, [members, nodes, effectiveCount, config, selectedIds, errorElementIds]);
     
     // ============================================
     // HOVER HANDLING (only for smaller models)

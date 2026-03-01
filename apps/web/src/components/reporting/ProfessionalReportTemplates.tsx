@@ -526,62 +526,81 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
     return (
         <div className="relative bg-white rounded-lg shadow-xl overflow-hidden" style={{ maxHeight: '500px' }}>
             {/* Cover Page Preview */}
-            <div className="p-8 border-b border-gray-200">
-                <div className="flex items-center justify-between mb-6">
+            <div className="p-8 border-b border-slate-200 relative">
+                {/* Branded accent bars */}
+                <div className="absolute top-0 left-0 right-0 h-[5px] bg-[#12376A]" />
+                <div className="absolute top-[5px] left-0 right-0 h-[2px] bg-[#BF9B30]" />
+
+                <div className="flex items-center justify-between mb-6 mt-1">
                     {config.includeCompanyLogo ? (
-                        <div className="w-32 h-10 bg-gray-200 rounded" />
+                        <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-slate-100 rounded-lg border border-slate-200" />
+                            <div>
+                                <div className="text-sm font-black text-[#12376A] tracking-tight">BeamLab Ultimate</div>
+                                <div className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.2em]">Structural Engineering</div>
+                            </div>
+                        </div>
                     ) : (
-                        <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company Logo</div>
+                        <div className="text-[8px] text-slate-400 uppercase tracking-wider">Company Logo</div>
                     )}
-                    <div className="text-[10px] text-gray-500">
-                        Doc Ref: RPT-{config.projectInfo.projectNumber || '0001'}
+                    <div className="text-[8px] text-slate-500 text-right leading-relaxed">
+                        <div>beamlabultimate.tech</div>
+                        <div>Doc Ref: RPT-{config.projectInfo.projectNumber || '0001'}</div>
                     </div>
                 </div>
 
-                <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                    {config.projectInfo.projectName || 'Untitled Project'}
-                </h1>
+                <div className="text-center my-6">
+                    <div className="w-12 h-[2px] bg-slate-200 mx-auto mb-4" />
+                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-2">
+                        {template.name}
+                    </p>
+                    <h1 className="text-xl font-black text-[#12376A] leading-tight mb-3">
+                        {config.projectInfo.projectName || 'Untitled Project'}
+                    </h1>
+                    <p className="text-[10px] text-slate-500 font-medium">
+                        Revision 00 &mdash; {config.projectInfo.dateCreated.toLocaleDateString()}
+                    </p>
+                    <div className="w-12 h-[2px] bg-slate-200 mx-auto mt-4" />
+                </div>
 
-                <h2 className="text-base text-gray-600 mb-4">{template.name}</h2>
-
-                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                <div className="grid grid-cols-2 gap-3 text-[10px] text-slate-600 mt-4">
                     {config.projectInfo.projectNumber && (
                         <div>
-                            <span className="text-gray-500 dark:text-gray-400">Project No:</span>
-                            <span className="ml-2">{config.projectInfo.projectNumber}</span>
+                            <span className="text-slate-400 font-bold text-[9px] uppercase">Project No:</span>
+                            <span className="ml-2 font-mono">{config.projectInfo.projectNumber}</span>
                         </div>
                     )}
                     {config.projectInfo.clientName && (
                         <div>
-                            <span className="text-gray-500 dark:text-gray-400">Client:</span>
+                            <span className="text-slate-400 font-bold text-[9px] uppercase">Client:</span>
                             <span className="ml-2">{config.projectInfo.clientName}</span>
                         </div>
                     )}
                     <div>
-                        <span className="text-gray-500 dark:text-gray-400">Design Code:</span>
-                        <span className="ml-2">{config.projectInfo.designCode}</span>
+                        <span className="text-slate-400 font-bold text-[9px] uppercase">Design Code:</span>
+                        <span className="ml-2 font-mono">{config.projectInfo.designCode}</span>
                     </div>
                     <div>
-                        <span className="text-gray-500 dark:text-gray-400">Date:</span>
+                        <span className="text-slate-400 font-bold text-[9px] uppercase">Date:</span>
                         <span className="ml-2">{config.projectInfo.dateCreated.toLocaleDateString()}</span>
                     </div>
                 </div>
 
-                <div className="mt-5 border border-gray-200 rounded text-[11px]">
-                    <div className="grid grid-cols-3 bg-gray-50 px-3 py-2 text-gray-500 font-medium">
+                <div className="mt-5 border border-slate-200 rounded-sm text-[10px] overflow-hidden">
+                    <div className="grid grid-cols-3 bg-slate-50 px-3 py-1.5 text-slate-500 font-bold uppercase text-[9px] tracking-wider border-b border-slate-200">
                         <span>Prepared</span>
                         <span>Checked</span>
                         <span>Approved</span>
                     </div>
-                    <div className="grid grid-cols-3 px-3 py-2 text-gray-700">
-                        <span>{config.projectInfo.engineerName || '—'}</span>
-                        <span>{config.projectInfo.checkerName || '—'}</span>
-                        <span>{config.projectInfo.approverName || '—'}</span>
+                    <div className="grid grid-cols-3 px-3 py-2 text-slate-700 font-medium">
+                        <span>{config.projectInfo.engineerName || '\u2014'}</span>
+                        <span>{config.projectInfo.checkerName || '\u2014'}</span>
+                        <span>{config.projectInfo.approverName || '\u2014'}</span>
                     </div>
                 </div>
 
                 {config.confidential && (
-                    <div className="mt-4 inline-block px-3 py-1 bg-red-100 text-red-600 text-[10px] font-semibold tracking-wider rounded">
+                    <div className="mt-4 inline-block px-3 py-1 bg-red-50 text-red-600 text-[9px] font-bold tracking-wider rounded border border-red-200">
                         CONFIDENTIAL
                     </div>
                 )}
@@ -589,17 +608,18 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
             
             {/* Table of Contents Preview */}
             <div className="p-6 overflow-y-auto" style={{ maxHeight: '300px' }}>
-                <h3 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider border-b border-gray-200 pb-2">
+                <h3 className="text-[10px] font-extrabold text-slate-900 uppercase tracking-[0.1em] border-b-2 border-slate-200 pb-1.5 mb-3">
                     Table of Contents
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     {includedSections.map((section, index) => (
-                        <div key={section.id} className="flex items-center justify-between text-sm">
-                            <span className="text-gray-700">
-                                {index + 1}. {section.title}
+                        <div key={section.id} className="flex items-center justify-between text-[11px]">
+                            <span className="text-slate-700 font-medium">
+                                <span className="font-mono font-bold text-slate-500 mr-2">{index + 1}.0</span>
+                                {section.title}
                             </span>
-                            <span className="text-gray-600 dark:text-gray-300 border-b border-dotted border-gray-300 flex-1 mx-2" />
-                            <span className="text-gray-500 dark:text-gray-400 tabular-nums">{index + 2}</span>
+                            <span className="text-slate-300 border-b border-dotted border-slate-200 flex-1 mx-2" />
+                            <span className="text-slate-400 tabular-nums font-mono text-[10px]">{index + 2}</span>
                         </div>
                     ))}
                 </div>
@@ -607,8 +627,8 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
             
             {/* Watermark */}
             {config.watermark && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-                    <span className="text-8xl font-bold text-gray-900 rotate-[-30deg]">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+                    <span className="text-8xl font-black text-slate-900 rotate-[-30deg]">
                         {config.watermark}
                     </span>
                 </div>

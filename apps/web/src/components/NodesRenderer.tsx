@@ -22,6 +22,7 @@ if (import.meta.hot) {
 export const NodesRenderer: FC = memo(() => {
     const nodes        = useModelStore((state) => state.nodes);
     const selectedIds  = useModelStore((state) => state.selectedIds);
+    const errorElementIds = useModelStore((state) => state.errorElementIds);
     const select       = useModelStore((state) => state.select);
     const analysisResults   = useModelStore((state) => state.analysisResults);
     const displacementScale = useModelStore((state) => state.displacementScale);
@@ -102,6 +103,8 @@ export const NodesRenderer: FC = memo(() => {
             // Color Logic
             if (selectedIds.has(node.id)) {
                 color.set('#ff00ff'); // Selected
+            } else if (errorElementIds.has(node.id)) {
+                color.set('#ef4444'); // Error element
             } else if (displacement) {
                 color.set('#ff4444'); // Displaced
             } else {
@@ -123,7 +126,7 @@ export const NodesRenderer: FC = memo(() => {
         updateMesh(fixedRef.current, fixedNodes);
         updateMesh(pinnedRef.current, pinnedNodes, new THREE.Euler(0, 0, 0)); // Cone upright
         updateMesh(rollerRef.current, rollerNodes, new THREE.Euler(Math.PI / 2, 0, 0)); // Cylinder on side
-    }, [nodes, selectedIds, analysisResults, displacementScale, freeNodes, fixedNodes, pinnedNodes, rollerNodes]);
+    }, [nodes, selectedIds, errorElementIds, analysisResults, displacementScale, freeNodes, fixedNodes, pinnedNodes, rollerNodes]);
 
     // Interaction handler
     const makeHandler = (nodeList: Node[]) => (e: any) => {

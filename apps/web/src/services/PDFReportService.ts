@@ -140,14 +140,14 @@ export const generateProfessionalReport = async (
 
     } catch (error) {
         console.error('Professional Report Error:', error);
-        alert('Failed to generate professional report. Falling back to basic report.');
         // Fallback or just re-throw
         throw error;
     }
 };
 
 /**
- * Legacy PDF report generator using jsPDF directly (fallback)
+ * Professional PDF report generator using jsPDF directly (fallback)
+ * Styled to match the ReportsPage's ARUP/WSP-grade engineering report quality
  */
 export const generateBasicPDFReport = (
     project: ProjectInfo,
@@ -158,61 +158,218 @@ export const generateBasicPDFReport = (
 ) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    // Professional theme colors (matches ReportGenerator.ts THEME)
+    const NAVY: [number, number, number] = [18, 55, 106];
+    const GOLD: [number, number, number] = [191, 155, 48];
+    const SLATE_700: [number, number, number] = [51, 65, 85];
+    const SLATE_500: [number, number, number] = [100, 116, 139];
+    const SLATE_200: [number, number, number] = [226, 232, 240];
+    const SLATE_50: [number, number, number] = [248, 250, 252];
+    const GREEN: [number, number, number] = [22, 163, 74];
+    const RED: [number, number, number] = [220, 38, 38];
+    const AMBER: [number, number, number] = [217, 119, 6];
 
     // Helper for formatting
-    const formatNumber = (n: number) => n.toFixed(2);
+    const formatNumber = (n: number, decimals = 2) => n.toFixed(decimals);
+    const docRef = `BL-${String((nodes.length * 37 + members.length * 53 + 1000) % 99999).padStart(5, '0')}`;
+    const dateStr = project.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     // ============================================
-    // HEADER
+    // COVER PAGE
     // ============================================
-    doc.setFontSize(22);
-    doc.setTextColor(40, 40, 40);
-    doc.text("BeamLab Ultimate", 14, 20);
+    // Top accent bars
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, pageWidth, 6, 'F');
+    doc.setFillColor(...GOLD);
+    doc.rect(0, 6, pageWidth, 3, 'F');
 
-    doc.setFontSize(14);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Structural Analysis & Design Report", 14, 28);
+    // Company branding
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...NAVY);
+    doc.text('BeamLab Ultimate', 20, 30);
 
-    // Project Details
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...SLATE_500);
+    doc.text('STRUCTURAL ENGINEERING', 20, 36);
+
+    // Right side branding
+    doc.setFontSize(8);
+    doc.setTextColor(...SLATE_500);
+    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
+    doc.text('support@beamlabultimate.tech', pageWidth - 20, 31, { align: 'right' });
+
+    // Divider
+    doc.setDrawColor(...SLATE_200);
+    doc.setLineWidth(0.5);
+    doc.line(20, 42, pageWidth - 20, 42);
+
+    // Centre title block
+    const centerY = pageHeight / 2 - 20;
+    doc.setDrawColor(...SLATE_200);
+    doc.line(pageWidth / 2 - 30, centerY - 25, pageWidth / 2 + 30, centerY - 25);
+
     doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Project: ${project.name}`, 14, 40);
-    doc.text(`Engineer: ${project.engineer}`, 14, 45);
-    doc.text(`Date: ${project.date}`, 14, 50);
-    doc.line(14, 55, pageWidth - 14, 55);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...SLATE_500);
+    doc.text('STRUCTURAL ANALYSIS REPORT', pageWidth / 2, centerY - 15, { align: 'center' });
+
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...NAVY);
+    doc.text(project.name || 'BeamLab Project', pageWidth / 2, centerY + 2, { align: 'center', maxWidth: pageWidth - 60 });
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...SLATE_500);
+    doc.text(`Document Ref: ${docRef}`, pageWidth / 2, centerY + 16, { align: 'center' });
+    doc.text(`Revision 00 \u2014 ${dateStr}`, pageWidth / 2, centerY + 23, { align: 'center' });
+
+    doc.setDrawColor(...SLATE_200);
+    doc.line(pageWidth / 2 - 30, centerY + 32, pageWidth / 2 + 30, centerY + 32);
+
+    // Document control mini-table
+    autoTable(doc, {
+        startY: pageHeight - 65,
+        margin: { left: 20, right: 20 },
+        head: [],
+        body: [
+            ['Project', project.name, 'Document No.', docRef],
+            ['Prepared by', project.engineer, 'Date', dateStr],
+            ['Status', analysisResults ? 'Issued for Review' : 'DRAFT', 'Revision', '00'],
+        ],
+        theme: 'plain',
+        styles: { fontSize: 8, cellPadding: 3, textColor: SLATE_700 },
+        columnStyles: {
+            0: { fontStyle: 'bold', textColor: SLATE_500, cellWidth: 30 },
+            2: { fontStyle: 'bold', textColor: SLATE_500, cellWidth: 30 },
+        },
+        tableLineColor: SLATE_200,
+        tableLineWidth: 0.3,
+        didDrawCell: (data) => {
+            // Draw cell borders
+            doc.setDrawColor(...SLATE_200);
+            doc.setLineWidth(0.3);
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'S');
+        }
+    });
+
+    // Bottom accent bar
+    doc.setFillColor(...NAVY);
+    doc.rect(0, pageHeight - 6, pageWidth, 6, 'F');
 
     // ============================================
-    // MODEL SUMMARY
+    // PAGE 2: MODEL SUMMARY
     // ============================================
-    doc.setFontSize(14);
-    doc.text("1. Model Summary", 14, 65);
+    doc.addPage();
+
+    // Running header
+    const addRunningHeader = () => {
+        doc.setFillColor(...NAVY);
+        doc.rect(0, 0, pageWidth, 1.5, 'F');
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...SLATE_500);
+        doc.text(`BeamLab \u2014 ${docRef}`, 14, 8);
+        doc.text(`Rev 00  |  ${dateStr}`, pageWidth - 14, 8, { align: 'right' });
+        doc.setDrawColor(...NAVY);
+        doc.setLineWidth(0.5);
+        doc.line(14, 10, pageWidth - 14, 10);
+    };
+
+    addRunningHeader();
+
+    // Section heading helper
+    const addSectionHeading = (num: string, title: string, y: number) => {
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...NAVY);
+        doc.text(`${num}  ${title}`, 14, y);
+        doc.setDrawColor(...SLATE_200);
+        doc.setLineWidth(0.5);
+        doc.line(14, y + 2, pageWidth - 14, y + 2);
+    };
+
+    addSectionHeading('1.0', 'Model Summary', 20);
+
+    const supportCount = nodes.filter((n: any) => n.restraints && Object.values(n.restraints).some(Boolean)).length;
 
     const summaryData = [
-        ['Nodes', nodes.length],
-        ['Members', members.length],
-        ['Analysis Status', analysisResults ? 'Completed' : 'Not Run'],
-        ['Design Check Status', designResults.size > 0 ? 'Completed' : 'Not Run']
+        ['Total Nodes', String(nodes.length)],
+        ['Total Members', String(members.length)],
+        ['Support Nodes', String(supportCount)],
+        ['Free Nodes', String(nodes.length - supportCount)],
+        ['Analysis Status', analysisResults ? 'Completed' : 'Pending'],
+        ['Design Check Status', designResults.size > 0 ? `Completed (${designResults.size} members)` : 'Not Run']
     ];
 
     autoTable(doc, {
-        startY: 70,
-        head: [['Item', 'Count/Status']],
+        startY: 27,
+        margin: { left: 14, right: 14 },
+        head: [['Item', 'Value']],
         body: summaryData,
-        theme: 'striped',
-        headStyles: { fillColor: [63, 81, 181] },
-        styles: { fontSize: 10 }
+        theme: 'plain',
+        headStyles: {
+            fillColor: SLATE_50,
+            textColor: SLATE_700,
+            fontStyle: 'bold',
+            fontSize: 9,
+            lineColor: SLATE_200,
+            lineWidth: 0.3,
+        },
+        bodyStyles: { fontSize: 9, textColor: SLATE_700 },
+        alternateRowStyles: { fillColor: SLATE_50 },
+        tableLineColor: SLATE_200,
+        tableLineWidth: 0.3,
+        styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
     });
 
     // ============================================
     // ANALYSIS RESULTS (FORCES)
     // ============================================
     if (analysisResults) {
-        const finalY = (doc as any).lastAutoTable.finalY + 15;
-        doc.setFontSize(14);
-        doc.text("2. Analysis Results (Member Forces)", 14, finalY);
+        let finalY = (doc as any).lastAutoTable.finalY + 12;
+
+        // Key results summary
+        let maxAxial = 0, maxMoment = 0, maxShear = 0, maxDisp = 0;
+        analysisResults.memberForces.forEach((f) => {
+            maxAxial = Math.max(maxAxial, Math.abs(f.axial ?? 0));
+            maxMoment = Math.max(maxMoment, Math.abs(f.momentY ?? 0), Math.abs(f.momentZ ?? 0));
+            maxShear = Math.max(maxShear, Math.abs(f.shearY ?? 0), Math.abs(f.shearZ ?? 0));
+        });
+        analysisResults.displacements?.forEach((d: any) => {
+            maxDisp = Math.max(maxDisp, Math.abs(d.dx ?? 0), Math.abs(d.dy ?? 0), Math.abs(d.dz ?? 0));
+        });
+
+        addSectionHeading('2.0', 'Analysis Results \u2014 Summary', finalY);
+
+        autoTable(doc, {
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
+            head: [['Peak Result', 'Value', 'Unit']],
+            body: [
+                ['Maximum Axial Force', formatNumber(maxAxial), 'kN'],
+                ['Maximum Bending Moment', formatNumber(maxMoment), 'kN\u00b7m'],
+                ['Maximum Shear Force', formatNumber(maxShear), 'kN'],
+                ['Maximum Displacement', formatNumber(maxDisp, 4), 'mm'],
+            ],
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+            bodyStyles: { fontSize: 9, textColor: SLATE_700 },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
+        });
+
+        finalY = (doc as any).lastAutoTable.finalY + 12;
+        if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
+
+        addSectionHeading('3.0', 'Internal Member Forces', finalY);
 
         const forcesBody = Array.from(analysisResults.memberForces.entries()).map(([id, f]) => [
-            `M${id}`,
+            id,
             formatNumber(f.axial),
             formatNumber(f.shearY),
             formatNumber(f.shearZ),
@@ -221,12 +378,16 @@ export const generateBasicPDFReport = (
         ]);
 
         autoTable(doc, {
-            startY: finalY + 5,
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
             head: [['Member', 'N (kN)', 'Vy (kN)', 'Vz (kN)', 'My (kN\u00b7m)', 'Mz (kN\u00b7m)']],
             body: forcesBody,
-            theme: 'grid',
-            headStyles: { fillColor: [63, 81, 181] },
-            styles: { fontSize: 9 }
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8, textColor: SLATE_700, font: 'courier' },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3, halign: 'right' },
+            columnStyles: { 0: { halign: 'left', fontStyle: 'bold', font: 'courier' } },
         });
     }
 
@@ -234,52 +395,68 @@ export const generateBasicPDFReport = (
     // DESIGN CHECKS
     // ============================================
     if (designResults.size > 0) {
-        let finalY = (doc as any).lastAutoTable.finalY + 15;
+        let finalY = (doc as any).lastAutoTable.finalY + 12;
+        if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
 
-        // New page if needed
-        if (finalY > 250) {
-            doc.addPage();
-            finalY = 20;
-        }
-
-        doc.setFontSize(14);
-        doc.text("3. Steel Design Checks (AISC 360-16)", 14, finalY);
+        addSectionHeading('4.0', 'Steel Design Verification', finalY);
 
         const designBody = Array.from(designResults.values()).map(r => [
-            `M${r.memberId}`,
+            r.memberId,
             r.section.name,
-            (r.criticalRatio * 100).toFixed(1) + '%',
+            formatNumber(r.criticalRatio, 3),
             r.overallStatus,
             r.governingCheck
         ]);
 
         autoTable(doc, {
-            startY: finalY + 5,
-            head: [['Member', 'Section', 'Ratio', 'Status', 'Critical Check']],
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
+            head: [['Member', 'Section', 'D/C Ratio', 'Status', 'Governing Check']],
             body: designBody,
-            theme: 'grid',
-            headStyles: { fillColor: [0, 150, 136] }, // Teal info
-            columnStyles: {
-                3: { fontStyle: 'bold' }
-            },
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8, textColor: SLATE_700 },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3 },
+            columnStyles: { 2: { halign: 'right', font: 'courier' }, 3: { fontStyle: 'bold' } },
             didParseCell: (data) => {
                 if (data.section === 'body' && data.column.index === 3) {
                     const status = data.cell.raw;
-                    if (status === 'FAIL') data.cell.styles.textColor = [220, 50, 50];
-                    else if (status === 'WARNING') data.cell.styles.textColor = [220, 180, 50];
-                    else data.cell.styles.textColor = [50, 180, 50];
+                    if (status === 'FAIL') data.cell.styles.textColor = RED;
+                    else if (status === 'WARNING') data.cell.styles.textColor = AMBER;
+                    else data.cell.styles.textColor = GREEN;
+                }
+                // Color D/C ratio based on value
+                if (data.section === 'body' && data.column.index === 2) {
+                    const ratio = parseFloat(String(data.cell.raw));
+                    if (ratio > 1.0) data.cell.styles.textColor = RED;
+                    else if (ratio > 0.85) data.cell.styles.textColor = AMBER;
+                    else data.cell.styles.textColor = GREEN;
                 }
             }
         });
     }
 
-    // Footer
+    // ============================================
+    // PROFESSIONAL FOOTER ON ALL PAGES
+    // ============================================
     const pageCount = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text(`Page ${i} of ${pageCount} - Generated by BeamLab Ultimate`, pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+        // Bottom accent line
+        doc.setDrawColor(...NAVY);
+        doc.setLineWidth(0.5);
+        doc.line(14, pageHeight - 15, pageWidth - 14, pageHeight - 15);
+        // Footer text
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...SLATE_500);
+        doc.text(`BeamLab Ultimate  \u2014  ${docRef}  Rev 00`, 14, pageHeight - 11);
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
+        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.setFontSize(6);
+        doc.setTextColor(180, 180, 180);
+        doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });
     }
 
     // Save
@@ -294,87 +471,176 @@ export const generateCivilReport = (
 ) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
 
-    // Header
-    doc.setFontSize(22);
-    doc.setTextColor(40, 40, 40);
-    doc.text("BeamLab Ultimate", 14, 20);
+    // Professional theme colors
+    const NAVY: [number, number, number] = [18, 55, 106];
+    const GOLD: [number, number, number] = [191, 155, 48];
+    const SLATE_700: [number, number, number] = [51, 65, 85];
+    const SLATE_500: [number, number, number] = [100, 116, 139];
+    const SLATE_200: [number, number, number] = [226, 232, 240];
+    const SLATE_50: [number, number, number] = [248, 250, 252];
 
-    doc.setFontSize(14);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Civil Engineering Design Report", 14, 28);
+    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-    doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
-    doc.text(title, 14, 45);
+    // ============================================
+    // COVER PAGE  
+    // ============================================
+    // Top accent bars
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, pageWidth, 6, 'F');
+    doc.setFillColor(...GOLD);
+    doc.rect(0, 6, pageWidth, 3, 'F');
+
+    // Company branding
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...NAVY);
+    doc.text('BeamLab Ultimate', 20, 30);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...SLATE_500);
+    doc.text('CIVIL ENGINEERING DESIGN', 20, 36);
+
+    doc.setFontSize(8);
+    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
+    doc.text('support@beamlabultimate.tech', pageWidth - 20, 31, { align: 'right' });
+
+    // Centre title
+    const centerY = pageHeight / 2 - 15;
+    doc.setDrawColor(...SLATE_200);
+    doc.line(pageWidth / 2 - 30, centerY - 25, pageWidth / 2 + 30, centerY - 25);
 
     doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 52);
-    doc.line(14, 55, pageWidth - 14, 55);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...SLATE_500);
+    doc.text('CIVIL ENGINEERING DESIGN REPORT', pageWidth / 2, centerY - 15, { align: 'center' });
 
-    let finalY = 65;
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...NAVY);
+    doc.text(title, pageWidth / 2, centerY + 2, { align: 'center', maxWidth: pageWidth - 60 });
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...SLATE_500);
+    doc.text(dateStr, pageWidth / 2, centerY + 16, { align: 'center' });
+
+    doc.setDrawColor(...SLATE_200);
+    doc.line(pageWidth / 2 - 30, centerY + 25, pageWidth / 2 + 30, centerY + 25);
+
+    // Bottom accent bar
+    doc.setFillColor(...NAVY);
+    doc.rect(0, pageHeight - 6, pageWidth, 6, 'F');
+
+    // ============================================
+    // PAGE 2+: CONTENT
+    // ============================================
+    doc.addPage();
+
+    // Running header
+    const addHeader = () => {
+        doc.setFillColor(...NAVY);
+        doc.rect(0, 0, pageWidth, 1.5, 'F');
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...SLATE_500);
+        doc.text(`BeamLab Ultimate  \u2014  ${title}`, 14, 8);
+        doc.text(dateStr, pageWidth - 14, 8, { align: 'right' });
+        doc.setDrawColor(...NAVY);
+        doc.setLineWidth(0.5);
+        doc.line(14, 10, pageWidth - 14, 10);
+    };
+
+    const addHeading = (num: string, heading: string, y: number) => {
+        doc.setFontSize(13);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...NAVY);
+        doc.text(`${num}  ${heading}`, 14, y);
+        doc.setDrawColor(...SLATE_200);
+        doc.setLineWidth(0.5);
+        doc.line(14, y + 2, pageWidth - 14, y + 2);
+    };
+
+    addHeader();
+
+    let finalY = 20;
 
     // Inputs Section
-    doc.setFontSize(14);
-    doc.text("1. Design Inputs", 14, finalY);
+    addHeading('1.0', 'Design Inputs', finalY);
 
-    const inputsBody = Object.entries(inputs).map(([key, val]) => [key, val]);
+    const inputsBody = Object.entries(inputs).map(([key, val]) => [key, String(val)]);
     autoTable(doc, {
-        startY: finalY + 5,
+        startY: finalY + 7,
+        margin: { left: 14, right: 14 },
         head: [['Parameter', 'Value']],
         body: inputsBody,
-        theme: 'striped',
-        headStyles: { fillColor: [63, 81, 181] },
-        styles: { fontSize: 10 }
+        theme: 'plain',
+        headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+        bodyStyles: { fontSize: 9, textColor: SLATE_700 },
+        alternateRowStyles: { fillColor: SLATE_50 },
+        styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
     });
 
-    finalY = (doc as any).lastAutoTable.finalY + 15;
+    finalY = (doc as any).lastAutoTable.finalY + 12;
+    if (finalY > 240) { doc.addPage(); addHeader(); finalY = 20; }
 
     // Results Section
-    doc.setFontSize(14);
-    doc.text("2. Calculation Results", 14, finalY);
+    addHeading('2.0', 'Calculation Results', finalY);
 
-    const resultsBody = Object.entries(results).map(([key, val]) => [key, val]);
+    const resultsBody = Object.entries(results).map(([key, val]) => [key, String(val)]);
     autoTable(doc, {
-        startY: finalY + 5,
+        startY: finalY + 7,
+        margin: { left: 14, right: 14 },
         head: [['Result Item', 'Value']],
         body: resultsBody,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 150, 136] }, // Teal
-        styles: { fontSize: 10, fontStyle: 'bold' }
+        theme: 'plain',
+        headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+        bodyStyles: { fontSize: 9, textColor: SLATE_700, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: SLATE_50 },
+        styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
     });
 
-    finalY = (doc as any).lastAutoTable.finalY + 15;
+    finalY = (doc as any).lastAutoTable.finalY + 12;
 
-    // Additional Sections (e.g., layers, schedules)
+    // Additional Sections
     sections.forEach((section, idx) => {
-        if (finalY > 250) {
-            doc.addPage();
-            finalY = 20;
-        }
+        if (finalY > 240) { doc.addPage(); addHeader(); finalY = 20; }
 
-        doc.setFontSize(14);
-        doc.text(`${3 + idx}. ${section.title}`, 14, finalY);
+        addHeading(`${3 + idx}.0`, section.title, finalY);
 
         autoTable(doc, {
-            startY: finalY + 5,
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
             head: [['Item', 'Details']],
-            body: section.data,
-            theme: 'grid',
-            headStyles: { fillColor: [100, 100, 100] },
-            styles: { fontSize: 9 }
+            body: section.data.map(([k, v]) => [k, String(v)]),
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+            bodyStyles: { fontSize: 9, textColor: SLATE_700 },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
         });
 
-        finalY = (doc as any).lastAutoTable.finalY + 15;
+        finalY = (doc as any).lastAutoTable.finalY + 12;
     });
 
-    // Footer
+    // Professional footer on all pages
     const pageCount = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(150);
-        doc.text(`Page ${i} of ${pageCount} - Generated by BeamLab Ultimate`, pageWidth / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+        doc.setDrawColor(...NAVY);
+        doc.setLineWidth(0.5);
+        doc.line(14, pageHeight - 15, pageWidth - 14, pageHeight - 15);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...SLATE_500);
+        doc.text('BeamLab Ultimate  \u2014  Civil Engineering Design', 14, pageHeight - 11);
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
+        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.setFontSize(6);
+        doc.setTextColor(180, 180, 180);
+        doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });
     }
 
     doc.save(`${title.replace(/\s+/g, '_')}_Report.pdf`);

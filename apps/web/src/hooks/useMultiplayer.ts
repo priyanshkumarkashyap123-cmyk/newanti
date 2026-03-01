@@ -268,6 +268,11 @@ export function useMultiplayer(config: MultiplayerConfig) {
     return () => {
       socket.disconnect();
       socketRef.current = null;
+      // Cancel any pending cursor rAF
+      if (cursorRafRef.current !== null) {
+        cancelAnimationFrame(cursorRafRef.current);
+        cursorRafRef.current = null;
+      }
     };
   }, [serverUrl, config.projectId, config.userName]);
 
@@ -342,18 +347,32 @@ export function useMultiplayer(config: MultiplayerConfig) {
   );
 
   /**
-   * Update cursor position
+   * Update cursor position — throttled to ~60fps via rAF to match server rate limit
    */
+  const lastCursorRef = useRef<{ x: number; y: number; z: number } | null>(null);
+  const cursorRafRef = useRef<number | null>(null);
+
   const updateCursor = useCallback(
     (x: number, y: number, z: number, screenX?: number, screenY?: number) => {
       if (!socketRef.current?.connected) return;
 
-      socketRef.current.emit("cursor_move", {
-        x,
-        y,
-        z,
-        screenX,
-        screenY,
+      // Store latest position, only send once per animation frame
+      lastCursorRef.current = { x, y, z };
+
+      if (cursorRafRef.current !== null) return; // already scheduled
+
+      cursorRafRef.current = requestAnimationFrame(() => {
+        cursorRafRef.current = null;
+        const pos = lastCursorRef.current;
+        if (!pos || !socketRef.current?.connected) return;
+
+        socketRef.current.emit("cursor_move", {
+          x: pos.x,
+          y: pos.y,
+          z: pos.z,
+          screenX,
+          screenY,
+        });
       });
     },
     [],

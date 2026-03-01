@@ -26,6 +26,7 @@ const COLORS = {
   nodeHover: new THREE.Color(0x00ffff), // Cyan
   nodeSelected: new THREE.Color(0xfbbf24), // Amber
   nodeSupport: new THREE.Color(0x10b981), // Green (has restraints)
+  nodeError: new THREE.Color(0xef4444), // Red (analysis error)
 };
 
 const NODE_RADIUS = 0.12;
@@ -44,6 +45,7 @@ export const InstancedNodesRenderer: React.FC = () => {
   // Zustand store selectors
   const nodes = useModelStore((state) => state.nodes);
   const selectedIds = useModelStore((state) => state.selectedIds);
+  const errorElementIds = useModelStore((state) => state.errorElementIds);
   const selectNode = useModelStore((state) => state.selectNode);
 
   const { raycaster, camera } = useThree();
@@ -136,6 +138,8 @@ export const InstancedNodesRenderer: React.FC = () => {
       let color = COLORS.nodeDefault;
       if (selectedIds.has(d.id)) {
         color = COLORS.nodeSelected;
+      } else if (errorElementIds.has(d.id)) {
+        color = COLORS.nodeError;
       } else if (d.hasSupport) {
         color = COLORS.nodeSupport;
       }
@@ -155,7 +159,7 @@ export const InstancedNodesRenderer: React.FC = () => {
       ).array = colorArray;
       mesh.geometry.attributes.instanceColor.needsUpdate = true;
     }
-  }, [instanceGeometry, instanceCount, selectedIds]);
+  }, [instanceGeometry, instanceCount, selectedIds, errorElementIds]);
 
   // ============================================
   // HOVER EFFECT (update color on hover)
@@ -173,9 +177,11 @@ export const InstancedNodesRenderer: React.FC = () => {
     instanceGeometry.forEach((data, i) => {
       let color = selectedIds.has(data.id)
         ? COLORS.nodeSelected
-        : data.hasSupport
-          ? COLORS.nodeSupport
-          : COLORS.nodeDefault;
+        : errorElementIds.has(data.id)
+          ? COLORS.nodeError
+          : data.hasSupport
+            ? COLORS.nodeSupport
+            : COLORS.nodeDefault;
 
       if (hoveredInstanceId === i) {
         color = COLORS.nodeHover;
@@ -185,7 +191,7 @@ export const InstancedNodesRenderer: React.FC = () => {
     });
 
     colorAttribute.needsUpdate = true;
-  }, [hoveredInstanceId, instanceGeometry, selectedIds]);
+  }, [hoveredInstanceId, instanceGeometry, selectedIds, errorElementIds]);
 
   // ============================================
   // RAYCASTING FOR SELECTION

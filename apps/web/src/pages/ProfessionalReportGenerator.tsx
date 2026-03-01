@@ -239,7 +239,7 @@ export default function ProfessionalReportGenerator() {
     approver: 'Chief Structural Engineer',
     date: new Date().toISOString().slice(0, 10),
     revision: 'R0',
-    companyName: 'BeamLab Structural Consultants',
+    companyName: 'BeamLab Ultimate',
     companyLogo: '/logo.png'
   });
 
@@ -323,31 +323,79 @@ export default function ProfessionalReportGenerator() {
     setSections(prev => prev.filter(s => s.id !== id));
   }, []);
 
-  // Generate report preview
+  // Generate report preview  
   const reportPreview = useMemo(() => {
     const enabledSections = sections.filter(s => s.enabled);
     
+    const NAVY = '#12376A';
+    const GOLD = '#BF9B30';
+    const SLATE_50 = '#f8fafc';
+    const SLATE_100 = '#f1f5f9';
+    const SLATE_200 = '#e2e8f0';
+    const SLATE_500 = '#64748b';
+    const SLATE_600 = '#475569';
+    const SLATE_700 = '#334155';
+    const SLATE_900 = '#0f172a';
+
+    const sectionHeadingStyle = `font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: ${SLATE_900}; border-bottom: 2px solid ${SLATE_200}; padding-bottom: 6px; margin: 28px 0 16px 0;`;
+    const subHeadingStyle = `font-size: 13px; font-weight: 700; color: ${SLATE_700}; border-bottom: 1px solid ${SLATE_200}; padding-bottom: 4px; margin: 20px 0 10px 0;`;
+    const tableHeaderStyle = `background: ${SLATE_100}; border: 1px solid ${SLATE_200}; padding: 8px 12px; font-size: 11px; font-weight: 700; color: ${SLATE_600}; text-align: left;`;
+    const tableCellStyle = `border: 1px solid ${SLATE_200}; padding: 6px 12px; font-size: 11px; color: ${SLATE_700};`;
+    const tableCellAltStyle = `${tableCellStyle} background: ${SLATE_50};`;
+    const monoStyle = 'font-family: "SF Mono", "Cascadia Code", "Consolas", monospace;';
+
     let html = `
-      <div class="report-preview" style="font-family: 'Times New Roman', serif; color: #1a1a1a; line-height: 1.6;">
+      <div class="report-preview" style="font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; color: ${SLATE_900}; line-height: 1.6;">
     `;
 
     enabledSections.forEach(section => {
       switch (section.type) {
         case 'cover':
           html += `
-            <div style="text-align: center; padding: 60px 40px; page-break-after: always;">
-              <div style="margin-bottom: 40px;">
-                <div style="font-size: 14px; color: #666;">STRUCTURAL DESIGN REPORT</div>
+            <div style="text-align: center; padding: 40px; page-break-after: always; position: relative;">
+              <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: ${NAVY};"></div>
+              <div style="position: absolute; top: 6px; left: 0; right: 0; height: 3px; background: ${GOLD};"></div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 12px; margin-bottom: 30px; text-align: left;">
+                <div>
+                  <div style="font-size: 22px; font-weight: 900; color: ${NAVY}; letter-spacing: -0.02em;">BeamLab Ultimate</div>
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.25em; margin-top: 2px;">Structural Engineering</div>
+                </div>
+                <div style="font-size: 8px; color: ${SLATE_500}; text-align: right; line-height: 1.6;">
+                  <div>beamlabultimate.tech</div>
+                  <div>support@beamlabultimate.tech</div>
+                </div>
               </div>
-              <h1 style="font-size: 28px; font-weight: bold; margin: 40px 0;">${projectInfo.projectName}</h1>
-              <div style="font-size: 16px; color: #444; margin: 20px 0;">Project No: ${projectInfo.projectNumber}</div>
-              <div style="font-size: 14px; color: #666; margin-top: 60px;">
+              
+              <div style="margin: 80px 0;">
+                <div style="width: 60px; height: 2px; background: ${SLATE_200}; margin: 0 auto 24px;"></div>
+                <div style="font-size: 10px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.3em; margin-bottom: 12px;">Structural Design Report</div>
+                <h1 style="font-size: 26px; font-weight: 900; margin: 16px 0; color: ${NAVY}; line-height: 1.2;">${projectInfo.projectName}</h1>
+                <div style="font-size: 11px; color: ${SLATE_500}; margin: 6px 0;">Project No: ${projectInfo.projectNumber}</div>
+                <div style="font-size: 11px; color: ${SLATE_500};">Revision ${projectInfo.revision} &mdash; ${projectInfo.date}</div>
+                <div style="width: 60px; height: 2px; background: ${SLATE_200}; margin: 24px auto 0;"></div>
+              </div>
+              
+              <div style="margin-top: 40px; font-size: 12px; color: ${SLATE_600}; line-height: 2;">
                 <div>Client: ${projectInfo.client}</div>
                 <div>Location: ${projectInfo.location}</div>
               </div>
-              <div style="margin-top: 80px; border-top: 2px solid #333; padding-top: 20px;">
-                <div style="font-size: 12px; color: #666;">Prepared by: ${projectInfo.companyName}</div>
-                <div style="font-size: 12px; color: #666;">Date: ${projectInfo.date} | Revision: ${projectInfo.revision}</div>
+              
+              <div style="margin-top: 50px; border: 1px solid ${SLATE_200}; border-radius: 4px; overflow: hidden; text-align: left;">
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px 12px; font-size: 10px; font-weight: 700; color: ${SLATE_500}; background: ${SLATE_50}; width: 25%; border-right: 1px solid ${SLATE_200}; border-bottom: 1px solid ${SLATE_200};">Prepared by</td>
+                    <td style="padding: 8px 12px; font-size: 10px; color: ${SLATE_700}; border-right: 1px solid ${SLATE_200}; border-bottom: 1px solid ${SLATE_200};">${projectInfo.engineer}</td>
+                    <td style="padding: 8px 12px; font-size: 10px; font-weight: 700; color: ${SLATE_500}; background: ${SLATE_50}; width: 25%; border-right: 1px solid ${SLATE_200}; border-bottom: 1px solid ${SLATE_200};">Checked by</td>
+                    <td style="padding: 8px 12px; font-size: 10px; color: ${SLATE_700}; border-bottom: 1px solid ${SLATE_200};">${projectInfo.checker}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 12px; font-size: 10px; font-weight: 700; color: ${SLATE_500}; background: ${SLATE_50}; border-right: 1px solid ${SLATE_200};">Approved by</td>
+                    <td style="padding: 8px 12px; font-size: 10px; color: ${SLATE_700}; border-right: 1px solid ${SLATE_200};">${projectInfo.approver}</td>
+                    <td style="padding: 8px 12px; font-size: 10px; font-weight: 700; color: ${SLATE_500}; background: ${SLATE_50}; border-right: 1px solid ${SLATE_200};">Date</td>
+                    <td style="padding: 8px 12px; font-size: 10px; color: ${SLATE_700};">${projectInfo.date}</td>
+                  </tr>
+                </table>
               </div>
             </div>
           `;
@@ -356,12 +404,12 @@ export default function ProfessionalReportGenerator() {
         case 'toc':
           html += `
             <div style="padding: 20px 40px; page-break-after: always;">
-              <h2 style="font-size: 20px; border-bottom: 2px solid #333; padding-bottom: 10px;">Table of Contents</h2>
-              <div style="margin-top: 20px;">
+              <h2 style="${sectionHeadingStyle}">Table of Contents</h2>
+              <div style="margin-top: 16px;">
                 ${enabledSections.filter(s => s.type !== 'cover' && s.type !== 'toc').map((s, i) => `
-                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ccc;">
-                    <span>${i + 1}. ${s.title}</span>
-                    <span>${i + 3}</span>
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px dotted ${SLATE_200}; font-size: 12px;">
+                    <span style="color: ${SLATE_700}; font-weight: 500;"><span style="${monoStyle} font-weight: 700; color: ${SLATE_500}; margin-right: 8px;">${i + 1}.0</span>${s.title}</span>
+                    <span style="color: ${SLATE_500}; ${monoStyle} font-size: 11px;">${i + 3}</span>
                   </div>
                 `).join('')}
               </div>
@@ -372,20 +420,32 @@ export default function ProfessionalReportGenerator() {
         case 'summary':
           html += `
             <div style="padding: 20px 40px;">
-              <h2 style="font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 8px;">1. Executive Summary</h2>
-              <p style="margin-top: 15px;">This report presents the structural design and analysis of ${projectInfo.projectName}. 
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">1.0</span> Executive Summary</h2>
+              <p style="margin-top: 12px; font-size: 12px; color: ${SLATE_600}; line-height: 1.7;">This report presents the structural design and analysis of ${projectInfo.projectName}. 
               The structure has been designed in accordance with IS 456:2000, IS 800:2007, and IS 1893:2016.</p>
               
-              <h3 style="font-size: 14px; margin-top: 20px;">Key Findings:</h3>
-              <ul style="margin-left: 20px;">
-                <li>All structural members satisfy strength and serviceability requirements</li>
-                <li>Maximum storey drift: 0.0028 (Limit: 0.004) ✓</li>
-                <li>Base shear: 2,450 kN (Zone IV, R=5.0)</li>
-                <li>Critical member utilization: 0.87 (Column C12)</li>
-              </ul>
+              <h3 style="${subHeadingStyle}">Key Findings</h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
+                <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #16a34a; border-radius: 4px; padding: 10px 14px;">
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Max Storey Drift</div>
+                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">0.0028 <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">/ 0.004</span></div>
+                </div>
+                <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #3b82f6; border-radius: 4px; padding: 10px 14px;">
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Base Shear</div>
+                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">2,450 <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">kN</span></div>
+                </div>
+                <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 10px 14px;">
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Critical Utilization</div>
+                  <div style="font-size: 16px; font-weight: 900; color: ${SLATE_900}; margin-top: 2px;">0.87 <span style="font-size: 10px; color: ${SLATE_500}; font-weight: 500;">Column C12</span></div>
+                </div>
+                <div style="border: 1px solid ${SLATE_200}; border-left: 4px solid #16a34a; border-radius: 4px; padding: 10px 14px;">
+                  <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.1em;">Overall Status</div>
+                  <div style="font-size: 16px; font-weight: 900; color: #16a34a; margin-top: 2px;">ALL PASS</div>
+                </div>
+              </div>
               
-              <h3 style="font-size: 14px; margin-top: 20px;">Recommendations:</h3>
-              <ul style="margin-left: 20px;">
+              <h3 style="${subHeadingStyle}">Recommendations</h3>
+              <ul style="margin-left: 16px; font-size: 11px; color: ${SLATE_600}; line-height: 2;">
                 <li>Provide special confining reinforcement at beam-column joints</li>
                 <li>Use M30 concrete grade for all RCC members</li>
                 <li>All connections to be designed as rigid connections</li>
@@ -397,34 +457,34 @@ export default function ProfessionalReportGenerator() {
         case 'geometry':
           html += `
             <div style="padding: 20px 40px;">
-              <h2 style="font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 8px;">2. Model Geometry</h2>
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">2.0</span> Model Geometry</h2>
               
-              <h3 style="font-size: 14px; margin-top: 20px;">2.1 Structure Summary</h3>
-              <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">Total Nodes</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">156</td>
+              <h3 style="${subHeadingStyle}">2.1 Structure Summary</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid ${SLATE_200}; border-radius: 4px;">
+                <tr>
+                  <td style="${tableCellStyle} font-weight: 700;">Total Nodes</td>
+                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">156</td>
                 </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Total Members</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">312</td>
-                </tr>
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">Total Supports</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">24</td>
+                  <td style="${tableCellAltStyle} font-weight: 700;">Total Members</td>
+                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">312</td>
                 </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Number of Storeys</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">G + 8</td>
+                  <td style="${tableCellStyle} font-weight: 700;">Total Supports</td>
+                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">24</td>
                 </tr>
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">Total Height</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; text-align: right;">28.0 m</td>
+                <tr>
+                  <td style="${tableCellAltStyle} font-weight: 700;">Number of Storeys</td>
+                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">G + 8</td>
+                </tr>
+                <tr>
+                  <td style="${tableCellStyle} font-weight: 700;">Total Height</td>
+                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">28.0 m</td>
                 </tr>
               </table>
               
-              <div style="margin-top: 20px; padding: 40px; background: #f5f5f5; text-align: center; border: 1px solid #ddd;">
-                [3D Model View - Rendered Image]
+              <div style="margin-top: 20px; padding: 40px; background: ${SLATE_50}; text-align: center; border: 1px solid ${SLATE_200}; border-radius: 4px; color: ${SLATE_500}; font-size: 12px;">
+                [3D Model View &mdash; Rendered Image]
               </div>
             </div>
           `;
@@ -433,43 +493,43 @@ export default function ProfessionalReportGenerator() {
         case 'materials':
           html += `
             <div style="padding: 20px 40px;">
-              <h2 style="font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 8px;">3. Material Properties</h2>
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">3.0</span> Material Properties</h2>
               
-              <h3 style="font-size: 14px; margin-top: 20px;">3.1 Concrete</h3>
+              <h3 style="${subHeadingStyle}">3.1 Concrete</h3>
               <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr style="background: #333; color: white;">
-                  <th style="border: 1px solid #ccc; padding: 8px;">Grade</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">fck (MPa)</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Ec (GPa)</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Usage</th>
+                <tr>
+                  <th style="${tableHeaderStyle}">Grade</th>
+                  <th style="${tableHeaderStyle}">f<sub>ck</sub> (MPa)</th>
+                  <th style="${tableHeaderStyle}">E<sub>c</sub> (GPa)</th>
+                  <th style="${tableHeaderStyle}">Usage</th>
                 </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">M30</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">30</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">27.4</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Columns, Beams</td>
+                  <td style="${tableCellStyle} ${monoStyle} font-weight: 700;">M30</td>
+                  <td style="${tableCellStyle} ${monoStyle} text-align: right;">30</td>
+                  <td style="${tableCellStyle} ${monoStyle} text-align: right;">27.4</td>
+                  <td style="${tableCellStyle}">Columns, Beams</td>
                 </tr>
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">M25</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">25</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">25.0</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Slabs, Footings</td>
+                <tr>
+                  <td style="${tableCellAltStyle} ${monoStyle} font-weight: 700;">M25</td>
+                  <td style="${tableCellAltStyle} ${monoStyle} text-align: right;">25</td>
+                  <td style="${tableCellAltStyle} ${monoStyle} text-align: right;">25.0</td>
+                  <td style="${tableCellAltStyle}">Slabs, Footings</td>
                 </tr>
               </table>
               
-              <h3 style="font-size: 14px; margin-top: 20px;">3.2 Reinforcement Steel</h3>
+              <h3 style="${subHeadingStyle}">3.2 Reinforcement Steel</h3>
               <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr style="background: #333; color: white;">
-                  <th style="border: 1px solid #ccc; padding: 8px;">Grade</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">fy (MPa)</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Es (GPa)</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Usage</th>
+                <tr>
+                  <th style="${tableHeaderStyle}">Grade</th>
+                  <th style="${tableHeaderStyle}">f<sub>y</sub> (MPa)</th>
+                  <th style="${tableHeaderStyle}">E<sub>s</sub> (GPa)</th>
+                  <th style="${tableHeaderStyle}">Usage</th>
                 </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Fe500</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">500</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">200</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Main reinforcement</td>
+                  <td style="${tableCellStyle} ${monoStyle} font-weight: 700;">Fe500</td>
+                  <td style="${tableCellStyle} ${monoStyle} text-align: right;">500</td>
+                  <td style="${tableCellStyle} ${monoStyle} text-align: right;">200</td>
+                  <td style="${tableCellStyle}">Main reinforcement</td>
                 </tr>
               </table>
             </div>
@@ -479,44 +539,44 @@ export default function ProfessionalReportGenerator() {
         case 'loads':
           html += `
             <div style="padding: 20px 40px;">
-              <h2 style="font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 8px;">4. Load Cases</h2>
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">4.0</span> Load Cases</h2>
               
               <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                <tr style="background: #333; color: white;">
-                  <th style="border: 1px solid #ccc; padding: 8px;">Load Case</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Type</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Reference Code</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Value</th>
+                <tr>
+                  <th style="${tableHeaderStyle}">Load Case</th>
+                  <th style="${tableHeaderStyle}">Type</th>
+                  <th style="${tableHeaderStyle}">Reference Code</th>
+                  <th style="${tableHeaderStyle}">Value</th>
                 </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">DL - Self Weight</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Dead Load</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 875 Part 1</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Calculated</td>
-                </tr>
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">DL - Floor Finish</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Dead Load</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 875 Part 1</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">1.5 kN/m²</td>
+                  <td style="${tableCellStyle} font-weight: 600;">DL - Self Weight</td>
+                  <td style="${tableCellStyle}">Dead Load</td>
+                  <td style="${tableCellStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 875 Part 1</td>
+                  <td style="${tableCellStyle} ${monoStyle}">Calculated</td>
                 </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">LL - Floor</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Live Load</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 875 Part 2</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">3.0 kN/m²</td>
-                </tr>
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">EQX - Seismic X</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Seismic</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 1893:2016</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Zone IV, R=5</td>
+                  <td style="${tableCellAltStyle} font-weight: 600;">DL - Floor Finish</td>
+                  <td style="${tableCellAltStyle}">Dead Load</td>
+                  <td style="${tableCellAltStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 875 Part 1</td>
+                  <td style="${tableCellAltStyle} ${monoStyle}">1.5 kN/m&sup2;</td>
                 </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">EQY - Seismic Y</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Seismic</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 1893:2016</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Zone IV, R=5</td>
+                  <td style="${tableCellStyle} font-weight: 600;">LL - Floor</td>
+                  <td style="${tableCellStyle}">Live Load</td>
+                  <td style="${tableCellStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 875 Part 2</td>
+                  <td style="${tableCellStyle} ${monoStyle}">3.0 kN/m&sup2;</td>
+                </tr>
+                <tr>
+                  <td style="${tableCellAltStyle} font-weight: 600;">EQX - Seismic X</td>
+                  <td style="${tableCellAltStyle}">Seismic</td>
+                  <td style="${tableCellAltStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 1893:2016</td>
+                  <td style="${tableCellAltStyle} ${monoStyle}">Zone IV, R=5</td>
+                </tr>
+                <tr>
+                  <td style="${tableCellStyle} font-weight: 600;">EQY - Seismic Y</td>
+                  <td style="${tableCellStyle}">Seismic</td>
+                  <td style="${tableCellStyle} ${monoStyle} font-size: 10px; color: ${SLATE_500};">IS 1893:2016</td>
+                  <td style="${tableCellStyle} ${monoStyle}">Zone IV, R=5</td>
                 </tr>
               </table>
             </div>
@@ -526,49 +586,41 @@ export default function ProfessionalReportGenerator() {
         case 'codeCheck':
           html += `
             <div style="padding: 20px 40px;">
-              <h2 style="font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 8px;">Code Compliance Summary</h2>
+              <h2 style="${sectionHeadingStyle}"><span style="color: ${SLATE_500}; ${monoStyle} margin-right: 8px;">5.0</span> Code Compliance Summary</h2>
               
-              <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-left: 4px solid #4caf50;">
-                <strong style="color: #2e7d32;">✓ STRUCTURE PASSES ALL CODE CHECKS</strong>
+              <div style="margin-top: 16px; padding: 12px 16px; background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 10px; font-weight: 800; color: #15803d; text-transform: uppercase; letter-spacing: 0.05em;">&#10003; STRUCTURE PASSES ALL CODE CHECKS</span>
               </div>
               
-              <h3 style="font-size: 14px; margin-top: 20px;">Utilization Summary</h3>
+              <h3 style="${subHeadingStyle}">Utilization Summary</h3>
               <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <tr style="background: #333; color: white;">
-                  <th style="border: 1px solid #ccc; padding: 8px;">Check Type</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Code Clause</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Max Ratio</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Location</th>
-                  <th style="border: 1px solid #ccc; padding: 8px;">Status</th>
-                </tr>
                 <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Column Strength</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 456 Cl. 39.3</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">0.87</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">C12, Level 2</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; color: green;">✓ OK</td>
+                  <th style="${tableHeaderStyle}">Check Type</th>
+                  <th style="${tableHeaderStyle}">Code Clause</th>
+                  <th style="${tableHeaderStyle} text-align: right;">D/C Ratio</th>
+                  <th style="${tableHeaderStyle}">Location</th>
+                  <th style="${tableHeaderStyle} text-align: center;">Status</th>
                 </tr>
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">Beam Flexure</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 456 Cl. 38.1</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">0.92</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">B24, Level 3</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; color: green;">✓ OK</td>
-                </tr>
-                <tr>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Storey Drift</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 1893 Cl. 7.11.1</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">0.70</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">Level 5</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; color: green;">✓ OK</td>
-                </tr>
-                <tr style="background: #f0f0f0;">
-                  <td style="border: 1px solid #ccc; padding: 8px;">Shear Capacity</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">IS 456 Cl. 40.4</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">0.68</td>
-                  <td style="border: 1px solid #ccc; padding: 8px;">B12, Level 1</td>
-                  <td style="border: 1px solid #ccc; padding: 8px; color: green;">✓ OK</td>
-                </tr>
+                ${[
+                  ['Column Strength', 'IS 456 Cl. 39.3', '0.87', 'C12, Level 2', 'PASS'],
+                  ['Beam Flexure', 'IS 456 Cl. 38.1', '0.92', 'B24, Level 3', 'WARN'],
+                  ['Storey Drift', 'IS 1893 Cl. 7.11.1', '0.70', 'Level 5', 'PASS'],
+                  ['Shear Capacity', 'IS 456 Cl. 40.4', '0.68', 'B12, Level 1', 'PASS'],
+                ].map(([check, code, ratio, loc, status], i) => {
+                  const bg = i % 2 === 0 ? '' : `background: ${SLATE_50};`;
+                  const statusColor = status === 'PASS' ? '#16a34a' : status === 'WARN' ? '#d97706' : '#dc2626';
+                  const statusBg = status === 'PASS' ? '#f0fdf4' : status === 'WARN' ? '#fffbeb' : '#fef2f2';
+                  const statusBorder = status === 'PASS' ? '#bbf7d0' : status === 'WARN' ? '#fde68a' : '#fecaca';
+                  return `<tr>
+                    <td style="${tableCellStyle} ${bg} font-weight: 600;">${check}</td>
+                    <td style="${tableCellStyle} ${bg} ${monoStyle} font-size: 10px; color: ${SLATE_500};">${code}</td>
+                    <td style="${tableCellStyle} ${bg} text-align: right; ${monoStyle} font-weight: 700;">${ratio}</td>
+                    <td style="${tableCellStyle} ${bg}">${loc}</td>
+                    <td style="${tableCellStyle} ${bg} text-align: center;">
+                      <span style="display: inline-block; padding: 2px 8px; font-size: 9px; font-weight: 800; color: ${statusColor}; background: ${statusBg}; border: 1px solid ${statusBorder}; border-radius: 4px; text-transform: uppercase;">${status}</span>
+                    </td>
+                  </tr>`;
+                }).join('')}
               </table>
             </div>
           `;
@@ -577,8 +629,8 @@ export default function ProfessionalReportGenerator() {
         default:
           html += `
             <div style="padding: 20px 40px;">
-              <h2 style="font-size: 18px; border-bottom: 1px solid #333; padding-bottom: 8px;">${section.title}</h2>
-              <p style="margin-top: 15px; color: #666;">[Section content will be populated from analysis results]</p>
+              <h2 style="${sectionHeadingStyle}">${section.title}</h2>
+              <p style="margin-top: 12px; color: ${SLATE_500}; font-size: 12px; font-style: italic;">[Section content will be populated from analysis results]</p>
             </div>
           `;
       }
@@ -604,12 +656,17 @@ export default function ProfessionalReportGenerator() {
         <title>${projectInfo.projectName} - Structural Design Report</title>
         <style>
           @page { size: ${paperSize} ${orientation}; margin: 20mm; }
-          body { font-family: 'Times New Roman', serif; }
+          body { font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif; color: #0f172a; line-height: 1.6; }
           @media print { .no-print { display: none; } }
         </style>
       </head>
       <body>
         ${reportPreview}
+        <div style="margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top: 16px; text-align: center;">
+          <p style="font-size: 9px; color: #64748b;">This is a computer-generated document. Results should be independently verified.</p>
+          <p style="font-size: 9px; color: #64748b;">Generated by BeamLab Ultimate &mdash; beamlabultimate.tech</p>
+          <p style="font-size: 8px; color: #94a3b8; margin-top: 4px;">&copy; ${new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
+        </div>
       </body>
       </html>
     `;
@@ -626,14 +683,14 @@ export default function ProfessionalReportGenerator() {
   }, [projectInfo, reportPreview, paperSize, orientation]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-                <FileText className="w-8 h-8 text-purple-400" />
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-2 flex items-center gap-3">
+                <FileText className="w-8 h-8 text-cyan-500" />
                 Professional Report Generator
               </h1>
               <p className="text-slate-600 dark:text-slate-400 text-sm">

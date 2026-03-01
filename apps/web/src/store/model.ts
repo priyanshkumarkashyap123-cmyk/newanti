@@ -376,6 +376,8 @@ interface ModelState {
   loadCombinations: LoadCombination[]; // Factored load combinations (IS 875, ASCE 7, EC)
   activeLoadCaseId: string | null; // Currently active load case for editing
   selectedIds: Set<string>;
+  /** Element IDs flagged as problematic by analysis error diagnosis */
+  errorElementIds: Set<string>;
   analysisResults: AnalysisResults | null;
   isAnalyzing: boolean;
   displacementScale: number; // Scale factor for displaced shape visualization
@@ -440,6 +442,10 @@ interface ModelState {
   ) => void;
   setAnalysisResults: (results: AnalysisResults | null) => void;
   setIsAnalyzing: (analyzing: boolean) => void;
+  /** Set element IDs to highlight as errors in 3D (from backend errorDetails) */
+  setErrorElementIds: (ids: string[]) => void;
+  /** Clear error highlighting */
+  clearErrorElementIds: () => void;
   select: (id: string, multi: boolean) => void;
   selectNode: (id: string | null, multi?: boolean) => void;
   selectMember: (id: string | null, multi?: boolean) => void;
@@ -566,6 +572,7 @@ export const useModelStore = create<ModelState>()(
         loadCombinations: [], // Factored load combinations
         activeLoadCaseId: null, // No active load case initially
         selectedIds: new Set(),
+        errorElementIds: new Set(),
         analysisResults: null,
         isAnalyzing: false,
         displacementScale: 100, // Default scale factor
@@ -830,6 +837,9 @@ export const useModelStore = create<ModelState>()(
         },
 
         setIsAnalyzing: (analyzing) => set({ isAnalyzing: analyzing }),
+
+        setErrorElementIds: (ids) => set({ errorElementIds: new Set(ids) }),
+        clearErrorElementIds: () => set({ errorElementIds: new Set() }),
 
         select: (id, multi) =>
           set((state) => {

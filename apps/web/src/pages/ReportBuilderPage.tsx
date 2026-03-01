@@ -22,7 +22,7 @@ export default function ReportBuilderPage() {
     engineer: 'Lead Structural Engineer',
     date: new Date().toISOString().slice(0, 10),
     revision: 'A1',
-    companyName: 'BeamLab Engineering',
+    companyName: 'BeamLab Ultimate',
     format: 'markdown',
     includeTableOfContents: true,
     includePageNumbers: true,

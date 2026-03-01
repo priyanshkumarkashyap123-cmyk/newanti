@@ -141,7 +141,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   const userName = isSignedIn && user?.firstName ? user.firstName : "Engineer";
   const userEmail =
     (isSignedIn && (user as any)?.emailAddresses?.[0]?.emailAddress) ||
-    "engineer@beamlab.io";
+    "engineer@beamlabultimate.tech";
 
   // ============================================
   // REAL PROJECT DATA FROM MONGODB

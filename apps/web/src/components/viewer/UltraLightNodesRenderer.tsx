@@ -105,6 +105,7 @@ const COLORS = {
   nodeHover: new THREE.Color(0x00ffff), // Cyan
   nodeSelected: new THREE.Color(0xfbbf24), // Amber
   nodeSupport: new THREE.Color(0x10b981), // Green (has restraints)
+  nodeError: new THREE.Color(0xef4444), // Red (analysis error)
   nodeBulk: new THREE.Color(0x4b5563), // Neutral gray for massive models
 };
 
@@ -151,6 +152,7 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
   // Zustand store selectors
   const nodes = useModelStore((state) => state.nodes);
   const selectedIds = useModelStore((state) => state.selectedIds);
+  const errorElementIds = useModelStore((state) => state.errorElementIds);
   const selectNode = useModelStore((state) => state.selectNode);
 
   const { raycaster } = useThree();
@@ -251,6 +253,8 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
           let color = COLORS.nodeDefault;
           if (isSelected) {
             color = COLORS.nodeSelected;
+          } else if (errorElementIds.has(id)) {
+            color = COLORS.nodeError;
           } else if (hasSupportNode) {
             color = COLORS.nodeSupport;
           }
@@ -294,7 +298,7 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
     return () => {
       setIsInitialized(false);
     };
-  }, [visibleNodes, effectiveCount, config, selectedIds]);
+  }, [visibleNodes, effectiveCount, config, selectedIds, errorElementIds]);
 
   // ============================================
   // HOVER HANDLING

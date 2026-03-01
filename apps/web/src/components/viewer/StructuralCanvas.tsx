@@ -50,6 +50,7 @@ interface MemberMeshProps {
   endPos: THREE.Vector3;
   isSelected: boolean;
   isHovered: boolean;
+  isError?: boolean;
   onHover: (id: string | null) => void;
   onClick: (id: string, event: ThreeEvent<MouseEvent>) => void;
 }
@@ -60,6 +61,7 @@ interface NodeMeshProps {
   isSelected: boolean;
   isHovered: boolean;
   hasSupport: boolean;
+  isError?: boolean;
   onHover: (id: string | null) => void;
   onClick: (id: string, event: ThreeEvent<MouseEvent>) => void;
 }
@@ -72,10 +74,12 @@ const COLORS = {
   memberDefault: "#6b7280", // Gray
   memberHover: "#00ffff", // Cyan (pre-highlight)
   memberSelected: "#3b82f6", // Blue
+  memberError: "#ef4444", // Red (analysis error)
   nodeDefault: "#22c55e", // Green
   nodeHover: "#00ffff", // Cyan
   nodeSelected: "#3b82f6", // Blue
   nodeSupport: "#f59e0b", // Orange
+  nodeError: "#ef4444", // Red (analysis error)
   grid: "#1f2937", // Dark gray
   gridSection: "#374151", // Lighter gray
   shadow: "#000000",
@@ -91,6 +95,7 @@ export const _MemberMesh: FC<MemberMeshProps> = ({
   endPos,
   isSelected,
   isHovered,
+  isError,
   onHover,
   onClick,
 }) => {
@@ -119,8 +124,9 @@ export const _MemberMesh: FC<MemberMeshProps> = ({
   const color = useMemo(() => {
     if (isSelected) return COLORS.memberSelected;
     if (isHovered) return COLORS.memberHover;
+    if (isError) return COLORS.memberError;
     return COLORS.memberDefault;
-  }, [isSelected, isHovered]);
+  }, [isSelected, isHovered, isError]);
 
   // Determine emissive intensity
   const emissiveIntensity = isHovered ? 0.3 : isSelected ? 0.2 : 0;
@@ -167,6 +173,7 @@ export const _NodeMesh: FC<NodeMeshProps> = ({
   isSelected,
   isHovered,
   hasSupport,
+  isError,
   onHover,
   onClick,
 }) => {
@@ -174,9 +181,10 @@ export const _NodeMesh: FC<NodeMeshProps> = ({
   const color = useMemo(() => {
     if (isSelected) return COLORS.nodeSelected;
     if (isHovered) return COLORS.nodeHover;
+    if (isError) return COLORS.nodeError;
     if (hasSupport) return COLORS.nodeSupport;
     return COLORS.nodeDefault;
-  }, [isSelected, isHovered, hasSupport]);
+  }, [isSelected, isHovered, isError, hasSupport]);
 
   const emissiveIntensity = isHovered ? 0.5 : isSelected ? 0.3 : 0;
 
