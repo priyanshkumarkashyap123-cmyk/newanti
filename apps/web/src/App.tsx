@@ -14,6 +14,7 @@ import { RequireAuth } from "./components/layout/RequireAuth";
 import "./App.css";
 import "./utils/generateTestGrid";
 import { SkipLink } from "./components/ui/SkipLink";
+import { OfflineBanner } from "./components/ui/OfflineBanner";
 
 // Lazy loaded components (Code Splitting)
 const Dashboard = lazy(() =>
@@ -380,6 +381,7 @@ function App() {
   return (
     <ErrorBoundary>
       <SkipLink />
+      <OfflineBanner />
       <AnalyticsProvider>
         <ToastProvider>
           <Suspense fallback={<PageLoader />}>

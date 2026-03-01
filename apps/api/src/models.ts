@@ -583,6 +583,107 @@ AISessionSchema.index({ owner: 1, type: 1 });
 
 export const AISession = mongoose.model<IAISession>('AISession', AISessionSchema);
 
+// ============================================
+// ANALYSIS JOB SCHEMA
+// ============================================
+
+export interface IAnalysisJob extends Document {
+    jobId: string;
+    userId: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    progress: number;
+    model: Record<string, unknown>;
+    result?: Record<string, unknown>;
+    error?: string;
+    errorCode?: string;
+    errorDetails?: Array<{
+        type: string;
+        message: string;
+        elementIds?: string[];
+    }>;
+    nodeCount: number;
+    memberCount: number;
+    createdAt: Date;
+    updatedAt: Date;
+    completedAt?: Date;
+}
+
+const AnalysisJobSchema = new Schema<IAnalysisJob>({
+    jobId: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true,
+    },
+    userId: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'running', 'completed', 'failed'],
+        default: 'pending',
+    },
+    progress: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
+    },
+    model: {
+        type: Schema.Types.Mixed,
+        required: true,
+    },
+    result: {
+        type: Schema.Types.Mixed,
+        default: null,
+    },
+    error: {
+        type: String,
+        default: null,
+    },
+    errorCode: {
+        type: String,
+        default: null,
+    },
+    errorDetails: [{
+        type: {
+            type: String,
+            required: true,
+        },
+        message: {
+            type: String,
+            required: true,
+        },
+        elementIds: {
+            type: [String],
+            default: [],
+        },
+    }],
+    nodeCount: {
+        type: Number,
+        default: 0,
+    },
+    memberCount: {
+        type: Number,
+        default: 0,
+    },
+    completedAt: {
+        type: Date,
+        default: null,
+    },
+}, {
+    timestamps: true,
+});
+
+// TTL index: auto-delete completed/failed jobs after 24 hours
+AnalysisJobSchema.index({ completedAt: 1 }, { expireAfterSeconds: 86400, partialFilterExpression: { completedAt: { $exists: true } } });
+AnalysisJobSchema.index({ userId: 1, status: 1 });
+AnalysisJobSchema.index({ status: 1, createdAt: -1 });
+
+export const AnalysisJob = mongoose.model<IAnalysisJob>('AnalysisJob', AnalysisJobSchema);
+
 
 // ============================================
 // DATABASE CONNECTION
@@ -610,4 +711,4 @@ export async function disconnectDB(): Promise<void> {
     console.log('📤 MongoDB disconnected');
 }
 
-export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, Consent, AISession, connectDB, disconnectDB };
+export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, Consent, AISession, AnalysisJob, connectDB, disconnectDB };

@@ -1,4 +1,4 @@
-import { FC, ReactNode, useState, useRef, useId } from 'react';
+import { FC, ReactNode, useState, useRef, useId, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 interface TooltipProps {
@@ -27,6 +27,15 @@ export const Tooltip: FC<TooltipProps> = ({
     const timeoutRef = useRef<number>();
     const hideTimeoutRef = useRef<number>();
     const tooltipId = useId();
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        setPrefersReducedMotion(mq.matches);
+        const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
 
     const showTooltip = () => {
         if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
@@ -118,7 +127,7 @@ export const Tooltip: FC<TooltipProps> = ({
                         top: position.top,
                         left: position.left,
                         transform: getTransform(),
-                        animation: 'tooltipIn 150ms ease-out',
+                        animation: prefersReducedMotion ? 'none' : 'tooltipIn 150ms ease-out',
                     }}
                 >
                     <div style={getArrowStyle()} />

@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "../../lib/utils";
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'elevated' | 'interactive' | 'outlined';
+  variant?: 'default' | 'elevated' | 'interactive' | 'outlined' | 'glass' | 'metric';
 }
 
 const variantClasses: Record<NonNullable<CardProps['variant']>, string> = {
@@ -10,6 +10,8 @@ const variantClasses: Record<NonNullable<CardProps['variant']>, string> = {
   elevated: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-lg shadow-black/20',
   interactive: 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-500/30 hover:bg-slate-100/80 dark:hover:bg-slate-700/80 hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:translate-y-0 active:shadow-sm',
   outlined: 'bg-transparent border-slate-200 dark:border-slate-700',
+  glass: 'bg-slate-100/60 dark:bg-[rgba(30,41,59,0.6)] border-slate-200/50 dark:border-white/[0.08] backdrop-blur-md',
+  metric: 'bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800 dark:to-blue-900/20 border-blue-200/50 dark:border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:shadow-[0_0_20px_rgba(59,130,246,0.2)] hover:scale-[1.02]',
 };
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
@@ -25,7 +27,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         role={resolvedRole}
         tabIndex={resolvedTabIndex}
         className={cn(
-          'rounded-xl border text-slate-800 dark:text-slate-100 transition-all duration-200',
+          'rounded-lg border text-slate-800 dark:text-slate-100 transition-all duration-200',
           variantClasses[variant],
           className
         )}

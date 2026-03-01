@@ -277,13 +277,15 @@ export const shadows = {
 
 export const animation = {
   duration: {
+    instant: '75ms',
     fastest: '50ms',
     faster: '100ms',
     fast: '150ms',
-    normal: '200ms',
-    slow: '300ms',
-    slower: '400ms',
-    slowest: '500ms',
+    normal: '250ms',
+    slow: '400ms',
+    slower: '600ms',
+    slowest: '1000ms',
+    loop: '2000ms',
   },
   
   easing: {
@@ -293,6 +295,8 @@ export const animation = {
     inOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
     bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
     elastic: 'cubic-bezier(0.5, 1.5, 0.5, 1)',
+    spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+    overshoot: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
   },
   
   keyframes: {

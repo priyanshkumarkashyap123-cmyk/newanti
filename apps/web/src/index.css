@@ -397,6 +397,7 @@ html:not(.dark) textarea::placeholder {
   --duration-slow: 400ms;
   --duration-slower: 600ms;
   --duration-slowest: 1000ms;
+  --duration-dramatic: 1000ms;
   --duration-loop: 2000ms;
 
   /* Easing tokens */
@@ -573,6 +574,16 @@ html:not(.dark) textarea::placeholder {
   }
 }
 
+/* RUN ANALYSIS button pulsing glow — Figma §6.3 */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 4px 0 rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.5);
+  }
+}
+
 @keyframes skeletonPulse {
   0%,
   100% {
@@ -733,27 +744,27 @@ html:not(.dark) textarea::placeholder {
   pointer-events: none;
 }
 
-/* Skeleton loading placeholder */
+/* Skeleton loading placeholder — Figma §2.12 shimmer */
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.05) 100%
+    rgb(30 41 59) 25%,
+    rgb(51 65 85) 37%,
+    rgb(30 41 59) 63%
   );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease infinite;
+  background-size: 400% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 4px;
 }
 
 html:not(.dark) .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.06) 0%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.06) 100%
+    rgb(241 245 249) 25%,
+    rgb(226 232 240) 37%,
+    rgb(241 245 249) 63%
   );
-  background-size: 200% 100%;
+  background-size: 400% 100%;
 }
 
 /* Animated gradient background */

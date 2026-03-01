@@ -93,6 +93,57 @@ export const ERROR_CODES = {
 };
 
 // ============================================
+// BACKEND → FRONTEND ERROR CODE MAPPING
+// Maps backend errorCode strings to local ERROR_CODES
+// ============================================
+
+export const BACKEND_ERROR_MAP: Record<string, string> = {
+    'SINGULAR_MATRIX':     ERROR_CODES.ANALYSIS_SINGULAR_MATRIX,
+    'ANALYSIS_TIMEOUT':    ERROR_CODES.ANALYSIS_TIMEOUT,
+    'OUT_OF_MEMORY':       ERROR_CODES.ANALYSIS_CONVERGENCE_FAILED,
+    'ANALYSIS_UNKNOWN':    ERROR_CODES.ANALYSIS_CONVERGENCE_FAILED,
+    'SERVER_RESTART':      ERROR_CODES.NETWORK_SERVER_ERROR,
+};
+
+/**
+ * Convert a backend error code + details into a StructuredError.
+ * Preserves elementIds for 3D highlighting.
+ */
+export function mapBackendAnalysisError(
+    backendCode?: string,
+    backendDetails?: Array<{ type: string; message: string; elementIds?: string[] }>,
+    rawError?: string,
+): {
+    code: string;
+    userMessage: string;
+    elementIds: string[];
+    details: Array<{ type: string; message: string; elementIds?: string[] }>;
+} {
+    const code = backendCode
+        ? (BACKEND_ERROR_MAP[backendCode] || ERROR_CODES.ANALYSIS_CONVERGENCE_FAILED)
+        : ERROR_CODES.ANALYSIS_CONVERGENCE_FAILED;
+
+    const userMessage = USER_MESSAGES[code] || rawError || 'An unexpected analysis error occurred.';
+
+    // Collect all element IDs across all error details for 3D highlighting
+    const elementIds: string[] = [];
+    if (backendDetails) {
+        for (const detail of backendDetails) {
+            if (detail.elementIds?.length) {
+                elementIds.push(...detail.elementIds);
+            }
+        }
+    }
+
+    return {
+        code,
+        userMessage,
+        elementIds,
+        details: backendDetails || [],
+    };
+}
+
+// ============================================
 // USER-FRIENDLY MESSAGES
 // ============================================
 

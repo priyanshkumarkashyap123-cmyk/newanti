@@ -33,18 +33,18 @@ const VIEWS = [
 ] as const;
 
 const ViewCube: FC<{ activeView: string; onViewChange: (view: string) => void }> = memo(({ activeView, onViewChange }) => (
-  <div className="flex flex-col gap-0.5">
+  <div className="flex flex-col gap-0.5 w-20">
     <div className="text-[7px] text-slate-500 uppercase tracking-widest font-bold text-center mb-0.5">
       View
     </div>
-    <div className="grid grid-cols-3 gap-0.5">
+    <div className="grid grid-cols-3 gap-px">
       {VIEWS.map((v) => (
         <button
           key={v.id}
           onClick={() => onViewChange(v.id)}
           title={v.label}
           className={`
-            w-8 h-8 rounded-md text-[9px] font-bold
+            w-[26px] h-[26px] rounded text-[9px] font-bold
             border transition-all duration-100 active:scale-95
             flex items-center justify-center
             ${activeView === v.id

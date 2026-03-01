@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import {
   Box,
   Layers,
@@ -9,6 +9,8 @@ import {
   BarChart3,
   Ruler,
   Globe,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { Category, useUIStore } from "../../store/uiStore";
 
@@ -23,6 +25,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   onCategoryChange,
 }) => {
   const { openModal, activeStep, setActiveStep } = useUIStore();
+  const [collapsed, setCollapsed] = useState(false);
 
   const workflowItems = [
     { id: "MODELING", label: "Geometry", icon: Box, subtext: "Nodes & Beams" },
@@ -101,22 +104,35 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   };
 
   return (
-    <div className="h-full w-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-800/60">
+    <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-800/60 transition-all duration-250 ease-in-out ${collapsed ? 'w-12' : 'w-full'}`}>
       {/* Header */}
-      <div className="px-3 py-3 border-b border-slate-800/60 bg-white dark:bg-slate-950">
-        <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-          Workflow
-        </h2>
-        <div className="text-[9px] text-slate-600 mt-0.5 font-mono">
-          ANALYTICAL MODELING
-        </div>
+      <div className={`border-b border-slate-800/60 bg-white dark:bg-slate-950 flex items-center ${collapsed ? 'px-1.5 py-3 justify-center' : 'px-3 py-3 justify-between'}`}>
+        {!collapsed && (
+          <div>
+            <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+              Workflow
+            </h2>
+            <div className="text-[9px] text-slate-600 mt-0.5 font-mono">
+              ANALYTICAL MODELING
+            </div>
+          </div>
+        )}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-1 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800/60 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronsRight className="w-3.5 h-3.5" /> : <ChevronsLeft className="w-3.5 h-3.5" />}
+        </button>
       </div>
 
       {/* Workflow Steps */}
       <div className="flex-1 overflow-y-auto py-1.5 eng-scroll">
-        <div className="flex flex-col gap-0.5 px-1.5">
+        <div className={`flex flex-col gap-0.5 ${collapsed ? 'px-0.5 items-center' : 'px-1.5'}`}>
           {workflowItems.map((item, index) => {
             const isActive = activeStep === item.id;
+            const Icon = item.icon;
 
             return (
               <button
@@ -124,8 +140,9 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 onClick={() => handleClick(item.id)}
                 aria-label={item.label}
                 aria-current={isActive ? "step" : undefined}
+                title={collapsed ? `${item.label} — ${item.subtext}` : undefined}
                 className={`
-                    relative group flex items-center gap-2.5 px-2.5 h-8 rounded-md text-left transition-all
+                    relative group flex items-center ${collapsed ? 'justify-center w-9 h-9' : 'gap-2.5 px-2.5 h-8'} rounded-md text-left transition-all duration-150 ease-in-out
                     ${
                       isActive
                         ? "bg-blue-500/10 text-blue-400 border-l-2 border-blue-500"
@@ -133,26 +150,33 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                     }
                 `}
               >
-                {/* Step number */}
-                <div
-                  className={`
-                    w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-colors flex-shrink-0
-                    ${isActive ? "bg-blue-500/20 text-blue-400" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
-                  `}
-                  aria-hidden="true"
-                >
-                  {index + 1}
-                </div>
-                <div className="flex flex-col items-start min-w-0">
-                  <span className="text-[12px] font-semibold leading-none truncate">
-                    {item.label}
-                  </span>
-                  <span
-                    className={`text-[12px] mt-1 leading-none truncate ${isActive ? "text-blue-300" : "text-slate-600"}`}
-                  >
-                    {item.subtext}
-                  </span>
-                </div>
+                {collapsed ? (
+                  /* Collapsed: icon only */
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
+                ) : (
+                  <>
+                    {/* Step number */}
+                    <div
+                      className={`
+                        w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-colors flex-shrink-0
+                        ${isActive ? "bg-blue-500/20 text-blue-400" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
+                      `}
+                      aria-hidden="true"
+                    >
+                      {index + 1}
+                    </div>
+                    <div className="flex flex-col items-start min-w-0">
+                      <span className="text-[12px] font-semibold leading-none truncate">
+                        {item.label}
+                      </span>
+                      <span
+                        className={`text-[10px] mt-1 leading-none truncate pl-0.5 ${isActive ? "text-blue-300/70" : "text-slate-500 dark:text-slate-600"}`}
+                      >
+                        {item.subtext}
+                      </span>
+                    </div>
+                  </>
+                )}
 
                 {/* Active Indicator Bar */}
                 {isActive && (
@@ -168,17 +192,25 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       </div>
 
       {/* Bottom Section */}
-      <div className="px-3 py-2.5 bg-white dark:bg-slate-950 border-t border-slate-800/60">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] text-slate-600">Connection</span>
-          <span className="text-[10px] text-emerald-500 flex items-center gap-1.5">
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
-              aria-hidden="true"
-            />
-            Online
-          </span>
-        </div>
+      <div className={`bg-white dark:bg-slate-950 border-t border-slate-800/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
+        {collapsed ? (
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+            title="Online"
+            aria-label="Connection: Online"
+          />
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-slate-600">Connection</span>
+            <span className="text-[10px] text-emerald-500 flex items-center gap-1.5">
+              <span
+                className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+                aria-hidden="true"
+              />
+              Online
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

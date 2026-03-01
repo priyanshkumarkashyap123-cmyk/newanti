@@ -49,6 +49,8 @@ export const StatusBadge: FC<StatusBadgeProps> = ({
 }) => {
     return (
         <span
+            role="status"
+            aria-live="polite"
             className={`
                 inline-flex items-center gap-1 rounded font-bold border
                 ${variantStyles[variant]}

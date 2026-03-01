@@ -419,6 +419,17 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
     const analysisResults = useModelStore((state) => state.analysisResults);
     const { activeCategory, activeTool, showGrid, snapToGrid, gridSize } = useUIStore();
 
+    // Zoom level display — listens to camera zoom events (Figma §6.1 zone D)
+    const [zoomLevel, setZoomLevel] = useState(100);
+    useEffect(() => {
+      const onZoomChange = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.zoom != null) setZoomLevel(Math.round(detail.zoom));
+      };
+      document.addEventListener('zoom-changed', onZoomChange);
+      return () => document.removeEventListener('zoom-changed', onZoomChange);
+    }, []);
+
     const backendHealthConfigs = useMemo(
       () => [
         { name: "Node", url: `${API_CONFIG.baseUrl}/health`, timeout: 3500 },
@@ -540,6 +551,14 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
           <span>
             <span className="text-slate-600">Units:</span>{" "}
             <span className="text-slate-500 dark:text-slate-400">kN, m</span>
+          </span>
+
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+
+          {/* Zoom Level — Figma §6.1 zone D */}
+          <span>
+            <span className="text-slate-600">Zoom:</span>{" "}
+            <span className="text-slate-500 dark:text-slate-400 font-mono">{zoomLevel}%</span>
           </span>
 
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
@@ -2934,6 +2953,13 @@ export const ModernModeler: FC = () => {
       onServerUpdate={handleServerUpdate}
     >
       <div className="h-screen w-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden relative">
+        {/* Skip to main content — Figma §22.2 accessibility */}
+        <a
+          href="#main-viewport"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-1/2 focus:-translate-x-1/2 focus:z-[9999] focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-b-lg focus:text-sm focus:font-medium"
+        >
+          Skip to main content
+        </a>
         <MultiplayerUI />
         {/* Top Bar - Compact Header */}
         <header className="h-9 bg-white/90 dark:bg-slate-900 backdrop-blur-sm border-b border-slate-800/60 flex items-center justify-between px-4 flex-shrink-0 select-none">
@@ -3014,6 +3040,7 @@ export const ModernModeler: FC = () => {
 
             {/* 3D Canvas Area */}
             <div
+              id="main-viewport"
               className="flex-1 bg-white dark:bg-slate-950 relative min-h-0"
               onContextMenu={(e) => {
                 // Determine what was clicked and show appropriate context menu

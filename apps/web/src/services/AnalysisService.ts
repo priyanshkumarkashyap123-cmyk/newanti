@@ -88,6 +88,13 @@ export interface LoadData {
   mz?: number;
 }
 
+/** Structured error detail from backend analysis diagnosis */
+export interface AnalysisErrorDetail {
+  type: string;
+  message: string;
+  elementIds?: string[];
+}
+
 export interface AnalysisResult {
   success: boolean;
   displacements?: Record<string, number[]>;
@@ -109,6 +116,10 @@ export interface AnalysisResult {
     fallbackFromLocal?: boolean; // True if cloud was used after local solver failed
   };
   error?: string;
+  /** Machine-readable error code from backend (e.g. SINGULAR_MATRIX, ANALYSIS_TIMEOUT) */
+  errorCode?: string;
+  /** Structured diagnostic details with element IDs for 3D highlighting */
+  errorDetails?: AnalysisErrorDetail[];
 }
 
 export type AnalysisStage =
@@ -562,6 +573,8 @@ class AnalysisService {
             resolve({
               success: false,
               error: response.error || "Worker cloud analysis failed",
+              errorCode: response.errorCode,
+              errorDetails: response.errorDetails,
             });
             return;
           }
@@ -692,7 +705,12 @@ class AnalysisService {
           }
 
           if (job.status === "failed") {
-            return { success: false, error: job.error || "Analysis failed" };
+            return {
+              success: false,
+              error: job.error || "Analysis failed",
+              errorCode: job.errorCode,
+              errorDetails: job.errorDetails,
+            };
           }
 
           // Update progress - ensure valid range

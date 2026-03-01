@@ -62,7 +62,7 @@ const rippleCSS = `
 const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5',
-        'rounded-md text-sm font-medium',
+        'rounded-md text-sm font-medium tracking-[0.01em]',
         'transition-all duration-150 ease-[cubic-bezier(0.4,0,0.2,1)]',
         'hover:-translate-y-px active:translate-y-0 active:scale-[0.98]',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
@@ -78,9 +78,9 @@ const buttonVariants = cva(
             variant: {
                 /* ---- core ---- */
                 default: [
-                    'bg-blue-500 text-white hover:bg-blue-600',
+                    'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
                     'shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/30',
-                    'focus-visible:ring-blue-400',
+                    'focus-visible:ring-blue-500',
                 ].join(' '),
                 destructive: [
                     'bg-red-600 text-white hover:bg-red-700',

@@ -3,7 +3,7 @@
  * Used for mesh density, quality settings, and numerical ranges
  */
 
-import { FC } from 'react';
+import { FC, useId } from 'react';
 
 export interface RangeSliderProps {
     label: string;
@@ -30,6 +30,8 @@ export const RangeSlider: FC<RangeSliderProps> = ({
     disabled = false,
     unit,
 }) => {
+    const id = useId();
+    const sliderId = `range-slider-${id}`;
     // Calculate percentage for gradient
     const percentage = ((value - min) / (max - min)) * 100;
 
@@ -37,13 +39,14 @@ export const RangeSlider: FC<RangeSliderProps> = ({
         <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                    <label className="text-slate-900 dark:text-white text-base font-medium">{label}</label>
+                    <label htmlFor={sliderId} className="text-slate-900 dark:text-white text-base font-medium">{label}</label>
                     <span className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 text-xs font-bold uppercase">
                         {valueLabel}{unit && ` ${unit}`}
                     </span>
                 </div>
                 <div className="relative h-10 flex items-center">
                     <input
+                        id={sliderId}
                         type="range"
                         min={min}
                         max={max}
@@ -51,6 +54,10 @@ export const RangeSlider: FC<RangeSliderProps> = ({
                         value={value}
                         onChange={(e) => onChange(Number(e.target.value))}
                         disabled={disabled}
+                        aria-valuemin={min}
+                        aria-valuemax={max}
+                        aria-valuenow={value}
+                        aria-valuetext={`${valueLabel}${unit ? ` ${unit}` : ''}`}
                         className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-blue-500"
                         style={{
                             background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${percentage}%, #3f3f46 ${percentage}%, #3f3f46 100%)`,

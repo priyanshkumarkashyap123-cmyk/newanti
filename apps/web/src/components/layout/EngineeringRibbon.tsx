@@ -447,13 +447,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory }) => {
       <ToolGroup label="Run">
         <ToolButton
           icon={Play}
-          label="Analyze"
+          label="RUN ANALYSIS"
           onClick={() => document.dispatchEvent(new CustomEvent("trigger-analysis"))}
           isActive={isAnalyzing}
           tooltip="Run Linear Static Analysis"
           shortcut="F5"
           size="large"
-          accent={isAnalyzing ? "text-yellow-400 animate-pulse" : "bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 shadow-lg shadow-emerald-500/20"}
+          accent={isAnalyzing ? "text-yellow-400 animate-pulse" : "bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-400/40 animate-[pulse-glow_2s_ease-in-out_infinite]"}
         />
         <StackedButtons>
           <MiniButton

@@ -319,7 +319,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
 
                                         {/* Message Content */}
                                         <div className={`rounded-2xl px-4 py-3 ${message.role === 'user'
-                                                ? 'bg-blue-600 text-white'
+                                                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
                                                 : 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 border-l-[3px] border-l-blue-500 text-slate-800 dark:text-slate-200'
                                             }`}>
                                             <div className="text-sm whitespace-pre-wrap">{message.content}</div>

@@ -3896,14 +3896,40 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Cloud solver error (${response.status}): ${errText}`);
+        let errText: string;
+        let errCode: string | undefined;
+        let errDetails: any[] | undefined;
+        try {
+          const errJson = await response.json();
+          errText = errJson.error || `Cloud solver error (${response.status})`;
+          errCode = errJson.errorCode;
+          errDetails = errJson.errorDetails;
+        } catch {
+          errText = await response.text().catch(() => `HTTP ${response.status}`);
+        }
+        self.postMessage({
+          type: "result",
+          requestId: request.requestId,
+          success: false,
+          error: errText,
+          errorCode: errCode,
+          errorDetails: errDetails,
+        });
+        return;
       }
 
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error || "Unknown solver error");
+        self.postMessage({
+          type: "result",
+          requestId: request.requestId,
+          success: false,
+          error: result.error || "Unknown solver error",
+          errorCode: result.errorCode,
+          errorDetails: result.errorDetails,
+        });
+        return;
       }
 
       self.postMessage({

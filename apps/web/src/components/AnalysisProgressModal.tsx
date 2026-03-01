@@ -165,7 +165,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                                         ) : isErrorStage ? (
                                             <AlertTriangle className="w-3 h-3" />
                                         ) : (
-                                            <span className="text-xs">{index + 1}</span>
+                                            <div className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500" />
                                         )}
                                     </div>
                                     <span className={`

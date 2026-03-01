@@ -105,13 +105,82 @@ const USER_COLORS = [
 // SOCKET SERVER CLASS
 // ============================================
 
+/**
+ * Per-socket rate limiter — sliding window counter per event type.
+ * Drops events silently if the rate exceeds the configured limit.
+ */
+class SocketRateLimiter {
+    /** Map<socketId:eventType, { count, windowStart }> */
+    private windows: Map<string, { count: number; windowStart: number }> = new Map();
+    /** Limits: { eventType → maxPerSecond } */
+    private limits: Record<string, number>;
+
+    constructor(limits: Record<string, number>) {
+        this.limits = limits;
+        // Purge stale entries every 30s to prevent memory leak
+        setInterval(() => {
+            const now = Date.now();
+            for (const [key, val] of this.windows) {
+                if (now - val.windowStart > 5000) {
+                    this.windows.delete(key);
+                }
+            }
+        }, 30_000);
+    }
+
+    /** Returns true if event should be ALLOWED, false if rate-limited */
+    allow(socketId: string, eventType: string): boolean {
+        const limit = this.limits[eventType];
+        if (limit === undefined) return true; // No limit configured
+
+        const key = `${socketId}:${eventType}`;
+        const now = Date.now();
+        const entry = this.windows.get(key);
+
+        if (!entry || now - entry.windowStart >= 1000) {
+            // Start new 1-second window
+            this.windows.set(key, { count: 1, windowStart: now });
+            return true;
+        }
+
+        entry.count++;
+        if (entry.count > limit) {
+            return false; // Rate limited
+        }
+        return true;
+    }
+
+    /** Clean up all entries for a disconnected socket */
+    removeSocket(socketId: string): void {
+        for (const key of this.windows.keys()) {
+            if (key.startsWith(`${socketId}:`)) {
+                this.windows.delete(key);
+            }
+        }
+    }
+}
+
 export class SocketServer {
     private io: SocketIOServer;
     private users: Map<string, User> = new Map();
     private projects: Map<string, ProjectState> = new Map();
     private colorIndex: number = 0;
+    private rateLimiter: SocketRateLimiter;
 
     constructor(httpServer: HTTPServer) {
+        // Per-event rate limits (events per second per socket)
+        this.rateLimiter = new SocketRateLimiter({
+            cursor_move: 60,       // 60 cursor updates/sec max
+            update_node: 10,       // 10 structural edits/sec max
+            update_member: 10,
+            update_load: 10,
+            delete_node: 10,
+            delete_member: 10,
+            delete_load: 10,
+            analysis_started: 2,
+            analysis_complete: 2,
+        });
+
         // Build CORS origin list from shared config
         const allOrigins = getAllowedOrigins();
 
@@ -158,6 +227,14 @@ export class SocketServer {
         this.io.on('connection', (socket: Socket) => {
             console.log(`👤 User connected: ${socket.id}`);
 
+            /** Rate-limited event handler — silently drops events over the limit */
+            const onLimited = <T>(event: string, handler: (data: T) => void) => {
+                socket.on(event, (data: T) => {
+                    if (!this.rateLimiter.allow(socket.id, event)) return;
+                    handler(data);
+                });
+            };
+
             // Create user with assigned color
             const user: User = {
                 id: socket.id,
@@ -192,27 +269,27 @@ export class SocketServer {
             // MODEL UPDATE EVENTS
             // ========================================
 
-            socket.on('update_node', (data: NodeUpdate) => {
+            onLimited<NodeUpdate>('update_node', (data) => {
                 this.handleNodeUpdate(socket, data);
             });
 
-            socket.on('delete_node', (data: { nodeId: string; userId: string }) => {
+            onLimited<{ nodeId: string; userId: string }>('delete_node', (data) => {
                 this.handleDeleteNode(socket, data);
             });
 
-            socket.on('update_member', (data: MemberUpdate) => {
+            onLimited<MemberUpdate>('update_member', (data) => {
                 this.handleMemberUpdate(socket, data);
             });
 
-            socket.on('delete_member', (data: { memberId: string; userId: string }) => {
+            onLimited<{ memberId: string; userId: string }>('delete_member', (data) => {
                 this.handleDeleteMember(socket, data);
             });
 
-            socket.on('update_load', (data: LoadUpdate) => {
+            onLimited<LoadUpdate>('update_load', (data) => {
                 this.handleLoadUpdate(socket, data);
             });
 
-            socket.on('delete_load', (data: { loadId: string; userId: string }) => {
+            onLimited<{ loadId: string; userId: string }>('delete_load', (data) => {
                 this.handleDeleteLoad(socket, data);
             });
 
@@ -220,7 +297,7 @@ export class SocketServer {
             // CURSOR TRACKING
             // ========================================
 
-            socket.on('cursor_move', (data: CursorPosition) => {
+            onLimited<CursorPosition>('cursor_move', (data) => {
                 this.handleCursorMove(socket, data);
             });
 
@@ -228,7 +305,7 @@ export class SocketServer {
             // ANALYSIS EVENTS
             // ========================================
 
-            socket.on('analysis_started', (data: { userId: string }) => {
+            onLimited<{ userId: string }>('analysis_started', (data) => {
                 const user = this.users.get(socket.id);
                 if (user?.projectId) {
                     socket.to(user.projectId).emit('analysis_started', {
@@ -238,7 +315,7 @@ export class SocketServer {
                 }
             });
 
-            socket.on('analysis_complete', (data: { results: any; userId: string }) => {
+            onLimited<{ results: any; userId: string }>('analysis_complete', (data) => {
                 const user = this.users.get(socket.id);
                 if (user?.projectId) {
                     socket.to(user.projectId).emit('analysis_complete', {
@@ -497,6 +574,9 @@ export class SocketServer {
      */
     private handleDisconnect(socket: Socket): void {
         const user = this.users.get(socket.id);
+
+        // Clean up rate limiter state for this socket
+        this.rateLimiter.removeSocket(socket.id);
 
         if (user) {
             if (user.projectId) {

@@ -3,12 +3,17 @@
  *
  * CANONICAL OWNER: Rust API (fastest solver - 50-100x vs Node)
  * This file is a THIN PROXY. No solver code runs in Node.js.
+ *
+ * Jobs are persisted to MongoDB so they survive server restarts.
+ * Completed/failed jobs auto-expire after 24 hours via TTL index.
  */
 
 import express, { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { rustProxy } from "../../services/serviceProxy.js";
 import { validateBody, analyzeRequestSchema } from "../../middleware/validation.js";
+import { AnalysisJob } from "../../models.js";
+import { getAuth } from "../../middleware/authMiddleware.js";
 
 const router: Router = express.Router();
 
@@ -46,18 +51,97 @@ interface AnalyzeRequest {
     };
 }
 
-interface JobStatus {
-    id: string;
-    status: "pending" | "running" | "completed" | "failed";
-    progress?: number;
-    result?: any;
-    error?: string;
-    createdAt: Date;
-    completedAt?: Date;
+// ============================================
+// ERROR PARSING — extract structured diagnosis from Rust errors
+// ============================================
+
+interface AnalysisErrorDetail {
+    type: string;
+    message: string;
+    elementIds?: string[];
 }
 
-// In-memory job store (use Redis in production)
-const jobs = new Map<string, JobStatus>();
+function parseAnalysisError(error: string, model: AnalyzeRequest): {
+    errorCode: string;
+    details: AnalysisErrorDetail[];
+} {
+    const details: AnalysisErrorDetail[] = [];
+    let errorCode = "ANALYSIS_UNKNOWN";
+
+    const lowerError = error.toLowerCase();
+
+    if (lowerError.includes("singular") || lowerError.includes("ill-conditioned")) {
+        errorCode = "SINGULAR_MATRIX";
+
+        // Check for insufficient supports
+        const supportedNodes = model.nodes.filter(
+            (n) => n.restraints && (n.restraints.fx || n.restraints.fy || n.restraints.fz)
+        );
+        if (supportedNodes.length < 2) {
+            details.push({
+                type: "insufficient_supports",
+                message: `Only ${supportedNodes.length} node(s) have boundary conditions. A stable structure typically needs at least 2 supported nodes.`,
+                elementIds: supportedNodes.map((n) => n.id),
+            });
+        }
+
+        // Check for disconnected members
+        const nodeConnections = new Map<string, number>();
+        for (const m of model.members) {
+            nodeConnections.set(m.startNodeId, (nodeConnections.get(m.startNodeId) || 0) + 1);
+            nodeConnections.set(m.endNodeId, (nodeConnections.get(m.endNodeId) || 0) + 1);
+        }
+        const isolatedNodes = model.nodes.filter(
+            (n) => !nodeConnections.has(n.id) || nodeConnections.get(n.id) === 0
+        );
+        if (isolatedNodes.length > 0) {
+            details.push({
+                type: "disconnected_nodes",
+                message: `${isolatedNodes.length} node(s) are not connected to any member.`,
+                elementIds: isolatedNodes.map((n) => n.id),
+            });
+        }
+
+        // Check for zero-length members
+        const zeroLengthMembers = model.members.filter((m) => {
+            const start = model.nodes.find((n) => n.id === m.startNodeId);
+            const end = model.nodes.find((n) => n.id === m.endNodeId);
+            if (!start || !end) return false;
+            const dx = end.x - start.x;
+            const dy = end.y - start.y;
+            const dz = end.z - start.z;
+            return Math.sqrt(dx * dx + dy * dy + dz * dz) < 1e-6;
+        });
+        if (zeroLengthMembers.length > 0) {
+            details.push({
+                type: "zero_length_members",
+                message: `${zeroLengthMembers.length} member(s) have zero or near-zero length.`,
+                elementIds: zeroLengthMembers.map((m) => m.id),
+            });
+        }
+    } else if (lowerError.includes("timeout") || lowerError.includes("timed out")) {
+        errorCode = "ANALYSIS_TIMEOUT";
+        details.push({
+            type: "timeout",
+            message: "The analysis took too long and was cancelled. Try reducing model size or simplifying the geometry.",
+        });
+    } else if (lowerError.includes("memory") || lowerError.includes("allocation")) {
+        errorCode = "OUT_OF_MEMORY";
+        details.push({
+            type: "memory",
+            message: `Model with ${model.nodes.length} nodes and ${model.members.length} members exceeded memory limits. Try reducing model complexity.`,
+        });
+    }
+
+    if (details.length === 0) {
+        details.push({
+            type: "unknown",
+            message: error,
+        });
+    }
+
+    return { errorCode, details };
+}
 
 // ============================================
 // CORE HANDLER - Proxies to Rust API
@@ -66,14 +150,40 @@ const jobs = new Map<string, JobStatus>();
 async function handleAnalysisRequest(req: Request, res: Response): Promise<void> {
     const model = req.body as AnalyzeRequest;
     const nodeCount = model.nodes?.length || 0;
+    const memberCount = model.members?.length || 0;
 
-    console.log(`[Analysis] -> Rust API | ${nodeCount} nodes, ${model.members?.length || 0} members`);
+    console.log(`[Analysis] -> Rust API | ${nodeCount} nodes, ${memberCount} members`);
 
     // For very large models, use async job
     if (nodeCount > 5000) {
+        let userId = "anonymous";
+        try {
+            const auth = getAuth(req);
+            if (auth.userId) userId = auth.userId;
+        } catch { /* anonymous fallback */ }
+
         const jobId = uuidv4();
-        jobs.set(jobId, { id: jobId, status: "pending", createdAt: new Date() });
+
+        try {
+            await AnalysisJob.create({
+                jobId,
+                userId,
+                status: "pending",
+                model,
+                nodeCount,
+                memberCount,
+            });
+        } catch (dbErr) {
+            console.error("[Analysis] Failed to persist job:", dbErr);
+            res.status(500).json({
+                success: false,
+                error: "Failed to create analysis job",
+            });
+            return;
+        }
+
         runAnalysisAsync(jobId, model);
+
         res.status(202).json({
             success: true,
             jobId,
@@ -88,10 +198,14 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
     if (result.success) {
         res.json(result.data);
     } else {
-        console.error("[Analysis] Rust API error:", result.error);
+        const errorMsg = result.error || "Analysis failed";
+        const { errorCode, details } = parseAnalysisError(errorMsg, model);
+        console.error("[Analysis] Rust API error:", errorMsg, "| Code:", errorCode);
         res.status(result.status || 500).json({
             success: false,
-            error: result.error || "Analysis failed",
+            error: errorMsg,
+            errorCode,
+            errorDetails: details,
             service: "rust-api",
         });
     }
@@ -106,29 +220,63 @@ router.post("/solve", validateBody(analyzeRequestSchema), handleAnalysisRequest)
 /**
  * GET /analyze/job/:jobId - Poll for async job status
  */
-router.get("/job/:jobId", (req: Request, res: Response) => {
+router.get("/job/:jobId", async (req: Request, res: Response) => {
     const { jobId } = req.params;
     if (!jobId) {
         res.status(400).json({ success: false, error: "Missing jobId" });
         return;
     }
-    const job = jobs.get(jobId);
-    if (!job) {
-        res.status(404).json({ success: false, error: "Job not found" });
-        return;
+
+    try {
+        const job = await AnalysisJob.findOne({ jobId }).lean();
+        if (!job) {
+            res.status(404).json({ success: false, error: "Job not found" });
+            return;
+        }
+        res.json({
+            success: true,
+            job: {
+                id: job.jobId,
+                status: job.status,
+                progress: job.progress,
+                result: job.result,
+                error: job.error,
+                errorCode: job.errorCode,
+                errorDetails: job.errorDetails,
+                nodeCount: job.nodeCount,
+                memberCount: job.memberCount,
+                createdAt: job.createdAt,
+                completedAt: job.completedAt,
+            },
+        });
+    } catch (err) {
+        console.error("[Analysis] Job lookup error:", err);
+        res.status(500).json({ success: false, error: "Failed to retrieve job status" });
     }
-    res.json({
-        success: true,
-        job: {
-            id: job.id,
-            status: job.status,
-            progress: job.progress,
-            result: job.result,
-            error: job.error,
-            createdAt: job.createdAt,
-            completedAt: job.completedAt,
-        },
-    });
+});
+
+/**
+ * GET /analyze/jobs - List jobs for the current user
+ */
+router.get("/jobs", async (req: Request, res: Response) => {
+    let userId = "anonymous";
+    try {
+        const auth = getAuth(req);
+        if (auth.userId) userId = auth.userId;
+    } catch { /* anonymous fallback */ }
+
+    try {
+        const jobs = await AnalysisJob.find({ userId })
+            .select("jobId status progress nodeCount memberCount error errorCode createdAt completedAt")
+            .sort({ createdAt: -1 })
+            .limit(50)
+            .lean();
+
+        res.json({ success: true, jobs });
+    } catch (err) {
+        console.error("[Analysis] Jobs list error:", err);
+        res.status(500).json({ success: false, error: "Failed to list jobs" });
+    }
 });
 
 /**
@@ -170,35 +318,81 @@ router.post("/validate", (req: Request, res: Response) => {
 });
 
 // ============================================
-// ASYNC JOB RUNNER - Proxies to Rust API
+// ASYNC JOB RUNNER - Proxies to Rust API, persists to MongoDB
 // ============================================
 
 async function runAnalysisAsync(jobId: string, model: AnalyzeRequest): Promise<void> {
-    const job = jobs.get(jobId);
-    if (!job) return;
-
-    job.status = "running";
-    job.progress = 0;
+    try {
+        await AnalysisJob.updateOne({ jobId }, { $set: { status: "running", progress: 0 } });
+    } catch (err) {
+        console.error("[Analysis] Failed to update job status:", err);
+        return;
+    }
 
     try {
         const result = await rustProxy("POST", "/api/analyze", model, undefined, 300_000);
         if (result.success) {
-            job.status = "completed";
-            job.progress = 100;
-            job.result = result.data;
+            await AnalysisJob.updateOne(
+                { jobId },
+                {
+                    $set: {
+                        status: "completed",
+                        progress: 100,
+                        result: result.data,
+                        completedAt: new Date(),
+                    },
+                },
+            );
         } else {
-            job.status = "failed";
-            job.error = result.error || "Rust API analysis failed";
+            const errorMsg = result.error || "Rust API analysis failed";
+            const { errorCode, details } = parseAnalysisError(errorMsg, model);
+            await AnalysisJob.updateOne(
+                { jobId },
+                {
+                    $set: {
+                        status: "failed",
+                        error: errorMsg,
+                        errorCode,
+                        errorDetails: details,
+                        completedAt: new Date(),
+                    },
+                },
+            );
         }
-        job.completedAt = new Date();
     } catch (error) {
-        job.status = "failed";
-        job.error = error instanceof Error ? error.message : "Unknown error";
-        job.completedAt = new Date();
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        const { errorCode, details } = parseAnalysisError(errorMsg, model);
+        await AnalysisJob.updateOne(
+            { jobId },
+            {
+                $set: {
+                    status: "failed",
+                    error: errorMsg,
+                    errorCode,
+                    errorDetails: details,
+                    completedAt: new Date(),
+                },
+            },
+        ).catch((err) => console.error("[Analysis] Failed to save error state:", err));
     }
-
-    // Clean up after 1 hour
-    setTimeout(() => jobs.delete(jobId), 60 * 60 * 1000);
 }
+
+// ============================================
+// STARTUP — Recover stale "running" jobs from previous crashes
+// ============================================
+
+(async () => {
+    try {
+        const stale = await AnalysisJob.updateMany(
+            { status: "running" },
+            { $set: { status: "failed", error: "Server restarted during analysis", errorCode: "SERVER_RESTART", completedAt: new Date() } },
+        );
+        if (stale.modifiedCount > 0) {
+            console.log(`[Analysis] Recovered ${stale.modifiedCount} stale running job(s) from previous crash`);
+        }
+    } catch {
+        // MongoDB may not be connected yet — non-fatal
+    }
+})();
 
 export default router;

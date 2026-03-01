@@ -3,7 +3,7 @@
  * Animated tabs, breadcrumbs, pagination, and steppers
  */
 
-import { FC, ReactNode, useState, createContext, useContext } from 'react';
+import { FC, ReactNode, useState, createContext, useContext, useRef, useCallback, KeyboardEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, MoreHorizontal, Check, Circle } from 'lucide-react';
 
@@ -36,6 +36,8 @@ export const Tabs: FC<TabsProps> = ({
     size = 'md',
     className = '',
 }) => {
+    const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+
     const sizeClasses = {
         sm: 'text-sm py-2 px-3',
         md: 'text-sm py-2.5 px-4',
@@ -65,11 +67,63 @@ export const Tabs: FC<TabsProps> = ({
 
     const styles = variantStyles[variant];
 
+    const enabledTabs = tabs.filter((t) => !t.disabled);
+
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent<HTMLDivElement>) => {
+            const currentIndex = enabledTabs.findIndex((t) => t.id === activeTab);
+            let nextIndex = -1;
+
+            switch (e.key) {
+                case 'ArrowRight':
+                case 'ArrowDown':
+                    e.preventDefault();
+                    nextIndex = (currentIndex + 1) % enabledTabs.length;
+                    break;
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                    e.preventDefault();
+                    nextIndex = (currentIndex - 1 + enabledTabs.length) % enabledTabs.length;
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    nextIndex = 0;
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    nextIndex = enabledTabs.length - 1;
+                    break;
+                default:
+                    return;
+            }
+
+            const nextTab = enabledTabs[nextIndex];
+            if (nextTab) {
+                onTabChange(nextTab.id);
+                tabRefs.current.get(nextTab.id)?.focus();
+            }
+        },
+        [activeTab, enabledTabs, onTabChange],
+    );
+
     return (
-        <div className={`flex ${styles.container} ${className}`}>
+        <div
+            role="tablist"
+            aria-orientation="horizontal"
+            onKeyDown={handleKeyDown}
+            className={`flex ${styles.container} ${className}`}
+        >
             {tabs.map((tab) => (
                 <button
                     key={tab.id}
+                    ref={(el) => {
+                        if (el) tabRefs.current.set(tab.id, el);
+                    }}
+                    role="tab"
+                    id={`tab-${tab.id}`}
+                    aria-selected={activeTab === tab.id}
+                    aria-controls={`tabpanel-${tab.id}`}
+                    tabIndex={activeTab === tab.id ? 0 : -1}
                     onClick={() => !tab.disabled && onTabChange(tab.id)}
                     disabled={tab.disabled}
                     className={`
@@ -110,13 +164,19 @@ export const Tabs: FC<TabsProps> = ({
 interface TabPanelProps {
     children: ReactNode;
     isActive: boolean;
+    /** Must match the tab id to link role="tabpanel" with its role="tab" */
+    tabId?: string;
     className?: string;
 }
 
-export const TabPanel: FC<TabPanelProps> = ({ children, isActive, className = '' }) => (
+export const TabPanel: FC<TabPanelProps> = ({ children, isActive, tabId, className = '' }) => (
     <AnimatePresence mode="wait">
         {isActive && (
             <motion.div
+                role="tabpanel"
+                id={tabId ? `tabpanel-${tabId}` : undefined}
+                aria-labelledby={tabId ? `tab-${tabId}` : undefined}
+                tabIndex={0}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}

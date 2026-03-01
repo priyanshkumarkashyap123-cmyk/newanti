@@ -298,6 +298,11 @@ export const shadows = {
     xl: '0 20px 25px rgba(0,0,0,0.18), 0 8px 10px rgba(0,0,0,0.12)',
     '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
     inner: 'inset 0 2px 4px rgba(0,0,0,0.06)',
+    // Figma §1.4 elevation aliases
+    'elevation-1': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)',
+    'elevation-2': '0 4px 6px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08)',
+    'elevation-3': '0 10px 15px rgba(0,0,0,0.15), 0 4px 6px rgba(0,0,0,0.10)',
+    'elevation-4': '0 20px 25px rgba(0,0,0,0.18), 0 8px 10px rgba(0,0,0,0.12)',
     glow: '0 0 20px rgba(59, 130, 246, 0.3)',
     glowAccent: '0 0 20px rgba(168, 85, 247, 0.3)',
     glowSuccess: '0 0 20px rgba(34, 197, 94, 0.3)',
@@ -364,8 +369,9 @@ export const breakpoints = {
 export const components = {
     button: {
         primary: {
-            bg: colors.primary[500],
-            bgHover: colors.primary[600],
+            bg: colors.primary[600],       // #2563eb per Figma §2.1
+            bgHover: colors.primary[700],  // #1d4ed8 per Figma §2.1
+            bgActive: colors.primary[800], // #1e40af per Figma §2.1
             text: 'white',
         },
         secondary: {
