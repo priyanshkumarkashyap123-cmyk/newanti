@@ -129,58 +129,54 @@ async fn main() -> anyhow::Result<()> {
         .max_age(std::time::Duration::from_secs(86400));
 
     // Build the router
-    let app = Router::new()
-        // Health endpoints
+    // Public routes (no auth required)
+    let public_routes = Router::new()
         .route("/", get(handlers::health::root))
         .route("/health", get(handlers::health::health_check))
-        
+        .route("/api/openapi.yaml", get(handlers::openapi::serve_openapi))
+        // Section database (read-only, public)
+        .route("/api/sections", get(handlers::sections::list_sections))
+        .route("/api/sections/:id", get(handlers::sections::get_section))
+        .route("/api/sections/search", post(handlers::sections::search_sections))
+        // Template generation (read-only, public)
+        .route("/api/templates/beam", get(handlers::templates::beam_template))
+        .route("/api/templates/continuous-beam", get(handlers::templates::continuous_beam_template))
+        .route("/api/templates/truss", get(handlers::templates::truss_template))
+        .route("/api/templates/frame", get(handlers::templates::frame_template))
+        .route("/api/templates/portal", get(handlers::templates::portal_template))
+        // Performance metrics
+        .route("/api/metrics", get(handlers::metrics::get_metrics))
+        .route("/api/metrics/detailed", get(handlers::metrics::get_detailed_metrics));
+
+    // Protected routes (auth required)
+    let protected_routes = Router::new()
         // Analysis endpoints (high-performance)
         .route("/api/analyze", post(handlers::analysis::analyze))
         .route("/api/analyze/solve", post(handlers::analysis::analyze))
         .route("/api/analyze/batch", post(handlers::analysis::batch_analyze))
         .route("/api/analyze/stream", post(handlers::analysis::stream_analyze))
-        
         // Advanced analysis with Rust solver integration
         .route("/api/analysis/modal", post(handlers::analysis::modal_analysis))
         .route("/api/analysis/time-history", post(handlers::analysis::time_history_analysis))
         .route("/api/analysis/seismic", post(handlers::analysis::seismic_analysis))
-        // OpenAPI spec route for clients/tools
-        .route("/api/openapi.yaml", get(handlers::openapi::serve_openapi))
-        
         // Advanced analysis endpoints (Rust-native, high-performance)
         .route("/api/advanced/pdelta", post(handlers::advanced::pdelta_analysis))
         .route("/api/advanced/modal", post(handlers::advanced::modal_analysis))
         .route("/api/advanced/buckling", post(handlers::advanced::buckling_analysis))
         .route("/api/advanced/spectrum", post(handlers::advanced::spectrum_analysis))
         .route("/api/advanced/cable", post(handlers::advanced::cable_analysis))
-        
-        // Template generation endpoints (100x faster than Python)
-        .route("/api/templates/beam", get(handlers::templates::beam_template))
-        .route("/api/templates/continuous-beam", get(handlers::templates::continuous_beam_template))
-        .route("/api/templates/truss", get(handlers::templates::truss_template))
-        .route("/api/templates/frame", get(handlers::templates::frame_template))
-        .route("/api/templates/portal", get(handlers::templates::portal_template))
-        
         // Structure CRUD (fast database operations)
         .route("/api/structures", get(handlers::structures::list_structures))
         .route("/api/structures", post(handlers::structures::create_structure))
         .route("/api/structures/:id", get(handlers::structures::get_structure))
         .route("/api/structures/:id", axum::routing::put(handlers::structures::update_structure))
         .route("/api/structures/:id", axum::routing::delete(handlers::structures::delete_structure))
-        
-        // Section database
-        .route("/api/sections", get(handlers::sections::list_sections))
-        .route("/api/sections/:id", get(handlers::sections::get_section))
-        .route("/api/sections/search", post(handlers::sections::search_sections))
-        
-        // REMOVED: /api/design/* routes (canonical owner: Python backend)
-        // REMOVED: /api/jobs/* routes (canonical owner: Python backend)
-        
-        // Performance metrics
-        .route("/api/metrics", get(handlers::metrics::get_metrics))
-        .route("/api/metrics/detailed", get(handlers::metrics::get_detailed_metrics))
-        
-        // Add middleware
+        // Auth middleware applied to all protected routes
+        .layer(axum::middleware::from_fn(middleware::auth_middleware));
+
+    let app = public_routes
+        .merge(protected_routes)
+        // Global middleware (applied to all routes)
         .layer(axum::middleware::from_fn(middleware::security_headers_middleware))
         .layer(axum::middleware::from_fn(middleware::rate_limit_middleware))
         .layer(TraceLayer::new_for_http())

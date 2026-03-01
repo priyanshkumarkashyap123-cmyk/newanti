@@ -586,6 +586,46 @@ class FrameAssembler:
         
         return T
 
+    def _build_local_stiffness(self, E, A, Iy, Iz, G, J, L) -> np.ndarray:
+        """Build the 12x12 local stiffness matrix (no transformation)."""
+        L2 = L * L
+        EA_L = E * A / L
+        GJ_L = G * J / L
+        EIy_L = E * Iy / L
+        EIz_L = E * Iz / L
+
+        ke = np.zeros((12, 12))
+
+        # Axial
+        ke[0, 0] = EA_L;  ke[0, 6] = -EA_L
+        ke[6, 0] = -EA_L; ke[6, 6] = EA_L
+
+        # Torsion
+        ke[3, 3] = GJ_L;  ke[3, 9] = -GJ_L
+        ke[9, 3] = -GJ_L; ke[9, 9] = GJ_L
+
+        # Bending y
+        ke[2, 2] = 12 * EIy_L / L2;  ke[2, 4] = 6 * EIy_L / L
+        ke[2, 8] = -12 * EIy_L / L2; ke[2, 10] = 6 * EIy_L / L
+        ke[4, 2] = 6 * EIy_L / L;    ke[4, 4] = 4 * EIy_L
+        ke[4, 8] = -6 * EIy_L / L;   ke[4, 10] = 2 * EIy_L
+        ke[8, 2] = -12 * EIy_L / L2; ke[8, 4] = -6 * EIy_L / L
+        ke[8, 8] = 12 * EIy_L / L2;  ke[8, 10] = -6 * EIy_L / L
+        ke[10, 2] = 6 * EIy_L / L;   ke[10, 4] = 2 * EIy_L
+        ke[10, 8] = -6 * EIy_L / L;  ke[10, 10] = 4 * EIy_L
+
+        # Bending z
+        ke[1, 1] = 12 * EIz_L / L2;  ke[1, 5] = -6 * EIz_L / L
+        ke[1, 7] = -12 * EIz_L / L2; ke[1, 11] = -6 * EIz_L / L
+        ke[5, 1] = -6 * EIz_L / L;   ke[5, 5] = 4 * EIz_L
+        ke[5, 7] = 6 * EIz_L / L;    ke[5, 11] = 2 * EIz_L
+        ke[7, 1] = -12 * EIz_L / L2; ke[7, 5] = 6 * EIz_L / L
+        ke[7, 7] = 12 * EIz_L / L2;  ke[7, 11] = 6 * EIz_L / L
+        ke[11, 1] = -6 * EIz_L / L;  ke[11, 5] = 2 * EIz_L
+        ke[11, 7] = 6 * EIz_L / L;   ke[11, 11] = 4 * EIz_L
+
+        return ke
+
 
 def analyze_large_frame(nodes: List[Dict],
                         members: List[Dict],
@@ -746,9 +786,130 @@ def analyze_large_frame(nodes: List[Dict],
                 'total_time_ms': total_time
             }
         
+        # ── Compute reactions at constrained DOFs ──
+        # R = K_full · u  (at constrained DOFs the applied force is zero,
+        # so the entire product gives the reaction)
+        reactions = {}
+        K_full_u = K.dot(result.displacements)
+        
+        # Build reverse map: dof_index -> (node_id, local_dof_offset)
+        dof_to_node = {}
+        for nid, nidx in node_map.items():
+            for offset in range(6):
+                dof_to_node[nidx * 6 + offset] = (nid, offset)
+        
+        # Accumulate reaction components per node
+        for dof_idx in fixed_dofs:
+            if dof_idx >= len(K_full_u):
+                continue
+            info = dof_to_node.get(dof_idx)
+            if info is None:
+                continue
+            nid, offset = info
+            if nid not in reactions:
+                reactions[nid] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            val = float(K_full_u[dof_idx] - F[dof_idx])
+            if not np.isfinite(val):
+                val = 0.0
+            reactions[nid][offset] = round(val, 6)
+        
+        # ── Compute member end-forces in local coordinates ──
+        member_forces = {}
+        for member in members:
+            mid = member.get('id')
+            start_id = member.get('start') or member.get('startNode')
+            end_id = member.get('end') or member.get('endNode')
+            if start_id is None or end_id is None:
+                continue
+            si = node_map.get(start_id)
+            ei = node_map.get(end_id)
+            if si is None or ei is None:
+                continue
+            
+            # Element global displacement vector (12 entries)
+            u_elem = np.zeros(12)
+            for k in range(6):
+                u_elem[k]     = result.displacements[si * 6 + k]
+                u_elem[k + 6] = result.displacements[ei * 6 + k]
+            
+            # Re-derive element geometry for transformation
+            n1 = None
+            n2 = None
+            for n in nodes:
+                nid_check = n.get('id')
+                if nid_check == start_id:
+                    n1 = n
+                if nid_check == end_id:
+                    n2 = n
+            if n1 is None or n2 is None:
+                continue
+            
+            dx_m = n2['x'] - n1['x']
+            dy_m = n2['y'] - n1['y']
+            dz_m = n2['z'] - n1['z']
+            L_m = np.sqrt(dx_m**2 + dy_m**2 + dz_m**2)
+            if L_m < 1e-10:
+                continue
+            
+            cx_m = dx_m / L_m
+            cy_m = dy_m / L_m
+            cz_m = dz_m / L_m
+            
+            T_m = assembler._transformation_matrix(cx_m, cy_m, cz_m)
+            
+            # Local displacement = T · u_global_element
+            u_local = T_m @ u_elem
+            
+            # Rebuild local stiffness for this member
+            E_m = member.get('E', 200e9)
+            A_m = member.get('A', 0.01)
+            Iy_m = member.get('Iy', 1e-4)
+            Iz_m = member.get('Iz', 1e-4)
+            G_m = member.get('G', 77e9)
+            J_m = member.get('J', 1e-5)
+            
+            elem_type = member.get('type', 'frame')
+            if elem_type == 'truss':
+                # For truss: axial only
+                f_axial = E_m * A_m / L_m * (u_local[6] - u_local[0])
+                member_forces[mid] = {
+                    'axial_start': round(float(-f_axial), 6),
+                    'axial_end': round(float(f_axial), 6),
+                    'shear_y_start': 0.0, 'shear_y_end': 0.0,
+                    'shear_z_start': 0.0, 'shear_z_end': 0.0,
+                    'moment_y_start': 0.0, 'moment_y_end': 0.0,
+                    'moment_z_start': 0.0, 'moment_z_end': 0.0,
+                    'torsion_start': 0.0, 'torsion_end': 0.0,
+                }
+            else:
+                # Frame: compute full local forces  f_local = k_local · u_local
+                ke_l = assembler._build_local_stiffness(E_m, A_m, Iy_m, Iz_m, G_m, J_m, L_m)
+                f_local = ke_l @ u_local
+                
+                def _cf(v):
+                    fv = float(v)
+                    return round(fv, 6) if np.isfinite(fv) else 0.0
+                
+                member_forces[mid] = {
+                    'axial_start': _cf(f_local[0]),
+                    'shear_y_start': _cf(f_local[1]),
+                    'shear_z_start': _cf(f_local[2]),
+                    'torsion_start': _cf(f_local[3]),
+                    'moment_y_start': _cf(f_local[4]),
+                    'moment_z_start': _cf(f_local[5]),
+                    'axial_end': _cf(f_local[6]),
+                    'shear_y_end': _cf(f_local[7]),
+                    'shear_z_end': _cf(f_local[8]),
+                    'torsion_end': _cf(f_local[9]),
+                    'moment_y_end': _cf(f_local[10]),
+                    'moment_z_end': _cf(f_local[11]),
+                }
+        
         return {
             'success': True,
             'displacements': displacements,
+            'reactions': reactions,
+            'member_forces': member_forces,
             'solve_time_ms': float(result.solve_time_ms),
             'total_time_ms': float(total_time),
             'method': result.method,

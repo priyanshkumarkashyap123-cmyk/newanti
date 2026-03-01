@@ -169,10 +169,10 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                 jobId,
                 userId,
                 status: "pending",
-                model,
+                analysisModel: model,
                 nodeCount,
                 memberCount,
-            });
+            } as any);
         } catch (dbErr) {
             console.error("[Analysis] Failed to persist job:", dbErr);
             res.status(500).json({

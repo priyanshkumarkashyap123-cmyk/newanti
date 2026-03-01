@@ -8,6 +8,7 @@ import { Router, Request, Response } from 'express';
 import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
 import { UserActivityService, TIER_LIMITS } from '../services/UserActivityService.js';
 import { User, Subscription, getEffectiveTier, UserModel, isMasterUser } from '../models.js';
+import { validateBody, userLoginSchema, recordAnalysisSchema, checkModelLimitsSchema, recordExportSchema, adminUpgradeSchema } from '../middleware/validation.js';
 
 // Check which auth mode is active
 const USE_CLERK = process.env['USE_CLERK'] === 'true';
@@ -22,18 +23,18 @@ router.get('/profile', requireAuth(), async (req: Request, res: Response) => {
     try {
         const { userId } = getAuth(req);
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         const summary = await UserActivityService.getActivitySummary(userId);
         if (!summary) {
-            return res.status(404).json({ success: false, error: 'User not found' });
+            return res.fail('NOT_FOUND', 'User not found', 404);
         }
 
-        return res.json({ success: true, data: summary });
+        return res.ok(summary);
     } catch (error) {
         console.error('[UserRoutes] /profile error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -41,29 +42,26 @@ router.get('/profile', requireAuth(), async (req: Request, res: Response) => {
 // POST /user/login - Record login
 // ============================================
 
-router.post('/login', requireAuth(), async (req: Request, res: Response) => {
+router.post('/login', requireAuth(), validateBody(userLoginSchema), async (req: Request, res: Response) => {
     try {
         const { userId } = getAuth(req);
         const { email } = req.body;
 
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         // Create user if doesn't exist, or update login
         let user = await UserActivityService.getOrCreateUser(userId, email || 'unknown@beamlab.com');
         user = await UserActivityService.recordLogin(userId);
 
-        return res.json({
-            success: true,
-            data: {
-                tier: user?.tier || 'free',
-                lastLogin: user?.lastLogin
-            }
+        return res.ok({
+            tier: user?.tier || 'free',
+            lastLogin: user?.lastLogin
         });
     } catch (error) {
         console.error('[UserRoutes] /login error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -75,7 +73,7 @@ router.get('/limits', requireAuth(), async (req: Request, res: Response) => {
     try {
         const { userId, email: authEmail } = getAuth(req);
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         let userEmail: string = '';
@@ -94,16 +92,10 @@ router.get('/limits', requireAuth(), async (req: Request, res: Response) => {
         const tier = getEffectiveTier(userEmail, dbTier);
         const limits = TIER_LIMITS[tier];
 
-        return res.json({
-            success: true,
-            data: {
-                tier,
-                limits
-            }
-        });
+        return res.ok({ tier, limits });
     } catch (error) {
         console.error('[UserRoutes] /limits error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -116,24 +108,21 @@ router.get('/subscription', requireAuth(), async (req: Request, res: Response) =
         const { userId, email: authEmail } = getAuth(req);
         if (!userId) {
             // Return free tier for unauthenticated users instead of 401
-            return res.json({
-                success: true,
-                data: {
-                    tier: 'free',
-                    isLoading: false,
-                    expiresAt: null,
-                    subscription: null,
-                    features: {
-                        maxProjects: 3,
-                        pdfExport: false,
-                        aiAssistant: false,
-                        advancedDesignCodes: false,
-                        teamMembers: 1,
-                        prioritySupport: false,
-                        apiAccess: false
-                    },
-                    limits: TIER_LIMITS['free']
-                }
+            return res.ok({
+                tier: 'free',
+                isLoading: false,
+                expiresAt: null,
+                subscription: null,
+                features: {
+                    maxProjects: 3,
+                    pdfExport: false,
+                    aiAssistant: false,
+                    advancedDesignCodes: false,
+                    teamMembers: 1,
+                    prioritySupport: false,
+                    apiAccess: false
+                },
+                limits: TIER_LIMITS['free']
             });
         }
 
@@ -191,20 +180,17 @@ router.get('/subscription', requireAuth(), async (req: Request, res: Response) =
             apiAccess: tier === 'enterprise'
         };
 
-        return res.json({
-            success: true,
-            data: {
-                tier,
-                isLoading: false,
-                expiresAt: subscriptionData?.currentPeriodEnd || null,
-                subscription: subscriptionData,
-                features,
-                limits
-            }
+        return res.ok({
+            tier,
+            isLoading: false,
+            expiresAt: subscriptionData?.currentPeriodEnd || null,
+            subscription: subscriptionData,
+            features,
+            limits
         });
     } catch (error) {
         console.error('[UserRoutes] /subscription error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -216,14 +202,14 @@ router.post('/check-analysis', requireAuth(), async (req: Request, res: Response
     try {
         const { userId } = getAuth(req);
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         const result = await UserActivityService.canRunAnalysis(userId);
-        return res.json({ success: true, data: result });
+        return res.ok(result);
     } catch (error) {
         console.error('[UserRoutes] /check-analysis error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -231,22 +217,22 @@ router.post('/check-analysis', requireAuth(), async (req: Request, res: Response
 // POST /user/record-analysis - Record an analysis run
 // ============================================
 
-router.post('/record-analysis', requireAuth(), async (req: Request, res: Response) => {
+router.post('/record-analysis', requireAuth(), validateBody(recordAnalysisSchema), async (req: Request, res: Response) => {
     try {
         const { userId } = getAuth(req);
         const { nodeCount, memberCount } = req.body;
 
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         // Record the analysis
         await UserActivityService.recordAnalysis(userId, { nodeCount, memberCount });
 
-        return res.json({ success: true });
+        return res.ok({ recorded: true });
     } catch (error) {
         console.error('[UserRoutes] /record-analysis error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -254,13 +240,13 @@ router.post('/record-analysis', requireAuth(), async (req: Request, res: Respons
 // POST /user/check-model-limits - Check node/member limits
 // ============================================
 
-router.post('/check-model-limits', requireAuth(), async (req: Request, res: Response) => {
+router.post('/check-model-limits', requireAuth(), validateBody(checkModelLimitsSchema), async (req: Request, res: Response) => {
     try {
         const { userId } = getAuth(req);
         const { nodeCount, memberCount } = req.body;
 
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         const result = await UserActivityService.checkModelLimits(
@@ -269,10 +255,10 @@ router.post('/check-model-limits', requireAuth(), async (req: Request, res: Resp
             memberCount || 0
         );
 
-        return res.json({ success: true, data: result });
+        return res.ok(result);
     } catch (error) {
         console.error('[UserRoutes] /check-model-limits error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -280,18 +266,18 @@ router.post('/check-model-limits', requireAuth(), async (req: Request, res: Resp
 // POST /user/record-export - Record PDF export
 // ============================================
 
-router.post('/record-export', requireAuth(), async (req: Request, res: Response) => {
+router.post('/record-export', requireAuth(), validateBody(recordExportSchema), async (req: Request, res: Response) => {
     try {
         const { userId } = getAuth(req);
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         await UserActivityService.recordExport(userId);
-        return res.json({ success: true });
+        return res.ok({ recorded: true });
     } catch (error) {
         console.error('[UserRoutes] /record-export error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -303,43 +289,37 @@ router.get('/activity', requireAuth(), async (req: Request, res: Response) => {
     try {
         const { userId } = getAuth(req);
         if (!userId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         if (USE_CLERK) {
             const user = await User.findOne({ clerkId: userId });
             if (!user) {
-                return res.status(404).json({ success: false, error: 'User not found' });
+                return res.fail('NOT_FOUND', 'User not found', 404);
             }
 
-            return res.json({
-                success: true,
-                data: {
-                    recentActivity: user.activityLog.slice(-20).reverse(),
-                    totalAnalysisRuns: user.totalAnalysisRuns,
-                    totalExports: user.totalExports,
-                    lastLogin: user.lastLogin
-                }
+            return res.ok({
+                recentActivity: user.activityLog.slice(-20).reverse(),
+                totalAnalysisRuns: user.totalAnalysisRuns,
+                totalExports: user.totalExports,
+                lastLogin: user.lastLogin
             });
         } else {
             const user = await UserModel.findById(userId);
             if (!user) {
-                return res.status(404).json({ success: false, error: 'User not found' });
+                return res.fail('NOT_FOUND', 'User not found', 404);
             }
 
-            return res.json({
-                success: true,
-                data: {
-                    recentActivity: [],
-                    totalAnalysisRuns: 0,
-                    totalExports: 0,
-                    lastLogin: user.lastLoginAt
-                }
+            return res.ok({
+                recentActivity: [],
+                totalAnalysisRuns: 0,
+                totalExports: 0,
+                lastLogin: user.lastLoginAt
             });
         }
     } catch (error) {
         console.error('[UserRoutes] /activity error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 
@@ -347,11 +327,11 @@ router.get('/activity', requireAuth(), async (req: Request, res: Response) => {
 // PUT /user/admin/upgrade - Admin endpoint to upgrade user tier
 // ============================================
 
-router.put('/admin/upgrade', requireAuth(), async (req: Request, res: Response) => {
+router.put('/admin/upgrade', requireAuth(), validateBody(adminUpgradeSchema), async (req: Request, res: Response) => {
     try {
         const { userId: adminUserId } = getAuth(req);
         if (!adminUserId) {
-            return res.status(401).json({ success: false, error: 'Unauthorized' });
+            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
         }
 
         // Fetch admin email from database to check master user status
@@ -363,16 +343,16 @@ router.put('/admin/upgrade', requireAuth(), async (req: Request, res: Response) 
         const adminEmail = clerkAdminUser?.email || inHouseAdminUser?.email || null;
 
         if (!isMasterUser(adminEmail)) {
-            return res.status(403).json({ success: false, error: 'Admin access required' });
+            return res.fail('FORBIDDEN', 'Admin access required', 403);
         }
 
         const { email, tier } = req.body;
         if (!email || !tier) {
-            return res.status(400).json({ success: false, error: 'Email and tier are required' });
+            return res.fail('VALIDATION_ERROR', 'Email and tier are required', 400);
         }
 
         if (!['free', 'pro', 'enterprise'].includes(tier)) {
-            return res.status(400).json({ success: false, error: 'Invalid tier. Must be free, pro, or enterprise' });
+            return res.fail('VALIDATION_ERROR', 'Invalid tier. Must be free, pro, or enterprise', 400);
         }
 
         // Try Clerk user first
@@ -393,16 +373,13 @@ router.put('/admin/upgrade', requireAuth(), async (req: Request, res: Response) 
         }
 
         if (!updated) {
-            return res.status(404).json({ success: false, error: 'User not found' });
+            return res.fail('NOT_FOUND', 'User not found', 404);
         }
 
-        return res.json({
-            success: true,
-            message: `User ${email} upgraded to ${tier}`
-        });
+        return res.ok({ email, tier, message: `User ${email} upgraded to ${tier}` });
     } catch (error) {
         console.error('[UserRoutes] /admin/upgrade error:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.fail('INTERNAL_ERROR', 'Server error');
     }
 });
 

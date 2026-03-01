@@ -2,20 +2,17 @@ import { Router, Request, Response } from "express";
 import { Consent } from "../models.js";
 import mongoose from "mongoose";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
+import { validateBody, recordConsentSchema } from "../middleware/validation.js";
 
 const router: Router = Router();
 
 // POST /api/consent/record — requires authentication
-router.post("/record", requireAuth(), async (req: Request, res: Response) => {
+router.post("/record", requireAuth(), validateBody(recordConsentSchema), async (req: Request, res: Response) => {
   try {
     // Fail silently if DB is not connected
     if (mongoose.connection.readyState !== 1) {
       console.warn("[Consent] Database disconnected, skipping consent record");
-      return res.status(200).json({
-        success: true,
-        message: "Consent acknowledged (DB offline)",
-        data: null,
-      });
+      return res.ok({ message: "Consent acknowledged (DB offline)" });
     }
 
     // Use authenticated userId from Clerk, not from body
@@ -30,11 +27,7 @@ router.post("/record", requireAuth(), async (req: Request, res: Response) => {
       "unknown";
 
     if (!userId || !consentType) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Missing required fields: userId (from auth) and consentType are required",
-      });
+      return res.fail('VALIDATION_ERROR', 'Missing required fields: userId (from auth) and consentType are required', 400);
     }
 
     const newConsent = new Consent({
@@ -50,17 +43,10 @@ router.post("/record", requireAuth(), async (req: Request, res: Response) => {
 
     console.log(`[Consent] Recorded ${consentType} consent for user ${userId}`);
 
-    return res.status(200).json({
-      success: true,
-      message: "Consent recorded successfully",
-      data: newConsent,
-    });
+    return res.ok({ message: "Consent recorded successfully", consent: newConsent });
   } catch (error) {
     console.error("Error recording consent:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 

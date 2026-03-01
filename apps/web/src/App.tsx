@@ -4,13 +4,14 @@
  */
 
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { Component, ReactNode, ErrorInfo, Suspense, lazy } from "react";
+import { Suspense, lazy } from "react";
 
 // Eagerly loaded critical components (Landing, Auth)
 import { LandingPage } from "./pages/LandingPage";
 import { SignInPage } from "./pages/SignInPage";
 import { SignUpPage } from "./pages/SignUpPage";
 import { RequireAuth } from "./components/layout/RequireAuth";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./App.css";
 import "./utils/generateTestGrid";
 import { SkipLink } from "./components/ui/SkipLink";
@@ -270,8 +271,8 @@ const PDeltaAnalysisPanel = lazy(() =>
   })),
 );
 
-// Toast Provider
-import { ToastProvider } from "./providers/ToastProvider";
+// Toast Provider (full-featured: queueing, positions, pause-on-hover, ARIA)
+import { ToastProvider } from "./components/ui/ToastSystem";
 
 // Analytics Provider — sends events to POST /api/analytics/batch
 import { AnalyticsProvider } from "./providers/AnalyticsProvider";
@@ -290,82 +291,6 @@ const PageLoader = () => (
 );
 
 // Performance Testing Utility - already imported at top of file
-
-// ============================================
-// ERROR BOUNDARY
-// ============================================
-
-interface ErrorBoundaryState {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
-}
-
-class ErrorBoundary extends Component<
-  { children: ReactNode },
-  ErrorBoundaryState
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
-  }
-
-  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
-    return { hasError: true, error };
-  }
-
-  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("🔴 React Error Boundary caught an error:", error, errorInfo);
-    this.setState({ errorInfo });
-  }
-
-  override render() {
-    if (this.state.hasError) {
-      return (
-        <div
-          style={{
-            padding: "40px",
-            background: "#1e1e1e",
-            color: "#fff",
-            minHeight: "100vh",
-            fontFamily: "monospace",
-          }}
-        >
-          <h1 style={{ color: "#ff6b6b" }}>⚠️ Something went wrong</h1>
-          <pre
-            style={{
-              background: "#2d2d2d",
-              padding: "20px",
-              borderRadius: "8px",
-              overflow: "auto",
-              color: "#ffa07a",
-            }}
-          >
-            {this.state.error?.toString()}
-            {"\n\n"}
-            {this.state.errorInfo?.componentStack}
-          </pre>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              marginTop: "20px",
-              padding: "10px 20px",
-              background: "#4CAF50",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            Reload Page
-          </button>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
 
 // ============================================
 // MAIN APP WITH ROUTING
@@ -572,29 +497,31 @@ function App() {
               <Route
                 path="/analysis/modal"
                 element={
-                  <ModalAnalysisRouteWrapper />
+                  <RequireAuth>
+                    <ModalAnalysisRouteWrapper />
+                  </RequireAuth>
                 }
               />
               <Route
                 path="/analysis/time-history"
-                element={<TimeHistoryPanel />}
+                element={<RequireAuth><TimeHistoryPanel /></RequireAuth>}
               />
               <Route
                 path="/analysis/seismic"
-                element={<SeismicAnalysisPanel />}
+                element={<RequireAuth><SeismicAnalysisPanel /></RequireAuth>}
               />
               <Route
                 path="/analysis/buckling"
-                element={<BucklingAnalysisPanel />}
+                element={<RequireAuth><BucklingAnalysisPanel /></RequireAuth>}
               />
-              <Route path="/analysis/cable" element={<CableAnalysisPanel />} />
+              <Route path="/analysis/cable" element={<RequireAuth><CableAnalysisPanel /></RequireAuth>} />
               <Route
                 path="/analysis/pdelta"
-                element={<PDeltaAnalysisPanel />}
+                element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>}
               />
               <Route
                 path="/analysis/nonlinear"
-                element={<PDeltaAnalysisPanel />}
+                element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>}
               />{" "}
               {/* Alias for P-Delta */}
               {/* Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14) */}

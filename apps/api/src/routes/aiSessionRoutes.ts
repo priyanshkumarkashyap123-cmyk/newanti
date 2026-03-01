@@ -8,6 +8,7 @@ import express, { Request, Response, Router } from "express";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
 import { AISession, User } from "../models.js";
 import mongoose from "mongoose";
+import { validateBody, createAiSessionSchema, updateAiSessionSchema } from "../middleware/validation.js";
 
 const router: Router = express.Router();
 const authRequired = requireAuth();
@@ -19,12 +20,12 @@ router.get("/", authRequired, async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
+      return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.json({ success: true, sessions: [], total: 0 });
+      return res.ok({ sessions: [], total: 0 });
     }
 
     const pageRaw = Number(req.query["page"] ?? 1);
@@ -56,19 +57,10 @@ router.get("/", authRequired, async (req: Request, res: Response) => {
       AISession.countDocuments(query),
     ]);
 
-    return res.json({
-      success: true,
-      sessions,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.max(1, Math.ceil(total / pageSize)),
-    });
+    return res.ok({ sessions, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) });
   } catch (error) {
     console.error("Error fetching AI sessions:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
@@ -79,19 +71,17 @@ router.get("/:id", authRequired, async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
+      return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
     }
 
     const sessionId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(sessionId)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid session ID" });
+      return res.fail('INVALID_ID', 'Invalid session ID', 400);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.fail('NOT_FOUND', 'User not found', 404);
     }
 
     const session = await AISession.findOne({
@@ -100,51 +90,39 @@ router.get("/:id", authRequired, async (req: Request, res: Response) => {
     });
 
     if (!session) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Session not found" });
+      return res.fail('NOT_FOUND', 'Session not found', 404);
     }
 
-    return res.json({ success: true, session });
+    return res.ok({ session });
   } catch (error) {
     console.error("Error fetching AI session:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
 // ============================================
 // POST / - Create or sync an AI session
 // ============================================
-router.post("/", authRequired, async (req: Request, res: Response) => {
+router.post("/", authRequired, validateBody(createAiSessionSchema), async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
+      return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        error: "User profile not found. Please log in again.",
-      });
+      return res.fail('NOT_FOUND', 'User profile not found. Please log in again.', 404);
     }
 
     const { name, type, messages, projectSnapshot } = req.body;
 
     if (!name || !type) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Session name and type are required" });
+      return res.fail('VALIDATION_ERROR', 'Session name and type are required', 400);
     }
 
     if (!["generate", "modify", "chat"].includes(type)) {
-      return res.status(400).json({
-        success: false,
-        error: "Type must be 'generate', 'modify', or 'chat'",
-      });
+      return res.fail('VALIDATION_ERROR', "Type must be 'generate', 'modify', or 'chat'", 400);
     }
 
     const session = await AISession.create({
@@ -156,15 +134,10 @@ router.post("/", authRequired, async (req: Request, res: Response) => {
       isArchived: false,
     });
 
-    return res.status(201).json({
-      success: true,
-      session,
-    });
+    return res.ok({ session }, 201);
   } catch (error) {
     console.error("Error creating AI session:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
@@ -175,19 +148,17 @@ router.post("/sync", authRequired, async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
+      return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.fail('NOT_FOUND', 'User not found', 404);
     }
 
     const { sessions } = req.body;
     if (!Array.isArray(sessions)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "sessions must be an array" });
+      return res.fail('VALIDATION_ERROR', 'sessions must be an array', 400);
     }
 
     // Limit bulk sync to 50 sessions at a time
@@ -214,39 +185,31 @@ router.post("/sync", authRequired, async (req: Request, res: Response) => {
       });
     }
 
-    return res.json({
-      success: true,
-      synced: results.length,
-      results,
-    });
+    return res.ok({ synced: results.length, results });
   } catch (error) {
     console.error("Error syncing AI sessions:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
 // ============================================
 // PUT /:id - Update an AI session
 // ============================================
-router.put("/:id", authRequired, async (req: Request, res: Response) => {
+router.put("/:id", authRequired, validateBody(updateAiSessionSchema), async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
+      return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
     }
 
     const sessionId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(sessionId)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid session ID" });
+      return res.fail('INVALID_ID', 'Invalid session ID', 400);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.fail('NOT_FOUND', 'User not found', 404);
     }
 
     const session = await AISession.findOne({
@@ -255,9 +218,7 @@ router.put("/:id", authRequired, async (req: Request, res: Response) => {
     });
 
     if (!session) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Session not found" });
+      return res.fail('NOT_FOUND', 'Session not found', 404);
     }
 
     // Update allowed fields
@@ -270,15 +231,10 @@ router.put("/:id", authRequired, async (req: Request, res: Response) => {
 
     await session.save();
 
-    return res.json({
-      success: true,
-      session,
-    });
+    return res.ok({ session });
   } catch (error) {
     console.error("Error updating AI session:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
@@ -289,19 +245,17 @@ router.delete("/:id", authRequired, async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
+      return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
     }
 
     const sessionId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(sessionId)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid session ID" });
+      return res.fail('INVALID_ID', 'Invalid session ID', 400);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.fail('NOT_FOUND', 'User not found', 404);
     }
 
     const result = await AISession.deleteOne({
@@ -310,17 +264,13 @@ router.delete("/:id", authRequired, async (req: Request, res: Response) => {
     });
 
     if (result.deletedCount === 0) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Session not found" });
+      return res.fail('NOT_FOUND', 'Session not found', 404);
     }
 
-    return res.json({ success: true, message: "Session deleted" });
+    return res.ok({ message: "Session deleted" });
   } catch (error) {
     console.error("Error deleting AI session:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 

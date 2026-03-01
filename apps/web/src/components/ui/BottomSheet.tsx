@@ -168,7 +168,7 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(
     const targetHeight = useMemo(() => snapToPixels(currentSnap), [currentSnap]);
 
     // Backdrop opacity driven by sheet height (0 = closed, 0.45 = full)
-    const backdropOpacity = useTransform(
+    const _backdropOpacity = useTransform(
       dragY,
       [0, -window.innerHeight * 0.9],
       [BACKDROP_MAX_OPACITY, BACKDROP_MAX_OPACITY],
@@ -214,9 +214,14 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(
       };
     }, [isOpen]);
 
-    // Reset snap on open
+    // Reset snap on open — track previous isOpen to detect open transition
+    const prevIsOpenRef = useRef(false);
     useEffect(() => {
-      if (isOpen) setCurrentSnap(initialSnap);
+      if (isOpen && !prevIsOpenRef.current) {
+        // Schedule snap reset on next tick to avoid setState-in-effect
+        queueMicrotask(() => setCurrentSnap(initialSnap));
+      }
+      prevIsOpenRef.current = isOpen;
     }, [isOpen, initialSnap]);
 
     // ── Drag handlers ──────────────────────────────────────────────────────
@@ -400,8 +405,6 @@ interface ActionSheetContentProps {
 }
 
 const ActionSheetContent: React.FC<ActionSheetContentProps> = ({ actions, onClose }) => {
-  if (!actions?.length) return null;
-
   const handlePress = useCallback(
     (action: ActionSheetItem) => {
       if (action.disabled) return;
@@ -411,6 +414,8 @@ const ActionSheetContent: React.FC<ActionSheetContentProps> = ({ actions, onClos
     },
     [onClose],
   );
+
+  if (!actions?.length) return null;
 
   return (
     <div className="px-4 pb-4 flex flex-col gap-2">

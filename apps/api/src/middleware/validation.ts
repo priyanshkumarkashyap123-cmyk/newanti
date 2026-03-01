@@ -436,3 +436,89 @@ export function validateQuery<T extends z.ZodTypeAny>(schema: T): RequestHandler
 
 // Re-export Zod for convenience
 export { z };
+
+// ============================================
+// PROJECT SCHEMAS
+// ============================================
+
+export const createProjectSchema = z.object({
+    name: z.string().min(1, 'Project name is required').max(200).trim(),
+    description: z.string().max(2000).trim().optional(),
+    data: z.record(z.unknown()).optional().default({}),
+    thumbnail: z.string().url().optional(),
+});
+
+export const updateProjectSchema = z.object({
+    name: z.string().min(1).max(200).trim().optional(),
+    description: z.string().max(2000).trim().optional(),
+    data: z.record(z.unknown()).optional(),
+    thumbnail: z.string().url().optional(),
+}).refine(obj => Object.keys(obj).length > 0, {
+    message: 'At least one field must be provided for update',
+});
+
+// ============================================
+// USER ACTIVITY SCHEMAS
+// ============================================
+
+export const userLoginSchema = z.object({
+    email: z.string().email().transform(e => e.toLowerCase().trim()).optional(),
+});
+
+export const recordAnalysisSchema = z.object({
+    nodeCount: z.number().int().min(0).max(1_000_000),
+    memberCount: z.number().int().min(0).max(1_000_000),
+    solverType: z.string().max(50).optional(),
+    duration: z.number().min(0).optional(),
+});
+
+export const checkModelLimitsSchema = z.object({
+    nodeCount: z.number().int().min(0),
+    memberCount: z.number().int().min(0),
+});
+
+export const recordExportSchema = z.object({
+    format: z.string().min(1).max(20),
+    fileSize: z.number().int().min(0).optional(),
+});
+
+export const adminUpgradeSchema = z.object({
+    email: z.string().email('Valid email is required').transform(e => e.toLowerCase().trim()),
+    tier: z.enum(['free', 'pro', 'enterprise', 'master'], {
+        errorMap: () => ({ message: 'Tier must be one of: free, pro, enterprise, master' }),
+    }),
+});
+
+// ============================================
+// CONSENT SCHEMA
+// ============================================
+
+export const recordConsentSchema = z.object({
+    consentType: z.enum(['terms', 'privacy', 'cookies', 'marketing'], {
+        errorMap: () => ({ message: 'consentType must be one of: terms, privacy, cookies, marketing' }),
+    }),
+    termsVersion: z.string().max(20).optional(),
+    userAgent: z.string().max(500).optional(),
+    ipAddress: z.string().max(45).optional(),
+});
+
+// ============================================
+// AI SESSION SCHEMAS
+// ============================================
+
+export const createAiSessionSchema = z.object({
+    name: z.string().min(1).max(200).trim(),
+    projectId: z.string().optional(),
+    projectSnapshot: z.record(z.unknown()).optional(),
+});
+
+export const updateAiSessionSchema = z.object({
+    name: z.string().min(1).max(200).trim().optional(),
+    projectSnapshot: z.record(z.unknown()).optional(),
+});
+
+export const addAiMessageSchema = z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string().min(1).max(50_000),
+    metadata: z.record(z.unknown()).optional(),
+});

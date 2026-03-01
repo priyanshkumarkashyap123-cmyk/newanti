@@ -50,8 +50,15 @@ impl IntoResponse for ApiError {
             ApiError::Unauthorized => (StatusCode::UNAUTHORIZED, "Unauthorized".to_string()),
             ApiError::RateLimited => (StatusCode::TOO_MANY_REQUESTS, "Rate limit exceeded".to_string()),
             ApiError::AnalysisFailed(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg.clone()),
-            ApiError::DatabaseError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.clone()),
-            ApiError::InternalError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.clone()),
+            ApiError::DatabaseError(msg) => {
+                // Log the real error server-side, return generic message to client
+                tracing::error!("Database error: {}", msg);
+                (StatusCode::INTERNAL_SERVER_ERROR, "A database error occurred. Please try again.".to_string())
+            }
+            ApiError::InternalError(msg) => {
+                tracing::error!("Internal error: {}", msg);
+                (StatusCode::INTERNAL_SERVER_ERROR, "An internal error occurred. Please try again.".to_string())
+            }
             ApiError::Timeout => (StatusCode::REQUEST_TIMEOUT, "Analysis timeout".to_string()),
             ApiError::ModelTooLarge(msg) => (StatusCode::PAYLOAD_TOO_LARGE, msg.clone()),
         };

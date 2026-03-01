@@ -599,9 +599,32 @@ class AnalysisService {
             displacements[nodeId] = [d.dx, d.dy, d.dz, d.rx, d.ry, d.rz];
           }
 
+          // Convert reactions (array of 6 DOF per node)
+          const reactions: Record<string, number[]> | undefined =
+            data.reactions && Object.keys(data.reactions).length > 0
+              ? (data.reactions as Record<string, number[]>)
+              : undefined;
+
+          // Convert member forces from cloud format
+          let memberForces: Record<string, any> | undefined;
+          if (data.member_forces && Object.keys(data.member_forces).length > 0) {
+            memberForces = {};
+            for (const [memberId, mf] of Object.entries(data.member_forces || {})) {
+              const f = mf as any;
+              memberForces[memberId] = {
+                axial: f.axial_start ?? 0,
+                shear: f.shear_y_start,
+                momentStart: f.moment_z_start,
+                momentEnd: f.moment_z_end,
+              };
+            }
+          }
+
           resolve({
             success: true,
             displacements,
+            reactions,
+            memberForces,
             stats: {
               assemblyTimeMs: 0,
               solveTimeMs: data.stats?.solve_time_ms || 0,

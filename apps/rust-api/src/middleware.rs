@@ -146,6 +146,13 @@ pub struct Claims {
     pub name: Option<String>,
 }
 
+/// Authenticated user extracted from JWT — inserted into request extensions
+#[derive(Debug, Clone)]
+pub struct AuthUser {
+    pub user_id: String,
+    pub email: Option<String>,
+}
+
 /// Request timing middleware - logs request duration
 pub async fn timing_middleware(
     request: Request,
@@ -242,7 +249,12 @@ pub async fn auth_middleware(
     ) {
         Ok(token_data) => {
             info!(user_id = %token_data.claims.sub, "Authenticated request");
-            // Could add claims to request extensions here
+            // Inject user_id into request extensions for downstream handlers
+            let mut request = request;
+            request.extensions_mut().insert(AuthUser {
+                user_id: token_data.claims.sub.clone(),
+                email: token_data.claims.email.clone(),
+            });
             Ok(next.run(request).await)
         }
         Err(e) => {

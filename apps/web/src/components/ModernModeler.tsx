@@ -262,10 +262,7 @@ const IntegrationDiagnostics = lazy(() => import("./IntegrationDiagnostics"));
 import { useRazorpayPayment } from "./RazorpayPayment";
 import { useTierAccess } from "../hooks/useTierAccess";
 import { ProjectService, Project } from "../services/ProjectService";
-import { mapBackendAnalysisError } from "../services/ErrorHandlingService";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import { JobHistoryPanel } from "./ui/JobHistoryPanel";
-import { SyncStatus } from "../lib/offlineSync";
 
 // Multiplayer
 import {
@@ -393,9 +390,8 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto eng-scroll p-2 space-y-2">
+        <div className="flex-1 overflow-y-auto eng-scroll p-2">
           <PropertiesPanel />
-          <JobHistoryPanel className="mt-2" />
         </div>
         <div className="px-3 py-2 border-t border-slate-800/60">
           <p className="text-[10px] text-slate-600 text-center">
@@ -564,11 +560,6 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
             <span className="text-slate-600">Zoom:</span>{" "}
             <span className="text-slate-500 dark:text-slate-400 font-mono">{zoomLevel}%</span>
           </span>
-
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
-
-          {/* Sync Status — offline queue indicator */}
-          <SyncStatus className="text-[11px]" />
 
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
@@ -1059,7 +1050,6 @@ export const ModernModeler: FC = () => {
     setAnalysisStage("validating");
     setAnalysisProgress(10);
     setAnalysisError(undefined);
-    useModelStore.getState().clearErrorElementIds();
 
     const startTime = Date.now();
 
@@ -1128,10 +1118,6 @@ export const ModernModeler: FC = () => {
         conditionNumber?: number;
         stats?: any;
         error?: string;
-        /** Machine-readable error code from backend (e.g. SINGULAR_MATRIX) */
-        errorCode?: string;
-        /** Structured diagnostic details with element IDs for 3D highlighting */
-        errorDetails?: Array<{ type: string; message: string; elementIds?: string[] }>;
       };
 
       // Always try WASM solver first (handles both with and without member loads)
@@ -2595,39 +2581,20 @@ export const ModernModeler: FC = () => {
         // setActiveStep(4); // Move to results step
       } else {
         setAnalysisStage("error");
-
-        // Extract structured error from backend (errorCode + errorDetails with elementIds)
-        const mapped = mapBackendAnalysisError(
-          result.errorCode,
-          result.errorDetails,
-          result.error,
-        );
-
-        setAnalysisError(mapped.userMessage);
-
-        // Highlight problem elements in 3D viewport (nodes/members from backend diagnosis)
-        if (mapped.elementIds.length > 0) {
-          useModelStore.getState().setErrorElementIds(mapped.elementIds);
-        }
+        setAnalysisError(result.error || "Analysis failed");
+        // showNotification('error', `Analysis failed: ${result.error}`);
 
         // Trigger AI diagnosis for the error automatically
+        // We use a custom event or store update to notify the AI assistant
         const event = new CustomEvent("ai-diagnose-error", {
-          detail: {
-            error: result.error || "Unknown analysis error",
-            errorCode: result.errorCode,
-            errorDetails: result.errorDetails,
-          },
+          detail: { error: result.error || "Unknown analysis error" },
         });
         window.dispatchEvent(event);
 
-        // Build detailed notification message
-        const detailMessages = mapped.details
-          .map((d) => d.message)
-          .slice(0, 2)
-          .join(' ');
+        // Notify user of the failure (AI assistant modal removed — key did not exist)
         showNotification(
           "error",
-          `Analysis failed: ${detailMessages || mapped.userMessage}`,
+          `Analysis failed: ${result.error || "Unknown error"}. Check model for issues.`,
         );
       }
     } catch (err) {

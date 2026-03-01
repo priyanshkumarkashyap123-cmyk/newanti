@@ -1,7 +1,7 @@
 //! Structure CRUD handlers
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, State, Request},
     Json,
 };
 use mongodb::bson::{doc, oid::ObjectId};
@@ -81,13 +81,21 @@ pub async fn list_structures(
 /// POST /api/structures - Create a new structure
 pub async fn create_structure(
     State(state): State<Arc<AppState>>,
+    request: Request,
     Json(req): Json<CreateStructureRequest>,
 ) -> ApiResult<Json<StructureResponse>> {
     let now = chrono::Utc::now();
 
+    // Extract authenticated user from request extensions
+    let user_id = request
+        .extensions()
+        .get::<crate::middleware::AuthUser>()
+        .map(|u| u.user_id.clone())
+        .unwrap_or_else(|| "anonymous".to_string());
+
     let doc = StructureDocument {
         id: None,
-        user_id: "anonymous".to_string(), // TODO: Get from auth
+        user_id,
         name: req.name.clone(),
         description: req.description.clone(),
         nodes: req.nodes,

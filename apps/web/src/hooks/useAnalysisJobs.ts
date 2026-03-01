@@ -65,7 +65,7 @@ export function useAnalysisJobs(autoFetch = true): UseAnalysisJobsReturn {
             const headers: Record<string, string> = {};
             if (token) headers['Authorization'] = `Bearer ${token}`;
 
-            const res = await fetch(`${API_CONFIG.API_URL}/api/analyze/jobs`, {
+            const res = await fetch(`${API_CONFIG.baseUrl}/api/analyze/jobs`, {
                 headers,
                 cache: 'no-store',
             });

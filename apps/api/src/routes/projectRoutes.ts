@@ -2,6 +2,7 @@ import express, { Request, Response, Router } from "express";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
 import { Project, User, IUser } from "../models.js";
 import mongoose from "mongoose";
+import { validateBody, createProjectSchema, updateProjectSchema } from "../middleware/validation.js";
 
 const router: Router = express.Router();
 
@@ -38,44 +39,29 @@ router.get("/", authRequired, async (req: Request, res: Response) => {
       : 20;
 
     if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
+      return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
     }
 
     // Find user by Clerk ID
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.json({
-        success: true,
-        projects: [],
-        total: 0,
-        page,
-        pageSize,
-      });
+      return res.ok({ projects: [], total: 0, page, pageSize });
     }
 
-    // Find projects owned by this user (bounded + paginated)
+    // Find projects owned by or shared with this user
     const [projects, total] = await Promise.all([
-      Project.find({ owner: user._id })
+      Project.find({ $or: [{ owner: user._id }, { collaborators: user._id }] })
         .select("name description thumbnail updatedAt createdAt isPublic")
         .sort({ updatedAt: -1 })
         .skip((page - 1) * pageSize)
         .limit(pageSize),
-      Project.countDocuments({ owner: user._id }),
+      Project.countDocuments({ $or: [{ owner: user._id }, { collaborators: user._id }] }),
     ]);
 
-    return res.json({
-      success: true,
-      projects,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.max(1, Math.ceil(total / pageSize)),
-    });
+    return res.ok({ projects, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) });
   } catch (error) {
     console.error("Error fetching projects:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
@@ -86,41 +72,32 @@ router.get("/:id", authRequired, async (req: Request, res: Response) => {
     const projectId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid project ID" });
+      return res.fail('INVALID_ID', 'Invalid project ID', 400);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.fail('NOT_FOUND', 'User not found', 404);
     }
 
     const project = await Project.findOne({
       _id: projectId,
-      owner: user._id,
+      $or: [{ owner: user._id }, { collaborators: user._id }],
     });
 
     if (!project) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Project not found" });
+      return res.fail('NOT_FOUND', 'Project not found', 404);
     }
 
-    return res.json({
-      success: true,
-      project,
-    });
+    return res.ok({ project });
   } catch (error) {
     console.error("Error fetching project:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
 // POST / - Create new project
-router.post("/", authRequired, async (req: Request, res: Response) => {
+router.post("/", authRequired, validateBody(createProjectSchema), async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     // Note: Clerk sometimes provides details in session claims, but we might rely on the DB
@@ -130,18 +107,12 @@ router.post("/", authRequired, async (req: Request, res: Response) => {
     const { name, description, data, thumbnail } = req.body;
 
     if (!name) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Project name is required" });
+      return res.fail('VALIDATION_ERROR', 'Project name is required', 400);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      // Alternatively, could fetch user details from Clerk API here if needed
-      return res.status(404).json({
-        success: false,
-        error: "User profile not found. Please log in again.",
-      });
+      return res.fail('NOT_FOUND', 'User profile not found. Please log in again.', 404);
     }
 
     const project = await Project.create({
@@ -158,34 +129,27 @@ router.post("/", authRequired, async (req: Request, res: Response) => {
       $push: { projects: project._id },
     });
 
-    return res.json({
-      success: true,
-      project,
-    });
+    return res.ok({ project }, 201);
   } catch (error) {
     console.error("Error creating project:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
 // PUT /:id - Update project
-router.put("/:id", authRequired, async (req: Request, res: Response) => {
+router.put("/:id", authRequired, validateBody(updateProjectSchema), async (req: Request, res: Response) => {
   try {
     const { userId } = getAuth(req);
     const projectId = req.params.id;
     const { name, description, data, thumbnail } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid project ID" });
+      return res.fail('INVALID_ID', 'Invalid project ID', 400);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.fail('NOT_FOUND', 'User not found', 404);
     }
 
     // Find and update
@@ -204,20 +168,13 @@ router.put("/:id", authRequired, async (req: Request, res: Response) => {
     );
 
     if (!project) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Project not found" });
+      return res.fail('NOT_FOUND', 'Project not found', 404);
     }
 
-    return res.json({
-      success: true,
-      project,
-    });
+    return res.ok({ project });
   } catch (error) {
     console.error("Error updating project:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 
@@ -228,14 +185,12 @@ router.delete("/:id", authRequired, async (req: Request, res: Response) => {
     const projectId = req.params.id;
 
     if (!mongoose.Types.ObjectId.isValid(projectId)) {
-      return res
-        .status(400)
-        .json({ success: false, error: "Invalid project ID" });
+      return res.fail('INVALID_ID', 'Invalid project ID', 400);
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
+      return res.fail('NOT_FOUND', 'User not found', 404);
     }
 
     const project = await Project.findOneAndDelete({
@@ -244,9 +199,7 @@ router.delete("/:id", authRequired, async (req: Request, res: Response) => {
     });
 
     if (!project) {
-      return res
-        .status(404)
-        .json({ success: false, error: "Project not found" });
+      return res.fail('NOT_FOUND', 'Project not found', 404);
     }
 
     // Remove from user's list
@@ -254,15 +207,10 @@ router.delete("/:id", authRequired, async (req: Request, res: Response) => {
       $pull: { projects: project._id },
     });
 
-    return res.json({
-      success: true,
-      id: projectId,
-    });
+    return res.ok({ id: projectId });
   } catch (error) {
     console.error("Error deleting project:", error);
-    return res
-      .status(500)
-      .json({ success: false, error: "Internal server error" });
+    return res.fail('INTERNAL_ERROR', 'Internal server error');
   }
 });
 

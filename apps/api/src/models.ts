@@ -592,7 +592,7 @@ export interface IAnalysisJob extends Document {
     userId: string;
     status: 'pending' | 'running' | 'completed' | 'failed';
     progress: number;
-    model: Record<string, unknown>;
+    analysisModel: Record<string, unknown>;
     result?: Record<string, unknown>;
     error?: string;
     errorCode?: string;
@@ -631,7 +631,7 @@ const AnalysisJobSchema = new Schema<IAnalysisJob>({
         min: 0,
         max: 100,
     },
-    model: {
+    analysisModel: {
         type: Schema.Types.Mixed,
         required: true,
     },

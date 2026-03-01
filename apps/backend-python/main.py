@@ -29,6 +29,7 @@ import importlib
 import importlib.util
 import traceback
 import json
+from contextlib import asynccontextmanager
 from request_logging import RequestLoggingMiddleware
 
 # Security middleware — rate limiting, auth verification, security headers
@@ -105,12 +106,39 @@ def get_env(key: str, default: str = "") -> str:
 # FASTAPI APP INITIALIZATION
 # ============================================
 
+# ============================================
+# LIFESPAN (replaces deprecated on_event)
+# ============================================
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Startup/shutdown lifecycle for FastAPI."""
+    # ── Startup ──
+    try:
+        from analysis.worker_pool import get_worker_pool
+        pool = await get_worker_pool()
+        logger.info("Worker pool started", extra={"max_workers": pool.max_workers})
+    except Exception as e:
+        logger.warning("Worker pool not available: %s", e)
+
+    yield  # ── App is running ──
+
+    # ── Shutdown ──
+    try:
+        from analysis.worker_pool import shutdown_worker_pool as _shutdown
+        await _shutdown()
+        logger.info("Worker pool stopped")
+    except Exception as e:
+        logger.error("Worker pool shutdown error: %s", e)
+
+
 app = FastAPI(
     title="BeamLab Structural Engine",
     description="Python backend for mathematical structural model generation",
     version="2.1.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Get configuration with fallbacks
@@ -401,31 +429,6 @@ try:
     logger.info("Database routes registered at /db/*")
 except ImportError as e:
     logger.warning("Database routes not available: %s", e)
-
-
-# ============================================
-# WORKER POOL LIFECYCLE
-# ============================================
-
-@app.on_event("startup")
-async def start_worker_pool():
-    """Initialize background worker pool on startup"""
-    try:
-        from analysis.worker_pool import get_worker_pool
-        pool = await get_worker_pool()
-        logger.info("Worker pool started", extra={"max_workers": pool.max_workers})
-    except Exception as e:
-        logger.warning("Worker pool not available: %s", e)
-
-@app.on_event("shutdown")
-async def shutdown_worker_pool():
-    """Graceful worker pool shutdown"""
-    try:
-        from analysis.worker_pool import shutdown_worker_pool as _shutdown
-        await _shutdown()
-        logger.info("Worker pool stopped")
-    except Exception as e:
-        logger.error("Worker pool shutdown error: %s", e)
 
 
 # ============================================
@@ -952,6 +955,8 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
         return {
             "success": True,
             "displacements": result['displacements'],
+            "reactions": result.get('reactions', {}),
+            "member_forces": result.get('member_forces', {}),
             "stats": {
                 "solve_time_ms": result.get('solve_time_ms', 0),
                 "total_time_ms": total_time,
@@ -1022,29 +1027,31 @@ async def generate_report_endpoint(request: ReportRequest):
         generator = ReportGenerator(settings)
         
         # Generate to temp file
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
-            output_path = tmp.name
+        output_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
+                output_path = tmp.name
+                
+            generator.generate_report(request.analysis_data, output_path)
             
-        generator.generate_report(request.analysis_data, output_path)
-        
-        # Read back as base64
-        with open(output_path, "rb") as f:
-            pdf_bytes = f.read()
-            pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
-            
-        # Cleanup
-        os.unlink(output_path)
-        
-        return {
-            "success": True,
-            "pdf_base64": pdf_base64,
-            "filename": f"{settings.project_name.replace(' ', '_')}_Report.pdf"
-        }
+            # Read back as base64
+            with open(output_path, "rb") as f:
+                pdf_bytes = f.read()
+                pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
+                
+            return {
+                "success": True,
+                "pdf_base64": pdf_base64,
+                "filename": f"{settings.project_name.replace(' ', '_')}_Report.pdf"
+            }
+        finally:
+            if output_path and os.path.exists(output_path):
+                os.unlink(output_path)
         
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Report generation failed")
 
 
 # ============================================
@@ -1872,28 +1879,37 @@ async def generate_pdf_report(request: GenerateReportRequest):
         generator = ReportGenerator(settings)
         
         # Create temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
-            output_path = tmp.name
-        
-        # Generate PDF
-        generator.generate_report(request.analysis_data, output_path)
-        
-        # Return as downloadable file
-        filename = f"{customization.project_name.replace(' ', '_')}_Report_{datetime.now().strftime('%Y%m%d')}.pdf"
-        
-        return FileResponse(
-            output_path,
-            media_type='application/pdf',
-            filename=filename,
-            headers={
-                "Content-Disposition": f"attachment; filename={filename}"
-            }
-        )
+        output_path = None
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+                output_path = tmp.name
+            
+            # Generate PDF
+            generator.generate_report(request.analysis_data, output_path)
+            
+            # Return as downloadable file — use BackgroundTask to clean up after response
+            from starlette.background import BackgroundTask
+            filename = f"{customization.project_name.replace(' ', '_')}_Report_{datetime.now().strftime('%Y%m%d')}.pdf"
+            
+            return FileResponse(
+                output_path,
+                media_type='application/pdf',
+                filename=filename,
+                headers={
+                    "Content-Disposition": f"attachment; filename={filename}"
+                },
+                background=BackgroundTask(os.unlink, output_path),
+            )
+        except Exception:
+            # Clean up on generation failure
+            if output_path and os.path.exists(output_path):
+                os.unlink(output_path)
+            raise
         
     except Exception as e:
         print(f"[REPORT] Generation error: {e}")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Report generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Report generation failed")
 
 
 @app.post("/stress/calculate")
