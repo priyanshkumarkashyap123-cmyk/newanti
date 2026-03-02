@@ -289,7 +289,7 @@ export function DataTable<T extends Record<string, unknown>>({
               )}
             />
             {searchQuery && (
-              <button
+              <button type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               >

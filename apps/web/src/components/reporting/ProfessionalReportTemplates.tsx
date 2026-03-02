@@ -247,7 +247,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
-                <button
+                <button type="button"
                     key={key}
                     onClick={() => onSelect(key as ReportTemplate)}
                     className={`
@@ -323,14 +323,14 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                     {includedCount} of {sections.length} sections included
                 </span>
                 <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                         onClick={selectAll}
                         className="text-xs text-cyan-400 hover:text-cyan-300 font-medium"
                     >
                         Select All
                     </button>
                     <span className="text-slate-500">|</span>
-                    <button
+                    <button type="button"
                         onClick={selectNone}
                         className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
                     >
@@ -352,7 +352,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                         `}
                     >
                         <div className="flex items-center p-3">
-                            <button
+                            <button type="button"
                                 onClick={() => toggleSection(section.id)}
                                 className={`
                                     w-5 h-5 rounded flex items-center justify-center mr-3 transition-colors
@@ -371,7 +371,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                             </div>
                             
                             {section.subsections && section.subsections.length > 0 && (
-                                <button
+                                <button type="button"
                                     onClick={() => toggleExpanded(section.id)}
                                     className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                                 >
@@ -721,7 +721,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 <div className="flex items-center justify-between">
                     {steps.map((step, index) => (
                         <React.Fragment key={step.number}>
-                            <button
+                            <button type="button"
                                 onClick={() => setActiveStep(step.number)}
                                 className={`
                                     flex items-center gap-2 px-4 py-2 rounded-lg transition-all
@@ -797,7 +797,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                 <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Output Format</label>
                                 <div className="grid grid-cols-4 gap-2">
                                     {(['pdf', 'docx', 'html', 'print'] as const).map(type => (
-                                        <button
+                                        <button type="button"
                                             key={type}
                                             onClick={() => setOutput(prev => ({ ...prev, type }))}
                                             className={`
@@ -819,7 +819,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                 <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Quality</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['draft', 'standard', 'high'] as const).map(quality => (
-                                        <button
+                                        <button type="button"
                                             key={quality}
                                             onClick={() => setOutput(prev => ({ ...prev, quality }))}
                                             className={`
@@ -861,7 +861,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                             </div>
                             
                             {/* Generate Button */}
-                            <button
+                            <button type="button"
                                 onClick={handleGenerate}
                                 disabled={isGenerating}
                                 className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -891,7 +891,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
             
             {/* Navigation */}
             <div className="px-6 py-4 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex justify-between">
-                <button
+                <button type="button"
                     onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
                     disabled={activeStep === 1}
                     className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -900,7 +900,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 </button>
                 
                 {activeStep < 4 && (
-                    <button
+                    <button type="button"
                         onClick={() => setActiveStep(Math.min(4, activeStep + 1))}
                         className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400 transition-colors"
                     >

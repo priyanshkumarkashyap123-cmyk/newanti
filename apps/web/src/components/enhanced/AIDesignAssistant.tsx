@@ -344,7 +344,7 @@ const MessageBubble: React.FC<{
                     </div>
                     <p className="text-sm text-slate-500 dark:text-slate-400">{suggestion.description}</p>
                   </div>
-                  <button className="shrink-0 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-slate-900 dark:text-white transition-colors">
+                  <button type="button" className="shrink-0 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-slate-900 dark:text-white transition-colors">
                     Apply
                   </button>
                 </div>
@@ -429,24 +429,24 @@ const MessageBubble: React.FC<{
         {/* Actions */}
         {!isUser && !message.isLoading && (
           <div className="flex items-center gap-2 mt-2">
-            <button
+            <button type="button"
               onClick={onCopy}
               className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               title="Copy"
             >
               <Copy className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={onRegenerate}
               className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               title="Regenerate"
             >
               <RotateCw className="w-4 h-4" />
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-emerald-400 transition-colors" title="Good response">
+            <button type="button" className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-emerald-400 transition-colors" title="Good response">
               <ThumbsUp className="w-4 h-4" />
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors" title="Poor response">
+            <button type="button" className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors" title="Poor response">
               <ThumbsDown className="w-4 h-4" />
             </button>
           </div>
@@ -626,14 +626,14 @@ Format important sections with **bold**.`;
           </div>
           
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={() => setShowHistory(!showHistory)}
               className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               title="History"
             >
               <History className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() => setIsExpanded(!isExpanded)}
               className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
@@ -645,7 +645,7 @@ Format important sections with **bold**.`;
         {/* Quick Actions */}
         <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
           {QUICK_ACTIONS.map((action) => (
-            <button
+            <button type="button"
               key={action.id}
               onClick={() => handleQuickAction(action)}
               className="shrink-0 flex items-center gap-2 px-3 py-1.5 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all"
@@ -686,7 +686,7 @@ Format important sections with **bold**.`;
               placeholder="Ask about your design..."
               className="w-full px-4 py-3 pr-12 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
             />
-            <button
+            <button type="button"
               onClick={toggleRecording}
               className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors ${
                 isRecording
@@ -698,7 +698,7 @@ Format important sections with **bold**.`;
             </button>
           </div>
           
-          <button
+          <button type="button"
             onClick={() => handleSend()}
             disabled={!inputValue.trim()}
             className="p-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-xl transition-all disabled:cursor-not-allowed"
@@ -724,7 +724,7 @@ Format important sections with **bold**.`;
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium text-slate-900 dark:text-white">Chat History</h3>
-              <button
+              <button type="button"
                 onClick={() => setShowHistory(false)}
                 className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
               >
@@ -734,7 +734,7 @@ Format important sections with **bold**.`;
             
             <div className="space-y-2">
               {['Beam optimization analysis', 'Column design check', 'Foundation sizing'].map((title, i) => (
-                <button
+                <button type="button"
                   key={i}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 text-left transition-colors"
                 >

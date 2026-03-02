@@ -545,7 +545,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
             {/* Action button */}
             {toast.action && (
               <div className="mt-3">
-                <button
+                <button type="button"
                   onClick={() => {
                     toast.action?.onClick();
                     handleDismiss();
@@ -567,7 +567,7 @@ const ToastItem: FC<ToastItemProps> = ({ toast, onDismiss }) => {
 
           {/* Dismiss button */}
           {toast.dismissible && (
-            <button
+            <button type="button"
               onClick={handleDismiss}
               className="flex-shrink-0 text-slate-500 hover:text-slate-700 dark:text-slate-200 transition-colors p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
               aria-label="Dismiss notification"

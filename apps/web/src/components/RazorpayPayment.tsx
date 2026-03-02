@@ -202,7 +202,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
           planType === "yearly"
             ? "Annual Pro Subscription"
             : "Monthly Pro Subscription",
-        image: "/logo.png",
+        image: "/branding/logo.png",
         handler: async (response) => {
           try {
             // 4. Verify payment on backend
@@ -283,7 +283,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
 
         {error && <div style={styles.error}>{error}</div>}
 
-        <button
+        <button type="button"
           style={styles.button}
           onClick={handleUpgrade}
           disabled={loading}

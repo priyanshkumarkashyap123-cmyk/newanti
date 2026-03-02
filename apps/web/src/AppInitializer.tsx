@@ -353,7 +353,7 @@ const ErrorScreen = ({
     <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
     <h1 style={{ marginBottom: 16, color: "#ef4444" }}>Initialization Error</h1>
     <p style={{ opacity: 0.7, marginBottom: 24 }}>{error}</p>
-    <button
+    <button type="button"
       onClick={onRetry}
       style={{
         padding: "12px 24px",

@@ -181,7 +181,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
           ].map(tab => {
             const Icon = tab.icon;
             return (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors text-xs font-semibold uppercase tracking-wider ${
@@ -396,7 +396,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                 </label>
                 <div className="flex gap-2">
                   {(['PDF', 'DOCX', 'HTML'] as const).map(fmt => (
-                    <button
+                    <button type="button"
                       key={fmt}
                       onClick={() => updateCustomization('format', fmt)}
                       className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${
@@ -416,7 +416,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                 </label>
                 <div className="flex gap-2">
                   {['A4', 'Letter'].map(size => (
-                    <button
+                    <button type="button"
                       key={size}
                       onClick={() => updateCustomization('page_size', size)}
                       className={`px-5 py-2 rounded-lg font-medium text-sm transition-all ${
@@ -442,7 +442,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                     { name: 'Red', color: [0.8, 0.2, 0.2] },
                     { name: 'Purple', color: [0.5, 0.2, 0.7] }
                   ].map(preset => (
-                    <button
+                    <button type="button"
                       key={preset.name}
                       onClick={() => updateCustomization('primary_color', preset.color as [number, number, number])}
                       className="flex flex-col items-center gap-1.5"

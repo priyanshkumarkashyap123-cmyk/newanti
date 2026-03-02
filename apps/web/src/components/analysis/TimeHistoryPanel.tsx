@@ -104,7 +104,7 @@ export const TimeHistoryPanel: React.FC = () => {
       </div>
 
       {/* Run Button */}
-      <button
+      <button type="button"
         onClick={runAnalysis}
         disabled={loading}
         className={`w-full py-3 px-6 rounded-lg font-semibold text-slate-900 dark:text-white transition-all duration-200 ${

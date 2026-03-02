@@ -148,7 +148,7 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
   }, [snapshot.timestamp]);
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`w-full text-left p-3 rounded-lg transition-all ${
         isCurrent
@@ -210,7 +210,7 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
 
   return (
     <div className="relative">
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
       >
@@ -244,7 +244,7 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
                       : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
-                  <button
+                  <button type="button"
                     onClick={() => {
                       onSwitchBranch(branch.id);
                       setIsOpen(false);
@@ -257,7 +257,7 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
                     </span>
                   </button>
                   {branch.id !== 'main' && (
-                    <button
+                    <button type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         onDeleteBranch(branch.id);
@@ -272,7 +272,7 @@ const BranchSelector: React.FC<BranchSelectorProps> = ({
               ))}
             </div>
             <div className="border-t border-slate-200 dark:border-slate-700 p-2">
-              <button
+              <button type="button"
                 onClick={() => {
                   onCreateBranch();
                   setIsOpen(false);
@@ -427,7 +427,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <button
+            <button type="button"
               onClick={loadStorageInfo}
               className="hover:text-slate-900 dark:hover:text-white transition-colors"
             >
@@ -435,7 +435,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
                 ? `${storageInfo.snapshots} snapshots • ${formatBytes(storageInfo.bytes)}`
                 : 'View storage info'}
             </button>
-            <button
+            <button type="button"
               onClick={handleClearHistory}
               className="text-red-400 hover:text-red-300 transition-colors"
             >
@@ -477,7 +477,7 @@ export const HistoryButton: React.FC<HistoryButtonProps> = ({ projectId }) => {
   return (
     <>
       <div className="flex items-center gap-1">
-        <button
+        <button type="button"
           onClick={undo}
           disabled={!canUndo}
           className="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
@@ -485,7 +485,7 @@ export const HistoryButton: React.FC<HistoryButtonProps> = ({ projectId }) => {
         >
           <UndoIcon />
         </button>
-        <button
+        <button type="button"
           onClick={redo}
           disabled={!canRedo}
           className="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
@@ -493,7 +493,7 @@ export const HistoryButton: React.FC<HistoryButtonProps> = ({ projectId }) => {
         >
           <RedoIcon />
         </button>
-        <button
+        <button type="button"
           onClick={() => setIsOpen(true)}
           className="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           title="View history"

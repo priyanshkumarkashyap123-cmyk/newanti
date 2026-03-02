@@ -323,7 +323,7 @@ export const AnimatedModeShapes: React.FC<{
           Animated Mode Shapes
         </h3>
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => setIsPlaying(!isPlaying)}
             className={`px-3 py-1 rounded text-sm font-medium ${
               isPlaying ? "bg-yellow-500 text-black" : "bg-green-500 text-white"
@@ -331,7 +331,7 @@ export const AnimatedModeShapes: React.FC<{
           >
             {isPlaying ? "⏸ Pause" : "▶ Play"}
           </button>
-          <button
+          <button type="button"
             onClick={exportImage}
             className="px-3 py-1 bg-slate-700 text-slate-900 dark:text-white rounded text-sm hover:bg-slate-600"
           >
@@ -357,7 +357,7 @@ export const AnimatedModeShapes: React.FC<{
           <label className="text-slate-500 dark:text-slate-400 text-sm">Mode:</label>
           <div className="flex gap-1">
             {modeShapes.slice(0, 10).map((mode, i) => (
-              <button
+              <button type="button"
                 key={i}
                 onClick={() => setSelectedMode(i)}
                 className={`w-8 h-8 rounded text-sm font-medium ${

@@ -301,7 +301,7 @@ export const ToolboxPage: FC = () => {
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
                 <div className="flex flex-wrap items-center gap-3">
                     <span className="text-slate-500 dark:text-slate-400 text-sm">Filter:</span>
-                    <button
+                    <button type="button"
                         onClick={() => setSelectedCategory(null)}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${!selectedCategory
                                 ? 'bg-blue-600 text-white'
@@ -311,7 +311,7 @@ export const ToolboxPage: FC = () => {
                         All Tools
                     </button>
                     {Object.entries(CATEGORIES).map(([key, { label, color }]) => (
-                        <button
+                        <button type="button"
                             key={key}
                             onClick={() => setSelectedCategory(key)}
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === key
@@ -337,7 +337,7 @@ export const ToolboxPage: FC = () => {
                     <div className="text-center py-16">
                         <Search className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                         <p className="text-slate-500 dark:text-slate-400">No tools found matching "{searchQuery}"</p>
-                        <button
+                        <button type="button"
                             onClick={() => setSearchQuery('')}
                             className="text-blue-400 mt-2 hover:underline"
                         >

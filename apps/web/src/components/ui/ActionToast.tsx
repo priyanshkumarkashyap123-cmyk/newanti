@@ -73,7 +73,7 @@ export const ActionToast: FC<ToastProps> = ({
             {icons[type]}
             <span className="text-sm font-medium">{message}</span>
             {action && (
-                <button 
+                <button type="button" 
                     onClick={action.onClick}
                     className="ml-2 px-2 py-1 text-xs font-semibold rounded bg-white/10 hover:bg-white/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
@@ -81,7 +81,7 @@ export const ActionToast: FC<ToastProps> = ({
                 </button>
             )}
             {onClose && (
-                <button 
+                <button type="button" 
                     onClick={onClose} 
                     className="ml-2 p-1 rounded hover:bg-white/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     aria-label="Dismiss notification"

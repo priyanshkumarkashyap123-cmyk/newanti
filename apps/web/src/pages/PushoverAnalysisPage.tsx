@@ -201,7 +201,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                   { value: 'first-mode', label: '1st Mode', icon: '∿' },
                   { value: 'adaptive', label: 'Adaptive', icon: '⚡' }
                 ].map(({ value, label, icon }) => (
-                  <button
+                  <button type="button"
                     key={value}
                     onClick={() => updateInput('loadPattern', value)}
                     className={`py-3 px-4 rounded-lg font-medium transition-colors flex flex-col items-center gap-2 ${
@@ -314,7 +314,7 @@ export const PushoverAnalysisPage: React.FC = () => {
             </div>
 
             {/* Analyze Button */}
-            <button
+            <button type="button"
               onClick={handleAnalyze}
               disabled={analyzing}
               className="w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
@@ -436,7 +436,7 @@ export const PushoverAnalysisPage: React.FC = () => {
                   )}
 
                   {/* Download Report */}
-                  <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
+                  <button type="button" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
                     <Download className="w-5 h-5" />
                     Download Report
                   </button>

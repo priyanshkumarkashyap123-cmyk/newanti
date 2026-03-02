@@ -121,7 +121,7 @@ export const RCDesignPanel: React.FC = () => {
                         </div>
                     </div>
 
-                    <button
+                    <button type="button"
                         onClick={handleDesign}
                         disabled={loading}
                         className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold transition-all disabled:opacity-50"

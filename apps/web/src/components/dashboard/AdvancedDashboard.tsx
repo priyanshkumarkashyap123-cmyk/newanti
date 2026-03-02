@@ -253,14 +253,14 @@ const ProjectCard: React.FC<{
 
       {/* Actions */}
       <div className="flex border-t border-slate-200 dark:border-slate-700">
-        <button
+        <button type="button"
           onClick={onOpen}
           className="flex-1 py-2 text-sm font-medium text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:text-slate-200 transition-colors"
         >
           Open
         </button>
         <div className="w-px bg-slate-200 dark:bg-slate-700" />
-        <button
+        <button type="button"
           onClick={onAnalyze}
           className="flex-1 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
         >
@@ -404,7 +404,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             <div className="flex items-center gap-4">
               {/* Tab Switcher */}
               <div className="flex rounded-lg bg-slate-200 dark:bg-slate-700 p-1">
-                <button
+                <button type="button"
                   onClick={() => setActiveTab('projects')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     activeTab === 'projects' ? 'bg-slate-600 text-slate-800 dark:text-slate-100 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-200'
@@ -412,7 +412,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 >
                   Projects
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setActiveTab('analytics')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     activeTab === 'analytics' ? 'bg-slate-600 text-slate-800 dark:text-slate-100 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-200'
@@ -422,7 +422,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 </button>
               </div>
               {/* Notification Badge */}
-              <button className="relative rounded-full p-2 hover:bg-slate-200 dark:hover:bg-slate-700">
+              <button type="button" className="relative rounded-full p-2 hover:bg-slate-200 dark:hover:bg-slate-700">
                 <svg className="w-6 h-6 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
@@ -510,7 +510,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Recent Projects</h2>
-                <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
+                <button type="button" className="text-sm font-medium text-blue-600 hover:text-blue-700">
                   View All →
                 </button>
               </div>
@@ -552,7 +552,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Notifications</h2>
                 {unreadCount > 0 && (
-                  <button
+                  <button type="button"
                     onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
                     className="text-sm text-blue-600 hover:text-blue-700"
                   >
@@ -603,7 +603,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 </div>
               </div>
               
-              <button className="w-full mt-4 py-2 text-sm font-medium text-blue-400 border border-blue-700 rounded-lg hover:bg-blue-900/30 transition-colors">
+              <button type="button" className="w-full mt-4 py-2 text-sm font-medium text-blue-400 border border-blue-700 rounded-lg hover:bg-blue-900/30 transition-colors">
                 Upgrade Plan
               </button>
             </section>
@@ -615,7 +615,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                 Use the AI Assistant to quickly generate optimized structural designs. 
                 Try saying "Create a portal frame for 15m span warehouse".
               </p>
-              <button
+              <button type="button"
                 onClick={() => onOpenAI?.()}
                 className="mt-4 w-full py-2 bg-white/20 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors"
               >

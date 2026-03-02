@@ -304,7 +304,7 @@ export const ResultsTable: FC = () => {
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                     Analysis Results
                 </h3>
-                <button
+                <button type="button"
                     onClick={handleExport}
                     className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium transition-all shadow-lg shadow-blue-500/20"
                 >
@@ -319,7 +319,7 @@ export const ResultsTable: FC = () => {
                     { id: 'reactions', label: 'Reactions' },
                     { id: 'forces', label: 'Forces' }
                 ].map(tab => (
-                    <button
+                    <button type="button"
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as TabType)}
                         className={`

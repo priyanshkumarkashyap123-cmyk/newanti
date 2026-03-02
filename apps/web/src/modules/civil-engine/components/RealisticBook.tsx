@@ -388,7 +388,7 @@ const TableOfContentsContent: React.FC<{ onNavigate: (page: number) => void }> =
       
       <div className="space-y-1">
         {/* Preface */}
-        <button 
+        <button type="button" 
           onClick={() => onNavigate(2)}
           className="w-full flex items-center gap-4 py-3 px-4 rounded-lg 
             hover:bg-amber-100/50 transition-colors group text-left"
@@ -402,7 +402,7 @@ const TableOfContentsContent: React.FC<{ onNavigate: (page: number) => void }> =
         
         {/* Chapters */}
         {chapters.map((ch, i) => (
-          <button
+          <button type="button"
             key={ch.num}
             onClick={() => onNavigate(4 + i * 2)}
             className="w-full flex items-center gap-4 py-3 px-4 rounded-lg 
@@ -423,7 +423,7 @@ const TableOfContentsContent: React.FC<{ onNavigate: (page: number) => void }> =
         
         {/* Appendix */}
         <div className="pt-4 mt-4 border-t border-amber-200/50">
-          <button
+          <button type="button"
             onClick={() => onNavigate(16)}
             className="w-full flex items-center gap-4 py-3 px-4 rounded-lg 
               hover:bg-amber-100/50 transition-colors group text-left"
@@ -848,7 +848,7 @@ export const RealisticBook: React.FC = () => {
       {/* Book */}
       <div className="relative">
         {/* Navigation arrows */}
-        <button
+        <button type="button"
           onClick={() => flipPage('prev')}
           disabled={currentSpread === 0 || isFlipping}
           className="nav-arrow left"
@@ -857,7 +857,7 @@ export const RealisticBook: React.FC = () => {
           ←
         </button>
         
-        <button
+        <button type="button"
           onClick={() => flipPage('next')}
           disabled={currentSpread >= totalSpreads - 1 || isFlipping}
           className="nav-arrow right"
@@ -911,7 +911,7 @@ export const RealisticBook: React.FC = () => {
         {/* Progress dots */}
         <div className="flex gap-2">
           {Array.from({ length: totalSpreads }).map((_, i) => (
-            <button
+            <button type="button"
               key={i}
               onClick={() => goToSpread(i)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${

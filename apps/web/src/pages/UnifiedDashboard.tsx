@@ -335,7 +335,7 @@ const ProjectCard: FC<{
       </div>
 
       {/* Delete button (stop propagation) */}
-      <button
+      <button type="button"
         onClick={(e) => {
           e.stopPropagation();
           onDelete();
@@ -552,7 +552,7 @@ export const UnifiedDashboard: FC<{
             ) : (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-500">{userName}</span>
-                <button
+                <button type="button"
                   onClick={() => signOut()}
                   className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.04] transition-colors"
                 >
@@ -578,7 +578,7 @@ export const UnifiedDashboard: FC<{
                 : "Your workspace is empty — create your first project"}
             </p>
           </div>
-          <button
+          <button type="button"
             onClick={() => navigate("/app")}
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white
               hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20 shrink-0"
@@ -619,7 +619,7 @@ export const UnifiedDashboard: FC<{
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {QUICK_ACTIONS.map((a) => (
-              <button
+              <button type="button"
                 key={a.id}
                 onClick={() => navigate(a.route)}
                 className="group flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02]
@@ -708,7 +708,7 @@ export const UnifiedDashboard: FC<{
               ) : projectsError ? (
                 <div className="col-span-full rounded-xl border border-red-500/20 bg-red-500/5 p-8 text-center">
                   <p className="text-sm text-red-400 mb-3">{projectsError}</p>
-                  <button
+                  <button type="button"
                     onClick={fetchProjects}
                     className="rounded-lg border border-red-500/20 px-4 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
                   >
@@ -743,7 +743,7 @@ export const UnifiedDashboard: FC<{
                       ? `Nothing matches "${searchQuery}". Try a different search.`
                       : "Create your first structural analysis project."}
                   </p>
-                  <button
+                  <button type="button"
                     onClick={() => navigate("/app")}
                     className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500 transition-colors"
                   >
@@ -763,7 +763,7 @@ export const UnifiedDashboard: FC<{
               </h3>
               <div className="space-y-1">
                 {TEMPLATES.map((t) => (
-                  <button
+                  <button type="button"
                     key={t.id}
                     onClick={() => navigate(`/app?template=${t.id}`)}
                     className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left

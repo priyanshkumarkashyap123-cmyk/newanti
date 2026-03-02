@@ -284,7 +284,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                                                 const isSelected = globalIndex === selectedIndex;
 
                                                 return (
-                                                    <button
+                                                    <button type="button"
                                                         key={cmd.id}
                                                         data-index={globalIndex}
                                                         onClick={cmd.action}

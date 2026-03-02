@@ -276,7 +276,7 @@ export const AIDesignWizard: React.FC<{
                 {/* Progress Bar */}
                 <div className="flex gap-1">
                     {DESIGN_STEPS.map((step, i) => (
-                        <button
+                        <button type="button"
                             key={step.step}
                             onClick={() => goToStep(step.step)}
                             className={`flex-1 h-2 rounded-full transition-colors ${i < currentStepIndex ? 'bg-green-500' :
@@ -322,7 +322,7 @@ export const AIDesignWizard: React.FC<{
                                     <p className="text-sm text-slate-700 dark:text-slate-200">{suggestion.message}</p>
                                 </div>
                                 {suggestion.action && !suggestion.applied && (
-                                    <button
+                                    <button type="button"
                                         onClick={() => applySuggestion(suggestion.id)}
                                         className="px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-400"
                                     >
@@ -368,7 +368,7 @@ export const AIDesignWizard: React.FC<{
 
             {/* Navigation Footer */}
             <div className="px-6 py-4 bg-slate-100 dark:bg-slate-800 border-t border-slate-700 flex justify-between">
-                <button
+                <button type="button"
                     onClick={prevStep}
                     disabled={currentStepIndex === 0}
                     className="px-4 py-2 bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -382,7 +382,7 @@ export const AIDesignWizard: React.FC<{
                     )}
                 </div>
 
-                <button
+                <button type="button"
                     onClick={nextStep}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-400"
                 >

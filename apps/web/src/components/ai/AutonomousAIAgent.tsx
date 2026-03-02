@@ -827,21 +827,21 @@ ${apiStatus}
         </div>
         
         <div className="flex items-center gap-1">
-          <button
+          <button type="button"
             onClick={() => setShowSettings(!showSettings)}
             className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'}`}
             title="Settings"
           >
             <Settings className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsExpanded(false)}
             className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title="Minimize"
@@ -875,7 +875,7 @@ ${apiStatus}
                     placeholder={hasApiKey ? '••••••••••••••••' : 'Enter your API key'}
                     className="flex-1 px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
                   />
-                  <button
+                  <button type="button"
                     onClick={handleSaveApiKey}
                     disabled={!apiKey.trim()}
                     className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium transition-colors"
@@ -893,7 +893,7 @@ ${apiStatus}
               
               <div className="flex items-center justify-between">
                 <label className="text-sm text-slate-600 dark:text-slate-300">Auto-execute plans</label>
-                <button
+                <button type="button"
                   onClick={() => setAutoExecute(!autoExecute)}
                   className={`relative w-11 h-6 rounded-full transition-colors ${autoExecute ? 'bg-purple-600' : 'bg-slate-200 dark:bg-slate-700'}`}
                 >
@@ -1002,7 +1002,7 @@ ${apiStatus}
                 {message.plan && message.actions && message.actions.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
                     <div className="flex items-center gap-2">
-                      <button
+                      <button type="button"
                         onClick={() => {
                           setPendingPlan(message.plan!);
                           handleExecutePlan();
@@ -1012,7 +1012,7 @@ ${apiStatus}
                         <Play className="w-4 h-4" />
                         Execute Plan ({message.actions.length} steps)
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => setInput('Modify the plan to...')}
                         className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm transition-colors"
                       >
@@ -1071,7 +1071,7 @@ ${apiStatus}
           </p>
           <div className="flex flex-wrap gap-2">
             {getContextualSuggestions().slice(0, 6).map((action, i) => (
-              <button
+              <button type="button"
                 key={i}
                 onClick={() => {
                   setInput(action.text);
@@ -1093,7 +1093,7 @@ ${apiStatus}
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Or start a conversation:</p>
           <div className="flex flex-wrap gap-2">
             {conversationStarters.map((starter, i) => (
-              <button
+              <button type="button"
                 key={i}
                 onClick={() => {
                   setInput(starter);
@@ -1124,7 +1124,7 @@ ${apiStatus}
             />
           </div>
           
-          <button
+          <button type="button"
             onClick={toggleVoice}
             className={`p-3 rounded-xl transition-all ${
               isListening
@@ -1136,7 +1136,7 @@ ${apiStatus}
             {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </button>
           
-          <button
+          <button type="button"
             onClick={handleSubmit}
             disabled={!input.trim() || processingState.status !== 'idle'}
             className="p-3 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 disabled:from-slate-700 disabled:to-slate-700 text-white rounded-xl transition-all disabled:cursor-not-allowed"

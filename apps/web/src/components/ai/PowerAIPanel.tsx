@@ -242,7 +242,7 @@ const QuickActionsGrid: FC<{
       {/* Category Tabs */}
       <div className="flex gap-1 overflow-x-auto pb-2">
         {categories.map(cat => (
-          <button
+          <button type="button"
             key={cat.id}
             onClick={() => onCategoryChange(cat.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
@@ -295,7 +295,7 @@ const ExpertModeToggle: FC<{
     <div className="space-y-3">
       <div className="flex gap-1">
         {modes.map(mode => (
-          <button
+          <button type="button"
             key={mode.id}
             onClick={() => onChange({ mode: mode.id as ExpertModeSettings['mode'] })}
             className={`flex-1 flex flex-col items-center p-2 rounded-lg transition-all ${
@@ -383,7 +383,7 @@ const MessageBubble: FC<{
             {/* Reasoning Steps */}
             {message.reasoning && message.reasoning.steps.length > 0 && (
               <div>
-                <button
+                <button type="button"
                   onClick={() => setShowDetails(!showDetails)}
                   className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                 >
@@ -428,13 +428,13 @@ const MessageBubble: FC<{
             {message.wasHelpful === undefined && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-500 dark:text-slate-400">Was this helpful?</span>
-                <button
+                <button type="button"
                   onClick={() => onFeedback(message.id, true)}
                   className="p-1 rounded hover:bg-green-500/20 text-slate-500 dark:text-slate-400 hover:text-green-400"
                 >
                   <ThumbsUp className="w-3 h-3" />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => onFeedback(message.id, false)}
                   className="p-1 rounded hover:bg-red-500/20 text-slate-500 dark:text-slate-400 hover:text-red-400"
                 >
@@ -681,7 +681,7 @@ Welcome to the **most powerful AI** in structural engineering!
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => setShowSettings(!showSettings)}
             className={`p-2 rounded-lg transition-all ${
               showSettings ? 'bg-violet-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -689,7 +689,7 @@ Welcome to the **most powerful AI** in structural engineering!
           >
             <Settings className="w-5 h-5" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
@@ -769,7 +769,7 @@ Welcome to the **most powerful AI** in structural engineering!
               <Zap className="w-4 h-4 text-violet-400" />
               <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Quick Actions</span>
             </div>
-            <button
+            <button type="button"
               onClick={() => setShowQuickActions(false)}
               className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
@@ -805,7 +805,7 @@ Welcome to the **most powerful AI** in structural engineering!
               style={{ minHeight: '44px', maxHeight: '120px' }}
             />
           </div>
-          <button
+          <button type="button"
             onClick={handleSubmit}
             disabled={!input.trim() || isProcessing}
             className="p-3 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-violet-500/25 transition-all"
@@ -828,7 +828,7 @@ Welcome to the **most powerful AI** in structural engineering!
             <span>•</span>
             <span>Powered by Gemini</span>
           </div>
-          <button
+          <button type="button"
             onClick={() => setShowQuickActions(!showQuickActions)}
             className="text-violet-400 hover:text-violet-300"
           >

@@ -75,7 +75,7 @@ export const CoordinateInputBar: FC<CoordinateInputBarProps> = memo(({
   return (
     <div className="flex items-center gap-2 h-full select-none">
       {/* Coordinate System Toggle */}
-      <button
+      <button type="button"
         onClick={() => onSystemChange?.(coordinateSystem === 'cartesian' ? 'cylindrical' : 'cartesian')}
         className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold 
                    text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
@@ -125,7 +125,7 @@ export const CoordinateInputBar: FC<CoordinateInputBarProps> = memo(({
               onKeyDown={(e) => handleKeyDown(e, 'z')}
               className="!w-16"
             />
-            <button
+            <button type="button"
               onClick={handleSubmit}
               className="ml-1 px-1.5 py-0.5 bg-blue-600/20 text-blue-400 rounded text-[9px] font-bold hover:bg-blue-600/30 transition-colors"
             >

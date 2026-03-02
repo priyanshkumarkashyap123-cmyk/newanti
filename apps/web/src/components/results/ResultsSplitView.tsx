@@ -107,14 +107,14 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
 
                 <div className="flex items-center gap-2">
                     {/* Panel Toggles */}
-                    <button
+                    <button type="button"
                         onClick={() => setLeftPanelOpen(!leftPanelOpen)}
                         className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={leftPanelOpen ? "Hide Table Panel" : "Show Table Panel"}
                     >
                         {leftPanelOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setBottomPanelOpen(!bottomPanelOpen)}
                         className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={bottomPanelOpen ? "Hide Control Panel" : "Show Control Panel"}
@@ -124,7 +124,7 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                     
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
                     
-                    <button
+                    <button type="button"
                         onClick={() => setIsFullscreen(!isFullscreen)}
                         className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
                         title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
@@ -133,7 +133,7 @@ export const ResultsSplitView: FC<ResultsSplitViewProps> = ({
                     </button>
                     
                     {onClose && (
-                        <button
+                        <button type="button"
                             onClick={onClose}
                             className="p-2 text-slate-500 dark:text-slate-400 hover:text-white hover:bg-red-800 rounded transition-colors"
                             title="Close Results View"
@@ -236,7 +236,7 @@ export const DockableResultsPanel: FC<DockableResultsPanelProps> = ({
             `}
         >
             {/* Collapse Toggle */}
-            <button
+            <button type="button"
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="absolute top-2 right-2 z-10 p-1 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
             >

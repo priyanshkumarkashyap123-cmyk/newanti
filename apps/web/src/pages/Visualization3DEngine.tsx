@@ -266,7 +266,7 @@ const Visualization3DEngine: React.FC = () => {
         <div className="flex items-center gap-1 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg p-1">
           {/* View Modes */}
           <div className="flex items-center gap-1 pr-2 border-r border-slate-600">
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({ ...prev, renderMode: "wireframe" }))
               }
@@ -275,7 +275,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Grid className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({ ...prev, renderMode: "solid" }))
               }
@@ -284,7 +284,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Box className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({
                   ...prev,
@@ -300,7 +300,7 @@ const Visualization3DEngine: React.FC = () => {
 
           {/* Display Modes */}
           <div className="flex items-center gap-1 px-2 border-r border-slate-600">
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "geometry" }))
               }
@@ -309,7 +309,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Hexagon className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "loads" }))
               }
@@ -318,7 +318,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Activity className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "deformed" }))
               }
@@ -327,7 +327,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Move className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "stress" }))
               }
@@ -336,7 +336,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Thermometer className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({ ...prev, displayMode: "diagrams" }))
               }
@@ -349,7 +349,7 @@ const Visualization3DEngine: React.FC = () => {
 
           {/* Tools */}
           <div className="flex items-center gap-1 px-2 border-r border-slate-600">
-            <button
+            <button type="button"
               onClick={() =>
                 setMeasurementTool((prev) => ({
                   ...prev,
@@ -362,7 +362,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Ruler className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSectionCuts((prev) =>
                   prev.map((sc, i) =>
@@ -375,7 +375,7 @@ const Visualization3DEngine: React.FC = () => {
             >
               <Scissors className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               onClick={() =>
                 setSettings((prev) => ({
                   ...prev,
@@ -391,26 +391,26 @@ const Visualization3DEngine: React.FC = () => {
 
           {/* Navigation */}
           <div className="flex items-center gap-1 pl-2">
-            <button
+            <button type="button"
               onClick={resetView}
               className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
               title="Reset View"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
               title="Zoom to Fit"
             >
               <Maximize2 className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
               title="Zoom In"
             >
               <ZoomIn className="w-4 h-4" />
             </button>
-            <button
+            <button type="button"
               className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-600"
               title="Zoom Out"
             >
@@ -421,21 +421,21 @@ const Visualization3DEngine: React.FC = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={takeScreenshot}
             className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
             title="Screenshot"
           >
             <Camera className="w-5 h-5" />
           </button>
-          <button
+          <button type="button"
             onClick={toggleRecording}
             className={`p-2 rounded ${isRecording ? "bg-red-600 text-white" : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"}`}
             title={isRecording ? "Stop Recording" : "Record Video"}
           >
             <Video className="w-5 h-5" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
@@ -446,7 +446,7 @@ const Visualization3DEngine: React.FC = () => {
               <Maximize2 className="w-5 h-5" />
             )}
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowRightPanel(!showRightPanel)}
             className="p-2 rounded text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
             title="Settings"
@@ -462,7 +462,7 @@ const Visualization3DEngine: React.FC = () => {
           <div className="w-64 bg-slate-100 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 flex flex-col">
             <div className="p-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
               <span className="text-slate-900 dark:text-white font-medium">Layers</span>
-              <button
+              <button type="button"
                 onClick={() => setShowLeftPanel(false)}
                 className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               >
@@ -472,7 +472,7 @@ const Visualization3DEngine: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {Object.entries(layers).map(([key, visible]) => (
-                <button
+                <button type="button"
                   key={key}
                   onClick={() => toggleLayer(key as keyof LayerVisibility)}
                   className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
@@ -496,7 +496,7 @@ const Visualization3DEngine: React.FC = () => {
               <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">View Presets</p>
               <div className="grid grid-cols-4 gap-1">
                 {viewPresets.map((preset) => (
-                  <button
+                  <button type="button"
                     key={preset.id}
                     onClick={() =>
                       setSettings((prev) => ({ ...prev, viewMode: preset.id }))
@@ -520,7 +520,7 @@ const Visualization3DEngine: React.FC = () => {
               <div className="space-y-2">
                 {sectionCuts.map((cut, index) => (
                   <div key={cut.id} className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                       onClick={() =>
                         setSectionCuts((prev) =>
                           prev.map((sc, i) =>
@@ -561,7 +561,7 @@ const Visualization3DEngine: React.FC = () => {
         )}
 
         {!showLeftPanel && (
-          <button
+          <button type="button"
             onClick={() => setShowLeftPanel(true)}
             className="absolute left-0 top-1/2 -translate-y-1/2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-r-lg p-2 z-10"
           >
@@ -702,21 +702,21 @@ const Visualization3DEngine: React.FC = () => {
           {/* Animation Controls (when in deformed/animation mode) */}
           {settings.displayMode === "deformed" && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-100 dark:bg-slate-800/90 rounded-lg px-4 py-2 flex items-center gap-3">
-              <button
+              <button type="button"
                 aria-label="Skip back"
                 title="Skip back"
                 className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
               >
                 <SkipBack className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               </button>
-              <button
+              <button type="button"
                 aria-label="Play animation"
                 title="Play animation"
                 className="p-2 bg-blue-600 hover:bg-blue-500 rounded-full"
               >
                 <Play className="w-4 h-4 text-white" />
               </button>
-              <button
+              <button type="button"
                 aria-label="Skip forward"
                 title="Skip forward"
                 className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
@@ -744,7 +744,7 @@ const Visualization3DEngine: React.FC = () => {
           <div className="w-72 bg-slate-100 dark:bg-slate-800 border-l border-slate-300 dark:border-slate-700 overflow-y-auto">
             <div className="p-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
               <span className="text-slate-900 dark:text-white font-medium">Settings</span>
-              <button
+              <button type="button"
                 onClick={() => setShowRightPanel(false)}
                 className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               >
@@ -827,7 +827,7 @@ const Visualization3DEngine: React.FC = () => {
                 <div className="grid grid-cols-5 gap-2">
                   {["#1e293b", "#0f172a", "#18181b", "#1f2937", "#111827"].map(
                     (color) => (
-                      <button
+                      <button type="button"
                         key={color}
                         onClick={() =>
                           setSettings((prev) => ({
@@ -879,15 +879,15 @@ const Visualization3DEngine: React.FC = () => {
                   Export
                 </h4>
                 <div className="space-y-2">
-                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
                     <Camera className="w-4 h-4" />
                     Screenshot (PNG)
                   </button>
-                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
                     <Video className="w-4 h-4" />
                     Record Video (MP4)
                   </button>
-                  <button className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm">
                     <Download className="w-4 h-4" />
                     Export 3D Model
                   </button>

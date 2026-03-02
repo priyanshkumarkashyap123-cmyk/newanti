@@ -342,7 +342,7 @@ PERFORM ANALYSIS
                     <span style={{ color: '#6B7280', fontSize: '11px' }}>
                         Ctrl+Enter to run
                     </span>
-                    <button style={buttonStyle} onClick={handleRun} disabled={isRunning}>
+                    <button type="button" style={buttonStyle} onClick={handleRun} disabled={isRunning}>
                         {isRunning ? '⏳ Running...' : '▶️ Run'}
                     </button>
                 </div>

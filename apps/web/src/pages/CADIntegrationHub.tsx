@@ -240,7 +240,7 @@ const CADIntegrationHub: React.FC = () => {
           <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">Supports AutoCAD 2024, MicroStation, and legacy formats</p>
           <div className="flex justify-center gap-4">
             {['DWG', 'DXF', 'DGN', 'PDF', 'IGES'].map((fmt) => (
-              <button
+              <button type="button"
                 key={fmt}
                 onClick={() => setImportSettings({ ...importSettings, format: fmt as CADImportSettings['format'] })}
                 className={`px-4 py-2 rounded-lg border-2 transition-all ${
@@ -434,10 +434,10 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Import Button */}
       <div className="flex justify-end gap-4">
-        <button className="px-6 py-3 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
+        <button type="button" className="px-6 py-3 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
           Preview
         </button>
-        <button
+        <button type="button"
           onClick={handleImport}
           className="px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-blue-500 transition-all flex items-center gap-3"
         >
@@ -458,7 +458,7 @@ const CADIntegrationHub: React.FC = () => {
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {['DWG', 'DXF', 'PDF', 'SVG', 'DGN'].map((fmt) => (
-            <button
+            <button type="button"
               key={fmt}
               onClick={() => setExportSettings({ ...exportSettings, format: fmt as CADExportSettings['format'] })}
               className={`p-4 rounded-lg border-2 text-center transition-all ${
@@ -503,7 +503,7 @@ const CADIntegrationHub: React.FC = () => {
             { id: 'details', label: 'Details', icon: '🔧' },
             { id: 'all', label: 'All Types', icon: '📦' },
           ].map((type) => (
-            <button
+            <button type="button"
               key={type.id}
               onClick={() => setExportSettings({ ...exportSettings, exportType: type.id as CADExportSettings['exportType'] })}
               className={`p-4 rounded-lg border-2 text-center transition-all ${
@@ -627,10 +627,10 @@ const CADIntegrationHub: React.FC = () => {
 
       {/* Export Button */}
       <div className="flex justify-end gap-4">
-        <button className="px-6 py-3 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
+        <button type="button" className="px-6 py-3 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600 transition-colors">
           Preview
         </button>
-        <button
+        <button type="button"
           onClick={handleExport}
           className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all flex items-center gap-3"
         >
@@ -649,7 +649,7 @@ const CADIntegrationHub: React.FC = () => {
             <span className="text-2xl">📑</span>
             Drawing Templates
           </h3>
-          <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>➕</span>
             Create Template
           </button>
@@ -673,7 +673,7 @@ const CADIntegrationHub: React.FC = () => {
                 <span>{template.scale}</span>
                 <span className="capitalize">{template.type}</span>
               </div>
-              <button className="w-full mt-3 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors opacity-0 group-hover:opacity-100">
+              <button type="button" className="w-full mt-3 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors opacity-0 group-hover:opacity-100">
                 Generate Drawing
               </button>
             </div>
@@ -787,7 +787,7 @@ const CADIntegrationHub: React.FC = () => {
         </div>
         
         <div className="flex justify-end mt-6">
-          <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all flex items-center gap-3">
+          <button type="button" className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all flex items-center gap-3">
             <span className="text-xl">📦</span>
             Generate All Drawings
           </button>
@@ -821,7 +821,7 @@ const CADIntegrationHub: React.FC = () => {
             { id: 'templates', label: 'Templates', icon: '📑' },
             { id: 'batch', label: 'Batch Export', icon: '📦' },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${

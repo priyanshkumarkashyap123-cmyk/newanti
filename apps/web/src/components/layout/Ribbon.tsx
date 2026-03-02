@@ -139,21 +139,21 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
         <div className="h-16 flex items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4">
             {/* Quick Actions */}
             <div className="flex items-center gap-1 pr-4 border-r border-slate-200 dark:border-slate-700">
-                <button
+                <button type="button"
                     onClick={() => onToolSelect('save')}
                     className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
                     title="Save (Ctrl+S)"
                 >
                     <Save className="w-4 h-4" />
                 </button>
-                <button
+                <button type="button"
                     onClick={() => onToolSelect('undo')}
                     className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
                     title="Undo (Ctrl+Z)"
                 >
                     <Undo className="w-4 h-4" />
                 </button>
-                <button
+                <button type="button"
                     onClick={() => onToolSelect('redo')}
                     className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
                     title="Redo (Ctrl+Y)"
@@ -173,7 +173,7 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
                                 const isActive = activeTool === tool.id;
 
                                 return (
-                                    <button
+                                    <button type="button"
                                         key={tool.id}
                                         onClick={() => onToolSelect(tool.id)}
                                         className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded transition-colors ${isActive
@@ -201,21 +201,21 @@ export const Ribbon: FC<RibbonProps> = ({ activeWorkflow, activeTool, onToolSele
 
             {/* View Controls */}
             <div className="flex items-center gap-1 pl-4 border-l border-slate-200 dark:border-slate-700">
-                <button
+                <button type="button"
                     onClick={() => onToolSelect('zoom-in')}
                     className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
                     title="Zoom In"
                 >
                     <ZoomIn className="w-4 h-4" />
                 </button>
-                <button
+                <button type="button"
                     onClick={() => onToolSelect('zoom-out')}
                     className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
                     title="Zoom Out"
                 >
                     <ZoomOut className="w-4 h-4" />
                 </button>
-                <button
+                <button type="button"
                     onClick={() => onToolSelect('fit-view')}
                     className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
                     title="Fit View"

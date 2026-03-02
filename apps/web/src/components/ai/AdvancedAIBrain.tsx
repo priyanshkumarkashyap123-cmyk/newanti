@@ -474,13 +474,13 @@ export const AdvancedAIBrain: FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button
+          <button type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
             className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsExpanded(false)}
             className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
@@ -528,7 +528,7 @@ export const AdvancedAIBrain: FC = () => {
               </div>
               {message.role === 'assistant' && (
                 <div className="flex items-center gap-2 mt-1">
-                  <button
+                  <button type="button"
                     onClick={() => copyToClipboard(message.content, message.id)}
                     className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
@@ -556,7 +556,7 @@ export const AdvancedAIBrain: FC = () => {
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Quick actions:</p>
           <div className="flex flex-wrap gap-2">
             {QUICK_PROMPTS.map((prompt, i) => (
-              <button
+              <button type="button"
                 key={i}
                 onClick={() => handleQuickPrompt(prompt.text)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -585,7 +585,7 @@ export const AdvancedAIBrain: FC = () => {
             />
             <div className="absolute right-2 bottom-2 flex items-center gap-1">
               {recognitionRef.current && (
-                <button
+                <button type="button"
                   onClick={toggleVoice}
                   className={`p-2 rounded-lg transition-colors ${
                     isListening 
@@ -596,7 +596,7 @@ export const AdvancedAIBrain: FC = () => {
                   {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                 </button>
               )}
-              <button
+              <button type="button"
                 onClick={handleSubmit}
                 disabled={!input.trim() || isLoading}
                 className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"

@@ -401,7 +401,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
                         className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
                     >
@@ -464,7 +464,7 @@ export const NodeInputPanel: FC<NodeInputPanelProps> = ({
                                 {/* Quick presets */}
                                 <div className="flex flex-wrap gap-1 mb-2">
                                     {SUPPORT_PRESETS.map((preset) => (
-                                        <button
+                                        <button type="button"
                                             key={preset.label}
                                             onClick={() => applySupportPreset(preset)}
                                             className="px-2 py-0.5 text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
@@ -551,7 +551,7 @@ export const LoadInputPanel: FC<LoadInputPanelProps> = ({
                     <Zap size={14} className="text-yellow-400" />
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Load {load.id}</span>
                 </div>
-                <button
+                <button type="button"
                     onClick={onDelete}
                     className="p-1 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
                 >
@@ -683,7 +683,7 @@ export const AnalysisProgress: FC<AnalysisProgressProps> = ({
             <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Analysis Progress</h4>
                 {onCancel && stage !== 'complete' && stage !== 'error' && (
-                    <button
+                    <button type="button"
                         onClick={onCancel}
                         className="text-xs text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
                     >
@@ -760,7 +760,7 @@ export const MaterialSelector: FC<MaterialSelectorProps> = ({
     return (
         <div className="relative">
             <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">Material</label>
-            <button
+            <button type="button"
                 onClick={() => setShowPresets(!showPresets)}
                 className="w-full px-3 py-1.5 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-md 
                          text-sm text-left text-slate-700 dark:text-slate-200 hover:border-slate-500 
@@ -782,7 +782,7 @@ export const MaterialSelector: FC<MaterialSelectorProps> = ({
                     >
                         <div className="max-h-60 overflow-y-auto">
                             {allMaterials.map((mat) => (
-                                <button
+                                <button type="button"
                                     key={mat.id}
                                     onClick={() => {
                                         onChange(mat.id);

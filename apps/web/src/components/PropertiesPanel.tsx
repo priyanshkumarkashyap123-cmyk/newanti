@@ -162,7 +162,7 @@ const PanelSection: FC<{
     const [open, setOpen] = useState(defaultOpen);
     return (
         <div className="flex flex-col">
-            <button
+            <button type="button"
                 onClick={() => setOpen(!open)}
                 className="flex items-center gap-1.5 py-1 text-left group"
             >
@@ -195,7 +195,7 @@ const DofToggle: FC<{ label: string; sub: string; active: boolean; onChange: (v:
 
 /** Preset button for support types */
 const PresetBtn: FC<{ label: string; active: boolean; onClick: () => void; title?: string }> = ({ label, active, onClick, title }) => (
-    <button
+    <button type="button"
         onClick={onClick}
         title={title}
         className={`flex-1 py-1 px-2 rounded text-[10px] font-medium transition-all
@@ -295,7 +295,7 @@ export const PropertiesPanel: FC = () => {
     // ================================
     if (isMinimized) {
         return (
-            <button
+            <button type="button"
                 onClick={() => setIsMinimized(false)}
                 className="w-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 rounded-lg
                            px-3 py-2.5 text-slate-700 dark:text-slate-200 cursor-pointer flex items-center gap-2 text-[13px]
@@ -317,7 +317,7 @@ export const PropertiesPanel: FC = () => {
             <div className={panelCls}>
                 <div className="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2 mb-1">
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Properties</h3>
-                    <button onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
+                    <button type="button" onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
                         <Minimize2 className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -388,7 +388,7 @@ export const PropertiesPanel: FC = () => {
                                 {selectedMembers.length} Members
                             </span>
                         </h3>
-                        <button onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
+                        <button type="button" onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
                             <Minimize2 className="w-3.5 h-3.5" />
                         </button>
                     </div>
@@ -439,7 +439,7 @@ export const PropertiesPanel: FC = () => {
 
                     <Divider />
 
-                    <button
+                    <button type="button"
                         onClick={() => selectedMembers.forEach(m => useModelStore.getState().removeMember(m.id))}
                         className="w-full py-1.5 rounded border border-red-500/40 text-red-400 text-xs font-medium
                                    hover:bg-red-500/10 transition-colors flex items-center justify-center gap-1.5"
@@ -455,7 +455,7 @@ export const PropertiesPanel: FC = () => {
             <div className={panelCls}>
                 <div className="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2 mb-1">
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Multiple Selection</h3>
-                    <button onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
+                    <button type="button" onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
                         <Minimize2 className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -463,7 +463,7 @@ export const PropertiesPanel: FC = () => {
                     {selectedNodes.length > 0 && <div className="flex items-center gap-1.5"><CircleDot className="w-3 h-3 text-blue-400" /> {selectedNodes.length} Nodes</div>}
                     {selectedMembers.length > 0 && <div className="flex items-center gap-1.5"><Link2 className="w-3 h-3 text-orange-400" /> {selectedMembers.length} Members</div>}
                 </div>
-                <button
+                <button type="button"
                     onClick={() => useModelStore.getState().deleteSelection()}
                     className="w-full py-1.5 rounded border border-red-500/40 text-red-400 text-xs font-medium
                                hover:bg-red-500/10 transition-colors flex items-center justify-center gap-1.5"
@@ -519,7 +519,7 @@ export const PropertiesPanel: FC = () => {
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2 mb-1">
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Node Properties</h3>
-                    <button onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
+                    <button type="button" onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
                         <Minimize2 className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -606,7 +606,7 @@ export const PropertiesPanel: FC = () => {
                 <PanelSection icon={<ArrowDown className="w-3.5 h-3.5 text-yellow-400" />} label="Nodal Loads">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-[10px] text-slate-500">{nodeLoads.length} load(s) applied</span>
-                        <button
+                        <button type="button"
                             onClick={() => setShowFullLoadInput(!showFullLoadInput)}
                             className="text-[10px] text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center gap-0.5"
                         >
@@ -626,7 +626,7 @@ export const PropertiesPanel: FC = () => {
                                 {!load.fx && !load.fy && !load.fz && !load.mz && 'Zero load'}
                                 <span className="text-slate-600 ml-1">kN</span>
                             </div>
-                            <button onClick={() => removeLoad(load.id)} className="text-red-400 hover:text-red-300 p-0.5 transition-colors">
+                            <button type="button" onClick={() => removeLoad(load.id)} className="text-red-400 hover:text-red-300 p-0.5 transition-colors">
                                 <X className="w-3 h-3" />
                             </button>
                         </div>
@@ -656,7 +656,7 @@ export const PropertiesPanel: FC = () => {
                                 <span className="text-[10px] text-slate-600">kN</span>
                             </div>
                         )}
-                        <button
+                        <button type="button"
                             onClick={handleAddLoad}
                             className="w-full mt-2 py-1.5 bg-blue-600/80 hover:bg-blue-600 text-white text-xs font-medium rounded
                                        transition-colors flex items-center justify-center gap-1"
@@ -778,7 +778,7 @@ export const PropertiesPanel: FC = () => {
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-slate-200/60 dark:border-slate-700/60 pb-2 mb-1">
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Member Properties</h3>
-                    <button onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
+                    <button type="button" onClick={() => setIsMinimized(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-200 p-0.5 rounded transition-colors" title="Minimize">
                         <Minimize2 className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -872,11 +872,11 @@ export const PropertiesPanel: FC = () => {
                                 ))}
                             </div>
                             <div className="flex gap-2 mt-3">
-                                <button onClick={handleApplyCustomSection}
+                                <button type="button" onClick={handleApplyCustomSection}
                                     className="flex-1 py-1.5 bg-emerald-600/80 hover:bg-emerald-600 text-white text-xs font-medium rounded transition-colors">
                                     Apply
                                 </button>
-                                <button onClick={() => setShowCustomSection(false)}
+                                <button type="button" onClick={() => setShowCustomSection(false)}
                                     className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded transition-colors">
                                     Cancel
                                 </button>
@@ -920,11 +920,11 @@ export const PropertiesPanel: FC = () => {
                                 <NumberInput value={customE} onChange={setCustomE} className="flex-1" />
                             </div>
                             <div className="flex gap-2 mt-3">
-                                <button onClick={handleApplyCustomMaterial}
+                                <button type="button" onClick={handleApplyCustomMaterial}
                                     className="flex-1 py-1.5 bg-blue-600/80 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors">
                                     Apply
                                 </button>
-                                <button onClick={() => setShowCustomMaterial(false)}
+                                <button type="button" onClick={() => setShowCustomMaterial(false)}
                                     className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded transition-colors">
                                     Cancel
                                 </button>
@@ -1035,7 +1035,7 @@ export const PropertiesPanel: FC = () => {
                                         <span className="text-[11px] font-semibold text-purple-300">
                                             {ml.type || 'UDL'} #{idx + 1}
                                         </span>
-                                        <button onClick={() => removeMemberLoad(ml.id)}
+                                        <button type="button" onClick={() => removeMemberLoad(ml.id)}
                                             className="text-red-400/70 hover:text-red-400 p-0.5 rounded transition-colors">
                                             <X className="w-3 h-3" />
                                         </button>
@@ -1053,7 +1053,7 @@ export const PropertiesPanel: FC = () => {
 
                     {/* Add new UDL */}
                     <div className="mt-2">
-                        <button
+                        <button type="button"
                             onClick={() => setShowUdlOptions(!showUdlOptions)}
                             className={`w-full py-1.5 text-xs font-medium rounded transition-colors flex items-center justify-center gap-1
                                 ${showUdlOptions ? 'bg-purple-700/50 text-purple-200' : 'bg-purple-600/70 hover:bg-purple-600 text-white'}`}
@@ -1101,7 +1101,7 @@ export const PropertiesPanel: FC = () => {
                                     </div>
                                     <p className="text-[9px] text-slate-600">0% = start, 100% = end of member</p>
 
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             addMemberLoad({
                                                 id: crypto.randomUUID(),

@@ -499,7 +499,7 @@ export function StirrupDesignPanel() {
           </div>
           
           {/* Calculate Button */}
-          <button
+          <button type="button"
             onClick={handleCalculate}
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium 
                        rounded-lg transition-colors flex items-center justify-center gap-2"

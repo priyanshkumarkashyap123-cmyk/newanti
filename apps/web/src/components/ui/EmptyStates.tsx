@@ -117,7 +117,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {(action || secondaryAction) && (
         <div className="flex flex-wrap items-center justify-center gap-3">
           {action && (
-            <button
+            <button type="button"
               onClick={action.onClick}
               className={`
                 ${sizes.button}
@@ -134,7 +134,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             </button>
           )}
           {secondaryAction && (
-            <button
+            <button type="button"
               onClick={secondaryAction.onClick}
               className={`
                 ${sizes.button}
@@ -290,7 +290,7 @@ export const SearchNoResults: React.FC<SearchNoResultsProps> = ({
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Try searching for:</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {suggestions.map((suggestion, index) => (
-              <button
+              <button type="button"
                 key={index}
                 onClick={() => onSuggestionClick?.(suggestion)}
                 className="px-3 py-1 bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"

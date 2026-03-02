@@ -154,7 +154,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                 <div className="px-8 pb-6">
                     {/* Quick Actions */}
                     <div className="grid grid-cols-3 gap-3 mb-6">
-                        <button
+                        <button type="button"
                             onClick={handleNewProject}
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
                         >
@@ -166,7 +166,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
 
                         {/* Resume Last Project - only show if saved project exists */}
                         {savedProject ? (
-                            <button
+                            <button type="button"
                                 onClick={handleResumeProject}
                                 className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-900/20 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 transition-all group"
                             >
@@ -177,7 +177,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                                 <span className="text-xs text-green-600/70 dark:text-green-400/70 truncate max-w-full">{savedProject.name}</span>
                             </button>
                         ) : (
-                            <button
+                            <button type="button"
                                 onClick={handleImportFile}
                                 className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
                             >
@@ -197,7 +197,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             className="hidden"
                         />
 
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 onClose();
                                 // Open keyboard shortcuts overlay as guided walkthrough start
@@ -211,7 +211,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tutorial</span>
                         </button>
 
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 onClose();
                                 onOpenWizard?.();
@@ -224,7 +224,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Structure Wizard</span>
                         </button>
 
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 onClose();
                                 onOpenFoundation?.();
@@ -237,7 +237,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Foundation Design</span>
                         </button>
 
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 onClose();
                                 onOpenLoads?.();
@@ -261,7 +261,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                     {/* Sample Structures */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {ALL_SAMPLES.map(sample => (
-                            <button
+                            <button type="button"
                                 key={sample.id}
                                 onClick={() => setSelectedSample(sample)}
                                 onDoubleClick={() => handleLoadSample(sample)}

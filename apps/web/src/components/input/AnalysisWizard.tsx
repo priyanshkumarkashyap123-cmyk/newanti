@@ -238,7 +238,7 @@ const TemplateStep: FC<TemplateStepProps> = ({ selected, onSelect }) => {
             {/* Category filter */}
             <div className="flex gap-2 flex-wrap">
                 {['all', 'beam', 'frame', 'truss'].map((cat) => (
-                    <button
+                    <button type="button"
                         key={cat}
                         onClick={() => setCategory(cat)}
                         className={`px-3 py-1 rounded-full text-sm capitalize transition-colors
@@ -285,7 +285,7 @@ const TemplateStep: FC<TemplateStepProps> = ({ selected, onSelect }) => {
 
             {/* Custom option */}
             <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
-                <button className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-cyan-400 transition-colors">
+                <button type="button" className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-cyan-400 transition-colors">
                     <Settings size={16} />
                     <span className="text-sm">Start from scratch (Advanced)</span>
                     <ChevronRight size={14} />
@@ -426,7 +426,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
                 <h4 className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Select Material</h4>
                 <div className="grid grid-cols-2 gap-2">
                     {materials.map((mat) => (
-                        <button
+                        <button type="button"
                             key={mat.id}
                             onClick={() => onMaterialChange(mat.id)}
                             className={`p-3 rounded-lg border text-left transition-all
@@ -449,7 +449,7 @@ const MaterialStep: FC<MaterialStepProps> = ({
                 <h4 className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Select Section</h4>
                 <div className="space-y-2">
                     {sections.map((sec) => (
-                        <button
+                        <button type="button"
                             key={sec.id}
                             onClick={() => onSectionChange(sec.id)}
                             className={`w-full p-3 rounded-lg border text-left transition-all
@@ -504,7 +504,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
         <div className="space-y-6">
             {/* Quick apply */}
             {template?.defaultLoads && (
-                <button
+                <button type="button"
                     onClick={applyDefaultLoads}
                     className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 
                              text-white rounded-lg transition-colors"
@@ -563,7 +563,7 @@ const LoadStep: FC<LoadStepProps> = ({ template, loads, onChange }) => {
             </div>
 
             {/* Add load button */}
-            <button className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300">
+            <button type="button" className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300">
                 <Circle size={14} className="fill-current" />
                 Add Point Load
             </button>
@@ -813,7 +813,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                     </p>
                 </div>
                 {onCancel && (
-                    <button
+                    <button type="button"
                         onClick={onCancel}
                         className="text-slate-500 hover:text-slate-700 dark:text-slate-200 transition-colors"
                     >
@@ -827,7 +827,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                 <div className="flex items-center justify-between">
                     {steps.map((step, idx) => (
                         <React.Fragment key={step.id}>
-                            <button
+                            <button type="button"
                                 onClick={() => idx < state.currentStep && setState(s => ({ ...s, currentStep: idx }))}
                                 className={`flex items-center gap-2 ${
                                     idx < state.currentStep 
@@ -923,7 +923,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
 
             {/* Footer navigation */}
             <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <button
+                <button type="button"
                     onClick={handlePrev}
                     disabled={!canGoPrev}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
@@ -941,7 +941,7 @@ export const AnalysisWizard: FC<AnalysisWizardProps> = ({ onComplete, onCancel }
                 </div>
 
                 {state.currentStep < steps.length - 1 && (
-                    <button
+                    <button type="button"
                         onClick={handleNext}
                         disabled={!canGoNext}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors

@@ -71,7 +71,7 @@ export const Drawer: FC<DrawerProps> = ({
                 {(title || showCloseButton) && (
                     <div className="flex items-center gap-3 p-4 border-b border-slate-200 dark:border-slate-800">
                         {showCloseButton && (
-                            <button
+                            <button type="button"
                                 onClick={onClose}
                                 className="p-2 -m-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             >
@@ -168,7 +168,7 @@ export const Sheet: FC<SheetProps> = ({
                 {title && (
                     <div className="flex items-center justify-between px-5 pb-3 border-b border-slate-200 dark:border-slate-800">
                         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
-                        <button
+                        <button type="button"
                             onClick={onClose}
                             className="p-2 -m-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                         >

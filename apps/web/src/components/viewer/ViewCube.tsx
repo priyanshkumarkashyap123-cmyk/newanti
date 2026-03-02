@@ -54,7 +54,7 @@ const CubeFaceButton: FC<CubeFaceButtonProps> = ({
     onClick
 }) => {
     return (
-        <button
+        <button type="button"
             className={`
                 absolute ${position}
                 w-12 h-12 flex items-center justify-center
@@ -100,7 +100,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     overflow-hidden
                 ">
                     {/* Center - TOP face */}
-                    <button
+                    <button type="button"
                         className={`
                             absolute inset-2
                             flex items-center justify-center
@@ -121,7 +121,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                 </div>
 
                 {/* Edge buttons */}
-                <button
+                <button type="button"
                     className={`
                         absolute -top-2 left-1/2 -translate-x-1/2
                         w-8 h-4 flex items-center justify-center
@@ -140,7 +140,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     B
                 </button>
 
-                <button
+                <button type="button"
                     className={`
                         absolute -bottom-2 left-1/2 -translate-x-1/2
                         w-8 h-4 flex items-center justify-center
@@ -159,7 +159,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     F
                 </button>
 
-                <button
+                <button type="button"
                     className={`
                         absolute -left-2 top-1/2 -translate-y-1/2
                         w-4 h-8 flex items-center justify-center
@@ -178,7 +178,7 @@ export const ViewCubeOverlay: FC<ViewCubeProps> = ({ onViewChange }) => {
                     L
                 </button>
 
-                <button
+                <button type="button"
                     className={`
                         absolute -right-2 top-1/2 -translate-y-1/2
                         w-4 h-8 flex items-center justify-center

@@ -46,10 +46,10 @@ export const ViewportPanel: FC<ViewportPanelProps> = ({
 
             {/* View Controls (Top Right) */}
             <div className="absolute top-4 right-4 flex gap-2 z-10">
-                <button className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
+                <button type="button" className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
                     <span className="material-symbols-outlined text-[18px]">square</span>
                 </button>
-                <button className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
+                <button type="button" className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded p-1.5 shadow-sm">
                     <span className="material-symbols-outlined text-[18px]">videocam</span>
                 </button>
             </div>

@@ -51,7 +51,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
     return (
         <div className="relative">
-            <button
+            <button type="button"
                 onClick={() => voiceInput.toggleListening()}
                 className={`relative p-3 rounded-full transition-all ${state.isListening
                     ? 'bg-red-500 text-white animate-pulse'
@@ -139,7 +139,7 @@ export const VoiceCommandPanel: React.FC<{
                         </span>
                     )}
                 </div>
-                <button
+                <button type="button"
                     onClick={() => voiceInput.toggleListening()}
                     className={`px-3 py-1 rounded text-sm font-medium ${state.isListening
                         ? 'bg-red-500 text-white'

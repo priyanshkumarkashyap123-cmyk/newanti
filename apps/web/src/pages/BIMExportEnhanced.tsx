@@ -331,7 +331,7 @@ const BIMExportEnhanced: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {supportedFormats.map((format) => (
-            <button
+            <button type="button"
               key={format.id}
               onClick={() => setExportSettings({ ...exportSettings, format: format.id as ExportSettings['format'] })}
               className={`p-4 rounded-lg border-2 text-left transition-all ${
@@ -526,7 +526,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Export Button */}
       <div className="flex justify-end">
-        <button
+        <button type="button"
           onClick={handleExport}
           className="px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold rounded-lg hover:from-cyan-500 hover:to-blue-500 transition-all flex items-center gap-3"
         >
@@ -547,7 +547,7 @@ const BIMExportEnhanced: React.FC = () => {
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {['IFC', 'RVT', 'DWG', 'SAT', 'STEP'].map((format) => (
-            <button
+            <button type="button"
               key={format}
               onClick={() => setImportSettings({ ...importSettings, format: format as ImportSettings['format'] })}
               className={`p-4 rounded-lg border-2 text-center transition-all ${
@@ -653,7 +653,7 @@ const BIMExportEnhanced: React.FC = () => {
 
       {/* Import Button */}
       <div className="flex justify-end">
-        <button
+        <button type="button"
           onClick={handleImport}
           className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all flex items-center gap-3"
         >
@@ -672,7 +672,7 @@ const BIMExportEnhanced: React.FC = () => {
             <span className="text-2xl">🔗</span>
             Entity Mapping Rules
           </h3>
-          <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>➕</span>
             Add Rule
           </button>
@@ -715,8 +715,8 @@ const BIMExportEnhanced: React.FC = () => {
                   </td>
                   <td className="p-3">
                     <div className="flex gap-2">
-                      <button aria-label="Edit" className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">✏️</button>
-                      <button aria-label="Delete" className="p-2 text-red-400 hover:bg-red-900/30 rounded">🗑️</button>
+                      <button type="button" aria-label="Edit" className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">✏️</button>
+                      <button type="button" aria-label="Delete" className="p-2 text-red-400 hover:bg-red-900/30 rounded">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -787,7 +787,7 @@ const BIMExportEnhanced: React.FC = () => {
                   {job.status === 'completed' && (
                     <>
                       <span className="text-slate-600 dark:text-slate-400 text-sm">{job.fileSize}</span>
-                      <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors flex items-center gap-2">
+                      <button type="button" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors flex items-center gap-2">
                         <span>⬇️</span>
                         Download
                       </button>
@@ -857,7 +857,7 @@ const BIMExportEnhanced: React.FC = () => {
             { id: 'mapping', label: 'Mapping Rules', icon: '🔗' },
             { id: 'history', label: 'History', icon: '📜' },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${

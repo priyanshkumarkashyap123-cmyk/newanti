@@ -66,10 +66,10 @@ export function ReinforcementDesignPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+              <button type="button" className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
                 <BookOpen className="w-5 h-5" />
               </button>
-              <button className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+              <button type="button" className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
                 <HelpCircle className="w-5 h-5" />
               </button>
             </div>
@@ -466,7 +466,7 @@ function LapSplicePanel() {
             />
           </div>
           
-          <button onClick={handleCalculate}
+          <button type="button" onClick={handleCalculate}
             className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium 
                        rounded-lg transition-colors flex items-center justify-center gap-2">
             <Calculator className="w-5 h-5" />
@@ -547,7 +547,7 @@ function LapSplicePanel() {
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Lap lengths for all bar sizes
             </p>
-            <button onClick={handleGenerateTable}
+            <button type="button" onClick={handleGenerateTable}
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium 
                          rounded-lg flex items-center gap-2">
               <Table className="w-4 h-4" />

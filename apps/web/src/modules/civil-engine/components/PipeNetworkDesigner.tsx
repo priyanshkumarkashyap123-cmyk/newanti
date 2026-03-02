@@ -395,7 +395,7 @@ export function PipeNetworkDesigner() {
 
         {/* Panel tabs */}
         {(['network', 'config', 'results', 'design'] as const).map(tab => (
-          <button
+          <button type="button"
             key={tab}
             onClick={() => setActivePanel(tab)}
             className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
@@ -408,14 +408,14 @@ export function PipeNetworkDesigner() {
           </button>
         ))}
 
-        <button
+        <button type="button"
           onClick={runAnalysis}
           disabled={nodes.length === 0 || pipes.length === 0}
           className="px-4 py-1.5 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed ml-2"
         >
           ▶ Run Analysis
         </button>
-        <button onClick={clearAll} className="px-3 py-1.5 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100 border border-red-200">
+        <button type="button" onClick={clearAll} className="px-3 py-1.5 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100 border border-red-200">
           Clear
         </button>
       </div>
@@ -503,7 +503,7 @@ export function PipeNetworkDesigner() {
                             <td className="px-2 py-1 text-center">{n.x}</td>
                             <td className="px-2 py-1 text-center">{n.y}</td>
                             <td className="px-2 py-1">
-                              <button onClick={() => removeNode(n.id)} className="text-red-500 hover:text-red-700 text-[10px]">✕</button>
+                              <button type="button" onClick={() => removeNode(n.id)} className="text-red-500 hover:text-red-700 text-[10px]">✕</button>
                             </td>
                           </tr>
                         ))}
@@ -530,7 +530,7 @@ export function PipeNetworkDesigner() {
                     <input type="number" placeholder="X pos" value={newNode.x || ''} onChange={e => setNewNode({ ...newNode, x: +e.target.value })} className="px-2 py-1 border rounded text-xs" />
                     <input type="number" placeholder="Y pos" value={newNode.y || ''} onChange={e => setNewNode({ ...newNode, y: +e.target.value })} className="px-2 py-1 border rounded text-xs" />
                   </div>
-                  <button onClick={addNode} disabled={!newNode.id} className="mt-2 px-3 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 disabled:opacity-40">
+                  <button type="button" onClick={addNode} disabled={!newNode.id} className="mt-2 px-3 py-1 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 disabled:opacity-40">
                     Add Node
                   </button>
                 </div>
@@ -569,7 +569,7 @@ export function PipeNetworkDesigner() {
                             <td className="px-2 py-1 text-center">{p.minorLossK}</td>
                             <td className="px-2 py-1 text-center">{p.initialFlow}</td>
                             <td className="px-2 py-1">
-                              <button onClick={() => removePipe(p.id)} className="text-red-500 hover:text-red-700 text-[10px]">✕</button>
+                              <button type="button" onClick={() => removePipe(p.id)} className="text-red-500 hover:text-red-700 text-[10px]">✕</button>
                             </td>
                           </tr>
                         ))}
@@ -600,7 +600,7 @@ export function PipeNetworkDesigner() {
                     </select>
                     <input type="number" placeholder="Init. Flow (m³/s)" step="0.001" value={newPipe.initialFlow || ''} onChange={e => setNewPipe({ ...newPipe, initialFlow: +e.target.value })} className="px-2 py-1 border rounded text-xs" />
                   </div>
-                  <button onClick={addPipe} disabled={!newPipe.id || !newPipe.startNodeId || !newPipe.endNodeId} className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-40">
+                  <button type="button" onClick={addPipe} disabled={!newPipe.id || !newPipe.startNodeId || !newPipe.endNodeId} className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-40">
                     Add Pipe
                   </button>
                 </div>
@@ -610,7 +610,7 @@ export function PipeNetworkDesigner() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-bold text-slate-800">Loops ({loops.length})</h3>
-                  <button onClick={autoDetectLoops} className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] rounded hover:bg-purple-200 font-semibold">
+                  <button type="button" onClick={autoDetectLoops} className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] rounded hover:bg-purple-200 font-semibold">
                     Auto-detect
                   </button>
                   <InfoTip text="Loops are required for Hardy Cross and loop-based methods. Auto-detect finds independent loops using DFS." />
@@ -635,7 +635,7 @@ export function PipeNetworkDesigner() {
                             <td className="px-2 py-1 font-mono">{l.pipeIds.join(', ')}</td>
                             <td className="px-2 py-1 font-mono">{l.directions.map(d => d > 0 ? '+1' : '-1').join(', ')}</td>
                             <td className="px-2 py-1">
-                              <button onClick={() => removeLoop(l.id)} className="text-red-500 hover:text-red-700 text-[10px]">✕</button>
+                              <button type="button" onClick={() => removeLoop(l.id)} className="text-red-500 hover:text-red-700 text-[10px]">✕</button>
                             </td>
                           </tr>
                         ))}
@@ -652,7 +652,7 @@ export function PipeNetworkDesigner() {
                     <input placeholder="Pipe IDs (P1,P2,P3)" value={newLoop.pipeIdsStr} onChange={e => setNewLoop({ ...newLoop, pipeIdsStr: e.target.value })} className="px-2 py-1 border rounded text-xs" />
                     <input placeholder="Directions (1,-1,1)" value={newLoop.directionsStr} onChange={e => setNewLoop({ ...newLoop, directionsStr: e.target.value })} className="px-2 py-1 border rounded text-xs" />
                   </div>
-                  <button onClick={addLoop} disabled={!newLoop.id || !newLoop.pipeIdsStr} className="mt-2 px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 disabled:opacity-40">
+                  <button type="button" onClick={addLoop} disabled={!newLoop.id || !newLoop.pipeIdsStr} className="mt-2 px-3 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700 disabled:opacity-40">
                     Add Loop
                   </button>
                 </div>
@@ -915,7 +915,7 @@ export function PipeNetworkDesigner() {
 
                   {/* Run Design Button */}
                   <div className="flex items-center gap-3">
-                    <button
+                    <button type="button"
                       onClick={runDesign}
                       className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg font-semibold hover:bg-purple-700"
                     >

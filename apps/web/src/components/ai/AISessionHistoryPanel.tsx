@@ -129,14 +129,14 @@ const SessionCard: FC<{
 
         {/* Actions */}
         <div className="flex items-center gap-1 relative" onClick={e => e.stopPropagation()}>
-          <button
+          <button type="button"
             onClick={onResume}
             className="px-2 py-1 text-[10px] bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 transition-colors"
             title="Resume session"
           >
             Resume
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowMenu(!showMenu)}
             className="p-1 text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
           >
@@ -145,13 +145,13 @@ const SessionCard: FC<{
 
           {showMenu && (
             <div className="absolute right-0 top-full mt-1 z-20 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[120px]">
-              <button
+              <button type="button"
                 onClick={() => { onExport(); setShowMenu(false); }}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
                 <Download className="w-3 h-3" /> Export
               </button>
-              <button
+              <button type="button"
                 onClick={() => { onDelete(); setShowMenu(false); }}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors"
               >
@@ -320,7 +320,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {onClose && (
-              <button onClick={onClose} aria-label="Close" title="Close" className="p-1 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors">
+              <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-1 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors">
                 <ArrowLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               </button>
             )}
@@ -331,7 +331,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
             </span>
           </div>
           {sessions.length > 0 && (
-            <button
+            <button type="button"
               onClick={() => {
                 if (confirm('Clear ALL session history?')) {
                   clearAllSessions();
@@ -355,7 +355,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
             className="w-full pl-8 pr-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none"
           />
           {searchQuery && (
-            <button
+            <button type="button"
               onClick={() => setSearchQuery('')}
               className="absolute right-2 top-1/2 -translate-y-1/2"
             >
@@ -367,7 +367,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
         {/* Filter tabs */}
         <div className="flex gap-1 mt-2">
           {(['all', 'generate', 'modify', 'chat'] as const).map(type => (
-            <button
+            <button type="button"
               key={type}
               onClick={() => setFilterType(type)}
               className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded transition-colors ${

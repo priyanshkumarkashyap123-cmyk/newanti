@@ -160,7 +160,7 @@ const StepIndicator: React.FC<{
     <div className="flex items-center justify-between mb-8">
       {steps.map((step, index) => (
         <React.Fragment key={step.id}>
-          <button
+          <button type="button"
             onClick={() => onStepClick(index)}
             disabled={index > currentStep && !steps[index - 1]?.isComplete}
             className="flex flex-col items-center gap-2 group"
@@ -702,7 +702,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                   { type: 'column' as MemberType, icon: <Columns className="w-6 h-6" />, label: 'Column' },
                   { type: 'slab' as MemberType, icon: <Square className="w-6 h-6" />, label: 'Slab' },
                 ].map(({ type, icon, label }) => (
-                  <button
+                  <button type="button"
                     key={type}
                     onClick={() => setMemberType(type)}
                     className={`flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
@@ -722,7 +722,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
               <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Design Code</label>
               <div className="grid grid-cols-2 gap-3">
                 {DESIGN_CODES.filter(c => c.material.includes('concrete')).map(code => (
-                  <button
+                  <button type="button"
                     key={code.code}
                     onClick={() => setSelectedCode(code.code)}
                     className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${
@@ -800,7 +800,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
               <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Concrete Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {CONCRETE_GRADES.map(({ grade, fck }) => (
-                  <button
+                  <button type="button"
                     key={grade}
                     onClick={() => setMaterial(m => ({ ...m, grade, fck }))}
                     className={`p-4 rounded-xl border text-center transition-all ${
@@ -822,7 +822,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
               <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Steel Grade</label>
               <div className="grid grid-cols-4 gap-3">
                 {STEEL_GRADES.map(({ grade, fy }) => (
-                  <button
+                  <button type="button"
                     key={grade}
                     onClick={() => setMaterial(m => ({ ...m, fy }))}
                     className={`p-4 rounded-xl border text-center transition-all ${
@@ -975,7 +975,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
                 <Target className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                 <p className="text-lg font-medium text-slate-900 dark:text-white mb-2">Ready to Design</p>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Click the button below to run design checks</p>
-                <button
+                <button type="button"
                   onClick={runDesign}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors"
                 >
@@ -1095,7 +1095,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
       
       {/* Footer */}
       <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <button
+        <button type="button"
           onClick={prevStep}
           disabled={currentStep === 0}
           className="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -1107,11 +1107,11 @@ export const AdvancedMemberDesignWizard: React.FC<{
         <div className="flex items-center gap-3">
           {currentStep === 5 && (
             <>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
                 <Download className="w-4 h-4" />
                 Export PDF
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
                 <Save className="w-4 h-4" />
                 Save Design
               </button>
@@ -1119,7 +1119,7 @@ export const AdvancedMemberDesignWizard: React.FC<{
           )}
           
           {currentStep < 5 && (
-            <button
+            <button type="button"
               onClick={currentStep === 4 && !isDesigning && designChecks.length === 0 ? runDesign : nextStep}
               disabled={isDesigning}
               className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium rounded-xl transition-colors"

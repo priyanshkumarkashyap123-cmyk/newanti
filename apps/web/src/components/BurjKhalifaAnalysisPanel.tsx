@@ -174,7 +174,7 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
                 key={step.stepNumber}
                 className="border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden"
             >
-                <button
+                <button type="button"
                     onClick={() => setExpandedStep(expandedStep === step.stepNumber ? null : step.stepNumber)}
                     className="w-full p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-between"
                 >
@@ -356,7 +356,7 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                         Burj Khalifa - Structural Analysis
                     </h2>
                     {onClose && (
-                        <button
+                        <button type="button"
                             onClick={onClose}
                             className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                         >
@@ -368,7 +368,7 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                 {/* Tabs */}
                 <div className="flex gap-2 text-xs font-semibold">
                     {(['overview', 'loads', 'results', 'settings'] as const).map((tab) => (
-                        <button
+                        <button type="button"
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-3 py-2 rounded transition ${activeTab === tab
@@ -475,7 +475,7 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                 <div className="text-xs text-slate-500">
                     <span>Height: {analysis.height}m | Floors: {analysis.floors}</span>
                 </div>
-                <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">
+                <button type="button" className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">
                     <FileDown className="w-4 h-4" />
                     Export Report
                 </button>

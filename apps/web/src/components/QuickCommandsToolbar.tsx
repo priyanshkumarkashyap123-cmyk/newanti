@@ -148,7 +148,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
             {/* Header */}
             <div className="flex items-center justify-between px-1 pb-2 mb-2 border-b border-slate-200 dark:border-slate-700">
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Quick Commands</span>
-                <button
+                <button type="button"
                     onClick={onClose}
                     className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
                 >
@@ -171,7 +171,7 @@ function QuickCommandsToolbar({ commands, onClose, position }: QuickCommandsTool
                                     const fi = flatMap.find((f) => f.cmd.id === cmd.id);
                                     const index = fi ? fi.flat : 0;
                                     return (
-                                        <button
+                                        <button type="button"
                                             key={cmd.id}
                                             onClick={() => {
                                                 cmd.action();

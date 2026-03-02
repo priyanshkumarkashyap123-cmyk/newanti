@@ -404,7 +404,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
   };
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`
                 w-full p-4 rounded-xl text-left transition-all
@@ -737,7 +737,7 @@ const MemberResultsTable: React.FC<MemberResultsTableProps> = ({
                 </td>
                 <td className="px-4 py-3">{getStatusBadge(member.status)}</td>
                 <td className="px-4 py-3">
-                  <button
+                  <button type="button"
                     onClick={() => onViewDetails(member)}
                     className="p-2 text-slate-500 dark:text-slate-400 hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                   >
@@ -823,14 +823,14 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               Last analyzed: {analysisDate.toLocaleString()}
             </div>
 
-            <button
+            <button type="button"
               onClick={onRefresh}
               className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors"
             >
               <RefreshCw className="w-5 h-5" />
             </button>
 
-            <button
+            <button type="button"
               onClick={onExport}
               className="px-4 py-2 bg-cyan-500 text-white font-medium rounded-lg hover:bg-cyan-400 transition-colors flex items-center gap-2"
             >
@@ -886,13 +886,13 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               Result Categories
             </h2>
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-              <button
+              <button type="button"
                 onClick={() => setViewMode("grid")}
                 className={`p-1.5 rounded ${viewMode === "grid" ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
               >
                 <Grid3X3 className="w-4 h-4" />
               </button>
-              <button
+              <button type="button"
                 onClick={() => setViewMode("list")}
                 className={`p-1.5 rounded ${viewMode === "list" ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
               >
@@ -935,7 +935,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                     </div>
                   </div>
 
-                  <button aria-label="Maximize" title="Maximize" className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg">
+                  <button type="button" aria-label="Maximize" title="Maximize" className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg">
                     <Maximize2 className="w-5 h-5" />
                   </button>
                 </div>

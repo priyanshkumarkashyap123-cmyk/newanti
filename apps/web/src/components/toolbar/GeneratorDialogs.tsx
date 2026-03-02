@@ -187,7 +187,7 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                         <Label className="mb-2">Truss Type</Label>
                         <div className="grid grid-cols-4 gap-2">
                             {(['warren', 'pratt', 'howe', 'k-truss'] as TrussType[]).map(type => (
-                                <button
+                                <button type="button"
                                     key={type}
                                     onClick={() => setTrussType(type)}
                                     className={`px-3 py-2 rounded text-sm capitalize
@@ -355,7 +355,7 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                         <Label className="mb-2">Arch Type</Label>
                         <div className="grid grid-cols-3 gap-2">
                             {(['parabolic', 'circular', 'catenary'] as ArchType[]).map(type => (
-                                <button
+                                <button type="button"
                                     key={type}
                                     onClick={() => setArchType(type)}
                                     className={`px-3 py-2 rounded text-sm capitalize
@@ -496,7 +496,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                     <div>
                         <Label className="mb-2">Frame Type</Label>
                         <div className="grid grid-cols-2 gap-2">
-                            <button
+                            <button type="button"
                                 onClick={() => setFrameType('portal')}
                                 className={`px-3 py-2 rounded text-sm
                   ${frameType === 'portal'
@@ -506,7 +506,7 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                             >
                                 Portal Frame
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => setFrameType('multi-story')}
                                 className={`px-3 py-2 rounded text-sm
                   ${frameType === 'multi-story'
@@ -692,7 +692,7 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
                         <Label className="mb-2">Cable Arrangement</Label>
                         <div className="grid grid-cols-3 gap-2">
                             {(['fan', 'harp', 'semi-harp'] as CableArrangement[]).map(type => (
-                                <button
+                                <button type="button"
                                     key={type}
                                     onClick={() => setArrangement(type)}
                                     className={`px-3 py-2 rounded text-sm capitalize

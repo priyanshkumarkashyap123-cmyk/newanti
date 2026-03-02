@@ -348,7 +348,7 @@ const MaterialsDatabasePage: React.FC = () => {
       {/* Categories */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
         {categories.map((cat) => (
-          <button
+          <button type="button"
             key={cat.type}
             onClick={() => setSelectedType(cat.type)}
             className={`p-3 rounded-lg border-2 text-center transition-all ${selectedType === cat.type
@@ -381,7 +381,7 @@ const MaterialsDatabasePage: React.FC = () => {
             {filteredMaterials.length} Materials Found
           </h3>
           {selectedMaterials.length > 0 && (
-            <button
+            <button type="button"
               onClick={() => setActiveTab('compare')}
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-colors"
             >
@@ -446,7 +446,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
               <div className="flex justify-end mt-3 gap-2">
                 {memberCount > 0 && (
-                  <button
+                  <button type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       // Apply material E to selected members (or all if none selected)
@@ -472,7 +472,7 @@ const MaterialsDatabasePage: React.FC = () => {
                   </button>
                 )}
                 {memberCount === 0 && (
-                  <button
+                  <button type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate('/app');
@@ -631,7 +631,7 @@ const MaterialsDatabasePage: React.FC = () => {
         </div>
 
         <div className="flex justify-end gap-4 mt-6">
-          <button
+          <button type="button"
             onClick={() => {
               setCustomName(''); setCustomGrade(''); setCustomStandard('');
               setCustomE(''); setCustomPoisson(''); setCustomFy(''); setCustomFu('');
@@ -641,7 +641,7 @@ const MaterialsDatabasePage: React.FC = () => {
           >
             Reset
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               if (!customName || !customE) {
                 showToast('Material name and E (modulus) are required', 'error');
@@ -696,7 +696,7 @@ const MaterialsDatabasePage: React.FC = () => {
             <div className="text-center py-12">
               <span className="text-5xl">📦</span>
               <p className="text-slate-600 dark:text-slate-400 mt-4">Select materials from the Browse tab to compare</p>
-              <button
+              <button type="button"
                 onClick={() => setActiveTab('browse')}
                 className="mt-4 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500"
               >
@@ -818,7 +818,7 @@ const MaterialsDatabasePage: React.FC = () => {
           Export Material Library
         </h3>
         <div className="flex gap-4">
-          <button
+          <button type="button"
             onClick={() => {
               const json = JSON.stringify(materials, null, 2);
               const blob = new Blob([json], { type: 'application/json' });
@@ -834,7 +834,7 @@ const MaterialsDatabasePage: React.FC = () => {
           >
             📄 Export to JSON
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               const header = 'Name,Type,Grade,Standard,E (MPa),fy (MPa),fu (MPa),fck (MPa),Density (kg/m³),Poisson,Thermal Coeff\n';
               const rows = materials.map(m =>
@@ -883,7 +883,7 @@ const MaterialsDatabasePage: React.FC = () => {
             { id: 'compare', label: 'Compare', icon: '📊' },
             { id: 'import', label: 'Import/Export', icon: '📥' },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${activeTab === tab.id
@@ -910,7 +910,7 @@ const MaterialsDatabasePage: React.FC = () => {
               <span className="font-medium">Model loaded:</span> {memberCount} member(s)
               {selectedCount > 0 && <span className="ml-2 text-cyan-400">• {selectedCount} selected</span>}
             </div>
-            <button
+            <button type="button"
               onClick={() => navigate('/app')}
               className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-500"
             >

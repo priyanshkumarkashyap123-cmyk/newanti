@@ -519,7 +519,7 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
       {/* Contents list */}
       <div className="space-y-1">
         {/* Preface */}
-        <button
+        <button type="button"
           onClick={() => onNavigate(1)}
           className="w-full flex items-center justify-between py-3 px-4 
             hover:bg-amber-100/50 rounded-lg transition-colors group"
@@ -533,7 +533,7 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
         
         {/* Chapters */}
         {BOOK_DATA.chapters.map((chapter, index) => (
-          <button
+          <button type="button"
             key={chapter.id}
             onClick={() => onNavigate(3 + index)}
             className="w-full flex items-center justify-between py-3 px-4 
@@ -556,7 +556,7 @@ const ContentsPage: React.FC<ContentsPageProps> = ({ onNavigate }) => (
         
         {/* Appendix */}
         <div className="pt-4 mt-4 border-t border-amber-200">
-          <button
+          <button type="button"
             onClick={() => onNavigate(3 + BOOK_DATA.chapters.length)}
             className="w-full flex items-center justify-between py-3 px-4 
               hover:bg-amber-100/50 rounded-lg transition-colors group"
@@ -839,7 +839,7 @@ export const BookInterface: React.FC = () => {
         
         {/* Navigation arrows */}
         {currentPage > 0 && (
-          <button
+          <button type="button"
             onClick={prevPage}
             disabled={isAnimating}
             className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 
@@ -854,7 +854,7 @@ export const BookInterface: React.FC = () => {
         )}
         
         {currentPage < totalPages - 1 && (
-          <button
+          <button type="button"
             onClick={nextPage}
             disabled={isAnimating}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 
@@ -874,7 +874,7 @@ export const BookInterface: React.FC = () => {
         {/* Page dots */}
         <div className="flex gap-2">
           {Array.from({ length: totalPages }).map((_, i) => (
-            <button
+            <button type="button"
               key={i}
               onClick={() => goToPage(i)}
               className={`w-2 h-2 rounded-full transition-all ${

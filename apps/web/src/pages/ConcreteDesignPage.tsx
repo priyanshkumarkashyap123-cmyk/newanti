@@ -965,7 +965,7 @@ export const ConcreteDesignPage: React.FC = () => {
           )}
 
           {/* Download Report */}
-          <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
+          <button type="button" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
             <Download className="w-5 h-5" />
             Download Detailed Report
           </button>
@@ -998,7 +998,7 @@ export const ConcreteDesignPage: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Design Code</label>
                   <div className="grid grid-cols-2 gap-2">
-                    <button
+                    <button type="button"
                       onClick={() => setDesignCode('IS456')}
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         designCode === 'IS456'
@@ -1008,7 +1008,7 @@ export const ConcreteDesignPage: React.FC = () => {
                     >
                       IS 456:2000
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => setDesignCode('ACI318')}
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         designCode === 'ACI318'
@@ -1024,7 +1024,7 @@ export const ConcreteDesignPage: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">Member Type</label>
                   <div className="grid grid-cols-3 gap-2">
-                    <button
+                    <button type="button"
                       onClick={() => setMemberType('beam')}
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'beam'
@@ -1035,7 +1035,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       <Box className="w-5 h-5" />
                       <span className="text-xs">Beam</span>
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => setMemberType('column')}
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'column'
@@ -1046,7 +1046,7 @@ export const ConcreteDesignPage: React.FC = () => {
                       <Columns className="w-5 h-5" />
                       <span className="text-xs">Column</span>
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => setMemberType('slab')}
                       className={`py-2 px-3 rounded-lg font-medium transition-colors flex flex-col items-center gap-1 ${
                         memberType === 'slab'
@@ -1067,7 +1067,7 @@ export const ConcreteDesignPage: React.FC = () => {
               {memberType === 'slab' && renderSlabForm()}
 
               {/* Analyze Button */}
-              <button
+              <button type="button"
                 onClick={handleAnalyze}
                 disabled={analyzing}
                 className="w-full mt-6 py-3 bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"

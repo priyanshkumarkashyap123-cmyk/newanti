@@ -360,7 +360,7 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
 
             {/* Toggle Buttons */}
             <div className="flex gap-2">
-                <button
+                <button type="button"
                     onClick={() => onAnimateChange(!animate)}
                     className={`
                         flex-1 px-2 py-1 text-xs rounded transition-colors
@@ -371,7 +371,7 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
                 >
                     {animate ? '⏸ Pause' : '▶ Animate'}
                 </button>
-                <button
+                <button type="button"
                     onClick={() => onShowOriginalChange(!showOriginal)}
                     className={`
                         flex-1 px-2 py-1 text-xs rounded transition-colors

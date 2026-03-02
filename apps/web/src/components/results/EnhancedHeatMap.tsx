@@ -544,7 +544,7 @@ export const EnhancedHeatMap: FC<EnhancedHeatMapProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                         onClick={toggleSort}
                         className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >

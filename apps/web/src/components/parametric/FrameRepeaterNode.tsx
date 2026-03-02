@@ -82,7 +82,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
                     <label className="text-slate-500 dark:text-slate-400 text-xs w-16">Direction</label>
                     <div className="flex-1 flex gap-1">
                         {['x', 'y', 'z'].map((dir) => (
-                            <button
+                            <button type="button"
                                 key={dir}
                                 onClick={() => handleChange('direction', dir)}
                                 className={`flex-1 px-2 py-1 text-xs font-bold rounded transition-colors ${data.direction === dir

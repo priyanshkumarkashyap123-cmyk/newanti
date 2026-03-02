@@ -123,7 +123,7 @@ export const MemberSpecificationsDialog: FC<MemberSpecificationsDialogProps> = (
                     {/* Tabs */}
                     <div className="flex border-b border-slate-200 dark:border-slate-800">
                         {(['releases', 'offsets', 'beta'] as const).map(tab => (
-                            <button
+                            <button type="button"
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === tab

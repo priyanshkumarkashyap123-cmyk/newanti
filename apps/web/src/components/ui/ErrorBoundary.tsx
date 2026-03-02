@@ -123,7 +123,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
 
                     {/* Actions */}
                     <div className="flex gap-3">
-                        <button
+                        <button type="button"
                             onClick={onRetry}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-colors"
                         >
@@ -140,7 +140,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                     </div>
 
                     {/* Show Details Toggle */}
-                    <button
+                    <button type="button"
                         onClick={() => setShowDetails(!showDetails)}
                         className="w-full flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-400 transition-colors"
                     >
@@ -159,7 +159,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                                 <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                                     Stack Trace
                                 </span>
-                                <button
+                                <button type="button"
                                     onClick={copyError}
                                     className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                                 >
@@ -238,7 +238,7 @@ export const ErrorToast = ({ message, isVisible, onDismiss }: ErrorToastProps) =
         <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
         <span className="text-red-300 font-medium">{message}</span>
         {onDismiss && (
-            <button
+            <button type="button"
                 onClick={onDismiss}
                 className="ml-2 text-red-400/50 hover:text-red-400 transition-colors"
             >

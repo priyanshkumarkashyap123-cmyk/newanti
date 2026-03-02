@@ -15,7 +15,7 @@ export function HydraulicsDesigner() {
 
                 {/* Tabs */}
                 <div className="flex gap-2 mt-6 border-b border-slate-200">
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('open-channel')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'open-channel'
                                 ? 'border-cyan-500 text-cyan-600'
@@ -24,7 +24,7 @@ export function HydraulicsDesigner() {
                     >
                         Open Channel Flow
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('pipe-flow')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pipe-flow'
                                 ? 'border-cyan-500 text-cyan-600'
@@ -33,7 +33,7 @@ export function HydraulicsDesigner() {
                     >
                         Pipe Flow
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('pipe-network')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pipe-network'
                                 ? 'border-indigo-500 text-indigo-600'

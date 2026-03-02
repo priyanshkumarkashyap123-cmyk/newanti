@@ -62,7 +62,7 @@ export const JobHistoryPanel: FC<{ className?: string }> = ({ className = '' }) 
                 <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                     Analysis History
                 </h3>
-                <button
+                <button type="button"
                     onClick={() => refresh()}
                     disabled={loading}
                     className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
@@ -150,7 +150,7 @@ export const JobHistoryPanel: FC<{ className?: string }> = ({ className = '' }) 
                                         </p>
                                     )}
                                     {allElementIds.length > 0 && (
-                                        <button
+                                        <button type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleShowInViewport(allElementIds);

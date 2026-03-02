@@ -502,7 +502,7 @@ export default function ConnectionDesignDatabase() {
             
             <div className="flex items-center gap-3">
               {analysisResults && (
-                <button
+                <button type="button"
                   onClick={autoFillFromAnalysis}
                   className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
@@ -510,7 +510,7 @@ export default function ConnectionDesignDatabase() {
                   Use Analysis Forces
                 </button>
               )}
-              <button
+              <button type="button"
                 onClick={() => setShowDesignMode(!showDesignMode)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
                   showDesignMode
@@ -611,7 +611,7 @@ export default function ConnectionDesignDatabase() {
                   <h3 className="text-sm font-semibold text-purple-400 mb-4">Categories</h3>
                   
                   <div className="space-y-2">
-                    <button
+                    <button type="button"
                       onClick={() => setSelectedCategory('all')}
                       className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex items-center gap-3 ${
                         selectedCategory === 'all'
@@ -629,7 +629,7 @@ export default function ConnectionDesignDatabase() {
                     {Object.entries(CATEGORY_INFO).map(([key, info]) => {
                       const count = CONNECTION_DATABASE.filter(c => c.category === key).length;
                       return (
-                        <button
+                        <button type="button"
                           key={key}
                           onClick={() => setSelectedCategory(key as ConnectionCategory)}
                           className={`w-full text-left px-4 py-2 rounded-lg transition-colors flex items-center gap-3 ${
@@ -661,7 +661,7 @@ export default function ConnectionDesignDatabase() {
                     const conn = CONNECTION_DATABASE.find(c => c.id === id);
                     if (!conn) return null;
                     return (
-                      <button
+                      <button type="button"
                         key={id}
                         onClick={() => setSelectedConnection(conn)}
                         className="w-full text-left px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 truncate"
@@ -755,7 +755,7 @@ export default function ConnectionDesignDatabase() {
                           </div>
                         )}
                         
-                        <button
+                        <button type="button"
                           onClick={(e) => { e.stopPropagation(); toggleSave(conn.id); }}
                           className={`p-2 rounded-lg transition-colors ${
                             savedConnections.has(conn.id)
@@ -802,14 +802,14 @@ export default function ConnectionDesignDatabase() {
                       {selectedConnection.id}
                     </span>
                     <div className="flex items-center gap-2">
-                      <button
+                      <button type="button"
                         onClick={() => exportConnection(selectedConnection)}
                         className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800 rounded-lg"
                         title="Export"
                       >
                         <Download className="w-4 h-4" />
                       </button>
-                      <button
+                      <button type="button"
                         className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:bg-slate-800 rounded-lg"
                         title="Copy"
                       >
@@ -901,7 +901,7 @@ export default function ConnectionDesignDatabase() {
                   </div>
                   
                   <div className="pt-4">
-                    <button className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                    <button type="button" className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
                       <FileText className="w-4 h-4" />
                       Generate Calculation Sheet
                     </button>

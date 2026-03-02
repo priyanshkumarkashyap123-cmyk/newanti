@@ -133,7 +133,7 @@ const CopyButton: FC<CopyButtonProps> = ({ value, label = 'Copy' }) => {
     };
 
     return (
-        <button
+        <button type="button"
             onClick={handleCopy}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${copied
                     ? 'bg-green-600 text-white'
@@ -499,7 +499,7 @@ export const LoadGenerators: FC = () => {
 
                 {/* Tab Switcher */}
                 <div className="flex justify-center gap-2 mb-8">
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('wind')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${activeTab === 'wind'
                                 ? 'bg-blue-600 text-white'
@@ -509,7 +509,7 @@ export const LoadGenerators: FC = () => {
                         <Wind className="w-5 h-5" />
                         Wind Load (IS 875)
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('seismic')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${activeTab === 'seismic'
                                 ? 'bg-red-600 text-white'

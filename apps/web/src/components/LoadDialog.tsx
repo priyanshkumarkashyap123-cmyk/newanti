@@ -436,7 +436,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                     {/* Tabs */}
                     <div className="flex gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                         {TABS.map(tab => (
-                            <button
+                            <button type="button"
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`

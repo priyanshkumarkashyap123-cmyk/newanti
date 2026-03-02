@@ -166,7 +166,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                         )}
 
                         <div className="flex gap-2">
-                            <button
+                            <button type="button"
                                 onClick={() => {
                                     if (result) {
                                         const model = sketchRecognition.toBeamLabModel(result, 10);
@@ -177,7 +177,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                             >
                                 Create Model
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => {
                                     setStatus('idle');
                                     setResult(null);
@@ -203,7 +203,7 @@ export const SketchUploadPanel: React.FC<SketchUploadPanelProps> = ({
                         </svg>
                         <p className="text-red-400 mb-2">Could not recognize structural elements</p>
                         <p className="text-slate-500 text-sm mb-4">Try a clearer sketch or draw elements more distinctly</p>
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 setStatus('idle');
                                 setPreview(null);

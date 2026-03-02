@@ -138,7 +138,7 @@ const MenuItemComponent: FC<{
 
     return (
         <div className="relative">
-            <button
+            <button type="button"
                 ref={itemRef}
                 onClick={handleClick}
                 onMouseEnter={() => {

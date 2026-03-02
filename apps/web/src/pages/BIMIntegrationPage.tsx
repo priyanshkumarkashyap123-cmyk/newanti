@@ -110,7 +110,7 @@ export default function BIMIntegrationPage() {
           </div>
           <div className="flex gap-2">
             {['upload', 'preview', 'clash', 'export'].map((mode) => (
-              <button
+              <button type="button"
                 key={mode}
                 onClick={() => setViewMode(mode as ViewMode)}
                 className={`px-3 py-1.5 rounded-lg text-sm capitalize transition-colors ${
@@ -161,7 +161,7 @@ export default function BIMIntegrationPage() {
                 {validationStatus === 'valid' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
                 <span>{validationStatus === 'valid' ? 'Model passes validation checks' : 'Validation errors found'}</span>
               </div>
-              <button onClick={runClashDetection} disabled={isProcessing} className="mt-4 w-full py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 rounded-lg transition-colors">
+              <button type="button" onClick={runClashDetection} disabled={isProcessing} className="mt-4 w-full py-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 rounded-lg transition-colors">
                 {isProcessing ? 'Processing...' : 'Run Clash Detection'}
               </button>
             </div>
@@ -197,7 +197,7 @@ export default function BIMIntegrationPage() {
             <FileDown className="w-12 h-12 mx-auto text-slate-600 dark:text-slate-400 mb-4" />
             <h2 className="text-lg font-semibold mb-2">Export Structural Model</h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Export the analyzed structural model to IFC 4 format</p>
-            <button onClick={exportIFC} disabled={isProcessing || parsedMembers.length === 0} className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">
+            <button type="button" onClick={exportIFC} disabled={isProcessing || parsedMembers.length === 0} className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">
               {isProcessing ? 'Exporting...' : 'Download IFC File'}
             </button>
           </section>

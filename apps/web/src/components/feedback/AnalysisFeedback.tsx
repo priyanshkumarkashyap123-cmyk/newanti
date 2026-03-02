@@ -201,7 +201,7 @@ export const ProgressIndicator: FC<ProgressIndicatorProps> = ({ status, onCancel
                         )}
                     </span>
                     {onCancel && status.state === 'running' && (
-                        <button
+                        <button type="button"
                             onClick={onCancel}
                             className="text-xs text-red-400 hover:text-red-300 transition-colors"
                         >
@@ -335,7 +335,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
 
                 <div className="flex items-center gap-1">
                     {(finding.memberId || finding.nodeId) && onHighlight && (
-                        <button
+                        <button type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onHighlight(finding.memberId, finding.nodeId);
@@ -363,7 +363,7 @@ export const FindingCard: FC<FindingCardProps> = ({ finding, onHighlight }) => {
                             {/* Learn more about concept */}
                             {concept && (
                                 <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3">
-                                    <button
+                                    <button type="button"
                                         onClick={() => setShowConcept(!showConcept)}
                                         className="flex items-center gap-2 text-xs text-cyan-400 hover:text-cyan-300"
                                     >
@@ -453,7 +453,7 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({ recommendation
                 </div>
 
                 {onApply && (
-                    <button
+                    <button type="button"
                         onClick={onApply}
                         className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                                  text-slate-700 dark:text-slate-200 rounded transition-colors"
@@ -563,7 +563,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHigh
 
             {/* Findings section */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <button
+                <button type="button"
                     onClick={() => setShowFindings(!showFindings)}
                     className="w-full px-4 py-3 flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 
                              hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
@@ -588,7 +588,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHigh
                             {/* Filter tabs */}
                             <div className="px-4 py-2 flex gap-2 border-b border-slate-200/50 dark:border-slate-700/50">
                                 {(['all', 'error', 'warning', 'info', 'success'] as const).map((type) => (
-                                    <button
+                                    <button type="button"
                                         key={type}
                                         onClick={() => setFilterType(type)}
                                         className={`px-2 py-1 text-xs rounded capitalize transition-colors ${
@@ -625,7 +625,7 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHigh
             {/* Recommendations section */}
             {interpretation.recommendations.length > 0 && (
                 <div className="bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <button
+                    <button type="button"
                         onClick={() => setShowRecommendations(!showRecommendations)}
                         className="w-full px-4 py-3 flex items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 
                                  hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
@@ -671,7 +671,7 @@ export const QuickActionsBar: FC<QuickActionsBarProps> = ({ actions }) => {
     return (
         <div className="flex flex-wrap gap-2 p-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
             {actions.map((action) => (
-                <button
+                <button type="button"
                     key={action.id}
                     onClick={action.onClick}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm 
@@ -769,7 +769,7 @@ export const AnalysisFeedbackPanel: FC<AnalysisFeedbackPanelProps> = ({
                                 An error occurred during analysis. Please check your model for issues.
                             </p>
                             {onRerun && (
-                                <button
+                                <button type="button"
                                     onClick={onRerun}
                                     className="mt-3 flex items-center gap-2 text-sm text-cyan-400 
                                              hover:text-cyan-300 transition-colors"

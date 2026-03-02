@@ -351,7 +351,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
             {notification.actions && notification.actions.length > 0 && (
               <div className="mt-3 flex gap-2">
                 {notification.actions.map((action, index) => (
-                  <button
+                  <button type="button"
                     key={index}
                     onClick={() => {
                       action.onClick();
@@ -372,7 +372,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
 
           {/* Dismiss button */}
           {notification.dismissible && (
-            <button
+            <button type="button"
               onClick={handleDismiss}
               className="flex-shrink-0 text-slate-500 dark:text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
               aria-label="Dismiss"
@@ -516,7 +516,7 @@ export function ConfirmDialog({
           >
             {title}
           </h2>
-          <button
+          <button type="button"
             onClick={onClose}
             className="p-1 rounded-lg text-slate-500 hover:text-slate-600 dark:hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             aria-label="Close dialog"
@@ -535,13 +535,13 @@ export function ConfirmDialog({
         </p>
 
         <div className="mt-6 flex justify-end gap-3">
-          <button
+          <button type="button"
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             {cancelLabel}
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               onConfirm();
               onClose();

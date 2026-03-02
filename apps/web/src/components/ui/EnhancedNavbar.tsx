@@ -184,7 +184,7 @@ export const EnhancedNavbar: FC = () => {
           <div className="hidden lg:flex items-center gap-1" ref={menuRef}>
             {/* Products Menu */}
             <div className="relative">
-              <button
+              <button type="button"
                 onClick={() => setActiveMenu(activeMenu === 'products' ? null : 'products')}
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                   activeMenu === 'products' 
@@ -251,7 +251,7 @@ export const EnhancedNavbar: FC = () => {
                             <p className="text-xs text-slate-500 dark:text-slate-400">Generate structures from natural language</p>
                           </div>
                         </div>
-                        <button 
+                        <button type="button" 
                           onClick={() => { navigate('/app'); setActiveMenu(null); }}
                           className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors"
                         >
@@ -266,7 +266,7 @@ export const EnhancedNavbar: FC = () => {
 
             {/* Resources Menu */}
             <div className="relative">
-              <button
+              <button type="button"
                 onClick={() => setActiveMenu(activeMenu === 'resources' ? null : 'resources')}
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
                   activeMenu === 'resources' 
@@ -336,7 +336,7 @@ export const EnhancedNavbar: FC = () => {
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
             {/* Search Button */}
-            <button
+            <button type="button"
               onClick={() => setSearchOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-500 dark:text-slate-400 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200/50 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all"
             >
@@ -350,7 +350,7 @@ export const EnhancedNavbar: FC = () => {
             {/* Notifications */}
             {isSignedIn && (
               <div className="relative">
-                <button aria-label="Notifications" className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all">
+                <button type="button" aria-label="Notifications" className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all">
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
@@ -414,7 +414,7 @@ export const EnhancedNavbar: FC = () => {
                 {filteredSuggestions.length > 0 ? (
                   <div className="p-2">
                     {filteredSuggestions.map((item, i) => (
-                      <button
+                      <button type="button"
                         key={i}
                         className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                         onClick={() => { setSearchOpen(false); setSearchQuery(''); }}

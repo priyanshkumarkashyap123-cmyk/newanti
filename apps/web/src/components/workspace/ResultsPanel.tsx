@@ -40,7 +40,7 @@ export const ResultsPanel: FC<ResultsPanelProps> = ({ tabs, defaultTab, isLoadin
             {/* Tab Headers */}
             <div className="flex items-center px-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 h-9 shrink-0">
                 {tabs.map((tab) => (
-                    <button
+                    <button type="button"
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`
@@ -63,7 +63,7 @@ export const ResultsPanel: FC<ResultsPanelProps> = ({ tabs, defaultTab, isLoadin
                     </button>
                 ))}
                 <div className="flex-1"></div>
-                <button className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400" title="Maximize panel" aria-label="Maximize results panel">
+                <button type="button" className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 dark:text-slate-400" title="Maximize panel" aria-label="Maximize results panel">
                     <span className="material-symbols-outlined text-[16px]">open_in_full</span>
                 </button>
             </div>

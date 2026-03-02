@@ -672,7 +672,7 @@ const CollaborationHub: React.FC = () => {
             <span className="text-2xl">👥</span>
             Team Members
           </h3>
-          <button
+          <button type="button"
             onClick={handleInviteMember}
             className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2"
           >
@@ -715,10 +715,10 @@ const CollaborationHub: React.FC = () => {
                   Last active: {member.lastActive}
                 </span>
                 <div className="flex gap-2">
-                  <button className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">
+                  <button type="button" className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">
                     💬
                   </button>
-                  <button className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-600 rounded">
+                  <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -838,7 +838,7 @@ const CollaborationHub: React.FC = () => {
           </h3>
           <div className="flex gap-2">
             {(["all", "open", "pending", "resolved"] as const).map((filter) => (
-              <button
+              <button type="button"
                 key={filter}
                 onClick={() => setCommentFilter(filter)}
                 className={`px-3 py-1 rounded-lg text-sm capitalize transition-colors ${
@@ -928,16 +928,16 @@ const CollaborationHub: React.FC = () => {
                   )}
 
                   <div className="flex gap-3 mt-4">
-                    <button className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button type="button" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       ↩️ Reply
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => handleResolveComment(comment.id)}
                       className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       ✅ Resolve
                     </button>
-                    <button className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button type="button" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       📍 Show in Model
                     </button>
                   </div>
@@ -958,14 +958,14 @@ const CollaborationHub: React.FC = () => {
           />
           <div className="flex justify-between items-center mt-3">
             <div className="flex gap-2">
-              <button className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
+              <button type="button" className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
                 📍 Pin to Element
               </button>
-              <button className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
+              <button type="button" className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
                 📎 Attach File
               </button>
             </div>
-            <button
+            <button type="button"
               onClick={handlePostComment}
               disabled={!newCommentText.trim()}
               className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -986,7 +986,7 @@ const CollaborationHub: React.FC = () => {
             <span className="text-2xl">📚</span>
             Version History
           </h3>
-          <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>📌</span>
             Create Milestone
           </button>
@@ -1045,13 +1045,13 @@ const CollaborationHub: React.FC = () => {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button aria-label="View" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                      <button type="button" aria-label="View" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                         👁️
                       </button>
-                      <button aria-label="Restore" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                      <button type="button" aria-label="Restore" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                         ↩️
                       </button>
-                      <button aria-label="Download" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                      <button type="button" aria-label="Download" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                         📥
                       </button>
                     </div>
@@ -1112,7 +1112,7 @@ const CollaborationHub: React.FC = () => {
           </div>
         </div>
         <div className="flex justify-center mt-4">
-          <button className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-colors flex items-center gap-2">
+          <button type="button" className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-colors flex items-center gap-2">
             <span>🔍</span>
             Compare Changes
           </button>
@@ -1142,7 +1142,7 @@ const CollaborationHub: React.FC = () => {
                 readOnly
                 className="flex-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-700 dark:text-slate-300"
               />
-              <button
+              <button type="button"
                 onClick={handleCopyLink}
                 className={`px-4 py-2 rounded-lg transition-colors ${linkCopied ? "bg-green-600 text-white" : "bg-cyan-600 text-white hover:bg-cyan-500"}`}
               >
@@ -1176,7 +1176,7 @@ const CollaborationHub: React.FC = () => {
                 <option value="engineer">Engineer</option>
                 <option value="reviewer">Reviewer</option>
               </select>
-              <button
+              <button type="button"
                 onClick={handleInviteMember}
                 disabled={!inviteEmail.trim()}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 disabled:opacity-50 transition-colors"
@@ -1309,7 +1309,7 @@ const CollaborationHub: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <button
+              <button type="button"
                 className={`w-full py-2 rounded text-sm ${
                   int.status === "connected"
                     ? "bg-green-600 text-white"
@@ -1362,7 +1362,7 @@ const CollaborationHub: React.FC = () => {
             { id: "versions", label: "Versions", icon: "📚" },
             { id: "sharing", label: "Sharing", icon: "🔗" },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${

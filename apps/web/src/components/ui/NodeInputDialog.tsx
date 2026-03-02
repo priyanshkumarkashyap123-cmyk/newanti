@@ -199,19 +199,19 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                         </div>
                         {/* Quick position buttons */}
                         <div className="flex gap-2 mt-3">
-                            <button
+                            <button type="button"
                                 onClick={setOrigin}
                                 className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
                             >
                                 Origin (0,0,0)
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => incrementX(1)}
                                 className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
                             >
                                 X+1
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => incrementY(1)}
                                 className="px-2 py-1 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
                             >
@@ -233,7 +233,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                                 { id: 'roller-x', label: 'Roller X', icon: '◎' },
                                 { id: 'roller-y', label: 'Roller Y', icon: '◎' }
                             ].map((type) => (
-                                <button
+                                <button type="button"
                                     key={type.id}
                                     onClick={() => handleSupportTypeChange(type.id as typeof supportType)}
                                     className={`
@@ -259,7 +259,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                         <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                             <div className="grid grid-cols-6 gap-2">
                                 {(['fx', 'fy', 'fz', 'mx', 'my', 'mz'] as const).map((key) => (
-                                    <button
+                                    <button type="button"
                                         key={key}
                                         onClick={() => setRestraints(r => ({ ...r, [key]: !r[key] }))}
                                         className={`

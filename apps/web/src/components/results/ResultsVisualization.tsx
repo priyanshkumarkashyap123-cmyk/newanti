@@ -557,19 +557,19 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
           <div className="flex items-center gap-3">
             {/* Export Buttons */}
             <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-              <button
+              <button type="button"
                 onClick={() => onExport?.('pdf')}
                 className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 PDF
               </button>
-              <button
+              <button type="button"
                 onClick={() => onExport?.('excel')}
                 className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-slate-200 dark:border-slate-700"
               >
                 Excel
               </button>
-              <button
+              <button type="button"
                 onClick={() => onExport?.('json')}
                 className="px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-l border-slate-200 dark:border-slate-700"
               >
@@ -577,7 +577,7 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
               </button>
             </div>
             {onClose && (
-              <button
+              <button type="button"
                 onClick={onClose}
                 className="rounded-lg p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:text-slate-200"
               >
@@ -592,7 +592,7 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
         {/* Tabs */}
         <div className="mt-4 flex gap-2">
           {tabs.map(tab => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setViewMode(tab.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -740,7 +740,7 @@ export const ResultsVisualization: React.FC<ResultsVisualizationProps> = ({
                   { id: 'deflection' as DiagramType, label: 'Deflection', icon: '〰️' },
                   { id: 'utilization' as DiagramType, label: 'Utilization', icon: '📊' },
                 ].map(diagram => (
-                  <button
+                  <button type="button"
                     key={diagram.id}
                     onClick={() => setDiagramType(diagram.id)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${

@@ -590,12 +590,12 @@ export const EnhancedPricingPage: FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-4 shrink-0">
-              <button className="text-sm font-bold text-slate-900 dark:text-white hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
+              <button type="button" className="text-sm font-bold text-slate-900 dark:text-white hover:text-indigo-200 transition-colors whitespace-nowrap underline decoration-indigo-400 underline-offset-2">
                 {marketMode === "india"
                   ? "Apply for India Plan"
                   : "Apply for PPP Pricing"}
               </button>
-              <button
+              <button type="button"
                 onClick={() => setShowPPP(false)}
                 className="text-indigo-200 hover:text-white p-1 rounded-md hover:bg-indigo-500/50 transition-colors"
               >
@@ -655,7 +655,7 @@ export const EnhancedPricingPage: FC = () => {
             transition={{ delay: 0.3 }}
             className="inline-flex items-center gap-4 p-1 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
           >
-            <button
+            <button type="button"
               onClick={() => setBillingPeriod("monthly")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
                 billingPeriod === "monthly"
@@ -665,7 +665,7 @@ export const EnhancedPricingPage: FC = () => {
             >
               Monthly
             </button>
-            <button
+            <button type="button"
               onClick={() => setBillingPeriod("yearly")}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                 billingPeriod === "yearly"
@@ -733,7 +733,7 @@ export const EnhancedPricingPage: FC = () => {
                   )}
               </div>
 
-              <button
+              <button type="button"
                 onClick={() => handleGetStarted(plan.id)}
                 disabled={paymentLoading}
                 className={`w-full py-3 rounded-xl font-semibold transition-all mb-6 disabled:opacity-50 disabled:cursor-wait ${
@@ -888,7 +888,7 @@ export const EnhancedPricingPage: FC = () => {
       {/* Feature Comparison Matrix Toggle */}
       <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
-          <button
+          <button type="button"
             onClick={() => setShowMatrix(!showMatrix)}
             className="w-full py-4 rounded-xl bg-slate-50 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-100 dark:bg-slate-800 transition-all flex items-center justify-center gap-2"
           >
@@ -1099,7 +1099,7 @@ export const EnhancedPricingPage: FC = () => {
                 viewport={{ once: true }}
                 className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 overflow-hidden"
               >
-                <button
+                <button type="button"
                   onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
                   aria-expanded={expandedFaq === i}
                   aria-controls={`faq-answer-${i}`}
@@ -1138,7 +1138,7 @@ export const EnhancedPricingPage: FC = () => {
             Start your 14-day free trial today. No credit card required.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <button
+            <button type="button"
               onClick={() => handleGetStarted("pro")}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/25"
             >

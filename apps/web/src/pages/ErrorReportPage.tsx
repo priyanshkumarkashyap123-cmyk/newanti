@@ -487,7 +487,7 @@ const AuditSectionCard: FC<{ section: AuditSection; defaultOpen?: boolean }> = (
   return (
     <div className={`rounded-lg border ${config.border} ${config.bg} overflow-hidden transition-all duration-200`}>
       {/* Header */}
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-white/5 transition-colors"
       >
@@ -597,7 +597,7 @@ const ErrorReportPage: FC = () => {
           <StatPill label="Passed" count={stats.passes} color="emerald" active={filter === 'pass'} onClick={() => setFilter(filter === 'pass' ? 'all' : 'pass')} />
           <div className="ml-auto">
             {filter !== 'all' && (
-              <button
+              <button type="button"
                 onClick={() => setFilter('all')}
                 className="text-xs text-slate-500 hover:text-white transition-colors"
               >
@@ -672,7 +672,7 @@ const StatPill: FC<{
   const c = colorMap[color];
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
         active ? `${c.ring} ring-1 bg-white/5 ${c.text}` : 'text-slate-400 hover:text-white'

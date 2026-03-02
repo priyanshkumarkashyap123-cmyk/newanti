@@ -115,7 +115,7 @@ export const DetailingDesignPage: React.FC = () => {
       <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-700 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
+            <button type="button"
               onClick={() => navigate(-1)}
               className="text-slate-500 hover:text-slate-900 dark:text-white transition-colors"
             >
@@ -143,7 +143,7 @@ export const DetailingDesignPage: React.FC = () => {
               Design Modules
             </h2>
             {MODULES.map((module) => (
-              <button
+              <button type="button"
                 key={module.id}
                 onClick={() => setActiveModule(module.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${

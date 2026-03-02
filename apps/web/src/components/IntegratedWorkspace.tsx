@@ -199,7 +199,7 @@ export const IntegratedWorkspace: FC = () => {
                 {/* Action Bar */}
                 <div className="absolute top-4 left-4 z-10 flex gap-2">
                     {/* Analyze Button */}
-                    <button
+                    <button type="button"
                         onClick={runAnalysis}
                         disabled={analyzing || model.members.size === 0}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-all ${analyzing
@@ -216,7 +216,7 @@ export const IntegratedWorkspace: FC = () => {
                     </button>
 
                     {/* Voice Button */}
-                    <button
+                    <button type="button"
                         onClick={toggleVoice}
                         className={`p-2 rounded-lg transition-all ${voiceActive
                                 ? 'bg-red-600 text-white animate-pulse'
@@ -267,7 +267,7 @@ export const IntegratedWorkspace: FC = () => {
 
                 {/* Right Panel Toggle */}
                 <div className="absolute top-4 right-4 z-10 flex flex-col gap-2" style={{ top: analysisResult ? 140 : 16 }}>
-                    <button
+                    <button type="button"
                         onClick={() => setActivePanel(activePanel === 'design' ? null : 'design')}
                         className={`p-2 rounded-lg ${activePanel === 'design' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                             }`}
@@ -275,7 +275,7 @@ export const IntegratedWorkspace: FC = () => {
                     >
                         <BarChart2 className="w-4 h-4" />
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActivePanel(activePanel === 'validation' ? null : 'validation')}
                         className={`p-2 rounded-lg ${activePanel === 'validation' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                             }`}
@@ -283,7 +283,7 @@ export const IntegratedWorkspace: FC = () => {
                     >
                         <CheckCircle className="w-4 h-4" />
                     </button>
-                    <button
+                    <button type="button"
                         onClick={generateReport}
                         className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                         title="Generate Report"

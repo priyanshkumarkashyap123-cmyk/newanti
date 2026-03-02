@@ -1124,7 +1124,7 @@ export default function AdvancedSettingsPage() {
                 </span>
               )}
               
-              <button
+              <button type="button"
                 onClick={resetToDefaults}
                 className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
               >
@@ -1132,7 +1132,7 @@ export default function AdvancedSettingsPage() {
                 Reset
               </button>
               
-              <button
+              <button type="button"
                 onClick={saveSettings}
                 disabled={!hasChanges}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
@@ -1169,7 +1169,7 @@ export default function AdvancedSettingsPage() {
               key={category.id}
               className="bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl overflow-hidden"
             >
-              <button
+              <button type="button"
                 onClick={() => toggleCategory(category.id)}
                 className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 dark:bg-slate-800 transition-colors"
               >
@@ -1207,17 +1207,17 @@ export default function AdvancedSettingsPage() {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
+            <button type="button" className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
               <div className="font-medium text-slate-900 dark:text-white">High Performance</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Optimized for speed with GPU acceleration</div>
             </button>
             
-            <button className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
+            <button type="button" className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
               <div className="font-medium text-slate-900 dark:text-white">High Accuracy</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Maximum precision for critical designs</div>
             </button>
             
-            <button className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
+            <button type="button" className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
               <div className="font-medium text-slate-900 dark:text-white">Balanced</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Good balance of speed and accuracy</div>
             </button>

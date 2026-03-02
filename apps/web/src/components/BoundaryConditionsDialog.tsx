@@ -166,7 +166,7 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                 <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Support Type</h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     {(Object.entries(SUPPORT_PRESETS) as [SupportType, typeof SUPPORT_PRESETS[SupportType]][]).map(([type, preset]) => (
-                                        <button
+                                        <button type="button"
                                             key={type}
                                             onClick={() => setSelectedType(type)}
                                             className={`p-4 rounded-lg border-2 transition-all text-left ${selectedType === type

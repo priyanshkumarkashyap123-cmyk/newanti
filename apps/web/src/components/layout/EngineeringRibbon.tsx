@@ -104,7 +104,7 @@ const ToolButton = memo<ToolButtonProps>(
 
     return (
       <Tooltip content={tooltip || label} shortcut={shortcut}>
-        <button
+        <button type="button"
           onClick={onClick}
           disabled={disabled}
           aria-pressed={isActive}
@@ -166,7 +166,7 @@ const MiniButton = memo<{
   className?: string;
 }>(({ icon: Icon, label, onClick, shortcut, className = "" }) => (
   <Tooltip content={label} shortcut={shortcut}>
-    <button
+    <button type="button"
       onClick={onClick}
       className={`flex items-center gap-1 px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all text-[9px] ${className}`}
     >
@@ -550,7 +550,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
       <div className="h-8 flex items-center justify-between px-3 border-b border-slate-800/60 bg-white/90 dark:bg-slate-950/90">
         <div className="flex items-center gap-2">
           {/* Mobile sidebar toggle */}
-          <button
+          <button type="button"
             className="md:hidden text-slate-400 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-0.5 transition-colors"
             onClick={() => document.dispatchEvent(new CustomEvent('toggle-sidebar'))}
             aria-label="Toggle sidebar navigation"
@@ -581,7 +581,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           {RIBBON_TABS.map((tab) => {
             const isActive = activeCategory === tab.id;
             return (
-              <button
+              <button type="button"
                 key={tab.id}
                 role="tab"
                 aria-selected={isActive}
@@ -601,7 +601,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         </div>
 
         <div className="flex items-center gap-3">
-          <button
+          <button type="button"
             onClick={() => document.dispatchEvent(new CustomEvent("trigger-upgrade"))}
             className="flex items-center gap-1 px-2 py-0.5 text-amber-400/80 hover:text-amber-300 text-[9px] font-semibold transition-colors"
           >

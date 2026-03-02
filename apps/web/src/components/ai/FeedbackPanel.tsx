@@ -62,7 +62,7 @@ export const QuickRating: React.FC<QuickRatingProps> = ({
             <span className="text-slate-500 dark:text-slate-400 text-sm">{compact ? '' : 'Rate this:'}</span>
             <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(value => (
-                    <button
+                    <button type="button"
                         key={value}
                         onClick={() => handleRate(value)}
                         className={`w-7 h-7 rounded-lg font-medium text-sm transition-all ${rating === value
@@ -109,7 +109,7 @@ export const CorrectionButton: React.FC<CorrectionButtonProps> = ({
 
     return (
         <>
-            <button
+            <button type="button"
                 onClick={() => setShowDialog(true)}
                 className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1"
             >
@@ -236,14 +236,14 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
                     <h3 className="font-semibold text-slate-900 dark:text-white">User Feedback</h3>
                 </div>
                 <div className="flex gap-2">
-                    <button
+                    <button type="button"
                         onClick={handleExport}
                         className="px-3 py-1 text-sm bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600"
                     >
                         Export
                     </button>
                     {onClose && (
-                        <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        <button type="button" onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -254,14 +254,14 @@ export const FeedbackPanel: React.FC<FeedbackPanelProps> = ({ onClose }) => {
 
             {/* Tabs */}
             <div className="flex border-b border-slate-300 dark:border-slate-700">
-                <button
+                <button type="button"
                     onClick={() => setView('recent')}
                     className={`flex-1 py-2 text-sm font-medium ${view === 'recent' ? 'text-slate-900 dark:text-white border-b-2 border-pink-500' : 'text-slate-500 dark:text-slate-400'
                         }`}
                 >
                     Recent
                 </button>
-                <button
+                <button type="button"
                     onClick={() => setView('stats')}
                     className={`flex-1 py-2 text-sm font-medium ${view === 'stats' ? 'text-slate-900 dark:text-white border-b-2 border-pink-500' : 'text-slate-500 dark:text-slate-400'
                         }`}

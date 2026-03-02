@@ -411,7 +411,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <button
+              <button type="button"
                 onClick={runOptimization}
                 disabled={isRunning}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg transition-colors disabled:opacity-50"
@@ -469,7 +469,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
             { id: "optimization", label: "Optimization", icon: Target },
             { id: "parameters", label: "Parameter Study", icon: Sliders },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
@@ -647,15 +647,15 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   Quick Actions
                 </h3>
                 <div className="space-y-2">
-                  <button className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
                     <Plus className="w-4 h-4" />
                     Add Design Variable
                   </button>
-                  <button className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
                     <Plus className="w-4 h-4" />
                     Add Constraint
                   </button>
-                  <button className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
+                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors text-sm">
                     <RefreshCw className="w-4 h-4" />
                     Recalculate Sensitivity
                   </button>
@@ -1063,7 +1063,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <button className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg transition-colors font-medium">
+                <button type="button" className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg transition-colors font-medium">
                   <Play className="w-4 h-4" />
                   Start Parameter Study
                 </button>
@@ -1074,15 +1074,15 @@ const SensitivityOptimizationDashboard: React.FC = () => {
 
         {/* Export Actions */}
         <div className="mt-8 flex flex-wrap gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
             <Download className="w-4 h-4" />
             Export Results
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
             <Copy className="w-4 h-4" />
             Generate Report
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
             <Upload className="w-4 h-4" />
             Import Variables
           </button>

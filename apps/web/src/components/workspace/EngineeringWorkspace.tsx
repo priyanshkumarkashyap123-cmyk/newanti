@@ -63,7 +63,7 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                 {/* Left Tool Palette */}
                 <aside className="w-[50px] bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col items-center py-2 gap-2 shrink-0 z-40">
                     {tools.map((tool) => (
-                        <button
+                        <button type="button"
                             key={tool.id}
                             onClick={() => setActiveTool(tool.id)}
                             className={`
@@ -81,7 +81,7 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                         </button>
                     ))}
                     <div className="h-px w-6 bg-slate-200 dark:bg-slate-700 my-1"></div>
-                    <button className="w-8 h-8 flex items-center justify-center rounded text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors group relative">
+                    <button type="button" className="w-8 h-8 flex items-center justify-center rounded text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors group relative">
                         <span className="material-symbols-outlined text-[20px]">settings</span>
                     </button>
                 </aside>
@@ -148,7 +148,7 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                             </p>
                             <div className="w-full flex items-center justify-between mt-4">
                                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Getting Started</span>
-                                <button
+                                <button type="button"
                                     onClick={onTutorialClose}
                                     className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105 active:scale-95 text-sm flex items-center gap-2"
                                 >

@@ -411,7 +411,7 @@ export const BarBendingSchedulePage: React.FC = () => {
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4 mb-4">
-            <button
+            <button type="button"
               onClick={() => navigate(-1)}
               className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
@@ -435,7 +435,7 @@ export const BarBendingSchedulePage: React.FC = () => {
           {/* Tab nav */}
           <div className="flex gap-2 mt-4">
             {(['input', 'schedule', 'summary'] as const).map(tab => (
-              <button
+              <button type="button"
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -499,7 +499,7 @@ export const BarBendingSchedulePage: React.FC = () => {
 
             {/* Add Member Buttons */}
             <div className="flex flex-wrap gap-3">
-              <button
+              <button type="button"
                 onClick={() => addMember('beam')}
                 className="flex items-center gap-2 px-4 py-2.5 bg-blue-600/20 border border-blue-500/30 rounded-lg text-blue-400 hover:bg-blue-600/30 transition-colors text-sm font-medium"
               >
@@ -507,7 +507,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                 <Ruler className="w-4 h-4" />
                 Add Beam
               </button>
-              <button
+              <button type="button"
                 onClick={() => addMember('column')}
                 className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600/20 border border-emerald-500/30 rounded-lg text-emerald-400 hover:bg-emerald-600/30 transition-colors text-sm font-medium"
               >
@@ -515,7 +515,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                 <Building2 className="w-4 h-4" />
                 Add Column
               </button>
-              <button
+              <button type="button"
                 onClick={() => addMember('slab')}
                 className="flex items-center gap-2 px-4 py-2.5 bg-amber-600/20 border border-amber-500/30 rounded-lg text-amber-400 hover:bg-amber-600/30 transition-colors text-sm font-medium"
               >
@@ -538,7 +538,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                     className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden"
                   >
                     {/* Member header */}
-                    <button
+                    <button type="button"
                       onClick={() => setExpandedIdx(isExpanded ? -1 : idx)}
                       className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-100 dark:bg-slate-800/50 transition-colors"
                     >
@@ -564,7 +564,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button
+                        <button type="button"
                           onClick={e => { e.stopPropagation(); removeMember(idx); }}
                           className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
                         >
@@ -604,7 +604,7 @@ export const BarBendingSchedulePage: React.FC = () => {
             {/* Generate Button */}
             {members.length > 0 && (
               <div className="flex justify-end">
-                <button
+                <button type="button"
                   onClick={generateSchedule}
                   className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl text-white font-semibold
                              hover:from-orange-600 hover:to-red-700 transition-all shadow-lg shadow-orange-500/20"
@@ -636,7 +636,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                       {schedule.drawingRef} &bull; {schedule.date} &bull; {schedule.code} &bull; {schedule.barGrade}
                     </p>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={exportCSV}
                     className="flex items-center gap-2 px-4 py-2 bg-emerald-600 rounded-lg text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
                   >

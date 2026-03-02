@@ -143,7 +143,7 @@ export const Logo: FC<LogoProps> = ({
 
   if (onClick) {
     return (
-      <button
+      <button type="button"
         onClick={onClick}
         className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
         aria-label={label}

@@ -734,7 +734,7 @@ export const SteelMemberDesigner: React.FC = () => {
         {/* Design Mode Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
           {(['tension', 'compression', 'beam', 'beam-column'] as DesignMode[]).map((mode) => (
-            <button
+            <button type="button"
               key={mode}
               onClick={() => updateState({ mode })}
               className={`${TAB_CLASS} ${state.mode === mode ? TAB_ACTIVE : TAB_INACTIVE}`}
@@ -907,7 +907,7 @@ export const SteelMemberDesigner: React.FC = () => {
             </div>
 
             {/* Design Button */}
-            <button onClick={runDesign} className={BUTTON_PRIMARY + ' w-full'}>
+            <button type="button" onClick={runDesign} className={BUTTON_PRIMARY + ' w-full'}>
               🔧 Run Design Analysis
             </button>
 

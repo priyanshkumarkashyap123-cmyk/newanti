@@ -618,7 +618,7 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                 <div className="flex items-center gap-2">
                     {/* Zoom Controls */}
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                        <button
+                        <button type="button"
                             onClick={handleZoomOut}
                             className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                             title="Zoom Out"
@@ -628,14 +628,14 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                         <span className="text-xs text-slate-500 dark:text-slate-400 px-2 min-w-[50px] text-center">
                             {Math.round(zoom * 100)}%
                         </span>
-                        <button
+                        <button type="button"
                             onClick={handleZoomIn}
                             className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                             title="Zoom In"
                         >
                             <ZoomIn className="w-4 h-4" />
                         </button>
-                        <button
+                        <button type="button"
                             onClick={handleReset}
                             className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                             title="Reset View"
@@ -645,7 +645,7 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                     </div>
                     
                     {/* Settings Toggle */}
-                    <button
+                    <button type="button"
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2 rounded-lg transition-colors ${
                             showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
@@ -655,7 +655,7 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                     </button>
                     
                     {/* Export */}
-                    <button
+                    <button type="button"
                         onClick={handleExport}
                         className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg"
                         title="Export SVG"
@@ -903,7 +903,7 @@ export const UtilizationHeatmap: React.FC<UtilizationHeatmapProps> = ({
                         <option value="utilization">Sort by Utilization</option>
                         <option value="name">Sort by Name</option>
                     </select>
-                    <button
+                    <button type="button"
                         onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}
                         className="p-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded"
                     >

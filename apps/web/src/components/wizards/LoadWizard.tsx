@@ -209,7 +209,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{WIZARD_STEPS[0].title}</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {LOAD_CATEGORIES.map(cat => (
-                  <button
+                  <button type="button"
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`p-4 rounded-xl border transition-all ${
@@ -234,7 +234,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{WIZARD_STEPS[1].title}</h3>
               <div className="grid grid-cols-2 gap-3">
                 {DESIGN_CODES.map(code => (
-                  <button
+                  <button type="button"
                     key={code.id}
                     onClick={() => setSelectedCode(code.id)}
                     className={`p-4 rounded-xl border text-left transition-all ${
@@ -320,7 +320,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
                           {load.magnitude} {load.unit}
                         </span>
                       </div>
-                      <button 
+                      <button type="button" 
                         onClick={() => removeLoad(i)}
                         className="text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300"
                       >
@@ -343,15 +343,15 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
               </p>
               
               <div className="grid grid-cols-3 gap-3">
-                <button className="p-4 rounded-xl border border-blue-500 bg-blue-500/20 text-center">
+                <button type="button" className="p-4 rounded-xl border border-blue-500 bg-blue-500/20 text-center">
                   <span className="text-sm font-medium text-slate-900 dark:text-white block">All Members</span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">Apply uniformly</span>
                 </button>
-                <button className="p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-center opacity-50">
+                <button type="button" className="p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-center opacity-50">
                   <span className="text-sm font-medium text-slate-900 dark:text-white block">Selected</span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">Choose members</span>
                 </button>
-                <button className="p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-center opacity-50">
+                <button type="button" className="p-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/50 text-center opacity-50">
                   <span className="text-sm font-medium text-slate-900 dark:text-white block">By Floor</span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">Floor-based</span>
                 </button>
@@ -373,7 +373,7 @@ export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
               
               <div className="space-y-2">
                 {STANDARD_COMBINATIONS.map(combo => (
-                  <button
+                  <button type="button"
                     key={combo.id}
                     onClick={() => toggleCombination(combo.id)}
                     className={`w-full p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${

@@ -105,7 +105,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                 </p>
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={onClose}
               className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             >
@@ -119,7 +119,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
-                <button
+                <button type="button"
                   key={tab.id}
                   onClick={() => {
                     setActiveTab(tab.id);
@@ -163,7 +163,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                     Full interactive column design with axial-moment interaction
                     diagrams, slenderness checks, and multi-code support.
                   </p>
-                  <button
+                  <button type="button"
                     onClick={() => setShowColumnDialog(true)}
                     className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >
@@ -181,7 +181,7 @@ export const SteelDesignDialog: FC<SteelDesignDialogProps> = ({
                     Composite slab and deck design with profiled steel sheeting,
                     reinforcement detailing, and deflection checks.
                   </p>
-                  <button
+                  <button type="button"
                     onClick={() => setShowSlabDialog(true)}
                     className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                   >

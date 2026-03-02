@@ -203,7 +203,7 @@ export default function SettingsPanel({
               
               <nav className="flex-1 p-2 space-y-1">
                 {sections.map(({ id, label, icon: Icon }) => (
-                  <button
+                  <button type="button"
                     key={id}
                     onClick={() => setActiveSection(id)}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
@@ -221,7 +221,7 @@ export default function SettingsPanel({
               
               {/* Import/Export */}
               <div className="p-3 border-t border-slate-200 dark:border-slate-700/50 space-y-2">
-                <button
+                <button type="button"
                   onClick={handleExportSettings}
                   className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700/50 hover:bg-slate-300 dark:hover:bg-slate-600/50 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-colors"
                 >
@@ -445,7 +445,7 @@ export default function SettingsPanel({
                             { value: 'dark', icon: Moon, label: 'Dark' },
                             { value: 'system', icon: Monitor, label: 'System' },
                           ].map(({ value, icon: Icon, label }) => (
-                            <button
+                            <button type="button"
                               key={value}
                               onClick={() => updateSetting('theme', value as 'dark' | 'light' | 'system')}
                               className={`p-2 rounded-lg transition-all ${
@@ -470,7 +470,7 @@ export default function SettingsPanel({
                             { value: 'amber', color: '#f59e0b' },
                             { value: 'rose', color: '#f43f5e' },
                           ].map(({ value, color }) => (
-                            <button
+                            <button type="button"
                               key={value}
                               onClick={() => updateSetting('accentColor', value)}
                               className={`w-8 h-8 rounded-full transition-all ${
@@ -610,7 +610,7 @@ function Toggle({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <button
+    <button type="button"
       onClick={() => onChange(!checked)}
       className={`relative w-11 h-6 rounded-full transition-colors ${
         checked ? 'bg-blue-500' : 'bg-slate-600'

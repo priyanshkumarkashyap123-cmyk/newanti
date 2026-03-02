@@ -63,7 +63,7 @@ function delayedImport<T extends ComponentType<unknown>>(
  * );
  * 
  * // Preload on hover
- * <button onMouseEnter={preload}>Go to Dashboard</button>
+ * <button type="button" onMouseEnter={preload}>Go to Dashboard</button>
  */
 export function lazyWithPreload<T extends ComponentType<unknown>>(
   factory: ModuleFactory<T>
@@ -276,7 +276,7 @@ function DefaultErrorFallback({ error, retry }: { error: Error; retry: () => voi
       <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
         {error.message}
       </p>
-      <button
+      <button type="button"
         onClick={retry}
         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
       >

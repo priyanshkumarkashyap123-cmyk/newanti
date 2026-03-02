@@ -324,7 +324,7 @@ export const Accordion: FC<AccordionProps> = ({
 
                 return (
                     <div key={item.id}>
-                        <button
+                        <button type="button"
                             onClick={() => toggleItem(item.id)}
                             className="w-full flex items-center justify-between py-4 text-left hover:text-slate-900 dark:hover:text-white transition-colors"
                         >

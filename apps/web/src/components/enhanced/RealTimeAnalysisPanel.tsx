@@ -700,7 +700,7 @@ export const RealTimeAnalysisPanel: React.FC<{
           <label className="block text-xs text-slate-500 dark:text-slate-400 mb-2">Analysis Type</label>
           <div className="grid grid-cols-4 gap-2">
             {ANALYSIS_TYPES.slice(0, 4).map(({ type, name, icon, color }) => (
-              <button
+              <button type="button"
                 key={type}
                 onClick={() => setConfig(c => ({ ...c, type }))}
                 disabled={status !== 'idle'}
@@ -728,7 +728,7 @@ export const RealTimeAnalysisPanel: React.FC<{
           <label className="block text-xs text-slate-500 dark:text-slate-400 mb-2">Solver</label>
           <div className="grid grid-cols-2 gap-2">
             {SOLVER_TYPES.map(({ type, name, description }) => (
-              <button
+              <button type="button"
                 key={type}
                 onClick={() => setConfig(c => ({ ...c, solver: type }))}
                 disabled={status !== 'idle'}
@@ -754,7 +754,7 @@ export const RealTimeAnalysisPanel: React.FC<{
         
         {/* Advanced Settings */}
         <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-          <button
+          <button type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="w-full flex items-center justify-between p-3 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
           >

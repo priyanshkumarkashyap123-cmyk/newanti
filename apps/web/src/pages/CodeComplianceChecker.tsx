@@ -1132,7 +1132,7 @@ const CodeComplianceChecker: React.FC = () => {
               s
             </p>
           </div>
-          <button
+          <button type="button"
             onClick={runComplianceCheck}
             disabled={isRunning || selectedCodes.length === 0}
             className={`px-8 py-4 rounded-lg font-bold transition-all flex items-center gap-3 ${
@@ -1234,7 +1234,7 @@ const CodeComplianceChecker: React.FC = () => {
                 </p>
               </div>
             </div>
-            <button className="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+            <button type="button" className="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
               <span>📄</span>
               Generate Report
             </button>
@@ -1250,7 +1250,7 @@ const CodeComplianceChecker: React.FC = () => {
             </h3>
             <div className="flex gap-2">
               {["all", "fail", "warning", "pass"].map((filter) => (
-                <button
+                <button type="button"
                   key={filter}
                   className="px-3 py-1 rounded text-sm capitalize bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600"
                 >
@@ -1528,7 +1528,7 @@ const CodeComplianceChecker: React.FC = () => {
                       ? "Review Required"
                       : "Non-Compliant"}
                 </span>
-                <button className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                   📄
                 </button>
               </div>
@@ -1565,7 +1565,7 @@ const CodeComplianceChecker: React.FC = () => {
             { id: "standards", label: "Standards", icon: "📚" },
             { id: "history", label: "History", icon: "📜" },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${

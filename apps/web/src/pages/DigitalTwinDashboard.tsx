@@ -399,14 +399,14 @@ const DigitalTwinDashboard: React.FC = () => {
 
           {/* Connect / disconnect */}
           {!connected ? (
-            <button
+            <button type="button"
               onClick={connect}
               className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white text-sm rounded-lg transition-colors"
             >
               Connect
             </button>
           ) : (
-            <button
+            <button type="button"
               onClick={disconnect}
               className="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white text-sm rounded-lg transition-colors"
             >
@@ -415,7 +415,7 @@ const DigitalTwinDashboard: React.FC = () => {
           )}
 
           {/* Sim toggle */}
-          <button
+          <button type="button"
             onClick={toggleSimulation}
             disabled={!connected}
             className={`flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg transition-colors ${
@@ -631,7 +631,7 @@ const DigitalTwinDashboard: React.FC = () => {
                     <span className="text-sm">{alert.message}</span>
                   </div>
                   {!alert.acknowledged && (
-                    <button
+                    <button type="button"
                       onClick={() => acknowledgeAlert(alert.id)}
                       className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-2 py-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
                     >

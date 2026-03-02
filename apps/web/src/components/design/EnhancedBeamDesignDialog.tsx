@@ -597,7 +597,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
             { id: 'results', label: 'Results', icon: BarChart2 },
             { id: 'detailing', label: 'Detailing', icon: Grid3X3 }
           ].map(tab => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
@@ -775,7 +775,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
 
               {/* Advanced options */}
               <div>
-                <button
+                <button type="button"
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 dark:text-slate-100"
                 >
@@ -820,7 +820,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
 
               {/* Design button */}
               <div className="flex justify-end">
-                <button
+                <button type="button"
                   onClick={performDesign}
                   disabled={isCalculating}
                   className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -1127,15 +1127,15 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
 
               {/* Export buttons */}
               <div className="flex justify-end gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
+                <button type="button" className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
                   <FileText className="w-4 h-4" />
                   Export Report
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
+                <button type="button" className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
                   <Download className="w-4 h-4" />
                   Download DXF
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button type="button" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                   <Save className="w-4 h-4" />
                   Save Design
                 </button>
@@ -1154,7 +1154,7 @@ export const EnhancedBeamDesignDialog: React.FC<Props> = ({
               <p className="text-slate-500 dark:text-slate-400">
                 Run the design calculation first to see results
               </p>
-              <button
+              <button type="button"
                 onClick={() => setActiveTab('input')}
                 className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
               >

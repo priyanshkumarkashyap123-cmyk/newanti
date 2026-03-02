@@ -331,7 +331,7 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
                 <p className="text-xs text-emerald-400">Online • GPT-4 Turbo</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+            <button type="button" onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
               <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             </button>
           </div>
@@ -362,7 +362,7 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Quick actions</p>
             <div className="flex flex-wrap gap-2">
               {suggestions.map((s, i) => (
-                <button
+                <button type="button"
                   key={i}
                   onClick={() => setQuery(s)}
                   className="px-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full transition-colors"
@@ -382,7 +382,7 @@ const AIAssistantPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ 
                 placeholder="Ask anything about structural design..."
                 className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
               />
-              <button aria-label="Submit query" title="Submit query" className="p-3 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl hover:opacity-90 transition-opacity">
+              <button type="button" aria-label="Submit query" title="Submit query" className="p-3 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl hover:opacity-90 transition-opacity">
                 <Sparkles className="w-5 h-5 text-white" />
               </button>
             </div>
@@ -728,7 +728,7 @@ const AnalysisControlPanel: React.FC<{
         >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-blue-400 capitalize">{analysis.type} Analysis</span>
-            <button onClick={onStop} className="text-xs text-red-400 hover:text-red-300">
+            <button type="button" onClick={onStop} className="text-xs text-red-400 hover:text-red-300">
               Stop
             </button>
           </div>
@@ -922,11 +922,11 @@ export const UltraModernDesignStudio: React.FC = () => {
             <Brain className="w-5 h-5" />
           </motion.button>
           
-          <button aria-label="Notifications" title="Notifications" className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          <button type="button" aria-label="Notifications" title="Notifications" className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
             <Bell className="w-5 h-5" />
           </button>
           
-          <button aria-label="Share" title="Share" className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          <button type="button" aria-label="Share" title="Share" className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
             <Share2 className="w-5 h-5" />
           </button>
           
@@ -973,10 +973,10 @@ export const UltraModernDesignStudio: React.FC = () => {
           
           <div className="h-px w-8 bg-white/10" />
           
-          <button className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Undo (Ctrl+Z)">
+          <button type="button" className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Undo (Ctrl+Z)">
             <Undo2 className="w-5 h-5" />
           </button>
-          <button className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Redo (Ctrl+Y)">
+          <button type="button" className="p-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors" title="Redo (Ctrl+Y)">
             <Redo2 className="w-5 h-5" />
           </button>
         </motion.aside>
@@ -994,7 +994,7 @@ export const UltraModernDesignStudio: React.FC = () => {
           {/* View Mode Selector */}
           <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-1 p-1 bg-black/50 backdrop-blur-xl rounded-xl border border-white/10">
             {(['3D', 'plan', 'elevation', 'section', 'isometric'] as ViewMode[]).map(vm => (
-              <button
+              <button type="button"
                 key={vm}
                 onClick={() => setViewMode(vm)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -1010,7 +1010,7 @@ export const UltraModernDesignStudio: React.FC = () => {
           
           {/* Quick Actions */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10">
-            <button 
+            <button type="button" 
               onClick={() => setShowResults(!showResults)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 showResults 
@@ -1022,7 +1022,7 @@ export const UltraModernDesignStudio: React.FC = () => {
               {showResults ? 'Hide Results' : 'Show Results'}
             </button>
             
-            <button 
+            <button type="button" 
               onClick={() => handleRunAnalysis('static')}
               disabled={analysis?.status === 'running'}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
@@ -1040,12 +1040,12 @@ export const UltraModernDesignStudio: React.FC = () => {
               )}
             </button>
             
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+            <button type="button" className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
               <Download className="w-4 h-4" />
               Export
             </button>
             
-            <button 
+            <button type="button" 
               onClick={() => setIsFullscreen(!isFullscreen)}
               className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
             >
@@ -1081,7 +1081,7 @@ export const UltraModernDesignStudio: React.FC = () => {
           {/* Tabs */}
           <div className="flex border-b border-white/5">
             {['Properties', 'Analysis', 'Design'].map((tab, i) => (
-              <button
+              <button type="button"
                 key={tab}
                 className={`flex-1 py-3 text-sm font-medium transition-colors ${
                   i === 0 ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'

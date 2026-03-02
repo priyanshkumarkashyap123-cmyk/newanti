@@ -230,7 +230,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                         {TOOLS.map((tool) => {
                             const Icon = tool.icon;
                             return (
-                                <button
+                                <button type="button"
                                     key={tool.id}
                                     onClick={() => setActiveTool(tool.id)}
                                     className={`flex flex-col items-center gap-2 p-4 rounded-lg border transition-all ${activeTool === tool.id

@@ -287,7 +287,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                         <div className="grid grid-cols-3 gap-2">
                             {mode === 'import' ? (
                                 <>
-                                    <button
+                                    <button type="button"
                                         onClick={() => setFormat('dxf')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'dxf'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
@@ -297,7 +297,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                         <FileText className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                         <span className="text-xs text-slate-700 dark:text-slate-300">DXF</span>
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => setFormat('staad')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'staad'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
@@ -307,7 +307,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                         <FileCode className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                         <span className="text-xs text-slate-700 dark:text-slate-300">STAAD .std</span>
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => setFormat('json')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'json'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
@@ -320,7 +320,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                 </>
                             ) : (
                                 <>
-                                    <button
+                                    <button type="button"
                                         onClick={() => setFormat('staad')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'staad'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
@@ -330,7 +330,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                         <FileCode className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                         <span className="text-xs text-slate-700 dark:text-slate-300">STAAD .std</span>
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => setFormat('ifc')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'ifc'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'
@@ -340,7 +340,7 @@ export const InteroperabilityDialog: FC<InteroperabilityDialogProps> = ({ isOpen
                                         <Box className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                         <span className="text-xs text-slate-700 dark:text-slate-300">IFC JSON</span>
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => setFormat('json')}
                                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border transition-all ${format === 'json'
                                                 ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/10'

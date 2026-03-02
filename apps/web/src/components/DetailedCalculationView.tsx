@@ -567,13 +567,13 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
           </div>
           {onExport && (
             <div className="flex gap-2">
-              <button
+              <button type="button"
                 onClick={() => onExport('pdf')}
                 className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
               >
                 📄 PDF
               </button>
-              <button
+              <button type="button"
                 onClick={() => onExport('excel')}
                 className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
               >
@@ -618,7 +618,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
       <div className="border-b border-slate-200 dark:border-slate-700">
         <nav className="flex">
           {['calculations', 'diagrams', 'summary'].map((tab) => (
-            <button
+            <button type="button"
               key={tab}
               onClick={() => setActiveTab(tab as any)}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
@@ -642,14 +642,14 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
           <div>
             {/* Controls */}
             <div className="flex justify-end gap-2 mb-4">
-              <button
+              <button type="button"
                 onClick={expandAll}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
                 Expand All
               </button>
               <span className="text-slate-600">|</span>
-              <button
+              <button type="button"
                 onClick={collapseAll}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >

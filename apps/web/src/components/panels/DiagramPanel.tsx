@@ -354,7 +354,7 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
     const renderTabs = () => (
         <div style={styles.tabs}>
             {(['diagrams', 'design', 'forces'] as const).map(tab => (
-                <button
+                <button type="button"
                     key={tab}
                     style={{
                         ...styles.tab,

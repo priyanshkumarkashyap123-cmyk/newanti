@@ -302,7 +302,7 @@ export function ShortcutsDialog({
           ))}
         </div>
         
-        <button
+        <button type="button"
           className="mt-6 w-full py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-200 rounded"
           onClick={onClose}
         >

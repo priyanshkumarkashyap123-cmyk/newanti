@@ -441,7 +441,7 @@ export function FrameAnalysisUI() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-900">Nodes</h3>
-              <button
+              <button type="button"
                 onClick={addNode}
                 className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
               >
@@ -474,7 +474,7 @@ export function FrameAnalysisUI() {
                     className="w-16 px-2 py-1 border rounded text-sm"
                     placeholder="Y"
                   />
-                  <button
+                  <button type="button"
                     onClick={() => removeNode(node.id)}
                     className="text-red-500 hover:text-red-700"
                   >
@@ -489,7 +489,7 @@ export function FrameAnalysisUI() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-900">Members</h3>
-              <button
+              <button type="button"
                 onClick={addMember}
                 className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
               >
@@ -528,7 +528,7 @@ export function FrameAnalysisUI() {
                         <option key={n.id} value={n.id}>N{n.id}</option>
                       ))}
                     </select>
-                    <button
+                    <button type="button"
                       onClick={() => setMembers(members.filter(m => m.id !== member.id))}
                       className="text-red-500 hover:text-red-700"
                     >
@@ -571,7 +571,7 @@ export function FrameAnalysisUI() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-900">Supports</h3>
-              <button
+              <button type="button"
                 onClick={() => setSupports([...supports, { nodeId: nodes[0]?.id || 0, type: 'pinned' }])}
                 className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
               >
@@ -608,7 +608,7 @@ export function FrameAnalysisUI() {
                     <option value="roller-x">Roller X</option>
                     <option value="roller-y">Roller Y</option>
                   </select>
-                  <button
+                  <button type="button"
                     onClick={() => setSupports(supports.filter((_, i) => i !== idx))}
                     className="text-red-500 hover:text-red-700"
                   >
@@ -623,7 +623,7 @@ export function FrameAnalysisUI() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-slate-900">Point Loads</h3>
-              <button
+              <button type="button"
                 onClick={() => setPointLoads([...pointLoads, { nodeId: nodes[0]?.id || 0, fx: 0, fy: 0 }])}
                 className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
               >
@@ -647,7 +647,7 @@ export function FrameAnalysisUI() {
                         <option key={n.id} value={n.id}>Node {n.id}</option>
                       ))}
                     </select>
-                    <button
+                    <button type="button"
                       onClick={() => setPointLoads(pointLoads.filter((_, i) => i !== idx))}
                       className="text-red-500 hover:text-red-700"
                     >
@@ -685,7 +685,7 @@ export function FrameAnalysisUI() {
           </div>
 
           {/* Analyze Button */}
-          <button
+          <button type="button"
             onClick={runAnalysis}
             className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
           >
@@ -704,7 +704,7 @@ export function FrameAnalysisUI() {
                 { id: 'sfd', label: 'SFD', icon: '📈' },
                 { id: 'deflected', label: 'Deflected', icon: '〰️' },
               ].map(view => (
-                <button
+                <button type="button"
                   key={view.id}
                   onClick={() => setViewMode(view.id as typeof viewMode)}
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
@@ -903,7 +903,7 @@ export function TrussAnalysisUI() {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={analyzeTruss}
               className="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700"
             >
@@ -1202,14 +1202,14 @@ export function ContinuousBeamUI() {
                     {idx < spans.length - 1 && <span className="text-slate-500 dark:text-slate-400">-</span>}
                   </div>
                 ))}
-                <button
+                <button type="button"
                   onClick={() => setSpans([...spans, 6])}
                   className="px-3 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
                 >
                   +
                 </button>
                 {spans.length > 1 && (
-                  <button
+                  <button type="button"
                     onClick={() => setSpans(spans.slice(0, -1))}
                     className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
                   >
@@ -1262,7 +1262,7 @@ export function ContinuousBeamUI() {
               />
             </div>
 
-            <button
+            <button type="button"
               onClick={analyze}
               className="w-full py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700"
             >

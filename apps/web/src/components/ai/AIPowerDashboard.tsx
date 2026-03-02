@@ -220,7 +220,7 @@ export const AIPowerDashboard: FC = () => {
           </div>
         </div>
 
-        <button
+        <button type="button"
           onClick={() => {
             setMetrics(aiPowerEngine.getPerformanceMetrics());
             setRefreshKey(k => k + 1);

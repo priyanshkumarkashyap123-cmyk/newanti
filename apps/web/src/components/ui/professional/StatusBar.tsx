@@ -184,7 +184,7 @@ const StatusIndicator: FC<{
   const Icon = config.icon;
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`flex items-center gap-2 px-2 py-1 rounded ${config.bgColor} hover:opacity-80 transition-opacity`}
     >
@@ -214,7 +214,7 @@ const CoordinateDisplay: FC<{
   unit: string;
   onClick?: () => void;
 }> = memo(({ coordinates, unit, onClick }) => (
-  <button
+  <button type="button"
     onClick={onClick}
     className="flex items-center gap-2 px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
     title="Click to input coordinates"
@@ -278,7 +278,7 @@ const QuickToggleButton: FC<{
   const Icon = toggle.enabled && toggle.activeIcon ? toggle.activeIcon : toggle.icon;
   
   return (
-    <button
+    <button type="button"
       onClick={onToggle}
       className={`flex items-center gap-1 px-1.5 py-1 rounded text-xs transition-all ${
         toggle.enabled
@@ -320,7 +320,7 @@ const UnitSystemSelector: FC<{
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 px-2 py-1 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
       >
@@ -340,7 +340,7 @@ const UnitSystemSelector: FC<{
               Unit System
             </div>
             {UNIT_SYSTEMS.map(system => (
-              <button
+              <button type="button"
                 key={system.id}
                 onClick={() => {
                   onChange(system.id);
@@ -386,7 +386,7 @@ const ZoomSelector: FC<{
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 px-2 py-1 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors min-w-[60px] justify-center"
       >
@@ -403,7 +403,7 @@ const ZoomSelector: FC<{
             className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl overflow-hidden"
           >
             {ZOOM_PRESETS.map(preset => (
-              <button
+              <button type="button"
                 key={preset}
                 onClick={() => {
                   onChange(preset);
@@ -471,7 +471,7 @@ const NotificationBadge: FC<{
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
       >
@@ -521,7 +521,7 @@ const NotificationBadge: FC<{
                     </p>
                   </div>
                   {!notification.persistent && (
-                    <button
+                    <button type="button"
                       onClick={() => onDismiss(notification.id)}
                       className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     >

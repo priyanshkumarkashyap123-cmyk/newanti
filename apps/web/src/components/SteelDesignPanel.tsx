@@ -162,7 +162,7 @@ const MemberRow: FC<{
     return (
         <div className="border border-slate-200 dark:border-slate-700 rounded-lg mb-2">
             {/* Header */}
-            <button
+            <button type="button"
                 onClick={onToggle}
                 className="w-full flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
@@ -587,7 +587,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
 
             {/* Actions */}
             <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex gap-2">
-                <button
+                <button type="button"
                     onClick={handleDetailedDesign}
                     disabled={isLoading}
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded-lg text-sm transition-colors"
@@ -595,7 +595,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
                     <Wrench className="w-4 h-4" />
                     {isLoading ? 'Designing...' : 'Run Detailed Design'}
                 </button>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800">
+                <button type="button" className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800">
                     <Download className="w-4 h-4" />
                     Export
                 </button>

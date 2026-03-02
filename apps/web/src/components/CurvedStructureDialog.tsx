@@ -163,7 +163,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
                   cat === "all" ? "All" : CATEGORY_LABELS[cat] || cat;
                 const isActive = selectedCategory === cat;
                 return (
-                  <button
+                  <button type="button"
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
                     className={`text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors ${
@@ -184,7 +184,7 @@ export const CurvedStructureDialog: FC<CurvedStructureDialogProps> = ({
               {filteredTemplates.map((template) => {
                 const isSelected = selectedTemplate?.id === template.id;
                 return (
-                  <button
+                  <button type="button"
                     key={template.id}
                     onClick={() => handleSelectTemplate(template)}
                     className={`w-full text-left p-3 rounded-lg border transition-all ${

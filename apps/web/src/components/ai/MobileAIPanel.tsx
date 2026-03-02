@@ -91,7 +91,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
     return (
         <>
             {/* Floating Action Button */}
-            <button
+            <button type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="fixed bottom-4 right-4 z-50 w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 
                    rounded-full shadow-lg flex items-center justify-center text-white
@@ -132,7 +132,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                 <div className="p-3 border-b border-slate-300 dark:border-slate-700">
                     <div className="grid grid-cols-4 gap-2">
                         {quickActions.map((action, i) => (
-                            <button
+                            <button type="button"
                                 key={i}
                                 onClick={action.action}
                                 className="flex flex-col items-center p-2 bg-slate-100 dark:bg-slate-800 rounded-lg 
@@ -178,7 +178,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                 <div className="p-3 bg-slate-100 dark:bg-slate-800 border-t border-slate-300 dark:border-slate-700">
                     <div className="flex items-center gap-2">
                         {/* Voice Button */}
-                        <button
+                        <button type="button"
                             onClick={handleVoiceToggle}
                             className={`p-3 rounded-full transition-colors touch-manipulation ${isListening
                                     ? 'bg-red-500 text-white animate-pulse'
@@ -207,7 +207,7 @@ export const MobileAIPanel: React.FC<MobileAIPanelProps> = ({
                         />
 
                         {/* Send Button */}
-                        <button
+                        <button type="button"
                             onClick={handleSubmit}
                             className="p-3 bg-blue-500 text-white rounded-full 
                          active:bg-blue-600 transition-colors touch-manipulation"
@@ -237,21 +237,21 @@ export const MobileViewerControls: React.FC<{
 }> = ({ onZoomIn, onZoomOut, onReset, onToggleMode }) => {
     return (
         <div className="fixed left-4 bottom-20 z-40 flex flex-col gap-2">
-            <button
+            <button type="button"
                 onClick={onZoomIn}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
                    text-slate-900 dark:text-white text-xl active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
             >
                 +
             </button>
-            <button
+            <button type="button"
                 onClick={onZoomOut}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
                    text-slate-900 dark:text-white text-xl active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
             >
                 −
             </button>
-            <button
+            <button type="button"
                 onClick={onReset}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
                    text-slate-900 dark:text-white active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"
@@ -262,7 +262,7 @@ export const MobileViewerControls: React.FC<{
                     />
                 </svg>
             </button>
-            <button
+            <button type="button"
                 onClick={onToggleMode}
                 className="w-12 h-12 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg flex items-center justify-center
                    text-slate-900 dark:text-white active:bg-slate-200 dark:active:bg-slate-700 touch-manipulation shadow-lg"

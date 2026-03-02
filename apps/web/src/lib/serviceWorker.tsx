@@ -319,7 +319,7 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
             A new version is ready. Update now for the latest features.
           </p>
         </div>
-        <button
+        <button type="button"
           onClick={onDismiss}
           className="text-blue-200 hover:text-slate-900 dark:text-white"
           aria-label="Dismiss"
@@ -329,7 +329,7 @@ export function UpdateBanner({ onUpdate, onDismiss, className = '' }: UpdateBann
           </svg>
         </button>
       </div>
-      <button
+      <button type="button"
         onClick={onUpdate}
         className="mt-3 w-full bg-white text-blue-600 px-4 py-2 rounded font-medium hover:bg-blue-50 transition-colors"
       >

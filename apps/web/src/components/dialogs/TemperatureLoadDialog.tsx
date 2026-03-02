@@ -147,7 +147,7 @@ export const TemperatureLoadDialog: React.FC<TemperatureLoadDialogProps> = ({ is
                 { label: 'Aluminum', val: 23.6e-6 },
                 { label: 'Timber', val: 5e-6 },
               ].map(mat => (
-                <button
+                <button type="button"
                   key={mat.label}
                   onClick={() => setAlpha(mat.val)}
                   className={`px-2 py-1 text-xs rounded border transition-colors ${

@@ -657,7 +657,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             </div>
 
             <div className="flex items-center gap-3">
-              <button
+              <button type="button"
                 onClick={startExport}
                 disabled={isExporting || selectedItems.length === 0}
                 className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-lg transition-colors disabled:opacity-50 font-medium"
@@ -707,7 +707,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             { id: "export", label: "Export Options", icon: Download },
             { id: "templates", label: "Templates", icon: Layers },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
@@ -746,7 +746,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
               <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                 <h3 className="text-slate-900 dark:text-white font-semibold">Export Items</h3>
                 <div className="flex gap-2">
-                  <button
+                  <button type="button"
                     onClick={() =>
                       setExportItems((prev) =>
                         prev.map((i) => ({ ...i, selected: true })),
@@ -756,7 +756,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   >
                     Select All
                   </button>
-                  <button
+                  <button type="button"
                     onClick={() =>
                       setExportItems((prev) =>
                         prev.map((i) => ({ ...i, selected: false })),
@@ -779,7 +779,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       key={category}
                       className="border-b border-slate-300 dark:border-slate-700/50 last:border-b-0"
                     >
-                      <button
+                      <button type="button"
                         onClick={() => toggleCategory(category, !allSelected)}
                         className="w-full flex items-center gap-3 p-3 hover:bg-slate-200 dark:hover:bg-slate-700/30"
                       >
@@ -809,7 +809,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         {items.map((item) => {
                           const Icon = getItemIcon(item.type);
                           return (
-                            <button
+                            <button type="button"
                               key={item.id}
                               onClick={() => toggleItem(item.id)}
                               className={`w-full flex items-center gap-3 p-2 hover:bg-slate-200 dark:hover:bg-slate-700/30 ${
@@ -859,7 +859,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                     <h3 className="text-slate-900 dark:text-white font-semibold">Print Preview</h3>
                     <div className="flex items-center gap-2">
-                      <button
+                      <button type="button"
                         onClick={() =>
                           setPreviewZoom(Math.max(50, previewZoom - 25))
                         }
@@ -870,7 +870,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       <span className="text-slate-600 dark:text-slate-400 text-sm w-12 text-center">
                         {previewZoom}%
                       </span>
-                      <button
+                      <button type="button"
                         onClick={() =>
                           setPreviewZoom(Math.min(200, previewZoom + 25))
                         }
@@ -1109,7 +1109,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
 
                 <div className="grid grid-cols-3 gap-3">
                   {exportFormats.map((format) => (
-                    <button
+                    <button type="button"
                       key={format.id}
                       onClick={() =>
                         setSelectedFormat(format.id as ExportFormat)
@@ -1277,7 +1277,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         <span className="text-slate-600 dark:text-slate-400 text-sm">
                           {template.items.length} items
                         </span>
-                        <button
+                        <button type="button"
                           onClick={() => applyTemplate(template)}
                           className="px-3 py-1 bg-orange-600 hover:bg-orange-500 text-white text-sm rounded transition-colors"
                         >
@@ -1288,7 +1288,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   ))}
                 </div>
 
-                <button className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors">
+                <button type="button" className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors">
                   <Plus className="w-4 h-4" />
                   Create New Template
                 </button>
@@ -1297,19 +1297,19 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
 
             {/* Quick Actions */}
             <div className="flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Printer className="w-4 h-4" />
                 Print
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Eye className="w-4 h-4" />
                 Full Preview
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Book className="w-4 h-4" />
                 Table of Contents
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <RefreshCw className="w-4 h-4" />
                 Regenerate
               </button>

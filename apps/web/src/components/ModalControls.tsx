@@ -87,7 +87,7 @@ export const ModalControls: FC = () => {
     return (
         <div style={containerStyle}>
             {/* Play/Pause Button */}
-            <button
+            <button type="button"
                 style={buttonStyle}
                 onClick={() => setIsAnimating(!isAnimating)}
             >

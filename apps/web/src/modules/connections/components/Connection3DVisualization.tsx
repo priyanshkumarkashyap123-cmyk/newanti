@@ -940,7 +940,7 @@ export const Connection3DVisualization: React.FC<
         }}
       >
         {["3D", "Plan", "Front", "Side"].map((view) => (
-          <button
+          <button type="button"
             key={view}
             style={{
               padding: "8px 12px",

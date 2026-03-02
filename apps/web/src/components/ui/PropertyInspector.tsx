@@ -410,7 +410,7 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({ selectedMemberId
                 {/* Presets */}
                 <div style={{ marginBottom: '12px' }}>
                     {(Object.keys(sectionsData.materials) as MaterialKey[]).slice(0, 4).map((key) => (
-                        <button
+                        <button type="button"
                             key={key}
                             style={{
                                 ...styles.presetButton,

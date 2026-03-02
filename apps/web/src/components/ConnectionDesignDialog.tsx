@@ -385,7 +385,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
                                     <Label className="text-xs text-muted-foreground mb-2 block">Connection Type</Label>
                                     <div className="grid grid-cols-2 gap-2">
                                         {(Object.keys(CONNECTION_TYPES) as ConnectionType[]).map((type) => (
-                                            <button
+                                            <button type="button"
                                                 key={type}
                                                 onClick={() => setConnectionType(type)}
                                                 className={`p-2 rounded-lg border text-left transition-all ${connectionType === type

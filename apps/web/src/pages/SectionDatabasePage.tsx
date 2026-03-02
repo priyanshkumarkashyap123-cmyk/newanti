@@ -264,7 +264,7 @@ export const SectionDatabasePage: React.FC = () => {
                     className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:outline-none"
                   />
                 </div>
-                <button className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <button type="button" className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
                   <Filter className="w-5 h-5" />
                   Filter
                 </button>
@@ -275,7 +275,7 @@ export const SectionDatabasePage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-purple-400 mb-4">Standard</h3>
               <div className="flex flex-wrap gap-2">
-                <button
+                <button type="button"
                   onClick={() => setSelectedStandard('ALL')}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     selectedStandard === 'ALL'
@@ -286,7 +286,7 @@ export const SectionDatabasePage: React.FC = () => {
                   All Standards
                 </button>
                 {standards.map((std) => (
-                  <button
+                  <button type="button"
                     key={std}
                     onClick={() => setSelectedStandard(std)}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -346,7 +346,7 @@ export const SectionDatabasePage: React.FC = () => {
                         </div>
                       </div>
                       
-                      <button
+                      <button type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleSaveSection(section.id);
@@ -372,7 +372,7 @@ export const SectionDatabasePage: React.FC = () => {
               <div className="bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-300 dark:border-slate-700 sticky top-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-white">{selectedSection.designation}</h2>
-                  <button
+                  <button type="button"
                     onClick={() => exportSection(selectedSection)}
                     className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
                   >
@@ -487,7 +487,7 @@ export const SectionDatabasePage: React.FC = () => {
                   </div>
 
                   {/* Use in Model Button */}
-                  <button
+                  <button type="button"
                     onClick={() => applyToModel(selectedSection)}
                     className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all shadow-lg"
                   >

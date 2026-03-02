@@ -147,7 +147,7 @@ export const DesignCodeResultsPanel: FC = () => {
                         <FileText className="w-5 h-5 text-blue-400" />
                         <h2 className="text-sm font-bold">Design Code Checks</h2>
                     </div>
-                    <button
+                    <button type="button"
                         onClick={runDesignChecks}
                         disabled={loading || model.members.size === 0}
                         className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded text-xs font-bold flex items-center gap-2 disabled:opacity-50"
@@ -160,7 +160,7 @@ export const DesignCodeResultsPanel: FC = () => {
                 {/* Code selector */}
                 <div className="flex gap-2">
                     {(['IS800', 'AISC360', 'EC3'] as const).map(code => (
-                        <button
+                        <button type="button"
                             key={code}
                             onClick={() => setSelectedCode(code)}
                             className={`px-3 py-1 rounded text-xs ${selectedCode === code
@@ -209,7 +209,7 @@ export const DesignCodeResultsPanel: FC = () => {
                         {/* Member results */}
                         {results.map(result => (
                             <div key={result.memberId} className="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800">
-                                <button
+                                <button type="button"
                                     onClick={() => setExpandedMember(
                                         expandedMember === result.memberId ? null : result.memberId
                                     )}

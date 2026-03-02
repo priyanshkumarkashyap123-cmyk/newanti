@@ -191,7 +191,7 @@ const ScaleSlider: FC<ScaleSliderProps> = ({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <button
+        <button type="button"
           onClick={() => onChange(Math.max(min, value - step * 5))}
           className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
         >
@@ -207,7 +207,7 @@ const ScaleSlider: FC<ScaleSliderProps> = ({
           className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer
                              accent-blue-500"
         />
-        <button
+        <button type="button"
           onClick={() => onChange(Math.min(max, value + step * 5))}
           className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
         >
@@ -235,7 +235,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({
   children,
   color = "#3b82f6",
 }) => (
-  <button
+  <button type="button"
     onClick={onClick}
     className={`px-3 py-1.5 text-xs font-medium rounded transition-all
                   ${
@@ -317,7 +317,7 @@ const CollapsibleSection: FC<CollapsibleSectionProps> = ({
 
   return (
     <div className="border-b border-slate-200 dark:border-slate-700">
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 
                          hover:bg-slate-700/30 transition-colors"
@@ -486,7 +486,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
             {/* Diagram Type Buttons */}
             <div className="grid grid-cols-3 gap-2">
               {diagramOptions.map((opt) => (
-                <button
+                <button type="button"
                   key={opt.id}
                   onClick={() => updateSettings({ showDiagram: opt.id })}
                   className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all
@@ -651,7 +651,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-500 dark:text-slate-400">Animate Deflection</span>
-              <button
+              <button type="button"
                 onClick={() =>
                   updateSettings({
                     animateDeflection: !settings.animateDeflection,
@@ -712,15 +712,15 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
             <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
               <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Quick Views</div>
               <div className="flex flex-wrap gap-2">
-                <button className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
+                <button type="button" className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
                   <Grid3X3 size={12} className="inline mr-1" />
                   Quad View
                 </button>
-                <button className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
+                <button type="button" className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
                   <Maximize2 size={12} className="inline mr-1" />
                   Full 3D
                 </button>
-                <button className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
+                <button type="button" className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600">
                   <Box size={12} className="inline mr-1" />
                   Isometric
                 </button>
@@ -763,7 +763,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
 
       {/* Footer Actions */}
       <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-100/30 dark:bg-slate-800/30">
-        <button
+        <button type="button"
           onClick={() => {
             setSettings({
               showDiagram: "none",

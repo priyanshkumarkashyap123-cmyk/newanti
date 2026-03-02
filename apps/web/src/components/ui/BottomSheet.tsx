@@ -341,7 +341,7 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(
                       </p>
                     )}
                   </div>
-                  <button
+                  <button type="button"
                     onClick={close}
                     className={cn(
                       'shrink-0 ml-3 p-1.5 rounded-lg',
@@ -422,7 +422,7 @@ const ActionSheetContent: React.FC<ActionSheetContentProps> = ({ actions, onClos
       {/* Action list */}
       <div className="rounded-xl overflow-hidden bg-slate-800/60 border border-slate-700/50">
         {actions.map((action, idx) => (
-          <button
+          <button type="button"
             key={action.id}
             onClick={() => handlePress(action)}
             disabled={action.disabled}
@@ -452,7 +452,7 @@ const ActionSheetContent: React.FC<ActionSheetContentProps> = ({ actions, onClos
       </div>
 
       {/* Cancel button — separated visually per iOS convention */}
-      <button
+      <button type="button"
         onClick={onClose}
         className={cn(
           'w-full py-3.5 rounded-xl',

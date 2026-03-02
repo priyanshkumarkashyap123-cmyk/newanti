@@ -160,7 +160,7 @@ interface FormatCardProps {
 }
 
 const FormatCard: React.FC<FormatCardProps> = ({ format, selected, onSelect }) => (
-    <button
+    <button type="button"
         onClick={onSelect}
         className={`
             p-3 rounded-xl border-2 text-left transition-all
@@ -422,7 +422,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                 
                 <div className="flex items-center gap-2">
                     {job.status === 'completed' && (
-                        <button
+                        <button type="button"
                             onClick={onDownload}
                             className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-400 transition-colors"
                         >
@@ -431,7 +431,7 @@ const ExportJobCard: React.FC<ExportJobCardProps> = ({ job, onDownload, onCancel
                     )}
                     
                     {(job.status === 'pending' || job.status === 'processing') && (
-                        <button
+                        <button type="button"
                             onClick={onCancel}
                             className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors"
                         >
@@ -545,7 +545,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                 <div className="w-56 border-r border-slate-200 dark:border-slate-800 p-4">
                     <div className="space-y-1">
                         {Object.entries(CATEGORY_INFO).map(([key, info]) => (
-                            <button
+                            <button type="button"
                                 key={key}
                                 onClick={() => {
                                     setActiveCategory(key as ExportCategory);
@@ -632,7 +632,7 @@ export const ExportManager: React.FC<ExportManagerProps> = ({
                     
                     {/* Export Button */}
                     <div className="flex items-center gap-4">
-                        <button
+                        <button type="button"
                             onClick={handleExport}
                             disabled={!selectedFormat || isExporting}
                             className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-500 text-white font-semibold rounded-xl hover:from-blue-400 hover:to-blue-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"

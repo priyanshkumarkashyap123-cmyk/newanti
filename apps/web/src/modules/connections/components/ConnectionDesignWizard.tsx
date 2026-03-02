@@ -773,7 +773,7 @@ export const ConnectionDesignWizard: React.FC<ConnectionDesignWizardProps> = ({
         <div className="flex items-center gap-2 mt-4">
           {WIZARD_STEPS.map((step, index) => (
             <React.Fragment key={step.id}>
-              <button
+              <button type="button"
                 onClick={() => index <= currentStep && setCurrentStep(index)}
                 disabled={index > currentStep}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${

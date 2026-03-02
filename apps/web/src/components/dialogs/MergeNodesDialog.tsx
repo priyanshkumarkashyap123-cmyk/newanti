@@ -179,7 +179,7 @@ export const MergeNodesDialog: React.FC<MergeNodesDialogProps> = ({ isOpen, onCl
               />
               <div className="flex gap-1">
                 {[0.001, 0.01, 0.05, 0.1].map(t => (
-                  <button
+                  <button type="button"
                     key={t}
                     onClick={() => setTolerance(t)}
                     className={`px-2 py-1 text-xs rounded border transition-colors ${
@@ -220,7 +220,7 @@ export const MergeNodesDialog: React.FC<MergeNodesDialogProps> = ({ isOpen, onCl
                 const key = `${pair.node1Id}|${pair.node2Id}`;
                 const isSelected = selectedPairs.has(key);
                 return (
-                  <button
+                  <button type="button"
                     key={key}
                     onClick={() => togglePair(key)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${

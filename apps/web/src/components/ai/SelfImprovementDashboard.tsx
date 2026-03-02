@@ -74,7 +74,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                         </span>
                     )}
                 </div>
-                <button
+                <button type="button"
                     onClick={toggleMonitoring}
                     className={`px-3 py-1 rounded text-sm font-medium ${isMonitoring
                             ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
@@ -202,13 +202,13 @@ export const SelfImprovementDashboard: React.FC = () => {
 
                 {/* Quick Actions */}
                 <div className="flex gap-3">
-                    <button
+                    <button type="button"
                         onClick={() => selfImprovement.runMonitoringCycle()}
                         className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium text-sm"
                     >
                         Run Check Now
                     </button>
-                    <button
+                    <button type="button"
                         onClick={async () => {
                             const report = await selfImprovement.generateReport(30);
 // console.log('Improvement Report:', report);

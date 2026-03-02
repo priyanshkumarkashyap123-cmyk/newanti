@@ -32,7 +32,7 @@ export const LearningAssistant: FC = () => {
 
     if (!isOpen) {
         return (
-            <button
+            <button type="button"
                 onClick={() => setIsOpen(true)}
                 className="fixed bottom-4 right-4 p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-lg transition-all"
             >
@@ -49,7 +49,7 @@ export const LearningAssistant: FC = () => {
                     <Lightbulb className="w-4 h-4 text-yellow-400" />
                     <span className="text-sm font-bold text-slate-900 dark:text-white">AI Learning Assistant</span>
                 </div>
-                <button
+                <button type="button"
                     onClick={() => setIsOpen(false)}
                     className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
@@ -106,10 +106,10 @@ export const LearningAssistant: FC = () => {
                                             <div className="text-xs font-bold text-slate-800 dark:text-slate-100">{rec.title}</div>
                                             <div className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">{rec.description}</div>
                                             <div className="mt-2 flex gap-2">
-                                                <button className="px-2 py-1 bg-indigo-600/20 text-indigo-400 text-[10px] rounded hover:bg-indigo-600/30">
+                                                <button type="button" className="px-2 py-1 bg-indigo-600/20 text-indigo-400 text-[10px] rounded hover:bg-indigo-600/30">
                                                     Start Lesson
                                                 </button>
-                                                <button className="px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-[10px] rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+                                                <button type="button" className="px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 text-[10px] rounded hover:bg-slate-200 dark:hover:bg-slate-700">
                                                     Dismiss
                                                 </button>
                                             </div>

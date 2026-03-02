@@ -152,7 +152,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                     return (
                         <div key={step.id} className="flex items-center flex-1">
                             {/* Step Indicator */}
-                            <button
+                            <button type="button"
                                 onClick={() => isClickable && onStepClick(index)}
                                 disabled={!isClickable}
                                 className={`
@@ -206,7 +206,7 @@ export const AnalysisWorkflow: FC<AnalysisWorkflowProps> = ({
                 })}
 
                 {/* Run Analysis Button */}
-                <button
+                <button type="button"
                     onClick={onRunAnalysis}
                     disabled={!stepStatus.analyze || isAnalyzing}
                     className={`

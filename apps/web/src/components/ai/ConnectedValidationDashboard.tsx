@@ -225,7 +225,7 @@ export const ConnectedValidationDashboard: React.FC<ConnectedValidationDashboard
                     )}
                 </div>
                 {!isValidating && analysisResults && (
-                    <button
+                    <button type="button"
                         onClick={runValidation}
                         className="text-sm text-blue-400 hover:text-blue-300"
                     >

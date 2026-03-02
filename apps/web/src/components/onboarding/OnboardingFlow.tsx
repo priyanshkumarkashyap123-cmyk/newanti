@@ -158,7 +158,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
       </div>
 
       {/* Skip Button */}
-      <button
+      <button type="button"
         onClick={handleSkip}
         className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm"
       >
@@ -218,7 +218,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
 
         {/* Navigation */}
         <div className="flex justify-between items-center mt-12">
-          <button
+          <button type="button"
             onClick={handleBack}
             disabled={currentStep === 0}
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
@@ -230,7 +230,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
 
-          <button
+          <button type="button"
             onClick={handleNext}
             disabled={!isStepValid()}
             className={`flex items-center gap-2 px-8 py-3 rounded-full font-bold transition-all shadow-lg shadow-blue-500/25 ${

@@ -114,7 +114,7 @@ const CheckRow: React.FC<{ check: CodeCheck }> = ({ check }) => {
 
     return (
         <div className="border border-slate-700 rounded-lg overflow-hidden">
-            <button
+            <button type="button"
                 onClick={() => setExpanded(!expanded)}
                 className="w-full px-4 py-3 flex items-center gap-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-750"
             >
@@ -258,7 +258,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                             <div className="text-slate-900 dark:text-white font-medium">{member.section.name}</div>
                             <div className="text-slate-500 dark:text-slate-400 text-sm">{member.material.grade} Steel</div>
                         </div>
-                        <button
+                        <button type="button"
                             onClick={runCheck}
                             disabled={!forces}
                             className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 disabled:opacity-50 font-medium"
@@ -316,13 +316,13 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
 
                         {/* Actions */}
                         <div className="mt-4 flex gap-2">
-                            <button
+                            <button type="button"
                                 onClick={runCheck}
                                 className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium"
                             >
                                 Re-check
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => {
                                     const summary = codeCompliance.generateSummary([report]);
 // console.log(summary);

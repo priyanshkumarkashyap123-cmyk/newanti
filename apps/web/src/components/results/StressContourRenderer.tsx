@@ -406,7 +406,7 @@ export const StressTypeSelector: FC<StressTypeSelectorProps> = ({ selected, onCh
     
     return (
         <div className="relative">
-            <button
+            <button type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                          rounded-lg text-sm transition-colors border border-slate-600"
@@ -428,7 +428,7 @@ export const StressTypeSelector: FC<StressTypeSelectorProps> = ({ selected, onCh
                                      rounded-lg shadow-xl z-50 overflow-hidden"
                         >
                             {STRESS_TYPES.map((type) => (
-                                <button
+                                <button type="button"
                                     key={type.id}
                                     onClick={() => {
                                         onChange(type.id);

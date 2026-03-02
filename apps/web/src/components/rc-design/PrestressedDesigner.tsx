@@ -227,7 +227,7 @@ export const PrestressedDesigner: React.FC = () => {
       {/* Tab Navigation */}
       <div className="flex gap-2 mb-6">
         {['input', 'results', 'losses', 'stresses'].map((tab) => (
-          <button
+          <button type="button"
             key={tab}
             onClick={() => setActiveTab(tab as any)}
             className={`px-6 py-3 rounded-xl font-medium transition-all ${
@@ -264,7 +264,7 @@ export const PrestressedDesigner: React.FC = () => {
                     <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Prestress Type</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(['pre-tensioned', 'post-tensioned'] as const).map((type) => (
-                        <button
+                        <button type="button"
                           key={type}
                           onClick={() => updateField('prestressType', type)}
                           className={`p-3 rounded-xl text-sm transition-all ${
@@ -319,7 +319,7 @@ export const PrestressedDesigner: React.FC = () => {
                 {/* Section Type Selection */}
                 <div className="grid grid-cols-4 gap-3 mb-6">
                   {SECTION_TYPES.map((type) => (
-                    <button
+                    <button type="button"
                       key={type.value}
                       onClick={() => updateField('sectionType', type.value as any)}
                       className={`p-4 rounded-xl text-center transition-all ${
@@ -459,7 +459,7 @@ export const PrestressedDesigner: React.FC = () => {
                     <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-2">Tendon Profile</label>
                     <div className="grid grid-cols-2 gap-2">
                       {TENDON_PROFILES.map((profile) => (
-                        <button
+                        <button type="button"
                           key={profile.value}
                           onClick={() => updateField('profile', profile.value)}
                           className={`p-2 rounded-lg text-sm transition-all ${

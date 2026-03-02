@@ -113,7 +113,7 @@ export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
                                     <h2 className="text-lg font-bold text-slate-900 dark:text-white">What's New in {CHANGELOG.version}</h2>
                                     <p className="text-sm text-slate-500">🎉 {CHANGELOG.date} Update</p>
                                 </div>
-                                <button onClick={handleClose} className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors">
+                                <button type="button" onClick={handleClose} className="text-slate-400 hover:text-slate-200 p-1 rounded-lg hover:bg-slate-800 transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -131,7 +131,7 @@ export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
                                                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{f.title}</p>
                                                     <p className="text-sm text-slate-500 mt-0.5">{f.description}</p>
                                                     {f.link && (
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => { onClose(); navigate(`/app${f.link ? `?mode=${f.link.split('/').pop()}` : ''}`); }}
                                                             className="text-xs text-blue-400 hover:text-blue-300 mt-1 flex items-center gap-1">
                                                             Try it → <ExternalLink className="w-3 h-3" />

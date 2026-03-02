@@ -64,7 +64,7 @@ export const AdvancedSelectionPanel: FC = () => {
                     </span>
                     <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Advanced Selection</h3>
                 </div>
-                <button
+                <button type="button"
                     onClick={() => setActiveTool(null)}
                     className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
@@ -74,7 +74,7 @@ export const AdvancedSelectionPanel: FC = () => {
 
             {/* Tabs */}
             <div className="flex border-b border-slate-200 dark:border-slate-800">
-                <button
+                <button type="button"
                     onClick={() => setActiveTab('range')}
                     className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5
                         ${activeTab === 'range' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
@@ -82,7 +82,7 @@ export const AdvancedSelectionPanel: FC = () => {
                     <Ruler className="w-3 h-3" />
                     Range
                 </button>
-                <button
+                <button type="button"
                     onClick={() => setActiveTab('parallel')}
                     className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5
                         ${activeTab === 'parallel' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
@@ -90,7 +90,7 @@ export const AdvancedSelectionPanel: FC = () => {
                     <Move3d className="w-3 h-3" />
                     Parallel
                 </button>
-                <button
+                <button type="button"
                     onClick={() => setActiveTab('property')}
                     className={`flex-1 py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5
                         ${activeTab === 'property' ? 'text-blue-400 border-b-2 border-blue-500 bg-blue-500/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
@@ -110,7 +110,7 @@ export const AdvancedSelectionPanel: FC = () => {
                             <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Select Axis</label>
                             <div className="flex gap-2 p-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg">
                                 {(['x', 'y', 'z'] as const).map((a) => (
-                                    <button
+                                    <button type="button"
                                         key={a}
                                         onClick={() => setAxis(a)}
                                         className={`
@@ -150,7 +150,7 @@ export const AdvancedSelectionPanel: FC = () => {
                             </div>
                         </div>
 
-                        <button
+                        <button type="button"
                             onClick={handleRangeSelect}
                             className="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
                         >
@@ -166,7 +166,7 @@ export const AdvancedSelectionPanel: FC = () => {
                         <p className="text-xs text-slate-500 dark:text-slate-400">Select members parallel to a global axis.</p>
                         <div className="grid grid-cols-1 gap-3">
                             {(['x', 'y', 'z'] as const).map((a) => (
-                                <button
+                                <button type="button"
                                     key={a}
                                     onClick={() => handleParallelSelect(a)}
                                     className="flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg group transition-all"
@@ -201,7 +201,7 @@ export const AdvancedSelectionPanel: FC = () => {
                                 </select>
                             )}
                         </div>
-                        <button
+                        <button type="button"
                             onClick={handlePropertySelect}
                             disabled={!selectedPropValue}
                             className="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"

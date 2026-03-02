@@ -259,11 +259,11 @@ const ResultAnimationViewer: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Camera className="w-4 h-4" />
                 Screenshot
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors">
                 <Video className="w-4 h-4" />
                 Export Video
               </button>
@@ -292,7 +292,7 @@ const ResultAnimationViewer: React.FC = () => {
                   { id: 'force-diagram', label: 'Force Diagrams', icon: BarChart3 },
                   { id: 'buckling', label: 'Buckling Shapes', icon: TrendingUp },
                 ].map(type => (
-                  <button
+                  <button type="button"
                     key={type.id}
                     onClick={() => setSettings(prev => ({ ...prev, type: type.id as AnimationType }))}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
@@ -314,7 +314,7 @@ const ResultAnimationViewer: React.FC = () => {
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Load Cases</h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {loadCases.map(lc => (
-                    <button
+                    <button type="button"
                       key={lc.id}
                       className={`w-full flex items-center gap-3 p-2 rounded-lg text-sm ${
                         lc.selected 
@@ -339,7 +339,7 @@ const ResultAnimationViewer: React.FC = () => {
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Mode Shapes</h3>
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {modeShapes.map(mode => (
-                    <button
+                    <button type="button"
                       key={mode.mode}
                       onClick={() => setSelectedMode(mode.mode)}
                       className={`w-full p-3 rounded-lg text-left ${
@@ -423,21 +423,21 @@ const ResultAnimationViewer: React.FC = () => {
             {/* Playback Controls */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
               <div className="flex items-center justify-center gap-2">
-                <button
+                <button type="button"
                   onClick={stop}
                   className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white"
                   title="Stop"
                 >
                   <RotateCcw className="w-5 h-5" />
                 </button>
-                <button
+                <button type="button"
                   onClick={prevFrame}
                   className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white"
                   title="Previous Frame"
                 >
                   <SkipBack className="w-5 h-5" />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setSettings(prev => ({ ...prev, speed: Math.max(0.25, prev.speed - 0.25) }))}
                   className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white"
                   title="Slower"
@@ -446,7 +446,7 @@ const ResultAnimationViewer: React.FC = () => {
                 </button>
                 
                 {playbackState === 'playing' ? (
-                  <button
+                  <button type="button"
                     onClick={pause}
                     className="p-4 rounded-full bg-purple-600 hover:bg-purple-500 text-white"
                     title="Pause"
@@ -454,7 +454,7 @@ const ResultAnimationViewer: React.FC = () => {
                     <Pause className="w-6 h-6" />
                   </button>
                 ) : (
-                  <button
+                  <button type="button"
                     onClick={play}
                     className="p-4 rounded-full bg-purple-600 hover:bg-purple-500 text-white"
                     title="Play"
@@ -463,21 +463,21 @@ const ResultAnimationViewer: React.FC = () => {
                   </button>
                 )}
 
-                <button
+                <button type="button"
                   onClick={() => setSettings(prev => ({ ...prev, speed: Math.min(4, prev.speed + 0.25) }))}
                   className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white"
                   title="Faster"
                 >
                   <FastForward className="w-5 h-5" />
                 </button>
-                <button
+                <button type="button"
                   onClick={nextFrame}
                   className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white"
                   title="Next Frame"
                 >
                   <SkipForward className="w-5 h-5" />
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setSettings(prev => ({ ...prev, loop: !prev.loop }))}
                   className={`p-2 rounded-lg ${settings.loop ? 'bg-purple-600' : 'bg-slate-200 dark:bg-slate-700'} hover:bg-purple-500 text-white`}
                   title="Loop"
@@ -595,15 +595,15 @@ const ResultAnimationViewer: React.FC = () => {
               </h3>
 
               <div className="space-y-2">
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+                <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                   <Video className="w-4 h-4" />
                   Export as MP4
                 </button>
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+                <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                   <Camera className="w-4 h-4" />
                   Export as GIF
                 </button>
-                <button className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+                <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                   <Camera className="w-4 h-4" />
                   Export Frame Sequence
                 </button>

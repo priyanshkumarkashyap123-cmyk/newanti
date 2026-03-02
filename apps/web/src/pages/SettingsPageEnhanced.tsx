@@ -107,7 +107,7 @@ export const SettingsPageEnhanced: FC = () => {
             {/* Header */}
             <header className="h-16 bg-surface-dark border-b border-border-dark flex items-center justify-between px-6 shrink-0">
                 <div className="flex items-center gap-4">
-                    <button
+                    <button type="button"
                         onClick={() => navigate(-1)}
                         className="flex items-center gap-2 text-text-muted hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
@@ -118,14 +118,14 @@ export const SettingsPageEnhanced: FC = () => {
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white">Settings</h1>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button
+                    <button type="button"
                         onClick={handleResetSettings}
                         className="flex items-center gap-2 h-10 px-4 rounded-lg border border-border-dark text-text-muted hover:text-slate-900 dark:hover:text-white hover:border-text-muted transition-colors text-sm font-medium"
                     >
                         <span className="material-symbols-outlined text-[18px]">restart_alt</span>
                         Reset
                     </button>
-                    <button
+                    <button type="button"
                         onClick={handleSaveSettings}
                         className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary hover:bg-primary/90 text-slate-900 dark:text-white text-sm font-bold transition-all shadow-lg shadow-primary/20"
                     >
@@ -140,7 +140,7 @@ export const SettingsPageEnhanced: FC = () => {
                 <aside className="w-64 bg-surface-dark border-r border-border-dark flex flex-col p-4 shrink-0">
                     <nav className="space-y-1">
                         {navItems.map((item) => (
-                            <button
+                            <button type="button"
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id
@@ -211,7 +211,7 @@ export const SettingsPageEnhanced: FC = () => {
                                                 <p className="text-slate-900 dark:text-white text-sm font-medium">Local Storage Used</p>
                                                 <p className="text-text-muted text-xs">45.2 MB of 500 MB</p>
                                             </div>
-                                            <button className="text-xs font-bold text-primary hover:underline">Clear Cache</button>
+                                            <button type="button" className="text-xs font-bold text-primary hover:underline">Clear Cache</button>
                                         </div>
                                         <div className="w-full h-2 bg-white dark:bg-slate-900 rounded-full overflow-hidden">
                                             <div className="h-full bg-primary rounded-full" style={{ width: '9%' }}></div>
@@ -444,15 +444,15 @@ export const SettingsPageEnhanced: FC = () => {
                                 <div className="bg-surface-dark border border-border-dark rounded-lg p-6">
                                     <h3 className="text-slate-900 dark:text-white text-sm font-bold mb-4">Account Actions</h3>
                                     <div className="flex flex-col gap-3">
-                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white transition-all group">
+                                        <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white transition-all group">
                                             <span className="text-sm font-medium">Change Password</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">chevron_right</span>
                                         </button>
-                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white transition-all group">
+                                        <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-border-dark hover:border-primary hover:bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white transition-all group">
                                             <span className="text-sm font-medium">Export My Data</span>
                                             <span className="material-symbols-outlined text-[18px] text-text-muted group-hover:text-primary">download</span>
                                         </button>
-                                        <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-red-900/50 hover:border-red-500 hover:bg-red-500/10 text-red-400 transition-all group">
+                                        <button type="button" className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-red-900/50 hover:border-red-500 hover:bg-red-500/10 text-red-400 transition-all group">
                                             <span className="text-sm font-medium">Delete Account</span>
                                             <span className="material-symbols-outlined text-[18px]">delete</span>
                                         </button>

@@ -244,7 +244,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                 <div className="flex items-center gap-3">
-                    <button
+                    <button type="button"
                         onClick={() => onNavigate?.('prev')}
                         className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
@@ -254,7 +254,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         <h2 className="text-lg font-semibold">Member {memberId}</h2>
                         <p className="text-xs text-slate-500 dark:text-slate-400">{sectionId} • L = {memberLength.toFixed(2)}m</p>
                     </div>
-                    <button
+                    <button type="button"
                         onClick={() => onNavigate?.('next')}
                         className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
@@ -272,10 +272,10 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                         <option value="EC3">Eurocode 3</option>
                         <option value="AISC360">AISC 360</option>
                     </select>
-                    <button aria-label="Download" title="Download" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <button type="button" aria-label="Download" title="Download" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
                         <Download className="w-4 h-4" />
                     </button>
-                    <button onClick={onClose} aria-label="Close" title="Close" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -306,7 +306,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                 {/* Diagram Type Selector */}
                 <div className="flex gap-2">
                     {(['ALL', 'SFD', 'BMD', 'AFD'] as const).map(type => (
-                        <button
+                        <button type="button"
                             key={type}
                             onClick={() => setActiveDiagram(type)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeDiagram === type
@@ -364,7 +364,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             <h3 className="text-sm font-medium text-blue-400 flex items-center gap-2">
                                 ✂️ Section Cut Query
                             </h3>
-                            <button
+                            <button type="button"
                                 onClick={() => setShowSectionCut(false)}
                                 className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                             >
@@ -425,7 +425,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                     <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Design Checks ({designCode})</h3>
-                            <button
+                            <button type="button"
                                 onClick={() => setShowDesign(false)}
                                 className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                             >

@@ -218,7 +218,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
         <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
           IS 456:2000 design checks are available with Pro
         </p>
-        <button className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white font-medium">
+        <button type="button" className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white font-medium">
           Upgrade to Pro
         </button>
       </div>
@@ -253,7 +253,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={handleSmartOptimize}
               disabled={isOptimizing}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 text-slate-900 dark:text-white rounded-md text-sm font-medium hover:bg-white/30 disabled:opacity-50 border border-white/30"
@@ -262,7 +262,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
               <Brain className="w-4 h-4" />
               {isOptimizing ? "Optimizing..." : "Smart Optimize"}
             </button>
-            <button
+            <button type="button"
               onClick={handleRunCheck}
               disabled={isLoading}
               className="px-4 py-1.5 bg-orange-600 text-white rounded-md text-sm font-bold hover:bg-orange-500 disabled:opacity-50"
@@ -300,7 +300,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
           >
             <Database className="w-3 h-3" /> {kbStats.cacheSize} cached
           </span>
-          <button
+          <button type="button"
             onClick={clearKB}
             className="flex items-center gap-1 text-slate-500 hover:text-red-400 transition-colors"
             title="Clear knowledge base"

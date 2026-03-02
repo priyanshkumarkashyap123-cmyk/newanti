@@ -165,7 +165,7 @@ export function WasmPerformanceDemo() {
             {/* Controls */}
             <div className="flex gap-3 mb-6">
                 {!isInitialized && (
-                    <button
+                    <button type="button"
                         onClick={initializeWasm}
                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                     >
@@ -174,7 +174,7 @@ export function WasmPerformanceDemo() {
                 )}
                 
                 {isInitialized && (
-                    <button
+                    <button type="button"
                         onClick={runBenchmark}
                         disabled={isRunning}
                         className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"

@@ -114,7 +114,7 @@ export const Tabs: FC<TabsProps> = ({
             className={`flex ${styles.container} ${className}`}
         >
             {tabs.map((tab) => (
-                <button
+                <button type="button"
                     key={tab.id}
                     ref={(el) => {
                         if (el) tabRefs.current.set(tab.id, el);
@@ -217,7 +217,7 @@ export const Breadcrumbs: FC<BreadcrumbsProps> = ({
             return (
                 <div key={item.label} className="flex items-center gap-2">
                     {item.href || item.onClick ? (
-                        <button
+                        <button type="button"
                             onClick={item.onClick}
                             className={`
                                 hover:text-slate-900 dark:hover:text-white transition-colors
@@ -293,7 +293,7 @@ export const Pagination: FC<PaginationProps> = ({
     return (
         <nav className={`flex items-center gap-1 ${className}`}>
             {/* Previous */}
-            <button
+            <button type="button"
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -326,7 +326,7 @@ export const Pagination: FC<PaginationProps> = ({
             ))}
 
             {/* Next */}
-            <button
+            <button type="button"
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -491,7 +491,7 @@ export const SegmentedControl: FC<SegmentedControlProps> = ({
     return (
         <div className={`inline-flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg ${className}`}>
             {options.map((option) => (
-                <button
+                <button type="button"
                     key={option.value}
                     onClick={() => onChange(option.value)}
                     className={`

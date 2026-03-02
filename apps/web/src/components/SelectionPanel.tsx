@@ -60,7 +60,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                             {totalSelected} item{totalSelected !== 1 ? 's' : ''} selected
                         </span>
                     </div>
-                    <button
+                    <button type="button"
                         onClick={clearSelection}
                         className="text-text-muted hover:text-slate-900 dark:hover:text-white transition-colors p-1"
                         title="Clear Selection"
@@ -104,7 +104,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                 {/* Quick Actions */}
                 <div className="flex flex-wrap gap-2">
                     {hasNodes && onApplySupport && (
-                        <button
+                        <button type="button"
                             onClick={onApplySupport}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors"
                         >
@@ -113,7 +113,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                         </button>
                     )}
                     {hasNodes && onApplyLoad && (
-                        <button
+                        <button type="button"
                             onClick={onApplyLoad}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
                         >
@@ -122,7 +122,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                         </button>
                     )}
                     {hasMembers && onApplyLoad && (
-                        <button
+                        <button type="button"
                             onClick={onApplyLoad}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors"
                         >
@@ -131,7 +131,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                         </button>
                     )}
                     {onRunAnalysis && (
-                        <button
+                        <button type="button"
                             onClick={onRunAnalysis}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
                         >
@@ -140,7 +140,7 @@ export const SelectionPanel: FC<SelectionPanelProps> = ({
                         </button>
                     )}
                     {onDelete && (
-                        <button
+                        <button type="button"
                             onClick={onDelete}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-colors ml-auto"
                         >

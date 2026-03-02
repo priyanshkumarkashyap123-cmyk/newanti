@@ -618,7 +618,7 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
 
                 {/* Run Button */}
                 <Button
-                    className="w-full bg-teal-500 hover:bg-teal-600 text-white"
+                    className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                     onClick={handleRunCable}
                     disabled={isRunning}
                 >
@@ -779,7 +779,7 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
                             const colors = colorClasses[option.color as keyof typeof colorClasses] || colorClasses.blue;
 
                             return (
-                                <button
+                                <button type="button"
                                     key={option.id}
                                     onClick={() => setActiveTab(option.id)}
                                     className={`

@@ -3,7 +3,7 @@
  * Matches Figma spec 02_COMPONENT_LIBRARY §15
  *
  * ARIA: Uses WAI-ARIA Accordion pattern (heading + region),
- *       NOT tab roles. Each header is a <h3> wrapping a <button>
+ *       NOT tab roles. Each header is a <h3> wrapping a <button type="button">
  *       with aria-expanded. Panels use role="region".
  *
  * Animation: smooth max-height + opacity fade on content.

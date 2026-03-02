@@ -415,7 +415,7 @@ export const Switch: React.FC<SwitchProps> = ({
 
   return (
     <div className={cn('flex items-center', className)}>
-      <button
+      <button type="button"
         id={id}
         role="switch"
         aria-checked={checked}

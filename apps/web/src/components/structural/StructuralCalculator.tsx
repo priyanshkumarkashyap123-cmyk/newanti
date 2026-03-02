@@ -932,7 +932,7 @@ const CalculationStepDisplay: React.FC<{ step: CalculationStep; index: number }>
   
   return (
     <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-      <button
+      <button type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
       >
@@ -1218,10 +1218,10 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+            <button type="button" className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
               <Settings className="h-5 w-5 text-slate-900 dark:text-white" />
             </button>
-            <button className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+            <button type="button" className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
               <Download className="h-5 w-5 text-slate-900 dark:text-white" />
             </button>
           </div>
@@ -1279,7 +1279,7 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
       <div className="border-b border-slate-200 dark:border-slate-700">
         <nav className="flex -mb-px">
           {(['inputs', 'results', 'steps', 'checks'] as const).map(tab => (
-            <button
+            <button type="button"
               key={tab}
               onClick={() => setActiveTab(tab)}
               disabled={!result && tab !== 'inputs'}
@@ -1339,7 +1339,7 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
               )}
               
               <div className="flex justify-end pt-4">
-                <button
+                <button type="button"
                   onClick={performCalculation}
                   disabled={isCalculating}
                   className={cn(
@@ -1454,7 +1454,7 @@ export const StructuralCalculator: React.FC<StructuralCalculatorProps> = ({
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   Calculation Steps
                 </h2>
-                <button className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <button type="button" className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   <FileText className="h-4 w-4" />
                   Export PDF
                 </button>

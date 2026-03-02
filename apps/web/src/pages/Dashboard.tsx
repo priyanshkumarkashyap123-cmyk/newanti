@@ -323,17 +323,17 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         role="menu"
         className="absolute top-10 left-2 z-50 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 animate-[scaleIn_100ms_ease-out] origin-top-left"
       >
-        <button role="menuitem" onClick={(e) => { e.stopPropagation(); setRenameValue(cloudProject?.name || ""); setRenamingProjectId(projectId); setProjectMenuId(null); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); setRenameValue(cloudProject?.name || ""); setRenamingProjectId(projectId); setProjectMenuId(null); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
           <Edit className="w-3.5 h-3.5 text-slate-500" /> Rename
         </button>
-        <button role="menuitem" onClick={(e) => { e.stopPropagation(); handleDuplicateProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleDuplicateProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
           <Copy className="w-3.5 h-3.5 text-slate-500" /> Duplicate
         </button>
-        <button role="menuitem" onClick={(e) => { e.stopPropagation(); handleExportProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleExportProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
           <Download className="w-3.5 h-3.5 text-slate-500" /> Export JSON
         </button>
         <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
-        <button role="menuitem" onClick={(e) => { e.stopPropagation(); handleDeleteProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+        <button type="button" role="menuitem" onClick={(e) => { e.stopPropagation(); handleDeleteProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
           <Trash2 className="w-3.5 h-3.5" /> Delete
         </button>
       </div>
@@ -526,14 +526,14 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           <div className="flex items-center gap-3">
             {/* Grid/List Toggle - per Figma §5.1 */}
             <div className="flex items-center border border-slate-200 dark:border-white/[0.08] rounded-lg overflow-hidden">
-              <button
+              <button type="button"
                 onClick={() => setViewMode("grid")}
                 className={`p-2 transition-colors ${viewMode === "grid" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
                 title="Grid view"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
-              <button
+              <button type="button"
                 onClick={() => setViewMode("list")}
                 className={`p-2 transition-colors ${viewMode === "list" ? "bg-blue-500/10 text-blue-400" : "text-slate-400 hover:text-slate-200"}`}
                 title="List view"
@@ -748,7 +748,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                         </Badge>
                       </div>
                       {/* Context Menu Button - per Figma §5.2 */}
-                      <button
+                      <button type="button"
                         onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }}
                         className="absolute top-3 left-3 w-7 h-7 rounded-md bg-slate-900/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-300 hover:text-white hover:bg-slate-900/80"
                         title="Project actions"
@@ -843,7 +843,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     <span className="text-slate-500">{project.memberCount}</span>
                     <span className="text-slate-500 text-xs">{project.lastModified}</span>
                     <div className="relative">
-                      <button onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       <ProjectCardMenu projectId={project.id} />

@@ -129,7 +129,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
   return (
     <>
       {/* Trigger Button */}
-      <button
+      <button type="button"
         onClick={handleOpen}
         className={`fixed ${positionClasses} z-50 w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center text-white`}
         aria-label="Send feedback"
@@ -153,7 +153,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                 {step === 'form' && feedbackTypes.find(t => t.id === feedbackType)?.label}
                 {step === 'success' && 'Thank You!'}
               </h3>
-              <button
+              <button type="button"
                 onClick={handleClose}
                 className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
@@ -167,7 +167,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
               {step === 'type' && (
                 <div className="grid grid-cols-2 gap-3">
                   {feedbackTypes.map((type) => (
-                    <button
+                    <button type="button"
                       key={type.id}
                       onClick={() => handleSelectType(type.id)}
                       className="flex flex-col items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500/50 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-all group"
@@ -218,7 +218,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                       </label>
                       <div className="flex gap-2">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <button
+                          <button type="button"
                             key={star}
                             onClick={() => setRating(star)}
                             className="p-1 transition-transform hover:scale-110"
@@ -252,13 +252,13 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
 
                   {/* Actions */}
                   <div className="flex gap-3 pt-2">
-                    <button
+                    <button type="button"
                       onClick={() => setStep('type')}
                       className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                     >
                       Back
                     </button>
-                    <button
+                    <button type="button"
                       onClick={handleSubmit}
                       disabled={!message.trim() || isSubmitting}
                       className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -287,7 +287,7 @@ export const FeedbackWidget: FC<FeedbackWidgetProps> = ({ position = 'bottom-rig
                   <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
                     Thanks for helping us improve BeamLab. We read every piece of feedback.
                   </p>
-                  <button
+                  <button type="button"
                     onClick={handleClose}
                     className="px-6 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-medium transition-colors"
                   >

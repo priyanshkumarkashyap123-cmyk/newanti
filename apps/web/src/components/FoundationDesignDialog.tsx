@@ -407,7 +407,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
 
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                                 {SOIL_TYPES.map((soil) => (
-                                    <button
+                                    <button type="button"
                                         key={soil.id}
                                         onClick={() => {
                                             setSelectedSoil(soil.id);
@@ -515,7 +515,7 @@ export const FoundationDesignDialog: FC<FoundationDesignDialogProps> = ({ isOpen
 
                             <div className="flex gap-2">
                                 {['M20', 'M25', 'M30', 'M35', 'M40'].map((grade) => (
-                                    <button
+                                    <button type="button"
                                         key={grade}
                                         onClick={() => setConcreteGrade(grade)}
                                         className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${concreteGrade === grade

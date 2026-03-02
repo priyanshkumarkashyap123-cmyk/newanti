@@ -325,7 +325,7 @@ export const SectionDatabase: FC = () => {
                             className="w-full pl-10 pr-4 py-3 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {searchQuery && (
-                            <button
+                            <button type="button"
                                 onClick={() => setSearchQuery('')}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                             >
@@ -356,7 +356,7 @@ export const SectionDatabase: FC = () => {
                         </h3>
                         <div className="space-y-1">
                             {filteredSections.map(section => (
-                                <button
+                                <button type="button"
                                     key={section.name}
                                     onClick={() => setSelectedSection(section)}
                                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${selectedSection?.name === section.name
@@ -479,7 +479,7 @@ export const SectionDatabase: FC = () => {
 
                                 {/* Actions */}
                                 <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-xl p-4 flex flex-col justify-center">
-                                    <button className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors mb-3">
+                                    <button type="button" className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors mb-3">
                                         <Download className="w-4 h-4" />
                                         Download Data
                                     </button>

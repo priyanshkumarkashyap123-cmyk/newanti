@@ -1112,7 +1112,7 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
           >
             D/C: {(member.utilization * 100).toFixed(1)}%
           </span>
-          <button
+          <button type="button"
             onClick={onClose}
             className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
@@ -1690,7 +1690,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
           <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
 
-          <button
+          <button type="button"
             onClick={() => setShowLegend(!showLegend)}
             className={`p-2 rounded-lg transition-colors ${
               showLegend
@@ -1707,7 +1707,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             )}
           </button>
 
-          <button
+          <button type="button"
             onClick={() => onExport?.("pdf")}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
             aria-label="Export results as PDF"
@@ -1717,7 +1717,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
           </button>
 
           {onClose && (
-            <button
+            <button type="button"
               onClick={onClose}
               autoFocus
               className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -1737,7 +1737,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
           const isActive = viewMode === mode.id;
 
           return (
-            <button
+            <button type="button"
               key={mode.id}
               onClick={() => setViewMode(mode.id)}
               role="tab"
@@ -1809,21 +1809,21 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
             {/* Quick Actions */}
             <div className="flex items-center gap-4">
-              <button
+              <button type="button"
                 onClick={() => setViewMode("diagrams")}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm transition-colors"
               >
                 <BarChart2 className="w-4 h-4" />
                 View Force Diagrams
               </button>
-              <button
+              <button type="button"
                 onClick={() => setViewMode("heatmap")}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm transition-colors"
               >
                 <Flame className="w-4 h-4" />
                 View Heat Map
               </button>
-              <button
+              <button type="button"
                 onClick={() => setViewMode("reactions")}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm transition-colors"
               >
@@ -1840,7 +1840,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 </h3>
                 {members.length > MEMBERS_PER_PAGE && (
                   <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <button
+                    <button type="button"
                       onClick={() => setOverviewPage((p) => Math.max(0, p - 1))}
                       disabled={overviewPage === 0}
                       className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
@@ -1855,7 +1855,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       )}{" "}
                       of {members.length}
                     </span>
-                    <button
+                    <button type="button"
                       onClick={() =>
                         setOverviewPage((p) =>
                           Math.min(
@@ -2272,7 +2272,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
               <div className="flex items-center gap-2">
                 {(["SFD", "BMD", "AFD", "DEFLECTION"] as DiagramType[]).map(
                   (type) => (
-                    <button
+                    <button type="button"
                       key={type}
                       onClick={() => setSelectedDiagramType(type)}
                       className={`
@@ -4041,28 +4041,28 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             : "Analysis completed — no result data available"}
         </span>
         <div className="flex items-center gap-4">
-          <button
+          <button type="button"
             onClick={() => onExport?.("excel")}
             className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <FileText className="w-3.5 h-3.5" />
             Export CSV
           </button>
-          <button
+          <button type="button"
             onClick={() => onExport?.("json")}
             className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             Export JSON
           </button>
-          <button
+          <button type="button"
             onClick={() => onExport?.("pdf")}
             className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <Printer className="w-3.5 h-3.5" />
             Print Report
           </button>
-          <button className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors">
+          <button type="button" className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors">
             <Share2 className="w-3.5 h-3.5" />
             Share
           </button>

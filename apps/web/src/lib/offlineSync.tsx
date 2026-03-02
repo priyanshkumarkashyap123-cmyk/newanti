@@ -579,7 +579,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps): JSX.Element {
       )}
 
       {/* Sync button */}
-      <button
+      <button type="button"
         onClick={() => sync()}
         disabled={isSyncing || !isOnline}
         className={`p-1.5 rounded transition-colors ${

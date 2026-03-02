@@ -352,7 +352,7 @@ const BeamEditor: FC<BeamEditorProps> = ({ model, onModelChange }) => {
             {/* Toolbar */}
             <div className="flex items-center gap-2 mb-4">
                 <span className="text-slate-500 dark:text-slate-400 text-sm">Add:</span>
-                <button
+                <button type="button"
                     onClick={() => setTool('support')}
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${tool === 'support' ? 'bg-green-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600'
                         }`}
@@ -360,7 +360,7 @@ const BeamEditor: FC<BeamEditorProps> = ({ model, onModelChange }) => {
                     <Triangle className="w-4 h-4" />
                     Support
                 </button>
-                <button
+                <button type="button"
                     onClick={() => setTool('pointLoad')}
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-colors ${tool === 'pointLoad' ? 'bg-red-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-600'
                         }`}
@@ -492,10 +492,10 @@ export const BeamCalculator: FC = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
+                        <button type="button" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
                             <Share2 className="w-5 h-5" />
                         </button>
-                        <button className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
+                        <button type="button" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2">
                             <Download className="w-5 h-5" />
                         </button>
                     </div>
@@ -556,7 +556,7 @@ export const BeamCalculator: FC = () => {
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-3">
-                            <button
+                            <button type="button"
                                 onClick={runAnalysis}
                                 disabled={isAnalyzing}
                                 className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -573,7 +573,7 @@ export const BeamCalculator: FC = () => {
                                     </>
                                 )}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={resetModel}
                                 className="flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-colors"
                             >

@@ -290,7 +290,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             <div className="mb-4">
                 <label className="text-xs text-slate-500 mb-2 block">Integration Method</label>
                 <div className="grid grid-cols-2 gap-2">
-                    <button
+                    <button type="button"
                         onClick={() => setAnalysisMethod('newmark')}
                         className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'newmark'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
@@ -300,7 +300,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         <div>Newmark-β (Direct)</div>
                         <div className="text-[10px] opacity-70 mt-0.5">γ=0.5, β=0.25 — unconditionally stable</div>
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setAnalysisMethod('modal')}
                         className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'modal'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
@@ -314,7 +314,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             </div>
 
             {/* Run Analysis Button */}
-            <button
+            <button type="button"
                 onClick={handleRunAnalysis}
                 disabled={isRunning}
                 className={`w-full py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${isRunning
@@ -514,7 +514,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         }
 
                         {/* Download Results Button */}
-                        <button
+                        <button type="button"
                             onClick={() => {
                                 const dataStr = JSON.stringify(results, null, 2);
                                 const dataBlob = new Blob([dataStr], { type: 'application/json' });

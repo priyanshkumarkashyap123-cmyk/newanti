@@ -41,7 +41,7 @@ const ViewCube: FC<{ activeView: string; onViewChange: (view: string) => void }>
     </div>
     <div className="grid grid-cols-3 gap-px">
       {VIEWS.map((v) => (
-        <button
+        <button type="button"
           key={v.id}
           onClick={() => onViewChange(v.id)}
           title={v.label}
@@ -75,7 +75,7 @@ interface CompactBtnProps {
 }
 
 const CompactBtn: FC<CompactBtnProps> = memo(({ icon: Icon, label, onClick, isActive = false }) => (
-  <button
+  <button type="button"
     onClick={onClick}
     title={label}
     className={`

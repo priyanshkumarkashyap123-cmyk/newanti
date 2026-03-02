@@ -291,7 +291,7 @@ const APIIntegrationDashboard: React.FC = () => {
           { label: 'View Documentation', icon: '📖', action: () => setActiveTab('docs') },
           { label: 'Manage Integrations', icon: '🔌', action: () => setActiveTab('integrations') },
         ].map((action, idx) => (
-          <button
+          <button type="button"
             key={idx}
             onClick={action.action}
             className="p-4 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors text-center"
@@ -343,7 +343,7 @@ const APIIntegrationDashboard: React.FC = () => {
             <span className="text-2xl">🔑</span>
             API Keys
           </h3>
-          <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>➕</span>
             Generate New Key
           </button>
@@ -364,7 +364,7 @@ const APIIntegrationDashboard: React.FC = () => {
                       <code className="text-slate-600 dark:text-slate-400 text-sm bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
                         {key.key.slice(0, 20)}...
                       </code>
-                      <button className="text-cyan-400 text-sm hover:text-cyan-300">Copy</button>
+                      <button type="button" className="text-cyan-400 text-sm hover:text-cyan-300">Copy</button>
                     </div>
                   </div>
                 </div>
@@ -376,7 +376,7 @@ const APIIntegrationDashboard: React.FC = () => {
                   }`}>
                     {key.status}
                   </span>
-                  <button className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                  <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -479,7 +479,7 @@ const APIIntegrationDashboard: React.FC = () => {
             <span className="text-2xl">🔗</span>
             Webhooks
           </h3>
-          <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>➕</span>
             Add Webhook
           </button>
@@ -507,7 +507,7 @@ const APIIntegrationDashboard: React.FC = () => {
                   }`}>
                     {webhook.status}
                   </span>
-                  <button className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                  <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -576,10 +576,10 @@ const APIIntegrationDashboard: React.FC = () => {
             Base URL: <code className="text-cyan-400 bg-slate-700 px-2 py-1 rounded">https://api.beamlab.app/v1</code>
           </p>
           <div className="flex gap-4">
-            <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
+            <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
               📥 Download OpenAPI Spec
             </button>
-            <button className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
+            <button type="button" className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
               🔗 View in Swagger
             </button>
           </div>
@@ -695,7 +695,7 @@ const results = await response.json();
                   </span>
                 ))}
               </div>
-              <button
+              <button type="button"
                 className={`w-full py-2 rounded text-sm ${
                   integration.status === 'connected'
                     ? 'bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-500'
@@ -732,7 +732,7 @@ const results = await response.json();
                 <p className="text-slate-600 dark:text-slate-400 text-sm">v{plugin.version} • {plugin.size}</p>
                 <p className="text-slate-500 text-xs">{plugin.platform}</p>
               </div>
-              <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
+              <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
                 📥 Download
               </button>
             </div>
@@ -768,7 +768,7 @@ const results = await response.json();
             { id: 'docs', label: 'Documentation', icon: '📖' },
             { id: 'integrations', label: 'Integrations', icon: '🔌' },
           ].map((tab) => (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${

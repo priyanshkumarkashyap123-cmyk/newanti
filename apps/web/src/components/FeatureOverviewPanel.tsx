@@ -142,7 +142,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                     {/* Section Tabs */}
                     <div className="w-56 border-r border-slate-200 dark:border-slate-800 p-3 space-y-1">
                         {sections.map((section) => (
-                            <button
+                            <button type="button"
                                 key={section.title}
                                 onClick={() => setActiveSection(
                                     activeSection === section.title.toLowerCase().replace(' ', '-')
@@ -176,7 +176,7 @@ export const FeatureOverviewPanel: React.FC<FeatureOverviewPanelProps> = ({ isOp
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     {section.items.map((item, idx) => (
-                                        <button
+                                        <button type="button"
                                             key={idx}
                                             onClick={() => {
                                                 if (item.action) {

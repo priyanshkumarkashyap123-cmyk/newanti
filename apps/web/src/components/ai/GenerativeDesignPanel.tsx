@@ -340,7 +340,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {DESIGN_CASES.map((dc) => (
-            <button
+            <button type="button"
               key={dc.id}
               onClick={() => setSelectedCase(dc.id)}
               disabled={status === "running"}
@@ -435,7 +435,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
         {/* Progress / Actions */}
         <div className="border-t border-white/[0.06] px-4 py-3">
           {status === "idle" && (
-            <button
+            <button type="button"
               onClick={runOptimization}
               className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium
                 transition-colors flex items-center justify-center gap-2"
@@ -480,7 +480,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <button
+              <button type="button"
                 onClick={handleCancel}
                 className="w-full py-2 rounded-lg border border-red-500/30 text-red-400 text-xs font-medium
                   hover:bg-red-500/10 transition-colors"
@@ -541,7 +541,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
 
               {/* Actions */}
               <div className="flex gap-2">
-                <button
+                <button type="button"
                   onClick={() => {
                     setStatus("idle");
                     setResult(null);
@@ -551,7 +551,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
                 >
                   New Design
                 </button>
-                <button
+                <button type="button"
                   onClick={() => {
                     const canvas = document.querySelector("canvas");
                     if (canvas) {
@@ -575,7 +575,7 @@ export const GenerativeDesignPanel: React.FC<GenerativeDesignPanelProps> = ({
               <p className="text-sm text-red-400">
                 {errorMsg || "Optimization failed"}
               </p>
-              <button
+              <button type="button"
                 onClick={() => {
                   setStatus("idle");
                   setErrorMsg("");

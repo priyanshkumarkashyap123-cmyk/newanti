@@ -550,7 +550,7 @@ const QuickAccessToolbar: FC<{
   return (
     <div className="flex items-center gap-0.5 px-2">
       {qatTools.map((tool) => (
-        <button
+        <button type="button"
           key={tool.id}
           onClick={() => onAction(tool.id)}
           disabled={tool.disabled}
@@ -633,7 +633,7 @@ const ToolButton: FC<ToolButtonProps> = ({
         ${isLarge ? '' : 'flex-row'}
       `}>
         {/* Main Button */}
-        <button
+        <button type="button"
           onClick={() => {
             if (!hasDropdown || tool.splitButton) {
               onClick();
@@ -668,7 +668,7 @@ const ToolButton: FC<ToolButtonProps> = ({
 
         {/* Dropdown Arrow (for non-split buttons with dropdown) */}
         {hasDropdown && !tool.splitButton && (
-          <button
+          <button type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className={`
               flex items-center justify-center w-full h-3 rounded-b
@@ -684,7 +684,7 @@ const ToolButton: FC<ToolButtonProps> = ({
 
         {/* Split Button Arrow */}
         {hasDropdown && tool.splitButton && (
-          <button
+          <button type="button"
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className={`
               flex items-center justify-center w-5 border-l border-slate-200 dark:border-slate-700
@@ -710,7 +710,7 @@ const ToolButton: FC<ToolButtonProps> = ({
             {tool.dropdown?.map((item, idx) => (
               <div key={item.id}>
                 {item.divider && idx > 0 && <div className="h-px bg-slate-200 dark:bg-slate-700 my-1" />}
-                <button
+                <button type="button"
                   onClick={() => {
                     onDropdownItemClick?.(item.id);
                     setDropdownOpen(false);
@@ -854,7 +854,7 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
 
         {/* Right: Search + Help */}
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => setSearchOpen(!searchOpen)}
             className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs transition-colors"
           >
@@ -862,7 +862,7 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
             <span>Search</span>
             <span className="text-slate-500">Ctrl+K</span>
           </button>
-          <button className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
+          <button type="button" className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
             <HelpCircle className="w-4 h-4" />
           </button>
         </div>
@@ -875,7 +875,7 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
           const TabIcon = tab.icon;
           
           return (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={`
@@ -895,7 +895,7 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
 
         {/* Collapse Button */}
         <div className="ml-auto flex items-center">
-          <button
+          <button type="button"
             onClick={() => handleCollapsedChange(!collapsed)}
             className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
             title={collapsed ? 'Expand Ribbon' : 'Collapse Ribbon'}
@@ -932,7 +932,7 @@ export const ProfessionalRibbon: FC<ProfessionalRibbonProps> = ({
                     <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
                     <span className="text-sm text-blue-400">Analyzing...</span>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => handleAction('stop-analysis')}
                     className="px-2 py-1 rounded bg-red-600/20 hover:bg-red-600/30 text-red-400 text-xs transition-colors"
                   >

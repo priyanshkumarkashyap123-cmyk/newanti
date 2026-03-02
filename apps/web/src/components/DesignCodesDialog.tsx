@@ -146,7 +146,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                     <label className="text-xs text-slate-500 mb-2 block">Footing Type</label>
                     <div className="grid grid-cols-3 gap-2">
                         {(['isolated', 'combined', 'mat'] as const).map((type) => (
-                            <button
+                            <button type="button"
                                 key={type}
                                 onClick={() => setFootingType(type)}
                                 className={`
@@ -217,7 +217,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             </div>
 
             {/* Design Button */}
-            <button
+            <button type="button"
                 onClick={handleDesign}
                 disabled={isDesigning}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white rounded-lg transition-colors mb-4"
@@ -396,7 +396,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                                 const isActive = activeTab === option.id;
 
                                 return (
-                                    <button
+                                    <button type="button"
                                         key={option.id}
                                         onClick={() => setActiveTab(option.id)}
                                         className={`

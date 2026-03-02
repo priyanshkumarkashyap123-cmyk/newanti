@@ -438,7 +438,7 @@ export function DevelopmentLengthPanel() {
           </div>
           
           {/* Calculate Button */}
-          <button
+          <button type="button"
             onClick={handleCalculate}
             className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -565,7 +565,7 @@ export function DevelopmentLengthPanel() {
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Development lengths for all bar sizes (f'c = {fc} {isMetric ? 'MPa' : 'psi'}, fy = {fy} {isMetric ? 'MPa' : 'psi'})
             </p>
-            <button
+            <button type="button"
               onClick={handleGenerateTable}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium 
                          rounded-lg transition-colors flex items-center gap-2"

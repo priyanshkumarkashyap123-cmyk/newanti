@@ -269,7 +269,7 @@ export function SteelDesignPage() {
                     </div>
                 </div>
 
-                <button
+                <button type="button"
                     onClick={handleRunDesign}
                     disabled={analyzing || members.length === 0}
                     style={{

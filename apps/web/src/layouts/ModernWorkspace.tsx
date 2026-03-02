@@ -145,7 +145,7 @@ const UmbrellaSwitcher: FC = memo(() => {
             {UMBRELLA_TABS.map((tab) => {
                 const isActive = activeCategory === tab.id;
                 return (
-                    <button
+                    <button type="button"
                         key={tab.id}
                         role="tab"
                         aria-selected={isActive}
@@ -181,7 +181,7 @@ const ContextSidebar: FC = memo(() => {
     if (!isExpanded) {
         return (
             <div className="w-10 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col items-center py-2">
-                <button
+                <button type="button"
                     onClick={toggleSidebar}
                     className="p-2 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
                     aria-label="Expand sidebar"
@@ -199,7 +199,7 @@ const ContextSidebar: FC = memo(() => {
                 <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     {activeCategory}
                 </h3>
-                <button
+                <button type="button"
                     onClick={toggleSidebar}
                     className="p-1 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
                     aria-label="Collapse sidebar"
@@ -213,7 +213,7 @@ const ContextSidebar: FC = memo(() => {
                 {items.map((item) => {
                     const isActive = activeTool === item.id;
                     return (
-                        <button
+                        <button type="button"
                             key={item.id}
                             onClick={() => {
                                 setActiveTool(item.id);
@@ -240,7 +240,7 @@ const ContextSidebar: FC = memo(() => {
             {/* Category-specific footer */}
             {activeCategory === 'MODELING' && (
                 <div className="p-3 border-t border-slate-200 dark:border-slate-800">
-                    <button className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all">
+                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all">
                         <Zap className="w-4 h-4" />
                         AI Generate
                     </button>
@@ -249,7 +249,7 @@ const ContextSidebar: FC = memo(() => {
 
             {activeCategory === 'ANALYSIS' && (
                 <div className="p-3 border-t border-slate-200 dark:border-slate-800">
-                    <button className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-500 transition-all">
+                    <button type="button" className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-500 transition-all">
                         <BarChart3 className="w-4 h-4" />
                         Run Analysis
                     </button>
@@ -273,7 +273,7 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
     if (collapsed) {
         return (
             <div className="w-10 h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col items-center py-2">
-                <button
+                <button type="button"
                     onClick={onToggle}
                     className="p-2 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg"
                     aria-label="Expand inspector panel"
@@ -291,7 +291,7 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
                 <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                     Inspector
                 </h3>
-                <button
+                <button type="button"
                     onClick={onToggle}
                     className="p-1 text-slate-500 hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
                     aria-label="Collapse inspector panel"
@@ -390,7 +390,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
 
                 {/* Right actions */}
                 <div className="flex items-center gap-2">
-                    <button className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900 dark:text-white transition-colors">
+                    <button type="button" className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900 dark:text-white transition-colors">
                         Settings
                     </button>
                 </div>

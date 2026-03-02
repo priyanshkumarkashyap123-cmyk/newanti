@@ -354,7 +354,7 @@ const ViewerToolbar: React.FC<{
       {/* Display Mode */}
       <div className="flex items-center gap-1 px-2 border-r border-white/10">
         {(['wireframe', 'solid', 'transparent'] as DisplayMode[]).map(mode => (
-          <button
+          <button type="button"
             key={mode}
             onClick={() => onSettingsChange({ displayMode: mode })}
             className={`p-2 rounded-lg transition-all ${
@@ -374,7 +374,7 @@ const ViewerToolbar: React.FC<{
       {/* Color Scheme */}
       <div className="flex items-center gap-1 px-2 border-r border-white/10">
         {(['element', 'stress', 'displacement', 'utilization'] as ColorScheme[]).map(scheme => (
-          <button
+          <button type="button"
             key={scheme}
             onClick={() => onSettingsChange({ colorScheme: scheme })}
             className={`p-2 rounded-lg transition-all ${
@@ -394,14 +394,14 @@ const ViewerToolbar: React.FC<{
       
       {/* View Controls */}
       <div className="flex items-center gap-1 px-2 border-r border-white/10">
-        <button
+        <button type="button"
           onClick={onFitView}
           className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
           title="Fit View"
         >
           <Locate className="w-4 h-4" />
         </button>
-        <button
+        <button type="button"
           onClick={onReset}
           className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
           title="Reset View"
@@ -412,7 +412,7 @@ const ViewerToolbar: React.FC<{
       
       {/* Toggle Controls */}
       <div className="flex items-center gap-1 px-2 border-r border-white/10">
-        <button
+        <button type="button"
           onClick={() => onSettingsChange({ showGrid: !settings.showGrid })}
           className={`p-2 rounded-lg transition-all ${
             settings.showGrid ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
@@ -421,7 +421,7 @@ const ViewerToolbar: React.FC<{
         >
           <Grid3X3 className="w-4 h-4" />
         </button>
-        <button
+        <button type="button"
           onClick={() => onSettingsChange({ showAxes: !settings.showAxes })}
           className={`p-2 rounded-lg transition-all ${
             settings.showAxes ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
@@ -430,7 +430,7 @@ const ViewerToolbar: React.FC<{
         >
           <Crosshair className="w-4 h-4" />
         </button>
-        <button
+        <button type="button"
           onClick={() => onSettingsChange({ showNodes: !settings.showNodes })}
           className={`p-2 rounded-lg transition-all ${
             settings.showNodes ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
@@ -439,7 +439,7 @@ const ViewerToolbar: React.FC<{
         >
           <Circle className="w-4 h-4" />
         </button>
-        <button
+        <button type="button"
           onClick={() => onSettingsChange({ showLoads: !settings.showLoads })}
           className={`p-2 rounded-lg transition-all ${
             settings.showLoads ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'
@@ -452,7 +452,7 @@ const ViewerToolbar: React.FC<{
       
       {/* Animation & Export */}
       <div className="flex items-center gap-1 px-2">
-        <button
+        <button type="button"
           onClick={onToggleAnimation}
           className={`p-2 rounded-lg transition-all ${
             isAnimating ? 'bg-amber-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-white hover:bg-white/10'
@@ -461,7 +461,7 @@ const ViewerToolbar: React.FC<{
         >
           {isAnimating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
         </button>
-        <button
+        <button type="button"
           onClick={onScreenshot}
           className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/10 rounded-lg transition-all"
           title="Screenshot"
@@ -494,7 +494,7 @@ const DeformationControls: React.FC<{
     >
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-medium text-slate-900 dark:text-white">Deformation</span>
-        <button
+        <button type="button"
           onClick={() => onEnabledChange(!enabled)}
           className={`w-10 h-5 rounded-full transition-all ${enabled ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'}`}
         >
@@ -546,13 +546,13 @@ const DeformationControls: React.FC<{
             </div>
             
             <div className="flex gap-2">
-              <button className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
                 Original
               </button>
-              <button className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex-1 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
                 Deformed
               </button>
-              <button className={`flex-1 py-1.5 text-xs rounded-lg transition-colors ${
+              <button type="button" className={`flex-1 py-1.5 text-xs rounded-lg transition-colors ${
                 isAnimating ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-white'
               }`}>
                 Animate
@@ -1112,7 +1112,7 @@ export const Advanced3DStructuralViewer: React.FC<{
             <div className="flex items-center gap-2 mb-2">
               <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse" />
               <span className="font-semibold text-amber-400">Selected: {selectedId}</span>
-              <button
+              <button type="button"
                 onClick={() => setSelectedId(null)}
                 className="ml-2 p-1 hover:bg-amber-500/20 rounded transition-colors"
               >

@@ -302,7 +302,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                         Structural analysis and design check results
                     </p>
                 </div>
-                <button
+                <button type="button"
                     onClick={onClose}
                     className="text-text-muted hover:text-slate-900 dark:hover:text-white p-2 transition-colors"
                 >
@@ -520,14 +520,14 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <button
+                                    <button type="button"
                                         onClick={applyToSelected}
                                         disabled={selectedIds.size === 0}
                                         className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
                                     >
                                         Apply ({selectedIds.size})
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={handleOptimize}
                                         disabled={selectedIds.size === 0 || !analysisResults}
                                         className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
@@ -536,7 +536,7 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
                                         <span className="material-symbols-outlined text-[16px]">auto_fix_high</span>
                                         Auto-Select
                                     </button>
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             const section = getSectionById(defaultSection);
                                             const material = getMaterialById(defaultMaterial);
@@ -618,21 +618,21 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
             {/* Footer */}
             <div className="p-4 border-t border-border-dark bg-white/50 dark:bg-slate-900/50">
                 <div className="flex gap-2">
-                    <button
+                    <button type="button"
                         onClick={handleExportDXF}
                         className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">download</span>
                         DXF
                     </button>
-                    <button
+                    <button type="button"
                         onClick={handleExportIFC}
                         className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
                         <span className="material-symbols-outlined text-[16px]">domain</span>
                         IFC
                     </button>
-                    <button
+                    <button type="button"
                         onClick={handleExportPDF}
                         disabled={!analysisResults}
                         className="flex-1 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-slate-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"

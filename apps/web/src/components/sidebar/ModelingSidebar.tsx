@@ -323,7 +323,7 @@ export const ModelingSidebar: FC = () => {
 
                 {/* Persistence Actions (Phase 3) */}
                 <div className="grid grid-cols-2 gap-2 px-3 pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <button
+                    <button type="button"
                         onClick={async () => {
                             showToast('Saving Project...', 'loading');
                             const state = useModelStore.getState();
@@ -342,7 +342,7 @@ export const ModelingSidebar: FC = () => {
                         <Save className="w-3 h-3" />
                         Save
                     </button>
-                    <button
+                    <button type="button"
                         onClick={async () => {
                             showToast('Fetching Projects...', 'loading');
                             const projects = await Bridge.listProjects();
@@ -382,7 +382,7 @@ export const ModelingSidebar: FC = () => {
                         return (
                             <div key={category.id} className="border-b border-slate-800/50">
                                 {/* Category Header */}
-                                <button
+                                <button type="button"
                                     onClick={() => toggleCategory(category.id)}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                                 >
@@ -404,7 +404,7 @@ export const ModelingSidebar: FC = () => {
                                             const isLoading = loadingItem === item.id;
 
                                             return (
-                                                <button
+                                                <button type="button"
                                                     key={item.id}
                                                     onClick={() => handleTemplateClick(item)}
                                                     disabled={loadingItem !== null}

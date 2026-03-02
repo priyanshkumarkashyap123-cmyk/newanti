@@ -177,7 +177,7 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
         {/* Tabs */}
         <div className="flex gap-1 border-b border-slate-200 dark:border-slate-700 mb-3">
           {(['browse', 'custom'] as const).map(t => (
-            <button
+            <button type="button"
               key={t}
               onClick={() => setActiveTab(t)}
               className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
@@ -234,7 +234,7 @@ export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ is
             <ScrollArea className="flex-1 border border-slate-200 dark:border-slate-700 rounded-lg">
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredMaterials.map(mat => (
-                  <button
+                  <button type="button"
                     key={mat.grade + mat.name}
                     onClick={() => setSelectedMaterial(mat)}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${

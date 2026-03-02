@@ -215,7 +215,7 @@ export default function PerformanceMonitorDashboard() {
               </div>
               
               {!isAnalysisRunning ? (
-                <button
+                <button type="button"
                   onClick={startAnalysis}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
@@ -223,7 +223,7 @@ export default function PerformanceMonitorDashboard() {
                   Start Demo
                 </button>
               ) : (
-                <button
+                <button type="button"
                   onClick={stopAnalysis}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
@@ -245,7 +245,7 @@ export default function PerformanceMonitorDashboard() {
               { id: 'history', label: 'Analysis History', icon: <Clock className="w-4 h-4" /> },
               { id: 'benchmark', label: 'Benchmarks', icon: <BarChart3 className="w-4 h-4" /> }
             ].map(tab => (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setSelectedTab(tab.id as typeof selectedTab)}
                 className={`px-4 py-3 font-medium transition-colors flex items-center gap-2 border-b-2 ${
@@ -487,7 +487,7 @@ export default function PerformanceMonitorDashboard() {
           <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
             <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Analyses</h3>
-              <button className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1">
+              <button type="button" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1">
                 <Download className="w-4 h-4" />
                 Export Log
               </button>
@@ -547,7 +547,7 @@ export default function PerformanceMonitorDashboard() {
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Performance Benchmarks</h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400">BeamLab WASM Solver Performance</p>
                 </div>
-                <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <button type="button" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
                   <Play className="w-4 h-4" />
                   Run Benchmark
                 </button>

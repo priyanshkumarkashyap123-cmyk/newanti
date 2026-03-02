@@ -126,7 +126,7 @@ const TreeSearchBar: FC<{
       className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-600 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
     />
     {value && (
-      <button
+      <button type="button"
         onClick={() => onChange('')}
         className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
       >
@@ -149,14 +149,14 @@ const TreeToolbar: FC<{
   onRefresh?: () => void;
 }> = memo(({ onExpandAll, onCollapseAll, onFilter, onRefresh }) => (
   <div className="flex items-center gap-1 px-2 py-1 border-b border-slate-200 dark:border-slate-800">
-    <button
+    <button type="button"
       onClick={onExpandAll}
       className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
       title="Expand All"
     >
       <ChevronDown className="w-3.5 h-3.5" />
     </button>
-    <button
+    <button type="button"
       onClick={onCollapseAll}
       className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
       title="Collapse All"
@@ -164,7 +164,7 @@ const TreeToolbar: FC<{
       <ChevronRight className="w-3.5 h-3.5" />
     </button>
     {onFilter && (
-      <button
+      <button type="button"
         onClick={onFilter}
         className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded"
         title="Filter"
@@ -173,7 +173,7 @@ const TreeToolbar: FC<{
       </button>
     )}
     {onRefresh && (
-      <button
+      <button type="button"
         onClick={onRefresh}
         className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded ml-auto"
         title="Refresh"
@@ -261,7 +261,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
       onContextMenu={onContextMenu}
     >
       {/* Expand/Collapse Arrow */}
-      <button
+      <button type="button"
         onClick={(e) => {
           e.stopPropagation();
           onToggleExpand();
@@ -297,7 +297,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
 
       {/* Visibility Toggle */}
       {onToggleVisibility && (
-        <button
+        <button type="button"
           onClick={(e) => {
             e.stopPropagation();
             onToggleVisibility();
@@ -312,7 +312,7 @@ const TreeNodeItem: FC<TreeNodeItemProps> = memo(({
 
       {/* Lock Toggle */}
       {onToggleLock && (
-        <button
+        <button type="button"
           onClick={(e) => {
             e.stopPropagation();
             onToggleLock();

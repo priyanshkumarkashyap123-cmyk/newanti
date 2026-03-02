@@ -354,7 +354,7 @@ export function OpenChannelFlowCalculator() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Channel Section</label>
               <div className="grid grid-cols-5 gap-2">
                 {(['rectangular', 'trapezoidal', 'triangular', 'circular', 'parabolic'] as const).map(type => (
-                  <button
+                  <button type="button"
                     key={type}
                     onClick={() => setChannel({ ...channel, type })}
                     className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
@@ -449,7 +449,7 @@ export function OpenChannelFlowCalculator() {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={calculate}
               className="w-full py-3 bg-cyan-600 text-white rounded-lg font-semibold hover:bg-cyan-700"
             >
@@ -650,7 +650,7 @@ export function PipeFlowCalculator() {
                   { id: 'hazen', name: 'Hazen-Williams' },
                   { id: 'manning', name: 'Manning' },
                 ].map(m => (
-                  <button
+                  <button type="button"
                     key={m.id}
                     onClick={() => setMethod(m.id as typeof method)}
                     className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
@@ -753,7 +753,7 @@ export function PipeFlowCalculator() {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={calculate}
               className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
             >
@@ -1043,7 +1043,7 @@ export function HydrologyCalculator() {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={calculate}
               className="w-full py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700"
             >

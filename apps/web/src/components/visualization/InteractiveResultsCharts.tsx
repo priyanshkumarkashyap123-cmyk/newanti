@@ -223,7 +223,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
             </div>
             
             <div className="flex items-center gap-1">
-                <button
+                <button type="button"
                     onClick={() => onSettingsChange({ ...settings, showGrid: !settings.showGrid })}
                     className={`p-1.5 rounded transition-colors ${
                         settings.showGrid ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'
@@ -232,7 +232,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                 >
                     <Activity className="w-4 h-4" />
                 </button>
-                <button
+                <button type="button"
                     onClick={() => onSettingsChange({ ...settings, showLegend: !settings.showLegend })}
                     className={`p-1.5 rounded transition-colors ${
                         settings.showLegend ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'
@@ -241,7 +241,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                 >
                     {settings.showLegend ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
-                <button
+                <button type="button"
                     onClick={() => onSettingsChange({ ...settings, fillArea: !settings.fillArea })}
                     className={`p-1.5 rounded transition-colors ${
                         settings.fillArea ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'
@@ -251,7 +251,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                     <Layers className="w-4 h-4" />
                 </button>
                 {onExport && (
-                    <button
+                    <button type="button"
                         onClick={onExport}
                         className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                         title="Export"
@@ -260,7 +260,7 @@ const ChartHeader: React.FC<ChartHeaderProps> = ({
                     </button>
                 )}
                 {onFullscreen && (
-                    <button
+                    <button type="button"
                         onClick={onFullscreen}
                         className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                         title="Fullscreen"
@@ -531,7 +531,7 @@ export const CombinedDiagramsChart: React.FC<CombinedDiagramsChartProps> = ({
             {/* Series Toggle */}
             <div className="px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4">
                 {Object.entries(visibleSeries).map(([key, visible]) => (
-                    <button
+                    <button type="button"
                         key={key}
                         onClick={() => toggleSeries(key as keyof typeof visibleSeries)}
                         className={`flex items-center gap-2 px-2 py-1 rounded text-xs transition-colors ${

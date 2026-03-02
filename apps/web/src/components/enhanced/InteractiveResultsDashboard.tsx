@@ -1147,11 +1147,11 @@ export const InteractiveResultsDashboard: React.FC<{
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-xl transition-colors">
             <RefreshCw className="w-4 h-4" />
             Refresh
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">
+          <button type="button" className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">
             <Download className="w-4 h-4" />
             Export Report
           </button>

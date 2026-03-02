@@ -96,7 +96,7 @@ export const FoundationDesignPanel: React.FC = () => {
                         </div>
                     </div>
 
-                    <button
+                    <button type="button"
                         onClick={handleDesign}
                         disabled={loading}
                         className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition-all disabled:opacity-50"

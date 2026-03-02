@@ -1056,7 +1056,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                             const Icon = info.icon;
                             const active = selectedCategory === cat;
                             return (
-                                <button
+                                <button type="button"
                                     key={cat}
                                     onClick={() => handleSelectCategory(cat)}
                                     className={'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ' +
@@ -1078,7 +1078,7 @@ export const StructureWizard: FC<StructureWizardProps> = ({ isOpen, onClose, onG
                             const Icon = tmpl.icon;
                             const active = selectedTemplateId === tmpl.id;
                             return (
-                                <button
+                                <button type="button"
                                     key={tmpl.id}
                                     onClick={() => handleSelectTemplate(tmpl.id)}
                                     className={'relative p-4 rounded-xl border text-left transition-all group ' +

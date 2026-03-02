@@ -303,7 +303,7 @@ export const NafemsBenchmarkPage: FC = () => {
             const Icon = cat.icon;
             const isActive = activeCategory === cat.key && report !== null;
             return (
-              <button
+              <button type="button"
                 key={cat.key}
                 disabled={running}
                 onClick={() => runBenchmark(cat.key)}
@@ -389,7 +389,7 @@ export const NafemsBenchmarkPage: FC = () => {
               const catColor = colorForCategory(category);
               return (
                 <div key={category} className="bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                  <button
+                  <button type="button"
                     onClick={() => toggleCategory(category)}
                     className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                   >

@@ -390,7 +390,7 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
       {/* Theme Selector */}
       <div className="flex items-center bg-slate-200/50 dark:bg-slate-700/50 rounded-lg p-1">
         {themes.map(({ value, icon, label }) => (
-          <button
+          <button type="button"
             key={value}
             onClick={() => setTheme(value)}
             className={`p-2 rounded-md transition-all ${
@@ -408,7 +408,7 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
       {/* Accent Color Picker */}
       {showAccentPicker && (
         <div className="relative">
-          <button
+          <button type="button"
             onClick={() => setShowPalette(!showPalette)}
             className="p-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             title="Accent Color"
@@ -421,7 +421,7 @@ export function ThemeSwitcher({ showAccentPicker = true, className }: ThemeSwitc
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 px-1">Accent Color</p>
               <div className="flex gap-2">
                 {accents.map(({ value, color, label }) => (
-                  <button
+                  <button type="button"
                     key={value}
                     onClick={() => {
                       setAccentColor(value);

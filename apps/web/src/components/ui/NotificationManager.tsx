@@ -191,7 +191,7 @@ const NotificationToast: FC<NotificationToastProps> = ({
                         </p>
                     )}
                     {notification.action && (
-                        <button
+                        <button type="button"
                             onClick={notification.action.onClick}
                             className="mt-2 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
                         >
@@ -200,7 +200,7 @@ const NotificationToast: FC<NotificationToastProps> = ({
                     )}
                 </div>
                 {notification.dismissible && notification.type !== 'loading' && (
-                    <button
+                    <button type="button"
                         onClick={onDismiss}
                         className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >

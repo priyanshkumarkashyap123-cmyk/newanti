@@ -632,7 +632,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
               { mode: 'symbol' as PaletteMode, label: 'Symbols', prefix: '@' },
               { mode: 'goto' as PaletteMode, label: 'Go to Line', prefix: ':' },
             ].map(tab => (
-              <button
+              <button type="button"
                 key={tab.mode}
                 onClick={() => {
                   setMode(tab.mode);

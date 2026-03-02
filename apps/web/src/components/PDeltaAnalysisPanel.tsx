@@ -297,7 +297,7 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                     </div>
                 </div>
 
-                <button
+                <button type="button"
                     onClick={handleRunAnalysis}
                     disabled={isLoading}
                     className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded transition-colors text-sm"
@@ -462,13 +462,13 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
             {/* Footer */}
             {pdeltaResult && (
                 <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex justify-between">
-                    <button
+                    <button type="button"
                         onClick={() => setShowComparison(!showComparison)}
                         className="text-sm text-slate-500 hover:text-slate-700"
                     >
                         {showComparison ? 'Hide' : 'Show'} Comparison
                     </button>
-                    <button className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700">
+                    <button type="button" className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700">
                         <Download className="w-4 h-4" />
                         Export
                     </button>

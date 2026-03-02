@@ -67,7 +67,7 @@ const ModeCard: FC<{
         >
             <div className="flex items-center justify-between mb-2">
                 <span className="font-semibold text-sm">Mode {mode.modeNumber}</span>
-                <button
+                <button type="button"
                     onClick={(e) => { e.stopPropagation(); onAnimate(); }}
                     className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                     title="Animate mode shape"
@@ -318,13 +318,13 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                         Modal Analysis
                     </h3>
                     <div className="flex gap-2 text-xs">
-                        <button
+                        <button type="button"
                             onClick={() => setViewMode('cards')}
                             className={`px-2 py-1 rounded ${viewMode === 'cards' ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
                             Cards
                         </button>
-                        <button
+                        <button type="button"
                             onClick={() => setViewMode('table')}
                             className={`px-2 py-1 rounded ${viewMode === 'table' ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
@@ -346,7 +346,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                             className="w-16 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
                         />
                     </label>
-                    <button
+                    <button type="button"
                         onClick={handleRunAnalysis}
                         disabled={isLoading}
                         className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded transition-colors ml-auto font-medium"
@@ -412,7 +412,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
                                                 <td className="p-2 font-mono text-slate-600 dark:text-slate-300">{mode.frequency.toFixed(3)}</td>
                                                 <td className="p-2 font-mono text-slate-600 dark:text-slate-300">{mode.period.toFixed(4)}</td>
                                                 <td className="p-2 text-center">
-                                                    <button
+                                                    <button type="button"
                                                         onClick={(e) => { e.stopPropagation(); handleAnimate(index); }}
                                                         className="text-slate-500 dark:text-slate-400 hover:text-blue-400"
                                                     >

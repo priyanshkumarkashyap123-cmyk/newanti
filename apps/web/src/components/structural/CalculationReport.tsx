@@ -297,21 +297,21 @@ export const CalculationReport: React.FC<CalculationReportProps> = ({
           <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 ml-1">Rev {projectInfo.revision}</span>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={onExportPDF}
             className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
           >
             <Download className="h-4 w-4" />
             Export PDF
           </button>
-          <button
+          <button type="button"
             onClick={onPrint || (() => window.print())}
             className="flex items-center gap-1.5 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             <Printer className="h-4 w-4" />
             Print
           </button>
-          <button className="flex items-center gap-1.5 px-4 py-2 border border-slate-300 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-100 transition-colors">
+          <button type="button" className="flex items-center gap-1.5 px-4 py-2 border border-slate-300 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-100 transition-colors">
             <Share2 className="h-4 w-4" />
             Share
           </button>

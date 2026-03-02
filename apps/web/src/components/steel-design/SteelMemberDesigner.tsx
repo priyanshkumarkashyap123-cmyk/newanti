@@ -271,7 +271,7 @@ export default function SteelMemberDesigner() {
             {/* Tab Navigation */}
             <div className="flex items-center gap-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-xl p-1">
               {(['input', 'results', 'drawing'] as const).map((tab) => (
-                <button
+                <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -306,7 +306,7 @@ export default function SteelMemberDesigner() {
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Member Type</h3>
                   <div className="grid grid-cols-4 gap-3">
                     {(['beam', 'column', 'tension', 'strut'] as MemberType[]).map((type) => (
-                      <button
+                      <button type="button"
                         key={type}
                         onClick={() => handleChange('memberType', type)}
                         className={`p-4 rounded-xl border-2 transition-all ${
@@ -556,7 +556,7 @@ function CollapsibleSection({
 }) {
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <button
+      <button type="button"
         onClick={onToggle}
         className="w-full flex items-center justify-between p-4 hover:bg-slate-700/30 transition-colors"
       >

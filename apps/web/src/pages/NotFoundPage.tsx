@@ -127,7 +127,7 @@ export function NotFoundPage() {
                     animate="visible"
                     className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm"
                 >
-                    <button
+                    <button type="button"
                         onClick={() => window.history.back()}
                         className="text-slate-500 hover:text-slate-300 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                     >

@@ -274,10 +274,10 @@ export default function VisualizationHubPage() {
             <p className="text-slate-600 dark:text-slate-400">Interactive diagrams for structural analysis results.</p>
           </div>
           <div className="flex gap-2">
-            <button onClick={startAnimation} disabled={isAnimating} className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">
+            <button type="button" onClick={startAnimation} disabled={isAnimating} className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-lg transition-colors">
               <Play className="w-4 h-4" /> Animate
             </button>
-            <button onClick={downloadImage} className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+            <button type="button" onClick={downloadImage} className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
               <Download className="w-4 h-4" /> Save PNG
             </button>
           </div>
@@ -289,7 +289,7 @@ export default function VisualizationHubPage() {
             <h2 className="font-semibold flex items-center gap-2"><BarChart3 className="w-5 h-5 text-blue-400" /> Diagram Type</h2>
             <div className="space-y-2">
               {(['bmd', 'sfd', 'deflection', 'axial'] as DiagramType[]).map(type => (
-                <button
+                <button type="button"
                   key={type}
                   onClick={() => setDiagramType(type)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${

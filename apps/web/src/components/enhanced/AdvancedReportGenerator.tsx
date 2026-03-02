@@ -223,7 +223,7 @@ const SectionCard: React.FC<{
     >
       <div className="flex items-center gap-3 p-4">
         {/* Toggle */}
-        <button
+        <button type="button"
           onClick={onToggle}
           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
             section.isEnabled
@@ -246,21 +246,21 @@ const SectionCard: React.FC<{
         
         {/* Actions */}
         <div className="flex items-center gap-1">
-          <button
+          <button type="button"
             onClick={() => onMove('up')}
             disabled={index === 0}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <MoveUp className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => onMove('down')}
             disabled={index === totalSections - 1}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <MoveDown className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={onExpand}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
@@ -504,7 +504,7 @@ export const AdvancedReportGenerator: React.FC<{
           </div>
           
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={() => setShowPreview(!showPreview)}
               className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${
                 showPreview ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
@@ -513,7 +513,7 @@ export const AdvancedReportGenerator: React.FC<{
               <Eye className="w-4 h-4" />
               Preview
             </button>
-            <button
+            <button type="button"
               onClick={handleExport}
               disabled={isGenerating}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium rounded-xl transition-colors"
@@ -540,7 +540,7 @@ export const AdvancedReportGenerator: React.FC<{
           {/* Tabs */}
           <div className="flex border-b border-slate-200 dark:border-slate-800">
             {(['content', 'style', 'export'] as const).map((tab) => (
-              <button
+              <button type="button"
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 px-4 py-3 text-sm font-medium capitalize transition-colors ${
@@ -570,7 +570,7 @@ export const AdvancedReportGenerator: React.FC<{
                     <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Report Template</label>
                     <div className="grid grid-cols-3 gap-3">
                       {TEMPLATES.map((template) => (
-                        <button
+                        <button type="button"
                           key={template.id}
                           onClick={() => {
                             setSelectedTemplate(template);
@@ -689,7 +689,7 @@ export const AdvancedReportGenerator: React.FC<{
                     <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Header Style</label>
                     <div className="grid grid-cols-3 gap-3">
                       {(['modern', 'classic', 'minimal'] as const).map((headerStyle) => (
-                        <button
+                        <button type="button"
                           key={headerStyle}
                           onClick={() => setStyle(s => ({ ...s, headerStyle }))}
                           className={`p-4 rounded-xl border text-center capitalize transition-all ${
@@ -745,7 +745,7 @@ export const AdvancedReportGenerator: React.FC<{
                     <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Export Format</label>
                     <div className="grid grid-cols-4 gap-3">
                       {(['pdf', 'docx', 'html', 'dxf'] as const).map((format) => (
-                        <button
+                        <button type="button"
                           key={format}
                           onClick={() => setExportOptions(o => ({ ...o, format }))}
                           className={`p-4 rounded-xl border text-center uppercase transition-all ${

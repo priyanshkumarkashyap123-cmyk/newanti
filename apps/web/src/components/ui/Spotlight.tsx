@@ -175,7 +175,7 @@ export const Spotlight: FC<SpotlightProps> = ({
                                 Step {currentStep + 1} of {steps.length}
                             </span>
                         </div>
-                        <button
+                        <button type="button"
                             onClick={onSkip}
                             className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                         >
@@ -191,14 +191,14 @@ export const Spotlight: FC<SpotlightProps> = ({
 
                     {/* Footer */}
                     <div className="flex items-center justify-between px-4 py-3 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800">
-                        <button
+                        <button type="button"
                             onClick={handlePrevious}
                             disabled={currentStep === 0}
                             className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
                             Previous
                         </button>
-                        <button
+                        <button type="button"
                             onClick={handleNext}
                             className="flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-lg transition-colors"
                         >
@@ -262,7 +262,7 @@ export const QuickTip: FC<QuickTipProps> = ({ children, tip, show = false }) => 
                     </motion.div>
                 )}
             </AnimatePresence>
-            <button
+            <button type="button"
                 onClick={() => setIsVisible(!isVisible)}
                 className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center hover:bg-blue-400 transition-colors"
             >

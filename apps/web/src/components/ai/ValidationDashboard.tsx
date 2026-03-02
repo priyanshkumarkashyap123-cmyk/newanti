@@ -78,7 +78,7 @@ const ValidationResultRow: React.FC<{ result: ValidationResult; index: number }>
 
     return (
         <div className="border border-slate-700 rounded-lg overflow-hidden mb-2">
-            <button
+            <button type="button"
                 onClick={() => setExpanded(!expanded)}
                 className="w-full px-4 py-3 flex items-center justify-between bg-slate-100 dark:bg-slate-800 hover:bg-slate-750 transition-colors"
             >
@@ -244,7 +244,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                 {state.status === 'idle' && (
                     <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                         <p>Run an analysis to see validation results</p>
-                        <button
+                        <button type="button"
                             onClick={runValidation}
                             disabled={!analysisResults}
                             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:opacity-50"
@@ -286,7 +286,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                         </div>
 
                         {/* Toggle Details */}
-                        <button
+                        <button type="button"
                             onClick={() => setShowDetails(!showDetails)}
                             className="w-full py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2"
                         >
@@ -308,13 +308,13 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
 
                         {/* Action Button */}
                         <div className="mt-4 flex gap-2">
-                            <button
+                            <button type="button"
                                 onClick={runValidation}
                                 className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-medium"
                             >
                                 Re-validate
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => {
                                     const report = auditTrail.generateReportMarkdown('Engineer', 'License');
 // console.log(report);
@@ -336,7 +336,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                             />
                         </svg>
                         <p>Validation failed. Please try again.</p>
-                        <button
+                        <button type="button"
                             onClick={runValidation}
                             className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500"
                         >

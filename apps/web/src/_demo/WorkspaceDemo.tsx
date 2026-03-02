@@ -238,7 +238,7 @@ export const WorkspaceDemo: FC = () => {
                                     <div className="flex flex-col items-center gap-3">
                                         <span className="material-symbols-outlined text-5xl text-slate-700">description</span>
                                         <p className="text-sm">Report generation coming soon</p>
-                                        <button className="px-4 py-2 bg-blue-600 text-white rounded text-xs font-semibold">
+                                        <button type="button" className="px-4 py-2 bg-blue-600 text-white rounded text-xs font-semibold">
                                             Generate PDF
                                         </button>
                                     </div>
@@ -276,7 +276,7 @@ export const WorkspaceDemo: FC = () => {
                             Go to Actual Demo →
                         </Link>
                     </div>
-                    <button
+                    <button type="button"
                         onClick={() => setShowTutorial(true)}
                         className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
                     >

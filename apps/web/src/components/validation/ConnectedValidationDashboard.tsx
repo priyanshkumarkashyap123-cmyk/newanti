@@ -112,7 +112,7 @@ export const ConnectedValidationDashboard: FC = () => {
                         </p>
                     </div>
                 </div>
-                <button
+                <button type="button"
                     onClick={runValidation}
                     disabled={loading}
                     className={`px-4 py-2 rounded text-xs font-bold flex items-center gap-2 ${loading

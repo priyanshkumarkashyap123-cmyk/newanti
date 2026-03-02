@@ -779,7 +779,7 @@ export const CableSuspensionDesigner: React.FC = () => {
         {/* Mode Tabs */}
         <div className="flex flex-wrap gap-2 mb-6">
           {(['stay-cable', 'catenary', 'suspension-bridge'] as DesignMode[]).map((mode) => (
-            <button
+            <button type="button"
               key={mode}
               onClick={() => updateState({ mode })}
               className={`${TAB_CLASS} ${state.mode === mode ? TAB_ACTIVE : TAB_INACTIVE}`}
@@ -841,7 +841,7 @@ export const CableSuspensionDesigner: React.FC = () => {
                     options={materialOptions}
                   />
                 </div>
-                <button onClick={runStayCableDesign} className={`${BUTTON_PRIMARY} w-full mt-6`}>
+                <button type="button" onClick={runStayCableDesign} className={`${BUTTON_PRIMARY} w-full mt-6`}>
                   Design Stay Cable
                 </button>
               </div>
@@ -909,7 +909,7 @@ export const CableSuspensionDesigner: React.FC = () => {
                     step={0.5}
                   />
                 </div>
-                <button onClick={runCatenaryAnalysis} className={`${BUTTON_PRIMARY} w-full mt-6`}>
+                <button type="button" onClick={runCatenaryAnalysis} className={`${BUTTON_PRIMARY} w-full mt-6`}>
                   Analyze Cable
                 </button>
               </div>
@@ -1064,7 +1064,7 @@ export const CableSuspensionDesigner: React.FC = () => {
                     ]}
                   />
                 </div>
-                <button onClick={runSuspensionDesign} className={`${BUTTON_PRIMARY} w-full mt-6`}>
+                <button type="button" onClick={runSuspensionDesign} className={`${BUTTON_PRIMARY} w-full mt-6`}>
                   Design Suspension Bridge
                 </button>
               </div>

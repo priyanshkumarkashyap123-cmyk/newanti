@@ -49,7 +49,7 @@ export const ValidationDashboard: FC = () => {
                         <p className="text-xs text-slate-500 dark:text-slate-400">Benchmark AI accuracy against analytical solutions</p>
                     </div>
                 </div>
-                <button
+                <button type="button"
                     onClick={runBenchmarks}
                     disabled={loading}
                     className={`px-4 py-2 rounded text-xs font-bold flex items-center gap-2 transition-all ${loading

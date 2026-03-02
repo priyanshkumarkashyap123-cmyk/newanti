@@ -58,7 +58,7 @@ const ToolBtn = memo<ToolBtnProps>(({
     };
 
     return (
-        <button
+        <button type="button"
             onClick={onClick}
             disabled={disabled}
             title={shortcut ? `${label} (${shortcut})` : label}
@@ -310,7 +310,7 @@ export const Toolbar: FC = () => {
             ">
                 {/* Undo / Redo */}
                 <div className="flex items-center gap-1">
-                    <button
+                    <button type="button"
                         onClick={() => undo()}
                         disabled={pastStates.length === 0}
                         title="Undo (Ctrl+Z)"
@@ -318,7 +318,7 @@ export const Toolbar: FC = () => {
                     >
                         <Undo2 className="w-4 h-4" />
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => redo()}
                         disabled={futureStates.length === 0}
                         title="Redo (Ctrl+Shift+Z)"

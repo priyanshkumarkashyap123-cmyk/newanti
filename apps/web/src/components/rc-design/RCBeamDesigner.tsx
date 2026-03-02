@@ -186,7 +186,7 @@ export default function RCBeamDesigner() {
             {/* Tab Navigation */}
             <div className="flex items-center gap-2 bg-slate-200/50 dark:bg-slate-700/50 rounded-xl p-1">
               {(["input", "results", "drawing"] as const).map((tab) => (
-                <button
+                <button type="button"
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -223,7 +223,7 @@ export default function RCBeamDesigner() {
                   <div className="grid grid-cols-4 gap-2">
                     {(["IS456", "ACI318", "EN1992", "AS3600"] as const).map(
                       (code) => (
-                        <button
+                        <button type="button"
                           key={code}
                           onClick={() => handleChange("code", code)}
                           className={`py-3 rounded-lg text-sm font-medium transition-all ${
@@ -243,7 +243,7 @@ export default function RCBeamDesigner() {
                 <InputCard title="Beam Type" icon={<Box className="w-5 h-5" />}>
                   <div className="grid grid-cols-3 gap-2">
                     {["rectangular", "T-beam", "L-beam"].map((type) => (
-                      <button
+                      <button type="button"
                         key={type}
                         onClick={() =>
                           handleChange(
@@ -492,7 +492,7 @@ function CollapsibleSection({
 }) {
   return (
     <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
-      <button
+      <button type="button"
         onClick={onToggle}
         className="w-full flex items-center justify-between p-6 hover:bg-slate-700/20 transition-colors"
       >

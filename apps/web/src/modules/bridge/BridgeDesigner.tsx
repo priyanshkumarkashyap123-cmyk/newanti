@@ -215,7 +215,7 @@ const ProgressStep: React.FC<{
   completed: boolean;
   onClick: () => void;
 }> = ({ number, title, active, completed, onClick }) => (
-  <button
+  <button type="button"
     onClick={onClick}
     className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${active
       ? 'bg-blue-600 text-white'
@@ -690,7 +690,7 @@ const SuperstructurePhase: React.FC<{
           />
         </div>
 
-        <button onClick={runDeckDesign} className={BUTTON_PRIMARY}>
+        <button type="button" onClick={runDeckDesign} className={BUTTON_PRIMARY}>
           Design Deck Slab
         </button>
 
@@ -769,7 +769,7 @@ const SuperstructurePhase: React.FC<{
           />
         </div>
 
-        <button onClick={runGirderDesign} className={BUTTON_PRIMARY}>
+        <button type="button" onClick={runGirderDesign} className={BUTTON_PRIMARY}>
           Design Girders
         </button>
 
@@ -922,7 +922,7 @@ const SubstructurePhase: React.FC<{
           />
         </div>
 
-        <button onClick={runPierDesign} className={BUTTON_PRIMARY}>
+        <button type="button" onClick={runPierDesign} className={BUTTON_PRIMARY}>
           Design Pier
         </button>
 
@@ -1000,7 +1000,7 @@ const SubstructurePhase: React.FC<{
           />
         </div>
 
-        <button onClick={runAbutmentDesign} className={BUTTON_PRIMARY}>
+        <button type="button" onClick={runAbutmentDesign} className={BUTTON_PRIMARY}>
           Design Abutment
         </button>
 
@@ -1042,7 +1042,7 @@ const SubstructurePhase: React.FC<{
           ⚙️ Bearing Design
         </h2>
 
-        <button onClick={runBearingDesign} className={BUTTON_PRIMARY}>
+        <button type="button" onClick={runBearingDesign} className={BUTTON_PRIMARY}>
           Design Bearings
         </button>
 
@@ -1156,7 +1156,7 @@ const FoundationPhase: React.FC<{
           />
         </div>
 
-        <button onClick={runFootingDesign} className={BUTTON_PRIMARY}>
+        <button type="button" onClick={runFootingDesign} className={BUTTON_PRIMARY}>
           Design Foundation
         </button>
 
@@ -1333,10 +1333,10 @@ const SummaryPhase: React.FC<{
 
         {/* Export Button */}
         <div className="mt-6 flex justify-end">
-          <button className={BUTTON_SECONDARY + ' mr-3'}>
+          <button type="button" className={BUTTON_SECONDARY + ' mr-3'}>
             📄 Export to PDF
           </button>
-          <button className={BUTTON_PRIMARY}>
+          <button type="button" className={BUTTON_PRIMARY}>
             💾 Save Design
           </button>
         </div>
@@ -1472,7 +1472,7 @@ export const BridgeDesigner: React.FC = () => {
 
         {/* Navigation */}
         <div className="mt-8 flex justify-between">
-          <button
+          <button type="button"
             onClick={() => {
               const idx = phases.findIndex((p) => p.key === phase);
               if (idx > 0) setPhase(phases[idx - 1].key);
@@ -1482,7 +1482,7 @@ export const BridgeDesigner: React.FC = () => {
           >
             ← Previous
           </button>
-          <button
+          <button type="button"
             onClick={() => {
               const idx = phases.findIndex((p) => p.key === phase);
               if (idx < phases.length - 1) setPhase(phases[idx + 1].key);

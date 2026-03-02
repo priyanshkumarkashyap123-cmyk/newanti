@@ -175,7 +175,7 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                             </p>
 
                                             {/* Load Button */}
-                                            <button className="mt-4 w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium transition-colors border border-emerald-500/30 group-hover:border-emerald-500">
+                                            <button type="button" className="mt-4 w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium transition-colors border border-emerald-500/30 group-hover:border-emerald-500">
                                                 Load Structure
                                             </button>
                                         </div>

@@ -134,6 +134,14 @@ const initializeApp = async () => {
 
 
         logger.info('✅ App rendered with AuthProvider and SubscriptionProvider');
+
+        // Initialize Web Vitals tracking (non-blocking)
+        import('./utils/webVitals').then(({ initWebVitals }) => {
+            initWebVitals();
+            logger.info('📊 Web Vitals tracking initialized');
+        }).catch(() => {
+            console.warn('⚠️ Web Vitals module not available');
+        });
     } catch (error) {
         logger.error('❌ Failed to initialize app:', error);
         console.error('❌ Initialization error:', error);

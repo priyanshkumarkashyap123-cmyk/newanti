@@ -104,7 +104,7 @@ export const MiniMap: FC<MiniMapProps> = ({
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
                 <span className="text-xs font-medium text-slate-500 dark:text-slate-400">MINIMAP</span>
-                <button
+                <button type="button"
                     onClick={() => setIsExpanded(false)}
                     className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >

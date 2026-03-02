@@ -70,7 +70,7 @@ const AuditEntryRow: React.FC<{ entry: AuditEntry }> = ({ entry }) => {
 
     return (
         <div className="border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden mb-2">
-            <button
+            <button type="button"
                 onClick={() => setExpanded(!expanded)}
                 className="w-full px-4 py-3 flex items-center gap-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors"
             >
@@ -186,7 +186,7 @@ export const AuditTrailViewer: React.FC<AuditTrailViewerProps> = ({
                     <h3 className="font-semibold text-slate-900 dark:text-white">Audit Trail</h3>
                     <span className="text-slate-500 dark:text-slate-400 text-sm">({entries.length} entries)</span>
                 </div>
-                <button
+                <button type="button"
                     onClick={() => setShowExportDialog(true)}
                     className="px-3 py-1.5 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-500"
                 >

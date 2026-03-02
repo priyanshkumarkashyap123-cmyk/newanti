@@ -707,21 +707,21 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
         
         <div className="flex items-center gap-2">
           {/* View controls */}
-          <button
+          <button type="button"
             onClick={() => handleZoom(0.25)}
             className="p-2 rounded-lg hover:bg-slate-200 text-slate-500"
             title="Zoom In"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => handleZoom(-0.25)}
             className="p-2 rounded-lg hover:bg-slate-200 text-slate-500"
             title="Zoom Out"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={resetView}
             className="p-2 rounded-lg hover:bg-slate-200 text-slate-500"
             title="Reset View"
@@ -732,35 +732,35 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           <div className="w-px h-6 bg-slate-300 mx-1" />
           
           {/* View toggles */}
-          <button
+          <button type="button"
             onClick={() => setViewSettings(s => ({ ...s, showGrid: !s.showGrid }))}
             className={`p-2 rounded-lg ${viewSettings.showGrid ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Toggle Grid"
           >
             <Grid className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setViewSettings(s => ({ ...s, showLoads: !s.showLoads }))}
             className={`p-2 rounded-lg ${viewSettings.showLoads ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Toggle Loads"
           >
             <ArrowDown className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setViewSettings(s => ({ ...s, showBMD: !s.showBMD }))}
             className={`p-2 rounded-lg ${viewSettings.showBMD ? 'bg-red-100 text-red-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Bending Moment Diagram"
           >
             <TrendingUp className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setViewSettings(s => ({ ...s, showSFD: !s.showSFD }))}
             className={`p-2 rounded-lg ${viewSettings.showSFD ? 'bg-blue-100 text-blue-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Shear Force Diagram"
           >
             <BarChart2 className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={() => setViewSettings(s => ({ ...s, showDeflectedShape: !s.showDeflectedShape }))}
             className={`p-2 rounded-lg ${viewSettings.showDeflectedShape ? 'bg-green-100 text-green-600' : 'hover:bg-slate-200 text-slate-500'}`}
             title="Deflected Shape"
@@ -770,7 +770,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           
           <div className="w-px h-6 bg-slate-300 mx-1" />
           
-          <button
+          <button type="button"
             onClick={() => setShowSettings(!showSettings)}
             className={`p-2 rounded-lg ${showSettings ? 'bg-slate-200' : 'hover:bg-slate-200'} text-slate-500`}
             title="Settings"
@@ -779,7 +779,7 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
           </button>
           
           {onAnalyze && (
-            <button
+            <button type="button"
               onClick={onAnalyze}
               disabled={isAnalyzing}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"

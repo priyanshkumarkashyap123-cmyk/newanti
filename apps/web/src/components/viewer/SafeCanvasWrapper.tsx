@@ -143,20 +143,20 @@ export class CanvasErrorBoundary extends Component<SafeCanvasWrapperProps, Error
                         
                         <div className="flex gap-4 justify-center flex-wrap">
                             {retryCount < maxRetries && (
-                                <button
+                                <button type="button"
                                     onClick={this.handleRetry}
                                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                                 >
                                     Retry ({maxRetries - retryCount} left)
                                 </button>
                             )}
-                            <button
+                            <button type="button"
                                 onClick={() => window.location.reload()}
                                 className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
                             >
                                 Reload Page
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={this.handleClearModel}
                                 className="px-6 py-2 bg-red-600/80 hover:bg-red-700 rounded-lg transition-colors"
                             >
@@ -289,7 +289,7 @@ export const PerformanceWarning: React.FC = () => {
                         </p>
                     )}
                 </div>
-                <button
+                <button type="button"
                     onClick={() => setDismissed(true)}
                     className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >

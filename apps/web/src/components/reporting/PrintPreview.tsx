@@ -376,7 +376,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     Print Settings
                 </h3>
-                <button onClick={onClose} className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <button type="button" onClick={onClose} className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                     <X className="w-4 h-4" />
                 </button>
             </div>
@@ -388,7 +388,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     { id: 'header', label: 'Header/Footer', icon: <Type className="w-4 h-4" /> },
                     { id: 'watermark', label: 'Watermark', icon: <Image className="w-4 h-4" /> }
                 ].map(tab => (
-                    <button
+                    <button type="button"
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`
@@ -428,7 +428,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Orientation</label>
                             <div className="flex gap-2">
                                 {(['portrait', 'landscape'] as const).map(orient => (
-                                    <button
+                                    <button type="button"
                                         key={orient}
                                         onClick={() => updateSettings('orientation', orient)}
                                         className={`
@@ -500,7 +500,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-900 dark:text-white">Header</span>
-                                <button
+                                <button type="button"
                                     onClick={() => updateSettings('header', {
                                         ...settings.header,
                                         enabled: !settings.header.enabled
@@ -542,7 +542,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium text-slate-900 dark:text-white">Footer</span>
-                                <button
+                                <button type="button"
                                     onClick={() => updateSettings('footer', {
                                         ...settings.footer,
                                         enabled: !settings.footer.enabled
@@ -780,7 +780,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
             {/* Header */}
             <div className="h-14 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
-                    <button
+                    <button type="button"
                         onClick={onClose}
                         className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"
                     >
@@ -805,16 +805,16 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                 <div className="flex items-center gap-2">
                     {/* Zoom Controls */}
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                        <button onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
+                        <button type="button" onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
                             <ZoomOut className="w-4 h-4" />
                         </button>
                         <span className="text-sm text-slate-900 dark:text-white px-2 min-w-[50px] text-center">
                             {Math.round(zoom * 100)}%
                         </span>
-                        <button onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
+                        <button type="button" onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
                             <ZoomIn className="w-4 h-4" />
                         </button>
-                        <button onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
+                        <button type="button" onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
                             <RotateCw className="w-4 h-4" />
                         </button>
                     </div>
@@ -822,7 +822,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     {/* View Mode */}
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                         {(['single', 'double', 'overview'] as const).map(mode => (
-                            <button
+                            <button type="button"
                                 key={mode}
                                 onClick={() => setViewMode(mode)}
                                 className={`p-1.5 rounded ${viewMode === mode ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
@@ -838,7 +838,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     </div>
                     
                     {/* Settings */}
-                    <button
+                    <button type="button"
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2 rounded-lg transition-colors ${
                             showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
@@ -848,7 +848,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     </button>
                     
                     {/* Actions */}
-                    <button
+                    <button type="button"
                         onClick={onExportPDF}
                         className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2"
                     >
@@ -856,7 +856,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                         Export PDF
                     </button>
                     
-                    <button
+                    <button type="button"
                         onClick={handlePrint}
                         className="px-4 py-2 bg-cyan-500 text-white font-medium rounded-lg hover:bg-cyan-400 flex items-center gap-2"
                     >
@@ -953,7 +953,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
             
             {/* Footer - Page Navigation */}
             <div className="h-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-4">
-                <button
+                <button type="button"
                     onClick={handlePrevPage}
                     disabled={currentPage === 1}
                     className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
@@ -967,7 +967,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     <span className="text-slate-500 dark:text-slate-400">{totalPages}</span>
                 </div>
                 
-                <button
+                <button type="button"
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
                     className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
@@ -978,7 +978,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                 {/* Page Thumbnails */}
                 <div className="flex items-center gap-1 ml-4">
                     {displayPages.slice(0, 10).map((_, index) => (
-                        <button
+                        <button type="button"
                             key={index}
                             onClick={() => setCurrentPage(index + 1)}
                             className={`w-6 h-8 rounded border transition-colors ${

@@ -268,7 +268,7 @@ const LoadCaseCard: React.FC<{
         </div>
         
         {/* Toggle */}
-        <button
+        <button type="button"
           onClick={onToggle}
           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
             loadCase.isEnabled
@@ -307,19 +307,19 @@ const LoadCaseCard: React.FC<{
         
         {/* Actions */}
         <div className="flex items-center gap-1">
-          <button
+          <button type="button"
             onClick={onEdit}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <Edit3 className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={onDuplicate}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <Copy className="w-4 h-4" />
           </button>
-          <button
+          <button type="button"
             onClick={onDelete}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
           >
@@ -391,7 +391,7 @@ const CombinationRow: React.FC<{
         </div>
         
         {/* Expand */}
-        <button className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400">
+        <button type="button" className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400">
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
@@ -642,7 +642,7 @@ export const ModernLoadCombinator: React.FC<{
             </div>
           </div>
           
-          <button
+          <button type="button"
             onClick={generateCombinations}
             disabled={isGenerating}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/50 text-white font-medium rounded-xl transition-colors"
@@ -667,7 +667,7 @@ export const ModernLoadCombinator: React.FC<{
         <div className={`border-r border-slate-200 dark:border-slate-800 transition-all ${showLoadCases ? 'w-1/2' : 'w-12'}`}>
           {/* Section Header */}
           <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <button
+            <button type="button"
               onClick={() => setShowLoadCases(!showLoadCases)}
               className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
@@ -676,7 +676,7 @@ export const ModernLoadCombinator: React.FC<{
             </button>
             
             {showLoadCases && (
-              <button aria-label="Add load case" title="Add load case" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+              <button type="button" aria-label="Add load case" title="Add load case" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                 <Plus className="w-4 h-4" />
               </button>
             )}
@@ -690,7 +690,7 @@ export const ModernLoadCombinator: React.FC<{
                 <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">Design Code</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(Object.keys(CODE_COMBINATIONS) as DesignCode[]).map((code) => (
-                    <button
+                    <button type="button"
                       key={code}
                       onClick={() => setSelectedCode(code)}
                       className={`p-2 rounded-lg text-xs font-medium transition-all ${
@@ -735,10 +735,10 @@ export const ModernLoadCombinator: React.FC<{
             
             {combinations.length > 0 && (
               <div className="flex items-center gap-2">
-                <button aria-label="Download combinations" title="Download combinations" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <button type="button" aria-label="Download combinations" title="Download combinations" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                   <Download className="w-4 h-4" />
                 </button>
-                <button aria-label="Settings" title="Settings" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <button type="button" aria-label="Settings" title="Settings" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                   <Settings className="w-4 h-4" />
                 </button>
               </div>
@@ -754,7 +754,7 @@ export const ModernLoadCombinator: React.FC<{
                 <p className="text-sm text-slate-500 mb-4">
                   Select a design code and click Generate to create load combinations
                 </p>
-                <button
+                <button type="button"
                   onClick={generateCombinations}
                   className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition-colors"
                 >

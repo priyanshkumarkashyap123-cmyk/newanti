@@ -134,11 +134,11 @@ export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onCl
                                             {deleteId === project._id ? (
                                                 <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded text-xs text-red-600">
                                                     <span>Sure?</span>
-                                                    <button onClick={() => handleDelete(project._id)} className="font-bold hover:underline">Yes</button>
-                                                    <button onClick={() => setDeleteId(null)} className="hover:underline">No</button>
+                                                    <button type="button" onClick={() => handleDelete(project._id)} className="font-bold hover:underline">Yes</button>
+                                                    <button type="button" onClick={() => setDeleteId(null)} className="hover:underline">No</button>
                                                 </div>
                                             ) : (
-                                                <button
+                                                <button type="button"
                                                     onClick={(e) => { e.stopPropagation(); setDeleteId(project._id); }}
                                                     className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                                                     title="Delete Project"

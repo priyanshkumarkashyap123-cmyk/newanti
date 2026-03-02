@@ -569,7 +569,7 @@ interface DropdownTriggerButtonProps {
 export const DropdownTriggerButton = forwardRef<HTMLButtonElement, DropdownTriggerButtonProps>(
   ({ children, isOpen, className }, ref) => {
     return (
-      <button
+      <button type="button"
         ref={ref}
         className={cn(
           'flex items-center gap-2 px-3 py-2 rounded-lg',

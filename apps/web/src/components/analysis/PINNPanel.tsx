@@ -125,7 +125,7 @@ export const PINNPanel: FC = () => {
                     </div>
                 </div>
 
-                <button
+                <button type="button"
                     onClick={startTraining}
                     disabled={training}
                     className={`w-full py-2 rounded text-xs font-bold flex items-center justify-center gap-2 transition-all ${training

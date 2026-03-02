@@ -385,7 +385,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4 mb-2">
-            <button
+            <button type="button"
               onClick={() => navigate(-1)}
               className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
@@ -416,7 +416,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             {/* Panel selector */}
             <div className="flex flex-wrap gap-1 bg-slate-50 dark:bg-slate-900 rounded-xl p-1 border border-slate-300 dark:border-slate-700">
               {(['geometry', 'material', 'mesh', 'loads', 'boundary'] as const).map(panel => (
-                <button
+                <button type="button"
                   key={panel}
                   onClick={() => setActivePanel(panel)}
                   className={`flex-1 px-2 py-2 rounded-lg text-xs font-medium capitalize transition-colors ${
@@ -545,7 +545,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                       { value: 'triangle' as MeshType, icon: Triangle, label: 'Tri' },
                       { value: 'mixed' as MeshType, icon: Grid3X3, label: 'Mixed' },
                     ]).map(opt => (
-                      <button
+                      <button type="button"
                         key={opt.value}
                         onClick={() => setMesh({...mesh, type: opt.value})}
                         className={`flex flex-col items-center gap-1 p-3 rounded-lg border text-xs font-medium transition-colors ${
@@ -589,7 +589,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">Load {idx + 1}</span>
                       {loads.length > 1 && (
-                        <button
+                        <button type="button"
                           onClick={() => setLoads(loads.filter((_, i) => i !== idx))}
                           className="text-red-400 hover:text-red-300 text-xs"
                         >Remove</button>
@@ -640,7 +640,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                     )}
                   </div>
                 ))}
-                <button
+                <button type="button"
                   onClick={() => setLoads([...loads, { type: 'uniform-pressure', magnitude: 5 }])}
                   className="w-full py-2 border border-dashed border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors text-sm"
                 >
@@ -680,19 +680,19 @@ export const PlateShellAnalysisPage: React.FC = () => {
                 <div className="pt-3 border-t border-slate-300 dark:border-slate-700">
                   <p className="text-xs text-slate-500 mb-2">Quick Presets</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <button
+                    <button type="button"
                       onClick={() => setBoundary({ edgeX0: 'simply-supported', edgeXL: 'simply-supported', edgeY0: 'simply-supported', edgeYL: 'simply-supported' })}
                       className="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >SSSS</button>
-                    <button
+                    <button type="button"
                       onClick={() => setBoundary({ edgeX0: 'fixed', edgeXL: 'fixed', edgeY0: 'fixed', edgeYL: 'fixed' })}
                       className="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >CCCC (All Fixed)</button>
-                    <button
+                    <button type="button"
                       onClick={() => setBoundary({ edgeX0: 'fixed', edgeXL: 'free', edgeY0: 'fixed', edgeYL: 'free' })}
                       className="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >Cantilever</button>
-                    <button
+                    <button type="button"
                       onClick={() => setBoundary({ edgeX0: 'simply-supported', edgeXL: 'simply-supported', edgeY0: 'free', edgeYL: 'free' })}
                       className="px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >One-way</button>
@@ -702,7 +702,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             )}
 
             {/* Run Analysis Button */}
-            <button
+            <button type="button"
               onClick={runAnalysis}
               disabled={isAnalyzing}
               className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-violet-500 to-purple-600 rounded-xl text-white font-semibold
@@ -734,7 +734,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                   { key: 'moment-xy' as ResultView, label: 'Mxy' },
                   { key: 'stress' as ResultView, label: 'Stress' },
                 ]).map(tab => (
-                  <button
+                  <button type="button"
                     key={tab.key}
                     onClick={() => setResultView(tab.key)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -821,7 +821,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                       <BarChart3 className="w-4 h-4 text-violet-400" />
                       Peak Displacements (Top 10)
                     </h3>
-                    <button
+                    <button type="button"
                       onClick={() => {
                         if (!results) return;
                         const csv = ['Node,X (mm),Y (mm),W (mm)',

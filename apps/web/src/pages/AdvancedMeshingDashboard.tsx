@@ -272,7 +272,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <button
+              <button type="button"
                 onClick={generateMesh}
                 disabled={isMeshing}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg transition-colors disabled:opacity-50"
@@ -454,7 +454,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
               </div>
 
               {/* Advanced Settings Toggle */}
-              <button
+              <button type="button"
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="mt-4 w-full flex items-center justify-between p-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
@@ -696,7 +696,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
 
             {/* Quality Metrics */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
-              <button
+              <button type="button"
                 onClick={() => setShowQualityDetails(!showQualityDetails)}
                 className="w-full flex items-center justify-between"
               >
@@ -802,19 +802,19 @@ const AdvancedMeshingDashboard: React.FC = () => {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Download className="w-4 h-4" />
                 Export Mesh
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <RefreshCw className="w-4 h-4" />
                 Remesh Failed
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Sliders className="w-4 h-4" />
                 Local Refinement
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <TrendingUp className="w-4 h-4" />
                 Mesh Sensitivity
               </button>

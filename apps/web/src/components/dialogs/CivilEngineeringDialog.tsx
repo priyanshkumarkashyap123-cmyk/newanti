@@ -118,7 +118,7 @@ export const CivilEngineeringDialog: FC<CivilEngineeringDialogProps> = ({
               </p>
             </div>
           </div>
-          <button
+          <button type="button"
             onClick={onClose}
             className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >
@@ -132,7 +132,7 @@ export const CivilEngineeringDialog: FC<CivilEngineeringDialogProps> = ({
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 min-w-fit flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all whitespace-nowrap

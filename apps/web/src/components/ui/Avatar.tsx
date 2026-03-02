@@ -293,7 +293,7 @@ export const AvatarGroup: React.FC<AvatarGroupProps> = ({
         />
       ))}
       {remainingCount > 0 && (
-        <button
+        <button type="button"
           onClick={onMoreClick}
           className={cn(
             'relative flex items-center justify-center',

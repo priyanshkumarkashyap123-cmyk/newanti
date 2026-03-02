@@ -600,7 +600,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                             { id: 'loads', label: 'Railway Loads', icon: Train },
                             { id: 'results', label: 'Results', icon: Calculator },
                         ].map((tab) => (
-                            <button
+                            <button type="button"
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                                 className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all
@@ -670,7 +670,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3">
                                         {(['MBG', 'HM', 'CooperE80'] as LoadingStandard[]).map((std) => (
-                                            <button
+                                            <button type="button"
                                                 key={std}
                                                 onClick={() => setConfig({ ...config, loadingStandard: std })}
                                                 className={`p-3 rounded-lg border-2 transition-all text-left
@@ -690,7 +690,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                 <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4">
                                     <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Deck Type</h3>
                                     <div className="flex gap-3">
-                                        <button
+                                        <button type="button"
                                             onClick={() => setConfig({ ...config, bridgeType: 'open_deck' })}
                                             className={`flex-1 p-3 rounded-lg border-2 transition-all
                                                 ${config.bridgeType === 'open_deck'
@@ -701,7 +701,7 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
                                             <p className="text-sm font-medium text-slate-900 dark:text-white">Open Deck</p>
                                             <p className="text-xs text-slate-500 dark:text-slate-400">Rails on sleepers</p>
                                         </button>
-                                        <button
+                                        <button type="button"
                                             onClick={() => setConfig({ ...config, bridgeType: 'ballasted_deck' })}
                                             className={`flex-1 p-3 rounded-lg border-2 transition-all
                                                 ${config.bridgeType === 'ballasted_deck'

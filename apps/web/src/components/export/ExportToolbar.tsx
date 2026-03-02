@@ -249,7 +249,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
     return (
         <div className={`flex items-center gap-2 ${className}`}>
             {/* Quick Export Button */}
-            <button
+            <button type="button"
                 onClick={handleQuickExport}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 
                          text-white text-sm font-medium rounded-md transition-colors"
@@ -261,7 +261,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
 
             {/* Dropdown Menu */}
             <div className="relative">
-                <button
+                <button type="button"
                     onClick={() => setIsOpen(!isOpen)}
                     className="flex items-center gap-1 px-2 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                              text-slate-700 dark:text-slate-200 text-sm rounded-md transition-colors border border-slate-600"
@@ -296,7 +296,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                                 {/* Export Options */}
                                 <div className="py-1 max-h-80 overflow-y-auto">
                                     {EXPORT_OPTIONS.map((option) => (
-                                        <button
+                                        <button type="button"
                                             key={option.id}
                                             onClick={() => handleExport(option)}
                                             disabled={exporting !== null}
@@ -325,7 +325,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
 
                                 {/* Additional Actions */}
                                 <div className="py-1">
-                                    <button
+                                    <button type="button"
                                         onClick={handleCopyToClipboard}
                                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 
                                                  transition-colors text-left"
@@ -350,7 +350,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
             </div>
 
             {/* Copy Button */}
-            <button
+            <button type="button"
                 onClick={handleCopyToClipboard}
                 className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 
                          rounded transition-colors"
@@ -393,7 +393,7 @@ export const InlineExportButtons: FC<InlineExportButtonsProps> = ({
     if (compact) {
         return (
             <div className="flex items-center gap-1">
-                <button
+                <button type="button"
                     onClick={() => handleExport('csv')}
                     className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 
                              rounded transition-colors"
@@ -401,7 +401,7 @@ export const InlineExportButtons: FC<InlineExportButtonsProps> = ({
                 >
                     <FileSpreadsheet size={14} />
                 </button>
-                <button
+                <button type="button"
                     onClick={() => handleExport('json')}
                     className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-cyan-400 hover:bg-slate-200 dark:hover:bg-slate-700 
                              rounded transition-colors"
@@ -415,7 +415,7 @@ export const InlineExportButtons: FC<InlineExportButtonsProps> = ({
 
     return (
         <div className="flex items-center gap-2">
-            <button
+            <button type="button"
                 onClick={() => handleExport('csv')}
                 className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                          text-slate-600 dark:text-slate-300 text-xs rounded transition-colors"
@@ -423,7 +423,7 @@ export const InlineExportButtons: FC<InlineExportButtonsProps> = ({
                 <FileSpreadsheet size={12} />
                 CSV
             </button>
-            <button
+            <button type="button"
                 onClick={() => handleExport('json')}
                 className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                          text-slate-600 dark:text-slate-300 text-xs rounded transition-colors"
@@ -431,7 +431,7 @@ export const InlineExportButtons: FC<InlineExportButtonsProps> = ({
                 <FileJson size={12} />
                 JSON
             </button>
-            <button
+            <button type="button"
                 onClick={() => handleExport('staad')}
                 className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                          text-slate-600 dark:text-slate-300 text-xs rounded transition-colors"

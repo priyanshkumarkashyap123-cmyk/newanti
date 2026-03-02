@@ -347,7 +347,7 @@ export function CivilEngineeringDesignCenter() {
               </div>
 
               {/* Visualization Toggle */}
-              <button
+              <button type="button"
                 onClick={() => setShowVisualization(!showVisualization)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   showVisualization
@@ -371,7 +371,7 @@ export function CivilEngineeringDesignCenter() {
               <h2 className="font-semibold text-slate-900 mb-3">Categories</h2>
               <div className="space-y-1">
                 {categories.map((category) => (
-                  <button
+                  <button type="button"
                     key={category.id}
                     onClick={() => setActiveCategory(category.id)}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -404,7 +404,7 @@ export function CivilEngineeringDesignCenter() {
                 {filteredModules.map((module) => {
                   const styles = CATEGORY_STYLES[module.category];
                   return (
-                    <button
+                    <button type="button"
                       key={module.id}
                       onClick={() => setSelectedModule(module.id)}
                       className={`w-full text-left p-3 rounded-lg border transition-all ${
@@ -513,7 +513,7 @@ export function CivilEngineeringDesignCenter() {
                 {/* Quick Access Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
                   {Object.entries(CATEGORY_STYLES).map(([category, styles]) => (
-                    <button
+                    <button type="button"
                       key={category}
                       onClick={() => setActiveCategory(category)}
                       className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${styles.bg} ${styles.border}`}
@@ -561,7 +561,7 @@ export function CivilEngineeringDesignCenter() {
                             </span>
                           </div>
                         </div>
-                        <button
+                        <button type="button"
                           onClick={() => setSelectedModule(result.moduleId)}
                           className="text-blue-600 hover:text-blue-800 text-sm"
                         >
@@ -617,7 +617,7 @@ function FrameAnalysisPanel({
           className="w-full h-24 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
-      <button
+      <button type="button"
         onClick={() =>
           onCalculationComplete({
             moduleId: "frame-analysis",
@@ -708,7 +708,7 @@ function TrussAnalysisPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           const panelLength = span / numNodes;
           const diagonal = Math.sqrt(
@@ -787,7 +787,7 @@ function BeamDesignPanel({
           <option>M40</option>
         </select>
       </div>
-      <button
+      <button type="button"
         onClick={() =>
           onCalculationComplete({
             moduleId: "beam-design",
@@ -913,7 +913,7 @@ function ColumnDesignPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           const kMap: Record<string, number> = {
             "fixed-free": 2.0,
@@ -1022,7 +1022,7 @@ function BearingCapacityPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() =>
           onCalculationComplete({
             moduleId: "bearing-capacity",
@@ -1157,7 +1157,7 @@ function SettlementPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           const gamma = 18;
           const overburden = gamma * (foundationDepth + layerThickness / 2);
@@ -1301,7 +1301,7 @@ function SlopeStabilityPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           const beta = (slopeAngle * Math.PI) / 180;
           const phi = (frictionAngle * Math.PI) / 180;
@@ -1488,7 +1488,7 @@ function PileDesignPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           const d = pileDiameter / 1000;
           const Ab = (Math.PI * d * d) / 4;
@@ -1601,7 +1601,7 @@ function ChannelFlowPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() =>
           onCalculationComplete({
             moduleId: "channel-flow",
@@ -1706,7 +1706,7 @@ function PipeFlowPanel({
           </div>
         )}
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           const d = diameter / 1000;
           if (d <= 0) return; // Guard against zero diameter
@@ -1866,7 +1866,7 @@ function HydrologyPanel({
           </>
         )}
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           if (method === "rational") {
             const Q = (runoffCoeff * rainfall * catchmentArea) / 3.6;
@@ -2013,7 +2013,7 @@ function HydraulicStructuresPanel({
           />
         </div>
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           let Q: number;
           const H = headOverCrest;
@@ -2094,7 +2094,7 @@ function GeometricDesignPanel({
           <option value="mountainous">Mountainous</option>
         </select>
       </div>
-      <button
+      <button type="button"
         onClick={() =>
           onCalculationComplete({
             moduleId: "geometric-design",
@@ -2210,7 +2210,7 @@ function PavementDesignPanel({
           </div>
         )}
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           if (pavementType === "flexible") {
             const subgradeModulus = 10 * cbr;
@@ -2369,7 +2369,7 @@ function TrafficAnalysisPanel({
           </div>
         )}
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           if (analysisType === "los") {
             const capacity = numLanes * 1800;
@@ -2501,7 +2501,7 @@ function TraversePanel({
           </div>
         ))}
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           let sumLat = 0,
             sumDep = 0,
@@ -2635,7 +2635,7 @@ function LevelingPanel({
           </div>
         ))}
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           const rls: number[] = [];
           let hi = benchmarkRL;
@@ -2812,7 +2812,7 @@ function CurveSettingPanel({
           </>
         )}
       </div>
-      <button
+      <button type="button"
         onClick={() => {
           if (curveType === "vertical") {
             const A = Math.abs(grade1 - grade2);

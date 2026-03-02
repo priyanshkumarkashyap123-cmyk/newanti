@@ -454,7 +454,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
       {/* Actions */}
       <div className="flex items-center gap-0.5">
         {config.collapsible && (
-          <button
+          <button type="button"
             onClick={onCollapse}
             className="p-1 rounded hover:bg-slate-600/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             title={state.collapsed ? 'Expand' : 'Collapse'}
@@ -468,7 +468,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
         )}
 
         {/* Pin Button */}
-        <button
+        <button type="button"
           onClick={onPin}
           className={`
             p-1 rounded hover:bg-slate-600/50 transition-colors
@@ -485,7 +485,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
 
         {/* More Menu */}
         <div className="relative">
-          <button
+          <button type="button"
             onClick={() => setMenuOpen(!menuOpen)}
             className="p-1 rounded hover:bg-slate-600/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
@@ -501,7 +501,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
                 className="absolute right-0 top-full mt-1 w-40 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 py-1"
               >
                 {config.floatable && (
-                  <button
+                  <button type="button"
                     onClick={() => { onFloat?.(); setMenuOpen(false); }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                   >
@@ -509,21 +509,21 @@ const PanelHeader: FC<PanelHeaderProps> = ({
                     Float Window
                   </button>
                 )}
-                <button
+                <button type="button"
                   onClick={() => setMenuOpen(false)}
                   className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   <Columns className="w-3 h-3" />
                   Dock Left
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setMenuOpen(false)}
                   className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   <Columns className="w-3 h-3" />
                   Dock Right
                 </button>
-                <button
+                <button type="button"
                   onClick={() => setMenuOpen(false)}
                   className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
@@ -533,7 +533,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
                 {config.closable && (
                   <>
                     <div className="h-px bg-slate-200 dark:bg-slate-700 my-1" />
-                    <button
+                    <button type="button"
                       onClick={() => { onClose?.(); setMenuOpen(false); }}
                       className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-red-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                     >
@@ -549,7 +549,7 @@ const PanelHeader: FC<PanelHeaderProps> = ({
 
         {/* Close Button */}
         {config.closable && (
-          <button
+          <button type="button"
             onClick={onClose}
             className="p-1 rounded hover:bg-red-600/30 text-slate-500 dark:text-slate-400 hover:text-red-400 transition-colors"
             title="Close"
@@ -767,7 +767,7 @@ export const PanelTabBar: FC<PanelTabBarProps> = ({
         const isActive = activePanel === id;
 
         return (
-          <button
+          <button type="button"
             key={id}
             onClick={() => onSelect(id)}
             className={`

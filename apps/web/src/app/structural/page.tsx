@@ -243,7 +243,7 @@ function CalculationTypeSelector({
         return (
           <div key={category.category} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             {/* Category Header */}
-            <button
+            <button type="button"
               onClick={() => toggleCategory(category.category)}
               className="w-full flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
             >
@@ -286,7 +286,7 @@ function CalculationTypeSelector({
                       const isSelected = selectedType === item.type && selectedCode === item.code;
                       
                       return (
-                        <button
+                        <button type="button"
                           key={item.type}
                           onClick={() => onSelect(item.type, item.code)}
                           className={cn(
@@ -388,7 +388,7 @@ function RecentCalculationsList({
           </div>
         ) : (
           calculations.map(calc => (
-            <button
+            <button type="button"
               key={calc.id}
               onClick={() => onSelect(calc)}
               className="w-full p-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
@@ -499,17 +499,17 @@ export default function StructuralDashboard() {
           </div>
           
           <div className="flex items-center gap-2">
-            <button 
+            <button type="button" 
               aria-label="Help and documentation"
               className="p-3 min-h-[44px] min-w-[44px] rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center">
               <HelpCircle className="h-5 w-5 text-slate-500" />
             </button>
-            <button 
+            <button type="button" 
               aria-label="Settings"
               className="p-3 min-h-[44px] min-w-[44px] rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center">
               <Settings className="h-5 w-5 text-slate-500" />
             </button>
-            <button 
+            <button type="button" 
               aria-label="Documentation"
               className="p-3 min-h-[44px] min-w-[44px] rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center">
               <BookOpen className="h-5 w-5 text-slate-500" />
@@ -552,7 +552,7 @@ export default function StructuralDashboard() {
                     { id: 'diagrams', label: 'Diagrams', icon: BarChart3 },
                     { id: 'report', label: 'Report', icon: FileText },
                   ].map(tab => (
-                    <button
+                    <button type="button"
                       key={tab.id}
                       onClick={() => setActiveView(tab.id as any)}
                       className={cn(
@@ -823,11 +823,11 @@ export default function StructuralDashboard() {
                   
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
-                    <button className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                    <button type="button" className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
                       <Download className="h-4 w-4" />
                       Export PDF
                     </button>
-                    <button className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm">
+                    <button type="button" className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm">
                       <Share2 className="h-4 w-4" />
                     </button>
                   </div>

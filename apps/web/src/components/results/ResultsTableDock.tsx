@@ -266,14 +266,14 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
             )}
           </div>
           <div className="flex items-center gap-1">
-            <button
+            <button type="button"
               onClick={() => setIsCollapsed(false)}
               className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
               title="Expand results panel"
             >
               <ChevronUp className="w-3.5 h-3.5" />
             </button>
-            <button
+            <button type="button"
               onClick={onClose}
               className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
               title="Close results panel"
@@ -318,7 +318,7 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
               };
               const colors = tabColors[tab.id] || { active: 'text-blue-400', border: 'border-blue-500' };
               return (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
@@ -368,21 +368,21 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                 className="w-24 h-5 px-1.5 text-[10px] bg-slate-800/50 border border-slate-700/40 rounded text-slate-300 placeholder:text-slate-600 focus:border-blue-500/50 focus:outline-none"
               />
             </div>
-            <button
+            <button type="button"
               onClick={handleExportCSV}
               className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
               title="Export CSV"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
-            <button
+            <button type="button"
               onClick={() => window.print()}
               className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
               title="Print"
             >
               <Printer className="w-3.5 h-3.5" />
             </button>
-            <button
+            <button type="button"
               onClick={() => setIsMaximized(!isMaximized)}
               className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
               title={isMaximized ? "Restore" : "Maximize"}
@@ -393,14 +393,14 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                 <Maximize2 className="w-3.5 h-3.5" />
               )}
             </button>
-            <button
+            <button type="button"
               onClick={() => setIsCollapsed(true)}
               className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
               title="Collapse"
             >
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
-            <button
+            <button type="button"
               onClick={onClose}
               className="p-1 hover:bg-red-500/20 rounded text-slate-400 hover:text-red-400 transition-colors"
               title="Close results panel"

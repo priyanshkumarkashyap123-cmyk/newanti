@@ -168,7 +168,7 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
             { key: 'parameters', label: '⚙️ Analysis Parameters' },
             { key: 'output', label: '📋 Output Options' },
           ] as const).map(t => (
-            <button
+            <button type="button"
               key={t.key}
               onClick={() => setActiveTab(t.key)}
               className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${

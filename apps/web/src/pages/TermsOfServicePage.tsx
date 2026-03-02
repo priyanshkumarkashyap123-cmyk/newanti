@@ -71,7 +71,7 @@ export const TermsOfServicePage = () => {
                             </div>
                         </div>
 
-                        <button
+                        <button type="button"
                             className="md:hidden p-2 text-slate-500 dark:text-slate-300"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         >
@@ -88,7 +88,7 @@ export const TermsOfServicePage = () => {
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Contents</h3>
                         <nav className="space-y-1 border-l border-slate-200 dark:border-slate-700 ml-1">
                             {sections.map((section) => (
-                                <button
+                                <button type="button"
                                     key={section.id}
                                     onClick={() => scrollToSection(section.id)}
                                     className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeSection === section.id

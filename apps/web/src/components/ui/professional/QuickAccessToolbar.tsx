@@ -122,7 +122,7 @@ const QuickToolButton: FC<{
   };
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       disabled={tool.disabled}
       className={`
@@ -234,7 +234,7 @@ const RecentFilesDropdown: FC<{
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1 px-2 py-1 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
       >
@@ -297,10 +297,10 @@ const RecentFilesDropdown: FC<{
 
             {/* Footer */}
             <div className="px-3 py-2 border-t border-slate-200 dark:border-slate-800 flex justify-between">
-              <button className="text-xs text-blue-400 hover:text-blue-300">
+              <button type="button" className="text-xs text-blue-400 hover:text-blue-300">
                 Open File...
               </button>
-              <button className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-400">
+              <button type="button" className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-400">
                 Clear Recent
               </button>
             </div>
@@ -341,7 +341,7 @@ const FileListItem: FC<{
         <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{file.path}</div>
       </div>
       <span className="text-[10px] text-slate-500">{formatTime(file.timestamp)}</span>
-      <button
+      <button type="button"
         onClick={(e) => {
           e.stopPropagation();
           onTogglePinned();
@@ -372,7 +372,7 @@ const Breadcrumbs: FC<{
 
       return (
         <div key={item.id} className="flex items-center">
-          <button
+          <button type="button"
             onClick={item.onClick}
             className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors ${
               isLast 
@@ -416,7 +416,7 @@ const UserMenu: FC<{
 
   return (
     <div className="relative" ref={menuRef}>
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="relative flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
       >
@@ -448,21 +448,21 @@ const UserMenu: FC<{
               <div className="text-xs text-slate-500 dark:text-slate-400">Free Plan</div>
             </div>
             <div className="py-1">
-              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
+              <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
                 <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Account Settings
               </button>
-              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
+              <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
                 <Keyboard className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Keyboard Shortcuts
               </button>
-              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
+              <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800">
                 <HelpCircle className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Help & Support
               </button>
             </div>
             <div className="py-1 border-t border-slate-200 dark:border-slate-800">
-              <button className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:bg-red-500/10">
+              <button type="button" className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-400 hover:bg-red-500/10">
                 Sign Out
               </button>
             </div>
@@ -486,19 +486,19 @@ const WindowControls: FC<{
   isMaximized?: boolean;
 }> = memo(({ onMinimize, onMaximize, onClose, isMaximized }) => (
   <div className="flex items-center ml-2 -mr-1">
-    <button
+    <button type="button"
       onClick={onMinimize}
       className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
     >
       <Minus className="w-3.5 h-3.5" />
     </button>
-    <button
+    <button type="button"
       onClick={onMaximize}
       className="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
     >
       {isMaximized ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
     </button>
-    <button
+    <button type="button"
       onClick={onClose}
       className="p-2 text-slate-500 dark:text-slate-400 hover:text-white hover:bg-red-500"
     >
@@ -543,7 +543,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
       {/* Left Section */}
       <div className="flex items-center gap-2 app-region-no-drag">
         {/* Logo/Home */}
-        <button className="p-1.5 rounded hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
+        <button type="button" className="p-1.5 rounded hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
           <Home className="w-4 h-4 text-blue-400" />
         </button>
 
@@ -606,7 +606,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
         {/* Settings Toggles */}
         <div className="flex items-center gap-1">
           {/* Dark Mode */}
-          <button
+          <button type="button"
             onClick={onToggleDarkMode}
             className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
             title={isDarkMode ? 'Light Mode' : 'Dark Mode'}
@@ -615,7 +615,7 @@ export const QuickAccessToolbar: FC<QuickAccessToolbarProps> = ({
           </button>
 
           {/* Notifications */}
-          <button
+          <button type="button"
             onClick={onToggleNotifications}
             className={`p-1.5 rounded transition-colors ${
               notificationsEnabled 

@@ -339,7 +339,7 @@ export const FoundationDesignPage: React.FC = () => {
                       { value: 'strap', label: 'Strap', icon: Minus },
                       { value: 'mat', label: 'Mat/Raft', icon: Layers }
                     ].map(({ value, label, icon: Icon }) => (
-                      <button
+                      <button type="button"
                         key={value}
                         onClick={() => updateInput('type', value)}
                         className={`py-3 px-4 rounded-lg font-medium transition-colors flex flex-col items-center gap-2 ${
@@ -359,7 +359,7 @@ export const FoundationDesignPage: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Design Code</label>
                   <div className="grid grid-cols-2 gap-2">
-                    <button
+                    <button type="button"
                       onClick={() => updateInput('code', 'IS456')}
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         input.code === 'IS456'
@@ -369,7 +369,7 @@ export const FoundationDesignPage: React.FC = () => {
                     >
                       IS 456
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => updateInput('code', 'ACI318')}
                       className={`py-2 px-4 rounded-lg font-medium transition-colors ${
                         input.code === 'ACI318'
@@ -564,7 +564,7 @@ export const FoundationDesignPage: React.FC = () => {
             </div>
 
             {/* Analyze Button */}
-            <button
+            <button type="button"
               onClick={handleAnalyze}
               disabled={analyzing}
               className="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
@@ -674,7 +674,7 @@ export const FoundationDesignPage: React.FC = () => {
                   )}
 
                   {/* Download Report */}
-                  <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
+                  <button type="button" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
                     <Download className="w-5 h-5" />
                     Download Report
                   </button>

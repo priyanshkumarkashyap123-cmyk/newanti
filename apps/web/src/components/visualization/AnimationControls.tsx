@@ -197,7 +197,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                 {/* Left Controls */}
                 <div className="flex items-center gap-2">
                     {/* Play/Pause */}
-                    <button
+                    <button type="button"
                         onClick={state === 'playing' ? onPause : onPlay}
                         className="p-2.5 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400 transition-colors"
                     >
@@ -209,7 +209,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     </button>
                     
                     {/* Stop */}
-                    <button
+                    <button type="button"
                         onClick={onStop}
                         className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
@@ -217,7 +217,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     </button>
                     
                     {/* Step Backward */}
-                    <button
+                    <button type="button"
                         onClick={onStepBackward}
                         className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors"
                         title="Previous Frame"
@@ -226,7 +226,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     </button>
                     
                     {/* Step Forward */}
-                    <button
+                    <button type="button"
                         onClick={onStepForward}
                         className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors"
                         title="Next Frame"
@@ -268,7 +268,7 @@ const PlaybackControlBar: React.FC<PlaybackControlBarProps> = ({
                     </div>
                     
                     {/* Loop Toggle */}
-                    <button
+                    <button type="button"
                         onClick={onLoopToggle}
                         className={`p-2 rounded-lg transition-colors ${
                             loop 
@@ -315,7 +315,7 @@ const ModeShapeSelector: React.FC<ModeShapeSelectorProps> = ({
             
             <div className="space-y-2 max-h-64 overflow-y-auto">
                 {modes.map(mode => (
-                    <button
+                    <button type="button"
                         key={mode.number}
                         onClick={() => onSelectMode(mode.number)}
                         className={`
@@ -549,7 +549,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                         <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Quality</label>
                         <div className="flex gap-2">
                             {(['low', 'medium', 'high'] as const).map(q => (
-                                <button
+                                <button type="button"
                                     key={q}
                                     onClick={() => onRecordingConfigChange({
                                         ...recordingConfig,
@@ -616,7 +616,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                     </div>
                     
                     {/* Start Recording Button */}
-                    <button
+                    <button type="button"
                         onClick={onStartRecording}
                         className="w-full py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-400 transition-colors flex items-center justify-center gap-2"
                     >
@@ -643,7 +643,7 @@ const RecordingPanel: React.FC<RecordingPanelProps> = ({
                     </div>
                     
                     {/* Stop Recording Button */}
-                    <button
+                    <button type="button"
                         onClick={onStopRecording}
                         className="w-full py-3 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg hover:bg-slate-600 transition-colors flex items-center justify-center gap-2"
                     >
@@ -861,7 +861,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2 rounded-lg transition-colors ${
                             showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-white'
@@ -870,7 +870,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                         <Settings className="w-4 h-4" />
                     </button>
                     
-                    <button
+                    <button type="button"
                         onClick={() => {}}
                         className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg"
                         title="Take Screenshot"
@@ -878,7 +878,7 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                         <Camera className="w-4 h-4" />
                     </button>
                     
-                    <button
+                    <button type="button"
                         onClick={() => setIsFullscreen(!isFullscreen)}
                         className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg"
                     >

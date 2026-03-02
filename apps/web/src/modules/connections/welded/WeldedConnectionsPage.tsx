@@ -108,10 +108,10 @@ export function WeldedConnectionsPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+              <button type="button" className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
                 <BookOpen className="w-5 h-5" />
               </button>
-              <button className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+              <button type="button" className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
                 <HelpCircle className="w-5 h-5" />
               </button>
             </div>
@@ -414,7 +414,7 @@ function FilletWeldPanel() {
             </div>
           </div>
 
-          <button
+          <button type="button"
             onClick={handleCalculate}
             className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-medium 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -675,7 +675,7 @@ function GrooveWeldPanel() {
             </div>
           </div>
 
-          <button
+          <button type="button"
             onClick={handleCalculate}
             className="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium 
                        rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -968,7 +968,7 @@ function BasePlatePanel() {
             </div>
           </div>
 
-          <button
+          <button type="button"
             onClick={handleCalculate}
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium 
                        rounded-lg transition-colors flex items-center justify-center gap-2"

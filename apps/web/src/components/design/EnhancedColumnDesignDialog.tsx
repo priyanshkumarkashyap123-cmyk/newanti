@@ -527,7 +527,7 @@ export function EnhancedColumnDesignDialog({
               { id: 'results', label: 'Results', icon: <FileText className="w-4 h-4" /> },
               { id: 'diagram', label: 'Interaction', icon: <TrendingUp className="w-4 h-4" /> },
             ].map(tab => (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
@@ -558,7 +558,7 @@ export function EnhancedColumnDesignDialog({
                       <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Shape</label>
                       <div className="flex gap-2">
                         {['rectangular', 'circular'].map(shape => (
-                          <button
+                          <button type="button"
                             key={shape}
                             onClick={() => updateInput('shape', shape)}
                             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -695,7 +695,7 @@ export function EnhancedColumnDesignDialog({
                       <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Bracing Condition</label>
                       <div className="flex gap-2">
                         {['braced', 'unbraced'].map(cond => (
-                          <button
+                          <button type="button"
                             key={cond}
                             onClick={() => updateInput('bracingCondition', cond)}
                             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${

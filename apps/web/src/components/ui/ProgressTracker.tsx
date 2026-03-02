@@ -284,7 +284,7 @@ export function ProgressCard({
       {/* Actions */}
       <div className="flex items-center gap-2">
         {state.canCancel && state.status === 'running' && onCancel && (
-          <button
+          <button type="button"
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-red-400 hover:text-red-300 
                        border border-red-500/30 hover:border-red-400/50 rounded-lg transition-colors"
@@ -294,7 +294,7 @@ export function ProgressCard({
         )}
         
         {state.canPause && state.status === 'running' && onPause && (
-          <button
+          <button type="button"
             onClick={onPause}
             className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white 
                        border border-slate-600 hover:border-slate-500 rounded-lg transition-colors"
@@ -304,7 +304,7 @@ export function ProgressCard({
         )}
         
         {state.status === 'paused' && onResume && (
-          <button
+          <button type="button"
             onClick={onResume}
             className="px-4 py-2 text-sm font-medium text-blue-400 hover:text-blue-300 
                        border border-blue-500/30 hover:border-blue-400/50 rounded-lg transition-colors"
@@ -314,7 +314,7 @@ export function ProgressCard({
         )}
         
         {state.status === 'failed' && onRetry && (
-          <button
+          <button type="button"
             onClick={onRetry}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 
                        hover:bg-blue-500 rounded-lg transition-colors"
@@ -508,7 +508,7 @@ export function BackgroundTaskIndicator({
   return (
     <div className={cn('fixed bottom-4 right-4 z-50', className)}>
       {/* Collapsed indicator */}
-      <button
+      <button type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
                    rounded-full shadow-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -537,7 +537,7 @@ export function BackgroundTaskIndicator({
           </div>
           <div className="max-h-64 overflow-y-auto">
             {runningTasks.map((task) => (
-              <button
+              <button type="button"
                 key={task.id}
                 onClick={() => onClick?.(task)}
                 className="w-full p-3 text-left hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors border-b border-slate-200/50 dark:border-slate-700/50 last:border-b-0"

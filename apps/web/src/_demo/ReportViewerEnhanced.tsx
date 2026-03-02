@@ -56,14 +56,14 @@ export const ReportViewerEnhanced: FC = () => {
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     {/* Breadcrumbs */}
                     <nav className="flex items-center gap-2 text-sm mb-3">
-                        <button
+                        <button type="button"
                             onClick={() => navigate('/dashboard')}
                             className="text-steel-blue/60 hover:text-steel-blue transition-colors"
                         >
                             Dashboard
                         </button>
                         <span className="material-symbols-outlined text-steel-blue/40 text-[16px]">chevron_right</span>
-                        <button
+                        <button type="button"
                             onClick={() => navigate('/reports')}
                             className="text-steel-blue/60 hover:text-steel-blue transition-colors"
                         >
@@ -330,7 +330,7 @@ export const ReportViewerEnhanced: FC = () => {
             {/* Floating Action Bar - Hide on print */}
             {showFloatingBar && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-steel-blue shadow-2xl rounded-full px-6 py-3 flex items-center gap-4 z-50 print:hidden">
-                    <button
+                    <button type="button"
                         onClick={handlePrint}
                         className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-accent transition-colors"
                     >
@@ -338,7 +338,7 @@ export const ReportViewerEnhanced: FC = () => {
                         <span className="text-sm font-medium">Print</span>
                     </button>
                     <div className="w-px h-6 bg-white/20"></div>
-                    <button
+                    <button type="button"
                         onClick={handleDownloadPDF}
                         className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-accent transition-colors"
                     >
@@ -346,7 +346,7 @@ export const ReportViewerEnhanced: FC = () => {
                         <span className="text-sm font-medium">Download PDF</span>
                     </button>
                     <div className="w-px h-6 bg-white/20"></div>
-                    <button
+                    <button type="button"
                         onClick={handleShare}
                         className="flex items-center gap-2 text-slate-900 dark:text-white hover:text-accent transition-colors"
                     >
@@ -354,7 +354,7 @@ export const ReportViewerEnhanced: FC = () => {
                         <span className="text-sm font-medium">Share</span>
                     </button>
                     <div className="w-px h-6 bg-white/20"></div>
-                    <button
+                    <button type="button"
                         onClick={() => setShowFloatingBar(false)}
                         className="flex items-center justify-center w-8 h-8 text-white/60 hover:text-slate-900 dark:text-white transition-colors"
                     >

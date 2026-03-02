@@ -347,7 +347,7 @@ export const LoadCombinationPage: React.FC = () => {
                   { code: 'Eurocode', label: 'EN 1990' },
                   { code: 'IBC', label: 'IBC 2021' }
                 ].map(({ code, label }) => (
-                  <button
+                  <button type="button"
                     key={code}
                     onClick={() => setDesignCode(code as DesignCode)}
                     className={`py-2 px-4 rounded-lg font-medium transition-colors ${
@@ -366,7 +366,7 @@ export const LoadCombinationPage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-amber-400">Load Cases</h3>
-                <button
+                <button type="button"
                   onClick={addLoadCase}
                   className="py-2 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
                 >
@@ -404,7 +404,7 @@ export const LoadCombinationPage: React.FC = () => {
                         <option value="earth">Earth</option>
                       </select>
 
-                      <button
+                      <button type="button"
                         onClick={() => removeLoadCase(loadCase.id)}
                         className="p-2 text-red-400 hover:bg-red-900/20 rounded transition-colors"
                       >
@@ -417,7 +417,7 @@ export const LoadCombinationPage: React.FC = () => {
             </div>
 
             {/* Generate Button */}
-            <button
+            <button type="button"
               onClick={generateCombinations}
               disabled={generating || loadCases.length === 0}
               className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
@@ -442,7 +442,7 @@ export const LoadCombinationPage: React.FC = () => {
               <div className="bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-white">Combinations</h2>
-                  <button
+                  <button type="button"
                     onClick={downloadCombinations}
                     className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                   >

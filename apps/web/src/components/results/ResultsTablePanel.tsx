@@ -819,14 +819,14 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
           </div>
 
           {/* Export buttons */}
-          <button
+          <button type="button"
             onClick={handleCopyTable}
             className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
             title="Copy table"
           >
             {copied ? <span className="text-xs text-green-500 font-medium">✓ Copied!</span> : <Copy size={16} />}
           </button>
-          <button
+          <button type="button"
             disabled
             className="p-1.5 text-slate-400 dark:text-slate-500 cursor-not-allowed rounded"
             title="CSV Export: Coming soon"
@@ -839,7 +839,7 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-700">
         {tabs.map((tab) => (
-          <button
+          <button type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors

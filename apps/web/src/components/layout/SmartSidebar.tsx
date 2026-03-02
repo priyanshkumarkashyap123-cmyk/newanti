@@ -93,7 +93,7 @@ const AccordionItem: FC<AccordionItemProps> = ({
 
   return (
     <div className="border-b border-slate-200 dark:border-slate-700">
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
@@ -223,7 +223,7 @@ const TemplateBankPanel: FC = () => {
     <div className="space-y-3">
       {/* Famous Structures Gallery Button - PROMINENT */}
       <div className="p-3 bg-gradient-to-r from-emerald-900/60 to-teal-900/60 border border-emerald-500/40 rounded-lg">
-        <button
+        <button type="button"
           onClick={() => useUIStore.getState().openModal("structureGallery")}
           className="w-full flex items-center justify-between mb-3 group"
         >
@@ -245,7 +245,7 @@ const TemplateBankPanel: FC = () => {
 
         {/* Quick Access - Top 3 Famous Structures */}
         <div className="grid grid-cols-1 gap-1.5">
-          <button
+          <button type="button"
             onClick={async () => {
               const { generateBurjKhalifa } =
                 await import("../../services/StructureFactory");
@@ -258,7 +258,7 @@ const TemplateBankPanel: FC = () => {
             <span>🏢</span>
             <span>Burj Khalifa (60 floors, 1500+ nodes)</span>
           </button>
-          <button
+          <button type="button"
             onClick={async () => {
               const { generateChenabBridge } =
                 await import("../../services/StructureFactory");
@@ -271,7 +271,7 @@ const TemplateBankPanel: FC = () => {
             <span>🌉</span>
             <span>Chenab Bridge (467m arch span)</span>
           </button>
-          <button
+          <button type="button"
             onClick={async () => {
               const { generateGoldenGateBridge } =
                 await import("../../services/StructureFactory");
@@ -297,7 +297,7 @@ const TemplateBankPanel: FC = () => {
       {/* Category Filter */}
       <div className="flex flex-wrap gap-1">
         {categories.slice(0, 5).map((cat) => (
-          <button
+          <button type="button"
             key={cat}
             onClick={() => setSelectedCategory(cat)}
             className={`
@@ -317,7 +317,7 @@ const TemplateBankPanel: FC = () => {
       {/* Templates List */}
       <div className="space-y-1.5">
         {filteredTemplates.map(([key, template]) => (
-          <button
+          <button type="button"
             key={key}
             onClick={() => handleTemplateClick(key, template)}
             disabled={loading !== null}
@@ -385,7 +385,7 @@ const DrawToolsPanel: FC = () => {
                     : undefined
           }
         >
-          <button
+          <button type="button"
             onClick={() => setActiveTool(tool.id)}
             className={`
                             w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
@@ -439,7 +439,7 @@ const EditToolsPanel: FC = () => {
         </div>
         <div className="grid grid-cols-2 gap-1.5">
           <Tooltip content="Select all elements">
-            <button
+            <button type="button"
               onClick={() => selectAll()}
               className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
             >
@@ -448,7 +448,7 @@ const EditToolsPanel: FC = () => {
             </button>
           </Tooltip>
           <Tooltip content="Delete selected elements" shortcut="Del">
-            <button
+            <button type="button"
               onClick={() => deleteSelection()}
               disabled={!hasSelection}
               className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
@@ -470,7 +470,7 @@ const EditToolsPanel: FC = () => {
           Supports
         </div>
         <Tooltip content="Assign boundary conditions (supports/restraints) to selected nodes">
-          <button
+          <button type="button"
             onClick={() =>
               useUIStore.getState().openModal("boundaryConditionsDialog")
             }
@@ -505,7 +505,7 @@ const EditToolsPanel: FC = () => {
           Advanced Select
         </div>
         <Tooltip content="Select by IDs, level, axis, or section">
-          <button
+          <button type="button"
             onClick={() => useUIStore.getState().openModal("selectionToolbar")}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-purple-400 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30"
           >
@@ -521,7 +521,7 @@ const EditToolsPanel: FC = () => {
           Clipboard
         </div>
         <div className="grid grid-cols-3 gap-1.5">
-          <button
+          <button type="button"
             onClick={() => copySelection()}
             disabled={!hasSelection}
             className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
@@ -533,7 +533,7 @@ const EditToolsPanel: FC = () => {
             <Copy className="w-4 h-4" />
             Copy
           </button>
-          <button
+          <button type="button"
             onClick={() => pasteClipboard()}
             disabled={!clipboard}
             className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
@@ -545,7 +545,7 @@ const EditToolsPanel: FC = () => {
             <Clipboard className="w-4 h-4" />
             Paste
           </button>
-          <button
+          <button type="button"
             onClick={() => duplicateSelection()}
             disabled={!hasSelection}
             className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
@@ -566,7 +566,7 @@ const EditToolsPanel: FC = () => {
           Transform
         </div>
         <Tooltip content="Move selection by offset" shortcut="M">
-          <button
+          <button type="button"
             onClick={() => setShowMoveDialog(!showMoveDialog)}
             disabled={!hasSelection}
             className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
@@ -629,7 +629,7 @@ const EditToolsPanel: FC = () => {
                 />
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={() => {
                 moveSelection(moveOffset.x, moveOffset.y, moveOffset.z);
                 setShowMoveDialog(false);
@@ -647,7 +647,7 @@ const EditToolsPanel: FC = () => {
         <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
           Member Operations
         </div>
-        <button
+        <button type="button"
           onClick={() => setShowSplitDialog(!showSplitDialog)}
           disabled={!selectedMemberId}
           className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
@@ -684,7 +684,7 @@ const EditToolsPanel: FC = () => {
                 {(splitRatio * 100).toFixed(0)}% from start
               </div>
             </div>
-            <button
+            <button type="button"
               onClick={() => {
                 splitMemberById(selectedMemberId, splitRatio);
                 setShowSplitDialog(false);
@@ -825,7 +825,7 @@ const AdvancedToolsPanel: FC = () => {
   return (
     <div className="space-y-2">
       {ADVANCED_TOOLS.map((tool) => (
-        <button
+        <button type="button"
           key={tool.id}
           onClick={() =>
             openModal(
@@ -909,7 +909,7 @@ const SectionPickerPanel: FC = () => {
           {codes.map((code) => {
             const isLocked = code.isPro && !isPro;
             return (
-              <button
+              <button type="button"
                 key={code.id}
                 onClick={() => handleCodeChange(code.id)}
                 className={`
@@ -951,7 +951,7 @@ const SectionPickerPanel: FC = () => {
             Get access to AISC 360, Eurocode 3, and more international
             standards.
           </p>
-          <button
+          <button type="button"
             onClick={() => navigate("/pricing")}
             className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium rounded-md hover:opacity-90 transition-opacity"
           >
@@ -967,7 +967,7 @@ const SectionPickerPanel: FC = () => {
         </label>
         <div className="max-h-40 overflow-y-auto space-y-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-2">
           {sections[selectedCode]?.map((section) => (
-            <button
+            <button type="button"
               key={section}
               onClick={() => setSelectedSection(section)}
               className={`
@@ -986,7 +986,7 @@ const SectionPickerPanel: FC = () => {
       </div>
 
       {/* Assign Button */}
-      <button className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-lg transition-colors">
+      <button type="button" className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-lg transition-colors">
         Assign to Selected
       </button>
     </div>
@@ -1036,7 +1036,7 @@ const LoadGeneratorsPanel: FC = () => {
             </select>
           </div>
         </div>
-        <button className="w-full bg-cyan-600/20 text-cyan-400 text-sm py-1.5 rounded hover:bg-cyan-600/30 transition-colors">
+        <button type="button" className="w-full bg-cyan-600/20 text-cyan-400 text-sm py-1.5 rounded hover:bg-cyan-600/30 transition-colors">
           Generate Wind Loads
         </button>
       </div>
@@ -1047,7 +1047,7 @@ const LoadGeneratorsPanel: FC = () => {
           <Download className="w-4 h-4 text-orange-400" />
           <span className="text-sm text-slate-600 dark:text-slate-300">Dead Load (Self Weight)</span>
         </div>
-        <button
+        <button type="button"
           onClick={() => setDeadLoadEnabled(!deadLoadEnabled)}
           className={`w-10 h-5 rounded-full transition-colors ${deadLoadEnabled ? "bg-green-600" : "bg-slate-200 dark:bg-slate-700"}`}
         >
@@ -1081,7 +1081,7 @@ const ManualLoadsPanel: FC = () => {
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
           Click and drag on members to place UDL loads visually
         </p>
-        <button
+        <button type="button"
           onClick={() =>
             setTool(activeTool === "memberLoad" ? "select" : "memberLoad")
           }
@@ -1147,7 +1147,7 @@ const ManualLoadsPanel: FC = () => {
           className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
         />
       </div>
-      <button className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg transition-colors">
+      <button type="button" className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg transition-colors">
         Apply to Selected Node
       </button>
     </div>
@@ -1179,7 +1179,7 @@ const SolverControlsPanel: FC = () => {
 
   return (
     <div className="space-y-3">
-      <button
+      <button type="button"
         onClick={handleRunSolver}
         disabled={isRunning}
         className={`
@@ -1205,7 +1205,7 @@ const SolverControlsPanel: FC = () => {
       </button>
 
       {/* Advanced Analysis Button */}
-      <button
+      <button type="button"
         onClick={() => openModal("advancedAnalysis")}
         className="w-full flex items-center justify-between px-3 py-3 bg-purple-600/20 rounded-lg text-purple-300 hover:bg-purple-600/30 border border-purple-500/30 transition-colors"
       >
@@ -1232,21 +1232,21 @@ const SolverControlsPanel: FC = () => {
         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">
           Advanced Solvers
         </p>
-        <button
+        <button type="button"
           onClick={() => openModal("pDeltaAnalysis")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>P-Delta (Geometric)</span>
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => openModal("modalAnalysis")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Modal / Eigenvalue</span>
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => openModal("bucklingAnalysis")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
@@ -1290,7 +1290,7 @@ const ResultTogglesPanel: FC = () => {
   return (
     <div className="space-y-2">
       {toggles.map((toggle) => (
-        <button
+        <button type="button"
           key={toggle.id}
           onClick={() => toggle.toggle(!toggle.checked)}
           className={`
@@ -1325,7 +1325,7 @@ const DesignChecksPanel: FC = () => {
   return (
     <div className="space-y-3">
       {/* Main Design Dialog Button */}
-      <button
+      <button type="button"
         onClick={() => openModal("designCodes")}
         className="w-full flex items-center justify-between px-3 py-3 bg-blue-600/20 rounded-lg text-blue-300 hover:bg-blue-600/30 border border-blue-500/30 transition-colors"
       >
@@ -1338,7 +1338,7 @@ const DesignChecksPanel: FC = () => {
 
       {/* Individual Design Buttons */}
       <div className="space-y-2 pt-2">
-        <button
+        <button type="button"
           onClick={() => openModal("steelDesign")}
           className="w-full flex items-center justify-between px-3 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1348,7 +1348,7 @@ const DesignChecksPanel: FC = () => {
           </span>
           <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => openModal("concreteDesign")}
           className="w-full flex items-center justify-between px-3 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1358,7 +1358,7 @@ const DesignChecksPanel: FC = () => {
           </span>
           <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => openModal("connectionDesign")}
           className="w-full flex items-center justify-between px-3 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1368,7 +1368,7 @@ const DesignChecksPanel: FC = () => {
           </span>
           <ArrowRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => openModal("foundationDesign")}
           className="w-full flex items-center justify-between px-3 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1382,7 +1382,7 @@ const DesignChecksPanel: FC = () => {
 
       {/* Generate Report */}
       <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-        <button className="w-full flex items-center justify-between px-3 py-3 bg-green-600/20 rounded-lg text-green-300 hover:bg-green-600/30 border border-green-500/30 transition-colors">
+        <button type="button" className="w-full flex items-center justify-between px-3 py-3 bg-green-600/20 rounded-lg text-green-300 hover:bg-green-600/30 border border-green-500/30 transition-colors">
           <span className="flex items-center gap-2">
             <Download className="w-4 h-4" />
             Generate Design Report
@@ -1408,7 +1408,7 @@ const AdvancedDesignToolsPanel: FC = () => {
         Specialized Design
       </p>
 
-      <button
+      <button type="button"
         onClick={() => openModal("detailedDesign")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
       >
@@ -1419,7 +1419,7 @@ const AdvancedDesignToolsPanel: FC = () => {
         <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
       </button>
 
-      <button
+      <button type="button"
         onClick={() => openModal("curvedStructure")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
       >
@@ -1430,7 +1430,7 @@ const AdvancedDesignToolsPanel: FC = () => {
         <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
       </button>
 
-      <button
+      <button type="button"
         onClick={() => openModal("seismicStudio")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
       >
@@ -1441,7 +1441,7 @@ const AdvancedDesignToolsPanel: FC = () => {
         <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
       </button>
 
-      <button
+      <button type="button"
         onClick={() => openModal("generativeDesign")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
       >
@@ -1456,28 +1456,28 @@ const AdvancedDesignToolsPanel: FC = () => {
         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">
           Quick Navigation
         </p>
-        <button
+        <button type="button"
           onClick={() => navigate("/quantity")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Quantity Survey / BBS</span>
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => navigate("/reports")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Reports & Export</span>
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => navigate("/tools/section-database")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Section Database</span>
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => navigate("/materials/database")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
@@ -1500,7 +1500,7 @@ const CivilToolsPanel: FC = () => {
   return (
     <div className="space-y-3">
       {/* Main Civil Engineering Hub */}
-      <button
+      <button type="button"
         onClick={() => openModal("civilEngineering")}
         className="w-full flex items-center justify-between px-3 py-3 bg-green-600/20 rounded-lg text-green-300 hover:bg-green-600/30 border border-green-500/30 transition-colors"
       >
@@ -1515,7 +1515,7 @@ const CivilToolsPanel: FC = () => {
       <div className="space-y-2 pt-2">
         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">Modules</p>
 
-        <button
+        <button type="button"
           onClick={() => openModal("civilEngineering")}
           className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1526,7 +1526,7 @@ const CivilToolsPanel: FC = () => {
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
 
-        <button
+        <button type="button"
           onClick={() => navigate("/civil/hydraulics")}
           className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1537,7 +1537,7 @@ const CivilToolsPanel: FC = () => {
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
 
-        <button
+        <button type="button"
           onClick={() => openModal("civilEngineering")}
           className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1548,7 +1548,7 @@ const CivilToolsPanel: FC = () => {
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
 
-        <button
+        <button type="button"
           onClick={() => openModal("civilEngineering")}
           className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
         >
@@ -1565,21 +1565,21 @@ const CivilToolsPanel: FC = () => {
         <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">
           Quick Navigate
         </p>
-        <button
+        <button type="button"
           onClick={() => navigate("/tools/bar-bending")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Bar Bending Schedule</span>
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => navigate("/quantity")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Quantity Survey</span>
           <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
         </button>
-        <button
+        <button type="button"
           onClick={() => navigate("/design/detailing")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
@@ -1601,7 +1601,7 @@ const AIOptimizationPanel: FC = () => {
 
   return (
     <div className="space-y-2">
-      <button
+      <button type="button"
         onClick={() => openModal("generativeDesign")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-emerald-600/20 rounded-lg text-emerald-300 hover:bg-emerald-600/30 border border-emerald-500/30 transition-colors"
       >
@@ -1612,7 +1612,7 @@ const AIOptimizationPanel: FC = () => {
         <ArrowRight className="w-4 h-4 text-emerald-400" />
       </button>
 
-      <button
+      <button type="button"
         onClick={() => openModal("seismicStudio")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
       >
@@ -1623,7 +1623,7 @@ const AIOptimizationPanel: FC = () => {
         <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
       </button>
 
-      <button
+      <button type="button"
         onClick={() => openModal("designCodes")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors"
       >
@@ -1634,7 +1634,7 @@ const AIOptimizationPanel: FC = () => {
         <ArrowRight className="w-3 h-3 text-slate-500 dark:text-slate-400" />
       </button>
 
-      <button
+      <button type="button"
         onClick={() => navigate("/analysis/sensitivity-optimization")}
         className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
       >
@@ -1680,7 +1680,7 @@ export const SmartSidebar: FC = () => {
         </div>
 
         {/* Quick Search Trigger */}
-        <button
+        <button type="button"
           onClick={() => {
             // Trigger Command Palette
             const event = new KeyboardEvent("keydown", {

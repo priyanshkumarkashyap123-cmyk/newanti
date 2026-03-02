@@ -212,20 +212,20 @@ export default function ReportBuilderPage() {
           </div>
           <div className="flex gap-2">
             {members.size > 0 && (
-              <button onClick={autoFillFromModel} className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors">
+              <button type="button" onClick={autoFillFromModel} className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors">
                 <Zap className="w-4 h-4" />
                 Auto-fill ({members.size} members)
               </button>
             )}
-            <button onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">
+            <button type="button" onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors">
               <Eye className="w-4 h-4" />
               {showPreview ? 'Edit' : 'Preview'}
             </button>
-            <button onClick={() => downloadReport('markdown')} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+            <button type="button" onClick={() => downloadReport('markdown')} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
               <Download className="w-4 h-4" />
               Markdown
             </button>
-            <button onClick={() => downloadReport('html')} className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
+            <button type="button" onClick={() => downloadReport('html')} className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
               <Download className="w-4 h-4" />
               HTML
             </button>
@@ -335,7 +335,7 @@ export default function ReportBuilderPage() {
                           className="w-full px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-xs resize-none"
                         />
                       </div>
-                      <button aria-label="Remove section" onClick={() => removeSection(section.id)} className="p-1 text-red-400 hover:text-red-300">
+                      <button type="button" aria-label="Remove section" onClick={() => removeSection(section.id)} className="p-1 text-red-400 hover:text-red-300">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -357,7 +357,7 @@ export default function ReportBuilderPage() {
                     rows={2}
                     className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm resize-none"
                   />
-                  <button onClick={addSection} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition-colors">
+                  <button type="button" onClick={addSection} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition-colors">
                     Add Section
                   </button>
                 </div>

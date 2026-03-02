@@ -593,7 +593,7 @@ export function HistoryPanel<TState>({
         <ul className="space-y-1 max-h-64 overflow-y-auto">
           {history.map((entry, index) => (
             <li key={entry.id}>
-              <button
+              <button type="button"
                 onClick={() => onJumpTo(index)}
                 className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${index === currentIndex
                     ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
@@ -640,7 +640,7 @@ export function UndoRedoToolbar({
 }: UndoRedoToolbarProps): JSX.Element {
   return (
     <div className={`flex items-center gap-1 ${className}`}>
-      <button
+      <button type="button"
         onClick={onUndo}
         disabled={!canUndo}
         title={undoDescription ? `Undo: ${undoDescription}` : 'Undo'}
@@ -660,7 +660,7 @@ export function UndoRedoToolbar({
         </svg>
       </button>
 
-      <button
+      <button type="button"
         onClick={onRedo}
         disabled={!canRedo}
         title={redoDescription ? `Redo: ${redoDescription}` : 'Redo'}

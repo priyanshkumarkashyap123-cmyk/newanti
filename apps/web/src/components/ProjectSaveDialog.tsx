@@ -374,7 +374,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
 
                 {/* Tabs */}
                 <div className="flex border-b border-slate-200 dark:border-slate-800">
-                    <button
+                    <button type="button"
                         onClick={() => { setActiveTab('save'); setError(null); setSuccess(null); }}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'save'
                             ? 'text-blue-400 border-b-2 border-blue-500'
@@ -384,7 +384,7 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                         <Save className="w-4 h-4 inline mr-2" />
                         Save Project
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => { setActiveTab('load'); setError(null); setSuccess(null); }}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'load'
                             ? 'text-blue-400 border-b-2 border-blue-500'
@@ -525,14 +525,14 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => handleLoad(proj.id, true)}
                                                             className="p-2 text-blue-400 hover:bg-blue-500/20 rounded"
                                                             title="Load"
                                                         >
                                                             <FolderOpen className="w-4 h-4" />
                                                         </button>
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => handleDelete(proj.id, true)}
                                                             className="p-2 text-red-400 hover:bg-red-500/20 rounded"
                                                             title="Delete"
@@ -564,14 +564,14 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => handleLoad(proj.id)}
                                                             className="p-2 text-blue-400 hover:bg-blue-500/20 rounded"
                                                             title="Load"
                                                         >
                                                             <FolderOpen className="w-4 h-4" />
                                                         </button>
-                                                        <button
+                                                        <button type="button"
                                                             onClick={() => handleDelete(proj.id)}
                                                             className="p-2 text-red-400 hover:bg-red-500/20 rounded"
                                                             title="Delete"

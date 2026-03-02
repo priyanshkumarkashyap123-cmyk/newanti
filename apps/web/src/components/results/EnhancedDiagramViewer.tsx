@@ -793,16 +793,16 @@ export const EnhancedDiagramViewer: FC<EnhancedDiagramViewerProps> = ({
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                         onClick={() => setIsFullscreen(!isFullscreen)}
                         className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
                         <Maximize2 className="w-4 h-4" />
                     </button>
-                    <button aria-label="Download" title="Download" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <button type="button" aria-label="Download" title="Download" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         <Download className="w-4 h-4" />
                     </button>
-                    <button aria-label="Copy" title="Copy" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                    <button type="button" aria-label="Copy" title="Copy" className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         <Copy className="w-4 h-4" />
                     </button>
                 </div>

@@ -47,7 +47,7 @@ const ToolButton: FC<ToolButtonProps> = ({
   const Icon = tool.icon;
 
   return (
-    <button
+    <button type="button"
       onClick={onClick}
       className={`
         flex items-center gap-2 px-3 py-2 rounded-md text-sm
@@ -103,7 +103,7 @@ const ToolGroupDropdown: FC<ToolGroupDropdownProps> = ({
 
   return (
     <div className="relative">
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`
           flex items-center gap-1.5 px-2.5 py-1.5 rounded-md
@@ -246,7 +246,7 @@ export const ModelingToolbar: FC = () => {
 
         const Icon = tool.icon;
         return (
-          <button
+          <button type="button"
             key={toolId}
             onClick={() => handleToolSelect(toolId)}
             className={`

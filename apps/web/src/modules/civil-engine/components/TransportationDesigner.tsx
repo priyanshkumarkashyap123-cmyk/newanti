@@ -14,7 +14,7 @@ export function TransportationDesigner() {
 
                 {/* Tabs */}
                 <div className="flex gap-2 mt-6 border-b border-slate-200">
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('highway')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'highway'
                             ? 'border-orange-500 text-orange-600'
@@ -23,7 +23,7 @@ export function TransportationDesigner() {
                     >
                         Highway Design
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('pavement')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pavement'
                             ? 'border-orange-500 text-orange-600'
@@ -32,7 +32,7 @@ export function TransportationDesigner() {
                     >
                         Pavement Design
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('intersection')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'intersection'
                             ? 'border-orange-500 text-orange-600'
@@ -179,7 +179,7 @@ function HighwayDesignPanel() {
                         </div>
                     </div>
 
-                    <button
+                    <button type="button"
                         onClick={calculate}
                         className="w-full py-2.5 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 shadow-sm"
                     >
@@ -223,7 +223,7 @@ function HighwayDesignPanel() {
 
                 {/* Export Action */}
                 {(curveResult || verticalResult) && (
-                    <button
+                    <button type="button"
                         onClick={() => {
                             generateCivilReport(
                                 "Highway Geometric Design Report",
@@ -298,13 +298,13 @@ function PavementDesignPanel() {
                     <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">Pavement Type</label>
                         <div className="flex gap-2">
-                            <button
+                            <button type="button"
                                 onClick={() => setParams({ ...params, type: 'flexible' })}
                                 className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'flexible' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
                             >
                                 Flexible (Bitumen)
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => setParams({ ...params, type: 'rigid' })}
                                 className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'rigid' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
                             >
@@ -367,7 +367,7 @@ function PavementDesignPanel() {
                         </div>
                     </div>
 
-                    <button
+                    <button type="button"
                         onClick={calculate}
                         className="w-full py-2.5 bg-slate-50 dark:bg-slate-900 text-white rounded-lg font-semibold hover:bg-black shadow-sm"
                     >
@@ -518,7 +518,7 @@ function IntersectionAnalysisPanel() {
                         </div>
                     ))}
 
-                    <button
+                    <button type="button"
                         onClick={calculate}
                         className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 shadow-sm"
                     >

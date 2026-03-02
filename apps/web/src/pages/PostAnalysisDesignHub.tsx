@@ -473,7 +473,7 @@ const MemberDesignTable: FC<{
                 </td>
                 <td className="py-2 px-2 text-center">
                   {dr && (
-                    <button
+                    <button type="button"
                       onClick={() => onViewDetail(row.id)}
                       className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors"
                       title="View detailed checks"
@@ -551,7 +551,7 @@ const DesignParametersPanel: FC<{
             <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Design Method</label>
             <div className="flex gap-2">
               {(['LRFD', 'ASD'] as const).map(m => (
-                <button
+                <button type="button"
                   key={m}
                   onClick={() => updateParam('designMethod', m)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -704,7 +704,7 @@ const SectionAssignmentPanel: FC<{
 
   return (
     <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-      <button
+      <button type="button"
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between text-sm font-semibold text-slate-900 dark:text-white"
       >
@@ -734,7 +734,7 @@ const SectionAssignmentPanel: FC<{
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
             {filteredSections.map(s => (
-              <button
+              <button type="button"
                 key={s.designation}
                 onClick={() => onAssign(s.designation)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -775,7 +775,7 @@ const MemberDetailPanel: FC<{
         <h3 className="text-lg font-bold text-slate-900 dark:text-white">{result.memberName}</h3>
         <p className="text-xs text-slate-600 dark:text-slate-400">{result.code} — {result.section}</p>
       </div>
-      <button onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+      <button type="button" onClick={onClose} aria-label="Close" title="Close" className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
         <XCircle className="w-5 h-5" />
       </button>
     </div>
@@ -966,7 +966,7 @@ const ConnectionDesignTab: FC<{
           </h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {supportNodes.map(s => (
-              <button
+              <button type="button"
                 key={s.nodeId}
                 onClick={() => setSelectedSupport(s.nodeId)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -983,7 +983,7 @@ const ConnectionDesignTab: FC<{
               <p className="text-sm text-slate-500 text-center py-4">No support reactions available</p>
             )}
           </div>
-          <button
+          <button type="button"
             onClick={runConnectionDesign}
             disabled={!selectedSupport || loading}
             className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
@@ -1170,7 +1170,7 @@ const FoundationDesignTab: FC<{
           </h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {supportNodes.map(s => (
-              <button
+              <button type="button"
                 key={s.nodeId}
                 onClick={() => setSelectedSupport(s.nodeId)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -1182,7 +1182,7 @@ const FoundationDesignTab: FC<{
               </button>
             ))}
           </div>
-          <button
+          <button type="button"
             onClick={runFoundationDesign}
             disabled={!selectedSupport || loading}
             className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
@@ -1631,7 +1631,7 @@ const PostAnalysisDesignHub: FC = () => {
         <div className="max-w-[1600px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              <button type="button" onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div className="flex items-center gap-3">
@@ -1665,7 +1665,7 @@ const PostAnalysisDesignHub: FC = () => {
         <div className="max-w-[1600px] mx-auto px-6">
           <div className="flex items-center gap-1 overflow-x-auto py-1">
             {TABS.map(tab => (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
@@ -1714,7 +1714,7 @@ const PostAnalysisDesignHub: FC = () => {
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Available Design Codes</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 {DESIGN_CODES.map(code => (
-                  <button
+                  <button type="button"
                     key={code.id}
                     onClick={() => {
                       if (code.material === 'steel') {
@@ -1745,25 +1745,25 @@ const PostAnalysisDesignHub: FC = () => {
             <div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <button onClick={() => { selectAll(true); setActiveTab('steel'); }}
+                <button type="button" onClick={() => { selectAll(true); setActiveTab('steel'); }}
                   className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Columns className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design All Steel</h3>
                   <p className="text-sm text-slate-900/70 dark:text-white/70">Check all members</p>
                 </button>
-                <button onClick={() => setActiveTab('connections')}
+                <button type="button" onClick={() => setActiveTab('connections')}
                   className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Wrench className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design Connections</h3>
                   <p className="text-sm text-slate-900/70 dark:text-white/70">Bolted & welded joints</p>
                 </button>
-                <button onClick={() => setActiveTab('foundations')}
+                <button type="button" onClick={() => setActiveTab('foundations')}
                   className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Building2 className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design Foundations</h3>
                   <p className="text-sm text-slate-900/70 dark:text-white/70">Footings from reactions</p>
                 </button>
-                <button onClick={() => setActiveTab('optimization')}
+                <button type="button" onClick={() => setActiveTab('optimization')}
                   className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Zap className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Optimize Sections</h3>
@@ -1815,7 +1815,7 @@ const PostAnalysisDesignHub: FC = () => {
                 />
 
                 {/* Run Design Button */}
-                <button
+                <button type="button"
                   onClick={runSteelDesign}
                   disabled={isDesigning || !hasAnalysis}
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
@@ -2000,7 +2000,7 @@ const PostAnalysisDesignHub: FC = () => {
                   Automatically find the lightest section that passes all design checks for each member.
                   Iterates through the section database from lightest to heaviest.
                 </p>
-                <button
+                <button type="button"
                   onClick={runOptimization}
                   disabled={isOptimizing || designResults.size === 0}
                   className="w-full py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
@@ -2158,7 +2158,7 @@ const PostAnalysisDesignHub: FC = () => {
                   </div>
 
                   <div className="flex gap-3">
-                    <button
+                    <button type="button"
                       onClick={() => {
                         // Copy report to clipboard
                         const lines = ['STRUCTURAL DESIGN REPORT — BeamLab', ''];

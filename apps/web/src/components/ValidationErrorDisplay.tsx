@@ -124,7 +124,7 @@ export const ValidationErrorDisplay: React.FC<Props> = ({ results, onDismiss, on
           </div>
           
           {onDismiss && (
-            <button
+            <button type="button"
               onClick={onDismiss}
               className="text-slate-500 hover:text-slate-700 ml-2"
               aria-label="Dismiss"
@@ -225,7 +225,7 @@ const IssueCard: React.FC<{
         </div>
         
         {issue.auto_fixable && onAutoFix && (
-          <button
+          <button type="button"
             onClick={() => onAutoFix(issue)}
             className="ml-3 px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded"
           >

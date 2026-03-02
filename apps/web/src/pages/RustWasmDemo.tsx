@@ -49,7 +49,7 @@ export const RustWasmDemo: FC = () => {
             {/* Tab Navigation */}
             <div className="container mx-auto px-6 py-6">
                 <div className="flex gap-2 mb-6">
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('solver')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'solver'
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
@@ -59,7 +59,7 @@ export const RustWasmDemo: FC = () => {
                         <Activity className="w-5 h-5" />
                         WASM Solver Benchmarks
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('renderer')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'renderer'
                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
@@ -69,7 +69,7 @@ export const RustWasmDemo: FC = () => {
                         <Zap className="w-5 h-5" />
                         WebGPU Rendering
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('phase52')}
                         className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${activeTab === 'phase52'
                                 ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
@@ -142,7 +142,7 @@ export const RustWasmDemo: FC = () => {
                         <div className="bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg p-6">
                             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Graphics Engine</h3>
                             <div className="flex gap-4">
-                                <button
+                                <button type="button"
                                     onClick={() => setUseWebGpu(false)}
                                     className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${!useWebGpu
                                             ? 'border-blue-500 bg-blue-500/20 text-slate-900 dark:text-white'
@@ -155,7 +155,7 @@ export const RustWasmDemo: FC = () => {
                                         <div className="text-xs opacity-75">Traditional 3D rendering</div>
                                     </div>
                                 </button>
-                                <button
+                                <button type="button"
                                     onClick={() => setUseWebGpu(true)}
                                     className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${useWebGpu
                                             ? 'border-emerald-500 bg-emerald-500/20 text-slate-900 dark:text-white'

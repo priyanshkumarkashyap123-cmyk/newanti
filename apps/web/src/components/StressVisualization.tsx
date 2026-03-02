@@ -154,7 +154,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
           </div>
           
           {onClose && (
-            <button
+            <button type="button"
               onClick={onClose}
               className="text-slate-500 dark:text-slate-400 hover:text-slate-600 transition-colors"
             >
@@ -190,7 +190,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
               const isActive = stressType === type.id;
               
               return (
-                <button
+                <button type="button"
                   key={type.id}
                   onClick={() => onStressTypeChange?.(type.id)}
                   className={`p-3 rounded-lg border-2 transition-all cursor-pointer hover:scale-105 ${
@@ -344,7 +344,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                 Stress Distribution Along Member
               </label>
-              <button
+              <button type="button"
                 onClick={() => setShowDetails(!showDetails)}
                 className="text-xs text-blue-600 hover:text-blue-700 font-medium"
               >
@@ -501,7 +501,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
 
         {/* Actions */}
         <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <button
+          <button type="button"
             onClick={() => {
               const dataStr = JSON.stringify(results, null, 2);
               const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -516,7 +516,7 @@ const StressVisualization: React.FC<StressVisualizationProps> = ({
           >
             Export Data (JSON)
           </button>
-          <button
+          <button type="button"
             disabled
             className="flex-1 px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-700 dark:from-slate-700 dark:to-slate-800 text-white/60 rounded-lg cursor-not-allowed font-semibold shadow-lg relative group"
             title="PDF report feature coming soon"

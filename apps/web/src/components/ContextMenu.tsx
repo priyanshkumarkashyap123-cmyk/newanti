@@ -155,7 +155,7 @@ function ContextMenu({ items, position, onClose }: ContextMenuProps) {
 
         return (
             <div key={item.id || index} className="relative">
-                <button
+                <button type="button"
                     role="menuitem"
                     tabIndex={-1}
                     aria-disabled={item.disabled}

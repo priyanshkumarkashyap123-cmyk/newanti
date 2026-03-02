@@ -129,7 +129,7 @@ export function PDeltaAnalysisPanel() {
                     </label>
                 </div>
 
-                <button
+                <button type="button"
                     onClick={handleRunAnalysis}
                     disabled={analyzing || store.nodes.size === 0}
                     style={{

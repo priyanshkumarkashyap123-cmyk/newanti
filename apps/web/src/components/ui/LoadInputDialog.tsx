@@ -144,7 +144,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 { id: 'udl', label: 'UDL', icon: '▼▼▼', disabled: !targetMemberId },
                                 { id: 'moment', label: 'Moment', icon: '↺', disabled: !targetNodeId }
                             ].map((type) => (
-                                <button
+                                <button type="button"
                                     key={type.id}
                                     onClick={() => !type.disabled && setLoadType(type.id as LoadType)}
                                     disabled={type.disabled}
@@ -176,7 +176,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                     const icons = { down: ArrowDown, up: ArrowUp, left: ArrowLeft, right: ArrowRight };
                                     const Icon = icons[dir];
                                     return (
-                                        <button
+                                        <button type="button"
                                             key={dir}
                                             onClick={() => setDirection(dir)}
                                             className={`
@@ -204,7 +204,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                             </h3>
                             <div className="grid grid-cols-2 gap-2">
                                 {(['cw', 'ccw'] as Direction[]).map((dir) => (
-                                    <button
+                                    <button type="button"
                                         key={dir}
                                         onClick={() => setDirection(dir)}
                                         className={`
@@ -243,7 +243,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                         {/* Quick magnitude buttons */}
                         <div className="flex gap-2 mt-3">
                             {[5, 10, 20, 50, 100].map((val) => (
-                                <button
+                                <button type="button"
                                     key={val}
                                     onClick={() => setMagnitude(val.toString())}
                                     className={`

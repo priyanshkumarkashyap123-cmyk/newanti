@@ -348,7 +348,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
     onClick,
     disabled = false
 }) => (
-    <button
+    <button type="button"
         onClick={onClick}
         disabled={disabled}
         title={label}
@@ -390,7 +390,7 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
     
     return (
         <div className="relative">
-            <button
+            <button type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2 px-3 py-2 bg-slate-200 dark:bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
             >
@@ -402,7 +402,7 @@ const ViewSelector: React.FC<ViewSelectorProps> = ({ currentView, onViewChange }
             {isOpen && (
                 <div className="absolute top-full left-0 mt-1 w-40 bg-slate-100 dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50">
                     {views.map(view => (
-                        <button
+                        <button type="button"
                             key={view.id}
                             onClick={() => {
                                 onViewChange(view.id);
@@ -455,7 +455,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <Settings className="w-4 h-4 text-cyan-400" />
                     Display Settings
                 </h3>
-                <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <button type="button" onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                     ×
                 </button>
             </div>
@@ -466,7 +466,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Render Mode</label>
                     <div className="grid grid-cols-2 gap-2 mt-2">
                         {(['shaded', 'wireframe', 'shaded-wireframe', 'hidden-line'] as RenderMode[]).map(mode => (
-                            <button
+                            <button type="button"
                                 key={mode}
                                 onClick={() => updateSetting('renderMode', mode)}
                                 className={`px-3 py-2 text-xs rounded-lg transition-colors ${
@@ -578,7 +578,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Background</label>
                     <div className="flex gap-2 mt-2">
                         {['#1e293b', '#0f172a', '#18181b', '#1c1917', '#0c4a6e'].map(color => (
-                            <button
+                            <button type="button"
                                 key={color}
                                 onClick={() => updateSetting('backgroundColor', color)}
                                 className={`w-8 h-8 rounded-lg border-2 transition-colors ${

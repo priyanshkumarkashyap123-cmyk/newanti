@@ -241,7 +241,7 @@ export const SuccessBanner: FC<{
                         )}
                     </div>
                     {onDismiss && (
-                        <button
+                        <button type="button"
                             onClick={onDismiss}
                             className="text-green-400/50 hover:text-green-400 transition-colors"
                         >

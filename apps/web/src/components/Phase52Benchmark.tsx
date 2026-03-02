@@ -83,7 +83,7 @@ export const Phase52Benchmark: React.FC = () => {
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                             Run NAFEMS standard benchmarks to verify element formulation and solver accuracy.
                         </p>
-                        <button 
+                        <button type="button" 
                             onClick={runMacNealHarder}
                             disabled={running}
                             className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium disabled:opacity-50"
@@ -97,7 +97,7 @@ export const Phase52Benchmark: React.FC = () => {
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
                             Test HHT-α implicit integrator with numerical damping on SDOF system.
                         </p>
-                        <button 
+                        <button type="button" 
                             onClick={runHHTAlpha}
                             disabled={running}
                             className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium disabled:opacity-50"

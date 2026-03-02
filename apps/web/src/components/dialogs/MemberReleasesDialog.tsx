@@ -167,7 +167,7 @@ export const MemberReleasesDialog: React.FC<MemberReleasesDialogProps> = ({ isOp
             const key = `${dof}${suffix}` as keyof ReleaseState;
             const isReleased = releases[key];
             return (
-              <button
+              <button type="button"
                 key={key}
                 onClick={() => toggleRelease(key)}
                 className={`flex flex-col items-center gap-1 p-2.5 rounded-lg border-2 transition-all text-xs ${
@@ -211,7 +211,7 @@ export const MemberReleasesDialog: React.FC<MemberReleasesDialogProps> = ({ isOp
             <Label className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">Quick Presets</Label>
             <div className="grid grid-cols-3 gap-2">
               {PRESETS.map(preset => (
-                <button
+                <button type="button"
                   key={preset.label}
                   onClick={() => applyPreset(preset.releases)}
                   title={preset.desc}

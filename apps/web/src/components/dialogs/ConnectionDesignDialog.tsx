@@ -55,7 +55,7 @@ export const ConnectionDesignDialog: FC<ConnectionDesignDialogProps> = ({
               </p>
             </div>
           </div>
-          <button
+          <button type="button"
             onClick={onClose}
             className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
           >

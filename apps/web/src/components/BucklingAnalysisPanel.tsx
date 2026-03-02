@@ -119,7 +119,7 @@ const ModeCard: FC<{
         >
             <div className="flex items-center justify-between mb-2">
                 <span className="font-semibold text-sm">Mode {mode.modeNumber}</span>
-                <button
+                <button type="button"
                     onClick={(e) => { e.stopPropagation(); onVisualize(); }}
                     className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                     title="Visualize mode shape"
@@ -365,7 +365,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                         <Shield className="w-4 h-4" />
                         Buckling Analysis
                     </h3>
-                    <button
+                    <button type="button"
                         onClick={() => setShowCalculator(!showCalculator)}
                         className="text-xs text-blue-500 hover:text-blue-600"
                     >
@@ -386,7 +386,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                             className="w-16 px-2 py-1 border rounded dark:bg-slate-800 dark:border-slate-600"
                         />
                     </label>
-                    <button
+                    <button type="button"
                         onClick={handleRunAnalysis}
                         disabled={isRunning}
                         className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white rounded transition-colors"
@@ -482,7 +482,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
             {/* Footer */}
             {modes.length > 0 && (
                 <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex justify-between">
-                    <button className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700">
+                    <button type="button" className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700">
                         <Download className="w-4 h-4" />
                         Export Results
                     </button>

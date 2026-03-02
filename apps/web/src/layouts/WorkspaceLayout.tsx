@@ -132,7 +132,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                 {/* Left: Logo & Navigation */}
                 <div className="flex items-center gap-3">
                     <Logo size="xs" showLabel href="/" />
-                    <button
+                    <button type="button"
                         onClick={handleGoHome}
                         className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors"
                     >
@@ -145,7 +145,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-2">
-                    <button
+                    <button type="button"
                         onClick={() => setIsChatOpen(!isChatOpen)}
                         className={`p-1.5 rounded transition-colors ${isChatOpen
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600'
@@ -154,7 +154,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                     >
                         <MessageSquare className="w-4 h-4" />
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                         className="p-1.5 rounded text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
                     >

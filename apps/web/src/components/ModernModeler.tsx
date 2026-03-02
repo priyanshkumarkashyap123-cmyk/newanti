@@ -373,7 +373,7 @@ const CategorySwitcher: FC = memo(() => {
         {CATEGORY_TABS.map((tab) => {
           const isActive = activeCategory === tab.id;
           return (
-            <button
+            <button type="button"
               key={tab.id}
               onClick={() => setCategory(tab.id)}
               className={`
@@ -396,7 +396,7 @@ const CategorySwitcher: FC = memo(() => {
       <div className="mx-2 h-6 w-px bg-slate-100 dark:bg-slate-800" />
 
       {/* Direct Structure Gallery Button */}
-      <button
+      <button type="button"
         onClick={() => useUIStore.getState().openModal("structureGallery")}
         className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 text-emerald-400 border border-emerald-500/30 rounded-lg hover:from-emerald-600/30 hover:to-teal-600/30 transition-all"
         title="Browse Famous Structures"
@@ -422,7 +422,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
     if (collapsed) {
       return (
         <div className="w-10 h-full bg-white dark:bg-slate-950 border-l border-slate-800/60 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none transition-all duration-200 ease-in">
-          <button
+          <button type="button"
             onClick={onToggle}
             className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
             title="Show Properties"
@@ -439,7 +439,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
           <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             Properties
           </h3>
-          <button
+          <button type="button"
             onClick={onToggle}
             className="p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
             title="Hide Properties"
@@ -583,7 +583,7 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
         {/* Right Section — Model Info + Backend Status */}
         <div className="flex items-center gap-3">
           {/* Grid/Snap Info */}
-          <button
+          <button type="button"
             onClick={() => toggleSnap()}
             className="flex items-center gap-1.5 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
             title="Click to toggle grid snap"
@@ -637,7 +637,7 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
           {/* Backend Health */}
-          <button
+          <button type="button"
             onClick={onOpenDiagnostics}
             className="flex items-center gap-1.5 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
             title="Click for integration diagnostics"
@@ -3318,28 +3318,28 @@ export const ModernModeler: FC = () => {
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Empty Workspace</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Start building your structural model</p>
                     <div className="grid grid-cols-2 gap-3">
-                      <button
+                      <button type="button"
                         onClick={() => { setCategory('MODELING'); useModelStore.getState().setTool('node'); }}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800 transition-colors"
                       >
                         <Plus className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Draw Nodes</span>
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => openModal('structureWizard')}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-purple-200 dark:border-purple-800 transition-colors"
                       >
                         <Wand2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                         <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Structure Wizard</span>
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => openModal('structureGallery')}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 transition-colors"
                       >
                         <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Gallery</span>
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => openModal('interoperability')}
                         className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-800 transition-colors"
                       >
@@ -3734,7 +3734,7 @@ export const ModernModeler: FC = () => {
           {showAIArchitect && (
             <div className="fixed right-0 top-0 bottom-0 w-[380px] z-40 shadow-2xl">
               <AIArchitectPanel />
-              <button
+              <button type="button"
                 onClick={() => setShowAIArchitect(false)}
                 className="absolute top-3 right-3 p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-slate-800/80 rounded-lg z-50"
                 title="Close AI Architect"
@@ -3804,7 +3804,7 @@ export const ModernModeler: FC = () => {
                       topology
                     </p>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => closeModal("generativeDesign")}
                     className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >
@@ -3836,7 +3836,7 @@ export const ModernModeler: FC = () => {
                       ASCE 7, EC8
                     </p>
                   </div>
-                  <button
+                  <button type="button"
                     onClick={() => closeModal("seismicStudio")}
                     className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
                   >

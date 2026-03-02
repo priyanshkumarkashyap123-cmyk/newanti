@@ -306,21 +306,21 @@ export function IntegratedEngineeringDashboard({
           </div>
           
           <div className="flex items-center gap-3">
-            <button
+            <button type="button"
               onClick={handleRefresh}
               disabled={refreshing}
               className="p-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-slate-200/50 dark:border-slate-700/50 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-5 h-5 text-slate-500 dark:text-slate-400 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
-            <button
+            <button type="button"
               onClick={onRunAnalysis}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-medium transition-all shadow-lg shadow-blue-500/25"
             >
               <Zap className="w-4 h-4" />
               Run Analysis
             </button>
-            <button
+            <button type="button"
               onClick={onExportReport}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-medium transition-colors"
             >
@@ -424,7 +424,7 @@ export function IntegratedEngineeringDashboard({
               { id: 'foundation', label: 'Foundation', icon: <Mountain className="w-4 h-4" /> },
               { id: 'analysis', label: 'Analysis', icon: <Activity className="w-4 h-4" /> },
             ].map((cat) => (
-              <button
+              <button type="button"
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -631,7 +631,7 @@ export function IntegratedEngineeringDashboard({
                 { icon: <Scale className="w-4 h-4" />, label: 'Load Combos', color: 'purple' },
                 { icon: <Settings className="w-4 h-4" />, label: 'Settings', color: 'zinc' },
               ].map((action, i) => (
-                <button
+                <button type="button"
                   key={i}
                   className={`flex items-center gap-2 p-3 rounded-lg text-sm font-medium transition-all ${
                     action.color === 'blue' ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30' :

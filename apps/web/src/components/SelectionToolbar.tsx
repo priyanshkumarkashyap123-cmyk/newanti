@@ -307,7 +307,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
             const active = tab === t.id;
             const styles = TAB_STYLES[t.id];
             return (
-              <button
+              <button type="button"
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors
@@ -352,7 +352,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                     count: plates.size,
                   },
                 ].map((e) => (
-                  <button
+                  <button type="button"
                     key={e.key}
                     onClick={() => {
                       setIdType(e.key);
@@ -416,7 +416,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                   </label>
                   <div className="flex flex-wrap gap-1.5">
                     {uniqueLevels.map((y) => (
-                      <button
+                      <button type="button"
                         key={y}
                         onClick={() => setLevelY(y)}
                         className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
@@ -484,7 +484,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                   { key: "y" as const, label: "Y-Axis", desc: "Columns" },
                   { key: "z" as const, label: "Z-Axis", desc: "Beams (NS)" },
                 ].map((a) => (
-                  <button
+                  <button type="button"
                     key={a.key}
                     onClick={() => setParallel(a.key)}
                     className={`py-3 rounded-lg font-medium transition-all text-center ${
@@ -520,7 +520,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
 
               {/* Property field selector */}
               <div className="flex gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-lg">
-                <button
+                <button type="button"
                   onClick={() => {
                     setPropField("sectionId");
                     setPropValue("");
@@ -533,7 +533,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                 >
                   Section ID
                 </button>
-                <button
+                <button type="button"
                   onClick={() => {
                     setPropField("sectionType");
                     setPropValue("");
@@ -556,7 +556,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {uniqueSections.map((s) => (
-                      <button
+                      <button type="button"
                         key={s}
                         onClick={() => setPropValue(s)}
                         className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
@@ -577,7 +577,7 @@ export const SelectionToolbar: FC<SelectionToolbarProps> = ({
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {uniqueSectionTypes.map((s) => (
-                    <button
+                    <button type="button"
                       key={s}
                       onClick={() => setPropValue(s)}
                       className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${

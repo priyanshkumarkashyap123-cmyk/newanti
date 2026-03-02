@@ -251,7 +251,7 @@ export const ViewportControls: FC<ViewportControlsProps> = ({
             </AnimatePresence>
 
             {/* Expand/Collapse */}
-            <button
+            <button type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-xs flex items-center justify-center gap-1 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700"
             >

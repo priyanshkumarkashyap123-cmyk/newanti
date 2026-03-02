@@ -588,7 +588,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                 const isSelected = flatIndex === selectedIndex;
 
                                 return (
-                                    <button
+                                    <button type="button"
                                         key={cmd.id}
                                         ref={(el) => { if (el) itemRefs.current.set(flatIndex, el); }}
                                         onClick={() => executeCommand(cmd)}

@@ -110,7 +110,7 @@ function RefundCancellationPage() {
             </Link>
 
             {/* Mobile menu button */}
-            <button
+            <button type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden p-2 text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
             >
@@ -156,7 +156,7 @@ function RefundCancellationPage() {
           >
             <div className="lg:sticky lg:top-24">
               {mobileMenuOpen && (
-                <button
+                <button type="button"
                   onClick={() => setMobileMenuOpen(false)}
                   className="lg:hidden mb-4 p-2 text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
                 >
@@ -168,7 +168,7 @@ function RefundCancellationPage() {
               </h3>
               <nav className="space-y-1 max-h-[70vh] overflow-y-auto pr-2">
                 {sections.map((section) => (
-                  <button
+                  <button type="button"
                     key={section.id}
                     onClick={() => scrollToSection(section.id)}
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 group ${

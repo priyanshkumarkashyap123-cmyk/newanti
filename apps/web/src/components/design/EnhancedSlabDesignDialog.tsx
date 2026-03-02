@@ -598,7 +598,7 @@ export function EnhancedSlabDesignDialog({
               { id: 'results', label: 'Results', icon: <FileText className="w-4 h-4" /> },
               { id: 'detailing', label: 'Detailing', icon: <Grid className="w-4 h-4" /> },
             ].map(tab => (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${

@@ -113,7 +113,7 @@ export const ExportDialog: FC<{
                             <div className="flex flex-col gap-4">
                                 <h3 className="text-sm font-medium text-slate-900 dark:text-white">Generate Reports</h3>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             if (projectInfo && nodes && members) {
                                                 showExportFeedback('calcBook', 'loading');
@@ -151,7 +151,7 @@ export const ExportDialog: FC<{
                                         </div>
                                     </button>
 
-                                    <button
+                                    <button type="button"
                                         onClick={() => {
                                             if (projectInfo && nodes && members) {
                                                 showExportFeedback('bom', 'loading');

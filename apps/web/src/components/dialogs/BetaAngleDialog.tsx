@@ -109,7 +109,7 @@ export const BetaAngleDialog: React.FC<BetaAngleDialogProps> = ({ isOpen, onClos
             <Label className="text-xs text-slate-500 dark:text-slate-400 mb-2 block">Quick Presets</Label>
             <div className="grid grid-cols-6 gap-1.5">
               {PRESET_ANGLES.map(preset => (
-                <button
+                <button type="button"
                   key={preset.value}
                   onClick={() => setBetaAngle(preset.value)}
                   title={preset.desc}

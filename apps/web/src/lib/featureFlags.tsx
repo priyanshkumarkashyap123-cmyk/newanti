@@ -525,7 +525,7 @@ export function FeatureFlagsDevTools(): JSX.Element | null {
 
   if (!isOpen) {
     return (
-      <button
+      <button type="button"
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed',
@@ -565,11 +565,11 @@ export function FeatureFlagsDevTools(): JSX.Element | null {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <strong>🚩 Feature Flags</strong>
-        <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>
+        <button type="button" onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>
       </div>
       
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <button
+        <button type="button"
           onClick={() => refresh()}
           disabled={isLoading}
           style={{
@@ -584,7 +584,7 @@ export function FeatureFlagsDevTools(): JSX.Element | null {
         >
           {isLoading ? 'Loading...' : 'Refresh'}
         </button>
-        <button
+        <button type="button"
           onClick={handleClearOverrides}
           style={{
             padding: '4px 8px',

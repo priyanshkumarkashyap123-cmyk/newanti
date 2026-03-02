@@ -331,7 +331,7 @@ const ViewPresetsDropdown: FC<{
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <button type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
         title="View Presets"
@@ -352,7 +352,7 @@ const ViewPresetsDropdown: FC<{
                 return <div key={index} className="h-px bg-slate-200 dark:bg-slate-700 my-1" />;
               }
               return (
-                <button
+                <button type="button"
                   key={preset.id}
                   onClick={() => {
                     onViewChange(preset.id as ViewOrientation);
@@ -517,7 +517,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
       {/* Controls Bar */}
       <div className="flex items-center justify-center gap-1 mt-2">
         {/* Home View */}
-        <button
+        <button type="button"
           onClick={onHomeView || (() => handleFaceClick('iso-front-right'))}
           className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
           title="Home View"
@@ -526,7 +526,7 @@ export const ViewCube: FC<ViewCubeProps> = ({
         </button>
 
         {/* Fit All */}
-        <button
+        <button type="button"
           onClick={onFitAll}
           className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded transition-colors"
           title="Fit All"

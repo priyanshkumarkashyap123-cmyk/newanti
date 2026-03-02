@@ -196,7 +196,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
                             {/* Buttons */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <button
+                                <button type="button"
                                     onClick={this.handleRetry}
                                     style={{
                                         padding: '12px',
@@ -211,7 +211,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                                 >
                                     🔄 Try Again
                                 </button>
-                                <button
+                                <button type="button"
                                     onClick={this.handleClearAndReload}
                                     style={{
                                         padding: '12px',
@@ -228,7 +228,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                                 </button>
                             </div>
 
-                            <button
+                            <button type="button"
                                 onClick={this.handleExportError}
                                 style={{
                                     width: '100%',

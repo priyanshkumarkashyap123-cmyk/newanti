@@ -338,7 +338,7 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                                             className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
                                                         >
                                                             {/* Suggestion Header */}
-                                                            <button
+                                                            <button type="button"
                                                                 onClick={() => setExpandedSuggestion(
                                                                     expandedSuggestion === suggestion.id ? null : suggestion.id
                                                                 )}

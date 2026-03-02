@@ -302,7 +302,7 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
     title="Project Overview" 
     icon={<Building2 className="w-5 h-5" />}
     action={
-      <button className="text-sm text-blue-500 hover:text-blue-600 font-medium">
+      <button type="button" className="text-sm text-blue-500 hover:text-blue-600 font-medium">
         Edit
       </button>
     }
@@ -395,7 +395,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
 
           return (
             <div key={category} className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-              <button
+              <button type="button"
                 onClick={() => setExpanded(isExpanded ? null : category)}
                 className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
@@ -704,7 +704,7 @@ export const EngineeringDashboard: React.FC<DashboardProps> = ({
               >
                 <RefreshCw className={`w-5 h-5 text-slate-500 ${isRefreshing ? 'animate-spin' : ''}`} />
               </motion.button>
-              <button
+              <button type="button"
                 onClick={onSettingsClick}
                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >

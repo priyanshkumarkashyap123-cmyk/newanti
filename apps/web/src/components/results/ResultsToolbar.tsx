@@ -1119,7 +1119,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
     return (
       <>
         <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2">
-          <button
+          <button type="button"
             onClick={() => {
               useUIStore.getState().setCategory("MODELING");
             }}
@@ -1129,7 +1129,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Model</span>
           </button>
-          <button
+          <button type="button"
             onClick={() => setIsExpanded(true)}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             title="Expand results panel"
@@ -1139,7 +1139,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             <Maximize2 className="w-3 h-3" />
           </button>
           {onClose && (
-            <button
+            <button type="button"
               onClick={onClose}
               className="p-2 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
               title="Close results toolbar"
@@ -1182,7 +1182,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <button
+            <button type="button"
               onClick={() => setIsExpanded(false)}
               className="p-1 rounded hover:bg-white/20 transition-colors"
               title="Minimize"
@@ -1190,7 +1190,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               <Minimize2 className="w-4 h-4" />
             </button>
             {onClose && (
-              <button
+              <button type="button"
                 onClick={onClose}
                 className="p-1 rounded hover:bg-white/20 transition-colors"
                 title="Close"
@@ -1202,7 +1202,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
         </div>
 
         {/* Back to Model Button */}
-        <button
+        <button type="button"
           onClick={() => {
             useUIStore.getState().setCategory("MODELING");
           }}
@@ -1225,7 +1225,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               const isActive = activeDiagram === diagram.id;
 
               return (
-                <button
+                <button type="button"
                   key={diagram.id}
                   onClick={() => handleDiagramToggle(diagram.id)}
                   className={`
@@ -1275,7 +1275,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                     gradient: "from-[#22c55e] via-[#3b82f6] via-[#f59e0b] via-[#f97316] to-[#ef4444]",
                   },
                 ].map((type) => (
-                  <button
+                  <button type="button"
                     key={type.id}
                     onClick={() => setHeatmapType(type.id as any)}
                     className={`
@@ -1342,7 +1342,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             Animation
           </h4>
           <div className="flex items-center gap-2">
-            <button
+            <button type="button"
               onClick={toggleAnimation}
               className={`
                             flex items-center gap-2 px-3 py-2 rounded-lg transition-colors flex-1
@@ -1365,7 +1365,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
                 </>
               )}
             </button>
-            <button
+            <button type="button"
               onClick={resetView}
               className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               title="Reset View"
@@ -1478,7 +1478,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
             Export Results
           </h4>
           <div className="flex flex-col gap-2">
-            <button
+            <button type="button"
               onClick={handleExportPDF}
               disabled={isExporting}
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg text-sm font-medium"
@@ -1490,7 +1490,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               )}
               <span>Export PDF Report</span>
             </button>
-            <button
+            <button type="button"
               onClick={handleExportCSV}
               disabled={isExporting}
               className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg transition-all text-sm font-medium"
@@ -1512,7 +1512,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
           </h4>
           <div className="flex flex-col gap-2">
             {/* Member Force Diagrams Button */}
-            <button
+            <button type="button"
               onClick={() => handleOpenMemberDetail()}
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all shadow-lg text-sm"
             >
@@ -1520,21 +1520,21 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               <span className="font-medium">Member Force Diagrams</span>
             </button>
             {/* Full Dashboard Button - Premium feature */}
-            <button
+            <button type="button"
               onClick={() => setShowDashboard(true)}
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all shadow-lg text-sm"
             >
               <LayoutDashboard className="w-4 h-4" />
               <span className="font-medium">Full Results Dashboard</span>
             </button>
-            <button
+            <button type="button"
               onClick={() => openModal("advancedAnalysis")}
               className="flex items-center gap-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors text-sm"
             >
               <Zap className="w-4 h-4" />
               <span className="font-medium">Advanced Analysis</span>
             </button>
-            <button
+            <button type="button"
               onClick={() => openModal("designCodes")}
               className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors text-sm"
             >
@@ -1542,7 +1542,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               <span className="font-medium">Design Code Check</span>
             </button>
             {/* Post-Processing Design Studio — STAAD-Pro-class */}
-            <button
+            <button type="button"
               onClick={() => setShowDesignStudio(true)}
               className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg text-sm"
             >

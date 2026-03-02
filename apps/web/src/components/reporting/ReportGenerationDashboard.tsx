@@ -400,7 +400,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                     { id: 'history', label: 'Report History', icon: Clock },
                     { id: 'schedule', label: 'Scheduled Reports', icon: Calendar }
                 ].map(tab => (
-                    <button
+                    <button type="button"
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as typeof activeTab)}
                         className={`flex items-center space-x-2 px-6 py-3 text-[12px] font-bold uppercase tracking-wider transition-colors ${
@@ -427,7 +427,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
                                 {Object.entries(REPORT_TYPES).map(([type, info]) => (
-                                    <button
+                                    <button type="button"
                                         key={type}
                                         onClick={() => handleTypeChange(type as ReportType)}
                                         className={`group relative p-4 rounded-lg border-2 transition-all ${
@@ -471,7 +471,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             </h3>
                             <div className="flex space-x-3">
                                 {Object.entries(OUTPUT_FORMATS).map(([format, info]) => (
-                                    <button
+                                    <button type="button"
                                         key={format}
                                         onClick={() => handleFormatChange(format as OutputFormat)}
                                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${
@@ -501,7 +501,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {PRESET_TEMPLATES.map(template => (
-                                    <button
+                                    <button type="button"
                                         key={template.id}
                                         onClick={() => {
                                             setSelectedTemplate(template.id);
@@ -555,7 +555,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                         Confidential
                                     </label>
-                                    <button
+                                    <button type="button"
                                         onClick={() => setConfig(prev => ({ ...prev, confidential: !prev.confidential }))}
                                         className={`w-full flex items-center justify-center space-x-2 px-4 py-2 rounded-lg border-2 transition-all ${
                                             config.confidential
@@ -572,7 +572,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
 
                         {/* Advanced Options */}
                         <div className="border border-slate-200 dark:border-slate-700 rounded-lg">
-                            <button
+                            <button type="button"
                                 onClick={() => setShowAdvanced(!showAdvanced)}
                                 className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:bg-slate-800/50"
                             >
@@ -649,7 +649,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                                     onChange={handleLogoUpload}
                                                     className="hidden"
                                                 />
-                                                <button
+                                                <button type="button"
                                                     onClick={() => fileInputRef.current?.click()}
                                                     className="w-full flex items-center justify-center space-x-2 px-3 py-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 transition-colors"
                                                 >
@@ -702,7 +702,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
 
                         {/* Actions */}
                         <div className="flex items-center justify-between pt-5 border-t-2 border-slate-200 dark:border-slate-700">
-                            <button
+                            <button type="button"
                                 onClick={handlePreview}
                                 className="flex items-center space-x-2 px-4 py-2.5 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:bg-slate-800/50 rounded-lg transition-colors text-sm font-medium"
                             >
@@ -711,14 +711,14 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                             </button>
                             
                             <div className="flex items-center space-x-2">
-                                <button
+                                <button type="button"
                                     className="flex items-center space-x-2 px-4 py-2.5 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:bg-slate-800/50 rounded-lg transition-colors text-sm font-medium"
                                 >
                                     <Printer className="w-4 h-4" />
                                     <span>Print</span>
                                 </button>
                                 
-                                <button
+                                <button type="button"
                                     onClick={handleGenerate}
                                     disabled={isGenerating || !analysisComplete}
                                     className={`flex items-center space-x-2 px-8 py-2.5 rounded-lg text-sm font-bold transition-all ${
@@ -781,13 +781,13 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                                         
                                         {report.status === 'ready' && (
                                             <div className="flex items-center space-x-2">
-                                                <button aria-label="Preview report" title="Preview report" className="p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors">
+                                                <button type="button" aria-label="Preview report" title="Preview report" className="p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Eye className="w-5 h-5" />
                                                 </button>
-                                                <button aria-label="Download report" title="Download report" className="p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors">
+                                                <button type="button" aria-label="Download report" title="Download report" className="p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Download className="w-5 h-5" />
                                                 </button>
-                                                <button aria-label="Email report" title="Email report" className="p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors">
+                                                <button type="button" aria-label="Email report" title="Email report" className="p-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 transition-colors">
                                                     <Mail className="w-5 h-5" />
                                                 </button>
                                             </div>
@@ -803,7 +803,7 @@ export const ReportGenerationDashboard: React.FC<ReportGenerationDashboardProps>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Scheduled Reports</h3>
-                            <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <button type="button" className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                                 <Calendar className="w-4 h-4" />
                                 <span>New Schedule</span>
                             </button>

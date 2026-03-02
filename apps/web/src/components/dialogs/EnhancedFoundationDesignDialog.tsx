@@ -758,7 +758,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
               { id: 'results', label: 'Design Results', icon: Target },
               { id: 'details', label: 'Detailed Checks', icon: FileText },
             ].map(tab => (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all ${activeTab === tab.id
@@ -811,7 +811,7 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                     {/* Soil Type Grid */}
                     <div className="grid grid-cols-4 gap-3 mb-4">
                       {SOIL_TYPES.map((soil) => (
-                        <button
+                        <button type="button"
                           key={soil.id}
                           onClick={() => {
                             setSelectedSoilId(soil.id);
@@ -1196,13 +1196,13 @@ export const EnhancedFoundationDesignDialog: FC<EnhancedFoundationDesignDialogPr
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-slate-900 dark:text-white font-semibold">Design Checks ({designResult.checks.length})</h3>
                     <div className="flex items-center gap-2">
-                      <button
+                      <button type="button"
                         onClick={() => setExpandedChecks(new Set(designResult.checks.map(c => c.id)))}
                         className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
                       >
                         Expand All
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => setExpandedChecks(new Set())}
                         className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-lg transition-colors"
                       >

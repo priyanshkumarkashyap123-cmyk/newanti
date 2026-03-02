@@ -378,7 +378,7 @@ const ModeShapeVisualization: React.FC<{
         {/* Mode selector */}
         <div className="flex gap-1">
           {modes.slice(0, 5).map(m => (
-            <button
+            <button type="button"
               key={m.mode}
               onClick={() => onModeSelect(m.mode)}
               className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${
@@ -517,7 +517,7 @@ const SeismicHazardMap: React.FC<{
       {/* Zone info */}
       <div className="grid grid-cols-4 gap-2">
         {zones.map(zone => (
-          <button
+          <button type="button"
             key={zone.id}
             onClick={() => onZoneSelect(zone.id)}
             className={`p-2 rounded-lg text-center transition-all ${
@@ -630,7 +630,7 @@ export const SeismicDesignStudio: React.FC<{
             </div>
           </div>
           
-          <button
+          <button type="button"
             onClick={runAnalysis}
             disabled={isAnalyzing}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-red-600/50 text-white font-medium rounded-xl transition-colors"
@@ -654,7 +654,7 @@ export const SeismicDesignStudio: React.FC<{
           {/* Code Selection */}
           <div className="flex gap-2">
             {SEISMIC_CODES.map(({ code, name }) => (
-              <button
+              <button type="button"
                 key={code}
                 onClick={() => setSelectedCode(code)}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
@@ -673,7 +673,7 @@ export const SeismicDesignStudio: React.FC<{
           {/* Analysis Method */}
           <div className="flex gap-2">
             {ANALYSIS_METHODS.map(({ method, name }) => (
-              <button
+              <button type="button"
                 key={method}
                 onClick={() => setAnalysisMethod(method)}
                 className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
@@ -706,7 +706,7 @@ export const SeismicDesignStudio: React.FC<{
             <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">Soil Type</label>
             <div className="space-y-2">
               {SOIL_TYPES.map(soil => (
-                <button
+                <button type="button"
                   key={soil.type}
                   onClick={() => setParameters(p => ({ ...p, soilType: soil.type }))}
                   className={`w-full flex items-center justify-between p-3 rounded-lg transition-all ${

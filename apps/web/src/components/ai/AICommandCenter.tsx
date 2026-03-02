@@ -360,7 +360,7 @@ export const AICommandCenter: FC = () => {
             {/* Quick Templates */}
             <div className="flex flex-wrap gap-1 mt-2 mb-3">
                 {['warehouse', 'truss', '2-story frame', 'cantilever'].map(template => (
-                    <button
+                    <button type="button"
                         key={template}
                         onClick={() => setPrompt(template)}
                         className="px-2 py-0.5 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded border border-slate-200 dark:border-slate-700 transition-colors"

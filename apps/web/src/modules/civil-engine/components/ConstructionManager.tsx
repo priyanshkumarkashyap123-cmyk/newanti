@@ -21,7 +21,7 @@ export function ConstructionManager() {
 
                 {/* Tabs */}
                 <div className="flex gap-2 mt-6 border-b border-slate-200">
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('schedule')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'schedule'
                             ? 'border-indigo-500 text-indigo-600'
@@ -30,7 +30,7 @@ export function ConstructionManager() {
                     >
                         Schedule (CPM/PERT)
                     </button>
-                    <button
+                    <button type="button"
                         onClick={() => setActiveTab('cost')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'cost'
                             ? 'border-indigo-500 text-indigo-600'
@@ -114,7 +114,7 @@ function SchedulePanel() {
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="px-6 py-4 bg-slate-50 border-b flex justify-between items-center">
                     <h3 className="font-bold text-slate-900">Activity List</h3>
-                    <button onClick={addActivity} className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700">
+                    <button type="button" onClick={addActivity} className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700">
                         + Add Activity
                     </button>
                 </div>
@@ -159,7 +159,7 @@ function SchedulePanel() {
                                         />
                                     </td>
                                     <td className="px-4 py-2 text-center">
-                                        <button onClick={() => deleteActivity(idx)} className="text-red-400 hover:text-red-600 px-1">×</button>
+                                        <button type="button" onClick={() => deleteActivity(idx)} className="text-red-400 hover:text-red-600 px-1">×</button>
                                     </td>
                                 </tr>
                             ))}
@@ -167,7 +167,7 @@ function SchedulePanel() {
                     </table>
                 </div>
                 <div className="px-6 py-3 bg-slate-50 border-t">
-                    <button onClick={calculate} className="w-full py-2 bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700">
+                    <button type="button" onClick={calculate} className="w-full py-2 bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700">
                         Apply Changes & Recalculate
                     </button>
                 </div>
@@ -314,7 +314,7 @@ function CostPanel() {
                         </select>
                     </div>
 
-                    <button
+                    <button type="button"
                         onClick={calculate}
                         className="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 mt-2"
                     >

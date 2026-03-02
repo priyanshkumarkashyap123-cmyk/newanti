@@ -151,7 +151,7 @@ export const DivideMemberDialog: React.FC<DivideMemberDialogProps> = ({ isOpen, 
           {/* Mode selection */}
           <div className="flex gap-2">
             {(['equal', 'custom'] as const).map(m => (
-              <button
+              <button type="button"
                 key={m}
                 onClick={() => setMode(m)}
                 className={`flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-colors ${

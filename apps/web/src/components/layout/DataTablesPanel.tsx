@@ -52,7 +52,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                         </span>
                     ))}
                 </div>
-                <button
+                <button type="button"
                     onClick={onToggleCollapse}
                     className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
                 >
@@ -72,7 +72,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                         const isActive = activeTab === tab.id;
 
                         return (
-                            <button
+                            <button type="button"
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-colors ${isActive
@@ -90,7 +90,7 @@ export const DataTablesPanel: FC<DataTablesPanelProps> = ({
                         );
                     })}
                 </div>
-                <button
+                <button type="button"
                     onClick={onToggleCollapse}
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
                 >

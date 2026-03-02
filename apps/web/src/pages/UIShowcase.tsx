@@ -341,7 +341,7 @@ export const UIShowcase: FC = () => {
                 >
                     <div className="grid grid-cols-3 gap-4">
                         {['New Project', 'Import', 'Settings', 'Help', 'Export', 'Share'].map((action) => (
-                            <button
+                            <button type="button"
                                 key={action}
                                 onClick={sheet.close}
                                 className="p-4 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"

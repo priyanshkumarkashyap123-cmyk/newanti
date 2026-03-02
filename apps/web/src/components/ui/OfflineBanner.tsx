@@ -139,7 +139,7 @@ export const OfflineBanner: FC = () => {
                                     {failedCount} failed
                                 </span>
                             )}
-                            <button
+                            <button type="button"
                                 onClick={handleRetry}
                                 disabled={isSyncing}
                                 className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md bg-amber-700/20 hover:bg-amber-700/30 active:scale-[0.97] transition-all disabled:opacity-50"
@@ -150,7 +150,7 @@ export const OfflineBanner: FC = () => {
                                 />
                                 {isSyncing ? 'Syncing…' : 'Retry'}
                             </button>
-                            <button
+                            <button type="button"
                                 onClick={() => setDismissed(true)}
                                 className="p-1 rounded hover:bg-amber-700/20 transition-colors"
                                 aria-label="Dismiss offline banner"
@@ -181,7 +181,7 @@ export const OfflineBanner: FC = () => {
                             ? `Back online — ${lastSyncResult.synced} change${lastSyncResult.synced !== 1 ? 's' : ''} synced`
                             : 'Back online'
                     }
-                    <button
+                    <button type="button"
                         onClick={() => setShowReconnected(false)}
                         className="ml-2 p-0.5 rounded hover:bg-emerald-500/50 transition-colors"
                         aria-label="Dismiss"

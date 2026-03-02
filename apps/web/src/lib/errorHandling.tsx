@@ -231,7 +231,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         {/* Error Details Toggle */}
         {(error?.stack || errorInfo?.componentStack) && (
           <div className="text-left">
-            <button
+            <button type="button"
               onClick={() => setShowDetails(!showDetails)}
               className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-400 transition-colors mx-auto"
             >

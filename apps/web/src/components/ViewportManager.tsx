@@ -174,7 +174,7 @@ const WebglFallback: FC<{ error?: string }> = ({ error }) => (
         </div>
       )}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <button
+        <button type="button"
           onClick={() => window.location.reload()}
           style={{
             padding: "10px 14px",
@@ -558,7 +558,7 @@ export const ViewportManager: FC = () => {
       >
         {/* Graphics Engine Toggle - Collapsible */}
         {isGEMinimized ? (
-          <button
+          <button type="button"
             onClick={() => setIsGEMinimized(false)}
             style={{
               background: "rgba(0, 0, 0, 0.85)",
@@ -608,7 +608,7 @@ export const ViewportManager: FC = () => {
               >
                 Graphics Engine
               </div>
-              <button
+              <button type="button"
                 onClick={() => setIsGEMinimized(true)}
                 style={{
                   background: "none",
@@ -625,7 +625,7 @@ export const ViewportManager: FC = () => {
               </button>
             </div>
             <div style={{ display: "flex", gap: "4px", marginBottom: "8px" }}>
-              <button
+              <button type="button"
                 onClick={() => setUseWebGpu(false)}
                 style={{
                   flex: 1,
@@ -644,7 +644,7 @@ export const ViewportManager: FC = () => {
                 <Cpu className="w-4 h-4" />
                 <span style={{ fontSize: "10px" }}>WebGL</span>
               </button>
-              <button
+              <button type="button"
                 onClick={() => setUseWebGpu(true)}
                 style={{
                   flex: 1,
@@ -683,7 +683,7 @@ export const ViewportManager: FC = () => {
               Member Display
             </div>
             <div style={{ display: "flex", gap: "4px", marginBottom: "8px" }}>
-              <button
+              <button type="button"
                 onClick={() => setRenderMode3D(false)}
                 style={{
                   flex: 1,
@@ -703,7 +703,7 @@ export const ViewportManager: FC = () => {
                 <GitBranch className="w-4 h-4" />
                 <span style={{ fontSize: "10px" }}>Wire</span>
               </button>
-              <button
+              <button type="button"
                 onClick={() => setRenderMode3D(true)}
                 style={{
                   flex: 1,
@@ -742,7 +742,7 @@ export const ViewportManager: FC = () => {
               Layout
             </div>
             <div style={{ display: "flex", gap: "4px" }}>
-              <button
+              <button type="button"
                 onClick={() => setLayout("SINGLE")}
                 style={{
                   flex: 1,
@@ -764,7 +764,7 @@ export const ViewportManager: FC = () => {
               >
                 Single
               </button>
-              <button
+              <button type="button"
                 onClick={() => setLayout("QUAD")}
                 style={{
                   flex: 1,

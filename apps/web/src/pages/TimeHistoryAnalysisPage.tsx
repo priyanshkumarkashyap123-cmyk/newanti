@@ -433,7 +433,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               { id: 'motion', label: 'Ground Motion', icon: Database },
               { id: 'results', label: 'Results', icon: BarChart3 }
             ].map(({ id, label, icon: Icon }) => (
-              <button
+              <button type="button"
                 key={id}
                 onClick={() => setActiveTab(id as any)}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
@@ -476,7 +476,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     { value: 'wilson-theta', label: 'Wilson-θ', desc: 'Unconditionally stable' },
                     { value: 'central-difference', label: 'Central Diff.', desc: 'Explicit' }
                   ].map(({ value, label, desc }) => (
-                    <button
+                    <button type="button"
                       key={value}
                       onClick={() => updateInput('method', value)}
                       className={`py-3 px-4 rounded-lg font-medium transition-all flex flex-col items-center gap-1 ${
@@ -583,7 +583,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     { value: 'modal', label: 'Modal', desc: 'ξ per mode' },
                     { value: 'caughey', label: 'Caughey', desc: 'Extended Rayleigh' }
                   ].map(({ value, label, desc }) => (
-                    <button
+                    <button type="button"
                       key={value}
                       onClick={() => updateInput('dampingType', value)}
                       className={`py-2 px-3 rounded-lg text-sm transition-all ${
@@ -639,7 +639,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
 
             {/* Run Button & Info Panel */}
             <div className="space-y-6">
-              <button
+              <button type="button"
                 onClick={handleAnalyze}
                 disabled={analyzing}
                 className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-3"
@@ -682,7 +682,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     <span className="text-slate-700 dark:text-slate-300">{selectedMotion.duration}s</span>
                   </div>
                 </div>
-                <button
+                <button type="button"
                   onClick={() => setActiveTab('motion')}
                   className="mt-4 w-full py-2 text-sm text-blue-400 hover:text-blue-300 flex items-center justify-center gap-2"
                 >
@@ -735,7 +735,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {GROUND_MOTION_DATABASE.map((motion) => (
-                  <button
+                  <button type="button"
                     key={motion.id}
                     onClick={() => setSelectedMotion(motion)}
                     className={`p-4 rounded-xl text-left transition-all ${
@@ -814,7 +814,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     Import ground motion from PEER NGA, COSMOS, or custom time-acceleration file
                   </p>
                 </div>
-                <button className="ml-auto px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
+                <button type="button" className="ml-auto px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
                   Browse Files
                 </button>
               </div>
@@ -829,7 +829,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
                 <LineChart className="w-16 h-16 text-slate-500 mx-auto mb-4" />
                 <p className="text-slate-600 dark:text-slate-400">Run analysis to see results</p>
-                <button
+                <button type="button"
                   onClick={() => setActiveTab('input')}
                   className="mt-4 px-4 py-2 text-blue-400 hover:text-blue-300 text-sm"
                 >
@@ -889,11 +889,11 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
 
                 {/* Export Options */}
                 <div className="flex gap-4">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
+                  <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
                     <Download className="w-4 h-4" />
                     Export CSV
                   </button>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
+                  <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700">
                     <FileText className="w-4 h-4" />
                     Generate Report
                   </button>

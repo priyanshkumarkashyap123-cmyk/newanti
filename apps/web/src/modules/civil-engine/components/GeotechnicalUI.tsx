@@ -279,7 +279,7 @@ export function BearingCapacityCalculator() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Analysis Method</label>
               <div className="grid grid-cols-4 gap-2">
                 {(['terzaghi', 'meyerhof', 'hansen', 'vesic'] as const).map(m => (
-                  <button
+                  <button type="button"
                     key={m}
                     onClick={() => setMethod(m)}
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -391,7 +391,7 @@ export function BearingCapacityCalculator() {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={calculate}
               className="w-full py-3 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition-colors"
             >
@@ -643,7 +643,7 @@ export function SettlementCalculator() {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={calculate}
               className="w-full py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700"
             >
@@ -688,7 +688,7 @@ export function SettlementCalculator() {
           <div className="xl:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-900">Soil Profile</h3>
-              <button
+              <button type="button"
                 onClick={addLayer}
                 className="px-3 py-1 bg-orange-100 text-orange-700 rounded text-sm hover:bg-orange-200"
               >
@@ -711,7 +711,7 @@ export function SettlementCalculator() {
                       className="font-medium text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-orange-500 outline-none"
                     />
                     {soilLayers.length > 1 && (
-                      <button
+                      <button type="button"
                         onClick={() => setSoilLayers(soilLayers.filter(l => l.id !== layer.id))}
                         className="text-red-500 hover:text-red-700 text-sm"
                       >
@@ -1215,7 +1215,7 @@ export function SlopeStabilityAnalyzer() {
                   { id: 'fellenius', name: 'Fellenius' },
                   { id: 'bishop', name: 'Bishop' },
                 ].map(m => (
-                  <button
+                  <button type="button"
                     key={m.id}
                     onClick={() => setMethod(m.id as typeof method)}
                     className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
@@ -1300,7 +1300,7 @@ export function SlopeStabilityAnalyzer() {
               </div>
             </div>
 
-            <button
+            <button type="button"
               onClick={analyze}
               className="w-full py-3 bg-stone-600 text-slate-900 dark:text-white rounded-lg font-semibold hover:bg-stone-700"
             >
