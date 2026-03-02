@@ -83,7 +83,7 @@ const Toggle: FC<ToggleProps> = ({ enabled, onChange, label, description, status
                 peer-focus:outline-none
                 after:content-[''] after:absolute after:top-[2px] 
                 ${enabled ? 'after:right-[2px]' : 'after:left-[2px]'}
-                after:bg-white after:border-gray-300 after:border 
+                after:bg-white after:border-slate-300 after:border 
                 after:rounded-full after:h-5 after:w-5 after:transition-all
                 transition-colors
             `} />

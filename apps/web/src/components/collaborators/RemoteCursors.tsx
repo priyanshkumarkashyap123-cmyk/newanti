@@ -33,14 +33,14 @@ const Cursor: React.FC<{ user: RemoteUser }> = ({ user }) => {
             </mesh>
 
             {/* Name Tag */}
-            <Html position={[0, 0.5, 0]} center>
+            <Html position={[0, -0.3, 0]} center>
                 <div
                     style={{
                         backgroundColor: user.color,
                         padding: '2px 6px',
                         borderRadius: '4px',
                         color: 'white',
-                        fontSize: '10px',
+                        fontSize: '12px',
                         fontWeight: 'bold',
                         whiteSpace: 'nowrap',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.2)'

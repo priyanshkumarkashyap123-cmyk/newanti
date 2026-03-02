@@ -151,12 +151,12 @@ export const CivilEngineeringDialog: FC<CivilEngineeringDialogProps> = ({
 
         {/* Content — light-bg wrapper for civil components that use white backgrounds */}
         <div className="flex-1 overflow-auto p-4">
-          <div className="bg-gray-50 rounded-xl p-4 min-h-full">
+          <div className="bg-slate-50 rounded-xl p-4 min-h-full">
             <Suspense
               fallback={
                 <div className="flex items-center justify-center h-64">
                   <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
-                  <span className="ml-3 text-gray-500">
+                  <span className="ml-3 text-slate-500">
                     Loading civil engineering module...
                   </span>
                 </div>

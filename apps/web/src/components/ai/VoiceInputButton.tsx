@@ -55,7 +55,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
                 onClick={() => voiceInput.toggleListening()}
                 className={`relative p-3 rounded-full transition-all ${state.isListening
                     ? 'bg-red-500 text-white animate-pulse'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-slate-900 dark:hover:text-white'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                     } ${className}`}
                 title={state.isListening ? 'Stop listening' : 'Start voice input'}
                 aria-label={state.isListening ? 'Stop listening' : 'Start voice input'}
@@ -81,7 +81,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
 
             {/* Command feedback */}
             {showFeedback && lastCommand && (
-                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white text-sm px-3 py-1 rounded-lg shadow-lg">
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-sm px-3 py-1 rounded-lg shadow-lg">
                     "{lastCommand}"
                 </div>
             )}
@@ -117,15 +117,15 @@ export const VoiceCommandPanel: React.FC<{
 
     if (!voiceInput.isVoiceSupported()) {
         return (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center text-gray-500 dark:text-gray-400">
+            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 text-center text-slate-500 dark:text-slate-400">
                 Voice input not supported in this browser
             </div>
         );
     }
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-700 overflow-hidden">
-            <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+            <div className="px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -153,7 +153,7 @@ export const VoiceCommandPanel: React.FC<{
             <div className="p-4">
                 {/* Quick commands */}
                 <div className="mb-4">
-                    <h4 className="text-gray-500 dark:text-gray-400 text-sm mb-2">Try saying:</h4>
+                    <h4 className="text-slate-500 dark:text-slate-400 text-sm mb-2">Try saying:</h4>
                     <div className="flex flex-wrap gap-2">
                         {[
                             'Add a 6 meter beam',
@@ -162,7 +162,7 @@ export const VoiceCommandPanel: React.FC<{
                             'Run analysis',
                             'Check design'
                         ].map((cmd, i) => (
-                            <span key={i} className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">
+                            <span key={i} className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded">
                                 "{cmd}"
                             </span>
                         ))}
@@ -171,18 +171,18 @@ export const VoiceCommandPanel: React.FC<{
 
                 {/* Command history */}
                 <div>
-                    <h4 className="text-gray-500 dark:text-gray-400 text-sm mb-2">Recent Commands</h4>
+                    <h4 className="text-slate-500 dark:text-slate-400 text-sm mb-2">Recent Commands</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                         {history.length === 0 ? (
-                            <p className="text-gray-500 text-sm">No commands yet</p>
+                            <p className="text-slate-500 text-sm">No commands yet</p>
                         ) : (
                             history.slice().reverse().map(cmd => (
-                                <div key={cmd.id} className="flex items-start gap-2 py-2 border-b border-gray-800 last:border-0">
+                                <div key={cmd.id} className="flex items-start gap-2 py-2 border-b border-slate-800 last:border-0">
                                     <span className={`mt-1 w-2 h-2 rounded-full ${cmd.processed ? 'bg-green-500' : 'bg-yellow-500'}`} />
                                     <div className="flex-1">
                                         <p className="text-white text-sm">"{cmd.transcript}"</p>
                                         {cmd.intent && (
-                                            <p className="text-gray-500 text-xs">
+                                            <p className="text-slate-500 text-xs">
                                                 Action: {cmd.intent.action} → {cmd.intent.target}
                                                 {Object.keys(cmd.intent.parameters).length > 0 && (
                                                     <span className="ml-1">
@@ -192,7 +192,7 @@ export const VoiceCommandPanel: React.FC<{
                                             </p>
                                         )}
                                     </div>
-                                    <span className="text-gray-500 text-xs">
+                                    <span className="text-slate-500 text-xs">
                                         {(cmd.confidence * 100).toFixed(0)}%
                                     </span>
                                 </div>

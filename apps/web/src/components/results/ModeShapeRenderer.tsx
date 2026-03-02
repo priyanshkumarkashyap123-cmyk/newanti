@@ -323,18 +323,18 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
     modeInfo,
 }) => {
     return (
-        <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+        <div className="absolute bottom-4 left-4 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
             {/* Mode Info */}
             {modeInfo && (
-                <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-700">
+                <div className="mb-3 pb-3 border-b border-slate-200 dark:border-slate-700">
                     <div className="text-sm font-medium">Mode {modeInfo.modeNumber}</div>
                     {modeInfo.frequency !== undefined && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-slate-500">
                             f = {modeInfo.frequency.toFixed(3)} Hz
                         </div>
                     )}
                     {modeInfo.period !== undefined && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-slate-500">
                             T = {modeInfo.period.toFixed(3)} s
                         </div>
                     )}
@@ -343,7 +343,7 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
 
             {/* Scale Slider */}
             <div className="mb-3">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
+                <div className="flex justify-between text-xs text-slate-500 mb-1">
                     <span>Scale Factor</span>
                     <span>{scale.toFixed(1)}x</span>
                 </div>
@@ -354,7 +354,7 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
                     step={0.1}
                     value={scale}
                     onChange={(e) => onScaleChange(parseFloat(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700"
                 />
             </div>
 
@@ -366,7 +366,7 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
                         flex-1 px-2 py-1 text-xs rounded transition-colors
                         ${animate 
                             ? 'bg-blue-500 text-white' 
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}
                     `}
                 >
                     {animate ? '⏸ Pause' : '▶ Animate'}
@@ -376,8 +376,8 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
                     className={`
                         flex-1 px-2 py-1 text-xs rounded transition-colors
                         ${showOriginal 
-                            ? 'bg-gray-500 text-slate-900 dark:text-white' 
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}
+                            ? 'bg-slate-500 text-slate-900 dark:text-white' 
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}
                     `}
                 >
                     {showOriginal ? 'Hide Original' : 'Show Original'}
@@ -385,8 +385,8 @@ export const ModeShapeControls: FC<ModeShapeControlsProps> = ({
             </div>
 
             {/* Color Legend */}
-            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-xs text-gray-500 mb-1">Displacement</div>
+            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                <div className="text-xs text-slate-500 mb-1">Displacement</div>
                 <div className="flex items-center gap-2">
                     <div className="text-xs">Min</div>
                     <div 

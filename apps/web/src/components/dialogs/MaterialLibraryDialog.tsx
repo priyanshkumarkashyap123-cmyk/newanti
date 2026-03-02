@@ -84,7 +84,7 @@ const MATERIAL_DATABASE: MaterialDef[] = [
 
 const CATEGORY_COLORS: Record<string, string> = {
   steel: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  concrete: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300',
+  concrete: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300',
   timber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
   aluminum: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-300',
   masonry: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',

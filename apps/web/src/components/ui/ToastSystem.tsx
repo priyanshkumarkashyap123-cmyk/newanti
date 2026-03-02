@@ -96,7 +96,7 @@ export interface ToastContextValue {
 // ============================================================================
 
 const DEFAULT_DURATION = 5000;
-const MAX_TOASTS = 5;
+const MAX_TOASTS = 3;
 const TOAST_GAP = 12;
 
 const DEFAULT_TOAST_OPTIONS: Partial<ToastOptions> = {

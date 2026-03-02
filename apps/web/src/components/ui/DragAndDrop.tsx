@@ -213,14 +213,14 @@ interface DragPreviewProps {
 function DragPreview({ position, item }: DragPreviewProps): JSX.Element {
   return (
     <div
-      className="fixed pointer-events-none z-[9999] bg-white dark:bg-gray-800 shadow-xl rounded-lg px-4 py-2 opacity-90"
+      className="fixed pointer-events-none z-[9999] bg-white dark:bg-slate-800 shadow-xl rounded-lg px-4 py-2 opacity-90"
       style={{
         left: position.x,
         top: position.y,
         transform: 'translate(-50%, -50%)',
       }}
     >
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
         {item.id}
       </span>
     </div>
@@ -445,7 +445,7 @@ export function DragHandle({ children, className = '' }: DragHandleProps): JSX.E
     <span className={`inline-flex cursor-grab active:cursor-grabbing ${className}`}>
       {children || (
         <svg
-          className="w-5 h-5 text-gray-500 dark:text-gray-400"
+          className="w-5 h-5 text-slate-500 dark:text-slate-400"
           fill="currentColor"
           viewBox="0 0 24 24"
         >

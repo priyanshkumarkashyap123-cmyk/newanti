@@ -12,13 +12,13 @@ interface DeterminacyPanelProps {
 
 export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) => {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6 space-y-6">
             {/* Header */}
-            <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div className="border-b border-slate-200 dark:border-slate-700 pb-4">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                     📊 Determinacy Analysis
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                     Complete static and kinematic analysis of structural stability
                 </p>
             </div>
@@ -54,7 +54,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
 
             {/* Static Determinacy */}
             <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <span className="text-xl">🔧</span>
                     Static Determinacy
                 </h3>
@@ -83,7 +83,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
 
             {/* Kinematic Stability */}
             <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <span className="text-xl">🏗️</span>
                     Kinematic Stability
                 </h3>
@@ -103,7 +103,7 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
             {/* Rigid Body Modes */}
             {result.hasRigidBodyModes && result.rigidBodyModes.length > 0 && (
                 <div className="space-y-3">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                         <span className="text-xl">⚠️</span>
                         Rigid Body Modes
                     </h3>
@@ -175,16 +175,16 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
             )}
 
             {/* Theory Reference */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <details className="text-sm text-gray-600 dark:text-gray-400">
-                    <summary className="cursor-pointer font-medium hover:text-gray-900 dark:hover:text-gray-800 dark:text-gray-100">
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+                <details className="text-sm text-slate-600 dark:text-slate-400">
+                    <summary className="cursor-pointer font-medium hover:text-slate-900 dark:hover:text-slate-800 dark:text-slate-100">
                         📚 Theory Reference
                     </summary>
                     <div className="mt-3 space-y-2 pl-4">
-                        <p className="font-mono text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded">
+                        <p className="font-mono text-xs bg-slate-100 dark:bg-slate-900 p-2 rounded">
                             Static Determinacy: DSI = (m + r) - 2j - c
                         </p>
-                        <p className="font-mono text-xs bg-gray-100 dark:bg-gray-900 p-2 rounded">
+                        <p className="font-mono text-xs bg-slate-100 dark:bg-slate-900 p-2 rounded">
                             Kinematic Stability: DKI = freeDOF - memberConstraints
                         </p>
                         <ul className="text-xs space-y-1 list-disc list-inside">
@@ -201,9 +201,9 @@ export const DeterminacyPanel: React.FC<DeterminacyPanelProps> = ({ result }) =>
 
 // Helper Components
 const InfoCard: React.FC<{ label: string; value: number }> = ({ label, value }) => (
-    <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 text-center">
-        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
-        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{label}</p>
+    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-center">
+        <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{label}</p>
     </div>
 );
 

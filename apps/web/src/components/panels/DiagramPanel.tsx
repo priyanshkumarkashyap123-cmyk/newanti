@@ -53,44 +53,44 @@ const styles = {
         display: 'flex',
         flexDirection: 'column' as const,
         height: '100%',
-        backgroundColor: '#1a1a2e',
-        color: '#eee',
+        backgroundColor: '#0f172a',
+        color: '#f1f5f9',
         fontFamily: 'Inter, system-ui, sans-serif',
     },
     header: {
         padding: '12px 16px',
-        borderBottom: '1px solid #333',
-        backgroundColor: '#0f0f1a',
+        borderBottom: '1px solid rgba(71, 85, 105, 0.5)',
+        backgroundColor: '#1e293b',
     },
     title: {
         margin: 0,
         fontSize: '16px',
         fontWeight: 600,
-        color: '#fff',
+        color: '#f8fafc',
     },
     subtitle: {
         margin: '4px 0 0 0',
         fontSize: '12px',
-        color: '#888',
+        color: '#94a3b8',
     },
     tabs: {
         display: 'flex',
-        borderBottom: '1px solid #333',
-        backgroundColor: '#0f0f1a',
+        borderBottom: '1px solid rgba(71, 85, 105, 0.5)',
+        backgroundColor: '#1e293b',
     },
     tab: {
         padding: '10px 16px',
         border: 'none',
         background: 'transparent',
-        color: '#888',
+        color: '#94a3b8',
         fontSize: '13px',
         cursor: 'pointer',
         transition: 'all 0.2s',
         borderBottom: '2px solid transparent',
     },
     tabActive: {
-        color: '#4a9eff',
-        borderBottomColor: '#4a9eff',
+        color: '#3b82f6',
+        borderBottomColor: '#3b82f6',
     },
     content: {
         flex: 1,
@@ -103,14 +103,14 @@ const styles = {
     select: {
         width: '100%',
         padding: '8px 12px',
-        backgroundColor: '#252540',
-        border: '1px solid #444',
+        backgroundColor: '#334155',
+        border: '1px solid #475569',
         borderRadius: '6px',
-        color: '#fff',
+        color: '#f1f5f9',
         fontSize: '14px',
     },
     diagramContainer: {
-        backgroundColor: '#252540',
+        backgroundColor: '#1e293b',
         borderRadius: '8px',
         padding: '16px',
         marginBottom: '16px',
@@ -119,7 +119,7 @@ const styles = {
         fontSize: '14px',
         fontWeight: 500,
         marginBottom: '12px',
-        color: '#ccc',
+        color: '#cbd5e1',
     },
     controls: {
         display: 'flex',
@@ -135,14 +135,14 @@ const styles = {
     checkbox: {
         width: '16px',
         height: '16px',
-        accentColor: '#4a9eff',
+        accentColor: '#3b82f6',
     },
     label: {
         fontSize: '13px',
-        color: '#bbb',
+        color: '#94a3b8',
     },
     designResults: {
-        backgroundColor: '#252540',
+        backgroundColor: '#1e293b',
         borderRadius: '8px',
         padding: '16px',
     },
@@ -152,7 +152,7 @@ const styles = {
         alignItems: 'center',
         padding: '10px 12px',
         marginBottom: '8px',
-        backgroundColor: '#1a1a2e',
+        backgroundColor: '#0f172a',
         borderRadius: '6px',
         borderLeft: '3px solid',
     },
@@ -172,7 +172,7 @@ const styles = {
     utilizationBar: {
         width: '100px',
         height: '6px',
-        backgroundColor: '#333',
+        backgroundColor: '#334155',
         borderRadius: '3px',
         overflow: 'hidden',
         marginRight: '10px',
@@ -193,7 +193,7 @@ const styles = {
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '16px',
-        backgroundColor: '#1a1a2e',
+        backgroundColor: '#0f172a',
         borderRadius: '8px',
         marginBottom: '16px',
     },
@@ -212,20 +212,20 @@ const styles = {
     tableHeader: {
         textAlign: 'left' as const,
         padding: '8px 12px',
-        backgroundColor: '#1a1a2e',
+        backgroundColor: '#0f172a',
         fontSize: '12px',
-        color: '#888',
+        color: '#94a3b8',
         fontWeight: 500,
     },
     tableCell: {
         padding: '10px 12px',
-        borderBottom: '1px solid #333',
+        borderBottom: '1px solid rgba(71, 85, 105, 0.5)',
         fontSize: '13px',
     },
     noData: {
         textAlign: 'center' as const,
         padding: '40px',
-        color: '#666',
+        color: '#64748b',
     },
 };
 
@@ -532,7 +532,7 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
             <div key={check.name} style={{ ...styles.checkRow, ...statusStyle }}>
                 <div>
                     <div style={styles.checkName}>{check.name}</div>
-                    <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
                         {check.description}
                     </div>
                 </div>
@@ -574,7 +574,7 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
                 <div style={styles.overallStatus}>
                     <div>
                         <div style={{ fontSize: '14px', fontWeight: 600 }}>Overall Status</div>
-                        <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+                        <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
                             Max Utilization: {(designResult.overallUtilization * 100).toFixed(1)}%
                         </div>
                     </div>
@@ -591,7 +591,7 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
 
                 {/* Individual Checks */}
                 <div style={{ marginTop: '16px' }}>
-                    <div style={{ fontSize: '13px', color: '#888', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '12px' }}>
                         Design Checks (IS 800:2007)
                     </div>
                     {designResult.checks.map(renderDesignCheck)}
@@ -599,12 +599,12 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
 
                 {/* Recommendations */}
                 {designResult.recommendations && designResult.recommendations.length > 0 && (
-                    <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#1a1a2e', borderRadius: '6px' }}>
-                        <div style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+                    <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#0f172a', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>
                             💡 Recommendations
                         </div>
                         {designResult.recommendations.map((rec, i) => (
-                            <div key={i} style={{ fontSize: '12px', color: '#bbb', marginTop: '4px' }}>
+                            <div key={i} style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '4px' }}>
                                 • {rec}
                             </div>
                         ))}
@@ -613,11 +613,11 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
 
                 {/* Reinforcement Design */}
                 {designResult.reinforcement && (
-                    <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#1a1a2e', borderRadius: '6px' }}>
-                        <div style={{ fontSize: '13px', color: '#888', marginBottom: '8px' }}>
+                    <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#0f172a', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>
                             🔩 Reinforcement Design
                         </div>
-                        <div style={{ fontSize: '12px', color: '#bbb' }}>
+                        <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
                             <div>Main Bars: {designResult.reinforcement.mainBars.count} × Ø{designResult.reinforcement.mainBars.diameter}mm</div>
                             <div>Area: {designResult.reinforcement.mainBars.area.toFixed(0)} mm² ({designResult.reinforcement.mainBars.ratio.toFixed(2)}%)</div>
                             <div>Stirrups: Ø{designResult.reinforcement.stirrups.diameter}mm @ {designResult.reinforcement.stirrups.spacing}mm c/c</div>

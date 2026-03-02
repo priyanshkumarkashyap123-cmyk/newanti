@@ -240,7 +240,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+        <div className="flex flex-col h-full w-[400px] bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xl border border-slate-200 dark:border-slate-700">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                 <div className="flex items-center gap-3">
@@ -410,7 +410,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                             ].map(item => (
                                 <div key={item.label} className="bg-white/50 dark:bg-slate-900/50 rounded-lg p-3 text-center">
                                     <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{item.label}</div>
-                                    <div className={`text-base font-bold font-mono ${item.color}`}>
+                                    <div className={`text-[11px] font-semibold font-sans ${item.color}`}>
                                         {item.value.toFixed(3)}
                                     </div>
                                     <div className="text-xs text-slate-500">{item.unit}</div>
@@ -456,18 +456,20 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                     <div className="flex items-center gap-3 ml-4">
                                         <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full rounded-full transition-all ${check.utilization <= 0.7 ? 'bg-green-500' :
-                                                    check.utilization <= 0.9 ? 'bg-yellow-500' :
-                                                        check.utilization <= 1.0 ? 'bg-orange-500' :
-                                                            'bg-red-500'
+                                            className={`h-full rounded-full transition-all ${check.utilization <= 0.6 ? 'bg-green-500' :
+                                                    check.utilization <= 0.8 ? 'bg-blue-500' :
+                                                        check.utilization <= 0.9 ? 'bg-amber-500' :
+                                                            check.utilization <= 1.0 ? 'bg-orange-500' :
+                                                                'bg-red-500'
                                                     }`}
                                                 style={{ width: `${Math.min(check.utilization * 100, 100)}%` }}
                                             />
                                         </div>
-                                        <span className={`text-sm font-bold font-mono w-14 text-right ${check.utilization <= 0.7 ? 'text-green-400' :
-                                            check.utilization <= 0.9 ? 'text-yellow-400' :
-                                                check.utilization <= 1.0 ? 'text-orange-400' :
-                                                    'text-red-400'
+                                        <span className={`text-sm font-bold font-mono w-14 text-right ${check.utilization <= 0.6 ? 'text-green-400' :
+                                            check.utilization <= 0.8 ? 'text-blue-400' :
+                                                check.utilization <= 0.9 ? 'text-amber-400' :
+                                                    check.utilization <= 1.0 ? 'text-orange-400' :
+                                                        'text-red-400'
                                             }`}>
                                             {(check.utilization * 100).toFixed(1)}%
                                         </span>

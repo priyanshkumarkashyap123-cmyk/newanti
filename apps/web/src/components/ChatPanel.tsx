@@ -309,11 +309,11 @@ export const ChatPanel: FC<ChatPanelProps> = ({ isOpen, onClose, failedMember })
                                 <div className={`max-w-[85%] ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
                                     {/* Avatar */}
                                     <div className={`flex items-start gap-2 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${message.role === 'user' ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-800'
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${message.role === 'user' ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-800'
                                             }`}>
                                             {message.role === 'user'
                                                 ? <User className="w-4 h-4 text-white" />
-                                                : <Bot className="w-4 h-4 text-gray-800 dark:text-white" />
+                                                : <Bot className="w-4 h-4 text-slate-800 dark:text-white" />
                                             }
                                         </div>
 

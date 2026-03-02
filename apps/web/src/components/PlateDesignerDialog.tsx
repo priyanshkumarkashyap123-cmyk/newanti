@@ -125,7 +125,7 @@ export function PlateDesignerDialog({ open, onClose, availableNodes, onPlateCrea
                                     <option key={n.id} value={n.id}>{`Node ${n.id} (${n.x}, ${n.y}, ${n.z})`}</option>
                                 ))}
                             </datalist>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-slate-500">
                                 Select 4 nodes forming a convex quadrilateral.
                             </p>
                         </div>

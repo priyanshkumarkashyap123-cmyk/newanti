@@ -178,16 +178,16 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Dynamic Time History Analysis
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal ml-auto">IS 1893 / ASCE 7</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal ml-auto">IS 1893 / ASCE 7</span>
             </h3>
 
             {/* Ground Motion Selection */}
             <div className="mb-4">
-                <label className="text-xs text-gray-500 mb-1 block">Earthquake Record</label>
+                <label className="text-xs text-slate-500 mb-1 block">Earthquake Record</label>
                 <select
                     value={earthquake}
                     onChange={(e) => setEarthquake(e.target.value)}
-                    className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                    className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                 >
                     {EARTHQUAKE_RECORDS.map(eq => (
                         <option key={eq.id} value={eq.id}>
@@ -199,11 +199,11 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
 
             {/* Structure Type (determines default damping) */}
             <div className="mb-4">
-                <label className="text-xs text-gray-500 mb-1 block">Structure Type (IS 1893 Table 3 Damping)</label>
+                <label className="text-xs text-slate-500 mb-1 block">Structure Type (IS 1893 Table 3 Damping)</label>
                 <select
                     value={structureType}
                     onChange={(e) => handleStructureTypeChange(e.target.value)}
-                    className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                    className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                 >
                     {Object.entries(STRUCTURE_DAMPING).map(([key, val]) => (
                         <option key={key} value={key}>
@@ -211,7 +211,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         </option>
                     ))}
                 </select>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     {STRUCTURE_DAMPING[structureType]?.description}
                 </div>
             </div>
@@ -219,23 +219,23 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
             <div className="grid grid-cols-2 gap-4 mb-4">
                 {/* Scale Factor */}
                 <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Scale Factor</label>
+                    <label className="text-xs text-slate-500 mb-1 block">Scale Factor</label>
                     <input
                         type="number"
                         step="0.1"
                         min="0.1"
                         value={scaleFactor}
                         onChange={(e) => setScaleFactor(parseFloat(e.target.value) || 1.0)}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     />
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         Scaled PGA: {((selectedEq?.pga || 0) * scaleFactor).toFixed(2)} m/s² ({(((selectedEq?.pga || 0) * scaleFactor) / 9.81).toFixed(2)}g)
                     </div>
                 </div>
 
                 {/* Damping Ratio (override) */}
                 <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Damping Ratio (ξ)</label>
+                    <label className="text-xs text-slate-500 mb-1 block">Damping Ratio (ξ)</label>
                     <input
                         type="number"
                         step="0.005"
@@ -243,26 +243,26 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         max="0.25"
                         value={dampingRatio}
                         onChange={(e) => setDampingRatio(parseFloat(e.target.value) || 0.05)}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     />
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         {(dampingRatio * 100).toFixed(1)}% critical damping
                     </div>
                 </div>
 
                 {/* Time Step */}
                 <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Time Step Δt (s)</label>
+                    <label className="text-xs text-slate-500 mb-1 block">Time Step Δt (s)</label>
                     <select
                         value={dt}
                         onChange={(e) => setDt(parseFloat(e.target.value))}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     >
                         <option value={0.005}>0.005 s (Fine — high frequency)</option>
                         <option value={0.01}>0.01 s (Standard)</option>
                         <option value={0.02}>0.02 s (Coarse — low frequency)</option>
                     </select>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                         Steps: ~{Math.ceil((selectedEq?.duration || 40) / dt).toLocaleString()}
                     </div>
                 </div>
@@ -270,16 +270,16 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                 {/* Modes (for modal method) */}
                 {analysisMethod === 'modal' && (
                     <div>
-                        <label className="text-xs text-gray-500 mb-1 block">Number of Modes</label>
+                        <label className="text-xs text-slate-500 mb-1 block">Number of Modes</label>
                         <input
                             type="number"
                             min={3}
                             max={50}
                             value={numModes}
                             onChange={(e) => setNumModes(parseInt(e.target.value) || 12)}
-                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                         />
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                             IS 1893 Cl.7.8.4.2: ≥90% mass participation
                         </div>
                     </div>
@@ -288,13 +288,13 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
 
             {/* Analysis Method */}
             <div className="mb-4">
-                <label className="text-xs text-gray-500 mb-2 block">Integration Method</label>
+                <label className="text-xs text-slate-500 mb-2 block">Integration Method</label>
                 <div className="grid grid-cols-2 gap-2">
                     <button
                         onClick={() => setAnalysisMethod('newmark')}
                         className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'newmark'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
-                            : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
+                            : 'border-slate-200 hover:border-slate-300 dark:border-slate-600'
                             }`}
                     >
                         <div>Newmark-β (Direct)</div>
@@ -304,7 +304,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                         onClick={() => setAnalysisMethod('modal')}
                         className={`px-3 py-2 rounded text-xs font-medium border-2 transition-all ${analysisMethod === 'modal'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20'
-                            : 'border-gray-200 hover:border-gray-300 dark:border-gray-600'
+                            : 'border-slate-200 hover:border-slate-300 dark:border-slate-600'
                             }`}
                     >
                         <div>Modal Superposition</div>
@@ -318,7 +318,7 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                 onClick={handleRunAnalysis}
                 disabled={isRunning}
                 className={`w-full py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all ${isRunning
-                    ? 'bg-gray-300 cursor-not-allowed dark:bg-gray-700'
+                    ? 'bg-slate-300 cursor-not-allowed dark:bg-slate-700'
                     : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     }`}
             >
@@ -393,14 +393,14 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                                 <strong>Duration:</strong> {results.ground_motion?.duration?.toFixed(1)} s
                             </div>
                             <div className="grid grid-cols-2 gap-2 mt-3">
-                                <div className="p-2 bg-white dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-800">
-                                    <div className="text-xs text-gray-500">Max Displacement</div>
+                                <div className="p-2 bg-white dark:bg-slate-800 rounded border border-emerald-200 dark:border-emerald-800">
+                                    <div className="text-xs text-slate-500">Max Displacement</div>
                                     <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                                         {(results.max_displacement * 1000).toFixed(2)} mm
                                     </div>
                                 </div>
-                                <div className="p-2 bg-white dark:bg-gray-800 rounded border border-emerald-200 dark:border-emerald-800">
-                                    <div className="text-xs text-gray-500">Steps</div>
+                                <div className="p-2 bg-white dark:bg-slate-800 rounded border border-emerald-200 dark:border-emerald-800">
+                                    <div className="text-xs text-slate-500">Steps</div>
                                     <div className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                                         {results.num_steps}
                                     </div>
@@ -408,8 +408,8 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
                             </div>
 
                             {/* Time History Response Chart */}
-                            <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Control Point Displacement (mm)</h5>
+                            <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                <h5 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">Control Point Displacement (mm)</h5>
                                 <div className="h-48 relative">
                                     <svg width="100%" height="100%" viewBox="0 0 400 150" className="overflow-visible">
                                         {/* Grid Lines */}
@@ -467,8 +467,8 @@ export const TimeHistoryPanel: FC<TimeHistoryPanelProps> = ({ isPro: _isPro }) =
 
                         {
                             results.analysis_type === 'spectrum' && (
-                                <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                    <h5 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3">Response Spectrum</h5>
+                                <div className="mt-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                                    <h5 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-3">Response Spectrum</h5>
                                     <div className="h-48 relative">
                                         <svg width="100%" height="100%" viewBox="0 0 400 150">
                                             {/* Grid */}

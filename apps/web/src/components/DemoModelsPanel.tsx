@@ -54,7 +54,7 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
             case 'intermediate': return 'bg-blue-500';
             case 'advanced': return 'bg-orange-500';
             case 'expert': return 'bg-red-500';
-            default: return 'bg-gray-500';
+            default: return 'bg-slate-500';
         }
     };
 

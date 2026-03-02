@@ -254,7 +254,7 @@ export function OptimizedImage({
       {placeholder === 'skeleton' && !isLoaded && (
         <div
           style={placeholderStyle}
-          className="animate-pulse bg-gray-200 dark:bg-gray-700"
+          className="animate-pulse bg-slate-200 dark:bg-slate-700"
         />
       )}
 
@@ -280,7 +280,7 @@ export function OptimizedImage({
       {/* Error State */}
       {isError && (
         <div
-          className="flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+          className="flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
           style={{ width: '100%', height: '100%' }}
         >
           <svg
@@ -376,7 +376,7 @@ export function BackgroundImage({
     >
       {/* Loading skeleton */}
       {!isLoaded && (
-        <div className="absolute inset-0 animate-pulse bg-gray-200 dark:bg-gray-700" />
+        <div className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" />
       )}
       
       {/* Overlay */}

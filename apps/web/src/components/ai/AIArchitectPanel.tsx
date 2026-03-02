@@ -1109,9 +1109,9 @@ export const AIArchitectPanel: FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-900">
+    <div className="h-full flex flex-col w-[380px] bg-white dark:bg-slate-900">
       {/* Header with Dual AI branding */}
-      <div className="px-3 py-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg">
@@ -1600,8 +1600,8 @@ export const AIArchitectPanel: FC = () => {
                   <div
                     className={`max-w-[80%] px-3 py-2 rounded-lg text-xs ${
                       msg.role === "user"
-                        ? "bg-purple-600 text-white"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-200 border border-slate-200 dark:border-slate-700"
+                        ? "bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-l-2 border-blue-500"
                     }`}
                   >
                     {msg.content}

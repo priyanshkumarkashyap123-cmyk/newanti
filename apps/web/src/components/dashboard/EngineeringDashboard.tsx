@@ -127,12 +127,12 @@ const Card: React.FC<{
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ${className}`}
+    className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${className}`}
   >
-    <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
       <div className="flex items-center gap-3">
         {icon && <span className="text-blue-500">{icon}</span>}
-        <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
+        <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
       </div>
       {action}
     </div>
@@ -150,9 +150,9 @@ const StatusBadge: React.FC<{
     fail: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', icon: XCircle },
     failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', icon: XCircle },
     warning: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-700 dark:text-yellow-400', icon: AlertTriangle },
-    pending: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-600 dark:text-gray-400', icon: Clock },
+    pending: { bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-slate-600 dark:text-slate-400', icon: Clock },
     running: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', icon: RefreshCw },
-    not_applicable: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-500 dark:text-gray-500', icon: Info },
+    not_applicable: { bg: 'bg-slate-100 dark:bg-slate-900/30', text: 'text-slate-500 dark:text-slate-500', icon: Info },
   };
 
   const { bg, text, icon: Icon } = config[status] || config.pending;
@@ -183,7 +183,7 @@ const ProgressRing: React.FC<{
     <div className="relative" style={{ width: size, height: size }}>
       <svg className="transform -rotate-90" width={size} height={size}>
         <circle
-          className="text-gray-700 dark:text-gray-700"
+          className="text-slate-700 dark:text-slate-700"
           strokeWidth={strokeWidth}
           stroke="currentColor"
           fill="transparent"
@@ -206,10 +206,10 @@ const ProgressRing: React.FC<{
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-gray-900 dark:text-white">
+        <span className="text-xl font-bold text-slate-900 dark:text-white">
           {Math.round(value)}%
         </span>
-        {label && <span className="text-xs text-gray-500">{label}</span>}
+        {label && <span className="text-xs text-slate-500">{label}</span>}
       </div>
     </div>
   );
@@ -233,7 +233,7 @@ const MetricCard: React.FC<{
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
       <div className="flex items-start justify-between">
         <div className={`p-2 rounded-lg ${colorClasses[color as keyof typeof colorClasses]}`}>
           {icon}
@@ -241,7 +241,7 @@ const MetricCard: React.FC<{
         {trend && (
           <div className={`flex items-center gap-1 text-sm ${
             trend === 'up' ? 'text-green-500' : 
-            trend === 'down' ? 'text-red-500' : 'text-gray-500'
+            trend === 'down' ? 'text-red-500' : 'text-slate-500'
           }`}>
             <TrendingUp className={`w-4 h-4 ${trend === 'down' ? 'rotate-180' : ''}`} />
             {trendValue}
@@ -250,10 +250,10 @@ const MetricCard: React.FC<{
       </div>
       <div className="mt-3">
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-gray-900 dark:text-white">{value}</span>
-          {unit && <span className="text-sm text-gray-500">{unit}</span>}
+          <span className="text-2xl font-bold text-slate-900 dark:text-white">{value}</span>
+          {unit && <span className="text-sm text-slate-500">{unit}</span>}
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{title}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{title}</p>
       </div>
     </div>
   );
@@ -274,14 +274,14 @@ const UtilizationBar: React.FC<{
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-600 dark:text-gray-400">{label}</span>
+        <span className="text-slate-600 dark:text-slate-400">{label}</span>
         {showValue && (
-          <span className="font-medium text-gray-900 dark:text-white">
+          <span className="font-medium text-slate-900 dark:text-white">
             {(value * 100).toFixed(1)}%
           </span>
         )}
       </div>
-      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.min(value * 100, 100)}%` }}
@@ -310,41 +310,41 @@ const ProjectOverview: React.FC<{ project: ProjectSummary }> = ({ project }) => 
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Project Name</p>
-          <p className="font-medium text-gray-900 dark:text-white">{project.name}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Project Name</p>
+          <p className="font-medium text-slate-900 dark:text-white">{project.name}</p>
         </div>
         <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Design Code</p>
-          <p className="font-medium text-gray-900 dark:text-white">{project.designCode}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Design Code</p>
+          <p className="font-medium text-slate-900 dark:text-white">{project.designCode}</p>
         </div>
         <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Building Type</p>
-          <p className="font-medium text-gray-900 dark:text-white">{project.buildingType}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Building Type</p>
+          <p className="font-medium text-slate-900 dark:text-white">{project.buildingType}</p>
         </div>
         <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Location</p>
-          <p className="font-medium text-gray-900 dark:text-white">{project.location}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Location</p>
+          <p className="font-medium text-slate-900 dark:text-white">{project.location}</p>
         </div>
       </div>
 
-      <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Structural Members</p>
+      <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Structural Members</p>
         <div className="grid grid-cols-5 gap-2">
           {Object.entries(project.members).map(([type, count]) => (
-            <div key={type} className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">{count}</p>
-              <p className="text-xs text-gray-500 capitalize">{type}</p>
+            <div key={type} className="text-center p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+              <p className="text-lg font-bold text-slate-900 dark:text-white">{count}</p>
+              <p className="text-xs text-slate-500 capitalize">{type}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Analysis Status</p>
+      <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Analysis Status</p>
         <div className="space-y-2">
           {Object.entries(project.analysisStatus).map(([type, status]) => (
             <div key={type} className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+              <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">
                 {type.replace('_', ' ')} Analysis
               </span>
               <StatusBadge status={status as any} size="sm" />
@@ -394,13 +394,13 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
           const isExpanded = expanded === category;
 
           return (
-            <div key={category} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            <div key={category} className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
               <button
                 onClick={() => setExpanded(isExpanded ? null : category)}
-                className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="w-full px-4 py-3 flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="capitalize font-medium text-gray-900 dark:text-white">
+                  <span className="capitalize font-medium text-slate-900 dark:text-white">
                     {category}
                   </span>
                   <span className={`text-sm px-2 py-0.5 rounded-full ${
@@ -411,7 +411,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                     {passed}/{total}
                   </span>
                 </div>
-                <ChevronRight className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRight className={`w-5 h-5 text-slate-500 dark:text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
               </button>
               
               <AnimatePresence>
@@ -424,13 +424,13 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                   >
                     <div className="p-4 space-y-3">
                       {categoryChecks.map(check => (
-                        <div key={check.id} className="flex items-start justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                        <div key={check.id} className="flex items-start justify-between py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              <span className="text-sm font-medium text-slate-900 dark:text-white">
                                 {check.name}
                               </span>
-                              <span className="text-xs text-gray-500">({check.reference})</span>
+                              <span className="text-xs text-slate-500">({check.reference})</span>
                             </div>
                             {check.utilizationRatio !== undefined && (
                               <div className="mt-1 w-48">
@@ -438,7 +438,7 @@ const DesignChecksPanel: React.FC<{ checks: DesignCheck[] }> = ({ checks }) => {
                               </div>
                             )}
                             {check.message && (
-                              <p className="text-xs text-gray-500 mt-1">{check.message}</p>
+                              <p className="text-xs text-slate-500 mt-1">{check.message}</p>
                             )}
                           </div>
                           <StatusBadge status={check.status} size="sm" />
@@ -471,37 +471,37 @@ const CalculationMetricsPanel: React.FC<{ metrics: CalculationMetrics }> = ({ me
         />
         <div className="flex-1 ml-6 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Total Calculations</span>
-            <span className="font-medium text-gray-900 dark:text-white">{metrics.totalCalculations}</span>
+            <span className="text-sm text-slate-500">Total Calculations</span>
+            <span className="font-medium text-slate-900 dark:text-white">{metrics.totalCalculations}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Successful</span>
+            <span className="text-sm text-slate-500">Successful</span>
             <span className="font-medium text-green-600">{metrics.successfulCalculations}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Failed</span>
+            <span className="text-sm text-slate-500">Failed</span>
             <span className="font-medium text-red-600">{metrics.failedCalculations}</span>
           </div>
         </div>
       </div>
       
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+        <div className="text-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
           <div className="flex items-center justify-center gap-1 text-blue-500">
             <Clock className="w-4 h-4" />
             <span className="font-bold">{metrics.averageTime.toFixed(0)}</span>
             <span className="text-sm">ms</span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">Avg. Calc Time</p>
+          <p className="text-xs text-slate-500 mt-1">Avg. Calc Time</p>
         </div>
-        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+          <div className="text-sm text-slate-600 dark:text-slate-400">
             {metrics.lastCalculation 
               ? new Date(metrics.lastCalculation).toLocaleTimeString()
               : 'N/A'
             }
           </div>
-          <p className="text-xs text-gray-500 mt-1">Last Calculation</p>
+          <p className="text-xs text-slate-500 mt-1">Last Calculation</p>
         </div>
       </div>
     </Card>
@@ -513,17 +513,17 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-sm text-gray-500 mb-2">CPU Usage</p>
+          <p className="text-sm text-slate-500 mb-2">CPU Usage</p>
           <UtilizationBar value={health.cpu / 100} label="" />
         </div>
         <div>
-          <p className="text-sm text-gray-500 mb-2">Memory</p>
+          <p className="text-sm text-slate-500 mb-2">Memory</p>
           <UtilizationBar value={health.memory / 100} label="" />
         </div>
       </div>
 
-      <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Active Engines</p>
+      <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Active Engines</p>
         <div className="flex flex-wrap gap-2">
           {health.activeEngines.length > 0 ? (
             health.activeEngines.map(engine => (
@@ -535,13 +535,13 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
               </span>
             ))
           ) : (
-            <span className="text-sm text-gray-500">No active engines</span>
+            <span className="text-sm text-slate-500">No active engines</span>
           )}
         </div>
       </div>
 
       {health.errors.length > 0 && (
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle className="w-4 h-4 text-red-500" />
             <p className="text-sm font-medium text-red-600">Recent Errors ({health.errors.length})</p>
@@ -556,8 +556,8 @@ const SystemHealthPanel: React.FC<{ health: SystemHealth }> = ({ health }) => (
                   'bg-yellow-100 dark:bg-yellow-900/30'
                 }`}
               >
-                <div className="font-medium text-gray-900 dark:text-white">[{error.code}] {error.message}</div>
-                <div className="text-xs text-gray-500 mt-0.5">
+                <div className="font-medium text-slate-900 dark:text-white">[{error.code}] {error.message}</div>
+                <div className="text-xs text-slate-500 mt-0.5">
                   {new Date(error.timestamp).toLocaleTimeString()}
                 </div>
               </div>
@@ -591,10 +591,10 @@ const QuickActions: React.FC<{
           whileTap={{ scale: 0.98 }}
           onClick={onClick}
           className={`p-4 rounded-xl border-2 border-dashed transition-colors hover:border-${color}-400 dark:hover:border-${color}-500
-            border-gray-200 dark:border-gray-700 hover:bg-${color}-50 dark:hover:bg-${color}-900/20`}
+            border-slate-200 dark:border-slate-700 hover:bg-${color}-50 dark:hover:bg-${color}-900/20`}
         >
           <Icon className={`w-6 h-6 mx-auto mb-2 text-${color}-500`} />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
         </motion.button>
       ))}
     </div>
@@ -674,9 +674,9 @@ export const EngineeringDashboard: React.FC<DashboardProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+      <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -684,31 +684,31 @@ export const EngineeringDashboard: React.FC<DashboardProps> = ({
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
                   StructuralAI Dashboard
                 </h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-slate-500">
                   Real-time structural engineering analysis
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-slate-500">
                 {currentTime.toLocaleTimeString()}
               </span>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleRefresh}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
-                <RefreshCw className={`w-5 h-5 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-5 h-5 text-slate-500 ${isRefreshing ? 'animate-spin' : ''}`} />
               </motion.button>
               <button
                 onClick={onSettingsClick}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               >
-                <Settings className="w-5 h-5 text-gray-500" />
+                <Settings className="w-5 h-5 text-slate-500" />
               </button>
             </div>
           </div>

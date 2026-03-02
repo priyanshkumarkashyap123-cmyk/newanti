@@ -34,7 +34,7 @@ const LoadCard: FC<LoadCardProps> = ({ title, value, unit, icon: Icon, color }) 
             <span className="font-semibold text-sm">{title}</span>
         </div>
         <div className="text-2xl font-bold">{value.toLocaleString()}</div>
-        <div className="text-xs text-gray-500">{unit}</div>
+        <div className="text-xs text-slate-500">{unit}</div>
     </div>
 );
 
@@ -122,7 +122,7 @@ const CriticalElementsTable: FC<CriticalElementsTableProps> = ({ analysis }) => 
     <div className="overflow-x-auto">
         <table className="w-full text-xs">
             <thead>
-                <tr className="border-b-2 border-gray-300 dark:border-gray-600">
+                <tr className="border-b-2 border-slate-300 dark:border-slate-600">
                     <th className="text-left p-2 font-semibold">Element</th>
                     <th className="text-right p-2 font-semibold">Max Stress</th>
                     <th className="text-right p-2 font-semibold">Capacity</th>
@@ -137,7 +137,7 @@ const CriticalElementsTable: FC<CriticalElementsTableProps> = ({ analysis }) => 
                     return (
                         <tr
                             key={idx}
-                            className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                         >
                             <td className="p-2 font-medium">{elem.element}</td>
                             <td className="text-right p-2">{elem.stress.toFixed(1)} MPa</td>
@@ -172,11 +172,11 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
         {analysis.analysisSteps.map((step) => (
             <div
                 key={step.stepNumber}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden"
+                className="border border-slate-300 dark:border-slate-600 rounded-lg overflow-hidden"
             >
                 <button
                     onClick={() => setExpandedStep(expandedStep === step.stepNumber ? null : step.stepNumber)}
-                    className="w-full p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center justify-between"
+                    className="w-full p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center justify-between"
                 >
                     <div className="flex items-center gap-3">
                         <span className="font-bold text-blue-600">Step {step.stepNumber}</span>
@@ -186,18 +186,18 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
                 </button>
 
                 {expandedStep === step.stepNumber && (
-                    <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-600">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{step.description}</p>
+                    <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-300 dark:border-slate-600">
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{step.description}</p>
 
                         <div className="space-y-2 mb-4">
                             {step.loads.map((load, idx) => (
-                                <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                     <div className="flex justify-between items-start mb-1">
                                         <span className="font-semibold text-sm">{load.category}</span>
                                         <span className="text-blue-600 font-bold">{load.magnitude.toLocaleString()} kN</span>
                                     </div>
-                                    <div className="text-xs text-gray-500 mb-1">{load.distribution}</div>
-                                    <div className="text-xs text-gray-600 italic">{load.notes}</div>
+                                    <div className="text-xs text-slate-500 mb-1">{load.distribution}</div>
+                                    <div className="text-xs text-slate-600 italic">{load.notes}</div>
                                 </div>
                             ))}
                         </div>
@@ -205,19 +205,19 @@ const AnalysisStepsAccordion: FC<AnalysisStepsAccordionProps> = ({ analysis, exp
                         <div className="grid grid-cols-3 gap-2">
                             {step.maxStress && (
                                 <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-                                    <div className="text-xs text-gray-600">Max Stress</div>
+                                    <div className="text-xs text-slate-600">Max Stress</div>
                                     <div className="font-bold">{step.maxStress} MPa</div>
                                 </div>
                             )}
                             {step.maxDeflection && (
                                 <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded">
-                                    <div className="text-xs text-gray-600">Max Deflection</div>
+                                    <div className="text-xs text-slate-600">Max Deflection</div>
                                     <div className="font-bold">{step.maxDeflection} mm</div>
                                 </div>
                             )}
                             {step.maxLateralSway && (
                                 <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded">
-                                    <div className="text-xs text-gray-600">Lateral Sway</div>
+                                    <div className="text-xs text-slate-600">Lateral Sway</div>
                                     <div className="font-bold">{step.maxLateralSway} mm</div>
                                 </div>
                             )}
@@ -238,7 +238,7 @@ interface SettingsPanelProps {
 }
 
 const SettingsPanel: FC<SettingsPanelProps> = ({ config, setConfig }) => (
-    <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
         <div>
             <label className="flex items-center gap-2">
                 <input
@@ -263,7 +263,7 @@ const SettingsPanel: FC<SettingsPanelProps> = ({ config, setConfig }) => (
                     onChange={(e) => setConfig({ ...config, windSpeed: parseFloat(e.target.value) })}
                     className="w-full"
                 />
-                <div className="text-xs text-gray-500 mt-1">Peak gust speed (Dubai: ~62.5 m/s)</div>
+                <div className="text-xs text-slate-500 mt-1">Peak gust speed (Dubai: ~62.5 m/s)</div>
             </div>
         )}
 
@@ -285,7 +285,7 @@ const SettingsPanel: FC<SettingsPanelProps> = ({ config, setConfig }) => (
                 <select
                     value={config.seismicZone}
                     onChange={(e) => setConfig({ ...config, seismicZone: e.target.value })}
-                    className="w-full px-3 py-1 border rounded text-sm dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full px-3 py-1 border rounded text-sm dark:bg-slate-700 dark:border-slate-600"
                 >
                     <option value="low">Low (0.05g)</option>
                     <option value="medium">Medium (0.15g) - Dubai</option>
@@ -318,7 +318,7 @@ const SettingsPanel: FC<SettingsPanelProps> = ({ config, setConfig }) => (
                     onChange={(e) => setConfig({ ...config, temperatureDelta: parseFloat(e.target.value) })}
                     className="w-full"
                 />
-                <div className="text-xs text-gray-500 mt-1">Design temperature swing (Dubai: ~50°C)</div>
+                <div className="text-xs text-slate-500 mt-1">Design temperature swing (Dubai: ~50°C)</div>
             </div>
         )}
     </div>
@@ -347,9 +347,9 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
     const analysis = useMemo(() => generateBurjAnalysis(config), [config]);
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-gray-950">
+        <div className="flex flex-col h-full bg-white dark:bg-slate-950">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="flex items-center gap-2 text-lg font-bold">
                         <Building2 className="w-5 h-5 text-blue-600" />
@@ -358,7 +358,7 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                     {onClose && (
                         <button
                             onClick={onClose}
-                            className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                            className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                         >
                             ✕
                         </button>
@@ -373,7 +373,7 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                             onClick={() => setActiveTab(tab)}
                             className={`px-3 py-2 rounded transition ${activeTab === tab
                                     ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
+                                    : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -424,19 +424,19 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
                         {/* Key Metrics */}
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                                <div className="text-xs text-gray-600">Max Lateral Sway (Top)</div>
+                                <div className="text-xs text-slate-600">Max Lateral Sway (Top)</div>
                                 <div className="text-2xl font-bold text-purple-600">{analysis.summary.maxLateralSway} mm</div>
-                                <div className="text-xs text-gray-500">Wind-induced</div>
+                                <div className="text-xs text-slate-500">Wind-induced</div>
                             </div>
                             <div className="p-3 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border border-cyan-200 dark:border-cyan-800">
-                                <div className="text-xs text-gray-600">Fundamental Period</div>
+                                <div className="text-xs text-slate-600">Fundamental Period</div>
                                 <div className="text-2xl font-bold text-cyan-600">{analysis.summary.fundamentalPeriod.toFixed(2)} s</div>
-                                <div className="text-xs text-gray-500">Long-period structure</div>
+                                <div className="text-xs text-slate-500">Long-period structure</div>
                             </div>
                             <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                                <div className="text-xs text-gray-600">Top Acceleration</div>
+                                <div className="text-xs text-slate-600">Top Acceleration</div>
                                 <div className="text-2xl font-bold text-amber-600">{analysis.summary.topFloorAcceleration.toFixed(2)} m/s²</div>
-                                <div className="text-xs text-gray-500">Seismic induced</div>
+                                <div className="text-xs text-slate-500">Seismic induced</div>
                             </div>
                         </div>
                     </>
@@ -471,8 +471,8 @@ export const BurjKhalifaAnalysisPanel: FC<BurjAnalysisPanelProps> = ({ onClose }
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-                <div className="text-xs text-gray-500">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                <div className="text-xs text-slate-500">
                     <span>Height: {analysis.height}m | Floors: {analysis.floors}</span>
                 </div>
                 <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">

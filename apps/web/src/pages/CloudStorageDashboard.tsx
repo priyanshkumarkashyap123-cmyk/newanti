@@ -296,7 +296,7 @@ const CloudStorageDashboard: React.FC = () => {
       case "error":
         return "text-red-400";
       default:
-        return "text-gray-600 dark:text-gray-400";
+        return "text-slate-600 dark:text-slate-400";
     }
   };
 

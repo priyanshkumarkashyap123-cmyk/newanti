@@ -121,9 +121,9 @@ export const colors = {
 export const semanticColors = {
     // Backgrounds
     background: {
-        primary: colors.neutral[950],    // Main app background
-        secondary: colors.neutral[900],  // Cards, panels
-        tertiary: colors.neutral[800],   // Elevated elements
+        primary: colors.neutral[900],    // Main app background (Figma §1.3: Slate-900)
+        secondary: colors.neutral[800],  // Cards, panels
+        tertiary: colors.neutral[700],   // Elevated elements
         hover: colors.neutral[800],      // Hover states
         selected: colors.primary[900],   // Selected states
     },
@@ -369,9 +369,9 @@ export const breakpoints = {
 export const components = {
     button: {
         primary: {
-            bg: colors.primary[600],       // #2563eb per Figma §2.1
-            bgHover: colors.primary[700],  // #1d4ed8 per Figma §2.1
-            bgActive: colors.primary[800], // #1e40af per Figma §2.1
+            bg: colors.primary[500],       // #3b82f6 per Figma §2.1
+            bgHover: colors.primary[600],  // #2563eb per Figma §2.1
+            bgActive: colors.primary[700], // #1d4ed8 per Figma §2.1
             text: 'white',
         },
         secondary: {

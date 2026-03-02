@@ -12,7 +12,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
             role="status"
             aria-label="Loading"
             className={cn(
-                "animate-pulse rounded-md bg-slate-100/50 dark:bg-slate-800/50",
+                "skeleton rounded-md",
                 className
             )}
             {...props}

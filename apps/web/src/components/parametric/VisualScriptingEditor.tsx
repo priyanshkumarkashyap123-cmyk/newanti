@@ -181,7 +181,7 @@ const NodePalette: FC<NodePaletteProps> = ({ onAddNode }) => {
                 {Object.entries(categories).map(([category, nodes]) => (
                     nodes.length > 0 && (
                         <div key={category}>
-                            <div className="text-gray-500 dark:text-gray-400 text-xs uppercase mb-1">{category}</div>
+                            <div className="text-slate-500 dark:text-slate-400 text-xs uppercase mb-1">{category}</div>
                             <div className="flex flex-wrap gap-1">
                                 {nodes.map(node => (
                                     <button
@@ -402,7 +402,7 @@ export const VisualScriptingEditor: FC<VisualScriptingEditorProps> = ({ onModelG
                         </button>
                         <button
                             onClick={() => setIsAutoExecute(!isAutoExecute)}
-                            className={`px-3 py-2 text-sm rounded-lg transition-colors ${isAutoExecute ? 'bg-green-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300'
+                            className={`px-3 py-2 text-sm rounded-lg transition-colors ${isAutoExecute ? 'bg-green-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                                 }`}
                         >
                             Auto: {isAutoExecute ? 'ON' : 'OFF'}

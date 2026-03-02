@@ -52,7 +52,7 @@ export const ReportViewerEnhanced: FC = () => {
     return (
         <div className="min-h-screen bg-slate-100 font-display">
             {/* Header with Breadcrumbs - Hide on print */}
-            <header className="bg-white border-b border-gray-200 print:hidden sticky top-0 z-40 shadow-sm">
+            <header className="bg-white border-b border-slate-200 print:hidden sticky top-0 z-40 shadow-sm">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     {/* Breadcrumbs */}
                     <nav className="flex items-center gap-2 text-sm mb-3">
@@ -123,7 +123,7 @@ export const ReportViewerEnhanced: FC = () => {
                                 <span className="material-symbols-outlined text-primary">info</span>
                                 Project Information
                             </h2>
-                            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-6 rounded-lg">
+                            <div className="grid grid-cols-2 gap-4 bg-slate-50 p-6 rounded-lg">
                                 <div>
                                     <p className="text-xs text-steel-blue/60 font-semibold uppercase mb-1">Project Name</p>
                                     <p className="text-steel-blue font-medium">{SAMPLE_REPORT.projectName}</p>
@@ -171,7 +171,7 @@ export const ReportViewerEnhanced: FC = () => {
                                 <span className="material-symbols-outlined text-primary">support</span>
                                 Support Reactions
                             </h2>
-                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                            <div className="border border-slate-200 rounded-lg overflow-hidden">
                                 <DataTable
                                     columns={[
                                         { accessor: 'node', header: 'Node' },
@@ -218,7 +218,7 @@ export const ReportViewerEnhanced: FC = () => {
                                 <span className="material-symbols-outlined text-primary">analytics</span>
                                 Member Forces (Maximum)
                             </h2>
-                            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                            <div className="border border-slate-200 rounded-lg overflow-hidden">
                                 <DataTable
                                     columns={[
                                         { accessor: 'member', header: 'Member' },
@@ -307,7 +307,7 @@ export const ReportViewerEnhanced: FC = () => {
                         </section>
 
                         {/* Certification */}
-                        <section className="mt-16 pt-8 border-t border-gray-300">
+                        <section className="mt-16 pt-8 border-t border-slate-300">
                             <div className="flex justify-between items-end">
                                 <div>
                                     <p className="text-sm text-steel-blue/60 mb-2">Prepared by</p>

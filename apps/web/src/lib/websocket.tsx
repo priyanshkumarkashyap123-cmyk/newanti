@@ -456,7 +456,7 @@ export function ConnectionStatus({
   const stateConfig: Record<ConnectionState, { color: string; label: string }> = {
     connected: { color: 'bg-green-500', label: 'Connected' },
     connecting: { color: 'bg-yellow-500 animate-pulse', label: 'Connecting...' },
-    disconnected: { color: 'bg-gray-500', label: 'Disconnected' },
+    disconnected: { color: 'bg-slate-500', label: 'Disconnected' },
     reconnecting: { color: 'bg-yellow-500 animate-pulse', label: 'Reconnecting...' },
     error: { color: 'bg-red-500', label: 'Error' },
   };

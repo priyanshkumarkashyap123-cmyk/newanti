@@ -220,7 +220,7 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
                 (effectiveDisplayMode === 'AUTO' && (!member.sectionId || member.sectionId === '' || member.sectionId.toLowerCase() === 'default'));
 
             if (shouldRenderAsLine) {
-                let color = '#00aaff';
+                let color = '#3b82f6';
                 if (selectedIds.has(member.id)) {
                     color = '#ff00ff';
                 } else if (errorElementIds.has(member.id)) {
@@ -289,7 +289,7 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
                 } else if (colorMode === 'UTILIZATION' && memberColors.has(member.id)) {
                     color.copy(memberColors.get(member.id)!);
                 } else {
-                    color.set('#00aaff');
+                    color.set('#3b82f6');
                 }
                 meshRef.current.setColorAt(index, color);
 

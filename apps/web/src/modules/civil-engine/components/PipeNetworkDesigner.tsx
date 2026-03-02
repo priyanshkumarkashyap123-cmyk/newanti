@@ -39,8 +39,8 @@ import {
 // =============================================================================
 const InfoTip: React.FC<{ text: string }> = ({ text }) => (
   <span className="relative group ml-1 cursor-help">
-    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold">?</span>
-    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white text-xs rounded px-2 py-1 whitespace-nowrap z-50 max-w-xs">
+    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold">?</span>
+    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-xs rounded px-2 py-1 whitespace-nowrap z-50 max-w-xs">
       {text}
     </span>
   </span>
@@ -368,7 +368,7 @@ export function PipeNetworkDesigner() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">Pipe Network Analysis & Design</h2>
@@ -378,7 +378,7 @@ export function PipeNetworkDesigner() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-4 py-2 bg-gray-50">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-4 py-2 bg-slate-50">
         {/* Preset selector */}
         <select
           value={selectedPreset}
@@ -401,7 +401,7 @@ export function PipeNetworkDesigner() {
             className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
               activePanel === tab
                 ? 'bg-indigo-600 text-white'
-                : 'bg-white text-gray-600 border hover:bg-gray-100'
+                : 'bg-white text-slate-600 border hover:bg-slate-100'
             }`}
           >
             {tab === 'network' ? '🔧 Network' : tab === 'config' ? '⚙️ Settings' : tab === 'results' ? '📊 Results' : '📐 Design'}
@@ -422,19 +422,19 @@ export function PipeNetworkDesigner() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-0">
         {/* ── Left: Network Visualization ── */}
-        <div className="xl:col-span-1 border-r border-gray-100 p-4 bg-gray-50 min-h-[320px]">
-          <h3 className="font-semibold text-gray-700 text-sm mb-2">Network Diagram</h3>
+        <div className="xl:col-span-1 border-r border-slate-100 p-4 bg-slate-50 min-h-[320px]">
+          <h3 className="font-semibold text-slate-700 text-sm mb-2">Network Diagram</h3>
           {nodes.length > 0 ? (
             <div className="bg-white rounded-lg border p-2" style={{ minHeight: 280 }}>
               {networkSvg}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400 text-sm">
+            <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400 text-sm">
               Load a preset or add nodes & pipes to begin
             </div>
           )}
           {/* Legend */}
-          <div className="flex gap-4 mt-2 text-xs text-gray-500">
+          <div className="flex gap-4 mt-2 text-xs text-slate-500">
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-sky-500 inline-block" /> Reservoir</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block" /> Junction</span>
             <span className="flex items-center gap-1"><span className="w-6 h-0.5 bg-blue-600 inline-block" /> Positive Q</span>
@@ -446,7 +446,7 @@ export function PipeNetworkDesigner() {
               <div className="font-semibold text-sm mb-1">
                 {result.converged ? '✅ Converged' : '⚠️ Not Converged'}
               </div>
-              <div className="text-xs text-gray-600 space-y-0.5">
+              <div className="text-xs text-slate-600 space-y-0.5">
                 <div>Method: <strong>{result.method}</strong> | Friction: <strong>{result.frictionModel}</strong></div>
                 <div>Iterations: <strong>{result.iterations}</strong> | Max Residual: <strong>{result.maxResidual.toExponential(2)}</strong></div>
                 <div>Total Head Loss: <strong>{result.totalHeadLoss.toFixed(3)} m</strong></div>
@@ -456,7 +456,7 @@ export function PipeNetworkDesigner() {
           {/* Convergence chart */}
           {convergenceChart && (
             <div className="mt-3 bg-white rounded-lg border p-2">
-              <div className="text-xs font-semibold text-gray-500 mb-1">Convergence History</div>
+              <div className="text-xs font-semibold text-slate-500 mb-1">Convergence History</div>
               {convergenceChart}
             </div>
           )}
@@ -470,12 +470,12 @@ export function PipeNetworkDesigner() {
             <div className="space-y-6">
               {/* ── NODES ── */}
               <div>
-                <h3 className="font-bold text-gray-800 mb-2">Nodes ({nodes.length})</h3>
+                <h3 className="font-bold text-slate-800 mb-2">Nodes ({nodes.length})</h3>
                 {nodes.length > 0 && (
                   <div className="overflow-x-auto mb-3">
                     <table className="w-full text-xs border-collapse">
                       <thead>
-                        <tr className="bg-gray-100">
+                        <tr className="bg-slate-100">
                           <th className="px-2 py-1 text-left">ID</th>
                           <th className="px-2 py-1 text-left">Label</th>
                           <th className="px-2 py-1">Type</th>
@@ -489,7 +489,7 @@ export function PipeNetworkDesigner() {
                       </thead>
                       <tbody>
                         {nodes.map(n => (
-                          <tr key={n.id} className="border-t border-gray-100 hover:bg-gray-50">
+                          <tr key={n.id} className="border-t border-slate-100 hover:bg-slate-50">
                             <td className="px-2 py-1 font-mono">{n.id}</td>
                             <td className="px-2 py-1">{n.label}</td>
                             <td className="px-2 py-1 text-center">
@@ -538,12 +538,12 @@ export function PipeNetworkDesigner() {
 
               {/* ── PIPES ── */}
               <div>
-                <h3 className="font-bold text-gray-800 mb-2">Pipes ({pipes.length})</h3>
+                <h3 className="font-bold text-slate-800 mb-2">Pipes ({pipes.length})</h3>
                 {pipes.length > 0 && (
                   <div className="overflow-x-auto mb-3">
                     <table className="w-full text-xs border-collapse">
                       <thead>
-                        <tr className="bg-gray-100">
+                        <tr className="bg-slate-100">
                           <th className="px-2 py-1 text-left">ID</th>
                           <th className="px-2 py-1 text-left">Label</th>
                           <th className="px-2 py-1">From</th>
@@ -558,7 +558,7 @@ export function PipeNetworkDesigner() {
                       </thead>
                       <tbody>
                         {pipes.map(p => (
-                          <tr key={p.id} className="border-t border-gray-100 hover:bg-gray-50">
+                          <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50">
                             <td className="px-2 py-1 font-mono">{p.id}</td>
                             <td className="px-2 py-1">{p.label}</td>
                             <td className="px-2 py-1 text-center">{p.startNodeId}</td>
@@ -609,7 +609,7 @@ export function PipeNetworkDesigner() {
               {/* ── LOOPS ── */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-bold text-gray-800">Loops ({loops.length})</h3>
+                  <h3 className="font-bold text-slate-800">Loops ({loops.length})</h3>
                   <button onClick={autoDetectLoops} className="px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] rounded hover:bg-purple-200 font-semibold">
                     Auto-detect
                   </button>
@@ -619,7 +619,7 @@ export function PipeNetworkDesigner() {
                   <div className="overflow-x-auto mb-3">
                     <table className="w-full text-xs border-collapse">
                       <thead>
-                        <tr className="bg-gray-100">
+                        <tr className="bg-slate-100">
                           <th className="px-2 py-1 text-left">ID</th>
                           <th className="px-2 py-1 text-left">Label</th>
                           <th className="px-2 py-1 text-left">Pipes</th>
@@ -629,7 +629,7 @@ export function PipeNetworkDesigner() {
                       </thead>
                       <tbody>
                         {loops.map(l => (
-                          <tr key={l.id} className="border-t border-gray-100 hover:bg-gray-50">
+                          <tr key={l.id} className="border-t border-slate-100 hover:bg-slate-50">
                             <td className="px-2 py-1 font-mono">{l.id}</td>
                             <td className="px-2 py-1">{l.label}</td>
                             <td className="px-2 py-1 font-mono">{l.pipeIds.join(', ')}</td>
@@ -663,12 +663,12 @@ export function PipeNetworkDesigner() {
           {/* ===== CONFIG PANEL ===== */}
           {activePanel === 'config' && (
             <div className="space-y-6">
-              <h3 className="font-bold text-gray-800">Analysis Settings</h3>
+              <h3 className="font-bold text-slate-800">Analysis Settings</h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Method */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <label className="block text-xs text-gray-500 mb-1 font-semibold">Analysis Method</label>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <label className="block text-xs text-slate-500 mb-1 font-semibold">Analysis Method</label>
                   <select
                     value={config.method}
                     onChange={e => setConfig({ ...config, method: e.target.value as AnalysisMethod })}
@@ -678,7 +678,7 @@ export function PipeNetworkDesigner() {
                     <option value="linear-theory">Linear Theory (Simultaneous Loop)</option>
                     <option value="newton-raphson">Newton-Raphson (Global)</option>
                   </select>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                     {config.method === 'hardy-cross' && 'Classic iterative method. Corrects flows loop-by-loop. Most intuitive, good for hand checks.'}
                     {config.method === 'linear-theory' && 'Solves all loops simultaneously. Faster convergence for large networks.'}
                     {config.method === 'newton-raphson' && 'Global Newton-Raphson on continuity + energy equations. Most robust for complex networks.'}
@@ -686,8 +686,8 @@ export function PipeNetworkDesigner() {
                 </div>
 
                 {/* Friction Model */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <label className="block text-xs text-gray-500 mb-1 font-semibold">Friction Model</label>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <label className="block text-xs text-slate-500 mb-1 font-semibold">Friction Model</label>
                   <select
                     value={config.frictionModel}
                     onChange={e => setConfig({ ...config, frictionModel: e.target.value as FrictionModel })}
@@ -697,7 +697,7 @@ export function PipeNetworkDesigner() {
                     <option value="darcy-weisbach">Darcy-Weisbach (ε roughness)</option>
                     <option value="manning">Manning (n roughness)</option>
                   </select>
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                     {config.frictionModel === 'hazen-williams' && 'Empirical; C = 130-150 for most pipes. Pipe roughness input is the C value. Most common in water distribution.'}
                     {config.frictionModel === 'darcy-weisbach' && 'Theoretical; uses ε (mm) absolute roughness + Colebrook-White. Pipe roughness input is ε in mm.'}
                     {config.frictionModel === 'manning' && 'Empirical; uses Manning\'s n. Pipe roughness input is n value (e.g., 0.011). Common for open channels & gravity mains.'}
@@ -705,8 +705,8 @@ export function PipeNetworkDesigner() {
                 </div>
 
                 {/* Tolerance */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <label className="block text-xs text-gray-500 mb-1 font-semibold">Convergence Tolerance (m³/s)</label>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <label className="block text-xs text-slate-500 mb-1 font-semibold">Convergence Tolerance (m³/s)</label>
                   <input
                     type="number"
                     step="0.00001"
@@ -714,12 +714,12 @@ export function PipeNetworkDesigner() {
                     onChange={e => setConfig({ ...config, tolerance: +e.target.value })}
                     className="w-full px-3 py-2 border rounded text-sm"
                   />
-                  <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Iteration stops when max flow correction ΔQ falls below this value.</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Iteration stops when max flow correction ΔQ falls below this value.</p>
                 </div>
 
                 {/* Max Iterations */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <label className="block text-xs text-gray-500 mb-1 font-semibold">Maximum Iterations</label>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <label className="block text-xs text-slate-500 mb-1 font-semibold">Maximum Iterations</label>
                   <input
                     type="number"
                     value={config.maxIterations}
@@ -731,11 +731,11 @@ export function PipeNetworkDesigner() {
 
               {/* Pipe Material Reference */}
               <div>
-                <h4 className="font-semibold text-gray-700 text-sm mb-2">Pipe Material Reference (IS Standards)</h4>
+                <h4 className="font-semibold text-slate-700 text-sm mb-2">Pipe Material Reference (IS Standards)</h4>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs border-collapse">
                     <thead>
-                      <tr className="bg-gray-100">
+                      <tr className="bg-slate-100">
                         <th className="px-2 py-1 text-left">Material</th>
                         <th className="px-2 py-1">H-W C</th>
                         <th className="px-2 py-1">ε (mm)</th>
@@ -746,7 +746,7 @@ export function PipeNetworkDesigner() {
                     </thead>
                     <tbody>
                       {Object.entries(PIPE_MATERIALS).map(([key, mat]) => (
-                        <tr key={key} className="border-t border-gray-100">
+                        <tr key={key} className="border-t border-slate-100">
                           <td className="px-2 py-1 font-medium">{mat.name}</td>
                           <td className="px-2 py-1 text-center">{mat.hazenWilliamsC}</td>
                           <td className="px-2 py-1 text-center">{mat.roughness}</td>
@@ -766,7 +766,7 @@ export function PipeNetworkDesigner() {
           {activePanel === 'results' && (
             <div className="space-y-6">
               {!result ? (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                <div className="text-center text-slate-500 dark:text-slate-400 py-12">
                   Run analysis to see results
                 </div>
               ) : (
@@ -788,7 +788,7 @@ export function PipeNetworkDesigner() {
 
                   {/* Pipe Results Table */}
                   <div>
-                    <h4 className="font-bold text-gray-800 mb-2">Pipe Results</h4>
+                    <h4 className="font-bold text-slate-800 mb-2">Pipe Results</h4>
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs border-collapse">
                         <thead>
@@ -812,7 +812,7 @@ export function PipeNetworkDesigner() {
                             const vColor = Math.abs(V) > 3 ? 'text-red-600 font-bold' : Math.abs(V) < 0.3 ? 'text-yellow-600' : '';
                             
                             return (
-                              <tr key={p.id} className="border-t border-gray-100 hover:bg-gray-50">
+                              <tr key={p.id} className="border-t border-slate-100 hover:bg-slate-50">
                                 <td className="px-2 py-1 font-semibold">{p.label}</td>
                                 <td className="px-2 py-1 text-center font-mono text-[10px]">
                                   {Q >= 0 ? `${p.startNodeId} → ${p.endNodeId}` : `${p.endNodeId} → ${p.startNodeId}`}
@@ -835,7 +835,7 @@ export function PipeNetworkDesigner() {
 
                   {/* Node Results Table */}
                   <div>
-                    <h4 className="font-bold text-gray-800 mb-2">Node Results</h4>
+                    <h4 className="font-bold text-slate-800 mb-2">Node Results</h4>
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs border-collapse">
                         <thead>
@@ -855,7 +855,7 @@ export function PipeNetworkDesigner() {
                             const adequate = n.type !== 'junction' || pressure >= (n.minPressure || 0);
                             
                             return (
-                              <tr key={n.id} className="border-t border-gray-100 hover:bg-gray-50">
+                              <tr key={n.id} className="border-t border-slate-100 hover:bg-slate-50">
                                 <td className="px-2 py-1 font-semibold">{n.label}</td>
                                 <td className="px-2 py-1 text-center">
                                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${n.type === 'reservoir' ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -883,14 +883,14 @@ export function PipeNetworkDesigner() {
                   </div>
 
                   {/* Iteration Log (collapsed) */}
-                  <details className="bg-gray-50 rounded-lg border">
-                    <summary className="px-4 py-2 cursor-pointer text-sm font-semibold text-gray-700 hover:bg-gray-100">
+                  <details className="bg-slate-50 rounded-lg border">
+                    <summary className="px-4 py-2 cursor-pointer text-sm font-semibold text-slate-700 hover:bg-slate-100">
                       Iteration Log ({result.iterationLog.length} iterations)
                     </summary>
                     <div className="px-4 pb-3 overflow-x-auto">
                       <table className="w-full text-xs border-collapse mt-2">
                         <thead>
-                          <tr className="bg-gray-200">
+                          <tr className="bg-slate-200">
                             <th className="px-2 py-1">Iter</th>
                             <th className="px-2 py-1">Max ΔQ (m³/s)</th>
                             <th className="px-2 py-1">Loop Corrections</th>
@@ -899,7 +899,7 @@ export function PipeNetworkDesigner() {
                         </thead>
                         <tbody>
                           {result.iterationLog.map(entry => (
-                            <tr key={entry.iteration} className="border-t border-gray-100">
+                            <tr key={entry.iteration} className="border-t border-slate-100">
                               <td className="px-2 py-1 text-center font-mono">{entry.iteration}</td>
                               <td className="px-2 py-1 text-center font-mono">{entry.maxCorrection.toExponential(4)}</td>
                               <td className="px-2 py-1 font-mono text-[10px]">
@@ -925,9 +925,9 @@ export function PipeNetworkDesigner() {
                       {Object.entries(PIPE_MATERIALS).map(([k, m]) => <option key={k} value={k}>{m.name}</option>)}
                     </select>
                     <input type="number" step="0.1" value={designMaxVel} onChange={e => setDesignMaxVel(+e.target.value)} className="w-24 px-2 py-1.5 border rounded text-sm" title="Max velocity (m/s)" />
-                    <span className="text-xs text-gray-500">Max V</span>
+                    <span className="text-xs text-slate-500">Max V</span>
                     <input type="number" step="0.5" value={designMaxHl} onChange={e => setDesignMaxHl(+e.target.value)} className="w-24 px-2 py-1.5 border rounded text-sm" title="Max head loss per km (m/km)" />
-                    <span className="text-xs text-gray-500">Max hf/km</span>
+                    <span className="text-xs text-slate-500">Max hf/km</span>
                   </div>
                 </>
               )}
@@ -938,7 +938,7 @@ export function PipeNetworkDesigner() {
           {activePanel === 'design' && (
             <div className="space-y-6">
               {!designResult ? (
-                <div className="text-center text-gray-500 dark:text-gray-400 py-12">
+                <div className="text-center text-slate-500 dark:text-slate-400 py-12">
                   Run analysis first, then pipe design
                 </div>
               ) : (
@@ -946,28 +946,28 @@ export function PipeNetworkDesigner() {
                   {/* Summary Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className={`p-3 rounded-lg text-center ${designResult.designAdequate ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                      <div className="text-xs text-gray-500">Design Status</div>
+                      <div className="text-xs text-slate-500">Design Status</div>
                       <div className={`text-lg font-bold ${designResult.designAdequate ? 'text-green-700' : 'text-red-700'}`}>
                         {designResult.designAdequate ? '✅ OK' : '❌ Inadequate'}
                       </div>
                     </div>
                     <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
-                      <div className="text-xs text-gray-500">Total Cost</div>
+                      <div className="text-xs text-slate-500">Total Cost</div>
                       <div className="text-lg font-bold text-blue-700">₹{(designResult.totalCost / 100000).toFixed(1)} L</div>
                     </div>
                     <div className="bg-purple-50 rounded-lg p-3 text-center border border-purple-200">
-                      <div className="text-xs text-gray-500">Max Velocity</div>
+                      <div className="text-xs text-slate-500">Max Velocity</div>
                       <div className="text-lg font-bold text-purple-700">{designResult.maxVelocity.toFixed(2)} m/s</div>
                     </div>
                     <div className="bg-amber-50 rounded-lg p-3 text-center border border-amber-200">
-                      <div className="text-xs text-gray-500">Max hf/km</div>
+                      <div className="text-xs text-slate-500">Max hf/km</div>
                       <div className="text-lg font-bold text-amber-700">{designResult.maxHeadLoss.toFixed(1)} m/km</div>
                     </div>
                   </div>
 
                   {/* Sizing Table */}
                   <div>
-                    <h4 className="font-bold text-gray-800 mb-2">Pipe Sizing Results</h4>
+                    <h4 className="font-bold text-slate-800 mb-2">Pipe Sizing Results</h4>
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs border-collapse">
                         <thead>
@@ -986,7 +986,7 @@ export function PipeNetworkDesigner() {
                           {designResult.sizing.map(s => {
                             const pipe = pipes.find(p => p.id === s.pipeId);
                             return (
-                              <tr key={s.pipeId} className="border-t border-gray-100 hover:bg-gray-50">
+                              <tr key={s.pipeId} className="border-t border-slate-100 hover:bg-slate-50">
                                 <td className="px-2 py-1 font-semibold">{pipe?.label || s.pipeId}</td>
                                 <td className="px-2 py-1 text-center">{(s.requiredDiameter * 1000).toFixed(0)}</td>
                                 <td className="px-2 py-1 text-center font-bold">{(s.selectedDiameter * 1000).toFixed(0)}</td>
@@ -1000,7 +1000,7 @@ export function PipeNetworkDesigner() {
                           })}
                         </tbody>
                         <tfoot>
-                          <tr className="bg-gray-100 font-bold">
+                          <tr className="bg-slate-100 font-bold">
                             <td className="px-2 py-1.5" colSpan={7}>Total</td>
                             <td className="px-2 py-1.5 text-right font-mono">₹{designResult.totalCost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                           </tr>
@@ -1023,8 +1023,8 @@ export function PipeNetworkDesigner() {
                   </div>
 
                   {/* Standard Diameters Reference */}
-                  <details className="bg-gray-50 rounded-lg border">
-                    <summary className="px-4 py-2 cursor-pointer text-sm font-semibold text-gray-700 hover:bg-gray-100">
+                  <details className="bg-slate-50 rounded-lg border">
+                    <summary className="px-4 py-2 cursor-pointer text-sm font-semibold text-slate-700 hover:bg-slate-100">
                       Standard Pipe Diameters (IS)
                     </summary>
                     <div className="px-4 pb-3">
@@ -1043,7 +1043,7 @@ export function PipeNetworkDesigner() {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-gray-200 px-4 py-2 bg-gray-50 text-[10px] text-gray-500 dark:text-gray-400 flex justify-between">
+      <div className="border-t border-slate-200 px-4 py-2 bg-slate-50 text-[10px] text-slate-500 dark:text-slate-400 flex justify-between">
         <span>Hardy Cross (1936) · Linear Theory (Wood & Charles, 1972) · Newton-Raphson | IS 783 · IS 2185</span>
         <span>{nodes.length} nodes · {pipes.length} pipes · {loops.length} loops</span>
       </div>

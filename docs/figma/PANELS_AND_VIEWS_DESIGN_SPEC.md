@@ -1,9 +1,10 @@
 # BeamLab — Panels, Views & Pages Design Specification
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Last Updated:** 2025-01-XX  
 **Companion To:** `WORKFLOW_BUTTONS_DESIGN_SPEC.md` (covers Workflow Sidebar, Ribbon, and all workflow dialogs)  
-**Scope:** Every panel, view, page, overlay, toolbar, menu, and modal **not** covered in the workflow spec — micro-detail accuracy for Figma reproduction.
+**Scope:** Every panel, view, page, overlay, toolbar, menu, and modal **not** covered in the workflow spec — micro-detail accuracy for Figma reproduction.  
+**Results Coverage:** 19 component files (~11,000 lines) fully documented in Appendixes F, G, H, I.
 
 ---
 
@@ -31,8 +32,10 @@
 - [C — Color Token Glossary](#appendix-c--color-token-glossary)
 - [D — Analysis Panels Deep Spec](#appendix-d--analysis-panels-deep-spec)
 - [E — Design Dialogs Deep Spec](#appendix-e--design-dialogs-deep-spec)
-- [F — Results & Post-Processing Deep Spec](#appendix-f--results--post-processing-deep-spec)
+- [F — Results & Post-Processing Deep Spec](#appendix-f--results--post-processing-deep-spec) *(18 sections, 1200+ lines)*
 - [G — Structural Analysis Viewer](#appendix-g--structural-analysis-viewer)
+- [H — Post-Processing Design Studio](#appendix-h--post-processing-design-studio) *(12 sub-sections covering RC Beam/Steel/Section/Deflection)*
+- [I — Barrel Exports](#appendix-i--barrel-exports-resultsindexts)
 
 ---
 
@@ -1926,11 +1929,1168 @@ Full table for `interior`, `oneEdge`, `twoEdges`, `simplySS` with aspect ratios 
 
 ## Appendix F — Results & Post-Processing Deep Spec
 
-### F.1 Analysis Data Conversion
+> **Scope:** 19 component files, ~11,000 lines of results UI code. This appendix covers every panel, dialog, overlay, table, chart, and 3D renderer in the results system.
 
-The `convertToAnalysisResultsData()` function transforms raw analysis results into dashboard-compatible format:
+---
 
-**Output Structure:**
+### F.1 Results Toolbar — `ResultsToolbar.tsx` (1685 lines)
+
+**Purpose:** Floating toolbar that appears post-analysis. Serves as command center for all results visualization.
+
+#### F.1.1 Collapsed State
+
+**Container:** `fixed bottom-4 right-4 z-40 flex items-center gap-2`
+
+| Button | Classes | Icon | Purpose |
+|---|---|---|---|
+| Back | `px-3 py-2 bg-white dark:bg-slate-900 text-blue-300 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700` | `ArrowLeft` | Return to modeling |
+| Expand | `px-4 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800` | `Maximize2` | Open full toolbar |
+| Close | `p-2 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700` | `X` | Exit results mode |
+
+#### F.1.2 Expanded State
+
+**Root:** `fixed bottom-4 right-4 z-40 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden`
+
+**Header Bar:**
+- Background: `bg-gradient-to-r from-blue-600 to-purple-600 text-white`
+- Title: "Results" + version badge `text-[9px] bg-white/20 rounded px-1.5 py-0.5 font-mono`
+- Minimize/Close buttons: `p-1 rounded hover:bg-white/20`
+
+**Back to Model Button:**
+```
+w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-300
+hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800
+border-b border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-blue-500
+```
+
+#### F.1.3 Diagram Toggle Grid
+
+**Container:** `px-4 py-3 border-b border-slate-200 dark:border-slate-800`
+**Label:** `text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider`
+**Grid:** `grid grid-cols-6 gap-1`
+
+| ID | Label | Icon | Color |
+|---|---|---|---|
+| `deflection` | Deflected | `TrendingDown` | `text-blue-500` |
+| `bmd` | BMD (Mz) | `BarChart2` | `text-green-500` |
+| `sfd` | SFD (Vy) | `Activity` | `text-orange-500` |
+| `bmd_my` | BMD (My) | `BarChart3` | `text-teal-500` |
+| `sfd_vz` | SFD (Vz) | `Waves` | `text-cyan-500` |
+| `reactions` | Reactions | `ArrowDownToLine` | `text-purple-500` |
+| `axial` | Axial | `SlidersHorizontal` | `text-red-500` |
+| `heatmap` | Heat Map | `Flame` | `text-yellow-500` |
+
+**Each toggle button:**
+- Active: `bg-slate-100 dark:bg-blue-500 dark:text-white dark:ring-2 dark:ring-blue-400`
+- Inactive: `hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-slate-400`
+- Icon: `w-4 h-4`, Label: `text-[9px]`
+
+#### F.1.4 Scale Slider Section
+
+**Container:** `px-4 py-3 border-b border-slate-200 dark:border-slate-800`
+**Range input:** `w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600`
+- Min: 1, Max: 200
+**Tick labels:** `text-[10px] text-slate-500 dark:text-slate-400`
+
+#### F.1.5 Animation Controls
+
+| Button | Classes |
+|---|---|
+| Play | `bg-blue-100 dark:bg-blue-900/30 text-blue-600` — `Play` icon |
+| Stop | `bg-red-100 dark:bg-red-900/30 text-red-600` — `Pause` icon |
+| Reset | `p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700` — `RotateCcw` icon |
+
+#### F.1.6 Quick Stats
+
+**Grid:** `grid grid-cols-2 gap-2`
+
+| Card | Background | Label Color | Value Color |
+|---|---|---|---|
+| Displacement | `bg-blue-50 dark:bg-blue-900/20` | `text-blue-600 dark:text-blue-400 text-[10px]` | `text-blue-700 dark:text-blue-300 text-sm font-bold` |
+| Reaction | `bg-purple-50 dark:bg-purple-900/20` | `text-purple-600 dark:text-purple-400` | `text-purple-700 dark:text-purple-300` |
+
+#### F.1.7 Heat Map Type Selector (conditional)
+
+Appears when `heatmap` toggle is active.
+**Container:** `mt-3 pt-3 border-t border-slate-200 dark:border-slate-700`
+**Type buttons:** `flex-1 px-2 py-1.5 text-[10px] font-medium rounded`
+**Active gets gradient background per type.**
+**Color scale legend bar:** `flex-1 h-2 rounded bg-gradient-to-r` with specific color stops per type.
+
+#### F.1.8 Support Reactions Table (conditional)
+
+Appears when `reactions` toggle is active.
+**Container:** `px-4 py-3 border-b border-slate-200 dark:border-slate-800 max-h-48 overflow-y-auto scroll-smooth`
+**Each card:** `p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg`
+**Values:** `font-mono text-slate-900 dark:text-white`, labels `text-slate-500 dark:text-slate-400 text-[9px]`
+
+#### F.1.9 Export Section
+
+| Button | Classes |
+|---|---|
+| Export PDF | `bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 shadow-lg text-sm font-medium` |
+| Export CSV | `bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium` |
+
+#### F.1.10 Next Steps Links
+
+| Action | Classes |
+|---|---|
+| Member Diagrams | `bg-gradient-to-r from-orange-500 to-red-500` |
+| Dashboard | `bg-gradient-to-r from-indigo-500 to-purple-600` |
+| Advanced | `bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300` |
+| Design Code | `bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300` |
+| Post-Processing | `bg-gradient-to-r from-emerald-500 to-teal-600` |
+| Design Hub | `bg-gradient-to-r from-blue-600 to-indigo-600` |
+
+#### F.1.11 Modals Launched
+
+| Modal | Dialog Size | Content |
+|---|---|---|
+| Dashboard | `max-w-[1800px] w-[95vw] h-[90vh] p-0` | `AnalysisResultsDashboard` |
+| Member Detail | `max-w-[900px] w-[90vw] h-[85vh] p-0` | `MemberDetailPanel` |
+| Design Studio | Inline render | `PostProcessingDesignStudio` |
+
+---
+
+### F.2 Results Table Dock — `ResultsTableDock.tsx` (642 lines)
+
+**Purpose:** Bottom-docked panel showing tabular analysis results.
+
+#### F.2.1 States
+
+**Collapsed (default):**
+- Height: `h-7`
+- Bar: `flex items-center justify-between px-3 bg-slate-900 border-t border-slate-700`
+- Shows: node/member count chips + equilibrium status badge
+- Click/drag-up → expanded
+
+**Expanded:**
+- Default height: `h-[240px]`
+- Maximized height: `h-[60vh]`
+- Animation: `animate-[slideInUp_200ms_ease-out]`
+
+#### F.2.2 Tab Bar
+
+3 tabs with colored ID indicators:
+
+| Tab | ID Color | Columns |
+|---|---|---|
+| Displacements | `cyan-400` | Node, δx, δy, δz (m), θx, θy, θz (rad) |
+| Member Forces | `blue-400` | Member, Fx, Fy, Fz (kN), Mx, My, Mz (kN·m) |
+| Reactions | `amber-400` | Node, Rx, Ry, Rz (kN), MRx, MRy, MRz (kN·m) |
+
+**Tab button active:** Blue-600 underline + white text
+**Tab button inactive:** `text-slate-400 hover:text-white`
+
+#### F.2.3 Table Styling
+
+**Header:** `sticky top-0 bg-slate-800 z-10`
+**Sort header:** `SortHeader` component with `ArrowUpDown` icon (`w-3 h-3`)
+**Filter input:** `w-24` text field for ID search
+**Cell font:** `font-mono text-xs`
+
+**Heat-map cell coloring:**
+- > 0.8 of max → `text-red-400`
+- > 0.5 of max → `text-orange-400`
+- > 0.2 of max → `text-yellow-400`
+- ≤ 0.2 of max → default `text-slate-300`
+
+**Summary footer rows (sticky tfoot):**
+| Tab | Label | Color |
+|---|---|---|
+| Reactions | `ΣR` | `text-emerald-400` |
+| Member Forces | `Max` | `text-red-400` |
+| Displacements | `Max` | `text-orange-400` |
+
+#### F.2.4 Action Buttons
+
+| Button | Icon | Behavior |
+|---|---|---|
+| Export CSV | `Download` | Per-tab CSV export |
+| Print | `Printer` | — |
+| Maximize/Minimize | `Maximize2`/`Minimize2` | Toggle `h-[60vh]` |
+| Collapse | `ChevronDown` | Return to `h-7` bar |
+| Close | `X` | `hover:text-red-400` |
+
+**Row click:** `useModelStore.getState().selectNode(r.id)` — selects corresponding node in 3D viewport.
+
+---
+
+### F.3 Results Control Panel — `ResultsControlPanel.tsx` (796 lines)
+
+**Purpose:** STAAD-like sidebar for results visualization settings.
+
+#### F.3.1 Header
+- Icon: `Sliders` + "Results Display" title
+- Status badge: `analyzed` (green-400 dot) or `no-results` (slate-500)
+
+#### F.3.2 Sub-components
+
+**ScaleSlider:** Range input with `ZoomIn`/`ZoomOut` icon buttons.
+**ToggleButton:** Cyan active style (`bg-cyan-600/20 text-cyan-400 border-cyan-500/30`).
+**SummaryCard:** `p-3 rounded-lg border` with ok/warning/error status icon + value display.
+**CollapsibleSection:** Expandable section with `ChevronRight`/`ChevronDown` toggle.
+
+#### F.3.3 Diagram Types — 3-col Grid
+
+8 types in `grid grid-cols-3 gap-2`:
+
+| Type | Color | Label |
+|---|---|---|
+| `none` | — | Off |
+| `SFD` | `#00aaff` | SFD |
+| `BMD` | `#ff8800` | BMD |
+| `AFD` | `#00ff00` | AFD |
+| `TORSION` | `#ff00ff` | Torsion |
+| `DEFLECTION` | `#ffff00` | Deflection |
+| `BMD_MY` | `#00cccc` | My |
+| `SFD_VZ` | `#0088cc` | Vz |
+
+#### F.3.4 Five Collapsible Sections
+
+| # | Section | Default | Contents |
+|---|---|---|---|
+| 1 | Summary | Open | 2×2 SummaryCards (Max Displacement mm, Max Shear kN, Max Moment kNm + utilization status, Max Axial kN) |
+| 2 | Force Diagrams | Open | 3-col diagram type grid, scale slider (0.001–0.2), deflection magnification (1–200×), display toggles (Labels, Critical Pts, Fill, Baseline) |
+| 3 | Color Scheme | Closed | 4 radio options: Standard, Stress Gradient, Utilization, Force Intensity |
+| 4 | Animation | Closed | Animate Deflection toggle (custom `w-12 h-6` switch), speed slider (0.1–3×) |
+| 5 | View Options | Closed | Show original shape checkbox, Quick Views: Quad View / Full 3D / Isometric buttons |
+| 6 | Model Info | Closed | Nodes / Members / DOFs / Analysis Status |
+
+#### F.3.5 DisplaySettings Interface
+
+```typescript
+{
+  showDiagram: DiagramType,
+  diagramScale: number,        // default 0.05
+  showLabels: boolean,
+  showCriticalPoints: boolean,
+  showFill: boolean,
+  showBaseline: boolean,
+  colorMode: 'standard'|'gradient'|'utilization'|'intensity',
+  deflectedShapeScale: number, // default 50
+  showOriginalShape: boolean,
+  animateDeflection: boolean,
+  animationSpeed: number       // default 1.0
+}
+```
+
+#### F.3.6 Footer
+
+**Reset button:** `RefreshCw` icon + "Reset Display Settings"
+
+---
+
+### F.4 Analysis Results Dashboard — `AnalysisResultsDashboard.tsx` (4076 lines)
+
+**Purpose:** THE MAIN COMPREHENSIVE RESULTS HUB — largest single component in the app.
+
+**Container:** `rounded-xl border overflow-hidden h-full flex flex-col`
+**Launched in:** Dialog `max-w-[1800px] w-[95vw] h-[90vh]`
+
+#### F.4.1 Header Bar
+
+- Status icon: `CheckCircle` (emerald) / `AlertTriangle` (amber) / `XCircle` (red)
+- Title: "Analysis Results"
+- Metrics: `{nodes} nodes · {members} members · {dof} DOF`, analysis time
+- Legend toggle button
+- Export PDF button (blue gradient)
+- Close button (`X`)
+
+#### F.4.2 Tab Bar — 8 View Modes
+
+| Tab | Icon | Label |
+|---|---|---|
+| Overview | `Grid3X3` | Overview |
+| Force Diagrams | `BarChart2` | Diagrams |
+| Heat Map | `Flame` | Heat Map |
+| Reactions | `ArrowDown` | Reactions |
+| D/C Summary | `ArrowUpDown` | D/C Ratio |
+| Stability | `Activity` | Stability |
+| Load Combos | `Layers` | Load Combos |
+| Detailed | `FileText` | Detailed |
+
+**Tab styling:**
+- Active: `bg-white text-black border-white`
+- Inactive: `border-slate-700 text-slate-400 hover:text-white`
+
+#### F.4.3 Overview Tab
+
+**Summary Cards:** `grid-cols-5` top row:
+| Card | Value | Color |
+|---|---|---|
+| Max Displacement | mm | `text-blue-400` |
+| Max Stress | MPa | `text-red-400` |
+| Max Utilization | % | `text-amber-400` |
+| Total Members | count | `text-cyan-400` |
+| Analysis Time | ms | `text-emerald-400` |
+
+**Quick Action Buttons:** row of action shortcuts
+
+**Member Overview Grid:** `grid-cols-3`, paginated 16/page with Prev/Next + page counter
+
+**MemberDiagramMini** (Canvas-based):
+- Canvas: 280×90px
+- High-DPI: `canvas.width = rect.width * devicePixelRatio`
+- Background: `transparent`
+- Grid: subtle gray lines
+- Gradient fill for +/- values (positive green, negative red)
+- Peak annotations: font-mono value labels
+- X-axis position labels in meters
+
+**ExpandedDiagram** (on member click):
+- 2×2 grid of chart canvases: SFD, BMD, AFD, DEFLECTION
+- 5th canvas: weak-axis (if data exists)
+- Interactive crosshair tooltips on canvas mouse move (6 canvas refs + 6 overlay refs)
+
+**Node Displacement Table:** Top 8 most displaced nodes, columns: Node ID, dx, dy, dz, total
+
+**Structure Statistics:** 4-col grid (total weight, node count, member count, analysis status)
+
+**Equilibrium Verification:** 6-col grid for Fx/Fy/Fz/Mx/My/Mz
+- Each column: Applied load, Reaction, Residual
+- Condition number warning banner if high
+
+**Serviceability Checks Table:** Sorted by worst ratio
+- Columns: Member, Deflection, L/240 Limit, L/360 Limit, Status
+
+#### F.4.4 Diagrams Tab
+
+- 4 diagram type buttons (SFD, BMD, AFD, DEFLECTION)
+- Member search input: `w-56`
+- Filtered members in `grid-cols-3` with `MemberDiagramMini`
+
+**Diagram colors:**
+| Type | Hex |
+|---|---|
+| SFD | `#f97316` |
+| BMD | `#22c55e` |
+| AFD | `#ef4444` |
+| DEFLECTION | `#3b82f6` |
+| BMD_MY | `#14b8a6` |
+| SFD_VZ | `#0891b2` |
+
+#### F.4.5 Reactions Tab
+
+**ReactionDisplay component:**
+- Auto-detects 2D vs 3D from presence of Fz/Mx/My
+- Reaction totals row (equilibrium check)
+- Per-node reaction cards in `grid-cols-2`
+- Each card: Node ID, Forces subgroup (Fx, Fy, Fz), Moments subgroup (Mx, My, Mz)
+- Support displacement/settlement check table
+
+#### F.4.6 Stability Tab
+
+**Euler Buckling Check Table:**
+| Column | Description |
+|---|---|
+| Member | ID |
+| Pcr | π²EI/L² |
+| Slenderness λ | L/r |
+| P/Pcr | Demand/capacity ratio |
+| Status | SAFE (green) / BUCKLE (red) |
+
+**P-M Interaction Diagram (SVG 320×240):**
+- Parabolic envelope curve
+- Linear AISC H1-1a line
+- Demand points colored by interaction ratio
+- Axes: P/Py (vertical), M/Mp (horizontal)
+
+**Natural Frequency Estimates:**
+- Beam formula: $f_1 = \frac{\pi}{2L^2}\sqrt{\frac{EI}{\rho A}}$
+- Rayleigh approximation
+- Building period: $T \approx 0.1N$ (N = number of stories)
+
+**Design Response Spectrum (SVG 400×200):**
+| Code | Parameters |
+|---|---|
+| IS 1893 | Zone IV, Soil Type II |
+| ASCE 7-22 | S_DS=1.0, S_D1=0.5 |
+| EC8 | Type 1, a_g=0.25g, Soil B |
+
+Three colored curves plotted on Period (s) vs Sa/g axes.
+
+#### F.4.7 Load Combinations Tab
+
+**Code tables:**
+| Code System | Standards |
+|---|---|
+| Indian | IS 875 / IS 456 |
+| American | ASCE 7-22 / ACI 318 |
+| European | Eurocode EN 1990 |
+
+**Combo type badges:**
+- Strength: red
+- Service: green
+- Seismic: purple
+
+**Factor summary:** 3-col grid showing typical DL/LL/WL/EQ factors per combo type
+
+#### F.4.8 D/C Ratio Tab
+
+**Status Count Cards (4):**
+| Status | Threshold | Color |
+|---|---|---|
+| Safe | ≤ 70% | emerald |
+| Warning | 70–90% | amber |
+| Critical | 90–100% | orange |
+| Failed | > 100% | red |
+
+**D/C Ratio Table:**
+- Columns: Member, D/C Ratio (with utilization bar), Governing Check (Bending/Shear/Axial), Status badge
+
+**Deflection Limit Checks:**
+| Limit | Code | Ratio |
+|---|---|---|
+| Floor | ASCE 7 / IS 800 | L/240 |
+| Roof | General | L/180 |
+| Cantilever | General | L/120 |
+| Sensitive | ACI 318 / IS 456 | L/360 |
+
+**Inter-Story Drift Check:**
+- Groups nodes by Y-coordinate (±0.1m tolerance)
+- IS 1893 limit: H/400
+- ASCE 7 limit: H/500
+
+#### F.4.9 Heat Map Tab
+
+**SVG Structural Layout:**
+- Auto-projected 2D from 3D node coordinates
+- Member lines: thickness proportional to utilization (1–6px)
+- Utilization coloring: continuous gradient
+- Support triangles at restrained nodes
+- Node circles at intersections
+
+**Utilization Color Gradient:**
+```
+0.0 → cyan (#06b6d4)
+0.3 → green (#22c55e)
+0.5 → yellow (#eab308)
+0.7 → orange (#f97316)
+1.0 → red (#ef4444)
+```
+
+**Section-Type Group Summary:** 3-col grid
+**Utilization Bar List:** Sorted descending, each with label + horizontal bar
+
+#### F.4.10 Detailed Tab
+
+**DetailedMemberTable** (virtualized with `@tanstack/react-virtual`):
+- `estimateSize`: 36px per row
+- `overscan`: 8 rows
+- `MAX_VISIBLE_HEIGHT`: 480px
+
+**12 Sortable Columns:**
+| Column | Unit | Align |
+|---|---|---|
+| ID | — | left |
+| Section | — | left |
+| Length | m | right |
+| Vy | kN | right |
+| Vz | kN | right |
+| Mz | kN·m | right |
+| My | kN·m | right |
+| Axial | kN | right |
+| Torsion | kN·m | right |
+| Deflection | mm | right |
+| Stress | MPa | right |
+| D/C | ratio | right |
+
+#### F.4.11 Footer Bar
+
+| Button | Icon | Action |
+|---|---|---|
+| Export CSV | `FileDown` | Download CSV |
+| Export JSON | `FileJson` | Download JSON |
+| Print Report | `Printer` | Print dialog |
+| Share | `Share2` | Copy link |
+
+---
+
+### F.5 Results Visualization — `ResultsVisualization.tsx` (829 lines)
+
+**Purpose:** Standalone results page with multiple view modes. Uses framer-motion throughout.
+
+#### F.5.1 View Modes (4 Tabs)
+
+| Tab | Icon | Label |
+|---|---|---|
+| Summary | 📊 | Summary |
+| Diagrams | 📈 | Diagrams |
+| Tables | 📋 | Tables |
+| Modes | 🎵 | Modal |
+
+#### F.5.2 SummaryCard Component
+
+- `motion.div` with `initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}`
+- Colored icon background circle
+- Critical badge: `animate-pulse bg-red-500 text-white text-xs px-1.5 rounded-full`
+- Value: `text-2xl font-bold font-mono`
+
+#### F.5.3 Summary View
+
+**Stability Check Banner:**
+- Stable: green bg + `CheckCircle` + "Structure is stable"
+- Unstable: red bg + `AlertTriangle` + "Instability detected"
+
+**6 SummaryCards** in 2×3 grid:
+| Card | Color | Critical Flag |
+|---|---|---|
+| Max Displacement | blue | No |
+| Max Moment | orange | No |
+| Max Shear | purple | No |
+| Max Axial | red | No |
+| Max Reaction | green | No |
+| Max Utilization | amber | Yes if > 0.9 |
+
+**Structure Summary:** Weight (kg), Members, Nodes, Load Cases
+
+#### F.5.4 Diagram View
+
+**5 type buttons:** BMD 📐, SFD ✂️, Axial ↕️, Deflection 〰️, Utilization 📊
+
+**DiagramCanvas (SVG viewBox 600×400):**
+- Grid pattern fill
+- Structure outline
+- Animated path: `motion.path` with `pathLength: 0→1` transition
+- Filled area for BMD polygon
+- Utilization color bars per segment
+- Support triangles
+- Max value annotation arrow + label
+- Auto legend
+
+#### F.5.5 Tables View
+
+4 `ResultsTable` instances:
+- Displacements (Node, dx, dy, dz, total)
+- Reactions (Node, Fx, Fy, Fz, Mx, My, Mz)
+- Member Forces (Member, Axial, ShearY, ShearZ, MomentZ, MomentY, Torsion)
+- Stresses & Utilization (Member, Stress, Utilization, Status)
+
+**ResultsTable features:**
+- Sortable columns with arrow indicators
+- Filter input
+- Row count footer
+- Highlighted max values (bold + colored)
+
+#### F.5.6 Modal Results View
+
+**Mode Cards (3):**
+- Frequency in Hz (large)
+- Period in seconds
+- Mass participation bars: X-direction (blue), Y-direction (green)
+- Participation bar height proportional to percentage
+
+**Full Modal Table:**
+| Column |
+|---|
+| Mode |
+| Frequency (Hz) |
+| Period (s) |
+| Mass Part. X (%) |
+| Mass Part. Y (%) |
+| Cumulative X (%) |
+| Cumulative Y (%) |
+
+#### F.5.7 Export Bar
+
+Segmented button group: PDF / Excel / JSON
+
+#### F.5.8 Utilization Color Scale
+
+```
+< 0.5 → green (#22c55e)
+< 0.7 → yellow (#eab308)
+< 0.9 → orange (#f97316)
+≥ 0.9 → red (#ef4444)
+```
+
+---
+
+### F.6 Member Detail Panel — `MemberDetailPanel.tsx` (528 lines)
+
+**Purpose:** Complete member analysis view in a dialog.
+
+#### F.6.1 Header
+
+- Navigation: `ChevronLeft` / `ChevronRight` (Prev/Next member)
+- Member info: ID + section name + length
+- Design code selector: `IS800` | `IS456` | `EC3` | `AISC360`
+- Download button, Close button
+
+#### F.6.2 Design Status Banner
+
+Full-width colored banner:
+- PASS: green bg + `CheckCircle` icon
+- FAIL: red bg + `AlertTriangle` icon
+- Shows overall utilization percentage
+
+#### F.6.3 Diagram Type Selector
+
+4 buttons in a row: ALL / SFD / BMD / AFD
+- Active: `bg-blue-600 text-white`
+- Inactive: `bg-slate-700 text-slate-400`
+
+#### F.6.4 Force Summary Grid
+
+6-column grid of force cards:
+
+| Card | Value | Color |
+|---|---|---|
+| Axial | kN | green (tension) / red (compression) |
+| Shear Y | kN | blue |
+| Shear Z | kN | blue |
+| Moment Y | kN·m | purple |
+| Moment Z | kN·m | purple |
+| Torsion | kN·m | orange |
+
+All values: `font-mono text-xl font-bold`
+
+#### F.6.5 Force Diagrams
+
+Integrates `ForceDiagramRenderer` with config:
+```typescript
+{ showShear: true, showMoment: true, showAxial: true, colorScheme: 'engineering' }
+```
+
+#### F.6.6 Section Cut Query
+
+**Container:** Gradient panel `bg-gradient-to-r from-blue-900/30 to-purple-900/30`
+**Position slider:** Range 0–1, step 0.01
+**Display:** Position in meters + percentage
+
+**8 Interpolated Values** in 4×2 grid:
+| Value | Unit |
+|---|---|
+| Shear Y | kN |
+| Shear Z | kN |
+| Moment Y | kN·m |
+| Moment Z | kN·m |
+| Axial | kN |
+| Torsion | kN·m |
+| Deflection Y | mm |
+| Deflection Z | mm |
+
+#### F.6.7 Design Checks
+
+Collapsible section with per-check cards:
+- Left border: 3px colored (green PASS / red FAIL / amber WARNING)
+- Check name + status badge
+- Utilization bar: `w-24 h-2 rounded-full`
+  - ≤0.6: `bg-emerald-500`
+  - ≤0.8: `bg-lime-500`
+  - ≤0.9: `bg-amber-500`
+  - ≤1.0: `bg-orange-500`
+  - >1.0: `bg-red-500`
+- Formula display: `font-mono text-xs`
+- Description text
+
+#### F.6.8 Reinforcement Design (concrete members)
+
+2-col layout:
+| Column | Contents |
+|---|---|
+| Main Bars | Count × Ø diameter, area (mm²), ratio (%) |
+| Stirrups | Ø diameter @ spacing mm, N-legged |
+
+#### F.6.9 Recommendations
+
+Blue info box: `bg-blue-900/15 border-blue-500/30`
+- Header: "Recommendations" in `text-blue-400 uppercase`
+- Bullet list with blue dot markers
+
+---
+
+### F.7 Results Table Panel — `ResultsTablePanel.tsx` (894 lines)
+
+**Purpose:** Standalone comprehensive table view for all analysis data.
+
+#### F.7.1 Container
+
+`bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden`
+
+#### F.7.2 Header
+
+- `Table` icon (size 18)
+- Title: `font-semibold text-slate-700 dark:text-slate-200`
+- Search input: `pl-8 pr-3 py-1.5 text-sm bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-md w-32` with `Search` icon (size 14) absolutely positioned
+- Copy button: `p-1.5 text-slate-500 hover:text-slate-700` — copied state shows `"✓ Copied!"` in `text-green-500`
+- Export button (disabled): `p-1.5 text-slate-400 cursor-not-allowed`
+
+#### F.7.3 Tab System
+
+3 tabs: `nodes`, `members`, `reactions`
+
+**Tab indicators:**
+| Tab | Indicator |
+|---|---|
+| Nodes | `w-2 h-2 rounded-full bg-cyan-400` |
+| Members | `w-4 h-0.5 bg-amber-400 rounded` |
+| Reactions | `w-2 h-2 bg-green-400 rotate-45` |
+
+**Active tab:** `text-cyan-400 border-b-2 border-cyan-400 bg-slate-100/30 dark:bg-slate-800/30`
+**Inactive tab:** `text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50`
+
+#### F.7.4 Table Styling
+
+**Header row:** `bg-slate-100 dark:bg-slate-800`
+**Sort indicators:** `ArrowUp`/`ArrowDown` (size 12) or `ArrowUpDown` (size 12, opacity 30)
+**Alternating rows:** odd `bg-slate-100/30 dark:bg-slate-800/30`, even `bg-slate-100/50 dark:bg-slate-800/50`
+**Hover:** `hover:bg-slate-200/50 dark:hover:bg-slate-700/50`
+**Max value row:** `bg-red-900/30`
+**Over-utilized:** `bg-red-900/30`, Warning: `bg-amber-900/20`
+
+**Cell Colors:**
+| Data | Color |
+|---|---|
+| Displacements (dx,dy,dz) | `text-cyan-400` |
+| Rotations (rx,ry,rz) | `text-amber-400` |
+| Total displacement | `text-emerald-400` (or `text-red-400` if max) |
+| Axial (compression) | `text-blue-400` |
+| Axial (tension) | `text-red-400` |
+| Shear | `text-cyan-400` / `text-cyan-300` (max) |
+| Moment | `text-amber-400` / `text-amber-300` (max) |
+| Torsion | `text-purple-400` |
+| Utilization OK | `text-emerald-400` |
+| Utilization warning | `text-amber-400` |
+| Utilization fail | `text-red-400` |
+| Reaction Fx | `text-red-400` |
+| Reaction Fy | `text-green-400` |
+| Reaction Fz | `text-blue-400` |
+| Reaction Moments | `text-amber-400` |
+| Reaction Total | `text-emerald-400` |
+
+**Overflow:** `max-h-[400px]` with `sticky top-0` headers
+**Footer:** `px-4 py-2 border-t text-xs text-slate-500 dark:text-slate-400` — shows row count
+
+---
+
+### F.8 Results Split View — `ResultsSplitView.tsx` (259 lines)
+
+**Purpose:** Full-screen split-pane layout for results with resizable panels.
+
+#### F.8.1 Root Layout
+
+`fixed inset-0 z-50 bg-white dark:bg-slate-950` (with `p-4` when not fullscreen)
+
+#### F.8.2 Header Bar (h-12)
+
+`bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4`
+- Title: `text-lg font-semibold text-slate-900 dark:text-white`
+- Status pill: `w-2 h-2 rounded-full bg-emerald-400` + `text-sm text-slate-500`
+- Action buttons: `p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 rounded`
+- Close button: `hover:text-white hover:bg-red-800`
+- Separator: `w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1`
+
+#### F.8.3 Panels
+
+| Panel | Default Size | Range | Position |
+|---|---|---|---|
+| Left | 400px wide | 280–600px | `border-r` |
+| Bottom | 280px tall | 150–450px | `border-t` |
+
+**Resize handles:**
+- Vertical: `w-1 bg-slate-200 dark:bg-slate-700 hover:bg-cyan-500 cursor-col-resize`
+- Horizontal: `h-1 bg-slate-200 dark:bg-slate-700 hover:bg-cyan-500 cursor-row-resize`
+
+#### F.8.4 DockableResultsPanel
+
+- Horizontal: default `h-80`, collapsed `h-10`
+- Vertical: default `w-96`, collapsed `w-10`
+- Collapse button: `absolute top-2 right-2 z-10 p-1 bg-slate-100 dark:bg-slate-800 rounded hover:bg-slate-200 dark:hover:bg-slate-700`
+- Transition: `transition-all duration-300`
+- Icons: `PanelLeftClose`/`PanelLeftOpen`, `PanelBottomClose`/`PanelBottomOpen` (size 14)
+
+---
+
+### F.9 Enhanced Diagram Viewer — `EnhancedDiagramViewer.tsx` (885 lines)
+
+**Purpose:** Full-featured force diagram viewer with Canvas 2D rendering.
+
+#### F.9.1 Container
+
+`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden`
+Fullscreen mode: `fixed inset-4 z-50`
+
+#### F.9.2 Header
+
+`flex items-center justify-between px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800`
+- Title: `font-semibold text-slate-900 dark:text-white` with member span in `text-slate-500 text-sm`
+- Action icons: `p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:hover:bg-slate-700` — `ZoomIn`, `ZoomOut`, `Maximize2`, `Download`, `Copy`
+
+#### F.9.3 Diagram Type Tabs (framer-motion)
+
+`<motion.button>` with `whileHover={{ scale: 1.02 }}`, `whileTap={{ scale: 0.98 }}`
+
+| Type | Stroke | Positive | Negative | Fill |
+|---|---|---|---|---|
+| SFD | `#ef4444` | `#ef4444` | `#3b82f6` | `rgba(239,68,68,0.2)` |
+| BMD | `#22c55e` | `#22c55e` | `#8b5cf6` | `rgba(34,197,94,0.2)` |
+| AFD | `#f97316` | `#f97316` | `#06b6d4` | `rgba(249,115,22,0.2)` |
+| DEFLECTION | `#6366f1` | `#6366f1` | `#ec4899` | `rgba(99,102,241,0.2)` |
+
+**Active tab:** `border-transparent text-slate-900 dark:text-white shadow-lg` + gradient bg
+**Inactive tab:** `border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900`
+
+#### F.9.4 Canvas Rendering
+
+**Padding:** `{ top: 60, right: 80, bottom: 80, left: 80 }`
+**Grid lines:** `rgba(255,255,255,0.1)`, lineWidth 1
+**Baseline (y=0):** `rgba(255,255,255,0.5)`, lineWidth 2, dashed `[5,5]`
+**Member axis:** `#fff`, lineWidth 4
+**Pin support:** white filled triangle
+**Roller support:** white filled circle, radius 8
+**Diagram line:** lineWidth 3, `lineCap=round`, `lineJoin=round`
+**Critical points:** filled circles, radius 6
+**Scanner:** dashed vertical line `[4,4]`, white point radius 8
+**Tooltip:** rounded rect (`radius=8`), bg `rgba(0,0,0,0.8)`, stroke `colors.stroke`, lineWidth 2
+**Fonts:** `'bold 12px Inter, sans-serif'`, `'bold 14px Inter, sans-serif'`, `'11px Inter, sans-serif'`
+**Cursor:** `cursor-crosshair`
+
+#### F.9.5 Stats Bar
+
+`flex items-center gap-6 px-4 py-2 bg-slate-100/30 dark:bg-slate-800/30 border-b`
+Values: `font-mono font-bold` with inline colors by sign
+
+#### F.9.6 Section Values Panel
+
+**Idle:** `px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700` with `Crosshair` icon + "Hover over diagram"
+**Active:** `motion.div` with `initial={{ opacity:0, y:-10 }} animate={{ opacity:1, y:0 }}`
+- Position + value separated by divider `h-6 w-px bg-slate-200 dark:bg-slate-700`
+- Value: `font-mono font-bold text-lg` with inline color
+
+---
+
+### F.10 Enhanced Heat Map — `EnhancedHeatMap.tsx` (634 lines)
+
+**Purpose:** Interactive structural heat map with member cards and summary stats.
+
+#### F.10.1 Container
+
+`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden`
+
+#### F.10.2 Header
+
+Title icon: `Flame w-5 h-5 text-orange-500`
+Sort button: `px-3 py-1.5 rounded-lg text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-200`
+
+#### F.10.3 Heat Map Types
+
+`'stress' | 'displacement' | 'utilization' | 'axial' | 'moment' | 'shear'`
+
+**Active type button:** `bg-orange-500/20 border-orange-500/50 text-orange-400`
+
+#### F.10.4 Color Scales
+
+| Scale | Stops |
+|---|---|
+| STRESS | `#3b82f6` → `#22c55e` → `#eab308` → `#f97316` → `#ef4444` |
+| DIVERGING | `#3b82f6` → `#ffffff` → `#ef4444` |
+| SEQUENTIAL | `#1e3a5f` → `#3b82f6` → `#22c55e` → `#eab308` → `#ef4444` |
+
+#### F.10.5 Color Legend
+
+Gradient bar: `h-4 rounded-full overflow-hidden border w-[200px]`
+Ticks: `flex justify-between text-xs font-mono`
+
+#### F.10.6 MemberCard (framer-motion)
+
+`motion.div` with `layout`, `initial={{ opacity:0, scale:0.9 }}`, `animate={{ opacity:1, scale:1 }}`, `whileHover={{ scale:1.02 }}`
+- Container: `relative p-3 rounded-lg border cursor-pointer`
+- Selected: `border-blue-500 bg-blue-500/10`
+- Default: `border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50`
+- Color bar: `absolute left-0 top-0 bottom-0 w-1 rounded-l-lg` with inline bg
+- Circle badge: `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold`
+
+#### F.10.7 Summary Stats
+
+`grid grid-cols-4 gap-4`:
+| Stat | Color |
+|---|---|
+| Max | `text-red-400` |
+| Min | `text-blue-400` |
+| Average | `text-green-400` |
+| Utilization | conditional: > threshold `text-red-400` else `text-green-400` |
+
+**Member grid:** `p-4 max-h-[400px] overflow-y-auto` → `grid grid-cols-3 gap-3` with `<AnimatePresence mode="popLayout">`
+
+#### F.10.8 Status Icons
+
+| Utilization | Icon | Color |
+|---|---|---|
+| ≤ 0.7 | `CheckCircle w-4 h-4` | `text-green-500` |
+| 0.7–0.9 | `AlertTriangle w-4 h-4` | `text-yellow-500` |
+| 0.9–1.0 | `AlertTriangle w-4 h-4` | `text-orange-500` |
+| > 1.0 | `XCircle w-4 h-4` | `text-red-500` |
+
+---
+
+### F.11 Animated Deflection — `AnimatedDeflection.tsx` (575 lines)
+
+**Purpose:** 3D animated deflected shape renderer in R3F canvas.
+
+#### F.11.1 Color Constants (THREE.Color)
+
+| Name | Hex | Usage |
+|---|---|---|
+| `COLOR_MIN` | `#3b82f6` | Low displacement (blue) |
+| `COLOR_MID` | `#22c55e` | Medium displacement (green) |
+| `COLOR_HIGH` | `#ef4444` | High displacement (red) |
+| `ORIGINAL_COLOR` | `#6b7280` | Ghost/reference shape (gray) |
+
+#### F.11.2 AnimatedMemberLine
+
+**Original shape:** `<Line>` drei — `color=#6b7280`, `lineWidth=1`, dashed (`dashSize=0.1`, `gapSize=0.05`, `opacity=0.5`)
+**Animated line:** `lineBasicMaterial` with `vertexColors`, `linewidth=3`
+
+#### F.11.3 AnimatedNode
+
+- Geometry: `sphereGeometry args=[0.05, 16, 16]` (hovered: `0.08`)
+- Material: `meshStandardMaterial` with emissive color (normal: `emissiveIntensity=0.2`, hovered: `0.5`)
+- Label: `<Html>` overlay — `bg-black/80 text-white text-xs px-1.5 py-0.5 rounded whitespace-nowrap`
+- Value format: `{(magnitude * 1000).toFixed(2)} mm`
+
+#### F.11.4 Animation
+
+`useFrame` loop: `phase += delta * animationSpeed * Math.PI * 2`
+Oscillation: `Math.sin(phase)` applied to displacement scale
+
+#### F.11.5 DeflectionControls Panel
+
+`bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur rounded-lg p-4 space-y-4`
+
+| Control | Type | Range |
+|---|---|---|
+| Scale | Range input | 1–200 |
+| Speed | Range input | 0.1–3.0 (step 0.1) |
+| Show Original | Checkbox | boolean |
+| Show Labels | Checkbox | boolean |
+
+**Range input style:** `w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer`
+**Value display:** `font-mono text-slate-600 dark:text-slate-300`
+**Max displacement footer:** `text-xs text-slate-500`, value in `text-cyan-400 font-mono`
+
+---
+
+### F.12 Diagram Overlay — `DiagramOverlay.tsx` (608 lines)
+
+**Purpose:** 3D force diagram overlay rendered in R3F scene.
+
+#### F.12.1 Color System
+
+| Token | Hex | Usage |
+|---|---|---|
+| `POSITIVE_COLOR` | `#3b82f6` | Sagging/positive |
+| `NEGATIVE_COLOR` | `#ef4444` | Hogging/negative |
+| `NEUTRAL_COLOR` | `#888888` | Zero crossing |
+| `DIAGRAM_OPACITY` | 0.2 | Fill transparency |
+| `SCANNER_LINE_COLOR` | `#ffffff` | Interactive scanner |
+| `TOOLTIP_BG` | `rgba(0,0,0,0.85)` | Value tooltip |
+
+#### F.12.2 Diagram Types
+
+`'BMD' | 'SFD' | 'deflection' | 'ShearY' | 'ShearZ' | 'MomentY' | 'MomentZ' | 'Axial' | 'Torsion' | 'DeflectionY' | 'DeflectionZ'`
+
+#### F.12.3 Sub-components
+
+**ValueLabel:** `<Text>` drei — `fontSize=0.2`, `outlineWidth=0.02`, `outlineColor=#000000`, `anchorX="center"`, `anchorY="bottom"`
+
+**CriticalPointMarker:** `<mesh>` + `sphereGeometry args=[0.08, 16, 16]` + `meshBasicMaterial`
+
+**ScannerLine:** `<Line>` drei — `color=#ffffff`, `lineWidth=2`, dashed (`dashSize=0.1`, `gapSize=0.05`)
+
+**Tooltip (Html):** `background: rgba(0,0,0,0.85)`, `color: white`, `padding: 8px 12px`, `borderRadius: 6px`, `fontSize: 12px`, `fontFamily: monospace`, `boxShadow: 0 4px 12px rgba(0,0,0,0.3)`, `border: 1px solid rgba(255,255,255,0.2)`
+
+#### F.12.4 3D Mesh
+
+**Fill mesh:** `meshStandardMaterial vertexColors transparent opacity=0.2 side=DoubleSide depthWrite=false`
+**Outline:** `lineSegments` → `lineBasicMaterial color=#ffffff transparent opacity=0.3`
+**Interactive:** `onPointerMove` (scanner position), `onPointerLeave`
+
+#### F.12.5 DiagramOverlayGroup
+
+Groups BMD + SFD + Deflection with per-type scale:
+- `bmdScale`: 0.05
+- `sfdScale`: 0.03
+- `deflectionScale`: 0.1
+
+---
+
+### F.13 Stress Contour Renderer — `StressContourRenderer.tsx` (806 lines)
+
+**Purpose:** 3D stress visualization with contour coloring, critical member highlighting, and UI panels.
+
+#### F.13.1 Stress Types
+
+`'vonMises' | 'principal1' | 'principal2' | 'principal3' | 'axial' | 'bending' | 'shear' | 'combined' | 'utilization'`
+
+#### F.13.2 Contour Color Scale (7-stop rainbow)
+
+| Position | Color |
+|---|---|
+| 0.0 | `#1e3a8a` (navy) |
+| 0.167 | `#2563eb` (blue) |
+| 0.333 | `#06b6d4` (cyan) |
+| 0.5 | `#22c55e` (green) |
+| 0.667 | `#eab308` (yellow) |
+| 0.833 | `#f97316` (orange) |
+| 1.0 | `#dc2626` (red) |
+
+#### F.13.3 StressMember (3D)
+
+- Geometry: `TubeGeometry` (radius 0.03, 8 radial segments)
+- Material: `meshStandardMaterial vertexColors roughness=0.6 metalness=0.2`
+- Critical pulse: `emissive=#ff0000`, `emissiveIntensity` oscillates 0.1–0.5 via `useFrame`
+- Critical label: `<Html>` → `bg-red-600 text-white text-xs px-2 py-1 rounded-full animate-pulse` + `AlertTriangle size=12`
+- Hover info: `<Html>` → `bg-black/90 text-white text-xs px-2 py-1 rounded whitespace-nowrap`
+
+#### F.13.4 Peak Value Labels
+
+Positioned at each member's critical location via `<Html>`:
+- Font: `monospace fontSize:10 fontWeight:600`
+- Border color by utilization: < 60% `#22c55e`, 60–90% `#eab308`, > 90% `#ef4444`
+- `backdropFilter: blur(4px)`
+
+#### F.13.5 StressTypeSelector UI
+
+**Trigger button:** `px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 rounded-lg text-sm border border-slate-600`
+**Dropdown:** `motion.div` — `w-64 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50`
+- `initial={{ opacity:0, y:-8 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-8 }}`
+- Active item: `bg-cyan-600/20 text-cyan-400`
+- Inactive: `hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-300`
+
+#### F.13.6 StressContourPanel
+
+**Container:** `bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden`
+**Header:** `px-4 py-3 bg-slate-100/50 dark:bg-slate-800/50 border-b` — `Layers w-5 h-5 text-cyan-500` icon
+**Controls:**
+- Contour intervals slider: `h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none`
+- Show contour lines checkbox: `rounded bg-slate-200 dark:bg-slate-700 border-slate-600 text-cyan-500`
+- Highlight critical checkbox
+**Summary grid:** `grid grid-cols-2 gap-4` — stress range (blue→red arrow), critical count
+
+#### F.13.7 Floating Legend (in R3F)
+
+`<Html>` positioned `fixed right-16 top-50%`:
+- Panel: `bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-300/60 dark:border-slate-700/60 shadow-2xl p-3 w-[200px]`
+- Select: `w-full text-xs bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-md px-2 py-1.5 focus:ring-1 focus:ring-cyan-500`
+- Stats: `text-[10px]` — colors: `text-red-400`, `text-green-400`, `text-cyan-400`
+
+---
+
+### F.14 Stress Overlay — `StressOverlay.tsx` (590 lines)
+
+**Purpose:** Combined stress/diagram/deflection overlay for 3D viewport.
+
+#### F.14.1 Visualization Modes
+
+`'none' | 'stress' | 'diagram_moment' | 'diagram_shear' | 'deflected'`
+
+#### F.14.2 Color Constants
+
+| Name | Hex |
+|---|---|
+| `COLOR_LOW` | `#3b82f6` |
+| `COLOR_MID` | `#22c55e` |
+| `COLOR_HIGH` | `#ef4444` |
+| `DEFLECTED_COLOR` | `#f97316` |
+| `DIAGRAM_POSITIVE` | `#ef4444` |
+| `DIAGRAM_NEGATIVE` | `#3b82f6` |
+
+#### F.14.3 ForcesDiagram (3D)
+
+- Fill: `meshBasicMaterial vertexColors transparent opacity=0.5 side=DoubleSide depthWrite=false`
+- Outline: `<Line> color=#ffffff lineWidth=1`
+
+#### F.14.4 DeflectedMember (3D)
+
+`<Line> color=#f97316 lineWidth=3 transparent opacity=0.7 dashed dashSize=0.2 gapSize=0.1`
+
+#### F.14.5 DeflectedNode (3D)
+
+`sphereGeometry args=[0.05, 16, 16]` + `meshStandardMaterial color=#f97316 transparent opacity=0.8 emissive=#f97316 emissiveIntensity=0.3`
+
+#### F.14.6 ScaleSlider (Html overlay)
+
+Inline styles: `fixed bottom:80px left:50% translateX(-50%)`, `background: rgba(0,0,0,0.8)`, `padding: 12px 20px`, `borderRadius: 8px`, `color: white`, `fontFamily: monospace`, `fontSize: 12px`
+Range: `width:150px accentColor:#f97316`
+
+#### F.14.7 ColorBar (Html overlay)
+
+Inline: `fixed right:20px top:50% translateY(-50%)`, `background: rgba(0,0,0,0.8)`, `padding: 12px`, `borderRadius: 8px`
+Gradient bar: `width:20px height:150px linear-gradient(to bottom, #ef4444, #22c55e, #3b82f6) borderRadius:4px`
+
+---
+
+### F.15 Mode Shape Renderer — `ModeShapeRenderer.tsx` (405 lines)
+
+**Purpose:** 3D animated mode shape visualization.
+
+#### F.15.1 Color Gradient (5-stop)
+
+| Name | Hex | Position |
+|---|---|---|
+| `MIN_COLOR` | `#3b82f6` | 0% |
+| `MID_CYAN_COLOR` | `#06b6d4` | 25% |
+| `MID_GREEN_COLOR` | `#22c55e` | 50% |
+| `MID_YELLOW_COLOR` | `#eab308` | 75% |
+| `MAX_COLOR` | `#ef4444` | 100% |
+| `ORIGINAL_COLOR` | `#6b7280` | Ghost |
+
+#### F.15.2 3D Elements
+
+**Original wireframe:** `<Line>` drei — `color=#6b7280`, `lineWidth=1`, dashed (`dashSize=0.1`, `gapSize=0.05`)
+**Deformed line:** `lineWidth=3`, vertex colors from 5-stop gradient
+**Node markers:** `sphereGeometry args=[0.05, 16, 16]`, only shown for nodes with > 50% of max displacement
+
+#### F.15.3 ModeShapeControls
+
+**Container:** `absolute bottom-4 left-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg`
+
+| Control | Type | Range |
+|---|---|---|
+| Scale | Slider | 0.1–5.0, step 0.1 |
+| Animate | Toggle | `bg-blue-500 text-white` (active) / `bg-gray-200 dark:bg-gray-700` (inactive) |
+| Show Original | Toggle | `bg-gray-500 text-white` (active) |
+
+**Mode info:** Mode number `text-sm font-medium`, frequency/period `text-xs text-gray-500`
+**Color legend:** `h-2 rounded` bar with `linear-gradient(to right, #3b82f6, #ef4444)`, Min/Max labels `text-xs`
+
+---
+
+### F.16 Viewport Overlays — `ResultsViewportOverlay.tsx` (401 lines)
+
+**Purpose:** Composites all diagram overlays for the 3D viewport.
+
+#### F.16.1 AllResultsOverlay
+
+Master component that renders `MemberDiagramOverlay` for each member + optional `StressColorOverlay`.
+
+**Props:** `diagramType`, `scale` (0.05), `showLabels`, `showCriticalPoints`, `showFill`, `showStressColors`
+
+#### F.16.2 SectionScanner
+
+- Scanner line: `<Line> points=[[0,-1,0],[0,1,0]] color=#ffff00 lineWidth=2 dashed`
+- Tooltip: `<Html>` — `background: rgba(0,0,0,0.9)`, `color: #ffff00`, `padding: 4px 8px`, `borderRadius: 4px`, `fontSize: 11px`, `fontWeight: bold`, `fontFamily: monospace`, `border: 1px solid #ffff00`
+
+#### F.16.3 DiagramDisplayType
+
+`'SFD' | 'BMD' | 'BMD_MY' | 'SFD_VZ' | 'AFD' | 'DEFLECTION' | 'STRESS'`
+
+---
+
+### F.17 Diagram Utilities — `DiagramUtils.ts` (46 lines)
+
+Pure math utility: `calculateLocalAxes(start, end, betaAngleDeg)` → computes `localX`, `localY`, `localZ` vectors for member orientation. Handles vertical vs non-vertical members.
+
+---
+
+### F.18 Data & Export
+
+#### F.18.1 Analysis Data Conversion
+
+`convertToAnalysisResultsData()` transforms raw results:
+
 ```typescript
 {
   nodes: Array<{ id, x, y, z, displacement: { dx, dy, dz, rx, ry, rz },
@@ -1938,20 +3098,15 @@ The `convertToAnalysisResultsData()` function transforms raw analysis results in
   members: Array<{ id, startNodeId, endNodeId, length, sectionType,
                    maxShear, minShear, maxMoment, minMoment,
                    maxAxial, minAxial, maxDeflection,
-                   maxShearZ, maxMomentY, torsion,
                    sectionProps: { A, I, Iy, E, fy },
-                   stress, utilization,
-                   diagramData: { x_values, shear_values, moment_values,
-                                  axial_values, deflection_values,
-                                  shear_z_values, moment_y_values,
-                                  deflection_z_values } }>,
+                   stress, utilization, diagramData }>,
   summary: { totalNodes, totalMembers, totalDOF, maxDisplacement,
              maxStress, maxUtilization, analysisTime, status },
   equilibriumCheck, conditionNumber, serviceabilityChecks
 }
 ```
 
-### F.2 Serviceability Limits
+#### F.18.2 Serviceability Limits
 
 | Limit | Code | Ratio |
 |---|---|---|
@@ -1960,17 +3115,12 @@ The `convertToAnalysisResultsData()` function transforms raw analysis results in
 | Sensitive finishes | ACI 318 / IS 456 | L/360 |
 | Cantilevers | General | L/120 |
 
-### F.3 Stress Computation
+#### F.18.3 Stress Computation
 
-`computeRealStress(moment, axial, member)`:
-- σ_bending = M × (h/2) / I
-- σ_axial = N / A
-- σ_total = σ_bending + σ_axial
-- utilization = σ_total / fy (default fy = 250 MPa)
+$\sigma_{bending} = \frac{M \cdot (h/2)}{I}$, $\sigma_{axial} = \frac{N}{A}$, $\sigma_{total} = \sigma_{bending} + \sigma_{axial}$, $utilization = \frac{\sigma_{total}}{f_y}$ (default $f_y$ = 250 MPa)
 
-### F.4 PDF Report Structure
+#### F.18.4 PDF Report Structure
 
-Generated by `ReportGenerator` service:
 1. Header + Project Info
 2. Nodes Table
 3. Members Table
@@ -1981,15 +3131,10 @@ Generated by `ReportGenerator` service:
 8. Combined Structure Diagrams (SFD, BMD, AFD)
 9. Detailed Individual Member Diagrams (top 10 by force magnitude)
 
-### F.5 CSV Export
+#### F.18.5 Export Formats
 
-Full data export including: nodes, members, displacements (6 DOF), reactions (6 DOF), member forces (6 components).  
-Filename: `BeamLab_Analysis_{date}.csv`
-
-### F.6 JSON Export
-
-Full `convertToAnalysisResultsData()` output as formatted JSON.  
-Filename: `BeamLab_Results_{date}.json`
+**CSV:** `BeamLab_Analysis_{date}.csv` — nodes, members, displacements (6 DOF), reactions (6 DOF), member forces (6 components)
+**JSON:** `BeamLab_Results_{date}.json` — full `convertToAnalysisResultsData()` output
 
 ---
 
@@ -2067,11 +3212,326 @@ Content varies by tab (structure = SVG viewer, results = data panels, table = ta
 
 ---
 
+## Appendix H — Post-Processing Design Studio
+
+**File:** `apps/web/src/components/results/PostProcessingDesignStudio.tsx` (2467 lines)
+
+> STAAD-Pro-class post-processing & design panel. Fullscreen dialog.
+
+### H.1 Dialog Shell
+
+**No results state:**
+- `Dialog` + `DialogContent` `max-w-md`
+- `AlertTriangle w-12 h-12 text-amber-400` centered
+- "No analysis results available." text
+- Close button
+
+**Active state:**
+- `DialogContent` `max-w-none w-screen h-screen p-0 rounded-none flex flex-col gap-0`
+
+### H.2 Title Bar
+
+`flex items-center justify-between px-5 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700/60`
+- Icon: `Shield w-5 h-5 text-blue-400`
+- Title: `text-lg font-bold text-slate-900 dark:text-slate-100` — "Post-Processing Design Studio"
+- Member count badge: `text-xs text-slate-500 bg-slate-200 dark:bg-slate-700/50 px-2 py-0.5 rounded-full`
+- Export Report button: `px-3 py-1.5 text-sm bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg` + `Download w-4 h-4`
+
+### H.3 Tab Bar
+
+`flex items-center gap-1 px-5 py-1.5 bg-slate-100/60 dark:bg-slate-800/60 border-b overflow-x-auto`
+
+| Tab ID | Label | Icon |
+|---|---|---|
+| `summary` | Design Summary | `BarChart3` |
+| `rcBeam` | RC Beam Design | `Building2` |
+| `steel` | Steel Design | `Columns3` |
+| `section` | Section Properties | `Layers` |
+| `deflection` | Deflection Check | `Ruler` |
+
+**Active tab:** `bg-blue-600 text-white shadow`
+**Inactive tab:** `text-slate-500 hover:text-slate-800 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50`
+
+### H.4 Utilization Color System
+
+| Range | Bar Color | Text Color |
+|---|---|---|
+| ≤ 0.6 | `bg-emerald-500` | `text-emerald-400` |
+| ≤ 0.8 | `bg-lime-500` | `text-lime-400` |
+| ≤ 0.9 | `bg-amber-500` | `text-amber-400` |
+| ≤ 1.0 | `bg-orange-500` | `text-orange-400` |
+| > 1.0 | `bg-red-500` | `text-red-400` |
+
+### H.5 Status Colors
+
+| Status | Background | Text |
+|---|---|---|
+| PASS | `bg-emerald-500/20` | `text-emerald-400` |
+| FAIL | `bg-red-500/20` | `text-red-400` |
+| WARNING | `bg-amber-500/20` | `text-amber-400` |
+
+### H.6 Summary Tab
+
+**KPI Banner:** 3 status dots showing pass/warn/fail counts
+**Search:** Text input for member filter
+**Status filter:** Dropdown (All / PASS / FAIL / WARNING)
+
+**Sortable Table — 9 Columns:**
+
+| Column | Content | Align |
+|---|---|---|
+| Member | `font-mono font-medium` | left |
+| Type | capitalize material type | left |
+| Length | `{length.toFixed(2)} m` | right |
+| Axial | `fmtForce(value) kN` | right |
+| Shear | `fmtForce(value) kN` | right |
+| Moment | `fmtForce(value) kN·m` | right |
+| Utilization | bar (`h-2 rounded-full`) | center |
+| Status | badge with icon (CheckCircle/XCircle/AlertTriangle) | center |
+| Governing | check name text | left |
+
+**Empty state:** "No members match filter criteria."
+
+### H.7 RC Beam Tab
+
+#### H.7.1 Layout
+Left sidebar: `w-56` member list  
+Right panel: scrollable design detail
+
+#### H.7.2 Member Sidebar
+Each member card shows:
+- Label (mono font)
+- Section type (`text-[10px] text-slate-500`)
+- Force summary: `text-[10px]` — Mu/Vu/Nu values
+
+**Selected member:** `bg-blue-900/30 border-l-2 border-blue-500`
+
+#### H.7.3 Design Panel Header
+- Member name + length + design code selector (`IS456` / `ACI318`)
+
+#### H.7.4 Material & Section Parameters (5-col grid)
+
+| Parameter | Range | Default |
+|---|---|---|
+| fck (MPa) | 15–100 | 25 |
+| fy (MPa) | 250–600 | 415 |
+| Cover (mm) | 20–75 | 40 |
+| Width b (mm) | 150–1000 | 230 |
+| Depth D (mm) | 200–2000 | 450 |
+
+#### H.7.5 Applied Forces (3 Cards)
+
+| Card | Color | Unit |
+|---|---|---|
+| Mu (Moment) | `text-purple-400` | kN·m |
+| Vu (Shear) | `text-blue-400` | kN |
+| Nu (Axial) | `text-green-400` (tension) / `text-red-400` (compression) | kN |
+
+Card style: `bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-3 text-center border`
+Value: `text-xl font-bold font-mono`
+
+#### H.7.6 Flexure Design Results
+
+| Field | Description |
+|---|---|
+| As,req | Required steel area (mm²) |
+| As,prov | Provided steel area |
+| As,min | Minimum per code |
+| As,max | Maximum per code |
+| Bars | `{count} × Ø{diameter}` |
+| Steel ratio ρ | Percentage |
+| N.A. depth | Neutral axis (mm) |
+| Compression block a | Whitney block depth (mm) |
+| φMn | Design capacity (kN·m) |
+| Mu/φMn | Demand/capacity ratio |
+
+**Includes RCBeamCrossSection SVG** — see H.10.
+
+#### H.7.7 Shear Design
+
+| Field | Value |
+|---|---|
+| Vu | Design shear (kN) |
+| φVc | Concrete capacity (kN) |
+| Vs,req | Required stirrup capacity |
+| Stirrup size | Ø diameter (mm) |
+| Spacing | mm c/c |
+| Max spacing | Per code limit |
+| Number of legs | Integer |
+
+**Capacity Breakdown Bars (3):**
+| Bar | Color | Label |
+|---|---|---|
+| Concrete | cyan | φVc |
+| Steel | blue | φVs |
+| Demand | amber | Vu |
+
+#### H.7.8 Reinforcement Summary
+
+`IS 456 notation: {count}Ø{dia} | ACI notation: {count}#{barNo}`
+Reinforcement string in `text-emerald-400 font-mono`
+
+### H.8 Steel Design Tab
+
+#### H.8.1 Layout
+Left sidebar: `w-56` with mini utilization bar per member
+Right panel: design detail
+
+#### H.8.2 Applied Forces (3 cards)
+
+| Card | Label | Color |
+|---|---|---|
+| Pu/Nu | Axial | `text-green-400` |
+| Vu | Shear | `text-blue-400` |
+| Mu | Moment | `text-purple-400` |
+
+#### H.8.3 Design Checks
+
+Each check card: `border-l-[3px]` colored by status
+- Left color: PASS `#10b981`, FAIL `#ef4444`, WARNING `#f59e0b`
+- Utilization bar: `w-28 h-2 bg-slate-200 dark:bg-slate-700 rounded-full`
+- Utilization text: `text-xs font-bold font-mono w-12 text-right`
+- Formula: `font-mono text-xs text-slate-600`
+- Description text below
+
+#### H.8.4 Recommendations
+
+`bg-blue-900/15 border border-blue-500/30 rounded-xl p-4`
+Header: `text-xs font-semibold text-blue-400 uppercase tracking-wider`
+Bullet list with blue dot markers
+
+### H.9 Section Properties Tab
+
+#### H.9.1 Table Headers (9 columns)
+
+| Column | Align | Unit |
+|---|---|---|
+| (expand icon) | — | — |
+| Member | left | M{id} |
+| Section | left | icon + name |
+| Length | right | m |
+| A | right | m² |
+| Iz | right | m⁴ |
+| Iy | right | m⁴ |
+| J | right | m⁴ |
+| E | right | kN/m² |
+
+**Section icons by type:**
+| Type | Icon | Color |
+|---|---|---|
+| I-BEAM | `Columns3` | `text-blue-400` |
+| RECTANGLE | `Box` | `text-amber-400` |
+| CIRCLE | `CircleDot` | `text-green-400` |
+| TUBE | `Grid3X3` | `text-purple-400` |
+| C-CHANNEL | `Minus` | `text-cyan-400` |
+| L-ANGLE | `Plus` | `text-orange-400` |
+| Default | `Box` | `text-slate-500` |
+
+**Values:** `font-mono`, scientific notation (`.toExponential(3)`)
+
+#### H.9.2 Expanded Detail (3-col grid)
+
+| Column 1 | Column 2 | Column 3 |
+|---|---|---|
+| **Geometric Properties** | **Section Dimensions** | **Material Properties** |
+| Area (A) m², Iz m⁴, Iy m⁴, J m⁴, rz (gyration) mm, Zz (elastic) m³ | Height mm, Width mm, Web tw mm, Flange tf mm, Diameter mm, Thickness mm | Material (auto-detect: E < 50 GPa → concrete), E GPa, G GPa, ρ kg/m³, β rotation °, Releases |
+
+**Expanded row bg:** `bg-slate-100/40 dark:bg-slate-800/40`
+**Click to expand:** toggle `ChevronRight` ↔ `ChevronDown`
+
+### H.10 RC Beam Cross-Section SVG (~270 lines)
+
+Parametric cross-section drawing:
+
+| Element | Rendering |
+|---|---|
+| Concrete body | Rectangle with hatch pattern (45° lines, spacing 8, stroke `#94a3b8` opacity 0.15) |
+| Stirrup | Inner rectangle with 135° hook paths at corners |
+| Bottom bars (tension) | Red circles, max 4/row then 2nd layer, fill `#ef4444` |
+| Top bars (hanger) | Orange circles, fill `#f97316` |
+| Neutral axis | Yellow dashed line (`#eab308`), label "N.A." |
+| Cover annotations | Cyan dimensioning arrows (`#06b6d4`) |
+| Width/depth dims | Gray dimension lines and labels |
+| Bar callouts | Text labels referencing bar count × diameter |
+
+**Color Legend (bottom of SVG):**
+| Swatch | Label |
+|---|---|
+| `#ef4444` | Tension bars |
+| `#f97316` | Compression bars |
+| `#64748b` | Stirrups |
+| `#eab308` | Neutral Axis |
+
+### H.11 Deflection Check Tab
+
+#### H.11.1 Header
+
+`Ruler w-4 h-4 text-blue-400` + "Deflection Compliance"
+Limit selector dropdown: 6 options
+
+| Option | Value | Code |
+|---|---|---|
+| L/180 | 180 | Floor, live load |
+| L/240 | 240 | Floor, total load |
+| L/250 | 250 | IS 800 |
+| L/300 | 300 | Roof, snow load |
+| L/325 | 325 | IS 456 |
+| L/360 | 360 | AISC floor |
+
+**Pass/Fail counts:** `text-emerald-400` / `text-red-400`
+
+#### H.11.2 Table (7 columns)
+
+| Column | Align | Content |
+|---|---|---|
+| Member | left | `font-mono` label |
+| Span | right | `{length.toFixed(3)} m` |
+| Max Defl | right | `{deflMM.toFixed(3)} mm` |
+| Allowable | right | `{allowableMM.toFixed(2)} mm` |
+| Actual L/δ | right | `L/{ratio}` or `∞` |
+| Ratio | center | utilization bar + percentage |
+| Status | center | PASS/FAIL badge with `CheckCircle`/`XCircle` icon |
+
+**Row hover:** `hover:bg-slate-100/60 dark:hover:bg-slate-800/60`
+
+### H.12 Export Report (Text)
+
+Generated by `handleExport()` — plain text file:
+1. Header: "STRUCTURAL DESIGN REPORT"
+2. Summary: date, member count, pass/fail/warning counts
+3. Member summary table (fixed-width columns)
+4. Detailed per-member design checks with formulas
+5. Reinforcement details (if concrete)
+6. Filename: `Design_Report_{date}.txt`
+
+---
+
+## Appendix I — Barrel Exports (`results/index.ts`)
+
+All results components are re-exported from a single barrel file:
+
+| Export | Source |
+|---|---|
+| `DiagramOverlay`, `DiagramOverlayGroup`, `DiagramData`, `DiagramType` | `DiagramOverlay.tsx` |
+| `StressOverlay`, `getStressColor`, `getStressColorHex`, `VisualizationMode`, `NodeDisplacement`, `MemberForces`, `NodePosition`, `MemberGeometry` | `StressOverlay.tsx` |
+| `ModeShapeRenderer`, `ModeShapeControls`, `ModeShapeData` | `ModeShapeRenderer.tsx` |
+| `ResultsToolbar` | `ResultsToolbar.tsx` |
+| `EnhancedDiagramViewer`, `EnhancedDiagramPoint` | `EnhancedDiagramViewer.tsx` |
+| `EnhancedHeatMap`, `HeatMapMemberData`, `HeatMapType` | `EnhancedHeatMap.tsx` |
+| `AnalysisResultsDashboard`, `AnalysisResultsData`, `NodeResult`, `MemberResult` | `AnalysisResultsDashboard.tsx` |
+| `MemberDiagramOverlay`, `StressColorOverlay`, `SectionScanner`, `AllResultsOverlay` | `ResultsViewportOverlay.tsx` |
+| `ResultsTablePanel` | `ResultsTablePanel.tsx` |
+| `ResultsControlPanel` | `ResultsControlPanel.tsx` |
+| `ResultsSplitView`, `DockableResultsPanel` | `ResultsSplitView.tsx` |
+
+---
+
 ## Revision History
 
 | Version | Date | Changes |
 |---|---|---|
 | 1.0 | 2025-01-XX | Initial comprehensive spec covering all panels, views, and pages |
+| 2.0 | 2025-01-XX | Massive expansion: Appendix F expanded from 70 to 1200+ lines covering all 19 results component files with micro-detail accuracy. New Appendix H (Post-Processing Design Studio with 12 sub-sections). New Appendix I (Barrel Exports). |
 
 ---
 

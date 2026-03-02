@@ -582,13 +582,13 @@ export function HistoryPanel<TState>({
   className = '',
 }: HistoryPanelProps<TState>): JSX.Element {
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 ${className}`}>
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+    <div className={`bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 ${className}`}>
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">
         History
       </h3>
 
       {history.length === 0 ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400">No history yet</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">No history yet</p>
       ) : (
         <ul className="space-y-1 max-h-64 overflow-y-auto">
           {history.map((entry, index) => (
@@ -598,12 +598,12 @@ export function HistoryPanel<TState>({
                 className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${index === currentIndex
                     ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
                     : index > currentIndex
-                      ? 'text-gray-500 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
               >
                 <span className="font-medium">{entry.description}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                <span className="text-xs text-slate-500 dark:text-slate-400 ml-2">
                   {new Date(entry.timestamp).toLocaleTimeString()}
                 </span>
               </button>
@@ -645,8 +645,8 @@ export function UndoRedoToolbar({
         disabled={!canUndo}
         title={undoDescription ? `Undo: ${undoDescription}` : 'Undo'}
         className={`p-2 rounded transition-colors ${canUndo
-            ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-            : 'text-gray-600 dark:text-gray-600 cursor-not-allowed'
+            ? 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+            : 'text-slate-600 dark:text-slate-600 cursor-not-allowed'
           }`}
         aria-label="Undo"
       >
@@ -665,8 +665,8 @@ export function UndoRedoToolbar({
         disabled={!canRedo}
         title={redoDescription ? `Redo: ${redoDescription}` : 'Redo'}
         className={`p-2 rounded transition-colors ${canRedo
-            ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-            : 'text-gray-600 dark:text-gray-600 cursor-not-allowed'
+            ? 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+            : 'text-slate-600 dark:text-slate-600 cursor-not-allowed'
           }`}
         aria-label="Redo"
       >

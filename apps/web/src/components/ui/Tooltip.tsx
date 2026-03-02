@@ -122,7 +122,7 @@ export const Tooltip: FC<TooltipProps> = ({
                     ref={tooltipRef}
                     id={tooltipId}
                     role="tooltip"
-                    className="fixed z-[1000] px-2.5 py-1.5 bg-slate-700 border border-slate-600 text-slate-100 text-xs rounded-md shadow-md max-w-[240px] pointer-events-none"
+                    className="fixed z-[1000] px-2.5 py-1.5 bg-slate-700 border border-slate-600 text-slate-100 text-xs rounded-md shadow-md max-w-[280px] pointer-events-none"
                     style={{
                         top: position.top,
                         left: position.left,

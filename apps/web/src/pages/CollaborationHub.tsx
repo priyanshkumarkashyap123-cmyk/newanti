@@ -403,20 +403,20 @@ const CollaborationHub: React.FC = () => {
     admin: "bg-purple-600",
     engineer: "bg-blue-600",
     reviewer: "bg-green-600",
-    viewer: "bg-gray-600",
+    viewer: "bg-slate-600",
   };
 
   const statusColors: Record<string, string> = {
     online: "bg-green-500",
     away: "bg-yellow-500",
-    offline: "bg-gray-500",
+    offline: "bg-slate-500",
   };
 
   const projectStatusColors: Record<string, string> = {
     active: "text-green-400 bg-green-900/30",
     review: "text-yellow-400 bg-yellow-900/30",
     completed: "text-blue-400 bg-blue-900/30",
-    archived: "text-gray-600 dark:text-gray-400 bg-gray-700",
+    archived: "text-slate-600 dark:text-slate-400 bg-slate-700",
   };
 
   // ============================================
@@ -547,7 +547,7 @@ const CollaborationHub: React.FC = () => {
 
       {/* Activity Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+        <div className="lg:col-span-2 bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-2xl">📜</span>
             Recent Activity
@@ -556,14 +556,14 @@ const CollaborationHub: React.FC = () => {
             {activities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-start gap-4 p-3 bg-gray-700/50 rounded-lg"
+                className="flex items-start gap-4 p-3 bg-slate-700/50 rounded-lg"
               >
                 <span className="text-2xl">
                   {teamMembers.find((m) => m.id === activity.userId)?.avatar ||
                     "👤"}
                 </span>
                 <div className="flex-1">
-                  <p className="text-gray-700 dark:text-gray-300">
+                  <p className="text-slate-700 dark:text-slate-300">
                     <span className="text-slate-900 dark:text-white font-medium">
                       {activity.userName}
                     </span>{" "}
@@ -571,11 +571,11 @@ const CollaborationHub: React.FC = () => {
                     <span className="text-cyan-400">{activity.target}</span>
                   </p>
                   {activity.details && (
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
                       "{activity.details}"
                     </p>
                   )}
-                  <p className="text-gray-500 text-xs mt-1">
+                  <p className="text-slate-500 text-xs mt-1">
                     {activity.timestamp}
                   </p>
                 </div>
@@ -585,7 +585,7 @@ const CollaborationHub: React.FC = () => {
         </div>
 
         {/* Team Status */}
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+        <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <span className="text-2xl">👥</span>
             Team Status
@@ -594,19 +594,19 @@ const CollaborationHub: React.FC = () => {
             {teamMembers.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center gap-3 p-2 hover:bg-gray-200 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                className="flex items-center gap-3 p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
               >
                 <div className="relative">
                   <span className="text-2xl">{member.avatar}</span>
                   <span
-                    className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-200 dark:border-gray-800 ${statusColors[member.status]}`}
+                    className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-200 dark:border-slate-800 ${statusColors[member.status]}`}
                   />
                 </div>
                 <div className="flex-1">
                   <p className="text-slate-900 dark:text-white text-sm font-medium">
                     {member.name}
                   </p>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">
                     {member.department}
                   </p>
                 </div>
@@ -622,7 +622,7 @@ const CollaborationHub: React.FC = () => {
       </div>
 
       {/* Shared Projects */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📁</span>
           Shared Projects
@@ -631,7 +631,7 @@ const CollaborationHub: React.FC = () => {
           {sharedProjects.map((project) => (
             <div
               key={project.id}
-              className="p-4 bg-gray-700 rounded-lg hover:bg-gray-600/50 transition-colors cursor-pointer"
+              className="p-4 bg-slate-700 rounded-lg hover:bg-slate-600/50 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-slate-900 dark:text-white font-medium">
@@ -643,17 +643,17 @@ const CollaborationHub: React.FC = () => {
                   {project.status}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400 mb-3">
                 <span>👤 {project.owner}</span>
                 <span>👥 {project.members} members</span>
               </div>
-              <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
+              <div className="h-2 bg-slate-600 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
                   style={{ width: `${project.progress}%` }}
                 />
               </div>
-              <div className="flex justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
+              <div className="flex justify-between mt-2 text-xs text-slate-600 dark:text-slate-400">
                 <span>{project.progress}% complete</span>
                 <span>{project.lastModified}</span>
               </div>
@@ -666,7 +666,7 @@ const CollaborationHub: React.FC = () => {
 
   const renderTeam = () => (
     <div className="space-y-6">
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span className="text-2xl">👥</span>
@@ -685,22 +685,22 @@ const CollaborationHub: React.FC = () => {
           {teamMembers.map((member) => (
             <div
               key={member.id}
-              className="p-4 bg-gray-700 rounded-lg border border-gray-600 hover:border-cyan-500 transition-all"
+              className="p-4 bg-slate-700 rounded-lg border border-slate-600 hover:border-cyan-500 transition-all"
             >
               <div className="flex items-center gap-4 mb-4">
                 <div className="relative">
-                  <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center text-3xl">
+                  <div className="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-3xl">
                     {member.avatar}
                   </div>
                   <span
-                    className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-700 ${statusColors[member.status]}`}
+                    className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-slate-300 dark:border-slate-700 ${statusColors[member.status]}`}
                   />
                 </div>
                 <div>
                   <h4 className="text-slate-900 dark:text-white font-medium">
                     {member.name}
                   </h4>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
                     {member.department}
                   </p>
                   <span
@@ -711,14 +711,14 @@ const CollaborationHub: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">
+                <span className="text-slate-600 dark:text-slate-400">
                   Last active: {member.lastActive}
                 </span>
                 <div className="flex gap-2">
                   <button className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">
                     💬
                   </button>
-                  <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-600 rounded">
+                  <button className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -729,7 +729,7 @@ const CollaborationHub: React.FC = () => {
       </div>
 
       {/* Role Permissions */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🔐</span>
           Role Permissions
@@ -737,14 +737,14 @@ const CollaborationHub: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-300 dark:border-gray-700">
-                <th className="text-left p-3 text-gray-600 dark:text-gray-400">
+              <tr className="border-b border-slate-300 dark:border-slate-700">
+                <th className="text-left p-3 text-slate-600 dark:text-slate-400">
                   Permission
                 </th>
                 <th className="text-center p-3 text-purple-400">Admin</th>
                 <th className="text-center p-3 text-blue-400">Engineer</th>
                 <th className="text-center p-3 text-green-400">Reviewer</th>
-                <th className="text-center p-3 text-gray-600 dark:text-gray-400">
+                <th className="text-center p-3 text-slate-600 dark:text-slate-400">
                   Viewer
                 </th>
               </tr>
@@ -810,9 +810,9 @@ const CollaborationHub: React.FC = () => {
               ].map((perm, idx) => (
                 <tr
                   key={idx}
-                  className="border-b border-gray-300 dark:border-gray-700/50"
+                  className="border-b border-slate-300 dark:border-slate-700/50"
                 >
-                  <td className="text-left p-3 text-gray-700 dark:text-gray-300">
+                  <td className="text-left p-3 text-slate-700 dark:text-slate-300">
                     {perm.name}
                   </td>
                   <td className="p-3">{perm.admin ? "✅" : "❌"}</td>
@@ -830,7 +830,7 @@ const CollaborationHub: React.FC = () => {
 
   const renderComments = () => (
     <div className="space-y-6">
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span className="text-2xl">💬</span>
@@ -844,7 +844,7 @@ const CollaborationHub: React.FC = () => {
                 className={`px-3 py-1 rounded-lg text-sm capitalize transition-colors ${
                   commentFilter === filter
                     ? "bg-cyan-600 text-white"
-                    : "bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600"
+                    : "bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600"
                 }`}
               >
                 {filter}
@@ -873,7 +873,7 @@ const CollaborationHub: React.FC = () => {
                       <span className="text-slate-900 dark:text-white font-medium">
                         {comment.userName}
                       </span>
-                      <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
+                      <span className="text-slate-600 dark:text-slate-400 text-sm ml-2">
                         • {comment.timestamp}
                       </span>
                     </div>
@@ -894,20 +894,20 @@ const CollaborationHub: React.FC = () => {
                     <div className="flex items-center gap-2 mb-2 text-sm text-cyan-400">
                       <span>📍</span>
                       <span>{comment.location.element}</span>
-                      <span className="text-gray-500">|</span>
-                      <span className="text-gray-600 dark:text-gray-400">
+                      <span className="text-slate-500">|</span>
+                      <span className="text-slate-600 dark:text-slate-400">
                         {comment.location.coordinates}
                       </span>
                     </div>
                   )}
 
-                  <p className="text-gray-700 dark:text-gray-300">
+                  <p className="text-slate-700 dark:text-slate-300">
                     {comment.content}
                   </p>
 
                   {/* Replies */}
                   {comment.replies.length > 0 && (
-                    <div className="mt-4 pl-4 border-l-2 border-gray-600 space-y-3">
+                    <div className="mt-4 pl-4 border-l-2 border-slate-600 space-y-3">
                       {comment.replies.map((reply) => (
                         <div key={reply.id} className="flex items-start gap-3">
                           <span className="text-xl">{reply.avatar}</span>
@@ -915,10 +915,10 @@ const CollaborationHub: React.FC = () => {
                             <span className="text-slate-900 dark:text-white text-sm font-medium">
                               {reply.userName}
                             </span>
-                            <span className="text-gray-600 dark:text-gray-400 text-xs ml-2">
+                            <span className="text-slate-600 dark:text-slate-400 text-xs ml-2">
                               {reply.timestamp}
                             </span>
-                            <p className="text-gray-700 dark:text-gray-300 text-sm mt-1">
+                            <p className="text-slate-700 dark:text-slate-300 text-sm mt-1">
                               {reply.content}
                             </p>
                           </div>
@@ -928,16 +928,16 @@ const CollaborationHub: React.FC = () => {
                   )}
 
                   <div className="flex gap-3 mt-4">
-                    <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       ↩️ Reply
                     </button>
                     <button
                       onClick={() => handleResolveComment(comment.id)}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     >
                       ✅ Resolve
                     </button>
-                    <button className="text-sm text-gray-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       📍 Show in Model
                     </button>
                   </div>
@@ -948,20 +948,20 @@ const CollaborationHub: React.FC = () => {
         </div>
 
         {/* Add Comment */}
-        <div className="mt-6 p-4 bg-gray-700 rounded-lg">
+        <div className="mt-6 p-4 bg-slate-700 rounded-lg">
           <textarea
             placeholder="Add a comment or flag an issue..."
             value={newCommentText}
             onChange={(e) => setNewCommentText(e.target.value)}
-            className="w-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-gray-400 resize-none"
+            className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
             rows={3}
           />
           <div className="flex justify-between items-center mt-3">
             <div className="flex gap-2">
-              <button className="px-3 py-1 bg-gray-600 text-gray-700 dark:text-gray-300 rounded text-sm hover:bg-gray-500">
+              <button className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
                 📍 Pin to Element
               </button>
-              <button className="px-3 py-1 bg-gray-600 text-gray-700 dark:text-gray-300 rounded text-sm hover:bg-gray-500">
+              <button className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
                 📎 Attach File
               </button>
             </div>
@@ -980,7 +980,7 @@ const CollaborationHub: React.FC = () => {
 
   const renderVersions = () => (
     <div className="space-y-6">
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span className="text-2xl">📚</span>
@@ -994,7 +994,7 @@ const CollaborationHub: React.FC = () => {
 
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-600" />
+          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-600" />
 
           <div className="space-y-6">
             {versions.map((version, _idx) => (
@@ -1006,7 +1006,7 @@ const CollaborationHub: React.FC = () => {
                       ? "bg-green-600"
                       : version.status === "milestone"
                         ? "bg-cyan-600"
-                        : "bg-gray-600"
+                        : "bg-slate-600"
                   }`}
                 >
                   {version.status === "current"
@@ -1022,7 +1022,7 @@ const CollaborationHub: React.FC = () => {
                       ? "bg-green-900/20 border-green-600"
                       : version.status === "milestone"
                         ? "bg-cyan-900/20 border-cyan-600"
-                        : "bg-gray-700 border-gray-600"
+                        : "bg-slate-700 border-slate-600"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -1030,7 +1030,7 @@ const CollaborationHub: React.FC = () => {
                       <span className="text-slate-900 dark:text-white font-bold text-lg">
                         {version.version}
                       </span>
-                      <span className="text-gray-700 dark:text-gray-300">
+                      <span className="text-slate-700 dark:text-slate-300">
                         {version.name}
                       </span>
                       {version.status === "current" && (
@@ -1045,19 +1045,19 @@ const CollaborationHub: React.FC = () => {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button aria-label="View" className="p-2 text-gray-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-600 rounded">
+                      <button aria-label="View" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                         👁️
                       </button>
-                      <button aria-label="Restore" className="p-2 text-gray-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-600 rounded">
+                      <button aria-label="Restore" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                         ↩️
                       </button>
-                      <button aria-label="Download" className="p-2 text-gray-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-gray-600 rounded">
+                      <button aria-label="Download" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
                         📥
                       </button>
                     </div>
                   </div>
 
-                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                  <p className="text-slate-600 dark:text-slate-400 text-sm mb-3">
                     By {version.author} • {version.timestamp}
                   </p>
 
@@ -1065,7 +1065,7 @@ const CollaborationHub: React.FC = () => {
                     {version.changes.map((change, cIdx) => (
                       <div
                         key={cIdx}
-                        className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+                        className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
                       >
                         <span className="text-green-400">+</span>
                         {change}
@@ -1080,17 +1080,17 @@ const CollaborationHub: React.FC = () => {
       </div>
 
       {/* Compare Versions */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🔍</span>
           Compare Versions
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
               From Version
             </label>
-            <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white">
+            <select className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white">
               {versions.map((v) => (
                 <option key={v.id} value={v.version}>
                   {v.version} - {v.name}
@@ -1099,10 +1099,10 @@ const CollaborationHub: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
               To Version
             </label>
-            <select className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white">
+            <select className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white">
               {versions.map((v) => (
                 <option key={v.id} value={v.version}>
                   {v.version} - {v.name}
@@ -1124,7 +1124,7 @@ const CollaborationHub: React.FC = () => {
   const renderSharing = () => (
     <div className="space-y-6">
       {/* Sharing Settings */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🔗</span>
           Share Project
@@ -1132,7 +1132,7 @@ const CollaborationHub: React.FC = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
               Share Link
             </label>
             <div className="flex gap-2">
@@ -1140,7 +1140,7 @@ const CollaborationHub: React.FC = () => {
                 type="text"
                 value={shareLink}
                 readOnly
-                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-700 dark:text-gray-300"
+                className="flex-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-700 dark:text-slate-300"
               />
               <button
                 onClick={handleCopyLink}
@@ -1152,7 +1152,7 @@ const CollaborationHub: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm text-slate-700 dark:text-slate-300 mb-2">
               Invite by Email
             </label>
             <div className="flex gap-2">
@@ -1161,7 +1161,7 @@ const CollaborationHub: React.FC = () => {
                 placeholder="colleague@company.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
-                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white placeholder-gray-400"
+                className="flex-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
               />
               <select
                 value={inviteRole}
@@ -1170,7 +1170,7 @@ const CollaborationHub: React.FC = () => {
                     e.target.value as "viewer" | "engineer" | "reviewer",
                   )
                 }
-                className="p-3 bg-gray-700 border border-gray-600 rounded-lg text-slate-900 dark:text-white"
+                className="p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
               >
                 <option value="viewer">Viewer</option>
                 <option value="engineer">Engineer</option>
@@ -1189,7 +1189,7 @@ const CollaborationHub: React.FC = () => {
       </div>
 
       {/* Access Settings */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🔐</span>
           Access Settings
@@ -1226,18 +1226,18 @@ const CollaborationHub: React.FC = () => {
             <label
               key={idx}
               onClick={() => handleToggleAccess(setting.key)}
-              className="flex items-center justify-between p-4 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors"
+              className="flex items-center justify-between p-4 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600 transition-colors"
             >
               <div>
                 <p className="text-slate-900 dark:text-white font-medium">
                   {setting.name}
                 </p>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                <p className="text-slate-600 dark:text-slate-400 text-sm">
                   {setting.desc}
                 </p>
               </div>
               <div
-                className={`relative w-12 h-6 rounded-full transition-colors ${accessSettings[setting.key] ? "bg-green-600" : "bg-gray-500"}`}
+                className={`relative w-12 h-6 rounded-full transition-colors ${accessSettings[setting.key] ? "bg-green-600" : "bg-slate-500"}`}
               >
                 <div
                   className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${accessSettings[setting.key] ? "right-1" : "left-1"}`}
@@ -1249,7 +1249,7 @@ const CollaborationHub: React.FC = () => {
       </div>
 
       {/* External Integration */}
-      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">🔌</span>
           External Integrations
@@ -1296,7 +1296,7 @@ const CollaborationHub: React.FC = () => {
           ].map((int, idx) => (
             <div
               key={idx}
-              className="p-4 bg-gray-700 rounded-lg border border-gray-600"
+              className="p-4 bg-slate-700 rounded-lg border border-slate-600"
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-2xl">{int.icon}</span>
@@ -1304,7 +1304,7 @@ const CollaborationHub: React.FC = () => {
                   <p className="text-slate-900 dark:text-white font-medium">
                     {int.name}
                   </p>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">
+                  <p className="text-slate-600 dark:text-slate-400 text-xs">
                     {int.desc}
                   </p>
                 </div>
@@ -1313,7 +1313,7 @@ const CollaborationHub: React.FC = () => {
                 className={`w-full py-2 rounded text-sm ${
                   int.status === "connected"
                     ? "bg-green-600 text-white"
-                    : "bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-500"
+                    : "bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-500"
                 }`}
               >
                 {int.status === "connected" ? "✓ Connected" : "Connect"}
@@ -1326,7 +1326,7 @@ const CollaborationHub: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1337,7 +1337,7 @@ const CollaborationHub: React.FC = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-2">
             👥 Collaboration Hub
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Real-Time Team Collaboration • Version Control • Comments & Issues •
             Project Sharing
           </p>
@@ -1345,7 +1345,7 @@ const CollaborationHub: React.FC = () => {
             <span
               className={`inline-block w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-yellow-500 animate-pulse"}`}
             />
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-slate-500">
               {isConnected
                 ? `Connected — ${teamMembers.length} user${teamMembers.length !== 1 ? "s" : ""} • v${projectVersion}`
                 : `Demo Mode — ${teamMembers.length} sample users • Connect a server for real-time collaboration`}
@@ -1368,7 +1368,7 @@ const CollaborationHub: React.FC = () => {
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? "bg-cyan-600 text-white"
-                  : "bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600"
+                  : "bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600"
               }`}
             >
               <span>{tab.icon}</span>

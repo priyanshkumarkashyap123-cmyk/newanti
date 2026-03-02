@@ -338,11 +338,11 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
               {notification.title}
             </p>
             {notification.message && (
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                 {notification.message}
               </p>
             )}
@@ -360,7 +360,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
                     className={`text-sm font-medium ${
                       action.variant === 'primary'
                         ? 'text-blue-600 hover:text-blue-500 dark:text-blue-400'
-                        : 'text-gray-600 hover:text-gray-500 dark:text-gray-400'
+                        : 'text-slate-600 hover:text-slate-500 dark:text-slate-400'
                     }`}
                   >
                     {action.label}
@@ -374,7 +374,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
           {notification.dismissible && (
             <button
               onClick={handleDismiss}
-              className="flex-shrink-0 text-gray-500 dark:text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              className="flex-shrink-0 text-slate-500 dark:text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
               aria-label="Dismiss"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -387,7 +387,7 @@ function NotificationItem({ notification }: NotificationItemProps): JSX.Element 
 
       {/* Progress bar */}
       {!notification.persistent && notification.duration && notification.duration > 0 && (
-        <div className="h-1 bg-gray-200 dark:bg-gray-700">
+        <div className="h-1 bg-slate-200 dark:bg-slate-700">
           <div
             className={`h-full transition-all duration-100 ${
               notification.type === 'success' ? 'bg-green-500' :
@@ -503,7 +503,7 @@ export function ConfirmDialog({
 
       {/* Dialog */}
       <div
-        className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
+        className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
@@ -512,13 +512,13 @@ export function ConfirmDialog({
         <div className="flex items-center justify-between">
           <h2
             id="confirm-dialog-title"
-            className="text-lg font-semibold text-gray-900 dark:text-gray-100"
+            className="text-lg font-semibold text-slate-900 dark:text-slate-100"
           >
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-gray-500 hover:text-gray-600 dark:hover:text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1 rounded-lg text-slate-500 hover:text-slate-600 dark:hover:text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             aria-label="Close dialog"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -529,7 +529,7 @@ export function ConfirmDialog({
         
         <p
           id="confirm-dialog-description"
-          className="mt-2 text-sm text-gray-600 dark:text-gray-400"
+          className="mt-2 text-sm text-slate-600 dark:text-slate-400"
         >
           {message}
         </p>
@@ -537,7 +537,7 @@ export function ConfirmDialog({
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             {cancelLabel}
           </button>

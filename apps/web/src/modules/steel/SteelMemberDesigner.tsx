@@ -50,15 +50,15 @@ import {
 // STYLING CONSTANTS
 // =============================================================================
 
-const CARD_CLASS = 'bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700';
-const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
-const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
+const CARD_CLASS = 'bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700';
+const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
+const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
 const BUTTON_PRIMARY = 'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-const BUTTON_SECONDARY = 'px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-lg transition-all';
+const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-medium rounded-lg transition-all';
 const TAB_CLASS = 'px-4 py-2 font-medium rounded-t-lg transition-all';
 const TAB_ACTIVE = 'bg-blue-600 text-white';
-const TAB_INACTIVE = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600';
-const LABEL_CLASS = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
+const TAB_INACTIVE = 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600';
+const LABEL_CLASS = 'block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1';
 
 // =============================================================================
 // COMPONENT TYPES
@@ -113,7 +113,7 @@ const InputField: React.FC<{
 }> = ({ label, value, onChange, unit, min, max, step = 0.1 }) => (
   <div>
     <label className={LABEL_CLASS}>
-      {label} {unit && <span className="text-gray-500">({unit})</span>}
+      {label} {unit && <span className="text-slate-500">({unit})</span>}
     </label>
     <input
       type="number"
@@ -170,12 +170,12 @@ const UtilizationBar: React.FC<{ ratio: number; label: string }> = ({ ratio, lab
   return (
     <div className="mb-3">
       <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+        <span className="font-medium text-slate-700 dark:text-slate-300">{label}</span>
+        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-slate-600 dark:text-slate-400'}>
           {(ratio * 100).toFixed(1)}%
         </span>
       </div>
-      <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <div
           className={`h-full ${color} transition-all duration-300`}
           style={{ width: `${percentage}%` }}
@@ -234,67 +234,67 @@ const SectionPropertiesCard: React.FC<{ section: SteelSection | null | undefined
   if (!section) {
     return (
       <div className={CARD_CLASS}>
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
           Section Properties
         </h3>
-        <p className="text-gray-500 italic">Select a section to view properties</p>
+        <p className="text-slate-500 italic">Select a section to view properties</p>
       </div>
     );
   }
 
   return (
     <div className={CARD_CLASS}>
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
         {section.designation} Properties
       </h3>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
-          <span className="text-gray-500 block">Depth</span>
+          <span className="text-slate-500 block">Depth</span>
           <span className="font-medium">{section.h} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Width</span>
+          <span className="text-slate-500 block">Width</span>
           <span className="font-medium">{section.b} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Web Thickness</span>
+          <span className="text-slate-500 block">Web Thickness</span>
           <span className="font-medium">{section.tw} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Flange Thickness</span>
+          <span className="text-slate-500 block">Flange Thickness</span>
           <span className="font-medium">{section.tf} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Area</span>
+          <span className="text-slate-500 block">Area</span>
           <span className="font-medium">{section.A.toFixed(0)} mm²</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Ix</span>
+          <span className="text-slate-500 block">Ix</span>
           <span className="font-medium">{(section.Ix / 1e4).toFixed(1)} ×10⁴ mm⁴</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Iy</span>
+          <span className="text-slate-500 block">Iy</span>
           <span className="font-medium">{(section.Iy / 1e4).toFixed(1)} ×10⁴ mm⁴</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Weight</span>
+          <span className="text-slate-500 block">Weight</span>
           <span className="font-medium">{section.mass} kg/m</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Zx</span>
+          <span className="text-slate-500 block">Zx</span>
           <span className="font-medium">{(section.Zx / 1e3).toFixed(1)} ×10³ mm³</span>
         </div>
         <div>
-          <span className="text-gray-500 block">rx</span>
+          <span className="text-slate-500 block">rx</span>
           <span className="font-medium">{section.rx.toFixed(1)} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">ry</span>
+          <span className="text-slate-500 block">ry</span>
           <span className="font-medium">{section.ry.toFixed(1)} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">J (Torsion)</span>
+          <span className="text-slate-500 block">J (Torsion)</span>
           <span className="font-medium">{(section.J / 1e3).toFixed(1)} ×10³ mm⁴</span>
         </div>
       </div>
@@ -309,7 +309,7 @@ const SectionPropertiesCard: React.FC<{ section: SteelSection | null | undefined
 const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
         Tension Member Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -317,7 +317,7 @@ const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Section Areas</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Section Areas</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Gross Area (Ag)</span>
@@ -335,7 +335,7 @@ const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }
       </div>
 
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Capacities</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Capacities</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Yield Capacity (φPn_yield)</span>
@@ -354,7 +354,7 @@ const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Utilization</h4>
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Utilization</h4>
       <UtilizationBar ratio={result.utilizationRatio} label="Demand/Capacity Ratio" />
     </div>
 
@@ -371,7 +371,7 @@ const TensionResultCard: React.FC<{ result: TensionMemberResult }> = ({ result }
 const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
         Compression Member Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -379,7 +379,7 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Slenderness</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Slenderness</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>λx (Major Axis)</span>
@@ -397,7 +397,7 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
       </div>
 
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Critical Stresses</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Critical Stresses</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Euler Stress (Fe)</span>
@@ -415,7 +415,7 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
       </div>
 
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Capacities</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Capacities</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Plastic (Npl)</span>
@@ -430,7 +430,7 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Utilization</h4>
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Utilization</h4>
       <UtilizationBar ratio={result.utilizationRatio} label="Axial Load Ratio (Pu/φPn)" />
     </div>
 
@@ -440,7 +440,7 @@ const CompressionResultCard: React.FC<{ result: CompressionMemberResult }> = ({ 
 const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
         Beam Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -448,7 +448,7 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Flexural Design</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Flexural Design</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Plastic Moment (Mp)</span>
@@ -463,7 +463,7 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
             <span>{result.Md.toFixed(1)} kN-m</span>
           </div>
         </div>
-        <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-sm space-y-1">
+        <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg text-sm space-y-1">
           <div><strong>Mcr:</strong> {result.Mcr.toFixed(1)} kN-m</div>
           <div><strong>LTB Applicable:</strong> {result.ltbApplicable ? 'Yes' : 'No'} (ψ = {result.ltbReductionFactor.toFixed(2)})</div>
           {result.reducedMomentCapacity && (
@@ -473,7 +473,7 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
       </div>
 
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Shear Design</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Shear Design</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Plastic Shear (Vp)</span>
@@ -492,7 +492,7 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Utilization Ratios</h4>
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Utilization Ratios</h4>
       <UtilizationBar ratio={result.momentUtilization} label="Flexural (Mu/φMn)" />
       <UtilizationBar ratio={result.shearUtilization} label="Shear (Vu/φVd)" />
     </div>
@@ -502,7 +502,7 @@ const BeamResultCard: React.FC<{ result: BeamDesignResult }> = ({ result }) => (
 const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
         Beam-Column Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -510,7 +510,7 @@ const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Axial</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Axial</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Compression Nd</span>
@@ -524,7 +524,7 @@ const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }
       </div>
 
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Major Axis Moment</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Major Axis Moment</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Md (x)</span>
@@ -538,7 +538,7 @@ const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }
       </div>
 
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Minor Axis Moment</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Minor Axis Moment</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Md (y)</span>
@@ -553,10 +553,10 @@ const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Interaction Check</h4>
-      <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-4">
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Interaction Check</h4>
+      <div className="p-4 bg-slate-50 dark:bg-slate-700 rounded-lg mb-4">
         <div className="text-center">
-          <div className="text-sm text-gray-500 mb-1">Interaction Equation ({result.interactionFormula})</div>
+          <div className="text-sm text-slate-500 mb-1">Interaction Equation ({result.interactionFormula})</div>
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
             {result.interactionRatio.toFixed(3)} ≤ 1.0
           </div>
@@ -719,14 +719,14 @@ export const SteelMemberDesigner: React.FC = () => {
   }, [updateState]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
             🏗️ Steel Member Design
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Design structural steel members per IS 800, AISC 360, EN 1993, or AS 4100
           </p>
         </div>
@@ -752,7 +752,7 @@ export const SteelMemberDesigner: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Code and Material */}
             <div className={CARD_CLASS}>
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                 Design Parameters
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -786,7 +786,7 @@ export const SteelMemberDesigner: React.FC = () => {
 
             {/* Member Parameters */}
             <div className={CARD_CLASS}>
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                 Member Geometry
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -830,7 +830,7 @@ export const SteelMemberDesigner: React.FC = () => {
 
             {/* Loading */}
             <div className={CARD_CLASS}>
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                 Applied Loads (Factored)
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -869,8 +869,8 @@ export const SteelMemberDesigner: React.FC = () => {
               </div>
 
               {state.mode === 'tension' && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                     Connection Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -928,13 +928,13 @@ export const SteelMemberDesigner: React.FC = () => {
             
             {/* Quick Reference */}
             <div className={`${CARD_CLASS} mt-6`}>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                 Quick Reference
               </h3>
               <div className="space-y-3 text-sm">
                 <div>
-                  <strong className="text-gray-700 dark:text-gray-300">Resistance Factors:</strong>
-                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 ml-2">
+                  <strong className="text-slate-700 dark:text-slate-300">Resistance Factors:</strong>
+                  <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 ml-2">
                     <li>Tension yield: φ = 0.90</li>
                     <li>Tension rupture: φ = 0.75</li>
                     <li>Compression: φ = 0.90</li>
@@ -943,8 +943,8 @@ export const SteelMemberDesigner: React.FC = () => {
                   </ul>
                 </div>
                 <div>
-                  <strong className="text-gray-700 dark:text-gray-300">Slenderness Limits:</strong>
-                  <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 ml-2">
+                  <strong className="text-slate-700 dark:text-slate-300">Slenderness Limits:</strong>
+                  <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 ml-2">
                     <li>Columns: KL/r ≤ 200</li>
                     <li>Bracing: L/r ≤ 300</li>
                     <li>Tension: L/r ≤ 400</li>

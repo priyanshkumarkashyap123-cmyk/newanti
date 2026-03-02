@@ -212,7 +212,7 @@ export function HealthIndicator({
     healthy: 'bg-green-500',
     degraded: 'bg-yellow-500',
     unhealthy: 'bg-red-500',
-    unknown: 'bg-gray-500',
+    unknown: 'bg-slate-500',
   };
 
   const statusLabels = {

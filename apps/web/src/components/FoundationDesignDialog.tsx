@@ -106,14 +106,14 @@ const SOIL_TYPES: SoilType[] = [
         name: 'Hard Rock',
         description: 'Maximum bearing capacity',
         bearingCapacity: 1000,
-        color: 'bg-gray-400'
+        color: 'bg-slate-400'
     },
     {
         id: 'weathered_rock',
         name: 'Weathered Rock',
         description: 'Good capacity with some variation',
         bearingCapacity: 500,
-        color: 'bg-gray-500'
+        color: 'bg-slate-500'
     },
 ];
 

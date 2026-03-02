@@ -97,7 +97,7 @@ const diagramOptions: DiagramOption[] = [
     id: "SFD",
     label: "Shear Force Diagram",
     shortLabel: "SFD",
-    color: "#00aaff",
+    color: "#22c55e",
     icon: <BarChart3 size={16} />,
     description: "Display shear force (Fy, Fz) along members",
   },
@@ -105,7 +105,7 @@ const diagramOptions: DiagramOption[] = [
     id: "BMD",
     label: "Bending Moment Diagram",
     shortLabel: "BMD",
-    color: "#ff8800",
+    color: "#3b82f6",
     icon: <Activity size={16} />,
     description: "Display bending moment (My, Mz) along members",
   },
@@ -113,7 +113,7 @@ const diagramOptions: DiagramOption[] = [
     id: "AFD",
     label: "Axial Force Diagram",
     shortLabel: "AFD",
-    color: "#00ff00",
+    color: "#1e40af",
     icon: <Move size={16} className="rotate-90" />,
     description: "Display axial force (Fx) along members",
   },
@@ -121,7 +121,7 @@ const diagramOptions: DiagramOption[] = [
     id: "TORSION",
     label: "Torsion Diagram",
     shortLabel: "TOR",
-    color: "#ff00ff",
+    color: "#8b5cf6",
     icon: <RotateCw size={16} />,
     description: "Display torsion (Mx) along members",
   },
@@ -129,7 +129,7 @@ const diagramOptions: DiagramOption[] = [
     id: "DEFLECTION",
     label: "Deflected Shape",
     shortLabel: "DEF",
-    color: "#ffff00",
+    color: "#f59e0b",
     icon: <TrendingDown size={16} />,
     description: "Display deflected shape of structure",
   },
@@ -137,7 +137,7 @@ const diagramOptions: DiagramOption[] = [
     id: "BMD_MY",
     label: "Moment My (Weak Axis)",
     shortLabel: "My",
-    color: "#00cccc",
+    color: "#06b6d4",
     icon: <BarChart2 size={16} />,
     description: "Display weak-axis bending moment (My) in XZ-plane",
   },
@@ -145,7 +145,7 @@ const diagramOptions: DiagramOption[] = [
     id: "SFD_VZ",
     label: "Shear Vz (Weak Axis)",
     shortLabel: "Vz",
-    color: "#0088cc",
+    color: "#0891b2",
     icon: <Waves size={16} />,
     description: "Display weak-axis shear force (Vz) in XZ-plane",
   },
@@ -204,7 +204,7 @@ const ScaleSlider: FC<ScaleSliderProps> = ({
           value={value}
           onChange={(e) => onChange(parseFloat(e.target.value))}
           className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer
-                             accent-cyan-500"
+                             accent-blue-500"
         />
         <button
           onClick={() => onChange(Math.min(max, value + step * 5))}
@@ -232,19 +232,16 @@ const ToggleButton: FC<ToggleButtonProps> = ({
   active,
   onClick,
   children,
-  color = "#00aaff",
+  color = "#3b82f6",
 }) => (
   <button
     onClick={onClick}
     className={`px-3 py-1.5 text-xs font-medium rounded transition-all
                   ${
                     active
-                      ? "bg-cyan-600/30 text-cyan-300 border border-cyan-500/50"
-                      : "bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 border border-slate-600 hover:border-slate-500"
+                      ? "bg-blue-500 text-white ring-2 ring-blue-400"
+                      : "bg-slate-200/50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
                   }`}
-    style={
-      active ? { borderColor: color + "80", backgroundColor: color + "20" } : {}
-    }
   >
     {children}
   </button>

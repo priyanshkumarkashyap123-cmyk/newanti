@@ -122,7 +122,7 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
                     </p>
 
                     {/* Current tier info */}
-                    <div className="bg-gray-50 dark:bg-background-dark rounded-lg p-4 mb-6">
+                    <div className="bg-slate-50 dark:bg-background-dark rounded-lg p-4 mb-6">
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-steel-blue/60">Your current plan:</span>
                             <span className="font-bold text-steel-blue capitalize">{subscription.tier}</span>

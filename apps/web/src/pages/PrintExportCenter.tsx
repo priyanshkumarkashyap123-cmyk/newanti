@@ -614,7 +614,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
       name: "CSV Data",
       ext: ".csv",
       icon: Table,
-      color: "text-gray-600 dark:text-gray-400",
+      color: "text-slate-600 dark:text-slate-400",
     },
     {
       id: "png",
@@ -900,7 +900,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       {/* Header */}
                       {pageSettings.header && (
                         <div
-                          className="border-b border-gray-200 pb-2 mb-4 flex items-center justify-between"
+                          className="border-b border-slate-200 pb-2 mb-4 flex items-center justify-between"
                           style={{ fontSize: 8 * (previewZoom / 100) }}
                         >
                           {pageSettings.companyLogo && (
@@ -912,7 +912,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                               }}
                             />
                           )}
-                          <span className="text-gray-500">
+                          <span className="text-slate-500">
                             Structural Analysis Report
                           </span>
                         </div>
@@ -921,31 +921,31 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       {/* Content placeholder */}
                       <div className="space-y-2">
                         <div
-                          className="h-2 bg-gray-200 rounded w-3/4"
+                          className="h-2 bg-slate-200 rounded w-3/4"
                           style={{ height: 8 * (previewZoom / 100) }}
                         />
                         <div
-                          className="h-2 bg-gray-200 rounded w-full"
+                          className="h-2 bg-slate-200 rounded w-full"
                           style={{ height: 8 * (previewZoom / 100) }}
                         />
                         <div
-                          className="h-2 bg-gray-200 rounded w-5/6"
+                          className="h-2 bg-slate-200 rounded w-5/6"
                           style={{ height: 8 * (previewZoom / 100) }}
                         />
                         <div
-                          className="h-2 bg-gray-200 rounded w-2/3"
+                          className="h-2 bg-slate-200 rounded w-2/3"
                           style={{ height: 8 * (previewZoom / 100) }}
                         />
                         <div
-                          className="my-4 h-20 bg-gray-100 rounded"
+                          className="my-4 h-20 bg-slate-100 rounded"
                           style={{ height: 80 * (previewZoom / 100) }}
                         />
                         <div
-                          className="h-2 bg-gray-200 rounded w-full"
+                          className="h-2 bg-slate-200 rounded w-full"
                           style={{ height: 8 * (previewZoom / 100) }}
                         />
                         <div
-                          className="h-2 bg-gray-200 rounded w-4/5"
+                          className="h-2 bg-slate-200 rounded w-4/5"
                           style={{ height: 8 * (previewZoom / 100) }}
                         />
                       </div>
@@ -953,14 +953,14 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       {/* Footer */}
                       {pageSettings.footer && (
                         <div
-                          className="absolute bottom-4 left-4 right-4 border-t border-gray-200 pt-2 flex justify-between"
+                          className="absolute bottom-4 left-4 right-4 border-t border-slate-200 pt-2 flex justify-between"
                           style={{ fontSize: 6 * (previewZoom / 100) }}
                         >
-                          <span className="text-gray-600 dark:text-gray-400">
+                          <span className="text-slate-600 dark:text-slate-400">
                             BeamLab
                           </span>
                           {pageSettings.pageNumbers && (
-                            <span className="text-gray-600 dark:text-gray-400">
+                            <span className="text-slate-600 dark:text-slate-400">
                               Page 1 of {totalPages}
                             </span>
                           )}

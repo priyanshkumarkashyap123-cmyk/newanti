@@ -89,9 +89,9 @@ export function WeldedConnectionsPage() {
   const [activeTab, setActiveTab] = useState('fillet');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -99,19 +99,19 @@ export function WeldedConnectionsPage() {
                 <Flame className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
                   Welded Connections
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   AWS D1.1 • AISC 360 • Eurocode 3 • IS 800
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+              <button className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
                 <BookOpen className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+              <button className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
                 <HelpCircle className="w-5 h-5" />
               </button>
             </div>
@@ -120,15 +120,15 @@ export function WeldedConnectionsPage() {
       </header>
 
       {/* Navigation Tabs */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4">
           <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
             <Tabs.List className="flex gap-1 -mb-px">
               <Tabs.Trigger 
                 value="fillet"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
-                           text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
+                           text-slate-600 border-b-2 border-transparent
+                           hover:text-slate-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
               >
                 <Square className="w-4 h-4" />
@@ -137,8 +137,8 @@ export function WeldedConnectionsPage() {
               <Tabs.Trigger 
                 value="groove"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
-                           text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
+                           text-slate-600 border-b-2 border-transparent
+                           hover:text-slate-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
               >
                 <Grid3X3 className="w-4 h-4" />
@@ -147,8 +147,8 @@ export function WeldedConnectionsPage() {
               <Tabs.Trigger 
                 value="baseplate"
                 className="flex items-center gap-2 px-4 py-3 text-sm font-medium 
-                           text-gray-600 border-b-2 border-transparent
-                           hover:text-gray-900 dark:hover:text-slate-900 dark:text-white
+                           text-slate-600 border-b-2 border-transparent
+                           hover:text-slate-900 dark:hover:text-slate-900 dark:text-white
                            data-[state=active]:text-red-600 data-[state=active]:border-red-600"
               >
                 <Anchor className="w-4 h-4" />
@@ -180,9 +180,9 @@ export function WeldedConnectionsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 mt-auto">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
             <p>© {new Date().getFullYear()} Structural Engineering Suite. Professional use only.</p>
             <div className="flex items-center gap-4">
               <span>Design Codes: AWS D1.1-2020, AISC 360-22, EN 1993-1-8</span>
@@ -240,14 +240,14 @@ function FilletWeldPanel() {
     : '';
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg">
+    <div className="w-full max-w-6xl mx-auto p-6 bg-white dark:bg-slate-900 rounded-xl shadow-lg">
       <div className="flex items-center gap-3 mb-6">
         <Square className="w-8 h-8 text-red-600" />
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             Fillet Weld Calculator
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             AISC 360 / AWS D1.1 / Eurocode 3 compliant design
           </p>
         </div>
@@ -259,22 +259,22 @@ function FilletWeldPanel() {
           {/* Design Parameters */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Design Code
               </Label.Root>
               <Select.Root value={designCode} onValueChange={(v) => setDesignCode(v as WeldDesignCode)}>
                 <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 
-                                           border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                           border border-slate-300 dark:border-slate-600 rounded-lg
+                                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
                   <Select.Value />
                   <Select.Icon><ChevronDown className="w-4 h-4" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-50">
+                  <Select.Content className="bg-white dark:bg-slate-800 border rounded-lg shadow-lg z-50">
                     <Select.Viewport className="p-1">
                       {Object.values(WeldDesignCode).map((code) => (
                         <Select.Item key={code} value={code}
-                          className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                          className="px-3 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
                           <Select.ItemText>{code}</Select.ItemText>
                         </Select.Item>
                       ))}
@@ -285,22 +285,22 @@ function FilletWeldPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Electrode
               </Label.Root>
               <Select.Root value={electrodeClass} onValueChange={(v) => setElectrodeClass(v as ElectrodeClass)}>
                 <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 
-                                           border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                           border border-slate-300 dark:border-slate-600 rounded-lg
+                                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
                   <Select.Value />
                   <Select.Icon><ChevronDown className="w-4 h-4" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-50">
+                  <Select.Content className="bg-white dark:bg-slate-800 border rounded-lg shadow-lg z-50">
                     <Select.Viewport className="p-1">
                       {Object.values(ElectrodeClass).map((el) => (
                         <Select.Item key={el} value={el}
-                          className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                          className="px-3 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
                           <Select.ItemText>{el} ({ELECTRODE_STRENGTH[el]} ksi)</Select.ItemText>
                         </Select.Item>
                       ))}
@@ -311,12 +311,12 @@ function FilletWeldPanel() {
             </div>
           </div>
 
-          <Separator.Root className="h-px bg-gray-200 dark:bg-gray-700" />
+          <Separator.Root className="h-px bg-slate-200 dark:bg-slate-700" />
 
           {/* Weld Geometry */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Weld Size ({isMetric ? 'mm' : 'in'})
               </Label.Root>
               <input
@@ -324,12 +324,12 @@ function FilletWeldPanel() {
                 step="0.0625"
                 value={weldSize}
                 onChange={(e) => setWeldSize(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Weld Length ({isMetric ? 'mm' : 'in'})
               </Label.Root>
               <input
@@ -337,12 +337,12 @@ function FilletWeldPanel() {
                 step="0.5"
                 value={weldLength}
                 onChange={(e) => setWeldLength(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Load Angle (°)
               </Label.Root>
               <input
@@ -351,30 +351,30 @@ function FilletWeldPanel() {
                 max="90"
                 value={loadAngle}
                 onChange={(e) => setLoadAngle(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
           {/* Base Metal */}
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-3">Base Metal Properties</h4>
+          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <h4 className="font-medium text-slate-900 dark:text-white mb-3">Base Metal Properties</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
                   Plate 1: Fy (ksi)
                 </Label.Root>
                 <input
                   type="number"
                   value={baseMetal1Fy}
                   onChange={(e) => setBaseMetal1Fy(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
                   Thickness (in)
                 </Label.Root>
                 <input
@@ -382,24 +382,24 @@ function FilletWeldPanel() {
                   step="0.0625"
                   value={baseMetal1Thickness}
                   onChange={(e) => setBaseMetal1Thickness(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
                   Plate 2: Fy (ksi)
                 </Label.Root>
                 <input
                   type="number"
                   value={baseMetal2Fy}
                   onChange={(e) => setBaseMetal2Fy(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
                   Thickness (in)
                 </Label.Root>
                 <input
@@ -407,8 +407,8 @@ function FilletWeldPanel() {
                   step="0.0625"
                   value={baseMetal2Thickness}
                   onChange={(e) => setBaseMetal2Thickness(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
             </div>
@@ -440,14 +440,14 @@ function FilletWeldPanel() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Nominal Strength</p>
-                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Nominal Strength</p>
+                    <p className="text-xl font-semibold text-slate-900 dark:text-white">
                       {(result.nominalStrength ?? 0).toFixed(2)} kips
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Throat Area</p>
-                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Throat Area</p>
+                    <p className="text-xl font-semibold text-slate-900 dark:text-white">
                       {result.effectiveThroat.toFixed(3)} in²
                     </p>
                   </div>
@@ -465,16 +465,16 @@ function FilletWeldPanel() {
               )}
 
               {result.minWeldSize && (
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Minimum Weld Size:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="text-slate-600 dark:text-slate-400">Minimum Weld Size:</span>
+                    <span className="font-medium text-slate-900 dark:text-white">
                       {result.minWeldSize}" (per Table J2.4)
                     </span>
                   </div>
                   <div className="flex justify-between text-sm mt-2">
-                    <span className="text-gray-600 dark:text-gray-400">Maximum Weld Size:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="text-slate-600 dark:text-slate-400">Maximum Weld Size:</span>
+                    <span className="font-medium text-slate-900 dark:text-white">
                       {result.maxWeldSize}"
                     </span>
                   </div>
@@ -494,10 +494,10 @@ function FilletWeldPanel() {
             </>
           ) : (
             <div className="h-full flex items-center justify-center border-2 border-dashed 
-                            border-gray-300 dark:border-gray-600 rounded-lg p-12">
+                            border-slate-300 dark:border-slate-600 rounded-lg p-12">
               <div className="text-center">
-                <Square className="w-16 h-16 mx-auto text-gray-500 dark:text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">
+                <Square className="w-16 h-16 mx-auto text-slate-500 dark:text-slate-400 mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">
                   Enter weld parameters and calculate
                 </p>
               </div>
@@ -547,14 +547,14 @@ function GrooveWeldPanel() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg">
+    <div className="w-full max-w-6xl mx-auto p-6 bg-white dark:bg-slate-900 rounded-xl shadow-lg">
       <div className="flex items-center gap-3 mb-6">
         <Grid3X3 className="w-8 h-8 text-orange-600" />
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             Groove Weld Calculator
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Complete Joint Penetration (CJP) and Partial Joint Penetration (PJP)
           </p>
         </div>
@@ -565,23 +565,23 @@ function GrooveWeldPanel() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Weld Type
               </Label.Root>
               <Select.Root value={weldType} onValueChange={(v) => setWeldType(v as 'CJP' | 'PJP')}>
                 <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 
-                                           border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                           border border-slate-300 dark:border-slate-600 rounded-lg
+                                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
                   <Select.Value />
                   <Select.Icon><ChevronDown className="w-4 h-4" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-50">
+                  <Select.Content className="bg-white dark:bg-slate-800 border rounded-lg shadow-lg z-50">
                     <Select.Viewport className="p-1">
-                      <Select.Item value="CJP" className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                      <Select.Item value="CJP" className="px-3 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
                         <Select.ItemText>CJP - Complete Joint Penetration</Select.ItemText>
                       </Select.Item>
-                      <Select.Item value="PJP" className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                      <Select.Item value="PJP" className="px-3 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
                         <Select.ItemText>PJP - Partial Joint Penetration</Select.ItemText>
                       </Select.Item>
                     </Select.Viewport>
@@ -591,22 +591,22 @@ function GrooveWeldPanel() {
             </div>
             
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Joint Type
               </Label.Root>
               <Select.Root value={jointType} onValueChange={(v) => setJointType(v as JointType)}>
                 <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 
-                                           border border-gray-300 dark:border-gray-600 rounded-lg
-                                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                           border border-slate-300 dark:border-slate-600 rounded-lg
+                                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
                   <Select.Value />
                   <Select.Icon><ChevronDown className="w-4 h-4" /></Select.Icon>
                 </Select.Trigger>
                 <Select.Portal>
-                  <Select.Content className="bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-50">
+                  <Select.Content className="bg-white dark:bg-slate-800 border rounded-lg shadow-lg z-50">
                     <Select.Viewport className="p-1">
                       {Object.values(JointType).map((jt) => (
                         <Select.Item key={jt} value={jt}
-                          className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                          className="px-3 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 rounded">
                           <Select.ItemText>{jt}</Select.ItemText>
                         </Select.Item>
                       ))}
@@ -617,11 +617,11 @@ function GrooveWeldPanel() {
             </div>
           </div>
 
-          <Separator.Root className="h-px bg-gray-200 dark:bg-gray-700" />
+          <Separator.Root className="h-px bg-slate-200 dark:bg-slate-700" />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Plate Thickness (in)
               </Label.Root>
               <input
@@ -629,12 +629,12 @@ function GrooveWeldPanel() {
                 step="0.0625"
                 value={plateThickness}
                 onChange={(e) => setPlateThickness(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Weld Length (in)
               </Label.Root>
               <input
@@ -642,12 +642,12 @@ function GrooveWeldPanel() {
                 step="0.5"
                 value={weldLength}
                 onChange={(e) => setWeldLength(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Groove Angle (°)
               </Label.Root>
               <input
@@ -656,12 +656,12 @@ function GrooveWeldPanel() {
                 max="90"
                 value={grooveAngle}
                 onChange={(e) => setGrooveAngle(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
             <div>
-              <Label.Root className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <Label.Root className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Root Opening (in)
               </Label.Root>
               <input
@@ -669,8 +669,8 @@ function GrooveWeldPanel() {
                 step="0.0625"
                 value={rootOpening}
                 onChange={(e) => setRootOpening(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                           bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               />
             </div>
           </div>
@@ -700,28 +700,28 @@ function GrooveWeldPanel() {
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Effective Throat</p>
-                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Effective Throat</p>
+                    <p className="text-xl font-semibold text-slate-900 dark:text-white">
                       {result.effectiveThroat.toFixed(3)}"
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Nominal Strength</p>
-                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Nominal Strength</p>
+                    <p className="text-xl font-semibold text-slate-900 dark:text-white">
                       {result.nominalStrength.toFixed(2)} kips
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-2">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">φ Factor:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{result.phiFactor}</span>
+                  <span className="text-slate-600 dark:text-slate-400">φ Factor:</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{result.phiFactor}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Governing Limit State:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{result.governingLimitState}</span>
+                  <span className="text-slate-600 dark:text-slate-400">Governing Limit State:</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{result.governingLimitState}</span>
                 </div>
               </div>
 
@@ -736,10 +736,10 @@ function GrooveWeldPanel() {
             </>
           ) : (
             <div className="h-full flex items-center justify-center border-2 border-dashed 
-                            border-gray-300 dark:border-gray-600 rounded-lg p-12">
+                            border-slate-300 dark:border-slate-600 rounded-lg p-12">
               <div className="text-center">
-                <Grid3X3 className="w-16 h-16 mx-auto text-gray-500 dark:text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">
+                <Grid3X3 className="w-16 h-16 mx-auto text-slate-500 dark:text-slate-400 mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">
                   Enter groove weld parameters
                 </p>
               </div>
@@ -820,27 +820,27 @@ function BasePlatePanel() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg">
+    <div className="w-full max-w-6xl mx-auto p-6 bg-white dark:bg-slate-900 rounded-xl shadow-lg">
       <div className="flex items-center gap-3 mb-6">
         <Anchor className="w-8 h-8 text-blue-600" />
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             Base Plate Calculator
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Column base plate and anchor bolt design per AISC Design Guide 1
           </p>
         </div>
       </div>
 
       <Tabs.Root defaultValue="input">
-        <Tabs.List className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
+        <Tabs.List className="flex border-b border-slate-200 dark:border-slate-700 mb-6">
+          <Tabs.Trigger value="input" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600">
             <Calculator className="w-4 h-4 inline mr-2" />
             Design Input
           </Tabs.Trigger>
-          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
+          <Tabs.Trigger value="results" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white border-b-2 border-transparent
                      data-[state=active]:text-blue-600 data-[state=active]:border-blue-600">
             <FileText className="w-4 h-4 inline mr-2" />
             Results
@@ -849,43 +849,43 @@ function BasePlatePanel() {
 
         <Tabs.Content value="input" className="space-y-6">
           {/* Applied Loads */}
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Applied Loads (Factored)</h4>
+          <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Applied Loads (Factored)</h4>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
                   Axial Pu (kips)
                 </Label.Root>
                 <input
                   type="number"
                   value={axialLoad}
                   onChange={(e) => setAxialLoad(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
                   Moment Mu (kip-ft)
                 </Label.Root>
                 <input
                   type="number"
                   value={moment}
                   onChange={(e) => setMoment(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
               <div>
-                <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
                   Shear Vu (kips)
                 </Label.Root>
                 <input
                   type="number"
                   value={shearForce}
                   onChange={(e) => setShearForce(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg
+                             bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
             </div>
@@ -899,43 +899,43 @@ function BasePlatePanel() {
                 <div>
                   <Label.Root className="block text-sm text-blue-700 dark:text-blue-300 mb-1">N (in)</Label.Root>
                   <input type="number" step="0.5" value={plateLength} onChange={(e) => setPlateLength(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
                 </div>
                 <div>
                   <Label.Root className="block text-sm text-blue-700 dark:text-blue-300 mb-1">B (in)</Label.Root>
                   <input type="number" step="0.5" value={plateWidth} onChange={(e) => setPlateWidth(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
                 </div>
                 <div>
                   <Label.Root className="block text-sm text-blue-700 dark:text-blue-300 mb-1">tp (in)</Label.Root>
                   <input type="number" step="0.125" value={plateThickness} onChange={(e) => setPlateThickness(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
                 </div>
                 <div>
                   <Label.Root className="block text-sm text-blue-700 dark:text-blue-300 mb-1">Fyp (ksi)</Label.Root>
                   <input type="number" value={plateFy} onChange={(e) => setPlateFy(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Concrete Pedestal</h4>
+            <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+              <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Concrete Pedestal</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">A1 (in)</Label.Root>
+                  <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">A1 (in)</Label.Root>
                   <input type="number" step="0.5" value={pedestalLength} onChange={(e) => setPedestalLength(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
                 </div>
                 <div>
-                  <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">A2 (in)</Label.Root>
+                  <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">A2 (in)</Label.Root>
                   <input type="number" step="0.5" value={pedestalWidth} onChange={(e) => setPedestalWidth(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
                 </div>
                 <div className="col-span-2">
-                  <Label.Root className="block text-sm text-gray-600 dark:text-gray-400 mb-1">f'c (ksi)</Label.Root>
+                  <Label.Root className="block text-sm text-slate-600 dark:text-slate-400 mb-1">f'c (ksi)</Label.Root>
                   <input type="number" step="0.5" value={concreteFc} onChange={(e) => setConcreteFc(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
                 </div>
               </div>
             </div>
@@ -948,22 +948,22 @@ function BasePlatePanel() {
               <div>
                 <Label.Root className="block text-sm text-amber-700 dark:text-amber-300 mb-1">Diameter (in)</Label.Root>
                 <input type="number" step="0.125" value={anchorDiameter} onChange={(e) => setAnchorDiameter(Number(e.target.value))}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
               </div>
               <div>
                 <Label.Root className="block text-sm text-amber-700 dark:text-amber-300 mb-1">Fu (ksi)</Label.Root>
                 <input type="number" value={anchorFu} onChange={(e) => setAnchorFu(Number(e.target.value))}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
               </div>
               <div>
                 <Label.Root className="block text-sm text-amber-700 dark:text-amber-300 mb-1">Quantity</Label.Root>
                 <input type="number" min="2" value={numAnchors} onChange={(e) => setNumAnchors(Number(e.target.value))}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
               </div>
               <div>
                 <Label.Root className="block text-sm text-amber-700 dark:text-amber-300 mb-1">Edge Dist (in)</Label.Root>
                 <input type="number" step="0.5" value={anchorEdgeDistance} onChange={(e) => setAnchorEdgeDistance(Number(e.target.value))}
-                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white" />
               </div>
             </div>
           </div>
@@ -1018,37 +1018,37 @@ function BasePlatePanel() {
 
               {/* Detailed Results */}
               <div className="grid grid-cols-2 gap-6">
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Bearing Capacity</h4>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Bearing Capacity</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">φPp:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{(result.bearingCapacity ?? 0).toFixed(1)} kips</span>
+                      <span className="text-slate-600 dark:text-slate-400">φPp:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{(result.bearingCapacity ?? 0).toFixed(1)} kips</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Required tp:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{(result.requiredPlateThickness ?? 0).toFixed(3)}"</span>
+                      <span className="text-slate-600 dark:text-slate-400">Required tp:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{(result.requiredPlateThickness ?? 0).toFixed(3)}"</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Provided tp:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{plateThickness}"</span>
+                      <span className="text-slate-600 dark:text-slate-400">Provided tp:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{plateThickness}"</span>
                     </div>
                   </div>
                 </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Anchor Design</h4>
+                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-3">Anchor Design</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">φRn (tension):</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{result.anchorTensionCapacity.toFixed(1)} kips</span>
+                      <span className="text-slate-600 dark:text-slate-400">φRn (tension):</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{result.anchorTensionCapacity.toFixed(1)} kips</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">φRn (shear):</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{result.anchorShearCapacity.toFixed(1)} kips</span>
+                      <span className="text-slate-600 dark:text-slate-400">φRn (shear):</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{result.anchorShearCapacity.toFixed(1)} kips</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Interaction:</span>
-                      <span className="font-medium text-gray-900 dark:text-white">{(result.anchorInteraction * 100).toFixed(1)}%</span>
+                      <span className="text-slate-600 dark:text-slate-400">Interaction:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{(result.anchorInteraction * 100).toFixed(1)}%</span>
                     </div>
                   </div>
                 </div>
@@ -1069,9 +1069,9 @@ function BasePlatePanel() {
               )}
             </>
           ) : (
-            <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-              <Anchor className="w-16 h-16 mx-auto text-gray-500 dark:text-gray-400 mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">Enter design parameters and calculate</p>
+            <div className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg">
+              <Anchor className="w-16 h-16 mx-auto text-slate-500 dark:text-slate-400 mb-4" />
+              <p className="text-slate-500 dark:text-slate-400">Enter design parameters and calculate</p>
             </div>
           )}
         </Tabs.Content>

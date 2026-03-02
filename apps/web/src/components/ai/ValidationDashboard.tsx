@@ -77,20 +77,20 @@ const ValidationResultRow: React.FC<{ result: ValidationResult; index: number }>
     const [expanded, setExpanded] = useState(false);
 
     return (
-        <div className="border border-gray-700 rounded-lg overflow-hidden mb-2">
+        <div className="border border-slate-700 rounded-lg overflow-hidden mb-2">
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="w-full px-4 py-3 flex items-center justify-between bg-gray-100 dark:bg-gray-800 hover:bg-gray-750 transition-colors"
+                className="w-full px-4 py-3 flex items-center justify-between bg-slate-100 dark:bg-slate-800 hover:bg-slate-750 transition-colors"
             >
                 <div className="flex items-center gap-3">
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">#{index + 1}</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">#{index + 1}</span>
                     <span className="font-medium text-slate-900 dark:text-white">{result.testCase}</span>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">{result.description}</span>
+                    <span className="text-slate-500 dark:text-slate-400 text-sm">{result.description}</span>
                 </div>
                 <div className="flex items-center gap-3">
                     <AccuracyBadge accuracy={result.accuracy.percentage} />
                     <svg
-                        className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+                        className={`w-5 h-5 text-slate-500 dark:text-slate-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
                         fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -99,27 +99,27 @@ const ValidationResultRow: React.FC<{ result: ValidationResult; index: number }>
             </button>
 
             {expanded && (
-                <div className="px-4 py-3 bg-gray-850 border-t border-gray-700">
+                <div className="px-4 py-3 bg-slate-850 border-t border-slate-700">
                     <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
-                            <span className="text-gray-500 dark:text-gray-400 block">Computed Value</span>
+                            <span className="text-slate-500 dark:text-slate-400 block">Computed Value</span>
                             <span className="text-slate-900 dark:text-white font-mono">{result.computed.toFixed(6)}</span>
                         </div>
                         <div>
-                            <span className="text-gray-500 dark:text-gray-400 block">Expected Value</span>
+                            <span className="text-slate-500 dark:text-slate-400 block">Expected Value</span>
                             <span className="text-green-400 font-mono">{result.expected.toFixed(6)}</span>
                         </div>
                         <div>
-                            <span className="text-gray-500 dark:text-gray-400 block">Error</span>
+                            <span className="text-slate-500 dark:text-slate-400 block">Error</span>
                             <span className={`font-mono ${result.accuracy.percentage >= 95 ? 'text-green-400' : 'text-yellow-400'}`}>
                                 {result.accuracy.relativeError.toFixed(4)}%
                             </span>
                         </div>
                     </div>
 
-                    <div className="mt-3 pt-3 border-t border-gray-700">
-                        <span className="text-gray-500 dark:text-gray-400 text-sm block mb-1">Analytical Formula</span>
-                        <code className="text-blue-400 text-sm bg-gray-50 dark:bg-gray-900 px-2 py-1 rounded">
+                    <div className="mt-3 pt-3 border-t border-slate-700">
+                        <span className="text-slate-500 dark:text-slate-400 text-sm block mb-1">Analytical Formula</span>
+                        <code className="text-blue-400 text-sm bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded">
                             {result.formula || 'Standard beam theory'}
                         </code>
                     </div>
@@ -222,9 +222,9 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
     // ==========================================
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-700 overflow-hidden">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
             {/* Header */}
-            <div className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-700 flex items-center justify-between">
+            <div className="px-4 py-3 bg-slate-100 dark:bg-slate-800 border-b border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -242,7 +242,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
             {/* Content */}
             <div className="p-4">
                 {state.status === 'idle' && (
-                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                         <p>Run an analysis to see validation results</p>
                         <button
                             onClick={runValidation}
@@ -257,7 +257,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                 {state.status === 'running' && (
                     <div className="text-center py-8">
                         <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400">Validating against analytical solutions...</p>
+                        <p className="text-slate-500 dark:text-slate-400">Validating against analytical solutions...</p>
                     </div>
                 )}
 
@@ -265,18 +265,18 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                     <>
                         {/* Summary Cards */}
                         <div className="grid grid-cols-3 gap-4 mb-4">
-                            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-                                <div className="text-gray-500 dark:text-gray-400 text-sm">Overall Accuracy</div>
+                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                                <div className="text-slate-500 dark:text-slate-400 text-sm">Overall Accuracy</div>
                                 <div className="text-2xl font-bold text-slate-900 dark:text-white">{state.overallAccuracy.toFixed(1)}%</div>
                             </div>
-                            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-                                <div className="text-gray-500 dark:text-gray-400 text-sm">Tests Passed</div>
+                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                                <div className="text-slate-500 dark:text-slate-400 text-sm">Tests Passed</div>
                                 <div className="text-2xl font-bold text-green-400">
                                     {state.results.filter(r => r.passed).length}/{state.results.length}
                                 </div>
                             </div>
-                            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-                                <div className="text-gray-500 dark:text-gray-400 text-sm">Confidence Level</div>
+                            <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                                <div className="text-slate-500 dark:text-slate-400 text-sm">Confidence Level</div>
                                 <div className={`text-2xl font-bold ${state.confidence === 'high' ? 'text-green-400' :
                                         state.confidence === 'medium' ? 'text-yellow-400' : 'text-red-400'
                                     }`}>
@@ -288,7 +288,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                         {/* Toggle Details */}
                         <button
                             onClick={() => setShowDetails(!showDetails)}
-                            className="w-full py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2"
+                            className="w-full py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2"
                         >
                             {showDetails ? 'Hide Details' : 'Show Details'}
                             <svg className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-180' : ''}`}
@@ -320,7 +320,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
 // console.log(report);
                                     alert('Validation report logged to audit trail');
                                 }}
-                                className="flex-1 py-2 bg-gray-700 text-slate-900 dark:text-white rounded-lg hover:bg-gray-600 font-medium"
+                                className="flex-1 py-2 bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-600 font-medium"
                             >
                                 Export Report
                             </button>

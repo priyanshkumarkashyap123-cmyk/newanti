@@ -260,15 +260,15 @@ export const AIDesignWizard: React.FC<{
     }, [state.currentStep]);
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden">
             {/* Progress Header */}
-            <div className="bg-gray-100 dark:bg-gray-800 px-4 py-3 border-b border-gray-700">
+            <div className="bg-slate-100 dark:bg-slate-800 px-4 py-3 border-b border-slate-700">
                 <div className="flex items-center justify-between mb-3">
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>🧙‍♂️</span>
                         AI Design Wizard
                     </h2>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
                         Step {currentStepIndex + 1} of {DESIGN_STEPS.length}
                     </span>
                 </div>
@@ -281,7 +281,7 @@ export const AIDesignWizard: React.FC<{
                             onClick={() => goToStep(step.step)}
                             className={`flex-1 h-2 rounded-full transition-colors ${i < currentStepIndex ? 'bg-green-500' :
                                 i === currentStepIndex ? 'bg-blue-500' :
-                                    'bg-gray-700'
+                                    'bg-slate-700'
                                 } ${state.completedSteps.includes(step.step) ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
                             title={step.title}
                         />
@@ -295,7 +295,7 @@ export const AIDesignWizard: React.FC<{
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
                         {currentStepConfig.title}
                     </h3>
-                    <p className="text-gray-500 dark:text-gray-400">{currentStepConfig.description}</p>
+                    <p className="text-slate-500 dark:text-slate-400">{currentStepConfig.description}</p>
                 </div>
 
                 {/* AI Suggestions */}
@@ -319,7 +319,7 @@ export const AIDesignWizard: React.FC<{
                                             suggestion.type === 'auto_fix' ? '🔧' : '💡'}
                                 </span>
                                 <div className="flex-1">
-                                    <p className="text-sm text-gray-700 dark:text-gray-200">{suggestion.message}</p>
+                                    <p className="text-sm text-slate-700 dark:text-slate-200">{suggestion.message}</p>
                                 </div>
                                 {suggestion.action && !suggestion.applied && (
                                     <button
@@ -351,7 +351,7 @@ export const AIDesignWizard: React.FC<{
                                         'bg-blue-500/10 border-blue-500/30'
                                     }`}
                             >
-                                <p className="text-sm text-gray-700 dark:text-gray-200">
+                                <p className="text-sm text-slate-700 dark:text-slate-200">
                                     {issue.code && <span className="font-mono text-xs mr-2">[{issue.code}]</span>}
                                     {issue.message}
                                 </p>
@@ -361,17 +361,17 @@ export const AIDesignWizard: React.FC<{
                 )}
 
                 {/* Step-specific content would go here */}
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-8 text-center text-gray-500">
+                <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-8 text-center text-slate-500">
                     Step content for "{currentStepConfig.title}"
                 </div>
             </div>
 
             {/* Navigation Footer */}
-            <div className="px-6 py-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-700 flex justify-between">
+            <div className="px-6 py-4 bg-slate-100 dark:bg-slate-800 border-t border-slate-700 flex justify-between">
                 <button
                     onClick={prevStep}
                     disabled={currentStepIndex === 0}
-                    className="px-4 py-2 bg-gray-700 text-slate-900 dark:text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     ← Previous
                 </button>

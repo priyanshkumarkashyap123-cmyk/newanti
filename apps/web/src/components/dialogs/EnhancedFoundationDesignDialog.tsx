@@ -163,7 +163,7 @@ const SOIL_TYPES: SoilTypeOption[] = [
     cohesion: 50,
     unitWeight: 22,
     elasticModulus: 100,
-    color: 'from-gray-500 to-gray-700',
+    color: 'from-slate-500 to-slate-700',
     icon: '🪨'
   },
   {
@@ -176,7 +176,7 @@ const SOIL_TYPES: SoilTypeOption[] = [
     cohesion: 200,
     unitWeight: 25,
     elasticModulus: 500,
-    color: 'from-gray-400 to-gray-600',
+    color: 'from-slate-400 to-slate-600',
     icon: '💎'
   },
 ];

@@ -44,15 +44,15 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
             <div className="p-3 space-y-3">
                 {/* Input indicator */}
                 <div className="flex items-center gap-2">
-                    <span className="text-gray-500 dark:text-gray-400 text-xs">Input</span>
-                    <div className="flex-1 px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-gray-500 text-xs rounded text-center">
+                    <span className="text-slate-500 dark:text-slate-400 text-xs">Input</span>
+                    <div className="flex-1 px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 text-xs rounded text-center">
                         {data.basePoints?.length ? `${data.basePoints.length} points` : 'Connect points'}
                     </div>
                 </div>
 
                 {/* Count */}
                 <div className="flex items-center gap-2">
-                    <label className="text-gray-500 dark:text-gray-400 text-xs w-16">Count</label>
+                    <label className="text-slate-500 dark:text-slate-400 text-xs w-16">Count</label>
                     <input
                         type="number"
                         value={data.repeatCount ?? 3}
@@ -65,7 +65,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
 
                 {/* Spacing */}
                 <div className="flex items-center gap-2">
-                    <label className="text-gray-500 dark:text-gray-400 text-xs w-16">Spacing</label>
+                    <label className="text-slate-500 dark:text-slate-400 text-xs w-16">Spacing</label>
                     <input
                         type="number"
                         value={data.spacing ?? 4}
@@ -74,12 +74,12 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
                         onChange={(e) => handleChange('spacing', parseFloat(e.target.value) || 1)}
                         className="flex-1 px-2 py-1 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm rounded border border-slate-600 focus:border-orange-500 focus:outline-none"
                     />
-                    <span className="text-gray-500 text-xs">m</span>
+                    <span className="text-slate-500 text-xs">m</span>
                 </div>
 
                 {/* Direction */}
                 <div className="flex items-center gap-2">
-                    <label className="text-gray-500 dark:text-gray-400 text-xs w-16">Direction</label>
+                    <label className="text-slate-500 dark:text-slate-400 text-xs w-16">Direction</label>
                     <div className="flex-1 flex gap-1">
                         {['x', 'y', 'z'].map((dir) => (
                             <button
@@ -87,7 +87,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
                                 onClick={() => handleChange('direction', dir)}
                                 className={`flex-1 px-2 py-1 text-xs font-bold rounded transition-colors ${data.direction === dir
                                         ? 'bg-orange-500 text-white'
-                                        : 'bg-slate-200 dark:bg-slate-700 text-gray-500 dark:text-gray-400 hover:bg-slate-600'
+                                        : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-600'
                                     }`}
                             >
                                 {dir.toUpperCase()}
@@ -98,7 +98,7 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
 
                 {/* Preview stats */}
                 <div className="pt-2 border-t border-slate-600 text-center">
-                    <span className="text-gray-500 text-xs">
+                    <span className="text-slate-500 text-xs">
                         Will generate: {(data.basePoints?.length || 0) * (data.repeatCount || 1)} nodes
                     </span>
                 </div>
@@ -121,8 +121,8 @@ const FrameRepeaterNode: FC<NodeProps<FrameRepeaterData>> = ({ data, isConnectab
             />
 
             {/* Output Labels */}
-            <div className="absolute right-4 text-gray-500 dark:text-gray-400 text-[10px]" style={{ top: '38%' }}>Nodes</div>
-            <div className="absolute right-4 text-gray-500 dark:text-gray-400 text-[10px]" style={{ top: '58%' }}>Members</div>
+            <div className="absolute right-4 text-slate-500 dark:text-slate-400 text-[10px]" style={{ top: '38%' }}>Nodes</div>
+            <div className="absolute right-4 text-slate-500 dark:text-slate-400 text-[10px]" style={{ top: '58%' }}>Members</div>
         </div>
     );
 };

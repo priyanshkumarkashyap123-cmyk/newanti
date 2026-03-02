@@ -160,11 +160,11 @@ const MemberRow: FC<{
     onToggle: () => void;
 }> = ({ result, expanded, onToggle }) => {
     return (
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg mb-2">
+        <div className="border border-slate-200 dark:border-slate-700 rounded-lg mb-2">
             {/* Header */}
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="w-full flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
                 <div className="flex items-center gap-3">
                     <StatusIcon status={result.status} />
@@ -172,7 +172,7 @@ const MemberRow: FC<{
                         <div className="font-medium text-sm">
                             {result.memberName}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-slate-500">
                             {result.sectionName}
                         </div>
                     </div>
@@ -187,18 +187,18 @@ const MemberRow: FC<{
                         </div>
                     </div>
                     {expanded ? (
-                        <ChevronUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <ChevronUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     ) : (
-                        <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     )}
                 </div>
             </button>
 
             {/* Expanded Details */}
             {expanded && (
-                <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800/50">
+                <div className="border-t border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
                     {/* Section Info */}
-                    <div className="flex gap-4 mb-3 text-xs text-gray-500">
+                    <div className="flex gap-4 mb-3 text-xs text-slate-500">
                         <span>Class {result.sectionClass}</span>
                         <span>•</span>
                         <span>IS 800:2007</span>
@@ -212,10 +212,10 @@ const MemberRow: FC<{
                                 className="flex items-center gap-2 text-sm"
                             >
                                 <StatusIcon status={check.status} />
-                                <span className="flex-1 text-gray-700 dark:text-gray-300">
+                                <span className="flex-1 text-slate-700 dark:text-slate-300">
                                     {check.name}
                                 </span>
-                                <span className="text-gray-500">
+                                <span className="text-slate-500">
                                     {check.demand.toFixed(1)} / {check.capacity.toFixed(1)} {check.unit}
                                 </span>
                                 <span
@@ -234,8 +234,8 @@ const MemberRow: FC<{
 
                     {/* Clause Reference */}
                     {result.checks.some(c => c.clause) && (
-                        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
                                 References: {result.checks.filter(c => c.clause).map(c => c.clause).join(', ')}
                             </div>
                         </div>
@@ -495,7 +495,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
 
     if (!analysisResults) {
         return (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center text-slate-500">
                 <Building2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Run analysis first to see steel design checks.</p>
             </div>
@@ -505,7 +505,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                         <Building2 className="w-4 h-4" />
@@ -515,7 +515,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
                         <select
                             value={designCode}
                             onChange={(e) => setDesignCode(e.target.value as 'IS800' | 'AISC360')}
-                            className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                            className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
                         >
                             <option value="IS800">IS 800:2007</option>
                             <option value="AISC360">AISC 360-16</option>
@@ -525,11 +525,11 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
 
                 {/* Grade Selection */}
                 <div className="flex items-center gap-2 text-xs">
-                    <label className="text-gray-500">Steel Grade:</label>
+                    <label className="text-slate-500">Steel Grade:</label>
                     <select
                         value={selectedGrade}
                         onChange={(e) => setSelectedGrade(e.target.value)}
-                        className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                        className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
                     >
                         {STEEL_GRADES.map((g) => (
                             <option key={g.name} value={g.name}>
@@ -541,23 +541,23 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
             </div>
 
             {/* Summary */}
-            <div className="p-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                 <div className="grid grid-cols-4 gap-2 text-center text-xs">
                     <div>
                         <div className="text-lg font-bold text-green-500">{summary.pass}</div>
-                        <div className="text-gray-500">Pass</div>
+                        <div className="text-slate-500">Pass</div>
                     </div>
                     <div>
                         <div className="text-lg font-bold text-yellow-500">{summary.warning}</div>
-                        <div className="text-gray-500">Warning</div>
+                        <div className="text-slate-500">Warning</div>
                     </div>
                     <div>
                         <div className="text-lg font-bold text-red-500">{summary.fail}</div>
-                        <div className="text-gray-500">Fail</div>
+                        <div className="text-slate-500">Fail</div>
                     </div>
                     <div>
                         <div className="text-lg font-bold">{(summary.maxUtil * 100).toFixed(0)}%</div>
-                        <div className="text-gray-500">Max Util</div>
+                        <div className="text-slate-500">Max Util</div>
                     </div>
                 </div>
             </div>
@@ -565,7 +565,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
             {/* Member List */}
             <div className="flex-1 overflow-auto p-3">
                 {designResults.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
+                    <div className="text-center text-slate-500 py-8">
                         <Ruler className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">No members to design.</p>
                     </div>
@@ -586,7 +586,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
             </div>
 
             {/* Actions */}
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex gap-2">
+            <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex gap-2">
                 <button
                     onClick={handleDetailedDesign}
                     disabled={isLoading}
@@ -595,7 +595,7 @@ export const SteelDesignPanel: FC<SteelDesignPanelProps> = ({ isPro = false }) =
                     <Wrench className="w-4 h-4" />
                     {isLoading ? 'Designing...' : 'Run Detailed Design'}
                 </button>
-                <button className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800">
+                <button className="flex items-center justify-center gap-2 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800">
                     <Download className="w-4 h-4" />
                     Export
                 </button>

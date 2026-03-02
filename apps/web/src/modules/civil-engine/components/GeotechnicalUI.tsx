@@ -264,7 +264,7 @@ export function BearingCapacityCalculator() {
   }, [foundation, soil, result]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">Bearing Capacity Calculator</h2>
         <p className="text-amber-100 text-sm">Terzaghi, Meyerhof, Hansen & Vesic Methods</p>
@@ -276,7 +276,7 @@ export function BearingCapacityCalculator() {
           <div className="space-y-6">
             {/* Method Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Analysis Method</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Analysis Method</label>
               <div className="grid grid-cols-4 gap-2">
                 {(['terzaghi', 'meyerhof', 'hansen', 'vesic'] as const).map(m => (
                   <button
@@ -285,7 +285,7 @@ export function BearingCapacityCalculator() {
                     className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       method === m
                         ? 'bg-amber-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                     }`}
                   >
                     {m.charAt(0).toUpperCase() + m.slice(1)}
@@ -295,11 +295,11 @@ export function BearingCapacityCalculator() {
             </div>
 
             {/* Foundation Parameters */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-3">Foundation</h3>
+            <div className="bg-slate-50 rounded-lg p-4">
+              <h3 className="font-medium text-slate-900 mb-3">Foundation</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Type</label>
+                  <label className="block text-xs text-slate-500 mb-1">Type</label>
                   <select
                     value={foundation.type}
                     onChange={(e) => setFoundation({ ...foundation, type: e.target.value as FoundationInput['type'] })}
@@ -312,7 +312,7 @@ export function BearingCapacityCalculator() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Width B (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Width B (m)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -323,7 +323,7 @@ export function BearingCapacityCalculator() {
                 </div>
                 {foundation.type === 'rectangular' && (
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Length L (m)</label>
+                    <label className="block text-xs text-slate-500 mb-1">Length L (m)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -334,7 +334,7 @@ export function BearingCapacityCalculator() {
                   </div>
                 )}
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Depth Df (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Depth Df (m)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -347,11 +347,11 @@ export function BearingCapacityCalculator() {
             </div>
 
             {/* Soil Parameters */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-3">Soil Properties</h3>
+            <div className="bg-slate-50 rounded-lg p-4">
+              <h3 className="font-medium text-slate-900 mb-3">Soil Properties</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Cohesion c (kPa)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Cohesion c (kPa)</label>
                   <input
                     type="number"
                     value={soil.cohesion}
@@ -360,7 +360,7 @@ export function BearingCapacityCalculator() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Friction Angle φ (°)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Friction Angle φ (°)</label>
                   <input
                     type="number"
                     value={soil.frictionAngle}
@@ -369,7 +369,7 @@ export function BearingCapacityCalculator() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Unit Weight γ (kN/m³)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Unit Weight γ (kN/m³)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -379,7 +379,7 @@ export function BearingCapacityCalculator() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Water Table Depth (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Water Table Depth (m)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -405,7 +405,7 @@ export function BearingCapacityCalculator() {
               ref={canvasRef}
               width={400}
               height={300}
-              className="w-full border border-gray-200 rounded-lg bg-sky-50"
+              className="w-full border border-slate-200 rounded-lg bg-sky-50"
             />
 
             {result && (
@@ -443,8 +443,8 @@ export function BearingCapacityCalculator() {
                 </div>
 
                 {/* Formula */}
-                <div className="bg-gray-50 rounded-lg p-3 text-sm">
-                  <div className="font-mono text-gray-700 text-center">
+                <div className="bg-slate-50 rounded-lg p-3 text-sm">
+                  <div className="font-mono text-slate-700 text-center">
                     q<sub>u</sub> = cN<sub>c</sub>s<sub>c</sub>d<sub>c</sub> + γD<sub>f</sub>N<sub>q</sub>s<sub>q</sub>d<sub>q</sub> + 0.5γBN<sub>γ</sub>s<sub>γ</sub>d<sub>γ</sub>
                   </div>
                 </div>
@@ -576,7 +576,7 @@ export function SettlementCalculator() {
   }, [soilLayers]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">Settlement Analysis</h2>
         <p className="text-orange-100 text-sm">Immediate, Consolidation & Secondary Settlement</p>
@@ -586,11 +586,11 @@ export function SettlementCalculator() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Foundation Input */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">Foundation</h3>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            <h3 className="font-semibold text-slate-900">Foundation</h3>
+            <div className="bg-slate-50 rounded-lg p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Width B (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Width B (m)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -600,7 +600,7 @@ export function SettlementCalculator() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Length L (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Length L (m)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -612,7 +612,7 @@ export function SettlementCalculator() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Depth Df (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Depth Df (m)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -622,7 +622,7 @@ export function SettlementCalculator() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Load P (kN)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Load P (kN)</label>
                   <input
                     type="number"
                     value={foundation.appliedLoad}
@@ -632,7 +632,7 @@ export function SettlementCalculator() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Water Table Depth (m)</label>
+                <label className="block text-xs text-slate-500 mb-1">Water Table Depth (m)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -677,7 +677,7 @@ export function SettlementCalculator() {
                     <span className="font-mono font-bold text-green-800 text-lg">{result.total.toFixed(2)} mm</span>
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-600">
+                <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600">
                   Time for 90% consolidation: <span className="font-mono font-medium">{result.timeFor90.toFixed(0)} days</span>
                 </div>
               </div>
@@ -687,7 +687,7 @@ export function SettlementCalculator() {
           {/* Soil Layers */}
           <div className="xl:col-span-2">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Soil Profile</h3>
+              <h3 className="font-semibold text-slate-900">Soil Profile</h3>
               <button
                 onClick={addLayer}
                 className="px-3 py-1 bg-orange-100 text-orange-700 rounded text-sm hover:bg-orange-200"
@@ -698,7 +698,7 @@ export function SettlementCalculator() {
 
             <div className="space-y-3 max-h-[500px] overflow-y-auto">
               {soilLayers.map((layer, idx) => (
-                <div key={layer.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div key={layer.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                   <div className="flex items-center justify-between mb-3">
                     <input
                       type="text"
@@ -708,7 +708,7 @@ export function SettlementCalculator() {
                         updated[idx].name = e.target.value;
                         setSoilLayers(updated);
                       }}
-                      className="font-medium text-gray-900 bg-transparent border-b border-transparent hover:border-gray-300 focus:border-orange-500 outline-none"
+                      className="font-medium text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-orange-500 outline-none"
                     />
                     {soilLayers.length > 1 && (
                       <button
@@ -722,7 +722,7 @@ export function SettlementCalculator() {
 
                   <div className="grid grid-cols-4 gap-3">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Thickness (m)</label>
+                      <label className="block text-xs text-slate-500 mb-1">Thickness (m)</label>
                       <input
                         type="number"
                         step="0.5"
@@ -736,7 +736,7 @@ export function SettlementCalculator() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">γ (kN/m³)</label>
+                      <label className="block text-xs text-slate-500 mb-1">γ (kN/m³)</label>
                       <input
                         type="number"
                         step="0.1"
@@ -750,7 +750,7 @@ export function SettlementCalculator() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">E (kPa)</label>
+                      <label className="block text-xs text-slate-500 mb-1">E (kPa)</label>
                       <input
                         type="number"
                         value={layer.E}
@@ -763,7 +763,7 @@ export function SettlementCalculator() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Cc</label>
+                      <label className="block text-xs text-slate-500 mb-1">Cc</label>
                       <input
                         type="number"
                         step="0.01"
@@ -777,7 +777,7 @@ export function SettlementCalculator() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">e₀</label>
+                      <label className="block text-xs text-slate-500 mb-1">e₀</label>
                       <input
                         type="number"
                         step="0.01"
@@ -791,7 +791,7 @@ export function SettlementCalculator() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">OCR</label>
+                      <label className="block text-xs text-slate-500 mb-1">OCR</label>
                       <input
                         type="number"
                         step="0.1"
@@ -805,7 +805,7 @@ export function SettlementCalculator() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">c (kPa)</label>
+                      <label className="block text-xs text-slate-500 mb-1">c (kPa)</label>
                       <input
                         type="number"
                         value={layer.cohesion}
@@ -818,7 +818,7 @@ export function SettlementCalculator() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">φ (°)</label>
+                      <label className="block text-xs text-slate-500 mb-1">φ (°)</label>
                       <input
                         type="number"
                         value={layer.frictionAngle}
@@ -1195,7 +1195,7 @@ export function SlopeStabilityAnalyzer() {
   }, [slopeGeometry, waterTable, result]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       <div className="bg-gradient-to-r from-stone-600 to-stone-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">Slope Stability Analysis</h2>
         <p className="text-stone-100 text-sm">Infinite Slope, Culmann, Fellenius & Bishop Methods</p>
@@ -1207,7 +1207,7 @@ export function SlopeStabilityAnalyzer() {
           <div className="space-y-4">
             {/* Method Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Analysis Method</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Analysis Method</label>
               <div className="grid grid-cols-4 gap-2">
                 {[
                   { id: 'infinite', name: 'Infinite' },
@@ -1221,7 +1221,7 @@ export function SlopeStabilityAnalyzer() {
                     className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors ${
                       method === m.id
                         ? 'bg-stone-600 text-slate-900 dark:text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                     }`}
                   >
                     {m.name}
@@ -1231,11 +1231,11 @@ export function SlopeStabilityAnalyzer() {
             </div>
 
             {/* Slope Geometry */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-3">Slope Geometry</h3>
+            <div className="bg-slate-50 rounded-lg p-4">
+              <h3 className="font-medium text-slate-900 mb-3">Slope Geometry</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Height H (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Height H (m)</label>
                   <input
                     type="number"
                     value={slopeGeometry.height}
@@ -1244,7 +1244,7 @@ export function SlopeStabilityAnalyzer() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Angle β (°)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Angle β (°)</label>
                   <input
                     type="number"
                     value={slopeGeometry.angle}
@@ -1256,11 +1256,11 @@ export function SlopeStabilityAnalyzer() {
             </div>
 
             {/* Soil Properties */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-medium text-gray-900 mb-3">Soil Properties</h3>
+            <div className="bg-slate-50 rounded-lg p-4">
+              <h3 className="font-medium text-slate-900 mb-3">Soil Properties</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Cohesion c (kPa)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Cohesion c (kPa)</label>
                   <input
                     type="number"
                     value={soilParams.cohesion}
@@ -1269,7 +1269,7 @@ export function SlopeStabilityAnalyzer() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Friction φ (°)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Friction φ (°)</label>
                   <input
                     type="number"
                     value={soilParams.frictionAngle}
@@ -1278,7 +1278,7 @@ export function SlopeStabilityAnalyzer() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">Unit Weight γ (kN/m³)</label>
+                  <label className="block text-xs text-slate-500 mb-1">Unit Weight γ (kN/m³)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -1288,7 +1288,7 @@ export function SlopeStabilityAnalyzer() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">GWT Depth (m)</label>
+                  <label className="block text-xs text-slate-500 mb-1">GWT Depth (m)</label>
                   <input
                     type="number"
                     step="0.5"
@@ -1314,7 +1314,7 @@ export function SlopeStabilityAnalyzer() {
                 result.FOS >= 1.0 ? 'bg-amber-50 border-2 border-amber-300' :
                 'bg-red-50 border-2 border-red-300'
               }`}>
-                <div className="text-sm text-gray-600 mb-1">Factor of Safety</div>
+                <div className="text-sm text-slate-600 mb-1">Factor of Safety</div>
                 <div className={`text-4xl font-bold ${
                   result.FOS >= 1.5 ? 'text-green-600' :
                   result.FOS >= 1.0 ? 'text-amber-600' :
@@ -1341,7 +1341,7 @@ export function SlopeStabilityAnalyzer() {
               ref={canvasRef}
               width={450}
               height={350}
-              className="w-full border border-gray-200 rounded-lg bg-sky-50"
+              className="w-full border border-slate-200 rounded-lg bg-sky-50"
             />
           </div>
         </div>

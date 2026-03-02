@@ -60,7 +60,7 @@ export const AdvancedToggle: FC<AdvancedToggleProps> = ({
                     peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 peer-focus:ring-offset-2 peer-focus:ring-offset-slate-800
                     after:content-[''] after:absolute after:top-[2px] 
                     ${enabled ? 'after:right-[2px]' : 'after:left-[2px]'}
-                    after:bg-white after:border-gray-300 after:border 
+                    after:bg-white after:border-slate-300 after:border 
                     after:rounded-full after:h-5 after:w-5 after:transition-all
                 `} />
             </label>

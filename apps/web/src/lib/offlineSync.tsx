@@ -559,7 +559,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps): JSX.Element {
         <span
           className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}
         />
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-slate-600 dark:text-slate-400">
           {isOnline ? 'Online' : 'Offline'}
         </span>
       </div>
@@ -584,8 +584,8 @@ export function SyncStatus({ className = '' }: SyncStatusProps): JSX.Element {
         disabled={isSyncing || !isOnline}
         className={`p-1.5 rounded transition-colors ${
           isSyncing || !isOnline
-            ? 'text-gray-600 dark:text-gray-300 cursor-not-allowed'
-            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+            ? 'text-slate-600 dark:text-slate-300 cursor-not-allowed'
+            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-700'
         }`}
         title={isSyncing ? 'Syncing...' : 'Sync now'}
       >

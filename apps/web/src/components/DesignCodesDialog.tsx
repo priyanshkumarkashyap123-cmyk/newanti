@@ -143,7 +143,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             <div className="grid grid-cols-2 gap-4 mb-4">
                 {/* Footing Type */}
                 <div className="col-span-2">
-                    <label className="text-xs text-gray-500 mb-2 block">Footing Type</label>
+                    <label className="text-xs text-slate-500 mb-2 block">Footing Type</label>
                     <div className="grid grid-cols-3 gap-2">
                         {(['isolated', 'combined', 'mat'] as const).map((type) => (
                             <button
@@ -153,7 +153,7 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                     p-2 rounded-lg border text-sm capitalize transition-all
                                     ${footingType === type
                                         ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30 text-amber-700'
-                                        : 'border-gray-200 dark:border-gray-700 hover:border-amber-300'}
+                                        : 'border-slate-200 dark:border-slate-700 hover:border-amber-300'}
                                 `}
                             >
                                 {type}
@@ -164,33 +164,33 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                 {/* Column Load */}
                 <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Column Load (kN)</label>
+                    <label className="text-xs text-slate-500 mb-1 block">Column Load (kN)</label>
                     <input
                         type="number"
                         value={columnLoad}
                         onChange={(e) => setColumnLoad(parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     />
                 </div>
 
                 {/* Moment X */}
                 <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Moment X (kN.m)</label>
+                    <label className="text-xs text-slate-500 mb-1 block">Moment X (kN.m)</label>
                     <input
                         type="number"
                         value={momentX}
                         onChange={(e) => setMomentX(parseFloat(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     />
                 </div>
 
                 {/* SBC */}
                 <div>
-                    <label className="text-xs text-gray-500 mb-1 block">SBC (kN/m²)</label>
+                    <label className="text-xs text-slate-500 mb-1 block">SBC (kN/m²)</label>
                     <select
                         value={sbc}
                         onChange={(e) => setSbc(parseInt(e.target.value))}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     >
                         <option value={100}>100 - Soft Soil</option>
                         <option value={150}>150 - Medium Soil</option>
@@ -202,11 +202,11 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                 {/* Concrete Grade */}
                 <div>
-                    <label className="text-xs text-gray-500 mb-1 block">Concrete</label>
+                    <label className="text-xs text-slate-500 mb-1 block">Concrete</label>
                     <select
                         value={concreteGrade}
                         onChange={(e) => setConcreteGrade(e.target.value)}
-                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-gray-800 dark:border-gray-600"
+                        className="w-full px-2 py-1.5 border rounded text-sm dark:bg-slate-800 dark:border-slate-600"
                     >
                         <option value="M20">M20</option>
                         <option value="M25">M25</option>
@@ -244,25 +244,25 @@ const FoundationDesignPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
                         <div className="flex justify-between">
-                            <span className="text-gray-500">Length:</span>
+                            <span className="text-slate-500">Length:</span>
                             <span className="font-medium">{result.length} m</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-500">Width:</span>
+                            <span className="text-slate-500">Width:</span>
                             <span className="font-medium">{result.width} m</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-500">Depth:</span>
+                            <span className="text-slate-500">Depth:</span>
                             <span className="font-medium">{result.depth} m</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-gray-500">Main Rebar:</span>
+                            <span className="text-slate-500">Main Rebar:</span>
                             <span className="font-medium">{result.rebarMain}</span>
                         </div>
                     </div>
 
                     {/* Footing Sketch */}
-                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
                         <svg viewBox="0 0 200 120" className="w-full h-24">
                             {/* Soil */}
                             <rect x="0" y="80" width="200" height="40" fill="#D4A574" opacity="0.3" />
@@ -323,7 +323,7 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
                             <Link2 className="w-4 h-4" />
                             Connection Design
                         </h3>
-                        <p className="text-sm text-gray-500 mb-4">
+                        <p className="text-sm text-slate-500 mb-4">
                             Design steel connections per IS 800:2007 Chapter 10.
                         </p>
                         <Button

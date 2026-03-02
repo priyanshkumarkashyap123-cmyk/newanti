@@ -63,7 +63,7 @@ export const ValidationErrorDisplay: React.FC<Props> = ({ results, onDismiss, on
       case 'info':
         return 'border-blue-500 bg-blue-50';
       default:
-        return 'border-gray-300 bg-gray-50';
+        return 'border-slate-300 bg-slate-50';
     }
   };
 
@@ -101,11 +101,11 @@ export const ValidationErrorDisplay: React.FC<Props> = ({ results, onDismiss, on
                   ? '⚡ Model Validation Warnings'
                   : 'ℹ️ Model Information'}
               </h3>
-              <p className="text-sm text-gray-700 mt-1">{results.summary}</p>
+              <p className="text-sm text-slate-700 mt-1">{results.summary}</p>
               
               {/* Statistics */}
               {results.statistics && (
-                <div className="mt-2 text-xs text-gray-600 grid grid-cols-2 gap-2">
+                <div className="mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2">
                   {results.statistics.num_nodes !== undefined && (
                     <span>Nodes: {results.statistics.num_nodes}</span>
                   )}
@@ -126,7 +126,7 @@ export const ValidationErrorDisplay: React.FC<Props> = ({ results, onDismiss, on
           {onDismiss && (
             <button
               onClick={onDismiss}
-              className="text-gray-500 hover:text-gray-700 ml-2"
+              className="text-slate-500 hover:text-slate-700 ml-2"
               aria-label="Dismiss"
             >
               ✕
@@ -199,7 +199,7 @@ const IssueCard: React.FC<{
       case 'info':
         return 'border-l-blue-600';
       default:
-        return 'border-l-gray-400';
+        return 'border-l-slate-400';
     }
   };
 

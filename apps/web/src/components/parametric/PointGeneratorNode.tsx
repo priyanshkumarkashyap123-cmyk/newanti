@@ -57,7 +57,7 @@ const PointGeneratorNode: FC<NodeProps<PointGeneratorData>> = ({ data, isConnect
             <div className="p-3 space-y-2">
                 {['x', 'y', 'z'].map((coord) => (
                     <div key={coord} className="flex items-center gap-2">
-                        <label className="text-gray-500 dark:text-gray-400 text-xs uppercase w-4">{coord}</label>
+                        <label className="text-slate-500 dark:text-slate-400 text-xs uppercase w-4">{coord}</label>
                         <input
                             type="number"
                             value={data.point?.[coord as 'x' | 'y' | 'z'] ?? 0}

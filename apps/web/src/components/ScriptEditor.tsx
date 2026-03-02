@@ -72,15 +72,16 @@ const registerStaadLanguage = (monaco: Monaco) => {
         base: 'vs-dark',
         inherit: true,
         rules: [
-            { token: 'comment', foreground: '6A9955', fontStyle: 'italic' },
-            { token: 'keyword.control', foreground: '569CD6', fontStyle: 'bold' },
+            { token: 'comment', foreground: '64748B', fontStyle: 'italic' },
+            { token: 'keyword.control', foreground: 'C084FC', fontStyle: 'bold' },
             { token: 'keyword.type', foreground: '4EC9B0' },
-            { token: 'keyword.support', foreground: 'C586C0' },
+            { token: 'keyword.support', foreground: '60A5FA' },
             { token: 'keyword.load', foreground: 'DCDCAA' },
             { token: 'keyword.command', foreground: 'FF6B6B', fontStyle: 'bold' },
             { token: 'keyword.direction', foreground: '9CDCFE' },
-            { token: 'keyword', foreground: '569CD6' },
-            { token: 'number', foreground: 'B5CEA8' },  // Green for numbers
+            { token: 'keyword', foreground: 'C084FC' },
+            { token: 'number', foreground: 'FBBF24' },
+            { token: 'string', foreground: '22D3EE' },
             { token: 'type.section', foreground: '4FC1FF', fontStyle: 'bold' },
             { token: 'identifier', foreground: 'D4D4D4' },
             { token: 'delimiter', foreground: 'D4D4D4' },
@@ -89,7 +90,7 @@ const registerStaadLanguage = (monaco: Monaco) => {
             'editor.background': '#1E1E2E',
             'editor.foreground': '#D4D4D4',
             'editor.lineHighlightBackground': '#2A2A3E',
-            'editorLineNumber.foreground': '#858585',
+            'editorLineNumber.foreground': '#64748B',
             'editorCursor.foreground': '#FFCC00',
         },
     });
@@ -309,7 +310,7 @@ PERFORM ANALYSIS
         padding: '8px 16px',
         background: isRunning
             ? 'rgba(100, 100, 100, 0.5)'
-            : 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)',
+            : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
         border: 'none',
         borderRadius: '6px',
         color: 'white',
@@ -325,9 +326,9 @@ PERFORM ANALYSIS
         fontSize: '12px',
         fontFamily: 'monospace',
         whiteSpace: 'pre-wrap',
-        color: lastResult.startsWith('✅') ? '#4CAF50' :
+        color: lastResult.startsWith('✅') ? '#22c55e' :
             lastResult.startsWith('❌') ? '#ff6b6b' : '#9CA3AF',
-        maxHeight: '100px',
+        maxHeight: '200px',
         overflowY: 'auto',
     };
 

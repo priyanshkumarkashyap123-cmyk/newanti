@@ -47,19 +47,19 @@ const LineConnectorNode: FC<NodeProps<LineConnectorData>> = ({ data, isConnectab
             {/* Body */}
             <div className="p-3 space-y-2">
                 <div className="flex items-center gap-2">
-                    <span className="text-gray-500 dark:text-gray-400 text-xs">Start</span>
-                    <div className="flex-1 px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-gray-500 text-xs rounded text-center">
+                    <span className="text-slate-500 dark:text-slate-400 text-xs">Start</span>
+                    <div className="flex-1 px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 text-xs rounded text-center">
                         {data.startPoint ? `(${data.startPoint.x}, ${data.startPoint.y}, ${data.startPoint.z})` : 'Connect input'}
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-gray-500 dark:text-gray-400 text-xs">End</span>
-                    <div className="flex-1 px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-gray-500 text-xs rounded text-center">
+                    <span className="text-slate-500 dark:text-slate-400 text-xs">End</span>
+                    <div className="flex-1 px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 text-slate-500 text-xs rounded text-center">
                         {data.endPoint ? `(${data.endPoint.x}, ${data.endPoint.y}, ${data.endPoint.z})` : 'Connect input'}
                     </div>
                 </div>
                 <div className="flex items-center gap-2 pt-1 border-t border-slate-600">
-                    <label className="text-gray-500 dark:text-gray-400 text-xs">Divisions</label>
+                    <label className="text-slate-500 dark:text-slate-400 text-xs">Divisions</label>
                     <input
                         type="number"
                         value={data.divisions ?? 1}
@@ -88,8 +88,8 @@ const LineConnectorNode: FC<NodeProps<LineConnectorData>> = ({ data, isConnectab
             />
 
             {/* Output Labels */}
-            <div className="absolute right-4 text-gray-500 dark:text-gray-400 text-[10px]" style={{ top: '38%' }}>Points</div>
-            <div className="absolute right-4 text-gray-500 dark:text-gray-400 text-[10px]" style={{ top: '58%' }}>Lines</div>
+            <div className="absolute right-4 text-slate-500 dark:text-slate-400 text-[10px]" style={{ top: '38%' }}>Points</div>
+            <div className="absolute right-4 text-slate-500 dark:text-slate-400 text-[10px]" style={{ top: '58%' }}>Lines</div>
         </div>
     );
 };

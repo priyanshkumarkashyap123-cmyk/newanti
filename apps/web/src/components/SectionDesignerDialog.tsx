@@ -362,21 +362,21 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
                                                     [field.name]: parseFloat(e.target.value) || 0
                                                 })}
                                             />
-                                            <span className="col-span-1 text-sm text-gray-500">{field.unit}</span>
+                                            <span className="col-span-1 text-sm text-slate-500">{field.unit}</span>
                                         </div>
                                     ))}
                                 </div>
                             </TabsContent>
 
                             <TabsContent value="custom" className="space-y-4">
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-slate-600">
                                     Click on the canvas to add points (counter-clockwise)
                                 </div>
 
                                 {/* Point List */}
                                 <ScrollArea className="h-48 border rounded p-2">
                                     {points.map((point, i) => (
-                                        <div key={i} className="flex justify-between items-center p-1 hover:bg-gray-50">
+                                        <div key={i} className="flex justify-between items-center p-1 hover:bg-slate-50">
                                             <span className="text-sm">
                                                 Point {i + 1}: ({point.x.toFixed(1)}, {point.y.toFixed(1)})
                                             </span>
@@ -504,12 +504,12 @@ function PropertyRow({
 }) {
     return (
         <>
-            <div className="font-medium text-gray-700">{label}:</div>
+            <div className="font-medium text-slate-700">{label}:</div>
             <div className="text-right">
                 {value.toLocaleString(undefined, {
                     minimumFractionDigits: decimal,
                     maximumFractionDigits: decimal
-                })} <span className="text-gray-500">{unit}</span>
+                })} <span className="text-slate-500">{unit}</span>
             </div>
         </>
     );

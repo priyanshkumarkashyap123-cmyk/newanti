@@ -368,7 +368,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
       case "low":
         return "text-green-400 bg-green-400/10";
       default:
-        return "text-gray-600 dark:text-gray-400 bg-gray-400/10";
+        return "text-slate-600 dark:text-slate-400 bg-slate-400/10";
     }
   };
 

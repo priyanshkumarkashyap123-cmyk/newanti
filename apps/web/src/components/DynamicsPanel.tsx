@@ -84,7 +84,7 @@ export function DynamicsPanel() {
             <CardContent className="space-y-4 p-4 flex-1 overflow-auto">
                 {/* 1. Modal Settings */}
                 <div className="space-y-3">
-                    <Label className="text-xs font-semibold text-gray-500 uppercase">Eigenvalue Solver</Label>
+                    <Label className="text-xs font-semibold text-slate-500 uppercase">Eigenvalue Solver</Label>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <Label>Modes</Label>
@@ -197,14 +197,14 @@ export function DynamicsPanel() {
                             {seismicResult && (
                                 <div className="bg-slate-100 p-3 rounded-md text-sm space-y-1">
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Base Shear X:</span>
+                                        <span className="text-slate-600">Base Shear X:</span>
                                         <span className="font-bold">{seismicResult.base_shear_x.toFixed(2)} kN</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-gray-600">Base Shear Z:</span>
+                                        <span className="text-slate-600">Base Shear Z:</span>
                                         <span className="font-bold">{seismicResult.base_shear_z.toFixed(2)} kN</span>
                                     </div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 pt-1 border-t">
+                                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 pt-1 border-t">
                                         Governing Period: {seismicResult.periods[0].toFixed(3)}s
                                     </div>
                                 </div>

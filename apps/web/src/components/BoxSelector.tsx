@@ -35,7 +35,7 @@ export const BoxSelector: FC = () => {
         const box = document.createElement('div');
         box.style.cssText = [
             'position:absolute',
-            'border:1px solid #00aaff',
+            'border:1px solid #3b82f6',
             'background:rgba(0,170,255,0.12)',
             'pointer-events:none',
             'display:none',

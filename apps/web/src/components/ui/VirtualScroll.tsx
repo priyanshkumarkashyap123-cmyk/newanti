@@ -432,10 +432,10 @@ export function VirtualTable<T>({
       rendered.push(
         <div
           key={key}
-          className={`flex border-b border-gray-200 dark:border-gray-700 ${
+          className={`flex border-b border-slate-200 dark:border-slate-700 ${
             isSelected
               ? 'bg-blue-50 dark:bg-blue-900/20'
-              : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+              : 'hover:bg-slate-50 dark:hover:bg-slate-800'
           } ${onRowClick ? 'cursor-pointer' : ''}`}
           style={{
             position: 'absolute',
@@ -466,13 +466,13 @@ export function VirtualTable<T>({
     <div className={`flex flex-col ${className}`}>
       {/* Header */}
       <div
-        className="flex bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+        className="flex bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
         style={{ height: headerHeight }}
       >
         {columns.map((column) => (
           <div
             key={column.key}
-            className="flex items-center px-4 font-semibold text-sm text-gray-700 dark:text-gray-300"
+            className="flex items-center px-4 font-semibold text-sm text-slate-700 dark:text-slate-300"
             style={{ width: column.width ?? 'auto', flex: column.width ? 'none' : 1 }}
           >
             {column.header}

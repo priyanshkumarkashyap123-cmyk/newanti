@@ -8,17 +8,17 @@ export function TransportationDesigner() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h1 className="text-2xl font-bold text-gray-900">Transportation Engineering</h1>
-                <p className="text-gray-500 mt-1">Highway Geometric Design, Pavement Design & Traffic Analysis</p>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h1 className="text-2xl font-bold text-slate-900">Transportation Engineering</h1>
+                <p className="text-slate-500 mt-1">Highway Geometric Design, Pavement Design & Traffic Analysis</p>
 
                 {/* Tabs */}
-                <div className="flex gap-2 mt-6 border-b border-gray-200">
+                <div className="flex gap-2 mt-6 border-b border-slate-200">
                     <button
                         onClick={() => setActiveTab('highway')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'highway'
                             ? 'border-orange-500 text-orange-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Highway Design
@@ -27,7 +27,7 @@ export function TransportationDesigner() {
                         onClick={() => setActiveTab('pavement')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'pavement'
                             ? 'border-orange-500 text-orange-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Pavement Design
@@ -36,7 +36,7 @@ export function TransportationDesigner() {
                         onClick={() => setActiveTab('intersection')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'intersection'
                             ? 'border-orange-500 text-orange-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Intersection Analysis
@@ -99,12 +99,12 @@ function HighwayDesignPanel() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Input Panel */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Design Parameters</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Design Parameters</h3>
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Road Class</label>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Road Class</label>
                             <select
                                 value={params.roadClass}
                                 onChange={e => setParams({ ...params, roadClass: e.target.value as RoadClass })}
@@ -119,7 +119,7 @@ function HighwayDesignPanel() {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Terrain</label>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Terrain</label>
                             <select
                                 value={params.terrain}
                                 onChange={e => setParams({ ...params, terrain: e.target.value as TerrainType })}
@@ -139,10 +139,10 @@ function HighwayDesignPanel() {
                     </div>
 
                     <div className="border-t pt-4">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3">Horizontal Alignment</h4>
+                        <h4 className="text-sm font-semibold text-slate-900 mb-3">Horizontal Alignment</h4>
                         <div className="grid grid-cols-1 gap-4">
                             <div>
-                                <label className="block text-xs text-gray-500 mb-1">Deflection Angle (degrees)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Deflection Angle (degrees)</label>
                                 <input
                                     type="number"
                                     value={params.deflectionAngle}
@@ -154,10 +154,10 @@ function HighwayDesignPanel() {
                     </div>
 
                     <div className="border-t pt-4">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3">Vertical Alignment</h4>
+                        <h4 className="text-sm font-semibold text-slate-900 mb-3">Vertical Alignment</h4>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs text-gray-500 mb-1">Incoming Grade (%)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Incoming Grade (%)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -167,7 +167,7 @@ function HighwayDesignPanel() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-500 mb-1">Outgoing Grade (%)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Outgoing Grade (%)</label>
                                 <input
                                     type="number"
                                     step="0.1"
@@ -191,8 +191,8 @@ function HighwayDesignPanel() {
             {/* Results Panel */}
             <div className="space-y-6">
                 {curveResult && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                             <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
                             Horizontal Curve
                         </h3>
@@ -207,8 +207,8 @@ function HighwayDesignPanel() {
                 )}
 
                 {verticalResult && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                             <span className={`w-2 h-6 rounded-full ${verticalResult.type === 'crest' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                             Vertical {verticalResult.type === 'crest' ? 'Crest' : 'Sag'} Curve
                         </h3>
@@ -292,21 +292,21 @@ function PavementDesignPanel() {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Pavement Parameters</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Pavement Parameters</h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Pavement Type</label>
+                        <label className="block text-xs font-medium text-slate-700 mb-1">Pavement Type</label>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setParams({ ...params, type: 'flexible' })}
-                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'flexible' ? 'bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200'}`}
+                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'flexible' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
                             >
                                 Flexible (Bitumen)
                             </button>
                             <button
                                 onClick={() => setParams({ ...params, type: 'rigid' })}
-                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'rigid' ? 'bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white border-gray-800' : 'bg-white text-gray-600 border-gray-200'}`}
+                                className={`flex-1 py-2 text-sm rounded-lg border ${params.type === 'rigid' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200'}`}
                             >
                                 Rigid (Concrete)
                             </button>
@@ -315,7 +315,7 @@ function PavementDesignPanel() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs text-gray-500 mb-1">Subgrade CBR (%)</label>
+                            <label className="block text-xs text-slate-500 mb-1">Subgrade CBR (%)</label>
                             <input
                                 type="number"
                                 value={params.cbr}
@@ -324,7 +324,7 @@ function PavementDesignPanel() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs text-gray-500 mb-1">Design Life (Years)</label>
+                            <label className="block text-xs text-slate-500 mb-1">Design Life (Years)</label>
                             <input
                                 type="number"
                                 value={params.designLife}
@@ -334,10 +334,10 @@ function PavementDesignPanel() {
                         </div>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                        <h4 className="text-sm font-semibold text-gray-900">Traffic Data</h4>
+                    <div className="bg-slate-50 p-4 rounded-lg space-y-3">
+                        <h4 className="text-sm font-semibold text-slate-900">Traffic Data</h4>
                         <div>
-                            <label className="block text-xs text-gray-500 mb-1">Initial Traffic (AADT)</label>
+                            <label className="block text-xs text-slate-500 mb-1">Initial Traffic (AADT)</label>
                             <input
                                 type="number"
                                 value={params.traffic.aadt}
@@ -347,7 +347,7 @@ function PavementDesignPanel() {
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-xs text-gray-500 mb-1">Growth Rate (%)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Growth Rate (%)</label>
                                 <input
                                     type="number"
                                     value={params.traffic.growthRate}
@@ -356,7 +356,7 @@ function PavementDesignPanel() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-500 mb-1">Heavy Vehicles (%)</label>
+                                <label className="block text-xs text-slate-500 mb-1">Heavy Vehicles (%)</label>
                                 <input
                                     type="number"
                                     value={params.traffic.trucks}
@@ -369,7 +369,7 @@ function PavementDesignPanel() {
 
                     <button
                         onClick={calculate}
-                        className="w-full py-2.5 bg-gray-50 dark:bg-gray-900 text-white rounded-lg font-semibold hover:bg-black shadow-sm"
+                        className="w-full py-2.5 bg-slate-50 dark:bg-slate-900 text-white rounded-lg font-semibold hover:bg-black shadow-sm"
                     >
                         Design Pavement Section
                     </button>
@@ -378,15 +378,15 @@ function PavementDesignPanel() {
 
             <div className="space-y-6">
                 {result && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                         <div className="flex justify-between items-start mb-6">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900">Design Output</h3>
-                                <p className="text-sm text-gray-500">Design Traffic: {result.trafficMSA.toFixed(2)} MSA</p>
+                                <h3 className="text-lg font-bold text-slate-900">Design Output</h3>
+                                <p className="text-sm text-slate-500">Design Traffic: {result.trafficMSA.toFixed(2)} MSA</p>
                             </div>
                             <div className="text-right">
-                                <div className="text-2xl font-bold text-gray-900">{result.totalThickness} mm</div>
-                                <div className="text-xs text-gray-500">Total Thickness</div>
+                                <div className="text-2xl font-bold text-slate-900">{result.totalThickness} mm</div>
+                                <div className="text-xs text-slate-500">Total Thickness</div>
                             </div>
                         </div>
 
@@ -396,14 +396,14 @@ function PavementDesignPanel() {
                                 // Calculate relative height for visualization (min 30px)
                                 const height = Math.max(30, (layer.thickness / result.totalThickness) * 300);
                                 const colors = [
-                                    'bg-gray-100 dark:bg-gray-800', // Surface
-                                    'bg-gray-600', // Base
+                                    'bg-slate-100 dark:bg-slate-800', // Surface
+                                    'bg-slate-600', // Base
                                     'bg-yellow-100', // Sub-base
                                 ];
                                 // Simple color cycling
-                                const color = layer.material.includes('BC') || layer.material.includes('PQC') ? 'bg-gray-100 dark:bg-gray-800 text-slate-900 dark:text-white' :
-                                    layer.material.includes('DBM') || layer.material.includes('DLC') ? 'bg-gray-600 text-white' :
-                                        layer.material.includes('WMM') ? 'bg-gray-400 text-white' :
+                                const color = layer.material.includes('BC') || layer.material.includes('PQC') ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' :
+                                    layer.material.includes('DBM') || layer.material.includes('DLC') ? 'bg-slate-600 text-white' :
+                                        layer.material.includes('WMM') ? 'bg-slate-400 text-white' :
                                             'bg-amber-100 text-amber-900';
 
                                 return (
@@ -425,8 +425,8 @@ function PavementDesignPanel() {
                         <div className="mt-6 space-y-2">
                             <h4 className="text-sm font-semibold">Layer Details</h4>
                             {result.layers.map((layer: any, idx: number) => (
-                                <div key={idx} className="flex justify-between text-sm py-1 border-b last:border-0 border-gray-100">
-                                    <span className="text-gray-600">{layer.name}</span>
+                                <div key={idx} className="flex justify-between text-sm py-1 border-b last:border-0 border-slate-100">
+                                    <span className="text-slate-600">{layer.name}</span>
                                     <span className="font-medium">{layer.material} ({layer.thickness} mm)</span>
                                 </div>
                             ))}
@@ -468,11 +468,11 @@ function IntersectionAnalysisPanel() {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Signal Timing</h3>
+                    <h3 className="text-lg font-bold text-slate-900">Signal Timing</h3>
                     <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500">Cycle Time (s)</label>
+                        <label className="text-xs text-slate-500">Cycle Time (s)</label>
                         <input
                             type="number"
                             value={cycleTime}
@@ -484,11 +484,11 @@ function IntersectionAnalysisPanel() {
 
                 <div className="space-y-4">
                     {approaches.map((app, idx) => (
-                        <div key={idx} className="p-3 bg-gray-50 rounded-lg">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-2">{directions[idx]}</h4>
+                        <div key={idx} className="p-3 bg-slate-50 rounded-lg">
+                            <h4 className="text-sm font-semibold text-slate-700 mb-2">{directions[idx]}</h4>
                             <div className="grid grid-cols-3 gap-3">
                                 <div>
-                                    <label className="block text-[10px] text-gray-500 uppercase">Volume (vph)</label>
+                                    <label className="block text-[10px] text-slate-500 uppercase">Volume (vph)</label>
                                     <input
                                         type="number"
                                         value={app.volume}
@@ -497,7 +497,7 @@ function IntersectionAnalysisPanel() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] text-gray-500 uppercase">Lanes</label>
+                                    <label className="block text-[10px] text-slate-500 uppercase">Lanes</label>
                                     <input
                                         type="number"
                                         value={app.lanes}
@@ -506,7 +506,7 @@ function IntersectionAnalysisPanel() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] text-gray-500 uppercase">Green (s)</label>
+                                    <label className="block text-[10px] text-slate-500 uppercase">Green (s)</label>
                                     <input
                                         type="number"
                                         value={app.greenTime}
@@ -529,7 +529,7 @@ function IntersectionAnalysisPanel() {
 
             <div className="space-y-6">
                 {result && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center">
                         <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center text-4xl font-bold mb-4 ${result.los === 'A' ? 'bg-green-100 text-green-700' :
                             result.los === 'B' ? 'bg-green-50 text-green-600' :
                                 result.los === 'C' ? 'bg-yellow-50 text-yellow-600' :
@@ -539,8 +539,8 @@ function IntersectionAnalysisPanel() {
                             }`}>
                             {result.los}
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">Level of Service {result.los}</h3>
-                        <p className="text-gray-500 text-sm mb-6">Average Delay: {result.delay.toFixed(1)} sec/veh</p>
+                        <h3 className="text-xl font-bold text-slate-900 mb-1">Level of Service {result.los}</h3>
+                        <p className="text-slate-500 text-sm mb-6">Average Delay: {result.delay.toFixed(1)} sec/veh</p>
 
                         <div className="grid grid-cols-2 gap-4 text-left">
                             <ResultCard label="Total Capacity" value={`${Math.round(result.capacity)} veh/hr`} />
@@ -555,9 +555,9 @@ function IntersectionAnalysisPanel() {
 
 function ResultCard({ label, value }: { label: string, value: string }) {
     return (
-        <div className="bg-gray-50 p-3 rounded-lg">
-            <div className="text-xs text-gray-500 mb-1">{label}</div>
-            <div className="text-lg font-bold text-gray-900">{value}</div>
+        <div className="bg-slate-50 p-3 rounded-lg">
+            <div className="text-xs text-slate-500 mb-1">{label}</div>
+            <div className="text-lg font-bold text-slate-900">{value}</div>
         </div>
     );
 }

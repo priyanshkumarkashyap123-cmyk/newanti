@@ -420,11 +420,11 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             <h4 className="font-semibold text-green-800 dark:text-green-300 mb-2">Analysis Results</h4>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div className="text-gray-500 text-xs">Base Shear ({direction})</div>
+                                    <div className="text-slate-500 text-xs">Base Shear ({direction})</div>
                                     <div className="font-mono font-bold">{result.base_shear?.toFixed(2) ?? '—'} kN</div>
                                 </div>
                                 <div>
-                                    <div className="text-gray-500 text-xs">Modes Used</div>
+                                    <div className="text-slate-500 text-xs">Modes Used</div>
                                     <div className="font-mono font-bold">{result.modes?.length || 0}</div>
                                 </div>
                             </div>

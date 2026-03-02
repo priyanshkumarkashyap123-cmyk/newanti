@@ -15,17 +15,17 @@ export function ConstructionManager() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h1 className="text-2xl font-bold text-gray-900">Construction Management</h1>
-                <p className="text-gray-500 mt-1">Project Scheduling, Estimating & Risk Analysis</p>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h1 className="text-2xl font-bold text-slate-900">Construction Management</h1>
+                <p className="text-slate-500 mt-1">Project Scheduling, Estimating & Risk Analysis</p>
 
                 {/* Tabs */}
-                <div className="flex gap-2 mt-6 border-b border-gray-200">
+                <div className="flex gap-2 mt-6 border-b border-slate-200">
                     <button
                         onClick={() => setActiveTab('schedule')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'schedule'
                             ? 'border-indigo-500 text-indigo-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Schedule (CPM/PERT)
@@ -34,7 +34,7 @@ export function ConstructionManager() {
                         onClick={() => setActiveTab('cost')}
                         className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'cost'
                             ? 'border-indigo-500 text-indigo-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Cost Estimation
@@ -111,16 +111,16 @@ function SchedulePanel() {
     return (
         <div className="space-y-6">
             {/* Activity Input Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 bg-gray-50 border-b flex justify-between items-center">
-                    <h3 className="font-bold text-gray-900">Activity List</h3>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="px-6 py-4 bg-slate-50 border-b flex justify-between items-center">
+                    <h3 className="font-bold text-slate-900">Activity List</h3>
                     <button onClick={addActivity} className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700">
                         + Add Activity
                     </button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-gray-100 text-gray-600 font-semibold">
+                        <thead className="bg-slate-100 text-slate-600 font-semibold">
                             <tr>
                                 <th className="px-4 py-2 w-16">ID</th>
                                 <th className="px-4 py-2">Activity Name</th>
@@ -129,10 +129,10 @@ function SchedulePanel() {
                                 <th className="px-4 py-2 w-16"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-slate-100">
                             {activities.map((act, idx) => (
-                                <tr key={idx} className="hover:bg-gray-50">
-                                    <td className="px-4 py-2 font-mono bg-gray-50">{act.id}</td>
+                                <tr key={idx} className="hover:bg-slate-50">
+                                    <td className="px-4 py-2 font-mono bg-slate-50">{act.id}</td>
                                     <td className="px-4 py-2">
                                         <input
                                             type="text"
@@ -166,7 +166,7 @@ function SchedulePanel() {
                         </tbody>
                     </table>
                 </div>
-                <div className="px-6 py-3 bg-gray-50 border-t">
+                <div className="px-6 py-3 bg-slate-50 border-t">
                     <button onClick={calculate} className="w-full py-2 bg-indigo-600 text-white rounded font-medium hover:bg-indigo-700">
                         Apply Changes & Recalculate
                     </button>
@@ -175,11 +175,11 @@ function SchedulePanel() {
 
             {/* Results & Gantt */}
             {schedule && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">Project Schedule</h3>
-                            <p className="text-sm text-gray-500">Duration: {schedule.projectDuration} days | Critical Path: {schedule.criticalPath.join(' → ')}</p>
+                            <h3 className="text-lg font-bold text-slate-900">Project Schedule</h3>
+                            <p className="text-sm text-slate-500">Duration: {schedule.projectDuration} days | Critical Path: {schedule.criticalPath.join(' → ')}</p>
                         </div>
                     </div>
 
@@ -191,7 +191,7 @@ function SchedulePanel() {
                                 <div className="w-48 shrink-0"></div>
                                 <div className="flex-1 flex relative">
                                     {Array.from({ length: schedule.projectDuration + 2 }).map((_, i) => (
-                                        <div key={i} className="absolute text-[10px] text-gray-500 dark:text-gray-400 border-l h-full pl-1" style={{ left: `${(i / schedule.projectDuration) * 100}%` }}>
+                                        <div key={i} className="absolute text-[10px] text-slate-500 dark:text-slate-400 border-l h-full pl-1" style={{ left: `${(i / schedule.projectDuration) * 100}%` }}>
                                             {i}
                                         </div>
                                     ))}
@@ -210,7 +210,7 @@ function SchedulePanel() {
                                     const opacity = s.isCritical ? 'bg-red-100' : 'bg-blue-100';
 
                                     return (
-                                        <div key={act.id} className="flex items-center h-8 group hover:bg-gray-50">
+                                        <div key={act.id} className="flex items-center h-8 group hover:bg-slate-50">
                                             <div className="w-48 shrink-0 text-sm font-medium px-2 truncate flex items-center justify-between">
                                                 <span>{act.id} - {act.name}</span>
                                                 {s.isCritical && <span className="text-[10px] text-red-500 font-bold px-1 rounded bg-red-50">CRIT</span>}
@@ -228,7 +228,7 @@ function SchedulePanel() {
                                                 {/* Float Bar (if any) */}
                                                 {s.TF > 0 && (
                                                     <div
-                                                        className={`absolute top-2.5 h-3 rounded-r ${opacity} border-l border-dashed border-gray-400`}
+                                                        className={`absolute top-2.5 h-3 rounded-r ${opacity} border-l border-dashed border-slate-400`}
                                                         style={{
                                                             left: `${((s.ES + act.duration) / schedule.projectDuration) * 100}%`,
                                                             width: `${(s.TF / schedule.projectDuration) * 100}%`
@@ -244,7 +244,7 @@ function SchedulePanel() {
                         </div>
                     </div>
 
-                    <div className="mt-4 flex gap-4 text-xs text-gray-500 justify-end">
+                    <div className="mt-4 flex gap-4 text-xs text-slate-500 justify-end">
                         <div className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded"></div> Critical Path</div>
                         <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500 rounded"></div> Standard Task</div>
                         <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-100 rounded"></div> Float / Slack</div>
@@ -278,13 +278,13 @@ function CostPanel() {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-fit">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Estimates</h3>
-                <p className="text-sm text-gray-500 mb-6">Generates an approximate BOQ based on plinth area rates.</p>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 h-fit">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Quick Estimates</h3>
+                <p className="text-sm text-slate-500 mb-6">Generates an approximate BOQ based on plinth area rates.</p>
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Built-up Area (sq. ft.)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Built-up Area (sq. ft.)</label>
                         <input
                             type="number"
                             value={params.area}
@@ -293,7 +293,7 @@ function CostPanel() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Number of Floors</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Number of Floors</label>
                         <input
                             type="number"
                             value={params.floors}
@@ -302,7 +302,7 @@ function CostPanel() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Building Type</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Building Type</label>
                         <select
                             value={params.type}
                             onChange={e => setParams({ ...params, type: e.target.value as 'residential' | 'commercial' | 'industrial' })}
@@ -325,16 +325,16 @@ function CostPanel() {
 
             <div className="space-y-6">
                 {estimate && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="p-6 bg-gray-50 dark:bg-gray-900 text-slate-900 dark:text-white">
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Total Project Estimate</div>
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="p-6 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white">
+                            <div className="text-sm text-slate-500 dark:text-slate-400">Total Project Estimate</div>
                             <div className="text-3xl font-bold">₹ {estimate.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Includes {(estimate.totalIndirect / estimate.totalDirect * 100).toFixed(0)}% overheads & contingencies</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Includes {(estimate.totalIndirect / estimate.totalDirect * 100).toFixed(0)}% overheads & contingencies</div>
                         </div>
 
                         <div className="p-0">
                             <table className="w-full text-sm">
-                                <thead className="bg-gray-50 text-gray-600">
+                                <thead className="bg-slate-50 text-slate-600">
                                     <tr>
                                         <th className="px-4 py-2 text-left">Item Description</th>
                                         <th className="px-4 py-2 text-right">Qty</th>
@@ -342,16 +342,16 @@ function CostPanel() {
                                         <th className="px-4 py-2 text-right">Amount</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-slate-100">
                                     {estimate.directCosts.map((item, idx) => (
-                                        <tr key={idx} className="hover:bg-gray-50">
+                                        <tr key={idx} className="hover:bg-slate-50">
                                             <td className="px-4 py-2 font-medium">{item.description}</td>
-                                            <td className="px-4 py-2 text-right text-gray-600">{Math.round(item.quantity)} {item.unit}</td>
-                                            <td className="px-4 py-2 text-right text-gray-600">₹{item.unitRate}</td>
+                                            <td className="px-4 py-2 text-right text-slate-600">{Math.round(item.quantity)} {item.unit}</td>
+                                            <td className="px-4 py-2 text-right text-slate-600">₹{item.unitRate}</td>
                                             <td className="px-4 py-2 text-right font-semibold">₹{Math.round(item.amount).toLocaleString('en-IN')}</td>
                                         </tr>
                                     ))}
-                                    <tr className="bg-gray-50 font-semibold text-gray-800">
+                                    <tr className="bg-slate-50 font-semibold text-slate-800">
                                         <td className="px-4 py-2" colSpan={3}>Subtotal (Direct Costs)</td>
                                         <td className="px-4 py-2 text-right">₹{Math.round(estimate.totalDirect).toLocaleString('en-IN')}</td>
                                     </tr>

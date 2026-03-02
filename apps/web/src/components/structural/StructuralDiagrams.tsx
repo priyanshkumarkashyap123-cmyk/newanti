@@ -113,7 +113,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
   }, [concreteX, concreteY, concreteW, concreteH, stirrupInset, stirrupDia]);
   
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-lg p-4", className)}>
+    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
       <svg 
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         className="w-full max-w-md mx-auto"
@@ -226,7 +226,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
             x={concreteX + concreteW / 2}
             y={concreteY + concreteH + 38}
             textAnchor="middle"
-            className="fill-gray-600 dark:fill-gray-400"
+            className="fill-slate-600 dark:fill-slate-400"
           >
             {width} mm
           </text>
@@ -249,7 +249,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
             y={concreteY + concreteH / 2}
             textAnchor="middle"
             transform={`rotate(-90, ${concreteX - 30}, ${concreteY + concreteH / 2})`}
-            className="fill-gray-600 dark:fill-gray-400"
+            className="fill-slate-600 dark:fill-slate-400"
           >
             {depth} mm
           </text>
@@ -258,11 +258,11 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
         {/* Legend */}
         <g transform={`translate(${concreteX}, ${concreteY - 25})`}>
           <circle cx="0" cy="0" r="4" fill="#dc2626"/>
-          <text x="10" y="4" className="text-xs fill-gray-600 dark:fill-gray-400">Tension</text>
+          <text x="10" y="4" className="text-xs fill-slate-600 dark:fill-slate-400">Tension</text>
           <circle cx="70" cy="0" r="4" fill="#2563eb"/>
-          <text x="80" y="4" className="text-xs fill-gray-600 dark:fill-gray-400">Compression</text>
+          <text x="80" y="4" className="text-xs fill-slate-600 dark:fill-slate-400">Compression</text>
           <rect x="150" y="-3" width="15" height="6" fill="#22c55e" rx="1"/>
-          <text x="170" y="4" className="text-xs fill-gray-600 dark:fill-gray-400">Stirrup</text>
+          <text x="170" y="4" className="text-xs fill-slate-600 dark:fill-slate-400">Stirrup</text>
         </g>
       </svg>
       
@@ -279,7 +279,7 @@ export const BeamCrossSection: React.FC<BeamCrossSectionProps> = ({
             <span className="font-medium">
               {layer.type === 'tension' ? 'Bottom' : 'Top'}: {layer.count} - {layer.diameter}φ
             </span>
-            <span className="text-gray-500 ml-2">
+            <span className="text-slate-500 ml-2">
               ({(layer.count * Math.PI * layer.diameter ** 2 / 4).toFixed(0)} mm²)
             </span>
           </div>
@@ -345,14 +345,14 @@ export const StressStrainDiagram: React.FC<StressStrainDiagramProps> = ({
   ];
   
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
         Stress-Strain Relationship
       </h3>
       
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full">
         {/* Grid */}
-        <g className="text-gray-700 dark:text-gray-700">
+        <g className="text-slate-700 dark:text-slate-700">
           {[0, 0.001, 0.002, 0.003, 0.004, 0.005].map(strain => (
             <line
               key={strain}
@@ -417,19 +417,19 @@ export const StressStrainDiagram: React.FC<StressStrainDiagramProps> = ({
         />
         
         {/* Labels */}
-        <text x={padding.left + plotWidth / 2} y={svgHeight - 10} textAnchor="middle" className="text-xs fill-gray-600 dark:fill-gray-400">
+        <text x={padding.left + plotWidth / 2} y={svgHeight - 10} textAnchor="middle" className="text-xs fill-slate-600 dark:fill-slate-400">
           Strain (ε)
         </text>
-        <text x={15} y={padding.top + plotHeight / 2} textAnchor="middle" transform={`rotate(-90, 15, ${padding.top + plotHeight / 2})`} className="text-xs fill-gray-600 dark:fill-gray-400">
+        <text x={15} y={padding.top + plotHeight / 2} textAnchor="middle" transform={`rotate(-90, 15, ${padding.top + plotHeight / 2})`} className="text-xs fill-slate-600 dark:fill-slate-400">
           Stress (MPa)
         </text>
         
         {/* Legend */}
         <g transform={`translate(${padding.left + 20}, ${padding.top + 20})`}>
           <line x1="0" y1="0" x2="20" y2="0" stroke="#3b82f6" strokeWidth="2.5"/>
-          <text x="25" y="4" className="text-xs fill-gray-600 dark:fill-gray-400">Concrete</text>
+          <text x="25" y="4" className="text-xs fill-slate-600 dark:fill-slate-400">Concrete</text>
           <line x1="0" y1="15" x2="20" y2="15" stroke="#dc2626" strokeWidth="2.5"/>
-          <text x="25" y="19" className="text-xs fill-gray-600 dark:fill-gray-400">Steel</text>
+          <text x="25" y="19" className="text-xs fill-slate-600 dark:fill-slate-400">Steel</text>
         </g>
         
         {/* Strain values on x-axis */}
@@ -439,7 +439,7 @@ export const StressStrainDiagram: React.FC<StressStrainDiagramProps> = ({
             x={xScale(strain)}
             y={padding.top + plotHeight + 15}
             textAnchor="middle"
-            className="text-[10px] fill-gray-500"
+            className="text-[10px] fill-slate-500"
           >
             {strain.toFixed(3)}
           </text>
@@ -448,10 +448,10 @@ export const StressStrainDiagram: React.FC<StressStrainDiagramProps> = ({
         {/* Key values annotation */}
         <g transform={`translate(${svgWidth - padding.right - 100}, ${padding.top + 20})`} className="text-xs">
           <rect x="-10" y="-15" width="110" height="75" rx="4" fill="white" fillOpacity="0.9" stroke="#e2e8f0"/>
-          <text y="0" className="fill-gray-600 font-medium">Key Values:</text>
-          <text y="15" className="fill-gray-500">εcu = {εcu.toFixed(4)}</text>
-          <text y="30" className="fill-gray-500">εs = {εs.toFixed(4)}</text>
-          <text y="45" className="fill-gray-500">xu/d = {(xu/d).toFixed(3)}</text>
+          <text y="0" className="fill-slate-600 font-medium">Key Values:</text>
+          <text y="15" className="fill-slate-500">εcu = {εcu.toFixed(4)}</text>
+          <text y="30" className="fill-slate-500">εs = {εs.toFixed(4)}</text>
+          <text y="45" className="fill-slate-500">xu/d = {(xu/d).toFixed(3)}</text>
         </g>
       </svg>
     </div>
@@ -490,8 +490,8 @@ export const MomentDiagram: React.FC<MomentDiagramProps> = ({
   }
   
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
         Bending Moment Diagram
       </h3>
       
@@ -537,13 +537,13 @@ export const MomentDiagram: React.FC<MomentDiagramProps> = ({
         </g>
         
         {/* Span label */}
-        <text x={padding.left + plotWidth / 2} y={svgHeight - 10} textAnchor="middle" className="text-xs fill-gray-600 dark:fill-gray-400">
+        <text x={padding.left + plotWidth / 2} y={svgHeight - 10} textAnchor="middle" className="text-xs fill-slate-600 dark:fill-slate-400">
           Span = {(span / 1000).toFixed(2)} m
         </text>
         
         {/* + / - labels */}
-        <text x={padding.left - 15} y={padding.top + 20} textAnchor="middle" className="text-xs fill-gray-500">+M</text>
-        <text x={padding.left - 15} y={padding.top + plotHeight - 10} textAnchor="middle" className="text-xs fill-gray-500">-M</text>
+        <text x={padding.left - 15} y={padding.top + 20} textAnchor="middle" className="text-xs fill-slate-500">+M</text>
+        <text x={padding.left - 15} y={padding.top + plotHeight - 10} textAnchor="middle" className="text-xs fill-slate-500">-M</text>
       </svg>
     </div>
   );
@@ -568,8 +568,8 @@ export const ShearDiagram: React.FC<ShearDiagramProps> = ({
   const maxAbsShear = Math.max(...shears.map(Math.abs), maxShear);
   
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
         Shear Force Diagram
       </h3>
       
@@ -626,7 +626,7 @@ export const ShearDiagram: React.FC<ShearDiagramProps> = ({
         </text>
         
         {/* Span label */}
-        <text x={padding.left + plotWidth / 2} y={svgHeight - 10} textAnchor="middle" className="text-xs fill-gray-600 dark:fill-gray-400">
+        <text x={padding.left + plotWidth / 2} y={svgHeight - 10} textAnchor="middle" className="text-xs fill-slate-600 dark:fill-slate-400">
           Span = {(span / 1000).toFixed(2)} m
         </text>
       </svg>
@@ -678,14 +678,14 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
   const isInside = true; // Simplified - would need proper point-in-polygon check
   
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-lg p-4", className)}>
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+    <div className={cn("bg-white dark:bg-slate-900 rounded-lg p-4", className)}>
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
         P-M Interaction Diagram
       </h3>
       
       <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full">
         {/* Grid */}
-        <g className="text-gray-700 dark:text-gray-700">
+        <g className="text-slate-700 dark:text-slate-700">
           {[0, 0.25, 0.5, 0.75, 1].map(frac => (
             <React.Fragment key={frac}>
               <line
@@ -747,7 +747,7 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
         
         {/* Load point annotation */}
         <g transform={`translate(${xScale(Mu) + 10}, ${yScale(Pu)})`}>
-          <text className="text-xs fill-gray-700 dark:fill-gray-300 font-medium">
+          <text className="text-xs fill-slate-700 dark:fill-slate-300 font-medium">
             ({Pu.toFixed(0)}, {Mu.toFixed(0)})
           </text>
         </g>
@@ -757,7 +757,7 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
           x={padding.left + plotWidth / 2} 
           y={svgHeight - 10} 
           textAnchor="middle" 
-          className="text-xs fill-gray-600 dark:fill-gray-400"
+          className="text-xs fill-slate-600 dark:fill-slate-400"
         >
           Moment M (kN·m)
         </text>
@@ -766,7 +766,7 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
           y={padding.top + plotHeight / 2} 
           textAnchor="middle"
           transform={`rotate(-90, 15, ${padding.top + plotHeight / 2})`}
-          className="text-xs fill-gray-600 dark:fill-gray-400"
+          className="text-xs fill-slate-600 dark:fill-slate-400"
         >
           Axial Load P (kN)
         </text>
@@ -779,9 +779,9 @@ export const InteractionDiagram: React.FC<InteractionDiagramProps> = ({
         <g transform={`translate(${svgWidth - 120}, ${padding.top + 10})`}>
           <rect x="-10" y="-10" width="110" height="50" rx="4" fill="white" fillOpacity="0.9" stroke="#e2e8f0"/>
           <circle cx="0" cy="5" r="5" fill="#22c55e"/>
-          <text x="10" y="9" className="text-xs fill-gray-600">Inside - OK</text>
+          <text x="10" y="9" className="text-xs fill-slate-600">Inside - OK</text>
           <circle cx="0" cy="25" r="5" fill="#ef4444"/>
-          <text x="10" y="29" className="text-xs fill-gray-600">Outside - FAIL</text>
+          <text x="10" y="29" className="text-xs fill-slate-600">Outside - FAIL</text>
         </g>
       </svg>
     </div>

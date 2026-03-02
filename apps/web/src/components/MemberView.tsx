@@ -29,7 +29,7 @@ export const MemberView: FC<MemberViewProps> = ({ startNode, endNode }) => {
     return (
         <mesh position={position} rotation={rotation}>
             <cylinderGeometry args={[0.1, 0.1, length, 8]} />
-            <meshStandardMaterial color="#00aaff" />
+            <meshStandardMaterial color="#3b82f6" />
         </mesh>
     );
 };

@@ -47,8 +47,8 @@ const ConvergenceChart: FC<{ history: number[] }> = ({ history }) => {
     const minResidual = Math.min(...history.filter(r => r > 0));
 
     return (
-        <div className="h-24 bg-gray-50 dark:bg-gray-800 rounded-lg p-2 relative">
-            <div className="absolute top-1 left-2 text-xs text-gray-500 dark:text-gray-400">Convergence</div>
+        <div className="h-24 bg-slate-50 dark:bg-slate-800 rounded-lg p-2 relative">
+            <div className="absolute top-1 left-2 text-xs text-slate-500 dark:text-slate-400">Convergence</div>
             <svg width="100%" height="100%" viewBox="0 0 100 60" preserveAspectRatio="none">
                 {/* Grid lines */}
                 <line x1="0" y1="30" x2="100" y2="30" stroke="#ddd" strokeDasharray="2" />
@@ -80,10 +80,10 @@ const ConvergenceChart: FC<{ history: number[] }> = ({ history }) => {
                     />
                 )}
             </svg>
-            <div className="absolute bottom-1 left-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="absolute bottom-1 left-2 text-xs text-slate-500 dark:text-slate-400">
                 {history.length} iterations
             </div>
-            <div className="absolute bottom-1 right-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="absolute bottom-1 right-2 text-xs text-slate-500 dark:text-slate-400">
                 Final: {history[history.length - 1]?.toExponential(2) || '—'}
             </div>
         </div>
@@ -107,32 +107,32 @@ const ComparisonBar: FC<{
 
     return (
         <div className="mb-3">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
+            <div className="flex justify-between text-xs text-slate-500 mb-1">
                 <span>{label}</span>
-                <span className={parseFloat(amplification) > 10 ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'}>
+                <span className={parseFloat(amplification) > 10 ? 'text-yellow-500' : 'text-slate-500 dark:text-slate-400'}>
                     +{amplification}%
                 </span>
             </div>
             <div className="flex gap-1">
                 <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded overflow-hidden">
                         <div
                             className="h-full bg-blue-400"
                             style={{ width: `${(firstOrder / maxValue) * 100}%` }}
                         />
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         1st: {firstOrder.toFixed(2)} {unit}
                     </div>
                 </div>
                 <div className="flex-1">
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded overflow-hidden">
                         <div
                             className="h-full bg-orange-400"
                             style={{ width: `${(secondOrder / maxValue) * 100}%` }}
                         />
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         2nd: {secondOrder.toFixed(2)} {unit}
                     </div>
                 </div>
@@ -260,34 +260,34 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-3 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                         <Layers className="w-4 h-4" />
                         P-Delta Analysis
                     </h3>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Second-Order Effects</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">Second-Order Effects</span>
                 </div>
 
                 {/* Settings */}
                 <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                     <div>
-                        <label className="text-gray-500">Max Iterations</label>
+                        <label className="text-slate-500">Max Iterations</label>
                         <input
                             type="number"
                             min={5}
                             max={100}
                             value={maxIterations}
                             onChange={(e) => setMaxIterations(parseInt(e.target.value) || 20)}
-                            className="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1 border rounded dark:bg-slate-800 dark:border-slate-600"
                         />
                     </div>
                     <div>
-                        <label className="text-gray-500">Tolerance</label>
+                        <label className="text-slate-500">Tolerance</label>
                         <select
                             value={tolerance}
                             onChange={(e) => setTolerance(parseFloat(e.target.value))}
-                            className="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-600"
+                            className="w-full px-2 py-1 border rounded dark:bg-slate-800 dark:border-slate-600"
                         >
                             <option value={1e-3}>1e-3 (Coarse)</option>
                             <option value={1e-4}>1e-4 (Standard)</option>
@@ -318,10 +318,10 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
             {/* Content */}
             <div className="flex-1 overflow-auto p-3">
                 {!pdeltaResult ? (
-                    <div className="text-center text-gray-500 py-8">
+                    <div className="text-center text-slate-500 py-8">
                         <Maximize2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p className="text-sm">Run P-Delta analysis to see second-order effects.</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                             Accounts for geometric nonlinearity due to axial loads
                         </p>
                     </div>
@@ -380,34 +380,34 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
                                         {amplificationInfo.factor.toFixed(3)}
                                     </span>
                                 </div>
-                                <p className="text-xs text-gray-500">{amplificationInfo.message}</p>
+                                <p className="text-xs text-slate-500">{amplificationInfo.message}</p>
                             </div>
                         )}
 
                         {/* Summary Stats */}
                         <div className="grid grid-cols-2 gap-2 mb-4 text-center text-xs">
-                            <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
                                 <div className="text-lg font-bold">
                                     {pdeltaResult.maxDisplacement?.toFixed(2) || '—'}
                                 </div>
-                                <div className="text-gray-500">Max Disp. (mm)</div>
+                                <div className="text-slate-500">Max Disp. (mm)</div>
                             </div>
-                            <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
                                 <div className="text-lg font-bold">
                                     {pdeltaResult.iterations}
                                 </div>
-                                <div className="text-gray-500">Iterations</div>
+                                <div className="text-slate-500">Iterations</div>
                             </div>
                         </div>
 
                         {/* 1st vs 2nd Order Comparison — use actual analysis results */}
                         {showComparison && analysisResults && (
-                            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                                 <div className="flex items-center justify-between mb-3">
-                                    <span className="text-xs font-medium text-gray-500">
+                                    <span className="text-xs font-medium text-slate-500">
                                         1st vs 2nd Order Comparison
                                     </span>
-                                    <BarChart3 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    <BarChart3 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                 </div>
 
                                 {(() => {
@@ -461,14 +461,14 @@ export const PDeltaAnalysisPanel: FC<PDeltaAnalysisPanelProps> = ({ isPro = fals
 
             {/* Footer */}
             {pdeltaResult && (
-                <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex justify-between">
+                <div className="p-3 border-t border-slate-200 dark:border-slate-700 flex justify-between">
                     <button
                         onClick={() => setShowComparison(!showComparison)}
-                        className="text-sm text-gray-500 hover:text-gray-700"
+                        className="text-sm text-slate-500 hover:text-slate-700"
                     >
                         {showComparison ? 'Hide' : 'Show'} Comparison
                     </button>
-                    <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700">
+                    <button className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700">
                         <Download className="w-4 h-4" />
                         Export
                     </button>

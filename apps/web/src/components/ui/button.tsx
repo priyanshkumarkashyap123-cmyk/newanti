@@ -86,9 +86,9 @@ const buttonVariants = cva(
             variant: {
                 /* ---- core ---- */
                 default: [
-                    'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800',
+                    'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700',
                     'shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/30',
-                    'focus-visible:ring-blue-500',
+                    'focus-visible:ring-blue-400',
                 ].join(' '),
                 destructive: [
                     'bg-red-600 text-white hover:bg-red-700',

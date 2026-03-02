@@ -155,7 +155,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
 
                             <div className="grid grid-cols-3 gap-2 text-center text-sm">
                                 <div className="bg-slate-50 p-2 rounded">
-                                    <div className="text-gray-500 text-xs uppercase">Total</div>
+                                    <div className="text-slate-500 text-xs uppercase">Total</div>
                                     <div className="font-bold">{totalChecked}</div>
                                 </div>
                                 <div className="bg-green-50 p-2 rounded text-green-700">
@@ -168,7 +168,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                                 </div>
                             </div>
 
-                            <Label className="text-xs text-gray-500 mt-2">Member Details</Label>
+                            <Label className="text-xs text-slate-500 mt-2">Member Details</Label>
                             <ScrollArea className="h-64 border rounded-md">
                                 <div className="divide-y">
                                     {Object.entries(activeResults).map(([id, res]: [string, any]) => (
@@ -181,14 +181,14 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                                                         <XCircle className="w-3 h-3 text-red-500" />
                                                     }
                                                 </div>
-                                                <div className="text-xs text-gray-500">{res.governing}</div>
-                                                {isClient && <div className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">Pn_c: {res.capacity?.Pn_compression?.toFixed(0)}</div>}
+                                                <div className="text-xs text-slate-500">{res.governing}</div>
+                                                {isClient && <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Pn_c: {res.capacity?.Pn_compression?.toFixed(0)}</div>}
                                             </div>
                                             <div className="text-right">
                                                 <div className={`font-bold ${res.ratio > 1.0 ? 'text-red-600' : 'text-green-600'}`}>
                                                     {res.ratio.toFixed(2)}
                                                 </div>
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">Ratio</div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400">Ratio</div>
                                             </div>
                                         </div>
                                     ))}

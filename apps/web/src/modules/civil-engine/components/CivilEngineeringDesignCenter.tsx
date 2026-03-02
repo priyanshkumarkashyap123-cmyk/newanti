@@ -317,13 +317,13 @@ export function CivilEngineeringDesignCenter() {
   }, [selectedModule]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-slate-900">
                 🏗️ Civil Engineering Design Center
               </h1>
               <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
@@ -339,9 +339,9 @@ export function CivilEngineeringDesignCenter() {
                   placeholder="Search modules..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-64 px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-64 px-4 py-2 pl-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">
+                <span className="absolute left-3 top-2.5 text-slate-500 dark:text-slate-400">
                   🔍
                 </span>
               </div>
@@ -352,7 +352,7 @@ export function CivilEngineeringDesignCenter() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   showVisualization
                     ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700"
+                    : "bg-slate-200 text-slate-700"
                 }`}
               >
                 📊 {showVisualization ? "Hide" : "Show"} Visualization
@@ -367,8 +367,8 @@ export function CivilEngineeringDesignCenter() {
           {/* Sidebar - Categories & Module List */}
           <aside className="w-80 flex-shrink-0">
             {/* Categories */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
-              <h2 className="font-semibold text-gray-900 mb-3">Categories</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-4">
+              <h2 className="font-semibold text-slate-900 mb-3">Categories</h2>
               <div className="space-y-1">
                 {categories.map((category) => (
                   <button
@@ -377,7 +377,7 @@ export function CivilEngineeringDesignCenter() {
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                       activeCategory === category.id
                         ? "bg-blue-50 text-blue-700 font-medium"
-                        : "text-gray-600 hover:bg-gray-50"
+                        : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
                     <span>{category.name}</span>
@@ -385,7 +385,7 @@ export function CivilEngineeringDesignCenter() {
                       className={`px-2 py-0.5 rounded-full text-xs ${
                         activeCategory === category.id
                           ? "bg-blue-100"
-                          : "bg-gray-100"
+                          : "bg-slate-100"
                       }`}
                     >
                       {category.count}
@@ -396,8 +396,8 @@ export function CivilEngineeringDesignCenter() {
             </div>
 
             {/* Module List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <h2 className="font-semibold text-gray-900 mb-3">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+              <h2 className="font-semibold text-slate-900 mb-3">
                 Modules ({filteredModules.length})
               </h2>
               <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto">
@@ -410,7 +410,7 @@ export function CivilEngineeringDesignCenter() {
                       className={`w-full text-left p-3 rounded-lg border transition-all ${
                         selectedModule === module.id
                           ? `${styles.bg} ${styles.border} ring-2 ring-offset-1 ring-blue-500`
-                          : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                          : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                       }`}
                     >
                       <div className="flex items-center space-x-3">
@@ -420,12 +420,12 @@ export function CivilEngineeringDesignCenter() {
                             className={`font-medium truncate ${
                               selectedModule === module.id
                                 ? styles.text
-                                : "text-gray-900"
+                                : "text-slate-900"
                             }`}
                           >
                             {module.name}
                           </h3>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-xs text-slate-500 truncate">
                             {module.description}
                           </p>
                         </div>
@@ -450,10 +450,10 @@ export function CivilEngineeringDesignCenter() {
                   <div className="flex items-center space-x-4">
                     <span className="text-4xl">{selectedModuleData.icon}</span>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">
+                      <h2 className="text-2xl font-bold text-slate-900">
                         {selectedModuleData.name}
                       </h2>
-                      <p className="text-gray-600">
+                      <p className="text-slate-600">
                         {selectedModuleData.description}
                       </p>
                       <span
@@ -471,8 +471,8 @@ export function CivilEngineeringDesignCenter() {
                 {/* Module Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Input Panel */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 className="font-semibold text-slate-900 mb-4 flex items-center">
                       <span className="mr-2">📝</span> Input Parameters
                     </h3>
                     <selectedModuleData.component
@@ -482,8 +482,8 @@ export function CivilEngineeringDesignCenter() {
 
                   {/* Results & Visualization Panel */}
                   {showVisualization && (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                      <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                      <h3 className="font-semibold text-slate-900 mb-4 flex items-center">
                         <span className="mr-2">📊</span> Results & Visualization
                       </h3>
                       <ResultsVisualizationPanel
@@ -498,12 +498,12 @@ export function CivilEngineeringDesignCenter() {
               </div>
             ) : (
               /* Welcome Screen */
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
                 <div className="text-6xl mb-4">🏗️</div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">
                   Welcome to Civil Engineering Design Center
                 </h2>
-                <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+                <p className="text-slate-600 max-w-2xl mx-auto mb-8">
                   A comprehensive platform for structural analysis, geotechnical
                   engineering, hydraulics, transportation engineering, and
                   surveying calculations. Select a module from the sidebar to
@@ -536,8 +536,8 @@ export function CivilEngineeringDesignCenter() {
 
             {/* Calculation History */}
             {calculationHistory.length > 0 && (
-              <div className="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h3 className="font-semibold text-slate-900 mb-4 flex items-center">
                   <span className="mr-2">📜</span> Recent Calculations
                 </h3>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -548,15 +548,15 @@ export function CivilEngineeringDesignCenter() {
                     return (
                       <div
                         key={result.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                       >
                         <div className="flex items-center space-x-3">
                           <span>{module?.icon}</span>
                           <div>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-slate-900">
                               {module?.name}
                             </span>
-                            <span className="text-xs text-gray-500 ml-2">
+                            <span className="text-xs text-slate-500 ml-2">
                               {result.timestamp.toLocaleTimeString()}
                             </span>
                           </div>
@@ -596,25 +596,25 @@ function FrameAnalysisPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Nodes (x, y coordinates)
         </label>
         <textarea
           value={nodes}
           onChange={(e) => setNodes(e.target.value)}
           placeholder="0, 0&#10;0, 3&#10;4, 3"
-          className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full h-24 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Members (start node, end node)
         </label>
         <textarea
           value={members}
           onChange={(e) => setMembers(e.target.value)}
           placeholder="0, 1&#10;1, 2"
-          className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full h-24 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <button
@@ -647,13 +647,13 @@ function TrussAnalysisPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Truss Type
         </label>
         <select
           value={trussType}
           onChange={(e) => setTrussType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="pratt">Pratt Truss</option>
           <option value="warren">Warren Truss</option>
@@ -663,29 +663,29 @@ function TrussAnalysisPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Span (m)
           </label>
           <input
             type="number"
             value={span}
             onChange={(e) => setSpan(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Height (m)
           </label>
           <input
             type="number"
             value={height}
             onChange={(e) => setHeight(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             No. of Panels
           </label>
           <input
@@ -693,18 +693,18 @@ function TrussAnalysisPanel({
             value={numNodes}
             onChange={(e) => setNumNodes(+e.target.value)}
             min={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Point Load (kN)
           </label>
           <input
             type="number"
             value={load}
             onChange={(e) => setLoad(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -750,35 +750,35 @@ function BeamDesignPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Span (m)
         </label>
         <input
           type="number"
           value={span}
           onChange={(e) => setSpan(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Load (kN/m)
         </label>
         <input
           type="number"
           value={load}
           onChange={(e) => setLoad(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Concrete Grade
         </label>
         <select
           value={concreteGrade}
           onChange={(e) => setConcreteGrade(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option>M20</option>
           <option>M25</option>
@@ -821,68 +821,68 @@ function ColumnDesignPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Axial Load Pu (kN)
           </label>
           <input
             type="number"
             value={axialLoad}
             onChange={(e) => setAxialLoad(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Moment Mu (kN·m)
           </label>
           <input
             type="number"
             value={moment}
             onChange={(e) => setMoment(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Width b (mm)
           </label>
           <input
             type="number"
             value={width}
             onChange={(e) => setWidth(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Depth D (mm)
           </label>
           <input
             type="number"
             value={depth}
             onChange={(e) => setDepth(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Eff. Length (mm)
           </label>
           <input
             type="number"
             value={length}
             onChange={(e) => setLength(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             End Condition
           </label>
           <select
             value={endCondition}
             onChange={(e) => setEndCondition(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="fixed-free">Fixed-Free (k=2.0)</option>
             <option value="fixed-pinned">Fixed-Pinned (k=0.7)</option>
@@ -891,25 +891,25 @@ function ColumnDesignPanel({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             fck (MPa)
           </label>
           <input
             type="number"
             value={fck}
             onChange={(e) => setFck(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             fy (MPa)
           </label>
           <input
             type="number"
             value={fy}
             onChange={(e) => setFy(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -976,49 +976,49 @@ function BearingCapacityPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Width B (m)
           </label>
           <input
             type="number"
             value={foundationWidth}
             onChange={(e) => setFoundationWidth(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Depth Df (m)
           </label>
           <input
             type="number"
             value={foundationDepth}
             onChange={(e) => setFoundationDepth(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Cohesion c (kPa)
           </label>
           <input
             type="number"
             value={cohesion}
             onChange={(e) => setCohesion(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             φ (degrees)
           </label>
           <input
             type="number"
             value={frictionAngle}
             onChange={(e) => setFrictionAngle(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1060,13 +1060,13 @@ function SettlementPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Soil Type
         </label>
         <select
           value={soilType}
           onChange={(e) => setSoilType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="clay">Clay (Consolidation)</option>
           <option value="sand">Sand (Elastic)</option>
@@ -1074,53 +1074,53 @@ function SettlementPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Applied Pressure (kPa)
           </label>
           <input
             type="number"
             value={appliedPressure}
             onChange={(e) => setAppliedPressure(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Foundation Width (m)
           </label>
           <input
             type="number"
             value={foundationWidth}
             onChange={(e) => setFoundationWidth(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Foundation Length (m)
           </label>
           <input
             type="number"
             value={foundationLength}
             onChange={(e) => setFoundationLength(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Foundation Depth (m)
           </label>
           <input
             type="number"
             value={foundationDepth}
             onChange={(e) => setFoundationDepth(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         {soilType === "clay" && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Compression Index Cc
               </label>
               <input
@@ -1128,11 +1128,11 @@ function SettlementPanel({
                 step="0.01"
                 value={compressionIndex}
                 onChange={(e) => setCompressionIndex(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Initial Void Ratio e₀
               </label>
               <input
@@ -1140,20 +1140,20 @@ function SettlementPanel({
                 step="0.01"
                 value={voidRatio}
                 onChange={(e) => setVoidRatio(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>
         )}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Layer Thickness (m)
           </label>
           <input
             type="number"
             value={layerThickness}
             onChange={(e) => setLayerThickness(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1220,13 +1220,13 @@ function SlopeStabilityPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Analysis Method
         </label>
         <select
           value={method}
           onChange={(e) => setMethod(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="culmann">Culmann&apos;s Method</option>
           <option value="taylor">Taylor&apos;s Stability Chart</option>
@@ -1235,69 +1235,69 @@ function SlopeStabilityPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Slope Height (m)
           </label>
           <input
             type="number"
             value={slopeHeight}
             onChange={(e) => setSlopeHeight(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Slope Angle (°)
           </label>
           <input
             type="number"
             value={slopeAngle}
             onChange={(e) => setSlopeAngle(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Cohesion c (kPa)
           </label>
           <input
             type="number"
             value={cohesion}
             onChange={(e) => setCohesion(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Friction Angle φ (°)
           </label>
           <input
             type="number"
             value={frictionAngle}
             onChange={(e) => setFrictionAngle(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Unit Weight (kN/m³)
           </label>
           <input
             type="number"
             value={unitWeight}
             onChange={(e) => setUnitWeight(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Water Table Depth (m)
           </label>
           <input
             type="number"
             value={waterTable}
             onChange={(e) => setWaterTable(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1391,100 +1391,100 @@ function PileDesignPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Pile Type
           </label>
           <select
             value={pileType}
             onChange={(e) => setPileType(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="bored">Bored Cast-in-situ</option>
             <option value="driven">Driven Precast</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Soil at Tip
           </label>
           <select
             value={soilType}
             onChange={(e) => setSoilType(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="clay">Cohesive (Clay)</option>
             <option value="sand">Granular (Sand)</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Diameter (mm)
           </label>
           <input
             type="number"
             value={pileDiameter}
             onChange={(e) => setPileDiameter(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Length (m)
           </label>
           <input
             type="number"
             value={pileLength}
             onChange={(e) => setPileLength(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         {soilType === "clay" ? (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Undrained Cohesion cu (kPa)
               </label>
               <input
                 type="number"
                 value={cu}
                 onChange={(e) => setCu(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Bearing Capacity Factor Nc
               </label>
               <input
                 type="number"
                 value={Nc}
                 onChange={(e) => setNc(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Friction Angle φ (°)
             </label>
             <input
               type="number"
               value={phi}
               onChange={(e) => setPhi(+e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Applied Load (kN)
           </label>
           <input
             type="number"
             value={appliedLoad}
             onChange={(e) => setAppliedLoad(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1562,13 +1562,13 @@ function ChannelFlowPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Channel Type
         </label>
         <select
           value={channelType}
           onChange={(e) => setChannelType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="rectangular">Rectangular</option>
           <option value="trapezoidal">Trapezoidal</option>
@@ -1578,18 +1578,18 @@ function ChannelFlowPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Bottom Width (m)
           </label>
           <input
             type="number"
             value={bottomWidth}
             onChange={(e) => setBottomWidth(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Slope (m/m)
           </label>
           <input
@@ -1597,7 +1597,7 @@ function ChannelFlowPanel({
             step="0.0001"
             value={slope}
             onChange={(e) => setSlope(Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -1632,13 +1632,13 @@ function PipeFlowPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Flow Type
         </label>
         <select
           value={flowType}
           onChange={(e) => setFlowType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="gravity">Gravity (Open/Part-Full)</option>
           <option value="pressure">Pressure (Full)</option>
@@ -1646,29 +1646,29 @@ function PipeFlowPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Diameter (mm)
           </label>
           <input
             type="number"
             value={diameter}
             onChange={(e) => setDiameter(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Length (m)
           </label>
           <input
             type="number"
             value={length}
             onChange={(e) => setLength(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Manning's n
           </label>
           <input
@@ -1676,12 +1676,12 @@ function PipeFlowPanel({
             step="0.001"
             value={roughness}
             onChange={(e) => setRoughness(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         {flowType === "gravity" ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Bed Slope
             </label>
             <input
@@ -1689,19 +1689,19 @@ function PipeFlowPanel({
               step="0.0001"
               value={slope}
               onChange={(e) => setSlope(+e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Pressure Head (kPa)
             </label>
             <input
               type="number"
               value={pressure}
               onChange={(e) => setPressure(+e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )}
@@ -1766,13 +1766,13 @@ function HydrologyPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Method
         </label>
         <select
           value={method}
           onChange={(e) => setMethod(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="rational">Rational Method (Q = CiA)</option>
           <option value="scs">SCS Curve Number</option>
@@ -1780,7 +1780,7 @@ function HydrologyPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Catchment Area (km²)
           </label>
           <input
@@ -1788,13 +1788,13 @@ function HydrologyPanel({
             step="0.1"
             value={catchmentArea}
             onChange={(e) => setCatchmentArea(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         {method === "rational" ? (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Runoff Coeff. C
               </label>
               <input
@@ -1802,65 +1802,65 @@ function HydrologyPanel({
                 step="0.01"
                 value={runoffCoeff}
                 onChange={(e) => setRunoffCoeff(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Rainfall Intensity (mm/hr)
               </label>
               <input
                 type="number"
                 value={rainfall}
                 onChange={(e) => setRainfall(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Time of Concentration (min)
               </label>
               <input
                 type="number"
                 value={timeOfConc}
                 onChange={(e) => setTimeOfConc(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>
         ) : (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Curve Number (CN)
               </label>
               <input
                 type="number"
                 value={curveNumber}
                 onChange={(e) => setCurveNumber(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Total Rainfall (mm)
               </label>
               <input
                 type="number"
                 value={rainfall}
                 onChange={(e) => setRainfall(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Storm Duration (hr)
               </label>
               <input
                 type="number"
                 value={stormDuration}
                 onChange={(e) => setStormDuration(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>
@@ -1937,13 +1937,13 @@ function HydraulicStructuresPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Structure Type
         </label>
         <select
           value={structureType}
           onChange={(e) => setStructureType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="sharp-crested">Sharp-Crested Weir</option>
           <option value="broad-crested">Broad-Crested Weir</option>
@@ -1953,7 +1953,7 @@ function HydraulicStructuresPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Crest Length (m)
           </label>
           <input
@@ -1961,11 +1961,11 @@ function HydraulicStructuresPanel({
             step="0.1"
             value={crestLength}
             onChange={(e) => setCrestLength(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Head over Crest H (m)
           </label>
           <input
@@ -1973,11 +1973,11 @@ function HydraulicStructuresPanel({
             step="0.01"
             value={headOverCrest}
             onChange={(e) => setHeadOverCrest(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Crest Height P (m)
           </label>
           <input
@@ -1985,11 +1985,11 @@ function HydraulicStructuresPanel({
             step="0.1"
             value={crestHeight}
             onChange={(e) => setCrestHeight(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Discharge Coeff. Cd
           </label>
           <input
@@ -1997,11 +1997,11 @@ function HydraulicStructuresPanel({
             step="0.01"
             value={dischargeCoeff}
             onChange={(e) => setDischargeCoeff(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Channel Width (m)
           </label>
           <input
@@ -2009,7 +2009,7 @@ function HydraulicStructuresPanel({
             step="0.1"
             value={channelWidth}
             onChange={(e) => setChannelWidth(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -2070,24 +2070,24 @@ function GeometricDesignPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Design Speed (km/h)
         </label>
         <input
           type="number"
           value={designSpeed}
           onChange={(e) => setDesignSpeed(Number(e.target.value))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Terrain
         </label>
         <select
           value={terrain}
           onChange={(e) => setTerrain(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="level">Level</option>
           <option value="rolling">Rolling</option>
@@ -2126,13 +2126,13 @@ function PavementDesignPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Pavement Type
         </label>
         <select
           value={pavementType}
           onChange={(e) => setPavementType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="flexible">Flexible (IRC:37)</option>
           <option value="rigid">Rigid / Concrete (IRC:58)</option>
@@ -2140,40 +2140,40 @@ function PavementDesignPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             CBR Value (%)
           </label>
           <input
             type="number"
             value={cbr}
             onChange={(e) => setCbr(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Design Traffic (MSA)
           </label>
           <input
             type="number"
             value={trafficMSA}
             onChange={(e) => setTrafficMSA(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Design Life (years)
           </label>
           <input
             type="number"
             value={designLife}
             onChange={(e) => setDesignLife(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Traffic Growth Rate (%)
           </label>
           <input
@@ -2181,11 +2181,11 @@ function PavementDesignPanel({
             step="0.1"
             value={growthRate}
             onChange={(e) => setGrowthRate(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Lane Width (m)
           </label>
           <input
@@ -2193,19 +2193,19 @@ function PavementDesignPanel({
             step="0.1"
             value={laneWidth}
             onChange={(e) => setLaneWidth(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         {pavementType === "rigid" && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Concrete Modulus (MPa)
             </label>
             <input
               type="number"
               value={modulus}
               onChange={(e) => setModulus(+e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )}
@@ -2283,13 +2283,13 @@ function TrafficAnalysisPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Analysis Type
         </label>
         <select
           value={analysisType}
           onChange={(e) => setAnalysisType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="los">Level of Service (HCM)</option>
           <option value="signal">Signal Timing (Webster)</option>
@@ -2297,18 +2297,18 @@ function TrafficAnalysisPanel({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Peak Volume (veh/hr)
           </label>
           <input
             type="number"
             value={peakHourVolume}
             onChange={(e) => setPeakHourVolume(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Number of Lanes
           </label>
           <input
@@ -2316,55 +2316,55 @@ function TrafficAnalysisPanel({
             value={numLanes}
             onChange={(e) => setNumLanes(+e.target.value)}
             min={1}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         {analysisType === "signal" ? (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Green Time (s)
               </label>
               <input
                 type="number"
                 value={greenTime}
                 onChange={(e) => setGreenTime(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Cycle Time (s)
               </label>
               <input
                 type="number"
                 value={cycleTime}
                 onChange={(e) => setCycleTime(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Saturation Flow (veh/hr/lane)
               </label>
               <input
                 type="number"
                 value={saturationFlow}
                 onChange={(e) => setSaturationFlow(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>
         ) : (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               Free Flow Speed (km/hr)
             </label>
             <input
               type="number"
               value={freeFlowSpeed}
               onChange={(e) => setFreeFlowSpeed(+e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )}
@@ -2458,7 +2458,7 @@ function TraversePanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Number of Traverse Legs
         </label>
         <input
@@ -2475,13 +2475,13 @@ function TraversePanel({
               return arr.slice(0, n);
             });
           }}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div className="max-h-48 overflow-y-auto space-y-2">
         {legs.slice(0, numLegs).map((leg, i) => (
           <div key={i} className="grid grid-cols-3 gap-2 items-center">
-            <span className="text-sm font-medium text-gray-600">
+            <span className="text-sm font-medium text-slate-600">
               Leg {i + 1}:
             </span>
             <input
@@ -2489,14 +2489,14 @@ function TraversePanel({
               placeholder="Bearing (°)"
               value={leg.bearing}
               onChange={(e) => updateLeg(i, "bearing", +e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
+              className="px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
             />
             <input
               type="number"
               placeholder="Distance (m)"
               value={leg.distance}
               onChange={(e) => updateLeg(i, "distance", +e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
+              className="px-2 py-1 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
         ))}
@@ -2568,7 +2568,7 @@ function LevelingPanel({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Benchmark RL (m)
           </label>
           <input
@@ -2576,11 +2576,11 @@ function LevelingPanel({
             step="0.001"
             value={benchmarkRL}
             onChange={(e) => setBenchmarkRL(+e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1">
             Stations
           </label>
           <input
@@ -2597,24 +2597,24 @@ function LevelingPanel({
                 return arr.slice(0, n);
               });
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
-      <div className="text-xs text-gray-500 font-medium">
+      <div className="text-xs text-slate-500 font-medium">
         Enter BS, IS, FS for each station (0 = not applicable)
       </div>
       <div className="max-h-48 overflow-y-auto space-y-2">
         {readings.slice(0, numStations).map((r, i) => (
           <div key={i} className="grid grid-cols-4 gap-1 items-center">
-            <span className="text-sm text-gray-600">Stn {i + 1}</span>
+            <span className="text-sm text-slate-600">Stn {i + 1}</span>
             <input
               type="number"
               step="0.001"
               placeholder="BS"
               value={r.bs || ""}
               onChange={(e) => updateReading(i, "bs", +e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-sm"
+              className="px-2 py-1 border border-slate-300 rounded text-sm"
             />
             <input
               type="number"
@@ -2622,7 +2622,7 @@ function LevelingPanel({
               placeholder="IS"
               value={r.is || ""}
               onChange={(e) => updateReading(i, "is", +e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-sm"
+              className="px-2 py-1 border border-slate-300 rounded text-sm"
             />
             <input
               type="number"
@@ -2630,7 +2630,7 @@ function LevelingPanel({
               placeholder="FS"
               value={r.fs || ""}
               onChange={(e) => updateReading(i, "fs", +e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-sm"
+              className="px-2 py-1 border border-slate-300 rounded text-sm"
             />
           </div>
         ))}
@@ -2696,13 +2696,13 @@ function CurveSettingPanel({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-slate-700 mb-1">
           Curve Type
         </label>
         <select
           value={curveType}
           onChange={(e) => setCurveType(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
         >
           <option value="simple">Simple Circular Curve</option>
           <option value="compound">Compound Curve</option>
@@ -2716,47 +2716,47 @@ function CurveSettingPanel({
           curveType === "transition") && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Radius (m)
               </label>
               <input
                 type="number"
                 value={radius}
                 onChange={(e) => setRadius(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Deflection Angle Δ (°)
               </label>
               <input
                 type="number"
                 value={deflectionAngle}
                 onChange={(e) => setDeflectionAngle(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Design Speed (km/hr)
               </label>
               <input
                 type="number"
                 value={designSpeed}
                 onChange={(e) => setDesignSpeed(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Chainage of PI (m)
               </label>
               <input
                 type="number"
                 value={chainagePI}
                 onChange={(e) => setChainagePI(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>
@@ -2764,7 +2764,7 @@ function CurveSettingPanel({
         {curveType === "vertical" && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Grade In g1 (%)
               </label>
               <input
@@ -2772,11 +2772,11 @@ function CurveSettingPanel({
                 step="0.1"
                 value={grade1}
                 onChange={(e) => setGrade1(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Grade Out g2 (%)
               </label>
               <input
@@ -2784,29 +2784,29 @@ function CurveSettingPanel({
                 step="0.1"
                 value={grade2}
                 onChange={(e) => setGrade2(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Curve Length L (m)
               </label>
               <input
                 type="number"
                 value={verticalLength}
                 onChange={(e) => setVerticalLength(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Design Speed (km/hr)
               </label>
               <input
                 type="number"
                 value={designSpeed}
                 onChange={(e) => setDesignSpeed(+e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </>
@@ -2903,8 +2903,8 @@ function ResultsVisualizationPanel({
 }) {
   if (!latestResult) {
     return (
-      <div className="h-96 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <div className="text-center text-gray-500">
+      <div className="h-96 flex items-center justify-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+        <div className="text-center text-slate-500">
           <div className="text-4xl mb-2">📊</div>
           <p>Run a calculation to see results and visualization</p>
         </div>
@@ -2915,17 +2915,17 @@ function ResultsVisualizationPanel({
   return (
     <div className="space-y-4">
       {/* Results Summary */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 mb-2">Results</h4>
-        <pre className="text-sm text-gray-700 overflow-auto">
+      <div className="bg-slate-50 rounded-lg p-4">
+        <h4 className="font-medium text-slate-900 mb-2">Results</h4>
+        <pre className="text-sm text-slate-700 overflow-auto">
           {JSON.stringify(latestResult.outputs, null, 2) ||
             "Calculation complete"}
         </pre>
       </div>
 
       {/* Visualization Area */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 min-h-[300px]">
-        <h4 className="font-medium text-gray-900 mb-2">Visualization</h4>
+      <div className="bg-white border border-slate-200 rounded-lg p-4 min-h-[300px]">
+        <h4 className="font-medium text-slate-900 mb-2">Visualization</h4>
         {latestResult.visualization ? (
           <div
             dangerouslySetInnerHTML={{
@@ -2933,8 +2933,8 @@ function ResultsVisualizationPanel({
             }}
           />
         ) : (
-          <div className="h-64 flex items-center justify-center bg-gray-50 rounded">
-            <span className="text-gray-500 dark:text-gray-400">
+          <div className="h-64 flex items-center justify-center bg-slate-50 rounded">
+            <span className="text-slate-500 dark:text-slate-400">
               Visualization will appear here
             </span>
           </div>

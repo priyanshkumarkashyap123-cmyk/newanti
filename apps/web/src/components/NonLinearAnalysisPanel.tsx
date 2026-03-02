@@ -113,7 +113,7 @@ export function NonLinearAnalysisPanel({ onRunAnalysis, isAnalyzing = false }: N
                                 Geometric (P-Delta, Large Disp)
                             </Label>
                         </div>
-                        <span title="Updates stiffness matrix based on deformed geometry" className="text-gray-500 dark:text-gray-400 cursor-help w-4 h-4">
+                        <span title="Updates stiffness matrix based on deformed geometry" className="text-slate-500 dark:text-slate-400 cursor-help w-4 h-4">
                             <Info className="w-4 h-4" />
                         </span>
                     </div>
@@ -128,7 +128,7 @@ export function NonLinearAnalysisPanel({ onRunAnalysis, isAnalyzing = false }: N
                                 Material (Yielding, Crushing)
                             </Label>
                         </div>
-                        <span title="Uses non-linear stress-strain relationships" className="text-gray-500 dark:text-gray-400 cursor-help w-4 h-4">
+                        <span title="Uses non-linear stress-strain relationships" className="text-slate-500 dark:text-slate-400 cursor-help w-4 h-4">
                             <Info className="w-4 h-4" />
                         </span>
                     </div>

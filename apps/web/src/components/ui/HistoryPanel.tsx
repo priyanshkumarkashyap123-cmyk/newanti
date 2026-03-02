@@ -161,7 +161,7 @@ const HistoryItem: React.FC<HistoryItemProps> = ({
         <div className="mt-1.5 relative">
           <div
             className={`w-3 h-3 rounded-full ${
-              isCurrent ? 'bg-blue-500' : 'bg-gray-500'
+              isCurrent ? 'bg-blue-500' : 'bg-slate-500'
             }`}
           />
           {isCurrent && (

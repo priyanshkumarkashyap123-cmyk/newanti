@@ -62,60 +62,60 @@ const ModeCard: FC<{
                 p-3 rounded-lg border cursor-pointer transition-all
                 ${selected
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'}
+                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-300'}
             `}
         >
             <div className="flex items-center justify-between mb-2">
                 <span className="font-semibold text-sm">Mode {mode.modeNumber}</span>
                 <button
                     onClick={(e) => { e.stopPropagation(); onAnimate(); }}
-                    className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                     title="Animate mode shape"
                 >
                     {isAnimating ? (
                         <PauseCircle className="w-4 h-4 text-blue-500" />
                     ) : (
-                        <PlayCircle className="w-4 h-4 text-gray-500 hover:text-blue-500" />
+                        <PlayCircle className="w-4 h-4 text-slate-500 hover:text-blue-500" />
                     )}
                 </button>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                    <span className="text-gray-500">Frequency:</span>
+                    <span className="text-slate-500">Frequency:</span>
                     <div className="font-medium">{mode.frequency.toFixed(3)} Hz</div>
                 </div>
                 <div>
-                    <span className="text-gray-500">Period:</span>
+                    <span className="text-slate-500">Period:</span>
                     <div className="font-medium">{mode.period.toFixed(3)} s</div>
                 </div>
             </div>
 
             {selected && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                    <div className="text-xs text-gray-500 mb-2">Participation Factors:</div>
+                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                    <div className="text-xs text-slate-500 mb-2">Participation Factors:</div>
                     <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
                             <div className="font-medium text-red-500">
                                 {(mode.participationX * 100).toFixed(1)}%
                             </div>
-                            <div className="text-gray-500 dark:text-gray-400">X</div>
+                            <div className="text-slate-500 dark:text-slate-400">X</div>
                         </div>
                         <div className="text-center">
                             <div className="font-medium text-green-500">
                                 {(mode.participationY * 100).toFixed(1)}%
                             </div>
-                            <div className="text-gray-500 dark:text-gray-400">Y</div>
+                            <div className="text-slate-500 dark:text-slate-400">Y</div>
                         </div>
                         <div className="text-center">
                             <div className="font-medium text-blue-500">
                                 {(mode.participationZ * 100).toFixed(1)}%
                             </div>
-                            <div className="text-gray-500 dark:text-gray-400">Z</div>
+                            <div className="text-slate-500 dark:text-slate-400">Z</div>
                         </div>
                     </div>
 
-                    <div className="text-xs text-gray-500 mt-2 mb-1">Effective Mass:</div>
+                    <div className="text-xs text-slate-500 mt-2 mb-1">Effective Mass:</div>
                     <div className="grid grid-cols-3 gap-1 text-xs">
                         <div className="text-center">
                             <div className="font-medium">{(mode.effectiveMassX * 100).toFixed(1)}%</div>
@@ -143,7 +143,7 @@ const CumulativeMassChart: FC<{
     const maxModes = data.length;
 
     return (
-        <div className="h-32 relative bg-gray-50 dark:bg-gray-800 rounded p-2">
+        <div className="h-32 relative bg-slate-50 dark:bg-slate-800 rounded p-2">
             <div className="absolute inset-0 p-2">
                 <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
                     {/* 90% threshold line */}

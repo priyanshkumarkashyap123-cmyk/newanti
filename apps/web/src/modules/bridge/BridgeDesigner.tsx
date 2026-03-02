@@ -43,12 +43,12 @@ import {
 // STYLING CONSTANTS
 // =============================================================================
 
-const CARD_CLASS = 'bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700';
-const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
-const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
+const CARD_CLASS = 'bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700';
+const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
+const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
 const BUTTON_PRIMARY = 'px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-const BUTTON_SECONDARY = 'px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-lg transition-all';
-const LABEL_CLASS = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
+const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-medium rounded-lg transition-all';
+const LABEL_CLASS = 'block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1';
 
 // =============================================================================
 // COMPONENT TYPES
@@ -135,7 +135,7 @@ const InputField: React.FC<{
 }> = ({ label, value, onChange, unit, min, max, step = 1, disabled }) => (
   <div>
     <label className={LABEL_CLASS}>
-      {label} {unit && <span className="text-gray-500">({unit})</span>}
+      {label} {unit && <span className="text-slate-500">({unit})</span>}
     </label>
     <input
       type="number"
@@ -193,12 +193,12 @@ const UtilizationBar: React.FC<{ ratio: number; label: string }> = ({ ratio, lab
   return (
     <div className="mb-3">
       <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+        <span className="font-medium text-slate-700 dark:text-slate-300">{label}</span>
+        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-slate-600 dark:text-slate-400'}>
           {(ratio * 100).toFixed(1)}%
         </span>
       </div>
-      <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <div
           className={`h-full ${color} transition-all duration-300`}
           style={{ width: `${percentage}%` }}
@@ -221,10 +221,10 @@ const ProgressStep: React.FC<{
       ? 'bg-blue-600 text-white'
       : completed
         ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
       }`}
   >
-    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${active ? 'bg-white text-blue-600' : completed ? 'bg-green-500 text-white' : 'bg-gray-300 dark:bg-gray-600'
+    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${active ? 'bg-white text-blue-600' : completed ? 'bg-green-500 text-white' : 'bg-slate-300 dark:bg-slate-600'
       }`}>
       {completed ? '✓' : number}
     </span>
@@ -241,10 +241,10 @@ const BridgeVisualization: React.FC<{ state: BridgeDesignState }> = ({ state }) 
 
   return (
     <div className={CARD_CLASS}>
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
         Bridge Elevation (Schematic)
       </h3>
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
         <svg width="100%" height="200" viewBox="0 0 700 200">
           {/* Ground line */}
           <line x1="0" y1="180" x2="700" y2="180" stroke="#8B4513" strokeWidth="3" />
@@ -308,27 +308,27 @@ const BridgeVisualization: React.FC<{ state: BridgeDesignState }> = ({ state }) 
 
       <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-4 text-sm">
         <div>
-          <span className="text-gray-500 block">Total Length</span>
+          <span className="text-slate-500 block">Total Length</span>
           <span className="font-bold">{totalLength.toFixed(1)} m</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Width</span>
+          <span className="text-slate-500 block">Width</span>
           <span className="font-bold">{state.totalWidth} m</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Spans</span>
+          <span className="text-slate-500 block">Spans</span>
           <span className="font-bold">{state.numSpans}</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Lanes</span>
+          <span className="text-slate-500 block">Lanes</span>
           <span className="font-bold">{state.numLanes}</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Girder Type</span>
+          <span className="text-slate-500 block">Girder Type</span>
           <span className="font-bold">{state.girderType}</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Pier Type</span>
+          <span className="text-slate-500 block">Pier Type</span>
           <span className="font-bold">{state.pierType}</span>
         </div>
       </div>
@@ -359,7 +359,7 @@ const GeometryPhase: React.FC<{
   return (
     <div className="space-y-6">
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           🌉 Bridge Geometry
         </h2>
 
@@ -417,7 +417,7 @@ const GeometryPhase: React.FC<{
 
         {/* Span lengths */}
         <div className="mt-6">
-          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-3">
             Span Lengths
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -437,7 +437,7 @@ const GeometryPhase: React.FC<{
       </div>
 
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           📐 Material Properties
         </h2>
 
@@ -470,7 +470,7 @@ const GeometryPhase: React.FC<{
       </div>
 
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           🚗 Loading Parameters
         </h2>
 
@@ -650,7 +650,7 @@ const SuperstructurePhase: React.FC<{
     <div className="space-y-6">
       {/* Deck Slab Design */}
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           🔲 Deck Slab Design
         </h2>
 
@@ -695,7 +695,7 @@ const SuperstructurePhase: React.FC<{
         </button>
 
         {results.deck && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Deck Slab Results</h3>
               <StatusBadge status={results.deck.status} />
@@ -703,19 +703,19 @@ const SuperstructurePhase: React.FC<{
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
               <div>
-                <span className="text-gray-500 block">Effective Depth</span>
+                <span className="text-slate-500 block">Effective Depth</span>
                 <span className="font-bold">{results.deck.effectiveDepth} mm</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Positive Moment</span>
+                <span className="text-slate-500 block">Positive Moment</span>
                 <span className="font-bold">{results.deck.positiveTransverse.toFixed(1)} kN-m/m</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Negative Moment</span>
+                <span className="text-slate-500 block">Negative Moment</span>
                 <span className="font-bold">{results.deck.negativeTransverse.toFixed(1)} kN-m/m</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Longitudinal Moment</span>
+                <span className="text-slate-500 block">Longitudinal Moment</span>
                 <span className="font-bold">{results.deck.longitudinalMoment.toFixed(1)} kN-m/m</span>
               </div>
             </div>
@@ -735,7 +735,7 @@ const SuperstructurePhase: React.FC<{
 
       {/* Girder Design */}
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           📏 Girder Design
         </h2>
 
@@ -774,7 +774,7 @@ const SuperstructurePhase: React.FC<{
         </button>
 
         {results.girders && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Composite Girder Results</h3>
               <StatusBadge status={results.girders.status} />
@@ -782,19 +782,19 @@ const SuperstructurePhase: React.FC<{
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
               <div>
-                <span className="text-gray-500 block">Moment Demand</span>
+                <span className="text-slate-500 block">Moment Demand</span>
                 <span className="font-bold">{results.girders.M_total.toFixed(0)} kN-m</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Moment Capacity</span>
+                <span className="text-slate-500 block">Moment Capacity</span>
                 <span className="font-bold">{results.girders.Mn_composite.toFixed(0)} kN-m</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Moment Utilization</span>
+                <span className="text-slate-500 block">Moment Utilization</span>
                 <span className="font-bold">{(results.girders.momentUtilization * 100).toFixed(1)}%</span>
               </div>
               <div>
-                <span className="text-gray-500 block">PNA Location</span>
+                <span className="text-slate-500 block">PNA Location</span>
                 <span className="font-bold">{results.girders.pnaLocation}</span>
               </div>
             </div>
@@ -878,7 +878,7 @@ const SubstructurePhase: React.FC<{
     <div className="space-y-6">
       {/* Pier Design */}
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           🏛️ Pier Design
         </h2>
 
@@ -927,7 +927,7 @@ const SubstructurePhase: React.FC<{
         </button>
 
         {results.pier && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Pier Design Results</h3>
               <StatusBadge status={results.pier.overallStatus} />
@@ -935,19 +935,19 @@ const SubstructurePhase: React.FC<{
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
               <div>
-                <span className="text-gray-500 block">Axial Load (Pu)</span>
+                <span className="text-slate-500 block">Axial Load (Pu)</span>
                 <span className="font-bold">{results.pier.column.Pu.toFixed(0)} kN</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Axial Capacity</span>
+                <span className="text-slate-500 block">Axial Capacity</span>
                 <span className="font-bold">{results.pier.column.axialCapacity.toFixed(0)} kN</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Slenderness</span>
+                <span className="text-slate-500 block">Slenderness</span>
                 <span className="font-bold">{results.pier.column.slenderness.toFixed(1)}</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Interaction Ratio</span>
+                <span className="text-slate-500 block">Interaction Ratio</span>
                 <span className="font-bold">{results.pier.column.interactionRatio.toFixed(3)}</span>
               </div>
             </div>
@@ -957,7 +957,7 @@ const SubstructurePhase: React.FC<{
               label="Column Interaction Ratio"
             />
 
-            <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm">
+            <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm">
               <strong>Reinforcement:</strong> {results.pier.column.longitudinalRebar.numBars} - Ø{results.pier.column.longitudinalRebar.diameter}mm
               ({(results.pier.column.longitudinalRebar.ratio * 100).toFixed(2)}%)
             </div>
@@ -967,7 +967,7 @@ const SubstructurePhase: React.FC<{
 
       {/* Abutment Design */}
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           🧱 Abutment Design
         </h2>
 
@@ -1005,7 +1005,7 @@ const SubstructurePhase: React.FC<{
         </button>
 
         {results.abutment && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Abutment Design Results</h3>
               <StatusBadge status={results.abutment.overallStatus} />
@@ -1038,7 +1038,7 @@ const SubstructurePhase: React.FC<{
 
       {/* Bearing Design */}
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           ⚙️ Bearing Design
         </h2>
 
@@ -1047,7 +1047,7 @@ const SubstructurePhase: React.FC<{
         </button>
 
         {results.bearing && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Elastomeric Bearing Results</h3>
               <StatusBadge status={results.bearing.status} />
@@ -1055,19 +1055,19 @@ const SubstructurePhase: React.FC<{
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
               <div>
-                <span className="text-gray-500 block">Size (L × W × H)</span>
+                <span className="text-slate-500 block">Size (L × W × H)</span>
                 <span className="font-bold">{results.bearing.length}×{results.bearing.width}×{results.bearing.totalHeight} mm</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Layers</span>
+                <span className="text-slate-500 block">Layers</span>
                 <span className="font-bold">{results.bearing.numLayers} × {results.bearing.layerThickness}mm</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Shape Factor</span>
+                <span className="text-slate-500 block">Shape Factor</span>
                 <span className="font-bold">{results.bearing.shapeFactor.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Shear Modulus</span>
+                <span className="text-slate-500 block">Shear Modulus</span>
                 <span className="font-bold">{results.bearing.shearModulus} MPa</span>
               </div>
             </div>
@@ -1124,7 +1124,7 @@ const FoundationPhase: React.FC<{
   return (
     <div className="space-y-6">
       <div className={CARD_CLASS}>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
           🏗️ Foundation Design
         </h2>
 
@@ -1161,7 +1161,7 @@ const FoundationPhase: React.FC<{
         </button>
 
         {results.footing && (
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">Spread Footing Results</h3>
               <StatusBadge status={results.footing.status} />
@@ -1169,19 +1169,19 @@ const FoundationPhase: React.FC<{
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
               <div>
-                <span className="text-gray-500 block">Size (L × B × D)</span>
+                <span className="text-slate-500 block">Size (L × B × D)</span>
                 <span className="font-bold">{results.footing.length.toFixed(2)}×{results.footing.width.toFixed(2)}×{results.footing.depth.toFixed(2)} m</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Max Pressure</span>
+                <span className="text-slate-500 block">Max Pressure</span>
                 <span className="font-bold">{results.footing.maxPressure.toFixed(0)} kPa</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Min Pressure</span>
+                <span className="text-slate-500 block">Min Pressure</span>
                 <span className="font-bold">{results.footing.minPressure.toFixed(0)} kPa</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Settlement</span>
+                <span className="text-slate-500 block">Settlement</span>
                 <span className="font-bold">{results.footing.immediateSettlement.toFixed(1)} mm</span>
               </div>
             </div>
@@ -1189,7 +1189,7 @@ const FoundationPhase: React.FC<{
             <UtilizationBar ratio={results.footing.bearingUtilization} label="Bearing Utilization" />
             <UtilizationBar ratio={results.footing.punchingShearUtilization} label="Punching Shear" />
 
-            <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm">
+            <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm">
               <strong>Bottom Reinforcement:</strong><br />
               Long: Ø{results.footing.bottomRebarLong.diameter}mm @ {results.footing.bottomRebarLong.spacing}mm<br />
               Short: Ø{results.footing.bottomRebarShort.diameter}mm @ {results.footing.bottomRebarShort.spacing}mm
@@ -1223,7 +1223,7 @@ const SummaryPhase: React.FC<{
     <div className="space-y-6">
       <div className={CARD_CLASS}>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white">
             📋 Design Summary
           </h2>
           <StatusBadge status={allPass ? 'pass' : 'fail'} />
@@ -1247,13 +1247,13 @@ const SummaryPhase: React.FC<{
         {/* Component Status */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Deck */}
-          <div className={`p-4 rounded-lg border ${results.deck ? (results.deck.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-gray-300 bg-gray-50 dark:bg-gray-800'}`}>
+          <div className={`p-4 rounded-lg border ${results.deck ? (results.deck.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-slate-300 bg-slate-50 dark:bg-slate-800'}`}>
             <div className="flex justify-between items-center mb-2">
               <span className="font-semibold">Deck Slab</span>
-              {results.deck ? <StatusBadge status={results.deck.status} /> : <span className="text-gray-500 text-sm">Not Designed</span>}
+              {results.deck ? <StatusBadge status={results.deck.status} /> : <span className="text-slate-500 text-sm">Not Designed</span>}
             </div>
             {results.deck && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Eff. Depth: {results.deck.effectiveDepth}mm<br />
                 Rebar: Ø{results.deck.bottomTransverse.diameter}@{results.deck.bottomTransverse.spacing}
               </div>
@@ -1261,13 +1261,13 @@ const SummaryPhase: React.FC<{
           </div>
 
           {/* Girders */}
-          <div className={`p-4 rounded-lg border ${results.girders ? (results.girders.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-gray-300 bg-gray-50 dark:bg-gray-800'}`}>
+          <div className={`p-4 rounded-lg border ${results.girders ? (results.girders.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-slate-300 bg-slate-50 dark:bg-slate-800'}`}>
             <div className="flex justify-between items-center mb-2">
               <span className="font-semibold">Girders</span>
-              {results.girders ? <StatusBadge status={results.girders.status} /> : <span className="text-gray-500 text-sm">Not Designed</span>}
+              {results.girders ? <StatusBadge status={results.girders.status} /> : <span className="text-slate-500 text-sm">Not Designed</span>}
             </div>
             {results.girders && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Depth: {state.girderDepth}mm<br />
                 Capacity: {results.girders.Mn_composite.toFixed(0)} kN-m
               </div>
@@ -1275,13 +1275,13 @@ const SummaryPhase: React.FC<{
           </div>
 
           {/* Pier */}
-          <div className={`p-4 rounded-lg border ${results.pier ? (results.pier.overallStatus === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-gray-300 bg-gray-50 dark:bg-gray-800'}`}>
+          <div className={`p-4 rounded-lg border ${results.pier ? (results.pier.overallStatus === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-slate-300 bg-slate-50 dark:bg-slate-800'}`}>
             <div className="flex justify-between items-center mb-2">
               <span className="font-semibold">Pier</span>
-              {results.pier ? <StatusBadge status={results.pier.overallStatus} /> : <span className="text-gray-500 text-sm">Not Designed</span>}
+              {results.pier ? <StatusBadge status={results.pier.overallStatus} /> : <span className="text-slate-500 text-sm">Not Designed</span>}
             </div>
             {results.pier && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Type: {state.pierType}<br />
                 Utilization: {(results.pier.column.interactionRatio * 100).toFixed(1)}%
               </div>
@@ -1289,13 +1289,13 @@ const SummaryPhase: React.FC<{
           </div>
 
           {/* Abutment */}
-          <div className={`p-4 rounded-lg border ${results.abutment ? (results.abutment.overallStatus === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-gray-300 bg-gray-50 dark:bg-gray-800'}`}>
+          <div className={`p-4 rounded-lg border ${results.abutment ? (results.abutment.overallStatus === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-slate-300 bg-slate-50 dark:bg-slate-800'}`}>
             <div className="flex justify-between items-center mb-2">
               <span className="font-semibold">Abutments</span>
-              {results.abutment ? <StatusBadge status={results.abutment.overallStatus} /> : <span className="text-gray-500 text-sm">Not Designed</span>}
+              {results.abutment ? <StatusBadge status={results.abutment.overallStatus} /> : <span className="text-slate-500 text-sm">Not Designed</span>}
             </div>
             {results.abutment && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Type: {state.abutmentType}<br />
                 Sliding FOS: {results.abutment.stability.slidingFactor.toFixed(2)}
               </div>
@@ -1303,13 +1303,13 @@ const SummaryPhase: React.FC<{
           </div>
 
           {/* Bearings */}
-          <div className={`p-4 rounded-lg border ${results.bearing ? (results.bearing.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-gray-300 bg-gray-50 dark:bg-gray-800'}`}>
+          <div className={`p-4 rounded-lg border ${results.bearing ? (results.bearing.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-slate-300 bg-slate-50 dark:bg-slate-800'}`}>
             <div className="flex justify-between items-center mb-2">
               <span className="font-semibold">Bearings</span>
-              {results.bearing ? <StatusBadge status={results.bearing.status} /> : <span className="text-gray-500 text-sm">Not Designed</span>}
+              {results.bearing ? <StatusBadge status={results.bearing.status} /> : <span className="text-slate-500 text-sm">Not Designed</span>}
             </div>
             {results.bearing && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Size: {results.bearing.length}×{results.bearing.width}mm<br />
                 Type: Elastomeric ({results.bearing.numLayers} layers)
               </div>
@@ -1317,13 +1317,13 @@ const SummaryPhase: React.FC<{
           </div>
 
           {/* Foundation */}
-          <div className={`p-4 rounded-lg border ${results.footing ? (results.footing.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-gray-300 bg-gray-50 dark:bg-gray-800'}`}>
+          <div className={`p-4 rounded-lg border ${results.footing ? (results.footing.status === 'pass' ? 'border-green-300 bg-green-50 dark:bg-green-900/20' : 'border-red-300 bg-red-50 dark:bg-red-900/20') : 'border-slate-300 bg-slate-50 dark:bg-slate-800'}`}>
             <div className="flex justify-between items-center mb-2">
               <span className="font-semibold">Foundation</span>
-              {results.footing ? <StatusBadge status={results.footing.status} /> : <span className="text-gray-500 text-sm">Not Designed</span>}
+              {results.footing ? <StatusBadge status={results.footing.status} /> : <span className="text-slate-500 text-sm">Not Designed</span>}
             </div>
             {results.footing && (
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
                 Size: {results.footing.length.toFixed(1)}×{results.footing.width.toFixed(1)}m<br />
                 Bearing: {results.footing.maxPressure.toFixed(0)} kPa
               </div>
@@ -1412,14 +1412,14 @@ export const BridgeDesigner: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
             🌉 Bridge Design Suite
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Comprehensive highway bridge design per AASHTO, EN 1991-2, or IRC codes
           </p>
         </div>

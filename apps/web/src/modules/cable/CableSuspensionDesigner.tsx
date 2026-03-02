@@ -51,15 +51,15 @@ type AnchorageType = 'gravity' | 'tunnel' | 'rock';
 // STYLING CONSTANTS
 // =============================================================================
 
-const CARD_CLASS = 'bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700';
-const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
-const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
+const CARD_CLASS = 'bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-200 dark:border-slate-700';
+const INPUT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
+const SELECT_CLASS = 'w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer';
 const BUTTON_PRIMARY = 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-const BUTTON_SECONDARY = 'px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium rounded-lg transition-all';
-const LABEL_CLASS = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
+const BUTTON_SECONDARY = 'px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white font-medium rounded-lg transition-all';
+const LABEL_CLASS = 'block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1';
 const TAB_CLASS = 'px-4 py-2 font-medium rounded-t-lg transition-all';
 const TAB_ACTIVE = 'bg-indigo-600 text-white';
-const TAB_INACTIVE = 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600';
+const TAB_INACTIVE = 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600';
 
 // =============================================================================
 // COMPONENT TYPES
@@ -112,7 +112,7 @@ const InputField: React.FC<{
 }> = ({ label, value, onChange, unit, min, max, step = 1 }) => (
   <div>
     <label className={LABEL_CLASS}>
-      {label} {unit && <span className="text-gray-500">({unit})</span>}
+      {label} {unit && <span className="text-slate-500">({unit})</span>}
     </label>
     <input
       type="number"
@@ -169,12 +169,12 @@ const UtilizationBar: React.FC<{ ratio: number; label: string }> = ({ ratio, lab
   return (
     <div className="mb-3">
       <div className="flex justify-between text-sm mb-1">
-        <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-gray-600 dark:text-gray-400'}>
+        <span className="font-medium text-slate-700 dark:text-slate-300">{label}</span>
+        <span className={ratio > 1 ? 'text-red-600 font-bold' : 'text-slate-600 dark:text-slate-400'}>
           {(ratio * 100).toFixed(1)}%
         </span>
       </div>
-      <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
         <div
           className={`h-full ${color} transition-all duration-300`}
           style={{ width: `${percentage}%` }}
@@ -204,10 +204,10 @@ const StayCableVisualization: React.FC<{
   
   return (
     <div className={CARD_CLASS}>
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
         Stay Cable Configuration
       </h3>
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+      <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
         <svg width="100%" height="300" viewBox="0 0 400 300">
           {/* Tower (anchor point) */}
           <rect x="30" y="50" width="40" height="200" fill="#4B5563" stroke="#374151" strokeWidth="2" />
@@ -283,10 +283,10 @@ const CatenaryVisualization: React.FC<{
   
   return (
     <div className={CARD_CLASS}>
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
         Cable Profile
       </h3>
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+      <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4">
         <svg width="100%" height="200" viewBox="0 0 400 200">
           {/* Support points */}
           <rect x="40" y="70" width="20" height="60" fill="#4B5563" />
@@ -369,10 +369,10 @@ const SuspensionBridgeVisualization: React.FC<{
   
   return (
     <div className={CARD_CLASS}>
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
         Suspension Bridge Configuration
       </h3>
-      <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
         <svg width="100%" height="220" viewBox="0 0 700 220">
           {/* Ground/Water */}
           <rect x="0" y="180" width="700" height="40" fill="#93C5FD" opacity="0.3" />
@@ -445,7 +445,7 @@ const SuspensionBridgeVisualization: React.FC<{
 const StayCableResultCard: React.FC<{ result: StayCableResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
         Stay Cable Design Results
       </h3>
       <StatusBadge status={result.status} />
@@ -453,7 +453,7 @@ const StayCableResultCard: React.FC<{ result: StayCableResult }> = ({ result }) 
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Cable Properties</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Cable Properties</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Cable Material</span>
@@ -479,7 +479,7 @@ const StayCableResultCard: React.FC<{ result: StayCableResult }> = ({ result }) 
       </div>
 
       <div>
-        <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Forces & Stresses</h4>
+        <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Forces & Stresses</h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Axial Force</span>
@@ -502,7 +502,7 @@ const StayCableResultCard: React.FC<{ result: StayCableResult }> = ({ result }) 
     </div>
 
     <div className="mt-6">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Utilization</h4>
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Utilization</h4>
       <UtilizationBar ratio={result.utilizationRatio} label="Stress Utilization" />
     </div>
 
@@ -527,92 +527,92 @@ const StayCableResultCard: React.FC<{ result: StayCableResult }> = ({ result }) 
 const SuspensionResultCard: React.FC<{ result: SuspensionBridgeResult }> = ({ result }) => (
   <div className={CARD_CLASS}>
     <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+      <h3 className="text-xl font-bold text-slate-800 dark:text-white">
         Suspension Bridge Design Results
       </h3>
       <StatusBadge status={result.overallStatus} />
     </div>
 
     {/* Main Cable */}
-    <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Main Cable</h4>
+    <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Main Cable</h4>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
-          <span className="text-gray-500 block">Main Span</span>
+          <span className="text-slate-500 block">Main Span</span>
           <span className="font-bold">{result.mainCable.mainSpanLength} m</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Sag Ratio</span>
+          <span className="text-slate-500 block">Sag Ratio</span>
           <span className="font-bold">{(result.mainCable.sagRatio * 100).toFixed(1)}%</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Selected Diameter</span>
+          <span className="text-slate-500 block">Selected Diameter</span>
           <span className="font-bold">{result.mainCable.selectedDiameter.toFixed(0)} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Required Area</span>
+          <span className="text-slate-500 block">Required Area</span>
           <span className="font-bold">{(result.mainCable.requiredArea / 1000).toFixed(1)} ×10³ mm²</span>
         </div>
         <div>
-          <span className="text-gray-500 block">H (Horizontal)</span>
+          <span className="text-slate-500 block">H (Horizontal)</span>
           <span className="font-bold">{(result.mainCable.horizontalTension / 1000).toFixed(0)} MN</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Max Tension</span>
+          <span className="text-slate-500 block">Max Tension</span>
           <span className="font-bold">{(result.mainCable.absoluteMaxTension / 1000).toFixed(0)} MN</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Utilization</span>
+          <span className="text-slate-500 block">Utilization</span>
           <span className="font-bold">{(result.mainCable.utilizationRatio * 100).toFixed(1)}%</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Status</span>
+          <span className="text-slate-500 block">Status</span>
           <span className={`font-bold ${result.mainCable.status === 'pass' ? 'text-green-600' : 'text-red-600'}`}>{result.mainCable.status.toUpperCase()}</span>
         </div>
       </div>
     </div>
 
     {/* Hangers */}
-    <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Hangers</h4>
+    <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Hangers</h4>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
-          <span className="text-gray-500 block">Number</span>
+          <span className="text-slate-500 block">Number</span>
           <span className="font-bold">{result.hangers.numHangers}</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Spacing</span>
+          <span className="text-slate-500 block">Spacing</span>
           <span className="font-bold">{result.hangers.spacing} m</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Hanger Diameter</span>
+          <span className="text-slate-500 block">Hanger Diameter</span>
           <span className="font-bold">{result.hangers.hangerDiameter} mm</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Max Force</span>
+          <span className="text-slate-500 block">Max Force</span>
           <span className="font-bold">{result.hangers.maxForce.toFixed(0)} kN</span>
         </div>
       </div>
     </div>
 
     {/* Tower */}
-    <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3">Towers</h4>
+    <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+      <h4 className="font-semibold text-slate-700 dark:text-slate-300 mb-3">Towers</h4>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
-          <span className="text-gray-500 block">Type</span>
+          <span className="text-slate-500 block">Type</span>
           <span className="font-bold">{result.towers.left.towerType}</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Height</span>
+          <span className="text-slate-500 block">Height</span>
           <span className="font-bold">{result.towers.left.height.toFixed(0)} m</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Axial Force</span>
+          <span className="text-slate-500 block">Axial Force</span>
           <span className="font-bold">{(result.towers.left.axialForce / 1000).toFixed(1)} MN</span>
         </div>
         <div>
-          <span className="text-gray-500 block">Status</span>
+          <span className="text-slate-500 block">Status</span>
           <span className={`font-bold ${result.towers.left.status === 'pass' ? 'text-green-600' : 'text-red-600'}`}>{result.towers.left.status.toUpperCase()}</span>
         </div>
       </div>
@@ -764,14 +764,14 @@ export const CableSuspensionDesigner: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-indigo-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-900 dark:to-indigo-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
             🔗 Cable & Suspension Structure Design
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-slate-600 dark:text-slate-400">
             Design stay cables, catenary systems, and suspension bridges
           </p>
         </div>
@@ -796,7 +796,7 @@ export const CableSuspensionDesigner: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
               <div className={CARD_CLASS}>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                   Stay Cable Parameters
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
@@ -864,7 +864,7 @@ export const CableSuspensionDesigner: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
               <div className={CARD_CLASS}>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                   Catenary Cable Parameters
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
@@ -916,32 +916,32 @@ export const CableSuspensionDesigner: React.FC = () => {
 
               {catenaryResult && (
                 <div className={CARD_CLASS}>
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                     Analysis Results
                   </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500 block">Cable Length</span>
+                      <span className="text-slate-500 block">Cable Length</span>
                       <span className="font-bold">{catenaryResult.cableLength?.toFixed(2) ?? 'N/A'} m</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block">Max Sag</span>
+                      <span className="text-slate-500 block">Max Sag</span>
                       <span className="font-bold">{catenaryResult.sag?.toFixed(2) ?? 'N/A'} m</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block">H (Horizontal)</span>
+                      <span className="text-slate-500 block">H (Horizontal)</span>
                       <span className="font-bold">{catenaryResult.horizontalTension?.toFixed(1) ?? 'N/A'} kN</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block">T<sub>max</sub></span>
+                      <span className="text-slate-500 block">T<sub>max</sub></span>
                       <span className="font-bold">{catenaryResult.maxTension?.toFixed(1) ?? 'N/A'} kN</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block">Left Reaction</span>
+                      <span className="text-slate-500 block">Left Reaction</span>
                       <span className="font-bold">{catenaryResult.leftReaction?.resultant?.toFixed(1) ?? 'N/A'} kN</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block">Right Reaction</span>
+                      <span className="text-slate-500 block">Right Reaction</span>
                       <span className="font-bold">{catenaryResult.rightReaction?.resultant?.toFixed(1) ?? 'N/A'} kN</span>
                     </div>
                   </div>
@@ -964,7 +964,7 @@ export const CableSuspensionDesigner: React.FC = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className={CARD_CLASS}>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                   Bridge Geometry
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
@@ -1020,7 +1020,7 @@ export const CableSuspensionDesigner: React.FC = () => {
               </div>
 
               <div className={CARD_CLASS}>
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
                   Loading & Configuration
                 </h2>
                 <div className="grid grid-cols-2 gap-4">

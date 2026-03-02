@@ -69,7 +69,7 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
         <div className={`space-y-4 ${className}`}>
             <div className="flex justify-between items-center">
                 <Label>Material</Label>
-                <span className="text-xs text-gray-500">Non-linear models</span>
+                <span className="text-xs text-slate-500">Non-linear models</span>
             </div>
 
             <Tabs value={materialType} onValueChange={(v) => setMaterialType(v as 'steel' | 'concrete')}>
@@ -90,7 +90,7 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
                                         onChange={e => setSteelProps({ ...steelProps, fy: parseFloat(e.target.value) })}
                                         className="h-8 text-sm"
                                     />
-                                    <span className="text-xs text-gray-500">MPa</span>
+                                    <span className="text-xs text-slate-500">MPa</span>
                                 </div>
                             </div>
                             <div>
@@ -102,7 +102,7 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
                                         onChange={e => setSteelProps({ ...steelProps, E: parseFloat(e.target.value) })}
                                         className="h-8 text-sm"
                                     />
-                                    <span className="text-xs text-gray-500">MPa</span>
+                                    <span className="text-xs text-slate-500">MPa</span>
                                 </div>
                             </div>
                         </div>
@@ -119,7 +119,7 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
                                         onChange={e => setConcreteProps({ ...concreteProps, fck: parseFloat(e.target.value) })}
                                         className="h-8 text-sm"
                                     />
-                                    <span className="text-xs text-gray-500">MPa</span>
+                                    <span className="text-xs text-slate-500">MPa</span>
                                 </div>
                             </div>
                             <div>
@@ -131,7 +131,7 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
                                         onChange={e => setConcreteProps({ ...concreteProps, density: parseFloat(e.target.value) })}
                                         className="h-8 text-sm"
                                     />
-                                    <span className="text-xs text-gray-500">kg/m³</span>
+                                    <span className="text-xs text-slate-500">kg/m³</span>
                                 </div>
                             </div>
                         </div>

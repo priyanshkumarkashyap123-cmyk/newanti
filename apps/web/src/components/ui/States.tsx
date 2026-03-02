@@ -32,7 +32,7 @@ export const Loading: React.FC<LoadingProps> = ({
 
   const colorClasses = {
     primary: 'border-blue-600 border-t-transparent',
-    secondary: 'border-gray-400 border-t-transparent',
+    secondary: 'border-slate-400 border-t-transparent',
     white: 'border-slate-200 dark:border-white border-t-transparent',
   };
 
@@ -48,7 +48,7 @@ export const Loading: React.FC<LoadingProps> = ({
         aria-label={label || 'Loading'}
       />
       {label && (
-        <span className="text-sm text-gray-600 dark:text-gray-400">{label}</span>
+        <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
       )}
     </div>
   );
@@ -82,7 +82,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       {children}
       <div
         className={cn(
-          'absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80',
+          'absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-900/80',
           blur && 'backdrop-blur-sm'
         )}
         aria-busy="true"
@@ -122,14 +122,14 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   const animationClasses = {
     pulse: 'animate-pulse',
-    shimmer: 'animate-shimmer bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 bg-[length:400%_100%]',
+    shimmer: 'animate-shimmer bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 bg-[length:400%_100%]',
     none: '',
   };
 
   return (
     <div
       className={cn(
-        'bg-gray-200 dark:bg-gray-700',
+        'bg-slate-200 dark:bg-slate-700',
         roundedClasses[rounded],
         animationClasses[animation],
         className
@@ -175,7 +175,7 @@ export const SkeletonText: React.FC<SkeletonTextProps> = ({
 // ============================================
 
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={cn('p-4 space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg', className)}>
+  <div className={cn('p-4 space-y-4 border border-slate-200 dark:border-slate-700 rounded-lg', className)}>
     <Skeleton height={120} rounded="md" />
     <SkeletonText lines={2} />
   </div>

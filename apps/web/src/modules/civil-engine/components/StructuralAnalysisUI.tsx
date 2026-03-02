@@ -427,7 +427,7 @@ export function FrameAnalysisUI() {
   }, [nodes, members, supports, pointLoads, distributedLoads, result, viewMode, scale]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">2D Frame Analysis</h2>
@@ -436,11 +436,11 @@ export function FrameAnalysisUI() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
         {/* Input Panel */}
-        <div className="lg:col-span-1 border-r border-gray-200 p-4 max-h-[700px] overflow-y-auto">
+        <div className="lg:col-span-1 border-r border-slate-200 p-4 max-h-[700px] overflow-y-auto">
           {/* Nodes Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Nodes</h3>
+              <h3 className="font-semibold text-slate-900">Nodes</h3>
               <button
                 onClick={addNode}
                 className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
@@ -450,8 +450,8 @@ export function FrameAnalysisUI() {
             </div>
             <div className="space-y-2">
               {nodes.map((node, idx) => (
-                <div key={node.id} className="flex items-center gap-2 bg-gray-50 rounded p-2">
-                  <span className="text-xs font-medium text-gray-500 w-8">N{node.id}</span>
+                <div key={node.id} className="flex items-center gap-2 bg-slate-50 rounded p-2">
+                  <span className="text-xs font-medium text-slate-500 w-8">N{node.id}</span>
                   <input
                     type="number"
                     value={node.x}
@@ -488,7 +488,7 @@ export function FrameAnalysisUI() {
           {/* Members Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Members</h3>
+              <h3 className="font-semibold text-slate-900">Members</h3>
               <button
                 onClick={addMember}
                 className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
@@ -498,9 +498,9 @@ export function FrameAnalysisUI() {
             </div>
             <div className="space-y-2">
               {members.map((member, idx) => (
-                <div key={member.id} className="bg-gray-50 rounded p-2">
+                <div key={member.id} className="bg-slate-50 rounded p-2">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 w-8">M{member.id}</span>
+                    <span className="text-xs font-medium text-slate-500 w-8">M{member.id}</span>
                     <select
                       value={member.startNode}
                       onChange={(e) => {
@@ -514,7 +514,7 @@ export function FrameAnalysisUI() {
                         <option key={n.id} value={n.id}>N{n.id}</option>
                       ))}
                     </select>
-                    <span className="text-gray-500 dark:text-gray-400">→</span>
+                    <span className="text-slate-500 dark:text-slate-400">→</span>
                     <select
                       value={member.endNode}
                       onChange={(e) => {
@@ -536,7 +536,7 @@ export function FrameAnalysisUI() {
                     </button>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-500">E:</span>
+                    <span className="text-slate-500">E:</span>
                     <input
                       type="number"
                       value={(member.E || 0) / 1e9}
@@ -547,8 +547,8 @@ export function FrameAnalysisUI() {
                       }}
                       className="w-14 px-1 py-0.5 border rounded"
                     />
-                    <span className="text-gray-500 dark:text-gray-400">GPa</span>
-                    <span className="text-gray-500 ml-2">A:</span>
+                    <span className="text-slate-500 dark:text-slate-400">GPa</span>
+                    <span className="text-slate-500 ml-2">A:</span>
                     <input
                       type="number"
                       step="0.01"
@@ -560,7 +560,7 @@ export function FrameAnalysisUI() {
                       }}
                       className="w-14 px-1 py-0.5 border rounded"
                     />
-                    <span className="text-gray-500 dark:text-gray-400">m²</span>
+                    <span className="text-slate-500 dark:text-slate-400">m²</span>
                   </div>
                 </div>
               ))}
@@ -570,7 +570,7 @@ export function FrameAnalysisUI() {
           {/* Supports Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Supports</h3>
+              <h3 className="font-semibold text-slate-900">Supports</h3>
               <button
                 onClick={() => setSupports([...supports, { nodeId: nodes[0]?.id || 0, type: 'pinned' }])}
                 className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
@@ -580,7 +580,7 @@ export function FrameAnalysisUI() {
             </div>
             <div className="space-y-2">
               {supports.map((support, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-gray-50 rounded p-2">
+                <div key={idx} className="flex items-center gap-2 bg-slate-50 rounded p-2">
                   <select
                     value={support.nodeId}
                     onChange={(e) => {
@@ -622,7 +622,7 @@ export function FrameAnalysisUI() {
           {/* Loads Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-gray-900">Point Loads</h3>
+              <h3 className="font-semibold text-slate-900">Point Loads</h3>
               <button
                 onClick={() => setPointLoads([...pointLoads, { nodeId: nodes[0]?.id || 0, fx: 0, fy: 0 }])}
                 className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
@@ -632,7 +632,7 @@ export function FrameAnalysisUI() {
             </div>
             <div className="space-y-2">
               {pointLoads.map((load, idx) => (
-                <div key={idx} className="bg-gray-50 rounded p-2">
+                <div key={idx} className="bg-slate-50 rounded p-2">
                   <div className="flex items-center gap-2 mb-2">
                     <select
                       value={load.nodeId}
@@ -655,7 +655,7 @@ export function FrameAnalysisUI() {
                     </button>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-500">Fx:</span>
+                    <span className="text-slate-500">Fx:</span>
                     <input
                       type="number"
                       value={load.fx}
@@ -666,7 +666,7 @@ export function FrameAnalysisUI() {
                       }}
                       className="w-16 px-1 py-0.5 border rounded"
                     />
-                    <span className="text-gray-500 ml-2">Fy:</span>
+                    <span className="text-slate-500 ml-2">Fy:</span>
                     <input
                       type="number"
                       value={load.fy}
@@ -677,7 +677,7 @@ export function FrameAnalysisUI() {
                       }}
                       className="w-16 px-1 py-0.5 border rounded"
                     />
-                    <span className="text-gray-500 dark:text-gray-400">kN</span>
+                    <span className="text-slate-500 dark:text-slate-400">kN</span>
                   </div>
                 </div>
               ))}
@@ -710,7 +710,7 @@ export function FrameAnalysisUI() {
                   className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                     viewMode === view.id
                       ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                   }`}
                 >
                   {view.icon} {view.label}
@@ -718,7 +718,7 @@ export function FrameAnalysisUI() {
               ))}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Scale:</span>
+              <span className="text-sm text-slate-500">Scale:</span>
               <input
                 type="range"
                 min="20"
@@ -735,7 +735,7 @@ export function FrameAnalysisUI() {
             ref={canvasRef}
             width={700}
             height={500}
-            className="w-full border border-gray-200 rounded-lg bg-white"
+            className="w-full border border-slate-200 rounded-lg bg-white"
           />
 
           {/* Results */}
@@ -835,7 +835,7 @@ export function TrussAnalysisUI() {
   }, [span, height, numPanels, loadPerNode]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">Truss Analysis</h2>
         <p className="text-indigo-100 text-sm">Method of Joints & Sections</p>
@@ -846,11 +846,11 @@ export function TrussAnalysisUI() {
           {/* Input Panel */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Truss Type</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Truss Type</label>
               <select
                 value={trussType}
                 onChange={(e) => setTrussType(e.target.value as typeof trussType)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg"
               >
                 <option value="pratt">Pratt Truss</option>
                 <option value="howe">Howe Truss</option>
@@ -861,44 +861,44 @@ export function TrussAnalysisUI() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Span (m)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Span (m)</label>
                 <input
                   type="number"
                   value={span}
                   onChange={(e) => setSpan(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Height (m)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Height (m)</label>
                 <input
                   type="number"
                   value={height}
                   onChange={(e) => setHeight(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Number of Panels</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Number of Panels</label>
                 <input
                   type="number"
                   min="2"
                   max="20"
                   value={numPanels}
                   onChange={(e) => setNumPanels(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Load per Node (kN)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Load per Node (kN)</label>
                 <input
                   type="number"
                   value={loadPerNode}
                   onChange={(e) => setLoadPerNode(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg"
                 />
               </div>
             </div>
@@ -912,7 +912,7 @@ export function TrussAnalysisUI() {
           </div>
 
           {/* Visualization */}
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-slate-50 rounded-lg p-4">
             <TrussVisualization
               span={span}
               height={height}
@@ -926,7 +926,7 @@ export function TrussAnalysisUI() {
         {/* Results Table */}
         {memberForces.length > 0 && (
           <div className="mt-6">
-            <h3 className="font-semibold text-gray-900 mb-3">Member Forces</h3>
+            <h3 className="font-semibold text-slate-900 mb-3">Member Forces</h3>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
               {memberForces.map(mf => (
                 <div
@@ -1172,7 +1172,7 @@ export function ContinuousBeamUI() {
   }, [spans, loads, supports, EI]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4">
         <h2 className="text-xl font-bold">Continuous Beam Analysis</h2>
         <p className="text-purple-100 text-sm">Three-Moment Equation Method</p>
@@ -1183,7 +1183,7 @@ export function ContinuousBeamUI() {
           {/* Input */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Spans (m) - {spans.length} spans
               </label>
               <div className="flex flex-wrap gap-2">
@@ -1199,7 +1199,7 @@ export function ContinuousBeamUI() {
                       }}
                       className="w-16 px-2 py-1 border rounded text-center"
                     />
-                    {idx < spans.length - 1 && <span className="text-gray-500 dark:text-gray-400">-</span>}
+                    {idx < spans.length - 1 && <span className="text-slate-500 dark:text-slate-400">-</span>}
                   </div>
                 ))}
                 <button
@@ -1220,7 +1220,7 @@ export function ContinuousBeamUI() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Uniform Loads (kN/m)
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -1228,7 +1228,7 @@ export function ContinuousBeamUI() {
                   const load = loads.find(l => l.spanIndex === idx);
                   return (
                     <div key={idx} className="flex items-center gap-1">
-                      <span className="text-xs text-gray-500">S{idx + 1}:</span>
+                      <span className="text-xs text-slate-500">S{idx + 1}:</span>
                       <input
                         type="number"
                         value={load?.value || 0}
@@ -1251,7 +1251,7 @@ export function ContinuousBeamUI() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 EI (kNm²)
               </label>
               <input
@@ -1271,7 +1271,7 @@ export function ContinuousBeamUI() {
           </div>
 
           {/* Visualization */}
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-slate-50 rounded-lg p-4">
             <ContinuousBeamVisualization spans={spans} loads={loads} results={results} />
           </div>
         </div>
