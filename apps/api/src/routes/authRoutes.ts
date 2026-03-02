@@ -911,7 +911,7 @@ router.get("/me", async (req: Request, res: Response) => {
     res.ok({ user: sanitizeUser(user) });
   } catch (error) {
     console.error("Get user error:", error);
-    res.fail('INTERNAL_ERROR', 'Failed to get user');
+    res.fail("INTERNAL_ERROR", "Failed to get user");
   }
 });
 
@@ -1140,8 +1140,7 @@ router.put(
       res.ok({ user: sanitizeUser(user) });
     } catch (error) {
       console.error("Update profile error:", error);
-      res.fail('INTERNAL_ERROR', 'Failed to update profile');
-      });
+      res.fail("INTERNAL_ERROR", "Failed to update profile");
     }
   },
 );
