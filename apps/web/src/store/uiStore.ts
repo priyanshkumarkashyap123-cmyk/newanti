@@ -256,6 +256,21 @@ interface UIState {
     civilEngineering: boolean;
     generativeDesign: boolean;
     seismicStudio: boolean;
+    // Properties tab distinct modals
+    sectionAssign: boolean;
+    sectionBuilder: boolean;
+    materialLibrary: boolean;
+    materialAssign: boolean;
+    materialProperties: boolean;
+    betaAngle: boolean;
+    memberReleases: boolean;
+    memberOffsets: boolean;
+    // Editing & Load dialogs
+    temperatureLoad: boolean;
+    divideMember: boolean;
+    mergeNodes: boolean;
+    // Advanced dynamic analysis
+    timeHistoryAnalysis: boolean;
   };
 
   // Graphics State
@@ -389,6 +404,19 @@ export const useUIStore = create<UIState>()(
         civilEngineering: false,
         generativeDesign: false,
         seismicStudio: false,
+        // Properties tab distinct modals
+        sectionAssign: false,
+        sectionBuilder: false,
+        materialLibrary: false,
+        materialAssign: false,
+        materialProperties: false,
+        betaAngle: false,
+        memberReleases: false,
+        memberOffsets: false,
+        temperatureLoad: false,
+        divideMember: false,
+        mergeNodes: false,
+        timeHistoryAnalysis: false,
       },
 
       // Graphics State
@@ -627,6 +655,19 @@ export const useUIStore = create<UIState>()(
             civilEngineering: false,
             generativeDesign: false,
             seismicStudio: false,
+            // Properties tab distinct modals
+            sectionAssign: false,
+            sectionBuilder: false,
+            materialLibrary: false,
+            materialAssign: false,
+            materialProperties: false,
+            betaAngle: false,
+            memberReleases: false,
+            memberOffsets: false,
+            temperatureLoad: false,
+            divideMember: false,
+            mergeNodes: false,
+            timeHistoryAnalysis: false,
           },
         }),
       // Grid Settings

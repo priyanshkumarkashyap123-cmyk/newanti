@@ -53,6 +53,12 @@ export {
 // User Registration
 export { useUserRegistration } from './useUserRegistration';
 
+// Device & Session Management
+export { useDeviceId, getDeviceId, getDeviceName } from './useDeviceId';
+export { useDeviceSession } from './useDeviceSession';
+export { useAnalysisLock } from './useAnalysisLock';
+export { useUsageTracking } from './useUsageTracking';
+
 // ============================================================================
 // INDUSTRY-STANDARD UI/UX HOOKS (CTO Session 3)
 // ============================================================================

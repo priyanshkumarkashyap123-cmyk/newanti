@@ -52,6 +52,9 @@ import {
   Workflow,
   Search,
   Calculator,
+  GitMerge,
+  SplitSquareVertical,
+  Thermometer,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useModelStore } from "../../store/model";
@@ -306,6 +309,10 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           <MiniButton icon={Scissors} label="Split" onClick={() => document.dispatchEvent(new CustomEvent("trigger-split"))} />
           <MiniButton icon={Trash2} label="Delete" onClick={() => document.dispatchEvent(new CustomEvent("trigger-delete"))} shortcut="Del" />
         </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={SplitSquareVertical} label="Divide" onClick={() => openModal("divideMember")} />
+          <MiniButton icon={GitMerge} label="Merge" onClick={() => openModal("mergeNodes")} />
+        </StackedButtons>
       </ToolGroup>
 
       <ToolGroup label="Supports">
@@ -330,26 +337,26 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           size="large"
         />
         <StackedButtons>
-          <MiniButton icon={Settings} label="Assign" onClick={() => openModal("geometryTools")} />
-          <MiniButton icon={Calculator} label="Section Builder" onClick={() => openModal("geometryTools")} />
+          <MiniButton icon={Settings} label="Assign" onClick={() => openModal("sectionAssign")} />
+          <MiniButton icon={Calculator} label="Section Builder" onClick={() => openModal("sectionBuilder")} />
         </StackedButtons>
       </ToolGroup>
       <ToolGroup label="Material">
         <ToolButton
           icon={Database}
           label="Material"
-          onClick={() => openModal("geometryTools")}
+          onClick={() => openModal("materialLibrary")}
           tooltip="Material Library — Steel, Concrete, Timber, Custom"
         />
         <StackedButtons>
-          <MiniButton icon={Settings} label="Assign" onClick={() => openModal("geometryTools")} />
-          <MiniButton icon={Table2} label="Properties" onClick={() => openModal("geometryTools")} />
+          <MiniButton icon={Settings} label="Assign" onClick={() => openModal("materialAssign")} />
+          <MiniButton icon={Table2} label="Properties" onClick={() => openModal("materialProperties")} />
         </StackedButtons>
       </ToolGroup>
       <ToolGroup label="Specifications">
-        <ToolButton icon={Table2} label="Beta Angle" onClick={() => openModal("geometryTools")} tooltip="Member Orientation / Beta Angle" />
-        <ToolButton icon={Link2} label="Releases" onClick={() => openModal("geometryTools")} tooltip="Member End Releases — Pinned, Partial" />
-        <ToolButton icon={Ruler} label="Offsets" onClick={() => openModal("geometryTools")} tooltip="Member End Offsets" />
+        <ToolButton icon={Table2} label="Beta Angle" onClick={() => openModal("betaAngle")} tooltip="Member Orientation / Beta Angle" />
+        <ToolButton icon={Link2} label="Releases" onClick={() => openModal("memberReleases")} tooltip="Member End Releases — Pinned, Partial" />
+        <ToolButton icon={Ruler} label="Offsets" onClick={() => openModal("memberOffsets")} tooltip="Member End Offsets" />
       </ToolGroup>
     </>
   );
@@ -435,6 +442,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           <MiniButton icon={Zap} label="IS 1893 Seismic" onClick={() => openModal("is1893SeismicDialog")} />
         </StackedButtons>
         <ToolButton
+          icon={Thermometer}
+          label="Thermal"
+          onClick={() => openModal("temperatureLoad")}
+          tooltip="Temperature Load — Uniform ΔT / Gradient"
+        />
+        <ToolButton
           icon={Layers}
           label="Combinations"
           onClick={() => openModal("loadCombinationsDialog")}
@@ -488,6 +501,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           label="Pushover"
           onClick={() => openModal("advancedAnalysis")}
           tooltip="Pushover Analysis"
+        />
+        <ToolButton
+          icon={Activity}
+          label="Time History"
+          onClick={() => openModal("timeHistoryAnalysis")}
+          tooltip="Nonlinear Dynamic Time History Analysis"
         />
       </ToolGroup>
       <ToolGroup label="Results">
@@ -554,7 +573,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
 
         {/* Category Tabs */}
         <div
-          className="flex items-center gap-0.5 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg p-0.5"
+          className="flex items-center gap-0.5 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg p-0.5 overflow-x-auto scrollbar-none"
           role="tablist"
           aria-label="Ribbon categories"
         >
@@ -567,7 +586,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 aria-selected={isActive}
                 onClick={() => setCategory(tab.id)}
                 className={`
-                  px-3 py-1 rounded-md text-[13px] font-medium tracking-normal transition-all duration-150 border
+                  px-3 py-1 rounded-md text-[13px] font-medium tracking-normal transition-all duration-150 border whitespace-nowrap flex-shrink-0
                   ${isActive
                     ? `${TAB_ACTIVE_COLORS[tab.color]} shadow-sm`
                     : "text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 border-transparent"
@@ -594,7 +613,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
 
       {/* Tools Area */}
       <div
-        className="h-[100px] flex items-center px-1 py-0.5 gap-0 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
+        className="h-[100px] flex items-center px-1 py-0.5 gap-0 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent"
         role="group"
         aria-label={`${activeCategory} tools`}
       >

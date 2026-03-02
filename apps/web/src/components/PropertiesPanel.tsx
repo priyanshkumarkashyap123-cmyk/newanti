@@ -899,7 +899,10 @@ export const PropertiesPanel: FC = () => {
 
                 {/* Material */}
                 <PanelSection icon={<Layers className="w-3.5 h-3.5 text-amber-400" />} label="Material">
-                    <PanelSelect onChange={(e) => handleMaterialChange(e.target.value)}>
+                    <PanelSelect
+                        value={MATERIAL_OPTIONS.find(m => Math.abs(m.E - (member.E ?? 200e6)) < 1e3)?.id || 'custom'}
+                        onChange={(e) => handleMaterialChange(e.target.value)}
+                    >
                         {MATERIAL_OPTIONS.map(opt => (
                             <option key={opt.id} value={opt.id}>{opt.label}</option>
                         ))}

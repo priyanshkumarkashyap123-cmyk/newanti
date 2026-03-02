@@ -10,6 +10,7 @@ import { FC, useState } from 'react';
 import { X, Sparkles, Wrench, Bug, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface WhatsNewPanelProps {
     isOpen: boolean;
@@ -31,8 +32,8 @@ const CHANGELOG: {
     improvements: ChangelogEntry[];
     bugfixes: ChangelogEntry[];
 } = {
-    version: 'v2.2',
-    date: 'January 2025',
+    version: 'v3.0',
+    date: 'March 2026',
     features: [
         {
             type: 'feature',
@@ -74,6 +75,7 @@ const typeIcon = {
 
 export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
     const [dontShowAgain, setDontShowAgain] = useState(false);
+    const navigate = useNavigate();
 
     const handleClose = () => {
         if (dontShowAgain) {
@@ -129,7 +131,9 @@ export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
                                                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{f.title}</p>
                                                     <p className="text-sm text-slate-500 mt-0.5">{f.description}</p>
                                                     {f.link && (
-                                                        <button className="text-xs text-blue-400 hover:text-blue-300 mt-1 flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => { onClose(); navigate(`/app${f.link ? `?mode=${f.link.split('/').pop()}` : ''}`); }}
+                                                            className="text-xs text-blue-400 hover:text-blue-300 mt-1 flex items-center gap-1">
                                                             Try it → <ExternalLink className="w-3 h-3" />
                                                         </button>
                                                     )}
@@ -177,7 +181,7 @@ export const WhatsNewPanel: FC<WhatsNewPanelProps> = ({ isOpen, onClose }) => {
                                     />
                                     Don't show this again
                                 </label>
-                                <Button variant="outline" size="sm" onClick={handleClose}>
+                                <Button variant="outline" size="sm" onClick={() => { handleClose(); window.open('https://github.com/changelog', '_blank'); }}>
                                     View Full Changelog →
                                 </Button>
                             </div>

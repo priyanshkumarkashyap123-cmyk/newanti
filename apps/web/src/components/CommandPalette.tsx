@@ -390,11 +390,52 @@ const fuzzyMatch = (text: string, query: string): boolean => {
 // COMMAND PALETTE COMPONENT
 // ============================================
 
+// ============================================
+// RECENTLY USED TRACKING
+// ============================================
+
+const RECENT_KEY = 'beamlab-recent-commands';
+const MAX_RECENT = 5;
+
+const getRecentCommandIds = (): string[] => {
+    try {
+        return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    } catch {
+        return [];
+    }
+};
+
+const trackCommandUsage = (id: string) => {
+    const recent = getRecentCommandIds().filter(r => r !== id);
+    recent.unshift(id);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
+};
+
+// ============================================
+// MATCH HIGHLIGHTING
+// ============================================
+
+const highlightMatch = (text: string, query: string): React.ReactNode => {
+    if (!query.trim()) return text;
+    const lowerText = text.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const idx = lowerText.indexOf(lowerQuery);
+    if (idx === -1) return text;
+    return (
+        <>
+            {text.slice(0, idx)}
+            <mark className="bg-yellow-200 dark:bg-yellow-500/30 text-inherit rounded-sm px-0.5">{text.slice(idx, idx + query.length)}</mark>
+            {text.slice(idx + query.length)}
+        </>
+    );
+};
+
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     const [query, setQuery] = useState('');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
+    const itemRefs = useRef<Map<number, HTMLButtonElement>>(new Map());
     const commands = useCommands();
 
     // Filter commands based on query
@@ -406,6 +447,40 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
             return fuzzyMatch(searchText, query);
         });
     }, [commands, query]);
+
+    // Build grouped + flat command list (includes recent when no query)
+    const { groupedCommands, allFlatCommands, categoryLabels } = useMemo(() => {
+        const recentIds = getRecentCommandIds();
+        const recentCommands = !query.trim()
+            ? recentIds.map(id => commands.find(c => c.id === id)).filter(Boolean) as Command[]
+            : [];
+
+        const grouped: Record<string, Command[]> = {};
+        if (recentCommands.length > 0) {
+            grouped['RECENT'] = recentCommands;
+        }
+        filteredCommands.forEach(cmd => {
+            const cat = cmd.category;
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(cmd);
+        });
+
+        const labels: Record<string, string> = {
+            'RECENT': '🕐 Recently Used',
+            'GLOBAL': '⚡ Quick Actions',
+            'MODELING': '📐 Modeling',
+            'PROPERTIES': '🔧 Properties',
+            'LOADING': '⬇️ Loading',
+            'ANALYSIS': '📊 Analysis',
+            'DESIGN': '✅ Design'
+        };
+
+        return {
+            groupedCommands: grouped,
+            allFlatCommands: Object.values(grouped).flat(),
+            categoryLabels: labels,
+        };
+    }, [commands, filteredCommands, query]);
 
     // Reset selection when query changes
     useEffect(() => {
@@ -421,13 +496,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         }
     }, [isOpen]);
 
-    // Scroll selected item into view
+    // Scroll selected item into view (use ref map, not children indexing)
     useEffect(() => {
-        if (listRef.current) {
-            const selectedEl = listRef.current.children[selectedIndex] as HTMLElement;
-            if (selectedEl) {
-                selectedEl.scrollIntoView({ block: 'nearest' });
-            }
+        const el = itemRefs.current.get(selectedIndex);
+        if (el) {
+            el.scrollIntoView({ block: 'nearest' });
         }
     }, [selectedIndex]);
 
@@ -436,7 +509,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setSelectedIndex(prev => Math.min(prev + 1, filteredCommands.length - 1));
+                setSelectedIndex(prev => Math.min(prev + 1, allFlatCommands.length - 1));
                 break;
             case 'ArrowUp':
                 e.preventDefault();
@@ -444,8 +517,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 break;
             case 'Enter':
                 e.preventDefault();
-                if (filteredCommands[selectedIndex]) {
-                    filteredCommands[selectedIndex].action();
+                if (allFlatCommands[selectedIndex]) {
+                    trackCommandUsage(allFlatCommands[selectedIndex].id);
+                    allFlatCommands[selectedIndex].action();
                     onClose();
                 }
                 break;
@@ -454,34 +528,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 onClose();
                 break;
         }
-    }, [filteredCommands, selectedIndex, onClose]);
+    }, [allFlatCommands, selectedIndex, onClose]);
 
-    // Execute command
+    // Execute command and track usage
     const executeCommand = useCallback((command: Command) => {
+        trackCommandUsage(command.id);
         command.action();
         onClose();
     }, [onClose]);
 
     if (!isOpen) return null;
 
-    // Group commands by category
-    const groupedCommands = filteredCommands.reduce((acc, cmd) => {
-        const cat = cmd.category;
-        if (!acc[cat]) acc[cat] = [];
-        acc[cat].push(cmd);
-        return acc;
-    }, {} as Record<string, Command[]>);
-
-    const categoryLabels: Record<string, string> = {
-        'GLOBAL': '⚡ Quick Actions',
-        'MODELING': '📐 Modeling',
-        'PROPERTIES': '🔧 Properties',
-        'LOADING': '⬇️ Loading',
-        'ANALYSIS': '📊 Analysis',
-        'DESIGN': '✅ Design'
-    };
-
     let flatIndex = -1;
+    // Clear ref map at each render
+    itemRefs.current.clear();
 
     return createPortal(
         <div
@@ -530,7 +590,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                 return (
                                     <button
                                         key={cmd.id}
+                                        ref={(el) => { if (el) itemRefs.current.set(flatIndex, el); }}
                                         onClick={() => executeCommand(cmd)}
+                                        onMouseEnter={() => setSelectedIndex(flatIndex)}
                                         className={`
                                             w-full flex items-center gap-3 px-4 py-3 text-left transition-colors
                                             ${isSelected
@@ -544,7 +606,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-medium text-slate-900 dark:text-white truncate">{cmd.label}</span>
+                                                <span className="font-medium text-slate-900 dark:text-white truncate">{highlightMatch(cmd.label, query)}</span>
                                                 {cmd.isPro && (
                                                     <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">
                                                         <Crown className="w-3 h-3" />
@@ -552,7 +614,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                                     </span>
                                                 )}
                                             </div>
-                                            <span className="text-sm text-slate-500 dark:text-slate-400 truncate">{cmd.description}</span>
+                                            <span className="text-sm text-slate-500 dark:text-slate-400 truncate block">{highlightMatch(cmd.description, query)}</span>
                                         </div>
                                         {cmd.shortcut && (
                                             <kbd className="flex-shrink-0 px-2 py-1 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded">
@@ -591,7 +653,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                             Close
                         </span>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{filteredCommands.length} commands</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{allFlatCommands.length} commands</span>
                 </div>
             </div>
         </div>,

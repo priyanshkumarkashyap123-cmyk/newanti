@@ -131,6 +131,28 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
     }, []);
 
     const signOut = useCallback(async () => {
+        // End device session before signing out (fire-and-forget)
+        try {
+            const token = await clerkAuth.getToken();
+            if (token) {
+                const { getDeviceId } = await import('../hooks/useDeviceId');
+                const { API_CONFIG } = await import('../config/env');
+                const deviceId = getDeviceId();
+                fetch(`${API_CONFIG.baseUrl}/api/session/end`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'X-Device-Id': deviceId
+                    },
+                    body: JSON.stringify({ deviceId })
+                }).catch(() => { /* non-critical */ });
+            }
+        } catch { /* non-critical */ }
+
+        // Clean up persisted token
+        try { localStorage.removeItem('beamlab_last_token'); } catch { /* noop */ }
+
         await clerkAuth.signOut();
     }, [clerkAuth]);
 

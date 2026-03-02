@@ -46,27 +46,48 @@ export function getEffectiveTier(email: string | null | undefined, actualTier: '
 
 // Activity log entry subdocument
 interface IActivityLog {
-    action: 'login' | 'analysis_run' | 'project_create' | 'project_save' | 'export_pdf' | 'template_use';
+    action: 'login' | 'logout' | 'analysis_run' | 'analysis_complete' | 'analysis_failed' |
+            'project_create' | 'project_save' | 'project_delete' | 'project_open' |
+            'export_pdf' | 'export_csv' | 'export_dxf' |
+            'report_generate' | 'report_download' |
+            'template_use' | 'ai_session' |
+            'session_start' | 'session_end' | 'device_registered' | 'device_revoked';
     timestamp: Date;
     metadata?: Record<string, unknown>;
+    ipAddress?: string;
+    userAgent?: string;
+    deviceId?: string;
 }
 
 export interface IUser extends Document {
     clerkId: string;
     email: string;
+    firstName?: string;
+    lastName?: string;
+    avatarUrl?: string;
     tier: 'free' | 'pro' | 'enterprise';
     projects: Types.ObjectId[];
     subscription?: Types.ObjectId;
     // Activity tracking
     lastLogin: Date;
+    lastActiveAt: Date;
     totalAnalysisRuns: number;
     totalExports: number;
+    totalReportsGenerated: number;
     dailyAnalysisCount: number;
     lastAnalysisDate: Date;
     activityLog: IActivityLog[];
+    // Device session tracking
+    activeDevices: Types.ObjectId[];
+    activeAnalysisDeviceId: string | null;
+    maxConcurrentBrowseSessions: number;
     // Tier limits tracking
     nodeCount: number;
     memberCount: number;
+    // Storage & usage
+    storageUsedBytes: number;
+    totalProjectsCreated: number;
+    totalLoginCount: number;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -74,7 +95,14 @@ export interface IUser extends Document {
 const ActivityLogSchema = new Schema({
     action: {
         type: String,
-        enum: ['login', 'analysis_run', 'project_create', 'project_save', 'export_pdf', 'template_use'],
+        enum: [
+            'login', 'logout', 'analysis_run', 'analysis_complete', 'analysis_failed',
+            'project_create', 'project_save', 'project_delete', 'project_open',
+            'export_pdf', 'export_csv', 'export_dxf',
+            'report_generate', 'report_download',
+            'template_use', 'ai_session',
+            'session_start', 'session_end', 'device_registered', 'device_revoked'
+        ],
         required: true
     },
     timestamp: {
@@ -84,6 +112,18 @@ const ActivityLogSchema = new Schema({
     metadata: {
         type: Schema.Types.Mixed,
         default: {}
+    },
+    ipAddress: {
+        type: String,
+        default: null
+    },
+    userAgent: {
+        type: String,
+        default: null
+    },
+    deviceId: {
+        type: String,
+        default: null
     }
 }, { _id: false });
 
@@ -100,6 +140,20 @@ const UserSchema = new Schema<IUser>({
         unique: true,
         lowercase: true,
         trim: true
+    },
+    firstName: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    lastName: {
+        type: String,
+        trim: true,
+        default: null
+    },
+    avatarUrl: {
+        type: String,
+        default: null
     },
     tier: {
         type: String,
@@ -119,11 +173,19 @@ const UserSchema = new Schema<IUser>({
         type: Date,
         default: Date.now
     },
+    lastActiveAt: {
+        type: Date,
+        default: Date.now
+    },
     totalAnalysisRuns: {
         type: Number,
         default: 0
     },
     totalExports: {
+        type: Number,
+        default: 0
+    },
+    totalReportsGenerated: {
         type: Number,
         default: 0
     },
@@ -139,9 +201,22 @@ const UserSchema = new Schema<IUser>({
         type: [ActivityLogSchema],
         default: [],
         validate: {
-            validator: (arr: unknown[]) => arr.length <= 200,
-            message: 'Activity log cannot exceed 200 entries'
+            validator: (arr: unknown[]) => arr.length <= 500,
+            message: 'Activity log cannot exceed 500 entries'
         }
+    },
+    // Device session tracking
+    activeDevices: [{
+        type: Schema.Types.ObjectId,
+        ref: 'DeviceSession'
+    }],
+    activeAnalysisDeviceId: {
+        type: String,
+        default: null
+    },
+    maxConcurrentBrowseSessions: {
+        type: Number,
+        default: 5
     },
     // Tier usage tracking
     nodeCount: {
@@ -149,6 +224,19 @@ const UserSchema = new Schema<IUser>({
         default: 0
     },
     memberCount: {
+        type: Number,
+        default: 0
+    },
+    // Storage & usage
+    storageUsedBytes: {
+        type: Number,
+        default: 0
+    },
+    totalProjectsCreated: {
+        type: Number,
+        default: 0
+    },
+    totalLoginCount: {
         type: Number,
         default: 0
     }
@@ -159,6 +247,8 @@ const UserSchema = new Schema<IUser>({
 // Indexes for efficient queries (email already indexed via field definition with index: true)
 UserSchema.index({ tier: 1 });
 UserSchema.index({ lastLogin: -1 });
+UserSchema.index({ lastActiveAt: -1 });
+UserSchema.index({ 'activityLog.timestamp': -1 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);
 
@@ -686,6 +776,422 @@ export const AnalysisJob = mongoose.model<IAnalysisJob>('AnalysisJob', AnalysisJ
 
 
 // ============================================
+// DEVICE SESSION SCHEMA
+// ============================================
+// Tracks every active device/browser session for each user.
+// Enforces: browse on multiple devices, but analyze from only ONE.
+
+export interface IDeviceSession extends Document {
+    userId: Types.ObjectId;
+    clerkId: string;
+    clerkSessionId: string;
+    deviceId: string;           // fingerprint or UUID generated client-side
+    deviceName: string;         // e.g. "Chrome on MacOS", "Safari on iPhone"
+    ipAddress: string;
+    userAgent: string;
+    isActive: boolean;
+    isAnalysisLocked: boolean;  // true = this device holds the analysis lock
+    lastHeartbeat: Date;
+    loginAt: Date;
+    logoutAt?: Date;
+    expiresAt: Date;            // auto-expire stale sessions
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const DeviceSessionSchema = new Schema<IDeviceSession>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
+    clerkId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    clerkSessionId: {
+        type: String,
+        required: true
+    },
+    deviceId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    deviceName: {
+        type: String,
+        default: 'Unknown Device'
+    },
+    ipAddress: {
+        type: String,
+        default: ''
+    },
+    userAgent: {
+        type: String,
+        default: ''
+    },
+    isActive: {
+        type: Boolean,
+        default: true,
+        index: true
+    },
+    isAnalysisLocked: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
+    lastHeartbeat: {
+        type: Date,
+        default: Date.now
+    },
+    loginAt: {
+        type: Date,
+        default: Date.now
+    },
+    logoutAt: {
+        type: Date,
+        default: null
+    },
+    expiresAt: {
+        type: Date,
+        required: true,
+        default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+    }
+}, {
+    timestamps: true
+});
+
+// Compound indexes
+DeviceSessionSchema.index({ clerkId: 1, isActive: 1 });
+DeviceSessionSchema.index({ clerkId: 1, deviceId: 1 });
+DeviceSessionSchema.index({ clerkId: 1, isAnalysisLocked: 1 });
+// TTL: auto-clean expired sessions
+DeviceSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+// TTL: auto-clean sessions with no heartbeat for 24h
+DeviceSessionSchema.index({ lastHeartbeat: 1 }, { expireAfterSeconds: 86400, partialFilterExpression: { isActive: true } });
+
+export const DeviceSession = mongoose.model<IDeviceSession>('DeviceSession', DeviceSessionSchema);
+
+
+// ============================================
+// ANALYSIS RESULT SCHEMA (PERSISTENT)
+// ============================================
+// Unlike AnalysisJob (which is ephemeral/TTL), this stores
+// permanent analysis results tied to projects and users.
+
+export interface IAnalysisResult extends Document {
+    userId: Types.ObjectId;
+    clerkId: string;
+    projectId: Types.ObjectId;
+    analysisType: 'linear_static' | 'buckling' | 'modal' | 'p_delta' | 'seismic' | 'time_history' | 'cable' | 'pinn' | 'nonlinear' | 'other';
+    analysisName: string;
+    status: 'completed' | 'failed';
+    // Input summary
+    inputSummary: {
+        nodeCount: number;
+        memberCount: number;
+        loadCases: number;
+        supports: number;
+    };
+    // Result data
+    resultData: Record<string, unknown>;
+    resultSummary: string;
+    // Performance
+    computeTimeMs: number;
+    solverUsed: 'wasm' | 'rust_api' | 'python';
+    deviceId?: string;
+    // Metadata
+    tags?: string[];
+    notes?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const AnalysisResultSchema = new Schema<IAnalysisResult>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
+    clerkId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    projectId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true,
+        index: true
+    },
+    analysisType: {
+        type: String,
+        enum: ['linear_static', 'buckling', 'modal', 'p_delta', 'seismic', 'time_history', 'cable', 'pinn', 'nonlinear', 'other'],
+        required: true,
+        index: true
+    },
+    analysisName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    status: {
+        type: String,
+        enum: ['completed', 'failed'],
+        required: true
+    },
+    inputSummary: {
+        nodeCount: { type: Number, default: 0 },
+        memberCount: { type: Number, default: 0 },
+        loadCases: { type: Number, default: 0 },
+        supports: { type: Number, default: 0 }
+    },
+    resultData: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    resultSummary: {
+        type: String,
+        default: ''
+    },
+    computeTimeMs: {
+        type: Number,
+        default: 0
+    },
+    solverUsed: {
+        type: String,
+        enum: ['wasm', 'rust_api', 'python'],
+        default: 'wasm'
+    },
+    deviceId: {
+        type: String,
+        default: null
+    },
+    tags: [{
+        type: String,
+        trim: true
+    }],
+    notes: {
+        type: String,
+        default: null
+    }
+}, {
+    timestamps: true
+});
+
+AnalysisResultSchema.index({ clerkId: 1, createdAt: -1 });
+AnalysisResultSchema.index({ projectId: 1, analysisType: 1 });
+AnalysisResultSchema.index({ clerkId: 1, analysisType: 1, createdAt: -1 });
+
+export const AnalysisResult = mongoose.model<IAnalysisResult>('AnalysisResult', AnalysisResultSchema);
+
+
+// ============================================
+// REPORT GENERATION SCHEMA
+// ============================================
+// Tracks every report generated (PDF, CSV, DXF, etc.)
+
+export interface IReportGeneration extends Document {
+    userId: Types.ObjectId;
+    clerkId: string;
+    projectId?: Types.ObjectId;
+    analysisResultId?: Types.ObjectId;
+    reportType: 'structural_analysis' | 'design_check' | 'load_summary' | 'member_forces' | 'deflection' | 'buckling' | 'modal' | 'seismic' | 'complete' | 'custom';
+    format: 'pdf' | 'csv' | 'dxf' | 'json' | 'xlsx';
+    reportName: string;
+    fileSizeBytes: number;
+    // Generation metadata
+    generationTimeMs: number;
+    pageCount?: number;
+    templateUsed?: string;
+    parameters?: Record<string, unknown>;
+    // Download tracking
+    downloadCount: number;
+    lastDownloadAt?: Date;
+    // Status
+    status: 'generating' | 'completed' | 'failed';
+    errorMessage?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const ReportGenerationSchema = new Schema<IReportGeneration>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true
+    },
+    clerkId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    projectId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        default: null
+    },
+    analysisResultId: {
+        type: Schema.Types.ObjectId,
+        ref: 'AnalysisResult',
+        default: null
+    },
+    reportType: {
+        type: String,
+        enum: ['structural_analysis', 'design_check', 'load_summary', 'member_forces', 'deflection', 'buckling', 'modal', 'seismic', 'complete', 'custom'],
+        required: true
+    },
+    format: {
+        type: String,
+        enum: ['pdf', 'csv', 'dxf', 'json', 'xlsx'],
+        required: true
+    },
+    reportName: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    fileSizeBytes: {
+        type: Number,
+        default: 0
+    },
+    generationTimeMs: {
+        type: Number,
+        default: 0
+    },
+    pageCount: {
+        type: Number,
+        default: null
+    },
+    templateUsed: {
+        type: String,
+        default: null
+    },
+    parameters: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    downloadCount: {
+        type: Number,
+        default: 0
+    },
+    lastDownloadAt: {
+        type: Date,
+        default: null
+    },
+    status: {
+        type: String,
+        enum: ['generating', 'completed', 'failed'],
+        default: 'generating'
+    },
+    errorMessage: {
+        type: String,
+        default: null
+    }
+}, {
+    timestamps: true
+});
+
+ReportGenerationSchema.index({ clerkId: 1, createdAt: -1 });
+ReportGenerationSchema.index({ projectId: 1 });
+ReportGenerationSchema.index({ reportType: 1, format: 1 });
+
+export const ReportGeneration = mongoose.model<IReportGeneration>('ReportGeneration', ReportGenerationSchema);
+
+
+// ============================================
+// USAGE LOG SCHEMA
+// ============================================
+// High-frequency, append-only log for admin monitoring.
+// Captures every significant user action for analytics & billing.
+
+export interface IUsageLog extends Document {
+    userId: Types.ObjectId;
+    clerkId: string;
+    email: string;
+    action: string;
+    category: 'auth' | 'analysis' | 'project' | 'export' | 'report' | 'ai' | 'billing' | 'admin' | 'system';
+    // Request context
+    ipAddress?: string;
+    userAgent?: string;
+    deviceId?: string;
+    // Action details
+    details?: Record<string, unknown>;
+    // Resource tracking
+    resourceType?: string;
+    resourceId?: string;
+    // Duration/cost tracking
+    durationMs?: number;
+    computeCreditsUsed?: number;
+    // Result
+    success: boolean;
+    errorMessage?: string;
+    createdAt: Date;
+}
+
+const UsageLogSchema = new Schema<IUsageLog>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        index: true
+    },
+    clerkId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    action: {
+        type: String,
+        required: true,
+        index: true
+    },
+    category: {
+        type: String,
+        enum: ['auth', 'analysis', 'project', 'export', 'report', 'ai', 'billing', 'admin', 'system'],
+        required: true,
+        index: true
+    },
+    ipAddress: { type: String, default: null },
+    userAgent: { type: String, default: null },
+    deviceId: { type: String, default: null },
+    details: {
+        type: Schema.Types.Mixed,
+        default: {}
+    },
+    resourceType: { type: String, default: null },
+    resourceId: { type: String, default: null },
+    durationMs: { type: Number, default: null },
+    computeCreditsUsed: { type: Number, default: null },
+    success: {
+        type: Boolean,
+        default: true
+    },
+    errorMessage: { type: String, default: null }
+}, {
+    timestamps: { createdAt: true, updatedAt: false }
+});
+
+// Time-series style indexes for admin dashboards
+UsageLogSchema.index({ createdAt: -1 });
+UsageLogSchema.index({ clerkId: 1, createdAt: -1 });
+UsageLogSchema.index({ category: 1, createdAt: -1 });
+UsageLogSchema.index({ action: 1, createdAt: -1 });
+UsageLogSchema.index({ email: 1, createdAt: -1 });
+// TTL: auto-purge logs older than 90 days (configurable)
+UsageLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
+
+export const UsageLog = mongoose.model<IUsageLog>('UsageLog', UsageLogSchema);
+
+
+// ============================================
 // DATABASE CONNECTION
 // ============================================
 
@@ -711,4 +1217,9 @@ export async function disconnectDB(): Promise<void> {
     console.log('📤 MongoDB disconnected');
 }
 
-export default { User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel, Consent, AISession, AnalysisJob, connectDB, disconnectDB };
+export default {
+    User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel,
+    Consent, AISession, AnalysisJob,
+    DeviceSession, AnalysisResult, ReportGeneration, UsageLog,
+    connectDB, disconnectDB
+};

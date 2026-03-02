@@ -32,6 +32,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Landmark,
+  Plus,
+  Wand2,
+  Building2,
+  FileJson,
 } from "lucide-react";
 import { useUIStore, Category } from "../store/uiStore";
 import { useModelStore, saveProjectToStorage } from "../store/model";
@@ -223,6 +227,52 @@ const GenerativeDesignPanel = lazy(() =>
 const SeismicDesignStudio = lazy(() =>
   import("./enhanced/SeismicDesignStudio").then((m) => ({
     default: m.SeismicDesignStudio,
+  })),
+);
+// ── Industry-standard Properties / Editing / Load dialogs ──
+const SectionAssignDialog = lazy(() =>
+  import("./dialogs/SectionAssignDialog").then((m) => ({
+    default: m.SectionAssignDialog,
+  })),
+);
+const MaterialLibraryDialog = lazy(() =>
+  import("./dialogs/MaterialLibraryDialog").then((m) => ({
+    default: m.MaterialLibraryDialog,
+  })),
+);
+const BetaAngleDialog = lazy(() =>
+  import("./dialogs/BetaAngleDialog").then((m) => ({
+    default: m.BetaAngleDialog,
+  })),
+);
+const MemberReleasesDialog = lazy(() =>
+  import("./dialogs/MemberReleasesDialog").then((m) => ({
+    default: m.MemberReleasesDialog,
+  })),
+);
+const MemberOffsetsDialog = lazy(() =>
+  import("./dialogs/MemberOffsetsDialog").then((m) => ({
+    default: m.MemberOffsetsDialog,
+  })),
+);
+const TemperatureLoadDialog = lazy(() =>
+  import("./dialogs/TemperatureLoadDialog").then((m) => ({
+    default: m.TemperatureLoadDialog,
+  })),
+);
+const DivideMemberDialog = lazy(() =>
+  import("./dialogs/DivideMemberDialog").then((m) => ({
+    default: m.DivideMemberDialog,
+  })),
+);
+const MergeNodesDialog = lazy(() =>
+  import("./dialogs/MergeNodesDialog").then((m) => ({
+    default: m.MergeNodesDialog,
+  })),
+);
+const TimeHistoryDialog = lazy(() =>
+  import("./dialogs/TimeHistoryDialog").then((m) => ({
+    default: m.TimeHistoryDialog,
   })),
 );
 import { useToast } from "./ui/ToastSystem";
@@ -419,7 +469,7 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
     const plates = useModelStore((state) => state.plates);
     const selectedIds = useModelStore((state) => state.selectedIds);
     const analysisResults = useModelStore((state) => state.analysisResults);
-    const { activeCategory, activeTool, showGrid, snapToGrid, gridSize } = useUIStore();
+    const { activeCategory, activeTool, showGrid, snapToGrid, gridSize, toggleSnap } = useUIStore();
 
     // Zoom level display — listens to camera zoom events (Figma §6.1 zone D)
     const [zoomLevel, setZoomLevel] = useState(100);
@@ -528,12 +578,16 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
         {/* Right Section — Model Info + Backend Status */}
         <div className="flex items-center gap-3">
           {/* Grid/Snap Info */}
-          <span className="flex items-center gap-1.5">
+          <button
+            onClick={() => toggleSnap()}
+            className="flex items-center gap-1.5 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 rounded px-1.5 py-0.5 -my-0.5 transition cursor-pointer"
+            title="Click to toggle grid snap"
+          >
             <span className={`w-1.5 h-1.5 rounded-full ${snapToGrid ? "bg-blue-400" : "bg-slate-600"}`} />
             <span className={snapToGrid ? "text-blue-400" : "text-slate-500"}>
               Snap {snapToGrid ? "ON" : "OFF"}
             </span>
-          </span>
+          </button>
 
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
@@ -2658,8 +2712,27 @@ export const ModernModeler: FC = () => {
       analysisAbortRef.current = null;
       setIsAnalyzingLocal(false);
       setIsAnalyzing(false);
+
+      // Release analysis device lock (fire-and-forget)
+      try {
+        const { getDeviceId } = await import('../hooks/useDeviceId');
+        const { API_CONFIG } = await import('../config/env');
+        const deviceId = getDeviceId();
+        const token = await getToken();
+        if (token) {
+          fetch(`${API_CONFIG.baseUrl}/api/session/analysis-lock/release`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'X-Device-Id': deviceId
+            },
+            body: JSON.stringify({ deviceId })
+          }).catch(() => { /* non-critical */ });
+        }
+      } catch { /* non-critical */ }
     }
-  }, [nodes, members, loads, memberLoads, floorLoads, plates, modelSettings, calculateStresses, openModal, showNotification, setAnalysisResults, setIsAnalyzing]);
+  }, [nodes, members, loads, memberLoads, floorLoads, plates, modelSettings, calculateStresses, openModal, showNotification, setAnalysisResults, setIsAnalyzing, getToken]);
 
   // Run analysis
   const handleRunAnalysis = useCallback(async () => {
@@ -2682,9 +2755,41 @@ export const ModernModeler: FC = () => {
       );
     }
 
+    // STEP 2: Acquire analysis device lock (single-device enforcement)
+    try {
+      const { getDeviceId } = await import('../hooks/useDeviceId');
+      const deviceId = getDeviceId();
+      const { API_CONFIG } = await import('../config/env');
+      const API_URL = API_CONFIG.baseUrl;
+      const token = await getToken();
+      if (token) {
+        const lockRes = await fetch(`${API_URL}/api/session/analysis-lock/acquire`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-Device-Id': deviceId
+          },
+          body: JSON.stringify({ deviceId })
+        });
+        if (lockRes.status === 409) {
+          const lockData = await lockRes.json();
+          const deviceName = lockData?.data?.currentLockDevice?.deviceName || 'another device';
+          showNotification?.(
+            'error',
+            `Analysis is currently active on ${deviceName}. Release the session on that device first, or go to Settings → Active Sessions to terminate it.`
+          );
+          return;
+        }
+      }
+    } catch (err) {
+      // Non-critical — allow analysis to proceed if lock service is unavailable
+      modelerLogger.log('[Analysis] Device lock check skipped:', err);
+    }
+
     // Run analysis directly (Clerk handles legal consent at sign-up)
     await executeAnalysis();
-  }, [nodes, members, executeAnalysis]);
+  }, [nodes, members, executeAnalysis, showNotification, getToken]);
 
   // Analysis Event Listeners - Listen for ribbon triggers
   useEffect(() => {
@@ -3198,6 +3303,50 @@ export const ModernModeler: FC = () => {
               </div>
               <ViewportManager />
 
+              {/* Empty workspace guidance overlay */}
+              {nodes.size === 0 && members.size === 0 && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                  <div className="pointer-events-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 dark:border-slate-700/60 p-8 max-w-md text-center shadow-xl">
+                    <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                      <Box className="w-7 h-7 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Empty Workspace</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">Start building your structural model</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => { setCategory('MODELING'); useModelStore.getState().setTool('node'); }}
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 border border-blue-200 dark:border-blue-800 transition-colors"
+                      >
+                        <Plus className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">Draw Nodes</span>
+                      </button>
+                      <button
+                        onClick={() => openModal('structureWizard')}
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 border border-purple-200 dark:border-purple-800 transition-colors"
+                      >
+                        <Wand2 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Structure Wizard</span>
+                      </button>
+                      <button
+                        onClick={() => openModal('structureGallery')}
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 transition-colors"
+                      >
+                        <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Gallery</span>
+                      </button>
+                      <button
+                        onClick={() => openModal('interoperability')}
+                        className="flex flex-col items-center gap-1.5 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 border border-amber-200 dark:border-amber-800 transition-colors"
+                      >
+                        <FileJson className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                        <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Import File</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 font-mono">⌘K</kbd> for command palette</p>
+                  </div>
+                </div>
+              )}
+
               {/* View Controls Overlay (ViewCube + Zoom + Display toggles) */}
               <ViewControlsOverlay />
 
@@ -3695,6 +3844,61 @@ export const ModernModeler: FC = () => {
               </div>
             </div>
           )}
+
+          {/* ── Industry-Standard Properties Dialogs ── */}
+          <SectionAssignDialog
+            isOpen={modals.sectionAssign}
+            onClose={() => closeModal("sectionAssign")}
+          />
+          <MaterialLibraryDialog
+            isOpen={modals.materialLibrary}
+            onClose={() => closeModal("materialLibrary")}
+            mode="library"
+          />
+          <MaterialLibraryDialog
+            isOpen={modals.materialAssign}
+            onClose={() => closeModal("materialAssign")}
+            mode="assign"
+          />
+          <MaterialLibraryDialog
+            isOpen={modals.materialProperties}
+            onClose={() => closeModal("materialProperties")}
+            mode="properties"
+          />
+          <BetaAngleDialog
+            isOpen={modals.betaAngle}
+            onClose={() => closeModal("betaAngle")}
+          />
+          <MemberReleasesDialog
+            isOpen={modals.memberReleases}
+            onClose={() => closeModal("memberReleases")}
+          />
+          <MemberOffsetsDialog
+            isOpen={modals.memberOffsets}
+            onClose={() => closeModal("memberOffsets")}
+          />
+
+          {/* ── Editing Tool Dialogs ── */}
+          <DivideMemberDialog
+            isOpen={modals.divideMember}
+            onClose={() => closeModal("divideMember")}
+          />
+          <MergeNodesDialog
+            isOpen={modals.mergeNodes}
+            onClose={() => closeModal("mergeNodes")}
+          />
+
+          {/* ── Additional Load Dialogs ── */}
+          <TemperatureLoadDialog
+            isOpen={modals.temperatureLoad}
+            onClose={() => closeModal("temperatureLoad")}
+          />
+
+          {/* ── Advanced Dynamic Analysis ── */}
+          <TimeHistoryDialog
+            isOpen={modals.timeHistoryAnalysis}
+            onClose={() => closeModal("timeHistoryAnalysis")}
+          />
         </Suspense>
 
         {/* Command Palette - Quick Access (Cmd+K) */}

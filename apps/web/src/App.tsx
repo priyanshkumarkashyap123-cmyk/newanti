@@ -305,10 +305,14 @@ const PageLoader = () => (
 
 // Hooks
 import { useUserRegistration } from "./hooks/useUserRegistration";
+import { useDeviceSession } from "./hooks/useDeviceSession";
 
 function App() {
   // Ensure user is registered in MongoDB upon login/load
   useUserRegistration();
+
+  // Manage device session lifecycle (register, heartbeat, cleanup)
+  useDeviceSession();
 
   return (
     <ErrorBoundary>

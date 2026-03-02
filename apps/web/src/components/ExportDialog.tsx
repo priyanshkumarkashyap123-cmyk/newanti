@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { ExportToolbar } from './export/ExportToolbar';
 import { useModelStore } from '../store/model';
@@ -6,7 +6,7 @@ import { ExportData } from '../services/ExportService';
 import { useUIStore } from '../store/uiStore';
 import { ReportingService } from '../services/ReportingService';
 import { SteelDesignResults } from '../services/SteelDesignService';
-import { FileText, TableProperties } from 'lucide-react';
+import { FileText, TableProperties, Check, Loader2, AlertCircle } from 'lucide-react';
 
 /**
  * ExportDialog - Modal for exporting analysis results
@@ -15,6 +15,15 @@ export const ExportDialog: FC<{
     isOpen: boolean;
     onClose: () => void;
 }> = ({ isOpen, onClose }) => {
+    // Export feedback state
+    const [exportStatus, setExportStatus] = useState<Record<string, 'idle' | 'loading' | 'success' | 'error'>>({});
+    const showExportFeedback = (key: string, status: 'loading' | 'success' | 'error') => {
+        setExportStatus(prev => ({ ...prev, [key]: status }));
+        if (status === 'success' || status === 'error') {
+            setTimeout(() => setExportStatus(prev => ({ ...prev, [key]: 'idle' })), 2500);
+        }
+    };
+
     // Get model data for export
     const nodes = useModelStore((state) => state.nodes);
     const members = useModelStore((state) => state.members);
@@ -84,9 +93,11 @@ export const ExportDialog: FC<{
                 <div className="py-6">
                     {!analysisResults ? (
                         <div className="text-center p-8 bg-white/50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800 border-dashed">
-                            <span className="text-slate-500 dark:text-slate-400">
-                                No analysis results available. Run visualization first.
-                            </span>
+                            <AlertCircle className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+                            <p className="text-slate-700 dark:text-slate-300 font-medium">No analysis results available</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                Run structural analysis first to generate exportable results.
+                            </p>
                         </div>
                     ) : exportData ? (
                         <div className="space-y-6">
@@ -105,22 +116,37 @@ export const ExportDialog: FC<{
                                     <button
                                         onClick={() => {
                                             if (projectInfo && nodes && members) {
-                                                ReportingService.generateCalculationBook(
-                                                    projectInfo, 
-                                                    nodes, 
-                                                    members, 
-                                                    analysisResults, 
-                                                    new Map() // TODO: Pass actual design results if available from store
-                                                );
+                                                showExportFeedback('calcBook', 'loading');
+                                                try {
+                                                    ReportingService.generateCalculationBook(
+                                                        projectInfo, 
+                                                        nodes, 
+                                                        members, 
+                                                        analysisResults, 
+                                                        new Map()
+                                                    );
+                                                    showExportFeedback('calcBook', 'success');
+                                                } catch {
+                                                    showExportFeedback('calcBook', 'error');
+                                                }
                                             }
                                         }}
-                                        className="flex flex-col items-center gap-2 p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
+                                        disabled={exportStatus['calcBook'] === 'loading'}
+                                        className="flex flex-col items-center gap-2 p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-50"
                                     >
                                         <div className="p-3 bg-blue-500/10 rounded-full">
-                                            <FileText className="w-6 h-6 text-blue-500" />
+                                            {exportStatus['calcBook'] === 'loading' ? (
+                                                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                                            ) : exportStatus['calcBook'] === 'success' ? (
+                                                <Check className="w-6 h-6 text-green-500" />
+                                            ) : (
+                                                <FileText className="w-6 h-6 text-blue-500" />
+                                            )}
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium text-sm text-slate-700 dark:text-slate-200">Calculation Book</div>
+                                            <div className="font-medium text-sm text-slate-700 dark:text-slate-200">
+                                                {exportStatus['calcBook'] === 'success' ? 'Downloaded!' : 'Calculation Book'}
+                                            </div>
                                             <div className="text-xs text-slate-500 dark:text-slate-400">PDF Report</div>
                                         </div>
                                     </button>
@@ -128,32 +154,42 @@ export const ExportDialog: FC<{
                                     <button
                                         onClick={() => {
                                             if (projectInfo && nodes && members) {
-                                                const bom = ReportingService.generateBOM(Array.from(members.values()), nodes);
-                                                // Create a mini report just for BOM or CSV
-                                                // For now, let's trigger the full BOM report via the service method we can add, 
-                                                // or just reuse the main one. Let's start with basic BOM CSV download for this specific button.
-                                                
-                                                const csvContent = "data:text/csv;charset=utf-8," 
-                                                    + "Section,Count,Total Length (m),Unit Wt (kg/m),Total Wt (kg)\n"
-                                                    + bom.items.map(e => `${e.section},${e.count},${e.totalLength.toFixed(2)},${e.unitWeight.toFixed(2)},${e.totalWeight.toFixed(2)}`).join("\n")
-                                                    + `\nTOTAL,,,${bom.items.length},${bom.totalWeight.toFixed(2)}`;
-                                                    
-                                                const encodedUri = encodeURI(csvContent);
-                                                const link = document.createElement("a");
-                                                link.setAttribute("href", encodedUri);
-                                                link.setAttribute("download", `BOM_${projectInfo.name}.csv`);
-                                                document.body.appendChild(link);
-                                                link.click();
-                                                document.body.removeChild(link);
+                                                showExportFeedback('bom', 'loading');
+                                                try {
+                                                    const bom = ReportingService.generateBOM(Array.from(members.values()), nodes);
+                                                    const csvContent = "data:text/csv;charset=utf-8," 
+                                                        + "Section,Count,Total Length (m),Unit Wt (kg/m),Total Wt (kg)\n"
+                                                        + bom.items.map(e => `${e.section},${e.count},${e.totalLength.toFixed(2)},${e.unitWeight.toFixed(2)},${e.totalWeight.toFixed(2)}`).join("\n")
+                                                        + `\nTOTAL,,,${bom.items.length},${bom.totalWeight.toFixed(2)}`;
+                                                    const encodedUri = encodeURI(csvContent);
+                                                    const link = document.createElement("a");
+                                                    link.setAttribute("href", encodedUri);
+                                                    link.setAttribute("download", `BOM_${projectInfo.name}.csv`);
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    document.body.removeChild(link);
+                                                    showExportFeedback('bom', 'success');
+                                                } catch {
+                                                    showExportFeedback('bom', 'error');
+                                                }
                                             }
                                         }}
-                                        className="flex flex-col items-center gap-2 p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors"
+                                        disabled={exportStatus['bom'] === 'loading'}
+                                        className="flex flex-col items-center gap-2 p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-50"
                                     >
                                         <div className="p-3 bg-emerald-500/10 rounded-full">
-                                            <TableProperties className="w-6 h-6 text-emerald-500" />
+                                            {exportStatus['bom'] === 'loading' ? (
+                                                <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+                                            ) : exportStatus['bom'] === 'success' ? (
+                                                <Check className="w-6 h-6 text-green-500" />
+                                            ) : (
+                                                <TableProperties className="w-6 h-6 text-emerald-500" />
+                                            )}
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-medium text-sm text-slate-700 dark:text-slate-200">Bill of Materials</div>
+                                            <div className="font-medium text-sm text-slate-700 dark:text-slate-200">
+                                                {exportStatus['bom'] === 'success' ? 'Downloaded!' : 'Bill of Materials'}
+                                            </div>
                                             <div className="text-xs text-slate-500 dark:text-slate-400">CSV Export</div>
                                         </div>
                                     </button>
@@ -164,7 +200,7 @@ export const ExportDialog: FC<{
                                     <ExportToolbar
                                         exportData={exportData}
                                         onExportComplete={() => {
-                                            // Optional: close dialog or show toast
+                                            showExportFeedback('toolbar', 'success');
                                         }}
                                         className="w-full justify-center"
                                     />

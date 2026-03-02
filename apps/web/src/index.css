@@ -429,6 +429,12 @@ html:not(.dark) textarea:not([class*="rounded"])::placeholder {
   to   { transform: translateY(0);    opacity: 1; }
 }
 
+/* Context menu entry (Figma §21 — scale from origin) */
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
 /* Input error shake animation (Figma §21.4) */
 @keyframes inputShake {
   0%, 100% { transform: translateX(0); }
@@ -1042,6 +1048,17 @@ html:not(.dark) .toggle-switch {
   outline: 2px solid #3b82f6;
   outline-offset: 3px;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Global keyboard focus ring — WCAG 2.1 AA §1.4.11 (2px min, 3:1 contrast) */
+:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* Remove focus ring for mouse/pointer clicks */
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* High contrast mode support */

@@ -128,6 +128,16 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
     onSkip?.();
   };
 
+  // Step validation — require selection before continuing
+  const isStepValid = (): boolean => {
+    const stepId = steps[currentStep]?.id;
+    if (stepId === 'role') return preferences.role !== null;
+    if (stepId === 'experience') return preferences.experience !== null;
+    if (stepId === 'use-cases') return preferences.primaryUse.length > 0;
+    // welcome, codes, ready are always valid
+    return true;
+  };
+
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   // Escape key to skip onboarding
@@ -222,7 +232,12 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
 
           <button
             onClick={handleNext}
-            className="flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:opacity-90 transition-all shadow-lg shadow-blue-500/25"
+            disabled={!isStepValid()}
+            className={`flex items-center gap-2 px-8 py-3 rounded-full font-bold transition-all shadow-lg shadow-blue-500/25 ${
+              isStepValid()
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90'
+                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
+            }`}
           >
             {currentStep === steps.length - 1 ? (
               <>Launch App <Sparkles className="w-4 h-4" /></>
@@ -240,7 +255,14 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
 // STEP COMPONENTS
 // ============================================
 
-const WelcomeStep: FC = () => (
+const WelcomeStep: FC = () => {
+  const colorClasses: Record<string, string> = {
+    blue: 'bg-blue-500/20 text-blue-400',
+    purple: 'bg-purple-500/20 text-purple-400',
+    cyan: 'bg-cyan-500/20 text-cyan-400',
+  };
+
+  return (
   <div className="space-y-8">
     <div className="flex justify-center gap-6">
       {[
@@ -255,7 +277,7 @@ const WelcomeStep: FC = () => (
           transition={{ delay: i * 0.1 }}
           className={`flex flex-col items-center gap-3 p-6 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800`}
         >
-          <div className={`p-4 rounded-xl bg-${item.color}-500/20 text-${item.color}-400`}>
+          <div className={`p-4 rounded-xl ${colorClasses[item.color] || 'bg-blue-500/20 text-blue-400'}`}>
             {item.icon}
           </div>
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{item.label}</span>
@@ -268,13 +290,15 @@ const WelcomeStep: FC = () => (
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
+        onClick={() => window.open('https://www.youtube.com/results?search_query=structural+analysis+tutorial', '_blank')}
         className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
       >
         <Play className="w-4 h-4" /> Watch 2-min intro
       </motion.button>
     </div>
   </div>
-);
+  );
+};
 
 const RoleStep: FC<{
   preferences: UserPreferences;

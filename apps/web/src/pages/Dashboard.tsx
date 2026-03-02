@@ -3,7 +3,7 @@
  * Modern project hub with BeamLab Branding & New UI System
  */
 
-import { FC, useState, useEffect, useCallback } from "react";
+import { FC, useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
@@ -34,6 +34,10 @@ import {
   Calculator,
   Building2,
   Construction,
+  Copy,
+  Edit,
+  Download,
+  Archive,
 } from "lucide-react";
 
 // New UI System
@@ -222,6 +226,120 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
   const handleNewProject = () => navigate("/app");
 
+  // ============================================
+  // PROJECT CONTEXT MENU (Figma §5.2)
+  // ============================================
+  const [projectMenuId, setProjectMenuId] = useState<string | null>(null);
+  const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const projectMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close project menu on outside click
+  useEffect(() => {
+    if (!projectMenuId) return;
+    const handler = (e: MouseEvent) => {
+      if (projectMenuRef.current && !projectMenuRef.current.contains(e.target as Node)) {
+        setProjectMenuId(null);
+      }
+    };
+    const timer = setTimeout(() => document.addEventListener("click", handler), 50);
+    return () => { clearTimeout(timer); document.removeEventListener("click", handler); };
+  }, [projectMenuId]);
+
+  const handleDeleteProject = useCallback(async (projectId: string) => {
+    if (!confirm("Delete this project permanently? This cannot be undone.")) return;
+    try {
+      const token = await getToken();
+      if (token) {
+        await ProjectService.deleteProject(projectId, token);
+        setCloudProjects(prev => prev.filter(p => p._id !== projectId));
+      }
+    } catch (err) {
+      console.error("[Dashboard] Delete failed:", err);
+      setProjectsError("Failed to delete project.");
+    }
+    setProjectMenuId(null);
+  }, [getToken]);
+
+  const handleDuplicateProject = useCallback(async (projectId: string) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const source = await ProjectService.getProject(projectId, token);
+      await ProjectService.createProject(
+        { name: `${source.name} (Copy)`, data: source.data },
+        token,
+      );
+      fetchProjects(); // Refresh list
+    } catch (err) {
+      console.error("[Dashboard] Duplicate failed:", err);
+      setProjectsError("Failed to duplicate project.");
+    }
+    setProjectMenuId(null);
+  }, [getToken, fetchProjects]);
+
+  const handleRenameProject = useCallback(async (projectId: string, newName: string) => {
+    if (!newName.trim()) { setRenamingProjectId(null); return; }
+    try {
+      const token = await getToken();
+      if (token) {
+        await ProjectService.updateProject(projectId, { name: newName.trim() }, token);
+        setCloudProjects(prev =>
+          prev.map(p => p._id === projectId ? { ...p, name: newName.trim() } : p),
+        );
+      }
+    } catch (err) {
+      console.error("[Dashboard] Rename failed:", err);
+      setProjectsError("Failed to rename project.");
+    }
+    setRenamingProjectId(null);
+  }, [getToken]);
+
+  const handleExportProject = useCallback(async (projectId: string) => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+      const project = await ProjectService.getProject(projectId, token);
+      const blob = new Blob([JSON.stringify(project.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${project.name}.beamlab.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("[Dashboard] Export failed:", err);
+    }
+    setProjectMenuId(null);
+  }, [getToken]);
+
+  /** Renders the dropdown context menu for a project card */
+  const ProjectCardMenu: FC<{ projectId: string }> = ({ projectId }) => {
+    if (projectMenuId !== projectId) return null;
+    const cloudProject = cloudProjects.find(p => p._id === projectId);
+    return (
+      <div
+        ref={projectMenuRef}
+        role="menu"
+        className="absolute top-10 left-2 z-50 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 animate-[scaleIn_100ms_ease-out] origin-top-left"
+      >
+        <button role="menuitem" onClick={(e) => { e.stopPropagation(); setRenameValue(cloudProject?.name || ""); setRenamingProjectId(projectId); setProjectMenuId(null); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
+          <Edit className="w-3.5 h-3.5 text-slate-500" /> Rename
+        </button>
+        <button role="menuitem" onClick={(e) => { e.stopPropagation(); handleDuplicateProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
+          <Copy className="w-3.5 h-3.5 text-slate-500" /> Duplicate
+        </button>
+        <button role="menuitem" onClick={(e) => { e.stopPropagation(); handleExportProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors">
+          <Download className="w-3.5 h-3.5 text-slate-500" /> Export JSON
+        </button>
+        <div className="my-1 h-px bg-slate-200 dark:bg-slate-700" />
+        <button role="menuitem" onClick={(e) => { e.stopPropagation(); handleDeleteProject(projectId); }} className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+          <Trash2 className="w-3.5 h-3.5" /> Delete
+        </button>
+      </div>
+    );
+  };
+
   // Greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -309,21 +427,21 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           ))}
 
           {/* Favorites & Trash - per Figma §5.1 */}
-          <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent">
+          <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent opacity-60 cursor-not-allowed" title="Coming soon">
             <Star className="w-4 h-4" />
             Favorites
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent">
+          <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent opacity-60 cursor-not-allowed" title="Coming soon">
             <Trash2 className="w-4 h-4" />
             Trash
           </Button>
 
           <div className="pt-4 mt-4 border-t border-white/[0.06]">
-            <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+            <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white opacity-60 cursor-not-allowed" title="Coming soon">
               <BarChart3 className="w-4 h-4" />
               Analytics
             </Button>
-            <Button variant="ghost" className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+            <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white opacity-60 cursor-not-allowed" title="Coming soon">
               <FileSpreadsheet className="w-4 h-4" />
               Reports
             </Button>
@@ -433,9 +551,6 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 className="relative h-9 w-9 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center">
-                  3
-                </span>
               </Button>
 
               {/* Notification Dropdown */}
@@ -443,34 +558,17 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 <div className="absolute right-0 top-11 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
                     <h3 className="font-semibold text-slate-900 dark:text-white text-sm">Notifications</h3>
-                    <button className="text-xs text-blue-400 hover:text-blue-300">Mark All ✓</button>
                   </div>
-                  <div className="max-h-80 overflow-y-auto">
-                    <div className="px-4 py-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Today</div>
-                    {[
-                      { color: "bg-green-500", text: "Analysis completed", detail: "Office Bldg — 2h ago" },
-                      { color: "bg-amber-500", text: "Design warning", detail: "M5 utilization 0.95 — 3h ago" },
-                      { color: "bg-blue-500", text: "Shared with you", detail: "Priya shared \"Tower\" — 5h ago" },
-                    ].map((n, i) => (
-                      <div key={i} className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer border-l-3 border-transparent hover:border-blue-500 transition-colors">
-                        <div className="flex items-start gap-2.5">
-                          <div className={`w-2 h-2 rounded-full ${n.color} mt-1.5 flex-shrink-0`} />
-                          <div>
-                            <p className="text-sm font-medium text-slate-900 dark:text-white">{n.text}</p>
-                            <p className="text-xs text-slate-500 mt-0.5">{n.detail}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700">
-                    <button className="text-xs text-blue-400 hover:text-blue-300 w-full text-center">View All Notifications →</button>
+                  <div className="px-4 py-8 text-center">
+                    <Bell className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500 dark:text-slate-400">No notifications yet</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">You'll be notified about analysis results, shares, and updates</p>
                   </div>
                 </div>
               )}
             </div>
 
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate('/app?tool=import')}>
               <Upload className="w-4 h-4" />
               Import
             </Button>
@@ -651,17 +749,30 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                       </div>
                       {/* Context Menu Button - per Figma §5.2 */}
                       <button
-                        onClick={(e) => { e.stopPropagation(); }}
+                        onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }}
                         className="absolute top-3 left-3 w-7 h-7 rounded-md bg-slate-900/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-slate-300 hover:text-white hover:bg-slate-900/80"
                         title="Project actions"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
+                      <ProjectCardMenu projectId={project.id} />
                     </div>
                     <div className="p-4">
-                      <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">
-                        {project.name}
-                      </h3>
+                      {renamingProjectId === project.id ? (
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onBlur={() => handleRenameProject(project.id, renameValue)}
+                          onKeyDown={(e) => { if (e.key === "Enter") handleRenameProject(project.id, renameValue); if (e.key === "Escape") setRenamingProjectId(null); }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full px-2 py-1 -mx-2 -my-1 text-sm font-bold bg-white dark:bg-slate-800 border border-blue-500 rounded outline-none text-slate-900 dark:text-white"
+                        />
+                      ) : (
+                        <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-blue-400 transition-colors">
+                          {project.name}
+                        </h3>
+                      )}
                       <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400">
                         <span>{project.nodeCount} Nodes</span>
                         <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full" />
@@ -709,9 +820,21 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                       i % 2 === 1 ? "bg-slate-50/50 dark:bg-slate-900/30" : ""
                     } ${isLoadingOne === project.id ? "opacity-60 pointer-events-none" : ""}`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 relative">
                       <span className="material-symbols-outlined text-xl text-slate-500">{getTypeIcon(project.type)}</span>
-                      <span className="font-medium text-slate-900 dark:text-white truncate">{project.name}</span>
+                      {renamingProjectId === project.id ? (
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onBlur={() => handleRenameProject(project.id, renameValue)}
+                          onKeyDown={(e) => { if (e.key === "Enter") handleRenameProject(project.id, renameValue); if (e.key === "Escape") setRenamingProjectId(null); }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-1 px-2 py-0.5 text-sm font-medium bg-white dark:bg-slate-800 border border-blue-500 rounded outline-none text-slate-900 dark:text-white"
+                        />
+                      ) : (
+                        <span className="font-medium text-slate-900 dark:text-white truncate">{project.name}</span>
+                      )}
                       <Badge variant={project.status === "Analyzed" ? "info" : "outline"} className="flex-shrink-0">
                         {project.status}
                       </Badge>
@@ -719,9 +842,12 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     <span className="text-slate-500">{project.type}</span>
                     <span className="text-slate-500">{project.memberCount}</span>
                     <span className="text-slate-500 text-xs">{project.lastModified}</span>
-                    <button onClick={(e) => { e.stopPropagation(); }} className="text-slate-400 hover:text-white">
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                    <div className="relative">
+                      <button onClick={(e) => { e.stopPropagation(); setProjectMenuId(projectMenuId === project.id ? null : project.id); }} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      <ProjectCardMenu projectId={project.id} />
+                    </div>
                   </div>
                 ))}
               </div>

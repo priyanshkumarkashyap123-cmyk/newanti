@@ -8,7 +8,7 @@
  * - Resume last project
  */
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useRef } from 'react';
 import { Plus, FileText, Bookmark, Play, Building2, Layers, Weight, RotateCcw } from 'lucide-react';
 import { ALL_SAMPLES, type SampleStructure } from '../data/SampleStructures';
 import { useModelStore, loadProjectFromStorage, getSavedProjectInfo } from '../store/model';
@@ -49,6 +49,30 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
     const addLoad = useModelStore((s) => s.addLoad);
     const addMemberLoad = useModelStore((s) => s.addMemberLoad);
     const clearModel = useModelStore((s) => s.clearModel);
+
+    // File import handler
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const handleImportFile = () => {
+      fileInputRef.current?.click();
+    };
+    const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target?.result as string);
+          const loaded = useModelStore.getState().loadProject(data);
+          if (loaded) onClose();
+          else alert('Could not parse the project file. Please check the format.');
+        } catch {
+          alert('Invalid JSON file. Please select a valid .beamlab.json file.');
+        }
+      };
+      reader.readAsText(file);
+      // Reset input so the same file can be re-imported
+      e.target.value = '';
+    };
 
     // Check for saved project on mount
     useEffect(() => {
@@ -154,6 +178,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             </button>
                         ) : (
                             <button
+                                onClick={handleImportFile}
                                 className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-green-500 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all group"
                             >
                                 <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900/50 transition-colors">
@@ -163,7 +188,21 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                             </button>
                         )}
 
+                        {/* Hidden file input for import */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".json,.beamlab.json"
+                            onChange={handleFileSelected}
+                            className="hidden"
+                        />
+
                         <button
+                            onClick={() => {
+                                onClose();
+                                // Open keyboard shortcuts overlay as guided walkthrough start
+                                document.dispatchEvent(new CustomEvent('open-keyboard-shortcuts'));
+                            }}
                             className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all group"
                         >
                             <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-purple-100 dark:group-hover:bg-purple-900/50 transition-colors">
@@ -215,7 +254,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
                     {/* Divider */}
                     <div className="flex items-center gap-4 mb-6">
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                        <span className="text-sm text-slate-500 dark:text-slate-400">or start from a template</span>
+                        <span className="text-sm text-slate-500 dark:text-slate-400">or start from a template <span className="text-xs text-slate-400">(double-click to load instantly)</span></span>
                         <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
                     </div>
 

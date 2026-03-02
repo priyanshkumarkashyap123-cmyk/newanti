@@ -25,6 +25,8 @@ import analyticsRouter from "./routes/analytics/index.js";
 import aiSessionRoutes from "./routes/aiSessionRoutes.js";
 import aiRoutes from "./routes/ai/index.js";
 import feedbackRoutes from "./routes/feedback/index.js";
+import sessionRoutes from "./routes/sessionRoutes.js";
+import usageRoutes from "./routes/usageRoutes.js";
 import { razorpayRouter } from "./razorpay.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
@@ -375,6 +377,8 @@ app.use("/api/ai-sessions", requireDbReady);
 app.use("/api/feedback", requireDbReady);
 app.use("/api/auth", requireDbReady);
 app.use("/api/billing", requireDbReady);
+app.use("/api/session", requireDbReady);
+app.use("/api/usage", requireDbReady);
 
 const authRequired = requireAuth();
 
@@ -407,6 +411,14 @@ app.use("/api/jobs", authRequired, analysisRateLimit, jobsRouter);
 // User Activity API (protected)
 app.use("/api/v1/user", crudRateLimit, userRoutes);
 app.use("/api/user", crudRateLimit, userRoutes);
+
+// Device Session API (session management, analysis lock — auth required)
+app.use("/api/v1/session", crudRateLimit, sessionRoutes);
+app.use("/api/session", crudRateLimit, sessionRoutes);
+
+// Usage Monitoring API (analysis results, reports, admin stats — auth required)
+app.use("/api/v1/usage", crudRateLimit, usageRoutes);
+app.use("/api/usage", crudRateLimit, usageRoutes);
 
 // Razorpay Billing API (rate limited: 5/min)
 app.use("/api/v1/billing", billingRateLimit, razorpayRouter);

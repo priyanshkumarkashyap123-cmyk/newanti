@@ -50,6 +50,10 @@ const MIGRATIONS: MigrationEntry[] = [
         name: '20250101000000_add_indexes',
         module: () => import('./20250101000000_add_indexes.js'),
     },
+    {
+        name: '20260302000000_add_master_db_collections',
+        module: () => import('./20260302000000_add_master_db_collections.js'),
+    },
 ];
 
 // ============================================
