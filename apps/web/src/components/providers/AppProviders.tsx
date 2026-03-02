@@ -26,6 +26,7 @@ import {
 } from "../ui/KeyboardShortcuts";
 import { ToastProvider } from "../ui/ToastSystem";
 import { ThemeProvider } from "../ui/ThemeProvider";
+import { ResponsiveProvider } from "../../hooks/useResponsive";
 
 // ============================================
 // Global Keyboard Features Component
@@ -64,14 +65,16 @@ export const AppProviders: FC<AppProvidersProps> = ({ children }) => {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" defaultAccent="blue">
-        <NotificationProvider position="bottom-right" maxVisible={5}>
-          <ConfirmProvider>
-            <ToastProvider>
-              {children}
-              <GlobalKeyboardFeatures />
-            </ToastProvider>
-          </ConfirmProvider>
-        </NotificationProvider>
+        <ResponsiveProvider>
+          <NotificationProvider position="bottom-right" maxVisible={5}>
+            <ConfirmProvider>
+              <ToastProvider>
+                {children}
+                <GlobalKeyboardFeatures />
+              </ToastProvider>
+            </ConfirmProvider>
+          </NotificationProvider>
+        </ResponsiveProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

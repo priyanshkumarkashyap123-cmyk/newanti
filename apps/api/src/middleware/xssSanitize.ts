@@ -70,7 +70,14 @@ export function xssSanitize(req: Request, _res: Response, next: NextFunction): v
   }
 
   if (req.query && typeof req.query === "object") {
-    req.query = sanitizeDeep(req.query) as typeof req.query;
+    // Express 5: req.query is a read-only getter on the prototype.
+    // Shadow it on the instance so downstream handlers see sanitized values.
+    const sanitized = sanitizeDeep(req.query) as typeof req.query;
+    Object.defineProperty(req, "query", {
+      value: sanitized,
+      writable: true,
+      configurable: true,
+    });
   }
 
   next();

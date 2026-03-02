@@ -429,7 +429,12 @@ export function validateQuery<T extends z.ZodTypeAny>(schema: T): RequestHandler
             res.status(400).json({ success: false, error: 'Query validation failed', details: errors });
             return;
         }
-        req.query = result.data;
+        // Express 5: req.query is a read-only getter — shadow on instance
+        Object.defineProperty(req, 'query', {
+            value: result.data,
+            writable: true,
+            configurable: true,
+        });
         next();
     };
 }
