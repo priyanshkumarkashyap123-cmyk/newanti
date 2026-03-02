@@ -310,7 +310,14 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
         {/* Tab Header Bar */}
         <div className="flex items-center justify-between h-8 px-2 bg-slate-100/80 dark:bg-slate-950/80 border-b border-slate-700/30 flex-shrink-0">
           <div className="flex items-center gap-0.5">
-            {tabs.map((tab) => (
+            {tabs.map((tab) => {
+              const tabColors: Record<string, { active: string; border: string }> = {
+                displacements: { active: 'text-cyan-400', border: 'border-cyan-500' },
+                memberForces: { active: 'text-blue-400', border: 'border-blue-500' },
+                reactions: { active: 'text-amber-400', border: 'border-amber-500' },
+              };
+              const colors = tabColors[tab.id] || { active: 'text-blue-400', border: 'border-blue-500' };
+              return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -318,7 +325,7 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                   px-3 py-1 text-[11px] font-semibold rounded-t transition-colors
                   ${
                     activeTab === tab.id
-                      ? "text-blue-400 bg-slate-800/50 border-b-2 border-blue-500"
+                      ? `${colors.active} bg-slate-800/50 border-b-2 ${colors.border}`
                       : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/30"
                   }
                 `}
@@ -328,7 +335,8 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                   {tab.count}
                 </span>
               </button>
-            ))}
+              );
+            })}
 
             {/* Equilibrium indicator */}
             {activeTab === "reactions" && equilibriumOk !== null && (

@@ -424,7 +424,7 @@ const highlightMatch = (text: string, query: string): React.ReactNode => {
     return (
         <>
             {text.slice(0, idx)}
-            <mark className="bg-yellow-200 dark:bg-yellow-500/30 text-inherit rounded-sm px-0.5">{text.slice(idx, idx + query.length)}</mark>
+            <mark className="bg-yellow-200 dark:bg-yellow-800 text-inherit rounded px-0.5">{text.slice(idx, idx + query.length)}</mark>
             {text.slice(idx + query.length)}
         </>
     );
@@ -557,7 +557,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Search Input */}
-                <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-200 dark:border-slate-700">
                     <Search className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                     <input
                         ref={inputRef}
@@ -638,7 +638,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between px-4 py-2 border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80">
+                <div className="flex items-center justify-between px-4 py-2 border-t border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80">
                     <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
                             <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">↑↓</kbd>

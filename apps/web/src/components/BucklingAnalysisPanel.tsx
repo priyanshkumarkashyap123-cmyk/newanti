@@ -389,7 +389,7 @@ export const BucklingAnalysisPanel: FC<BucklingAnalysisPanelProps> = ({ isPro = 
                     <button
                         onClick={handleRunAnalysis}
                         disabled={isRunning}
-                        className="flex items-center gap-1 px-3 py-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white rounded transition-colors"
+                        className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white rounded transition-colors"
                         title="Run buckling analysis (WASM)"
                     >
                         <RefreshCw className={`w-3 h-3 ${isRunning ? 'animate-spin' : ''}`} />

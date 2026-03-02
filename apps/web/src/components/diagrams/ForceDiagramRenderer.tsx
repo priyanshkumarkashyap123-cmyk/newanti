@@ -70,41 +70,41 @@ interface ForceDiagramRendererProps {
 
 const COLOR_SCHEMES = {
     engineering: {
-        shearPositive: '#2196F3',    // Blue
-        shearNegative: '#2196F3',
-        momentPositive: '#F44336',   // Red
-        momentNegative: '#F44336',
-        axialTension: '#4CAF50',     // Green (tension)
-        axialCompression: '#FF9800', // Orange (compression)
-        torsion: '#9C27B0',          // Purple
-        member: '#333333',
-        grid: '#E0E0E0',
-        text: '#333333',
+        shearPositive: '#ef4444',    // Red (per Figma §21)
+        shearNegative: '#3b82f6',    // Blue
+        momentPositive: '#22c55e',   // Green
+        momentNegative: '#8b5cf6',   // Purple
+        axialTension: '#f97316',     // Orange (tension)
+        axialCompression: '#06b6d4', // Cyan (compression)
+        torsion: '#a855f7',          // Purple
+        member: '#1e293b',
+        grid: '#e2e8f0',
+        text: '#1e293b',
         background: '#FFFFFF',
     },
     modern: {
-        shearPositive: '#00BCD4',
-        shearNegative: '#00BCD4',
-        momentPositive: '#E91E63',
-        momentNegative: '#E91E63',
-        axialTension: '#8BC34A',
-        axialCompression: '#FF5722',
-        torsion: '#673AB7',
-        member: '#37474F',
-        grid: '#ECEFF1',
-        text: '#263238',
-        background: '#FAFAFA',
+        shearPositive: '#ef4444',
+        shearNegative: '#3b82f6',
+        momentPositive: '#22c55e',
+        momentNegative: '#8b5cf6',
+        axialTension: '#f97316',
+        axialCompression: '#06b6d4',
+        torsion: '#a855f7',
+        member: '#334155',
+        grid: '#f1f5f9',
+        text: '#0f172a',
+        background: '#f8fafc',
     },
     contrast: {
-        shearPositive: '#1565C0',
-        shearNegative: '#1565C0',
-        momentPositive: '#C62828',
-        momentNegative: '#C62828',
-        axialTension: '#2E7D32',
-        axialCompression: '#E65100',
-        torsion: '#6A1B9A',
+        shearPositive: '#dc2626',
+        shearNegative: '#1e40af',
+        momentPositive: '#16a34a',
+        momentNegative: '#7c3aed',
+        axialTension: '#ea580c',
+        axialCompression: '#0891b2',
+        torsion: '#9333ea',
         member: '#000000',
-        grid: '#BDBDBD',
+        grid: '#cbd5e1',
         text: '#000000',
         background: '#FFFFFF',
     },
@@ -114,7 +114,7 @@ const COLOR_SCHEMES = {
 // DIAGRAM STYLES
 // ============================================
 
-const DIAGRAM_PADDING = { top: 60, right: 80, bottom: 40, left: 80 };
+const DIAGRAM_PADDING = { top: 60, right: 80, bottom: 80, left: 80 };
 
 // ============================================
 // COMPONENT

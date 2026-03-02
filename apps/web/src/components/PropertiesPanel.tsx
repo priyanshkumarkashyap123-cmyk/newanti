@@ -177,7 +177,7 @@ const PanelSection: FC<{
 
 /** Info row for displaying read-only values */
 const InfoRow: FC<{ label: string; value: string; color?: string; borderColor?: string }> = ({ label, value, color, borderColor }) => (
-    <div className={`flex justify-between items-center bg-black/20 px-1.5 py-1 rounded text-[11px] font-mono ${borderColor ? `border-l-2 ${borderColor}` : ''}`}>
+    <div className={`flex justify-between items-center bg-slate-100/50 dark:bg-slate-800/50 px-1.5 py-1 rounded text-[11px] font-mono ${borderColor ? `border-l-2 ${borderColor}` : ''}`}>
         <span className="text-slate-500">{label}</span>
         <span className={`font-semibold ${color ?? 'text-slate-600 dark:text-slate-300'}`}>{value}</span>
     </div>
@@ -186,7 +186,7 @@ const InfoRow: FC<{ label: string; value: string; color?: string; borderColor?: 
 /** DOF toggle button */
 const DofToggle: FC<{ label: string; sub: string; active: boolean; onChange: (v: boolean) => void }> = ({ label, sub, active, onChange }) => (
     <label className={`flex flex-col items-center py-1.5 px-1 rounded cursor-pointer border-2 transition-all select-none
-        ${active ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-200 dark:border-slate-700 bg-black/30 hover:border-slate-300 dark:hover:border-slate-600'}`}>
+        ${active ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600'}`}>
         <input type="checkbox" checked={active} onChange={(e) => onChange(e.target.checked)} className="hidden" />
         <span className={`text-[10px] font-semibold ${active ? 'text-emerald-400' : 'text-slate-500'}`}>{label}</span>
         <span className="text-[8px] text-slate-600">{sub}</span>
@@ -530,7 +530,7 @@ export const PropertiesPanel: FC = () => {
                         <span className="text-sm font-semibold text-blue-400 flex items-center gap-1.5">
                             <CircleDot className="w-4 h-4" /> NODE
                         </span>
-                        <span className="text-[11px] text-slate-500 font-mono bg-black/30 px-1.5 py-0.5 rounded">
+                        <span className="text-[11px] text-slate-500 font-mono bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded">
                             #{id.slice(0, 8)}
                         </span>
                     </div>
@@ -538,7 +538,7 @@ export const PropertiesPanel: FC = () => {
 
                 {/* Coordinates */}
                 <PanelSection icon={<Crosshair className="w-3.5 h-3.5 text-blue-400" />} label="Coordinates (m)">
-                    <div className="grid grid-cols-3 gap-1.5 bg-black/20 p-2 rounded-md">
+                    <div className="grid grid-cols-3 gap-1.5 bg-slate-100/50 dark:bg-slate-800/50 p-2 rounded-md">
                         <div className="text-center">
                             <span className="text-[10px] text-red-400 block mb-0.5 font-semibold">X</span>
                             <NumberInput value={node.x} onChange={(val) => updateNodePosition(id, { x: val })} className="text-center" />
@@ -579,7 +579,7 @@ export const PropertiesPanel: FC = () => {
                     </div>
 
                     {/* DOF Grid */}
-                    <div className="grid grid-cols-3 gap-1 bg-black/20 p-2 rounded-md">
+                    <div className="grid grid-cols-3 gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-2 rounded-md">
                         <DofToggle label="Tx" sub="X-trans" active={restraints.fx} onChange={(v) => handleRestraintChange('fx', v)} />
                         <DofToggle label="Ty" sub="Y-trans" active={restraints.fy} onChange={(v) => handleRestraintChange('fy', v)} />
                         <DofToggle label="Tz" sub="Z-trans" active={restraints.fz} onChange={(v) => handleRestraintChange('fz', v)} />
@@ -633,7 +633,7 @@ export const PropertiesPanel: FC = () => {
                     ))}
 
                     {/* Add Load Form */}
-                    <div className="mt-2 p-2 bg-black/20 rounded-md">
+                    <div className="mt-2 p-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-md">
                         {showFullLoadInput ? (
                             <div className="flex flex-col gap-1.5">
                                 {[
@@ -798,7 +798,7 @@ export const PropertiesPanel: FC = () => {
 
                 {/* Connectivity */}
                 <PanelSection icon={<Link2 className="w-3.5 h-3.5 text-blue-400" />} label="Connectivity">
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-black/20 p-2 rounded-md">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 p-2 rounded-md">
                         <div className="text-center">
                             <span className="text-[9px] text-slate-500 block">START (I)</span>
                             <span className="text-[11px] text-blue-400 font-mono">{member.startNodeId.slice(0, 6)}</span>
@@ -854,7 +854,7 @@ export const PropertiesPanel: FC = () => {
 
                     {/* Custom Section Dialog */}
                     {showCustomSection && (
-                        <div className="bg-black/60 p-3 rounded-lg mt-2 border border-slate-600">
+                        <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg mt-2 border border-slate-600">
                             <div className="text-xs font-semibold mb-2 text-emerald-400 flex items-center gap-1.5">
                                 <Settings2 className="w-3 h-3" /> Custom Section Properties
                             </div>
@@ -911,7 +911,7 @@ export const PropertiesPanel: FC = () => {
 
                     {/* Custom Material Dialog */}
                     {showCustomMaterial && (
-                        <div className="bg-black/60 p-3 rounded-lg mt-2 border border-slate-600">
+                        <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg mt-2 border border-slate-600">
                             <div className="text-xs font-semibold mb-2 text-blue-400 flex items-center gap-1.5">
                                 <Settings2 className="w-3 h-3" /> Custom Material Properties
                             </div>
@@ -941,12 +941,12 @@ export const PropertiesPanel: FC = () => {
 
                 {/* Member End Releases */}
                 <PanelSection icon={<Unlock className="w-3.5 h-3.5 text-orange-400" />} label="Member End Releases">
-                    <div className="grid grid-cols-2 gap-2 bg-black/20 p-2 rounded-md">
+                    <div className="grid grid-cols-2 gap-2 bg-slate-100/50 dark:bg-slate-800/50 p-2 rounded-md">
                         {/* Start End */}
                         <div className="text-center">
                             <span className="text-[10px] text-blue-400 font-semibold block mb-1.5">START (I)</span>
                             <label className={`flex flex-col items-center py-2 px-2 rounded cursor-pointer border-2 transition-all
-                                ${releases.startMoment ? 'border-orange-500 bg-orange-500/10' : 'border-slate-200 dark:border-slate-700 bg-black/30'}`}>
+                                ${releases.startMoment ? 'border-orange-500 bg-orange-500/10' : 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800'}`}>
                                 <input type="checkbox" checked={releases.startMoment}
                                     onChange={(e) => handleReleaseChange('startMoment', e.target.checked)} className="hidden" />
                                 {releases.startMoment ?
@@ -963,7 +963,7 @@ export const PropertiesPanel: FC = () => {
                         <div className="text-center">
                             <span className="text-[10px] text-blue-400 font-semibold block mb-1.5">END (J)</span>
                             <label className={`flex flex-col items-center py-2 px-2 rounded cursor-pointer border-2 transition-all
-                                ${releases.endMoment ? 'border-orange-500 bg-orange-500/10' : 'border-slate-200 dark:border-slate-700 bg-black/30'}`}>
+                                ${releases.endMoment ? 'border-orange-500 bg-orange-500/10' : 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800'}`}>
                                 <input type="checkbox" checked={releases.endMoment}
                                     onChange={(e) => handleReleaseChange('endMoment', e.target.checked)} className="hidden" />
                                 {releases.endMoment ?
@@ -1010,7 +1010,7 @@ export const PropertiesPanel: FC = () => {
                                 <InfoRow label="Moment" value={`${forces.momentZ.toFixed(2)} kN·m`} color="text-purple-400" borderColor="border-purple-500" />
                             </div>
 
-                            <div className="mt-2 py-1 bg-black/20 rounded text-center text-[9px] text-slate-500">
+                            <div className="mt-2 py-1 bg-slate-100/50 dark:bg-slate-800/50 rounded text-center text-[9px] text-slate-500">
                                 {Math.abs(forces.axial) > Math.abs(forces.shearY) && Math.abs(forces.axial) > Math.abs(forces.momentZ) ?
                                     'Axial-dominant member' :
                                     Math.abs(forces.momentZ) > Math.abs(forces.shearY) ?

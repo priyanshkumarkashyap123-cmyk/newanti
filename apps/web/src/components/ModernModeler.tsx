@@ -240,6 +240,11 @@ const MaterialLibraryDialog = lazy(() =>
     default: m.MaterialLibraryDialog,
   })),
 );
+const SectionDesignerDialog = lazy(() =>
+  import("./SectionDesignerDialog").then((m) => ({
+    default: m.SectionDesignerDialog,
+  })),
+);
 const BetaAngleDialog = lazy(() =>
   import("./dialogs/BetaAngleDialog").then((m) => ({
     default: m.BetaAngleDialog,
@@ -3849,6 +3854,10 @@ export const ModernModeler: FC = () => {
           <SectionAssignDialog
             isOpen={modals.sectionAssign}
             onClose={() => closeModal("sectionAssign")}
+          />
+          <SectionDesignerDialog
+            open={modals.sectionBuilder}
+            onClose={() => closeModal("sectionBuilder")}
           />
           <MaterialLibraryDialog
             isOpen={modals.materialLibrary}

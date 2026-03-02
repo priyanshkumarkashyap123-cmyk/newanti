@@ -52,6 +52,7 @@ import {
   Workflow,
   Search,
   Calculator,
+  Check,
   GitMerge,
   SplitSquareVertical,
   Thermometer,
@@ -143,7 +144,7 @@ const ToolGroup = memo<{ label: string; children: ReactNode; className?: string 
   ({ label, children, className = "" }) => (
     <div className={`flex flex-col h-full border-r border-slate-200/30 dark:border-slate-700/30 px-1.5 pb-2.5 pt-1 last:border-r-0 ${className}`}>
       <div className="flex-1 flex items-center gap-0.5">{children}</div>
-      <div className="text-[10px] text-slate-500 text-center uppercase tracking-[0.08em] mt-0.5 select-none font-semibold">
+      <div className="text-[9px] text-slate-500 dark:text-slate-400 text-center uppercase tracking-[0.08em] mt-0.5 select-none font-medium">
         {label}
       </div>
     </div>
@@ -565,7 +566,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
             <Cpu className="w-3 h-3 text-white" />
           </div>
           <span className="font-bold text-[11px] text-slate-200 tracking-tight">BeamLab</span>
-          <span className="px-1.5 py-0.5 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border border-blue-500/20 text-blue-400 text-[7px] font-extrabold rounded tracking-widest">
+          <span className="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded flex items-center gap-1">
             ULTIMATE
           </span>
         </Link>
@@ -607,7 +608,10 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
             <Crown className="w-3 h-3" />
             Upgrade
           </button>
-          <span className="text-[9px] text-slate-600 font-mono">Auto-Saved</span>
+          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono flex items-center gap-1">
+            <Check className="w-3 h-3 text-green-500" />
+            Auto-Saved
+          </span>
         </div>
       </div>
 

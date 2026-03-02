@@ -456,20 +456,22 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
                                     <div className="flex items-center gap-3 ml-4">
                                         <div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                             <div
-                                            className={`h-full rounded-full transition-all ${check.utilization <= 0.6 ? 'bg-green-500' :
-                                                    check.utilization <= 0.8 ? 'bg-blue-500' :
-                                                        check.utilization <= 0.9 ? 'bg-amber-500' :
-                                                            check.utilization <= 1.0 ? 'bg-orange-500' :
-                                                                'bg-red-500'
+                                            className={`h-full rounded-full transition-all ${check.utilization <= 0.6 ? 'bg-emerald-500' :
+                                                    check.utilization <= 0.7 ? 'bg-green-500' :
+                                                        check.utilization <= 0.8 ? 'bg-lime-500' :
+                                                            check.utilization <= 0.9 ? 'bg-amber-500' :
+                                                                check.utilization <= 1.0 ? 'bg-orange-500' :
+                                                                    'bg-red-500'
                                                     }`}
                                                 style={{ width: `${Math.min(check.utilization * 100, 100)}%` }}
                                             />
                                         </div>
-                                        <span className={`text-sm font-bold font-mono w-14 text-right ${check.utilization <= 0.6 ? 'text-green-400' :
-                                            check.utilization <= 0.8 ? 'text-blue-400' :
-                                                check.utilization <= 0.9 ? 'text-amber-400' :
-                                                    check.utilization <= 1.0 ? 'text-orange-400' :
-                                                        'text-red-400'
+                                        <span className={`text-sm font-bold font-mono w-14 text-right ${check.utilization <= 0.6 ? 'text-emerald-400' :
+                                            check.utilization <= 0.7 ? 'text-green-400' :
+                                                check.utilization <= 0.8 ? 'text-lime-400' :
+                                                    check.utilization <= 0.9 ? 'text-amber-400' :
+                                                        check.utilization <= 1.0 ? 'text-orange-400' :
+                                                            'text-red-400'
                                             }`}>
                                             {(check.utilization * 100).toFixed(1)}%
                                         </span>

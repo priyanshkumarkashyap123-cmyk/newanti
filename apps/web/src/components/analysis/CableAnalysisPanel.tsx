@@ -184,7 +184,7 @@ export function CableAnalysisPanel() {
                                             <td style={{ padding: '10px', textAlign: 'right' }}>
                                                 {cable.length?.toFixed(3) || 'N/A'}
                                             </td>
-                                            <td style={{ padding: '10px', textAlign: 'center' }}>
+                                            <td style={{ padding: '10px', textAlign: 'center', color: cable.status === 'slack' ? '#ef4444' : '#4caf50' }}>
                                                 {cable.status === 'slack' ? '⚠️ Slack' : '✓ Taut'}
                                             </td>
                                         </tr>

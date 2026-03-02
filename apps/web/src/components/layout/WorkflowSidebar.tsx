@@ -204,13 +204,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                   </>
                 )}
 
-                {/* Active Indicator Bar */}
-                {isActive && (
-                  <div
-                    className="absolute left-0 w-[2px] h-7 bg-blue-400 rounded-r-full"
-                    aria-hidden="true"
-                  />
-                )}
+
               </button>
             );
           })}
@@ -221,7 +215,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       <div className={`bg-white dark:bg-slate-950 border-t border-slate-800/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
         {collapsed ? (
           <span
-            className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+            className="w-2 h-2 rounded-full bg-green-500 animate-pulse"
             title="Online"
             aria-label="Connection: Online"
           />
@@ -230,7 +224,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
             <span className="text-[10px] text-slate-600">Connection</span>
             <span className="text-[10px] text-emerald-500 flex items-center gap-1.5">
               <span
-                className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+                className="w-2 h-2 rounded-full bg-green-500 animate-pulse"
                 aria-hidden="true"
               />
               Online

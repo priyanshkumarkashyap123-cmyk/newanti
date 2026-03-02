@@ -11,7 +11,6 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { useBlocker } from 'react-router-dom';
 import { useModelStore } from '../store/model';
 
 /** Lightweight fingerprint – we only care whether *something* changed. */
@@ -61,21 +60,27 @@ export function useUnsavedChangesGuard() {
     return unsub;
   }, []);
 
-  // Block in-app navigation when dirty
-  const blocker = useBlocker(isDirty);
-
+  // Block browser back/forward navigation when dirty (works with any router)
   useEffect(() => {
-    if (blocker.state === 'blocked') {
+    if (!isDirty) return;
+
+    // Push a sentinel state so the back button triggers popstate instead of leaving
+    window.history.pushState({ unsavedGuard: true }, '', window.location.href);
+
+    const handlePopState = (_e: PopStateEvent) => {
       const leave = window.confirm(
         'You have unsaved changes. Are you sure you want to leave?',
       );
-      if (leave) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
+      if (!leave) {
+        // Re-push so we can intercept again
+        window.history.pushState({ unsavedGuard: true }, '', window.location.href);
       }
-    }
-  }, [blocker]);
+      // If they confirm, the browser navigates normally
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isDirty]);
 
   // Block tab close / refresh when dirty
   useEffect(() => {
