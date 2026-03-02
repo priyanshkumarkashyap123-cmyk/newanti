@@ -8,6 +8,8 @@
  * - Console log filtering for production
  */
 
+import { logger } from '../lib/logging/logger';
+
 export interface ErrorLog {
   timestamp: Date;
   message: string;
@@ -33,7 +35,7 @@ class ProductionSafeguards {
     this.setupConsoleFiltering();
     this.setupPerformanceMonitoring();
 
-    console.log("✅ Production safeguards initialized");
+    logger.info('Production safeguards initialized');
   }
 
   /**
@@ -55,7 +57,7 @@ class ProductionSafeguards {
 
       // Log to console in development
       if (!this.isProduction) {
-        console.error("🔴 Global Error:", errorLog);
+        logger.error('Global Error', { errorLog });
       }
 
       // Prevent default browser error handling in production
@@ -83,7 +85,7 @@ class ProductionSafeguards {
 
         // Log to console in development
         if (!this.isProduction) {
-          console.error("🔴 Unhandled Promise Rejection:", errorLog);
+          logger.error('Unhandled Promise Rejection', { errorLog });
         }
 
         // Prevent default handling in production
@@ -132,9 +134,7 @@ class ProductionSafeguards {
         const perfObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
             if (entry.duration > 50) {
-              console.warn(
-                `⚠️ Long task detected: ${entry.duration.toFixed(2)}ms`,
-              );
+              logger.warn('Long task detected', { durationMs: entry.duration.toFixed(2) });
             }
           }
         });
@@ -154,9 +154,11 @@ class ProductionSafeguards {
         const percentUsed = (usedMB / limitMB) * 100;
 
         if (percentUsed > 90) {
-          console.warn(
-            `⚠️ High memory usage: ${percentUsed.toFixed(1)}% (${usedMB.toFixed(1)}MB / ${limitMB.toFixed(1)}MB)`,
-          );
+          logger.warn('High memory usage', {
+            percentUsed: percentUsed.toFixed(1),
+            usedMB: usedMB.toFixed(1),
+            limitMB: limitMB.toFixed(1),
+          });
         }
       }, 30000); // Check every 30 seconds
     }

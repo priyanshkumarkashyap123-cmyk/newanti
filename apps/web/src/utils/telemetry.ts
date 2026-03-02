@@ -7,6 +7,8 @@
  * @version 1.0.0
  */
 
+import { logger } from '../lib/logging/logger';
+
 // ============================================
 // CORE WEB VITALS
 // ============================================
@@ -117,7 +119,7 @@ class PerformanceTelemetry {
             lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
             this.observers.push(lcpObserver);
         } catch (e) {
-            console.debug('LCP observer not supported');
+            logger.debug('LCP observer not supported');
         }
 
         // FID Observer
@@ -134,7 +136,7 @@ class PerformanceTelemetry {
             fidObserver.observe({ type: 'first-input', buffered: true });
             this.observers.push(fidObserver);
         } catch (e) {
-            console.debug('FID observer not supported');
+            logger.debug('FID observer not supported');
         }
 
         // CLS Observer
@@ -152,7 +154,7 @@ class PerformanceTelemetry {
             clsObserver.observe({ type: 'layout-shift', buffered: true });
             this.observers.push(clsObserver);
         } catch (e) {
-            console.debug('CLS observer not supported');
+            logger.debug('CLS observer not supported');
         }
 
         // FCP Observer
@@ -169,7 +171,7 @@ class PerformanceTelemetry {
             fcpObserver.observe({ type: 'paint', buffered: true });
             this.observers.push(fcpObserver);
         } catch (e) {
-            console.debug('FCP observer not supported');
+            logger.debug('FCP observer not supported');
         }
 
         // TTFB from Navigation Timing
@@ -282,41 +284,38 @@ class PerformanceTelemetry {
      * Log metrics to console
      */
     logMetrics(): void {
-        console.group('📊 Performance Metrics');
-        
-        console.group('Web Vitals');
-        console.log(`LCP: ${this.metrics.webVitals.LCP?.toFixed(0) ?? 'N/A'}ms`);
-        console.log(`FID: ${this.metrics.webVitals.FID?.toFixed(0) ?? 'N/A'}ms`);
-        console.log(`CLS: ${this.metrics.webVitals.CLS?.toFixed(3) ?? 'N/A'}`);
-        console.log(`FCP: ${this.metrics.webVitals.FCP?.toFixed(0) ?? 'N/A'}ms`);
-        console.log(`TTFB: ${this.metrics.webVitals.TTFB?.toFixed(0) ?? 'N/A'}ms`);
-        console.groupEnd();
-        
-        console.group('Rendering');
-        console.log(`FPS: ${this.metrics.rendering.fps} (avg: ${this.getAverageFPS()})`);
-        console.log(`Frame Time: ${this.metrics.rendering.frameTime.toFixed(2)}ms`);
-        console.log(`Draw Calls: ${this.metrics.rendering.drawCalls}`);
-        console.log(`Triangles: ${this.metrics.rendering.triangles.toLocaleString()}`);
-        console.groupEnd();
-        
+        logger.info('Performance Metrics - Web Vitals', {
+            LCP: this.metrics.webVitals.LCP?.toFixed(0) ?? 'N/A',
+            FID: this.metrics.webVitals.FID?.toFixed(0) ?? 'N/A',
+            CLS: this.metrics.webVitals.CLS?.toFixed(3) ?? 'N/A',
+            FCP: this.metrics.webVitals.FCP?.toFixed(0) ?? 'N/A',
+            TTFB: this.metrics.webVitals.TTFB?.toFixed(0) ?? 'N/A',
+        });
+
+        logger.info('Performance Metrics - Rendering', {
+            fps: this.metrics.rendering.fps,
+            avgFps: this.getAverageFPS(),
+            frameTimeMs: this.metrics.rendering.frameTime.toFixed(2),
+            drawCalls: this.metrics.rendering.drawCalls,
+            triangles: this.metrics.rendering.triangles,
+        });
+
         if (this.metrics.solver.totalSolveTime > 0) {
-            console.group('Solver');
-            console.log(`DOF: ${this.metrics.solver.dof.toLocaleString()}`);
-            console.log(`Assembly: ${this.metrics.solver.matrixAssemblyTime.toFixed(0)}ms`);
-            console.log(`Factorization: ${this.metrics.solver.factorizationTime.toFixed(0)}ms`);
-            console.log(`Total: ${this.metrics.solver.totalSolveTime.toFixed(0)}ms`);
-            console.groupEnd();
+            logger.info('Performance Metrics - Solver', {
+                dof: this.metrics.solver.dof,
+                assemblyTimeMs: this.metrics.solver.matrixAssemblyTime.toFixed(0),
+                factorizationTimeMs: this.metrics.solver.factorizationTime.toFixed(0),
+                totalTimeMs: this.metrics.solver.totalSolveTime.toFixed(0),
+            });
         }
-        
+
         if (this.metrics.memory.usedJSHeapSize) {
-            console.group('Memory');
-            console.log(`Used: ${(this.metrics.memory.usedJSHeapSize / 1024 / 1024).toFixed(1)}MB`);
-            console.log(`Total: ${(this.metrics.memory.totalJSHeapSize! / 1024 / 1024).toFixed(1)}MB`);
-            console.log(`Limit: ${(this.metrics.memory.jsHeapSizeLimit! / 1024 / 1024).toFixed(1)}MB`);
-            console.groupEnd();
+            logger.info('Performance Metrics - Memory', {
+                usedMB: (this.metrics.memory.usedJSHeapSize / 1024 / 1024).toFixed(1),
+                totalMB: (this.metrics.memory.totalJSHeapSize! / 1024 / 1024).toFixed(1),
+                limitMB: (this.metrics.memory.jsHeapSizeLimit! / 1024 / 1024).toFixed(1),
+            });
         }
-        
-        console.groupEnd();
     }
 
     /**
@@ -354,7 +353,7 @@ export function createTimer(name: string) {
     return {
         stop: () => {
             const duration = performance.now() - start;
-            console.debug(`⏱️ ${name}: ${duration.toFixed(2)}ms`);
+            logger.debug('Timer completed', { name, durationMs: duration.toFixed(2) });
             return duration;
         },
     };
@@ -387,7 +386,7 @@ export function measure(name: string, startMark: string, endMark?: string): numb
             return entries[entries.length - 1].duration;
         }
     } catch (e) {
-        console.debug('Performance measure failed:', e);
+        logger.debug('Performance measure failed', { error: e });
     }
     
     return null;

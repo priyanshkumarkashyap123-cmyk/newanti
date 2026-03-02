@@ -217,7 +217,7 @@ export class SocketServer {
                     return next(new Error('Invalid or expired authentication token'));
                 }
                 // Attach verified userId to socket data for downstream use
-                (socket as any).userId = payload.userId ?? payload.sub ?? payload.id;
+                socket.data.userId = payload.userId ?? payload.sub ?? payload.id;
                 next();
             } catch (err) {
                 logger.error({ err }, 'Socket auth failed');
@@ -324,7 +324,7 @@ export class SocketServer {
                 }
             });
 
-            onLimited<{ results: any; userId: string }>('analysis_complete', (data) => {
+            onLimited<{ results: Record<string, unknown>; userId: string }>('analysis_complete', (data) => {
                 const user = this.users.get(socket.id);
                 if (user?.projectId) {
                     socket.to(user.projectId).emit('analysis_complete', {

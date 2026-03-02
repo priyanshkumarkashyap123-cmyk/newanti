@@ -51,18 +51,23 @@ const router: Router = Router();
 
 // SECURITY: Never fall back to a hardcoded secret. Crash early if misconfigured.
 // Only enforce when in-house auth is active (not Clerk).
-const JWT_SECRET = process.env["JWT_SECRET"];
-const JWT_REFRESH_SECRET = process.env["JWT_REFRESH_SECRET"];
+const JWT_SECRET_RAW = process.env["JWT_SECRET"];
+const JWT_REFRESH_SECRET_RAW = process.env["JWT_REFRESH_SECRET"];
 
 if (
   process.env["USE_CLERK"] !== "true" &&
-  (!JWT_SECRET || !JWT_REFRESH_SECRET)
+  (!JWT_SECRET_RAW || !JWT_REFRESH_SECRET_RAW)
 ) {
   throw new Error(
     "FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required " +
       "when USE_CLERK is not enabled. Refusing to start with insecure defaults.",
   );
 }
+
+// After the guard above, these are guaranteed to be defined when in-house auth is active.
+// Use a fallback empty string for the Clerk-only code path (these functions won't be called).
+const JWT_SECRET: string = JWT_SECRET_RAW ?? "";
+const JWT_REFRESH_SECRET: string = JWT_REFRESH_SECRET_RAW ?? "";
 
 const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = "7d"; // 7 days
@@ -734,9 +739,9 @@ router.post("/refresh", asyncHandler(async (req: Request, res: Response) => {
     }
 
     // Verify refresh token
-    let decoded: any;
+    let decoded: JWTPayload;
     try {
-      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as unknown as JWTPayload;
     } catch {
       throw new HttpError(401, "Invalid or expired refresh token");
     }
@@ -809,7 +814,7 @@ router.get("/me", asyncHandler(async (req: Request, res: Response) => {
 
     let decoded: JWTPayload;
     try {
-      decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+      decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
     } catch {
       throw new HttpError(401, "Invalid or expired token");
     }
@@ -832,7 +837,7 @@ router.post("/verify-email", asyncHandler(async (req: Request, res: Response) =>
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
 
     const { code } = req.body;
     if (!code) {
@@ -981,7 +986,7 @@ router.put(
       }
 
       const token = authHeader.split(" ")[1];
-      const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+      const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
 
       const { firstName, lastName, avatarUrl, company, phone } = req.body;
 
@@ -1019,7 +1024,7 @@ router.post(
       }
 
       const token = authHeader.split(" ")[1];
-      const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+      const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
 
       // Body is already validated by Zod middleware
       const { currentPassword, newPassword } = req.body;
@@ -1064,7 +1069,7 @@ router.delete("/delete-account", asyncHandler(async (req: Request, res: Response
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
 
     const { password } = req.body;
 
@@ -1134,7 +1139,7 @@ router.post("/resend-verification", asyncHandler(async (req: Request, res: Respo
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
 
     const user = await UserModel.findById(decoded.userId);
     if (!user) {

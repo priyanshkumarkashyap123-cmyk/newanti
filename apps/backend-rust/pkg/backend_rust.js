@@ -889,6 +889,17 @@ export function run_nafems_thermal_benchmarks() {
     return takeObject(ret);
 }
 
+/**
+ * Run REAL structural benchmarks that call actual solver code.
+ * Unlike the legacy NAFEMS exports (which compare TARGET to TARGET),
+ * this function builds real FE models, solves them, and compares to analytical solutions.
+ * @returns {any}
+ */
+export function run_real_benchmarks() {
+    const ret = wasm.run_real_benchmarks();
+    return takeObject(ret);
+}
+
 export function set_panic_hook() {
     wasm.set_panic_hook();
 }

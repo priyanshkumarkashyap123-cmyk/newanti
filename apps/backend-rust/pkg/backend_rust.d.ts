@@ -166,6 +166,13 @@ export function run_nafems_nl_benchmarks(): any;
  */
 export function run_nafems_thermal_benchmarks(): any;
 
+/**
+ * Run REAL structural benchmarks that call actual solver code.
+ * Unlike the legacy NAFEMS exports (which compare TARGET to TARGET),
+ * this function builds real FE models, solves them, and compares to analytical solutions.
+ */
+export function run_real_benchmarks(): any;
+
 export function set_panic_hook(): void;
 
 export function simulate_hysteresis_response(model: string, k0: number, fy: number, alpha: number, strain_history: Float64Array): Float64Array;
@@ -270,6 +277,7 @@ export interface InitOutput {
   readonly run_nafems_le_benchmarks: () => number;
   readonly run_nafems_nl_benchmarks: () => number;
   readonly run_nafems_thermal_benchmarks: () => number;
+  readonly run_real_benchmarks: () => number;
   readonly simulate_hysteresis_response: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
   readonly solve_2d_frame_with_loads: (a: number, b: number, c: number) => number;
   readonly solve_3d_frame_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;

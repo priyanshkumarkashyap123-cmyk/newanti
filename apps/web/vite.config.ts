@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 import { VitePWA } from "vite-plugin-pwa";
+import { compression } from "vite-plugin-compression2";
 import path from "path";
 
 // ============================================
@@ -116,6 +117,12 @@ export default defineConfig({
           },
         ],
       },
+    }),
+    // Pre-compress assets with gzip for faster serving
+    compression({
+      algorithm: 'gzip',
+      threshold: 1024,     // Only compress files > 1KB
+      exclude: [/\.(br|gz)$/],
     }),
   ],
   resolve: {

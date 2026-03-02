@@ -58,75 +58,51 @@ export function CableAnalysisPanel() {
     };
 
     return (
-        <div className="cable-analysis-panel" style={{ padding: '20px', background: '#1e1e1e', color: '#fff', minHeight: '100vh' }}>
-            <h2 style={{ marginBottom: '20px' }}>🔗 Cable Analysis</h2>
+        <div className="cable-analysis-panel p-5 bg-[#1e1e1e] text-white min-h-screen">
+            <h2 className="mb-5">🔗 Cable Analysis</h2>
             
-            <div style={{ marginBottom: '30px', background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
+            <div className="mb-[30px] bg-[#2d2d2d] p-5 rounded-lg">
                 <h3>Cable Properties</h3>
                 
-                <div style={{ marginTop: '15px', display: 'grid', gap: '15px' }}>
-                    <label style={{ display: 'block' }}>
+                <div className="mt-[15px] grid gap-[15px]">
+                    <label className="block">
                         Cable Modulus (MPa):
                         <input
                             type="number"
                             value={params.cableModulus}
                             onChange={(e) => setParams({ ...params, cableModulus: parseFloat(e.target.value) || 200000 })}
-                            style={{
-                                marginLeft: '10px',
-                                padding: '8px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px',
-                                width: '150px'
-                            }}
+                            className="ml-2.5 p-2 bg-[#1e1e1e] text-white border border-[#444] rounded w-[150px]"
                         />
                     </label>
 
-                    <label style={{ display: 'block' }}>
+                    <label className="block">
                         Initial Sag Ratio:
                         <input
                             type="number"
                             value={params.sag}
                             step="0.01"
                             onChange={(e) => setParams({ ...params, sag: parseFloat(e.target.value) || 0.05 })}
-                            style={{
-                                marginLeft: '10px',
-                                padding: '8px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px',
-                                width: '150px'
-                            }}
+                            className="ml-2.5 p-2 bg-[#1e1e1e] text-white border border-[#444] rounded w-[150px]"
                         />
                     </label>
 
-                    <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                    <label className="flex items-center cursor-pointer">
                         <input
                             type="checkbox"
                             checked={params.tensionOnly}
                             onChange={(e) => setParams({ ...params, tensionOnly: e.target.checked })}
-                            style={{ marginRight: '10px' }}
+                            className="mr-2.5"
                         />
                         Tension Only (no compression)
                     </label>
 
-                    <label style={{ display: 'block' }}>
+                    <label className="block">
                         Max Iterations:
                         <input
                             type="number"
                             value={params.iterations}
                             onChange={(e) => setParams({ ...params, iterations: parseInt(e.target.value) || 20 })}
-                            style={{
-                                marginLeft: '10px',
-                                padding: '8px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px',
-                                width: '100px'
-                            }}
+                            className="ml-2.5 p-2 bg-[#1e1e1e] text-white border border-[#444] rounded w-[100px]"
                         />
                     </label>
                 </div>
@@ -134,15 +110,10 @@ export function CableAnalysisPanel() {
                 <button type="button"
                     onClick={handleRunAnalysis}
                     disabled={analyzing || store.nodes.size === 0}
+                    className="mt-5 py-3 px-6 text-white border-none rounded text-base"
                     style={{
-                        marginTop: '20px',
-                        padding: '12px 24px',
                         background: analyzing ? '#555' : '#2196F3',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: analyzing ? 'wait' : 'pointer',
-                        fontSize: '16px'
+                        cursor: analyzing ? 'wait' : 'pointer'
                     }}
                 >
                     {analyzing ? '🔄 Analyzing...' : '▶️ Run Cable Analysis'}
@@ -150,41 +121,41 @@ export function CableAnalysisPanel() {
             </div>
 
             {error && (
-                <div style={{ padding: '15px', background: '#d32f2f', borderRadius: '8px', marginBottom: '20px' }}>
+                <div className="p-[15px] bg-[#d32f2f] rounded-lg mb-5">
                     <strong>Error:</strong> {error}
                 </div>
             )}
 
             {results && (
-                <div style={{ background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
+                <div className="bg-[#2d2d2d] p-5 rounded-lg">
                     <h3>Cable Forces & Geometry</h3>
                     
                     {results.cables && results.cables.length > 0 ? (
-                        <div style={{ marginTop: '20px' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div className="mt-5">
+                            <table className="w-full border-collapse">
                                 <thead>
-                                    <tr style={{ borderBottom: '2px solid #444' }}>
-                                        <th style={{ padding: '10px', textAlign: 'left' }}>Cable ID</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>Tension (kN)</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>Sag (mm)</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>Length (m)</th>
-                                        <th style={{ padding: '10px', textAlign: 'center' }}>Status</th>
+                                    <tr className="border-b-2 border-[#444]">
+                                        <th className="p-2.5 text-left">Cable ID</th>
+                                        <th className="p-2.5 text-right">Tension (kN)</th>
+                                        <th className="p-2.5 text-right">Sag (mm)</th>
+                                        <th className="p-2.5 text-right">Length (m)</th>
+                                        <th className="p-2.5 text-center">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {results.cables.map((cable: any, idx: number) => (
-                                        <tr key={idx} style={{ borderBottom: '1px solid #333' }}>
-                                            <td style={{ padding: '10px' }}>{cable.id}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right', color: '#4fc3f7' }}>
+                                        <tr key={idx} className="border-b border-[#333]">
+                                            <td className="p-2.5">{cable.id}</td>
+                                            <td className="p-2.5 text-right text-[#4fc3f7]">
                                                 {cable.tension?.toFixed(2) || 'N/A'}
                                             </td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>
+                                            <td className="p-2.5 text-right">
                                                 {cable.sag ? (cable.sag * 1000).toFixed(1) : 'N/A'}
                                             </td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>
+                                            <td className="p-2.5 text-right">
                                                 {cable.length?.toFixed(3) || 'N/A'}
                                             </td>
-                                            <td style={{ padding: '10px', textAlign: 'center', color: cable.status === 'slack' ? '#ef4444' : '#4caf50' }}>
+                                            <td className="p-2.5 text-center" style={{ color: cable.status === 'slack' ? '#ef4444' : '#4caf50' }}>
                                                 {cable.status === 'slack' ? '⚠️ Slack' : '✓ Taut'}
                                             </td>
                                         </tr>
@@ -193,13 +164,13 @@ export function CableAnalysisPanel() {
                             </table>
 
                             {results.converged !== undefined && (
-                                <div style={{ marginTop: '20px', padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>
+                                <div className="mt-5 p-[15px] bg-[#1e1e1e] rounded">
                                     <strong>Convergence: </strong>
                                     <span style={{ color: results.converged ? '#4caf50' : '#ff9800' }}>
                                         {results.converged ? '✓ Converged' : '⚠️ Not Converged'}
                                     </span>
                                     {results.iterations && (
-                                        <span style={{ marginLeft: '20px', color: '#bbb' }}>
+                                        <span className="ml-5 text-[#bbb]">
                                             ({results.iterations} iterations)
                                         </span>
                                     )}
@@ -207,14 +178,14 @@ export function CableAnalysisPanel() {
                             )}
                         </div>
                     ) : (
-                        <p style={{ color: '#999', marginTop: '15px' }}>No cable results available</p>
+                        <p className="text-[#999] mt-[15px]">No cable results available</p>
                     )}
                 </div>
             )}
 
-            <div style={{ marginTop: '30px', padding: '15px', background: '#424242', borderRadius: '8px', fontSize: '14px' }}>
+            <div className="mt-[30px] p-[15px] bg-[#424242] rounded-lg text-sm">
                 <strong>ℹ️ About Cable Analysis</strong>
-                <p style={{ marginTop: '10px', lineHeight: '1.6', color: '#bbb' }}>
+                <p className="mt-2.5 leading-[1.6] text-[#bbb]">
                     Cable analysis accounts for the nonlinear catenary shape of cables under self-weight and loads.
                     Cables are tension-only elements that go slack when subjected to compression. The analysis
                     iteratively determines the equilibrium geometry and tension forces. Typical applications include

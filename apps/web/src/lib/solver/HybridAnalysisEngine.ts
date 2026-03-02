@@ -15,6 +15,7 @@
  */
 
 import { gpuSolver, hybridSolver, HybridStructuralSolver } from './GPUAcceleratedSolver';
+import { analysisLogger } from '../logging/logger';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -136,10 +137,10 @@ async function initWasm(): Promise<boolean> {
       wasm.set_panic_hook?.();
       wasmSolver = wasm as unknown as WasmSolver;
       wasmInitialized = true;
-      console.log('WASM solver initialized:', wasm.get_solver_info?.());
+      analysisLogger.info('WASM solver initialized', { info: wasm.get_solver_info?.() });
       return true;
     } catch (error) {
-      console.warn('WASM solver not available:', error);
+      analysisLogger.warn('WASM solver not available', { error });
       return false;
     }
   })();
@@ -170,11 +171,11 @@ export class HybridAnalysisEngine {
       this.gpuAvailable = await gpuSolver.initialize();
       this.gpuInitialized = true;
     } catch (e) {
-      console.warn('GPU solver not available');
+      analysisLogger.warn('GPU solver not available');
       this.gpuAvailable = false;
     }
     
-    console.log(`Hybrid Engine: WASM=${this.wasmAvailable}, GPU=${this.gpuAvailable}`);
+    analysisLogger.info('Hybrid Engine initialized', { wasm: this.wasmAvailable, gpu: this.gpuAvailable });
   }
   
   /**
@@ -493,7 +494,7 @@ export class HybridAnalysisEngine {
     
     // GPU solver integration would go here
     // For now, use hybrid solver
-    console.warn('GPU solver not fully integrated, using hybrid');
+    analysisLogger.warn('GPU solver not fully integrated, using hybrid');
     return this.analyzeWasmStandard(nodes, elements, loads, []);
   }
   
@@ -501,28 +502,28 @@ export class HybridAnalysisEngine {
    * Run benchmark suite
    */
   async benchmark(): Promise<void> {
-    console.log('Starting Hybrid Analysis Engine Benchmark...\n');
+    analysisLogger.info('Starting Hybrid Analysis Engine Benchmark');
     
     if (wasmSolver && wasmSolver.benchmark_ultra_fast) {
       // Small structure benchmark
-      console.log('Testing 20 nodes (target: < 0.1ms)...');
+      analysisLogger.info('Benchmarking small structure', { nodes: 20, target: '< 0.1ms' });
       const small = wasmSolver.benchmark_ultra_fast(20, 30, 100);
-      console.log(`  Result: ${small.mean_us?.toFixed(1)} μs mean, ${small.min_us?.toFixed(1)} μs min`);
+      analysisLogger.info('Small structure result', { meanUs: small.mean_us?.toFixed(1), minUs: small.min_us?.toFixed(1) });
       
       // Medium structure benchmark
-      console.log('Testing 100 nodes (target: < 1ms)...');
+      analysisLogger.info('Benchmarking medium structure', { nodes: 100, target: '< 1ms' });
       const medium = wasmSolver.benchmark_ultra_fast(100, 180, 50);
-      console.log(`  Result: ${medium.mean_us?.toFixed(1)} μs mean, ${medium.min_us?.toFixed(1)} μs min`);
+      analysisLogger.info('Medium structure result', { meanUs: medium.mean_us?.toFixed(1), minUs: medium.min_us?.toFixed(1) });
       
       // Large structure benchmark
-      console.log('Testing 500 nodes (target: < 10ms)...');
+      analysisLogger.info('Benchmarking large structure', { nodes: 500, target: '< 10ms' });
       const large = wasmSolver.benchmark_ultra_fast(500, 950, 20);
-      console.log(`  Result: ${large.mean_us?.toFixed(1)} μs mean, ${large.min_us?.toFixed(1)} μs min`);
+      analysisLogger.info('Large structure result', { meanUs: large.mean_us?.toFixed(1), minUs: large.min_us?.toFixed(1) });
     } else {
-      console.log('Benchmark not available - WASM solver not loaded');
+      analysisLogger.info('Benchmark not available - WASM solver not loaded');
     }
     
-    console.log('\nBenchmark complete.');
+    analysisLogger.info('Benchmark complete');
   }
   
   /**
@@ -543,7 +544,7 @@ export const hybridEngine = new HybridAnalysisEngine();
 
 // Auto-initialize when module loads
 if (typeof window !== 'undefined') {
-  hybridEngine.initialize().catch(console.error);
+  hybridEngine.initialize().catch((err) => analysisLogger.error('Hybrid engine initialization failed', { error: err }));
   
   // Expose for debugging
   (window as any).hybridEngine = hybridEngine;

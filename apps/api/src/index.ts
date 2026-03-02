@@ -214,10 +214,10 @@ app.use(attachResponseHelpers);
 // The `verify` callback runs BEFORE json parsing, giving us the original bytes.
 app.use(express.json({
   limit: "10mb",
-  verify: (req: any, _res, buf) => {
+  verify: (req, _res, buf) => {
     // Only save raw body for webhook routes to avoid unnecessary memory usage
     if (req.url?.includes('/webhook')) {
-      req.rawBody = buf;
+      (req as typeof req & { rawBody?: Buffer }).rawBody = buf;
     }
   },
 }));

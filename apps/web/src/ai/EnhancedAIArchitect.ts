@@ -118,15 +118,63 @@ export interface AnalysisResults {
   reactions: Record<string, number[]>;
 }
 
+export interface StructureNode {
+  id: string;
+  x: number;
+  y: number;
+  z: number;
+  label?: string;
+}
+
+export interface StructureMemberData {
+  id: string;
+  startNodeId: string;
+  endNodeId: string;
+  type: string;
+  section: string;
+  material?: string;
+}
+
+export interface StructureLoadData {
+  id: string;
+  type: string;
+  nodeId?: string;
+  memberId?: string;
+  values: number[];
+  loadCase: string;
+}
+
+export interface StructureSupport {
+  nodeId: string;
+  type: string;
+  restraints: boolean[];
+}
+
+export interface StructureMaterial {
+  id: string;
+  name: string;
+  E: number;
+  fy: number;
+  density: number;
+}
+
+export interface StructureSection {
+  id: string;
+  name: string;
+  A: number;
+  Ix?: number;
+  type: string;
+}
+
 export interface StructureData {
   type: string;
-  nodes: any[];
-  members: any[];
-  loads: any[];
-  supports: any[];
-  materials: any[];
-  sections: any[];
-  metadata: Record<string, any>;
+  nodes: StructureNode[];
+  members: StructureMemberData[];
+  loads: StructureLoadData[];
+  supports: StructureSupport[];
+  materials: StructureMaterial[];
+  sections: StructureSection[];
+  metadata: Record<string, unknown>;
 }
 
 export interface CalculationResult {
@@ -163,7 +211,7 @@ class StructureGenerator {
    */
   generateFromRequest(
     structureType: string,
-    params: Record<string, any>,
+    params: Record<string, number>,
     material: string = 'structural_steel'
   ): StructureData {
     switch (structureType.toLowerCase().replace(/[_\s-]/g, '')) {
@@ -203,7 +251,7 @@ class StructureGenerator {
     }
   }
 
-  private generateBuilding(params: Record<string, any>, material: string): StructureData {
+  private generateBuilding(params: Record<string, number>, material: string): StructureData {
     const {
       bays = 3,
       stories = 5,
@@ -211,10 +259,10 @@ class StructureGenerator {
       storyHeight = 3.5,
     } = params;
 
-    const nodes: any[] = [];
-    const members: any[] = [];
-    const supports: any[] = [];
-    const loads: any[] = [];
+    const nodes: StructureNode[] = [];
+    const members: StructureMemberData[] = [];
+    const supports: StructureSupport[] = [];
+    const loads: StructureLoadData[] = [];
 
     let nodeId = 1;
     const nodeGrid: number[][] = [];
@@ -317,7 +365,7 @@ class StructureGenerator {
     };
   }
 
-  private generateWarrenTruss(params: Record<string, any>, material: string): StructureData {
+  private generateWarrenTruss(params: Record<string, number>, material: string): StructureData {
     const {
       span = 30,
       height = 5,
@@ -325,10 +373,10 @@ class StructureGenerator {
     } = params;
 
     const panelLength = span / panels;
-    const nodes: any[] = [];
-    const members: any[] = [];
-    const supports: any[] = [];
-    const loads: any[] = [];
+    const nodes: StructureNode[] = [];
+    const members: StructureMemberData[] = [];
+    const supports: StructureSupport[] = [];
+    const loads: StructureLoadData[] = [];
 
     // Bottom chord nodes
     for (let i = 0; i <= panels; i++) {
@@ -442,12 +490,12 @@ class StructureGenerator {
     };
   }
 
-  private generatePrattTruss(params: Record<string, any>, material: string): StructureData {
+  private generatePrattTruss(params: Record<string, number>, material: string): StructureData {
     const { span = 24, height = 4, panels = 6 } = params;
     const panelLength = span / panels;
-    const nodes: any[] = [];
-    const members: any[] = [];
-    const supports: any[] = [];
+    const nodes: StructureNode[] = [];
+    const members: StructureMemberData[] = [];
+    const supports: StructureSupport[] = [];
 
     // Similar to Warren but with verticals
     for (let i = 0; i <= panels; i++) {
@@ -489,7 +537,7 @@ class StructureGenerator {
     };
   }
 
-  private generatePortalFrame(params: Record<string, any>, material: string): StructureData {
+  private generatePortalFrame(params: Record<string, number>, material: string): StructureData {
     const { span = 20, height = 8, roofPitch = 5 } = params;
     const ridgeHeight = height + (span / 2) * Math.tan(roofPitch * Math.PI / 180);
 
@@ -530,13 +578,13 @@ class StructureGenerator {
     };
   }
 
-  private generateIndustrialShed(params: Record<string, any>, material: string): StructureData {
+  private generateIndustrialShed(params: Record<string, number>, material: string): StructureData {
     const { span = 20, length = 50, height = 8, baySpacing = 6 } = params;
     const numFrames = Math.floor(length / baySpacing) + 1;
     
-    const nodes: any[] = [];
-    const members: any[] = [];
-    const supports: any[] = [];
+    const nodes: StructureNode[] = [];
+    const members: StructureMemberData[] = [];
+    const supports: StructureSupport[] = [];
 
     for (let f = 0; f < numFrames; f++) {
       const z = f * baySpacing;
@@ -575,7 +623,7 @@ class StructureGenerator {
     };
   }
 
-  private generateCantilever(params: Record<string, any>, material: string): StructureData {
+  private generateCantilever(params: Record<string, number>, material: string): StructureData {
     const { length = 5, load = 10 } = params;
     
     return {
@@ -599,7 +647,7 @@ class StructureGenerator {
     };
   }
 
-  private generateSimplySupported(params: Record<string, any>, material: string): StructureData {
+  private generateSimplySupported(params: Record<string, number>, material: string): StructureData {
     const { span = 6, load = 20 } = params;
     
     return {
@@ -624,14 +672,14 @@ class StructureGenerator {
     };
   }
 
-  private generateContinuousBeam(params: Record<string, any>, material: string): StructureData {
+  private generateContinuousBeam(params: Record<string, number>, material: string): StructureData {
     const { span = 6, spans = 3, load = 15 } = params;
     const totalLength = span * spans;
     
-    const nodes: any[] = [];
-    const members: any[] = [];
-    const supports: any[] = [];
-    const loads: any[] = [];
+    const nodes: StructureNode[] = [];
+    const members: StructureMemberData[] = [];
+    const supports: StructureSupport[] = [];
+    const loads: StructureLoadData[] = [];
 
     for (let i = 0; i <= spans; i++) {
       nodes.push({ id: `N${i}`, x: i * span, y: 0, z: 0, label: `Support ${i}` });
@@ -786,7 +834,7 @@ export class EnhancedAIArchitect {
     const structureEntity = interpretation.entities.find(e => e.type === 'structure');
     if (!structureEntity) return undefined;
 
-    const params: Record<string, any> = {};
+    const params: Record<string, number> = {};
     for (const entity of interpretation.entities) {
       if (entity.type === 'dimension') {
         const dimType = entity.metadata?.dimensionType;

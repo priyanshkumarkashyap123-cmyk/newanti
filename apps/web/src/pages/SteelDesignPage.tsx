@@ -118,46 +118,29 @@ export function SteelDesignPage() {
     };
 
     return (
-        <div className="steel-design-page" style={{ 
-            padding: '20px', 
-            background: '#1e1e1e', 
-            color: '#fff', 
-            minHeight: '100vh' 
-        }}>
-            <header style={{ marginBottom: '30px' }}>
-                <h1 style={{ fontSize: '32px', marginBottom: '10px' }}>
+        <div className="steel-design-page p-5 bg-[#1e1e1e] text-white min-h-screen">
+            <header className="mb-[30px]">
+                <h1 className="text-[32px] mb-2.5">
                     🏗️ Steel Member Design
                 </h1>
-                <p style={{ color: '#888', fontSize: '14px' }}>
+                <p className="text-[#888] text-sm">
                     ⚡ Powered by Rust API (10x faster than Python) | AISC 360-16 & IS 800
                 </p>
             </header>
 
             {/* Configuration Panel */}
-            <div style={{ 
-                background: '#2d2d2d', 
-                padding: '20px', 
-                borderRadius: '8px', 
-                marginBottom: '30px' 
-            }}>
-                <h3 style={{ marginBottom: '20px' }}>Design Parameters</h3>
+            <div className="bg-[#2d2d2d] p-5 rounded-lg mb-[30px]">
+                <h3 className="mb-5">Design Parameters</h3>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5">
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label className="block mb-2">
                             Design Code:
                         </label>
                         <select
                             value={designCode}
                             onChange={(e) => setDesignCode(e.target.value as 'AISC360' | 'IS800')}
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px'
-                            }}
+                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
                         >
                             <option value="AISC360">AISC 360-16 (USA)</option>
                             <option value="IS800">IS 800:2007 (India)</option>
@@ -165,20 +148,13 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label className="block mb-2">
                             Member:
                         </label>
                         <select
                             value={selectedMember}
                             onChange={(e) => setSelectedMember(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px'
-                            }}
+                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
                         >
                             <option value="">All Members</option>
                             {members.map(m => (
@@ -190,26 +166,19 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label className="block mb-2">
                             Unbraced Length (mm):
                         </label>
                         <input
                             type="number"
                             value={params.Lb}
                             onChange={(e) => setParams({ ...params, Lb: parseFloat(e.target.value) || 3000 })}
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px'
-                            }}
+                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
                         />
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label className="block mb-2">
                             Kx (Effective Length Factor):
                         </label>
                         <input
@@ -217,19 +186,12 @@ export function SteelDesignPage() {
                             step="0.1"
                             value={params.Kx}
                             onChange={(e) => setParams({ ...params, Kx: parseFloat(e.target.value) || 1.0 })}
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px'
-                            }}
+                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
                         />
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label className="block mb-2">
                             Ky (Effective Length Factor):
                         </label>
                         <input
@@ -237,19 +199,12 @@ export function SteelDesignPage() {
                             step="0.1"
                             value={params.Ky}
                             onChange={(e) => setParams({ ...params, Ky: parseFloat(e.target.value) || 1.0 })}
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px'
-                            }}
+                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
                         />
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <label className="block mb-2">
                             Cb (LTB Modifier):
                         </label>
                         <input
@@ -257,14 +212,7 @@ export function SteelDesignPage() {
                             step="0.1"
                             value={params.Cb}
                             onChange={(e) => setParams({ ...params, Cb: parseFloat(e.target.value) || 1.0 })}
-                            style={{
-                                width: '100%',
-                                padding: '10px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px'
-                            }}
+                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
                         />
                     </div>
                 </div>
@@ -272,26 +220,16 @@ export function SteelDesignPage() {
                 <button type="button"
                     onClick={handleRunDesign}
                     disabled={analyzing || members.length === 0}
+                    className="mt-5 py-3 px-8 text-white border-0 rounded text-base font-bold flex items-center justify-center gap-2"
                     style={{
-                        marginTop: '20px',
-                        padding: '12px 32px',
                         background: analyzing ? '#555' : '#2196F3',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
                         cursor: analyzing ? 'not-allowed' : 'pointer',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
                         opacity: (analyzing || members.length === 0) ? 0.6 : 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
                     }}
                 >
                     {analyzing ? (
                         <>
-                            <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                            <Loader2 size={18} className="animate-spin" />
                             Running Design Checks...
                         </>
                     ) : (
@@ -305,17 +243,7 @@ export function SteelDesignPage() {
 
             {/* Error Display */}
             {error && (
-                <div style={{ 
-                    padding: '15px', 
-                    background: '#d32f2f22',
-                    border: '1px solid #d32f2f',
-                    borderRadius: '8px', 
-                    marginBottom: '20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    color: '#ff6b6b',
-                }}>
+                <div className="p-[15px] bg-[#d32f2f22] border border-[#d32f2f] rounded-lg mb-5 flex items-center gap-2.5 text-[#ff6b6b]">
                     <AlertTriangle size={18} />
                     <span><strong>Error:</strong> {error}</span>
                 </div>
@@ -323,18 +251,18 @@ export function SteelDesignPage() {
 
             {/* Results Display */}
             {results.length > 0 && (
-                <div style={{ background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
-                    <h3 style={{ marginBottom: '20px' }}>Design Check Results</h3>
+                <div className="bg-[#2d2d2d] p-5 rounded-lg">
+                    <h3 className="mb-5">Design Check Results</h3>
                     
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
                             <thead>
-                                <tr style={{ borderBottom: '2px solid #444' }}>
-                                    <th style={{ padding: '12px', textAlign: 'left' }}>Member</th>
-                                    <th style={{ padding: '12px', textAlign: 'left' }}>Section</th>
-                                    <th style={{ padding: '12px', textAlign: 'center' }}>Status</th>
-                                    <th style={{ padding: '12px', textAlign: 'right' }}>Critical Ratio</th>
-                                    <th style={{ padding: '12px', textAlign: 'left' }}>Governing Check</th>
+                                <tr className="border-b-2 border-[#444]">
+                                    <th className="p-3 text-left">Member</th>
+                                    <th className="p-3 text-left">Section</th>
+                                    <th className="p-3 text-center">Status</th>
+                                    <th className="p-3 text-right">Critical Ratio</th>
+                                    <th className="p-3 text-left">Governing Check</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -348,30 +276,24 @@ export function SteelDesignPage() {
                                         result.overallStatus === 'WARNING' ? '⚠️' : '✗';
 
                                     return (
-                                        <tr key={idx} style={{ borderBottom: '1px solid #333' }}>
-                                            <td style={{ padding: '12px' }}>{result.memberId}</td>
-                                            <td style={{ padding: '12px', color: '#4fc3f7' }}>
+                                        <tr key={idx} className="border-b border-[#333]">
+                                            <td className="p-3">{result.memberId}</td>
+                                            <td className="p-3 text-[#4fc3f7]">
                                                 {result.section.name}
                                             </td>
-                                            <td style={{ padding: '12px', textAlign: 'center' }}>
-                                                <span style={{ 
-                                                    padding: '4px 12px', 
+                                            <td className="p-3 text-center">
+                                                <span className="py-1 px-3 rounded text-xs" style={{ 
                                                     background: statusColor, 
-                                                    borderRadius: '4px',
-                                                    fontSize: '12px'
                                                 }}>
                                                     {statusIcon} {result.overallStatus}
                                                 </span>
                                             </td>
-                                            <td style={{ 
-                                                padding: '12px', 
-                                                textAlign: 'right',
+                                            <td className="p-3 text-right font-bold" style={{ 
                                                 color: result.criticalRatio > 1.0 ? '#f44336' : '#4fc3f7',
-                                                fontWeight: 'bold'
                                             }}>
                                                 {(result.criticalRatio * 100).toFixed(1)}%
                                             </td>
-                                            <td style={{ padding: '12px', fontSize: '14px' }}>
+                                            <td className="p-3 text-sm">
                                                 {result.governingCheck || 'N/A'}
                                             </td>
                                         </tr>
@@ -382,36 +304,31 @@ export function SteelDesignPage() {
                     </div>
 
                     {/* Summary Statistics */}
-                    <div style={{ 
-                        marginTop: '30px', 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-                        gap: '15px' 
-                    }}>
-                        <div style={{ padding: '20px', background: '#1e1e1e', borderRadius: '4px' }}>
-                            <div style={{ color: '#888', fontSize: '12px' }}>TOTAL MEMBERS</div>
-                            <div style={{ fontSize: '28px', color: '#4fc3f7', marginTop: '5px' }}>
+                    <div className="mt-[30px] grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-[15px]">
+                        <div className="p-5 bg-[#1e1e1e] rounded">
+                            <div className="text-[#888] text-xs">TOTAL MEMBERS</div>
+                            <div className="text-[28px] text-[#4fc3f7] mt-1">
                                 {results.length}
                             </div>
                         </div>
                         
-                        <div style={{ padding: '20px', background: '#1e1e1e', borderRadius: '4px' }}>
-                            <div style={{ color: '#888', fontSize: '12px' }}>PASSING</div>
-                            <div style={{ fontSize: '28px', color: '#4caf50', marginTop: '5px' }}>
+                        <div className="p-5 bg-[#1e1e1e] rounded">
+                            <div className="text-[#888] text-xs">PASSING</div>
+                            <div className="text-[28px] text-[#4caf50] mt-1">
                                 {results.filter(r => r.overallStatus === 'PASS').length}
                             </div>
                         </div>
                         
-                        <div style={{ padding: '20px', background: '#1e1e1e', borderRadius: '4px' }}>
-                            <div style={{ color: '#888', fontSize: '12px' }}>WARNING</div>
-                            <div style={{ fontSize: '28px', color: '#ff9800', marginTop: '5px' }}>
+                        <div className="p-5 bg-[#1e1e1e] rounded">
+                            <div className="text-[#888] text-xs">WARNING</div>
+                            <div className="text-[28px] text-[#ff9800] mt-1">
                                 {results.filter(r => r.overallStatus === 'WARNING').length}
                             </div>
                         </div>
                         
-                        <div style={{ padding: '20px', background: '#1e1e1e', borderRadius: '4px' }}>
-                            <div style={{ color: '#888', fontSize: '12px' }}>FAILING</div>
-                            <div style={{ fontSize: '28px', color: '#f44336', marginTop: '5px' }}>
+                        <div className="p-5 bg-[#1e1e1e] rounded">
+                            <div className="text-[#888] text-xs">FAILING</div>
+                            <div className="text-[28px] text-[#f44336] mt-1">
                                 {results.filter(r => r.overallStatus === 'FAIL').length}
                             </div>
                         </div>
@@ -420,9 +337,9 @@ export function SteelDesignPage() {
             )}
 
             {/* Info Section */}
-            <div style={{ marginTop: '30px', padding: '15px', background: '#424242', borderRadius: '8px', fontSize: '14px' }}>
+            <div className="mt-[30px] p-[15px] bg-[#424242] rounded-lg text-sm">
                 <strong>ℹ️ About Steel Design</strong>
-                <p style={{ marginTop: '10px', lineHeight: '1.6', color: '#bbb' }}>
+                <p className="mt-2.5 leading-[1.6] text-[#bbb]">
                     This module performs comprehensive steel member design checks according to {designCode} standards.
                     All checks (tension, compression, flexure, shear, combined forces) are performed locally and 
                     validated using the Rust API for 10x faster computation. Ensure you have run structural analysis

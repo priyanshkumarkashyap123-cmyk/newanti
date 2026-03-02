@@ -34,6 +34,7 @@ export const run_nafems_fv_benchmarks: () => number;
 export const run_nafems_le_benchmarks: () => number;
 export const run_nafems_nl_benchmarks: () => number;
 export const run_nafems_thermal_benchmarks: () => number;
+export const run_real_benchmarks: () => number;
 export const simulate_hysteresis_response: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
 export const solve_2d_frame_with_loads: (a: number, b: number, c: number) => number;
 export const solve_3d_frame_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;

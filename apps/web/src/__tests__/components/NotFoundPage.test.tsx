@@ -42,7 +42,8 @@ describe('NotFoundPage', () => {
     });
     it('should render 404 heading', () => {
         renderWithRouter();
-        expect(screen.getByText('404')).toBeDefined();
+        const heading = screen.getByRole('heading', { level: 1 });
+        expect(heading.textContent).toContain('404');
     });
 
     it('should render "Page Not Found" message', () => {

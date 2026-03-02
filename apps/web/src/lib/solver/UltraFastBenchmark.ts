@@ -10,6 +10,7 @@
  */
 
 import { gpuSolver, hybridSolver, GPUAcceleratedSolver } from './GPUAcceleratedSolver';
+import { analysisLogger } from '../logging/logger';
 
 // ============================================
 // BENCHMARK UTILITIES
@@ -411,8 +412,7 @@ export async function runBenchmarkSuite(
   const verbose = options.verbose ?? true;
   
   if (verbose) {
-    console.log('🚀 Ultra-Fast Solver Benchmark Suite');
-    console.log('====================================\n');
+    analysisLogger.info('Ultra-Fast Solver Benchmark Suite started');
   }
   
   // Test cases: [name, rows, cols, targetMs]
@@ -425,16 +425,22 @@ export async function runBenchmarkSuite(
   ];
   
   for (const [name, rows, cols, targetMs] of gridTests) {
-    if (verbose) console.log(`Testing: ${name}...`);
+    if (verbose) analysisLogger.info('Testing benchmark', { name });
     
     const { nodes, elements, loads } = generateGridFrame(rows, cols);
     const result = await runBenchmark(name, solver, nodes, elements, loads, targetMs);
     results.push(result);
     
     if (verbose) {
-      const status = result.passed ? '✅' : '❌';
-      console.log(`  ${status} ${result.numNodes} nodes, ${result.numElements} elements`);
-      console.log(`     Mean: ${result.meanMs.toFixed(3)}ms, Min: ${result.minMs.toFixed(3)}ms (target: ${targetMs}ms)\n`);
+      analysisLogger.info('Grid benchmark result', {
+        name,
+        passed: result.passed,
+        numNodes: result.numNodes,
+        numElements: result.numElements,
+        meanMs: result.meanMs.toFixed(3),
+        minMs: result.minMs.toFixed(3),
+        targetMs,
+      });
     }
   }
   
@@ -446,16 +452,22 @@ export async function runBenchmarkSuite(
   ];
   
   for (const [name, stories, baysX, baysY, targetMs] of buildingTests) {
-    if (verbose) console.log(`Testing: ${name}...`);
+    if (verbose) analysisLogger.info('Testing benchmark', { name });
     
     const { nodes, elements, loads } = generateBuildingFrame(stories, baysX, baysY);
     const result = await runBenchmark(name, solver, nodes, elements, loads, targetMs);
     results.push(result);
     
     if (verbose) {
-      const status = result.passed ? '✅' : '❌';
-      console.log(`  ${status} ${result.numNodes} nodes, ${result.numElements} elements`);
-      console.log(`     Mean: ${result.meanMs.toFixed(3)}ms, Min: ${result.minMs.toFixed(3)}ms (target: ${targetMs}ms)\n`);
+      analysisLogger.info('Building benchmark result', {
+        name,
+        passed: result.passed,
+        numNodes: result.numNodes,
+        numElements: result.numElements,
+        meanMs: result.meanMs.toFixed(3),
+        minMs: result.minMs.toFixed(3),
+        targetMs,
+      });
     }
   }
   
@@ -470,9 +482,11 @@ export async function runBenchmarkSuite(
   }, 0) / results.length;
   
   if (verbose) {
-    console.log('====================================');
-    console.log(`Summary: ${passed}/${results.length} tests passed`);
-    console.log(`Average speedup: ${avgSpeedup.toFixed(1)}x`);
+    analysisLogger.info('Benchmark suite summary', {
+      passed,
+      total: results.length,
+      averageSpeedup: avgSpeedup.toFixed(1),
+    });
   }
   
   return {
@@ -494,17 +508,16 @@ export async function runBenchmarkSuite(
 // ============================================
 
 export async function benchmarkGPU(): Promise<void> {
-  console.log('🎮 GPU Benchmark');
-  console.log('================\n');
+  analysisLogger.info('GPU Benchmark started');
   
   const initialized = await gpuSolver.initialize();
   
   if (!initialized) {
-    console.log('❌ WebGPU not available');
+    analysisLogger.warn('WebGPU not available');
     return;
   }
   
-  console.log('✅ WebGPU initialized\n');
+  analysisLogger.info('WebGPU initialized');
   
   // Test matrix-vector multiplication
   const sizes = [100, 500, 1000, 2000];
@@ -533,8 +546,11 @@ export async function benchmarkGPU(): Promise<void> {
     }
     
     const stats = calculateStats(times);
-    console.log(`Matrix-Vector (${n}x${n}):`);
-    console.log(`  Mean: ${stats.mean.toFixed(3)}ms, Min: ${stats.min.toFixed(3)}ms\n`);
+    analysisLogger.info('GPU Matrix-Vector benchmark', {
+      size: n,
+      meanMs: stats.mean.toFixed(3),
+      minMs: stats.min.toFixed(3),
+    });
   }
   
   gpuSolver.destroy();
@@ -545,8 +561,7 @@ export async function benchmarkGPU(): Promise<void> {
 // ============================================
 
 export function benchmarkMemory(): void {
-  console.log('💾 Memory Benchmark');
-  console.log('===================\n');
+  analysisLogger.info('Memory Benchmark started');
   
   const sizes = [100, 500, 1000, 5000];
   
@@ -560,9 +575,13 @@ export function benchmarkMemory(): void {
     
     const savings = ((denseBytes - sparseBytes) / denseBytes * 100).toFixed(1);
     
-    console.log(`${n} nodes (${n * 6} DOFs):`);
-    console.log(`  Dense: ${(denseBytes / 1024 / 1024).toFixed(2)} MB`);
-    console.log(`  Sparse: ${(sparseBytes / 1024 / 1024).toFixed(2)} MB (${savings}% savings)\n`);
+    analysisLogger.info('Memory benchmark result', {
+      nodes: n,
+      dofs: n * 6,
+      denseMB: (denseBytes / 1024 / 1024).toFixed(2),
+      sparseMB: (sparseBytes / 1024 / 1024).toFixed(2),
+      savingsPercent: savings,
+    });
   }
 }
 

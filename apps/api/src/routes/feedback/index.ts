@@ -25,8 +25,8 @@ interface FeedbackEntry {
     sessionId: string;
     userId?: string;
     originalInput: string;
-    originalOutput: any;
-    correctedOutput?: any;
+    originalOutput: Record<string, unknown>;
+    correctedOutput?: Record<string, unknown>;
     rating?: number;
     comment?: string;
     processed: boolean;

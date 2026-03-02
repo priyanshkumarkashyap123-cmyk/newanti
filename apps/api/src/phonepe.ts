@@ -507,7 +507,7 @@ billingRouter.post(
   "/initiate-payment",
   requireAuth(),
   async (req: Request, res: Response) => {
-    const requestId = (req as any).requestId || "unknown";
+    const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
       const { userId, email: authEmail } = getAuth(req);
       if (!userId) {
@@ -575,7 +575,7 @@ billingRouter.post(
   "/create-order",
   requireAuth(),
   async (req: Request, res: Response) => {
-    const requestId = (req as any).requestId || "unknown";
+    const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
       const { userId, email: authEmail } = getAuth(req);
       if (!userId) {
@@ -650,7 +650,7 @@ billingRouter.post(
   "/verify-payment",
   requireAuth(),
   async (req: Request, res: Response) => {
-    const requestId = (req as any).requestId || "unknown";
+    const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
       const { userId } = getAuth(req);
       if (!userId) {
@@ -735,7 +735,7 @@ billingRouter.post(
 billingRouter.post(
   "/webhooks/phonepe",
   async (req: Request, res: Response) => {
-    const requestId = (req as any).requestId || "unknown";
+    const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
       const xVerify = req.headers["x-verify"] as string;
       const body = req.body;
@@ -773,7 +773,7 @@ billingRouter.get(
   "/status",
   requireAuth(),
   async (req: Request, res: Response) => {
-    const requestId = (req as any).requestId || "unknown";
+    const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
       const { userId } = getAuth(req);
       if (!userId) {
@@ -908,7 +908,7 @@ billingRouter.get(
   "/transaction-status/:txnId",
   requireAuth(),
   async (req: Request, res: Response) => {
-    const requestId = (req as any).requestId || "unknown";
+    const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
       const { userId } = getAuth(req);
       if (!userId) {

@@ -79,11 +79,20 @@ Commitlint runs automatically via Husky pre-commit hooks. Your PR will fail CI i
 ### Running Tests
 
 ```bash
-# All tests
+# All tests (API + Web)
 pnpm test:run
 
-# Frontend unit tests with coverage
+# Frontend unit tests (240 tests)
+cd apps/web && pnpm test:run
+
+# API unit tests (97 tests)
+cd apps/api && npx vitest run
+
+# Frontend with coverage
 cd apps/web && pnpm test:run -- --coverage
+
+# API TypeScript check (0 errors enforced)
+cd apps/api && npx tsc --noEmit
 
 # E2E tests (requires build first)
 cd apps/web && pnpm build && pnpm test:e2e

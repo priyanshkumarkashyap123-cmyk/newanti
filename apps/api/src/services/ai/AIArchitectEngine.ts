@@ -779,7 +779,7 @@ export class AIArchitectEngine {
       if (startNode && endNode) {
         const dx = endNode.x - startNode.x;
         const dy = endNode.y - startNode.y;
-        const dz = (endNode as any).z - (startNode as any).z || 0;
+        const dz = endNode.z - startNode.z || 0;
         const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (length < 0.001) {
           issues.push({
@@ -892,7 +892,7 @@ Provide diagnosis as JSON array of issues.`;
         .trim();
 
       const parsed = JSON.parse(text);
-      return (parsed.issues || parsed || []).filter((i: any) =>
+      return (parsed.issues || parsed || []).filter((i: { severity?: string; category?: string; message?: string }) =>
         i.severity && i.category && i.message
       ) as DiagnosisIssue[];
     } catch {
@@ -1217,7 +1217,7 @@ Output JSON array of load actions: [{"nodeId": "n1", "fx": 0, "fy": -50, "fz": 0
         const text = result.response.text().replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
         const loads = JSON.parse(text);
 
-        const actions: AIAction[] = (Array.isArray(loads) ? loads : [loads]).map((l: any) => ({
+        const actions: AIAction[] = (Array.isArray(loads) ? loads : [loads]).map((l: { nodeId?: string; fx?: number; fy?: number; fz?: number }) => ({
           type: 'addLoad' as const,
           params: { nodeId: l.nodeId, fx: l.fx || 0, fy: l.fy || 0, fz: l.fz || 0 },
           description: `Add load at ${l.nodeId}: Fx=${l.fx || 0}, Fy=${l.fy || 0} kN`,
@@ -1427,7 +1427,7 @@ Suggest section optimization as JSON.`;
         const text = result.response.text().replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
         const optimization = JSON.parse(text);
 
-        const actions: AIAction[] = (optimization.changes || []).map((c: any) => ({
+        const actions: AIAction[] = (optimization.changes || []).map((c: { memberId?: string; oldSection?: string; newSection?: string; reason?: string }) => ({
           type: 'changeSection' as const,
           params: { memberId: c.memberId, section: c.newSection },
           description: `${c.memberId}: ${c.oldSection} → ${c.newSection} (${c.reason})`,
@@ -1541,7 +1541,7 @@ Suggest section optimization as JSON.`;
         const dx = Math.abs(endNode.x - startNode.x);
         const dy = Math.abs(endNode.y - startNode.y);
         memberType = dy > dx ? 'column' : 'beam';
-        memberLength = Math.sqrt(dx * dx + dy * dy + ((endNode as any).z - (startNode as any).z || 0) ** 2);
+        memberLength = Math.sqrt(dx * dx + dy * dy + (endNode.z - startNode.z || 0) ** 2);
       }
 
       // Estimate forces from analysis results or use defaults

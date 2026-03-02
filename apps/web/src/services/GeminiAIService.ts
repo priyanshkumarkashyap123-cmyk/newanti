@@ -18,6 +18,7 @@ import { auditTrail, AuditEntry } from './AuditTrailService';
 import { codeCompliance, IS800Checker, SteelSection, SteelMaterial, MemberForces, ComplianceReport } from './CodeComplianceEngine';
 import { connectionDesign, ConnectionDesign, ConnectionForces } from './ConnectionDesignService';
 import { API_CONFIG } from '../config/env';
+import { apiLogger } from '../lib/logging/logger';
 
 // ============================================
 // TYPES
@@ -536,7 +537,7 @@ class GeminiAIService {
     // In production, calls are proxied through the backend — no client-side key needed.
     if (import.meta.env.DEV) {
       this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || null;
-      console.log('[GeminiAI] 🚀 Power AI Service initialized (DEV mode), API key status:', this.apiKey ? 'Found' : 'Not found');
+      apiLogger.info('Power AI Service initialized (DEV mode)', { apiKeyStatus: this.apiKey ? 'Found' : 'Not found' });
     } else {
       // In production, we use the backend proxy — mark as 'proxy' so callGemini knows to route accordingly
       this.apiKey = '__PROXY__';
@@ -552,7 +553,7 @@ class GeminiAIService {
    */
   setExpertMode(mode: 'assistant' | 'expert' | 'mentor'): void {
     this.expertMode = mode;
-    console.log('[GeminiAI] Expert mode set to:', mode);
+    apiLogger.info('Expert mode set', { mode });
   }
 
   /**
@@ -704,7 +705,7 @@ class GeminiAIService {
     if (import.meta.env.DEV) {
       this.apiKey = key;
     } else {
-      console.warn('[GeminiAI] Cannot set API key in production — all calls are proxied through the backend.');
+      apiLogger.warn('Cannot set API key in production — all calls are proxied through the backend');
     }
   }
 
@@ -797,7 +798,7 @@ Be specific and actionable.`;
         return [query];
       }
     } catch (error) {
-      console.warn('[GeminiAI] Task decomposition failed:', error);
+      apiLogger.warn('Task decomposition failed', { error });
       return [query];
     }
   }
@@ -902,7 +903,7 @@ Provide detailed reasoning with formulas shown.`;
 
       return await this.callGemini(reasoningPrompt, SYSTEM_PROMPT);
     } catch (error) {
-      console.warn('[GeminiAI] Problem reasoning failed:', error);
+      apiLogger.warn('Problem reasoning failed', { error });
       return problem;
     }
   }
@@ -965,7 +966,7 @@ Provide detailed reasoning with formulas shown.`;
     }
 
     if (import.meta.env.DEV) {
-      console.log('[GeminiAI] Calling Gemini API with prompt:', prompt.substring(0, 100) + '...');
+      apiLogger.info('Calling Gemini API', { promptPreview: prompt.substring(0, 100) });
     }
 
     // SECURITY: In production, proxy through backend to keep API key server-side
@@ -995,7 +996,7 @@ Provide detailed reasoning with formulas shown.`;
     };
 
     try {
-      if (import.meta.env.DEV) console.log('[GeminiAI] Sending request...');
+      if (import.meta.env.DEV) apiLogger.info('Sending request');
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1004,16 +1005,16 @@ Provide detailed reasoning with formulas shown.`;
 
       if (!response.ok) {
         const error = await response.json();
-        console.error('[GeminiAI] API error:', error);
+        apiLogger.error('API error', { error });
         throw new Error(error.error?.message || 'Gemini API request failed');
       }
 
       const data = await response.json();
       const result = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated';
-      if (import.meta.env.DEV) console.log('[GeminiAI] Response received:', result.substring(0, 100) + '...');
+      if (import.meta.env.DEV) apiLogger.info('Response received', { preview: result.substring(0, 100) });
       return result;
     } catch (error) {
-      console.error('[GeminiAI] Gemini API error:', error);
+      apiLogger.error('Gemini API error', { error });
       throw error;
     }
   }
@@ -1028,13 +1029,13 @@ Provide detailed reasoning with formulas shown.`;
   ): Promise<{ response: string; plan?: AIPlan; actions?: AIAction[] }> {
     this.isProcessing = true;
     this.emit('processing', { status: 'thinking', query });
-    console.log('[GeminiAI] Processing query:', query);
-    console.log('[GeminiAI] Model context:', { nodes: modelContext.nodes.length, members: modelContext.members.length, loads: modelContext.loads.length });
+    apiLogger.info('Processing query', { query });
+    apiLogger.info('Model context', { nodes: modelContext.nodes.length, members: modelContext.members.length, loads: modelContext.loads.length });
 
     try {
       // Determine intent
       const intent = this.classifyIntent(query);
-      console.log('[GeminiAI] Classified intent:', intent);
+      apiLogger.info('Classified intent', { intent });
       this.emit('processing', { status: 'classified', intent });
 
       let response: string;
@@ -1063,12 +1064,12 @@ Provide detailed reasoning with formulas shown.`;
           break;
 
         case 'create_structure':
-          console.log('[GeminiAI] Creating structure...');
+          apiLogger.info('Creating structure');
           const structurePlan = await this.planStructureCreation(query, modelContext);
           plan = structurePlan;
           actions = structurePlan.steps;
           response = this.formatPlanResponse(structurePlan);
-          console.log('[GeminiAI] Plan generated with', actions.length, 'actions');
+          apiLogger.info('Plan generated', { actionCount: actions.length });
           break;
 
         case 'run_analysis':
@@ -1088,7 +1089,7 @@ Provide detailed reasoning with formulas shown.`;
           break;
 
         case 'explain':
-          console.log('[GeminiAI] Explaining concept...');
+          apiLogger.info('Explaining concept');
           response = await this.explainConcept(query);
           break;
 
@@ -1107,7 +1108,7 @@ Provide detailed reasoning with formulas shown.`;
 
         case 'conversation':
         default:
-          console.log('[GeminiAI] Conversational response...');
+          apiLogger.info('Conversational response');
           response = await this.handleConversation(query, modelContext);
       }
 
@@ -1118,11 +1119,11 @@ Provide detailed reasoning with formulas shown.`;
       );
 
       this.emit('processing', { status: 'complete', response, plan, actions });
-      console.log('[GeminiAI] Query processed successfully');
+      apiLogger.info('Query processed successfully');
       return { response, plan, actions };
 
     } catch (error) {
-      console.error('[GeminiAI] Error processing query:', error);
+      apiLogger.error('Error processing query', { error });
       this.emit('processing', { status: 'error', error });
       throw error;
     } finally {
@@ -1228,7 +1229,7 @@ Provide detailed reasoning with formulas shown.`;
         const plan = this.parseAIPlan(aiResponse);
         if (plan) return plan;
       } catch (error) {
-        console.warn('Gemini API failed, using local planning:', error);
+        apiLogger.warn('Gemini API failed, using local planning', { error });
       }
     }
 
@@ -3447,7 +3448,7 @@ Provide detailed reasoning with formulas shown.`;
         }
       }
     } catch (e) {
-      console.warn('Failed to parse AI plan:', e);
+      apiLogger.warn('Failed to parse AI plan', { error: e });
     }
     return null;
   }
@@ -3700,7 +3701,7 @@ Click "Run Analysis" or say "Analyze the structure" to proceed.`;
         this.updateReasoningMemory(response);
         return response;
       } catch (error) {
-        console.warn('Gemini unavailable for explanation:', error);
+        apiLogger.warn('Gemini unavailable for explanation', { error });
       }
     }
 
@@ -4782,7 +4783,7 @@ I can explain many structural engineering concepts in detail. Here are the topic
         Use relevant emoji sparingly.`;
         return await this.callGemini(prompt, SYSTEM_PROMPT);
       } catch (error) {
-        console.warn('[GeminiAI] Greeting API failed:', error);
+        apiLogger.warn('Greeting API failed', { error });
       }
     }
 
@@ -4805,7 +4806,7 @@ I can explain many structural engineering concepts in detail. Here are the topic
         Keep it natural and professional.`;
         return await this.callGemini(prompt, SYSTEM_PROMPT);
       } catch (error) {
-        console.warn('[GeminiAI] Thanks API failed:', error);
+        apiLogger.warn('Thanks API failed', { error });
       }
     }
 
@@ -4920,7 +4921,7 @@ Provide a helpful, empathetic response that:
 Keep it conversational and helpful.`;
         return await this.callGemini(prompt, SYSTEM_PROMPT);
       } catch (error) {
-        console.warn('[GeminiAI] Troubleshooting API failed:', error);
+        apiLogger.warn('Troubleshooting API failed', { error });
       }
     }
 
@@ -5006,7 +5007,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
         const aiRecommendations = await this.callGemini(prompt, SYSTEM_PROMPT);
         assessment += `### 💡 AI Recommendations\n${aiRecommendations}\n`;
       } catch (error) {
-        console.warn('[GeminiAI] Review API failed:', error);
+        apiLogger.warn('Review API failed', { error });
       }
     }
 
@@ -5040,7 +5041,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
 
         // For complex queries, use multi-step reasoning
         if (subtasks.length > 1) {
-          console.log('[GeminiAI] Complex query detected, using multi-step reasoning');
+          apiLogger.info('Complex query detected, using multi-step reasoning');
           const responses: string[] = [];
 
           for (const subtask of subtasks) {
@@ -5051,7 +5052,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
               );
               responses.push(subResponse);
             } catch (e) {
-              console.warn('[GeminiAI] Subtask failed:', e);
+              apiLogger.warn('Subtask failed', { error: e });
             }
           }
 
@@ -5073,7 +5074,7 @@ Provide 2-3 specific recommendations to improve this model. Be practical and act
         this.updateReasoningMemory(response);
         return response;
       } catch (error) {
-        console.warn('[GeminiAI] Enhanced conversation failed:', error);
+        apiLogger.warn('Enhanced conversation failed', { error });
       }
     }
 
@@ -5199,7 +5200,7 @@ Feel free to ask me anything about structural engineering - I'm here to help! �
         const prompt = `${contextStr}\n\nUser query: ${query}`;
         return await this.callGemini(prompt, SYSTEM_PROMPT);
       } catch (error) {
-        console.warn('Gemini unavailable:', error);
+        apiLogger.warn('Gemini unavailable', { error });
       }
     }
 
@@ -5278,7 +5279,7 @@ How can I assist you today?`;
       ...taskData,
       timestamp: new Date(),
     });
-    console.log('[GeminiAI] Task stored:', taskId);
+    apiLogger.info('Task stored', { taskId });
   }
 
   /**

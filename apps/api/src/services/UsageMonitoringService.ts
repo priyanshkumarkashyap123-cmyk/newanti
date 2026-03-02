@@ -12,7 +12,7 @@
 import mongoose from 'mongoose';
 import {
     User, UsageLog, AnalysisResult, ReportGeneration,
-    IAnalysisResult, IReportGeneration,
+    IAnalysisResult, IReportGeneration, IUsageLog,
     isMasterUser
 } from '../models.js';
 import { logger } from '../utils/logger.js';
@@ -50,7 +50,7 @@ export class UsageMonitoringService {
         try {
             const user = await User.findOne({ clerkId: params.clerkId }).select('_id email').lean();
             await UsageLog.create({
-                userId: user?._id ?? null,
+                userId: user?._id ?? undefined,
                 clerkId: params.clerkId,
                 email: params.email || user?.email || 'unknown',
                 action: params.action,
@@ -226,8 +226,8 @@ export class UsageMonitoringService {
             const report = await ReportGeneration.create({
                 userId: user._id,
                 clerkId: params.clerkId,
-                projectId: params.projectId ? new mongoose.Types.ObjectId(params.projectId) : null,
-                analysisResultId: params.analysisResultId ? new mongoose.Types.ObjectId(params.analysisResultId) : null,
+                projectId: params.projectId ? new mongoose.Types.ObjectId(params.projectId) : undefined,
+                analysisResultId: params.analysisResultId ? new mongoose.Types.ObjectId(params.analysisResultId) : undefined,
                 reportType: params.reportType,
                 format: params.format,
                 reportName: params.reportName,
@@ -541,7 +541,7 @@ export class UsageMonitoringService {
         endDate?: Date;
         limit?: number;
         skip?: number;
-    }): Promise<{ logs: Array<Record<string, unknown>>; total: number }> {
+    }): Promise<{ logs: Array<Record<string, unknown> | IUsageLog>; total: number }> {
         if (!isConnected()) return { logs: [], total: 0 };
 
         try {

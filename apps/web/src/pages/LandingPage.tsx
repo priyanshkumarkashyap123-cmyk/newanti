@@ -624,6 +624,7 @@ export const LandingPage: FC = () => {
               {/* Monthly / Yearly Toggle */}
               <div className="inline-flex items-center bg-slate-200 dark:bg-slate-800 rounded-full p-1">
                 <button
+                  type="button"
                   onClick={() => setBillingCycle('monthly')}
                   className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                     billingCycle === 'monthly'
@@ -634,6 +635,7 @@ export const LandingPage: FC = () => {
                   Monthly
                 </button>
                 <button
+                  type="button"
                   onClick={() => setBillingCycle('yearly')}
                   className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                     billingCycle === 'yearly'

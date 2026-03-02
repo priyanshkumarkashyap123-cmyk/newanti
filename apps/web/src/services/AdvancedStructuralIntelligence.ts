@@ -299,12 +299,81 @@ export const SECTION_DATABASE = {
 };
 
 // ============================================
+// INTERNAL HELPER INTERFACES
+// ============================================
+
+interface MemberForces {
+  axial: number;
+  momentStart?: number;
+  momentEnd?: number;
+  shear?: number;
+}
+
+interface SectionProperties {
+  d?: number;
+  bf?: number;
+  tf?: number;
+  tw?: number;
+  t?: number;
+  A: number;
+  Ix: number;
+  Iy?: number;
+  Zx?: number;
+  weight: number;
+}
+
+interface MaterialProperties {
+  fy: number;
+  fu?: number;
+  E: number;
+  density: number;
+  cost: number;
+}
+
+interface MemberInput {
+  id: string;
+  sectionId: string;
+  material?: string;
+  startNodeId: string;
+  endNodeId: string;
+  length?: number;
+  startX?: number;
+  startY?: number;
+  startZ?: number;
+  endX?: number;
+  endY?: number;
+  endZ?: number;
+}
+
+interface AnalysisInput {
+  memberForces?: Record<string, MemberForces>;
+  displacements?: Record<string, number[]>;
+}
+
+interface StructureInput {
+  height?: number;
+  totalWeight?: number;
+  stories?: number;
+}
+
+interface NodeInput {
+  id: string;
+  restraints?: Record<string, boolean>;
+}
+
+interface LoadInput {
+  nodeId: string;
+  type?: string;
+  value?: number;
+}
+
+// ============================================
 // ADVANCED STRUCTURAL INTELLIGENCE CLASS
 // ============================================
 
 export class AdvancedStructuralIntelligence {
-  private modelContext: any;
-  private analysisHistory: any[] = [];
+  private modelContext: Record<string, unknown> | null = null;
+  private analysisHistory: Record<string, unknown>[] = [];
   
   constructor() {
     console.log('[ASI] Advanced Structural Intelligence initialized');
@@ -314,7 +383,7 @@ export class AdvancedStructuralIntelligence {
   // STRUCTURAL HEALTH MONITORING
   // ============================================
   
-  analyzeStructuralHealth(members: any[], analysisResults: any): StructuralHealthData[] {
+  analyzeStructuralHealth(members: MemberInput[], analysisResults: AnalysisInput): StructuralHealthData[] {
     const healthData: StructuralHealthData[] = [];
     
     for (const member of members) {
@@ -356,7 +425,7 @@ export class AdvancedStructuralIntelligence {
     return healthData;
   }
   
-  private calculateStressRatio(forces: any, section: any, material: any): number {
+  private calculateStressRatio(forces: MemberForces, section: SectionProperties | null, material: MaterialProperties | null): number {
     if (!section || !material) return 0;
     
     const axialStress = Math.abs(forces.axial || 0) / section.A;
@@ -366,7 +435,7 @@ export class AdvancedStructuralIntelligence {
     return Math.min(1, combinedStress / material.fy);
   }
   
-  private calculateDeflectionRatio(member: any, results: any): number {
+  private calculateDeflectionRatio(member: MemberInput, results: AnalysisInput): number {
     const displacements = results?.displacements || {};
     const startDisp = displacements[member.startNodeId] || [0, 0, 0];
     const endDisp = displacements[member.endNodeId] || [0, 0, 0];
@@ -382,7 +451,7 @@ export class AdvancedStructuralIntelligence {
     return Math.min(1, maxDisp / limit);
   }
   
-  private calculateFatigueIndex(forces: any, section: any): number {
+  private calculateFatigueIndex(forces: MemberForces, section: SectionProperties | null): number {
     // Simplified fatigue assessment based on stress range
     const stressRange = Math.abs(forces.axial || 0) / (section?.A || 1);
     const fatigueLimit = 100; // MPa - simplified
@@ -407,7 +476,7 @@ export class AdvancedStructuralIntelligence {
   // PREDICTIVE FAILURE ANALYSIS
   // ============================================
   
-  predictFailures(members: any[], analysisResults: any): FailurePrediction[] {
+  predictFailures(members: MemberInput[], analysisResults: AnalysisInput): FailurePrediction[] {
     const predictions: FailurePrediction[] = [];
     
     for (const member of members) {
@@ -450,14 +519,14 @@ export class AdvancedStructuralIntelligence {
     return predictions.sort((a, b) => b.probability - a.probability);
   }
   
-  private checkYieldingProbability(forces: any, section: any, material: any): number {
+  private checkYieldingProbability(forces: MemberForces, section: SectionProperties | null, material: MaterialProperties | null): number {
     if (!section || !material) return 0;
     const stress = Math.abs(forces.axial || 0) / section.A + 
                    Math.abs(forces.momentStart || 0) / section.Zx;
     return Math.min(1, Math.max(0, (stress / material.fy - 0.7) / 0.3));
   }
   
-  private checkBucklingProbability(forces: any, member: any, section: any, material: any): number {
+  private checkBucklingProbability(forces: MemberForces, member: MemberInput, section: SectionProperties | null, material: MaterialProperties | null): number {
     if (!section || !material || (forces.axial || 0) >= 0) return 0;
     
     const length = this.getMemberLength(member);
@@ -468,7 +537,7 @@ export class AdvancedStructuralIntelligence {
     return Math.min(1, Math.max(0, Math.abs(forces.axial) / Pcr - 0.5) / 0.5);
   }
   
-  private checkLTBProbability(forces: any, member: any, section: any): number {
+  private checkLTBProbability(forces: MemberForces, member: MemberInput, section: SectionProperties | null): number {
     if (!section || !(forces.momentStart || forces.momentEnd)) return 0;
     
     const length = this.getMemberLength(member);
@@ -494,7 +563,7 @@ export class AdvancedStructuralIntelligence {
     return 'negligible';
   }
   
-  private getMitigationActions(mode: FailureMode, member: any): MitigationAction[] {
+  private getMitigationActions(mode: FailureMode, _member: MemberInput): MitigationAction[] {
     const actions: MitigationAction[] = [];
     
     switch (mode) {
@@ -528,8 +597,8 @@ export class AdvancedStructuralIntelligence {
   // ============================================
   
   checkCodeCompliance(
-    members: any[], 
-    analysisResults: any, 
+    members: MemberInput[], 
+    analysisResults: AnalysisInput, 
     code: DesignCode
   ): CodeComplianceResult {
     const checks: CodeCheck[] = [];
@@ -559,7 +628,7 @@ export class AdvancedStructuralIntelligence {
     };
   }
   
-  private performCodeChecks(member: any, forces: any, section: any, code: DesignCode): CodeCheck[] {
+  private performCodeChecks(member: MemberInput, forces: MemberForces, section: SectionProperties | null, code: DesignCode): CodeCheck[] {
     const checks: CodeCheck[] = [];
     
     if (code.startsWith('IS800')) {
@@ -573,7 +642,7 @@ export class AdvancedStructuralIntelligence {
     return checks;
   }
   
-  private performIS800Checks(member: any, forces: any, section: any): CodeCheck[] {
+  private performIS800Checks(member: MemberInput, forces: MemberForces, section: SectionProperties): CodeCheck[] {
     const checks: CodeCheck[] = [];
     const fy = 250; // MPa
     const gammaM0 = 1.1;
@@ -644,7 +713,7 @@ export class AdvancedStructuralIntelligence {
     return checks;
   }
   
-  private performAISCChecks(member: any, forces: any, section: any): CodeCheck[] {
+  private performAISCChecks(member: MemberInput, forces: MemberForces, section: SectionProperties): CodeCheck[] {
     const checks: CodeCheck[] = [];
     const Fy = 345; // MPa (50 ksi)
     const phi_t = 0.9;
@@ -700,7 +769,7 @@ export class AdvancedStructuralIntelligence {
     return checks;
   }
   
-  private performEurocodeChecks(member: any, forces: any, section: any): CodeCheck[] {
+  private performEurocodeChecks(_member: MemberInput, forces: MemberForces, section: SectionProperties): CodeCheck[] {
     const checks: CodeCheck[] = [];
     const fy = 355; // MPa S355
     const gammaM0 = 1.0;
@@ -788,7 +857,7 @@ export class AdvancedStructuralIntelligence {
   // LOAD PATH ANALYSIS
   // ============================================
   
-  analyzeLoadPaths(nodes: any[], members: any[], loads: any[]): LoadPathAnalysis {
+  analyzeLoadPaths(nodes: NodeInput[], members: MemberInput[], loads: LoadInput[]): LoadPathAnalysis {
     const paths = this.identifyLoadPaths(nodes, members, loads);
     const criticalPath = paths.sort((a, b) => b.totalLoad - a.totalLoad)[0];
     
@@ -804,7 +873,7 @@ export class AdvancedStructuralIntelligence {
     };
   }
   
-  private identifyLoadPaths(nodes: any[], members: any[], loads: any[]): LoadPath[] {
+  private identifyLoadPaths(nodes: NodeInput[], members: MemberInput[], loads: LoadInput[]): LoadPath[] {
     const paths: LoadPath[] = [];
     
     // Find support nodes
@@ -821,7 +890,7 @@ export class AdvancedStructuralIntelligence {
     return paths;
   }
   
-  private traceLoadPath(startNodeId: string, members: any[], supportNodes: any[]): LoadPath | null {
+  private traceLoadPath(startNodeId: string, members: MemberInput[], supportNodes: NodeInput[]): LoadPath | null {
     const visited = new Set<string>();
     const pathMembers: string[] = [];
     let current = startNodeId;
@@ -877,7 +946,7 @@ export class AdvancedStructuralIntelligence {
   // ============================================
   
   assessSeismicVulnerability(
-    structure: any,
+    structure: StructureInput,
     zone: string,
     soilType: 'A' | 'B' | 'C' | 'D' | 'E'
   ): SeismicVulnerability {
@@ -912,7 +981,7 @@ export class AdvancedStructuralIntelligence {
     return zones[zone] || 0.16;
   }
   
-  private estimateFundamentalPeriod(structure: any): number {
+  private estimateFundamentalPeriod(structure: StructureInput): number {
     const height = structure.height || 15; // meters
     return 0.075 * Math.pow(height, 0.75); // Approximate formula
   }
@@ -926,13 +995,13 @@ export class AdvancedStructuralIntelligence {
     return 2.5 * Z * S * (0.4 / 4.0) * (4.0 / T);
   }
   
-  private calculateBaseShear(structure: any, Sa: number, I: number): number {
+  private calculateBaseShear(structure: StructureInput, Sa: number, I: number): number {
     const W = structure.totalWeight || 5000; // kN
     const R = 5; // Response modification factor
     return (Sa * I * W) / R;
   }
   
-  private calculateStoryDrifts(structure: any): number[] {
+  private calculateStoryDrifts(structure: StructureInput): number[] {
     const stories = structure.stories || 3;
     return Array.from({ length: stories }, () => 0.005 + Math.random() * 0.015);
   }
@@ -995,7 +1064,7 @@ export class AdvancedStructuralIntelligence {
   // CARBON FOOTPRINT
   // ============================================
   
-  calculateCarbonFootprint(members: any[]): CarbonFootprint {
+  calculateCarbonFootprint(members: MemberInput[]): CarbonFootprint {
     let steelWeight = 0;
     
     for (const member of members) {
@@ -1060,7 +1129,7 @@ export class AdvancedStructuralIntelligence {
   // COST ESTIMATION
   // ============================================
   
-  estimateCost(members: any[], currency: string = 'INR'): CostEstimate {
+  estimateCost(members: MemberInput[], currency: string = 'INR'): CostEstimate {
     let steelWeight = 0;
     
     for (const member of members) {
@@ -1105,18 +1174,18 @@ export class AdvancedStructuralIntelligence {
   // HELPER METHODS
   // ============================================
   
-  private getSection(sectionId: string): any {
+  private getSection(sectionId: string): SectionProperties {
     for (const region of Object.values(SECTION_DATABASE)) {
-      for (const series of Object.values(region as any)) {
-        if ((series as any)[sectionId]) {
-          return (series as any)[sectionId];
+      for (const series of Object.values(region as Record<string, Record<string, SectionProperties>>)) {
+        if ((series as Record<string, SectionProperties>)[sectionId]) {
+          return (series as Record<string, SectionProperties>)[sectionId];
         }
       }
     }
-    return SECTION_DATABASE.indian.ISMB['ISMB300'];
+    return SECTION_DATABASE.indian.ISMB['ISMB300'] as SectionProperties;
   }
   
-  private getMemberLength(member: any): number {
+  private getMemberLength(member: MemberInput): number {
     if (member.length) return member.length;
     
     // Calculate from node coordinates if available

@@ -405,6 +405,8 @@ export interface IUserModel extends Document {
     emailVerified: boolean;
     role: 'user' | 'admin' | 'enterprise';
     subscriptionTier: 'free' | 'pro' | 'enterprise';
+    /** Alias kept in sync with subscriptionTier for billing compat */
+    tier: 'free' | 'pro' | 'enterprise';
     company?: string;
     phone?: string;
     lastLoginAt?: Date;
@@ -469,8 +471,15 @@ const UserModelSchema = new Schema<IUserModel>({
         default: null
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
+
+// Virtual alias: tier → subscriptionTier (billing compat with Clerk User model)
+UserModelSchema.virtual('tier')
+    .get(function (this: IUserModel) { return this.subscriptionTier; })
+    .set(function (this: IUserModel, val: string) { this.subscriptionTier = val as IUserModel['subscriptionTier']; });
 
 export const UserModel = mongoose.model<IUserModel>('UserModel', UserModelSchema);
 

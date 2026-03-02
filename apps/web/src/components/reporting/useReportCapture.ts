@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useRef } from 'react';
-import html2canvas from 'html2canvas';
+// html2canvas is dynamically imported on first use to keep it out of the main bundle (~204 KB)
 import { ReportGenerator, type ProjectData, type NodeDisplacementRow, type MemberForceRow, type ReactionRow } from '../../services/ReportGenerator';
 import { useModelStore } from '../../store/model';
 
@@ -85,6 +85,7 @@ export function useReportCapture() {
                     continue;
                 }
 
+                const { default: html2canvas } = await import('html2canvas');
                 const canvas = await html2canvas(element, {
                     backgroundColor: '#1a1a24', // Dark background
                     scale: 2, // Higher resolution
@@ -119,6 +120,7 @@ export function useReportCapture() {
                 return null;
             }
 
+            const { default: html2canvas } = await import('html2canvas');
             const canvas = await html2canvas(element, {
                 backgroundColor: '#1a1a24',
                 scale: 2,

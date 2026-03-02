@@ -21,8 +21,8 @@ export interface CreateFeedback {
     type: FeedbackType;
     feature: string;
     originalInput: string;
-    originalOutput?: any;
-    correctedOutput?: any;
+    originalOutput?: Record<string, unknown>;
+    correctedOutput?: Record<string, unknown>;
     rating?: number;
     comment?: string;
 }
@@ -41,8 +41,8 @@ export interface TrainingExport {
     exportedAt: Date;
     entries: Array<{
         input: string;
-        originalOutput: any;
-        correctedOutput: any;
+        originalOutput: Record<string, unknown>;
+        correctedOutput: Record<string, unknown>;
         feature: string;
         rating?: number;
     }>;
@@ -63,7 +63,7 @@ export class DatabaseFeedbackService {
      * Log a correction
      */
     async logCorrection(
-        data: Omit<CreateFeedback, 'type'> & { correctedOutput: any }
+        data: Omit<CreateFeedback, 'type'> & { correctedOutput: Record<string, unknown> }
     ): Promise<Feedback> {
         return this.prisma.feedback.create({
             data: {
@@ -218,8 +218,8 @@ export class DatabaseFeedbackService {
             exportedAt: new Date(),
             entries: corrections.map(c => ({
                 input: c.originalInput,
-                originalOutput: c.originalOutput,
-                correctedOutput: c.correctedOutput,
+                originalOutput: (c.originalOutput ?? {}) as Record<string, unknown>,
+                correctedOutput: (c.correctedOutput ?? {}) as Record<string, unknown>,
                 feature: c.feature || '',
                 rating: c.rating ?? undefined
             }))

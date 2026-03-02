@@ -30,6 +30,28 @@ import { requireAuth } from '../../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
 import { logger } from '../../utils/logger.js';
 
+/** Shape of a node as received from the client request body */
+interface RawNodeInput {
+  id: string;
+  x: number;
+  y: number;
+  z?: number;
+  isSupport?: boolean;
+  restraints?: { fx?: boolean; fy?: boolean };
+}
+
+/** Shape of a member as received from the client request body */
+interface RawMemberInput {
+  id: string;
+  s?: string;
+  startNode?: string;
+  startNodeId?: string;
+  e?: string;
+  endNode?: string;
+  endNodeId?: string;
+  section?: string;
+}
+
 const router: IRouter = Router();
 
 // SECURITY: All AI routes require authentication + rate limiting
@@ -106,14 +128,14 @@ router.post('/validate', asyncHandler(async (req: Request, res: Response) => {
 
   // Convert to ModelContext for diagnosis
   const context = {
-    nodes: model.nodes.map((n: any) => ({
+    nodes: model.nodes.map((n: RawNodeInput) => ({
       id: n.id,
       x: n.x,
       y: n.y,
       z: n.z || 0,
       hasSupport: n.isSupport || (n.restraints && (n.restraints.fy || n.restraints.fx)),
     })),
-    members: model.members.map((m: any) => ({
+    members: model.members.map((m: RawMemberInput) => ({
       id: m.id,
       startNode: m.s || m.startNode || m.startNodeId,
       endNode: m.e || m.endNode || m.endNodeId,
@@ -144,14 +166,14 @@ router.post('/diagnose', asyncHandler(async (req: Request, res: Response) => {
   let modelContext = context;
   if (!modelContext && model) {
     modelContext = {
-      nodes: (model.nodes || []).map((n: any) => ({
+      nodes: (model.nodes || []).map((n: RawNodeInput) => ({
         id: n.id,
         x: n.x,
         y: n.y,
         z: n.z || 0,
         hasSupport: n.isSupport || !!(n.restraints && (n.restraints.fy || n.restraints.fx)),
       })),
-      members: (model.members || []).map((m: any) => ({
+      members: (model.members || []).map((m: RawMemberInput) => ({
         id: m.id,
         startNode: m.s || m.startNode,
         endNode: m.e || m.endNode,
@@ -194,11 +216,11 @@ router.post('/fix', asyncHandler(async (req: Request, res: Response) => {
     const chatResult = await aiArchitectEngine.chat(
       'Fix all issues in the model',
       context || {
-        nodes: model.nodes?.map((n: any) => ({
+        nodes: model.nodes?.map((n: RawNodeInput) => ({
           id: n.id, x: n.x, y: n.y, z: n.z || 0,
           hasSupport: n.isSupport || false,
         })) || [],
-        members: model.members?.map((m: any) => ({
+        members: model.members?.map((m: RawMemberInput) => ({
           id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
         })) || [],
         loads: model.loads || [],
@@ -226,11 +248,11 @@ router.post('/modify', asyncHandler(async (req: Request, res: Response) => {
   }
 
   const modelContext = context || (model ? {
-    nodes: model.nodes?.map((n: any) => ({
+    nodes: model.nodes?.map((n: RawNodeInput) => ({
       id: n.id, x: n.x, y: n.y, z: n.z || 0,
       hasSupport: n.isSupport || false,
     })) || [],
-    members: model.members?.map((m: any) => ({
+    members: model.members?.map((m: RawMemberInput) => ({
       id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
     })) || [],
     loads: model.loads || [],
@@ -285,11 +307,11 @@ router.post('/optimize', asyncHandler(async (req: Request, res: Response) => {
   }
 
   const modelContext = context || {
-    nodes: model.nodes?.map((n: any) => ({
+    nodes: model.nodes?.map((n: RawNodeInput) => ({
       id: n.id, x: n.x, y: n.y, z: n.z || 0,
       hasSupport: n.isSupport || false,
     })) || [],
-    members: model.members?.map((m: any) => ({
+    members: model.members?.map((m: RawMemberInput) => ({
       id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
     })) || [],
     loads: model.loads || [],

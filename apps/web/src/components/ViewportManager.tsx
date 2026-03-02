@@ -76,79 +76,40 @@ const checkWebglSupport = (): { supported: boolean; reason?: string } => {
 
 const WebglFallback: FC<{ error?: string }> = ({ error }) => (
   <div
+    className="w-full h-full text-[#e5e7eb] flex items-center justify-center p-8"
     style={{
-      width: "100%",
-      height: "100%",
       background:
         "radial-gradient(circle at 20% 20%, rgba(34,197,94,0.08), rgba(10,10,10,0.95))",
-      color: "#e5e7eb",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "32px",
     }}
   >
     <div
-      style={{
-        maxWidth: 640,
-        width: "100%",
-        background: "#0b1120",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 16,
-        padding: 24,
-        boxShadow: "0 10px 50px rgba(0,0,0,0.35)",
-      }}
+      className="max-w-[640px] w-full bg-[#0b1120] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-[0_10px_50px_rgba(0,0,0,0.35)]"
     >
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 12,
-        }}
+        className="flex items-center gap-3 mb-3"
       >
         <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: "rgba(239,68,68,0.1)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#f87171",
-          }}
+          className="w-9 h-9 rounded-[10px] bg-[rgba(239,68,68,0.1)] flex items-center justify-center text-[#f87171]"
         >
           ⚠️
         </div>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 700 }}>
+          <div className="text-lg font-bold">
             3D Viewer needs WebGL
           </div>
-          <div style={{ fontSize: 13, color: "#94a3b8" }}>
+          <div className="text-[13px] text-[#94a3b8]">
             Your browser/device couldn’t create a WebGL context. The workspace
             is disabled to avoid crashes.
           </div>
         </div>
       </div>
       <div
-        style={{
-          fontSize: 13,
-          color: "#cbd5e1",
-          lineHeight: 1.6,
-          marginBottom: 12,
-        }}
+        className="text-[13px] text-[#cbd5e1] leading-[1.6] mb-3"
       >
         Try these quick fixes, then refresh:
       </div>
       <ul
-        style={{
-          fontSize: 13,
-          color: "#cbd5e1",
-          lineHeight: 1.6,
-          paddingLeft: 18,
-          marginBottom: 14,
-        }}
+        className="text-[13px] text-[#cbd5e1] leading-[1.6] pl-[18px] mb-3.5"
       >
         <li>Enable hardware acceleration in your browser settings</li>
         <li>Close GPU-intensive tabs/apps and reload</li>
@@ -157,34 +118,18 @@ const WebglFallback: FC<{ error?: string }> = ({ error }) => (
       </ul>
       {error && (
         <div
-          style={{
-            fontSize: 12,
-            color: "#94a3b8",
-            background: "rgba(255,255,255,0.04)",
-            padding: 12,
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.05)",
-            marginBottom: 14,
-          }}
+          className="text-xs text-[#94a3b8] bg-[rgba(255,255,255,0.04)] p-3 rounded-[10px] border border-[rgba(255,255,255,0.05)] mb-3.5"
         >
-          <div style={{ fontWeight: 600, marginBottom: 4 }}>
+          <div className="font-semibold mb-1">
             Technical details
           </div>
-          <div style={{ whiteSpace: "pre-wrap" }}>{error}</div>
+          <div className="whitespace-pre-wrap">{error}</div>
         </div>
       )}
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div className="flex gap-3 flex-wrap">
         <button type="button"
           onClick={() => window.location.reload()}
-          style={{
-            padding: "10px 14px",
-            background: "#22c55e",
-            color: "#0b1120",
-            border: "none",
-            borderRadius: 10,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
+          className="py-2.5 px-3.5 bg-[#22c55e] text-[#0b1120] border-none rounded-[10px] font-bold cursor-pointer"
         >
           Reload after enabling WebGL
         </button>
@@ -192,13 +137,7 @@ const WebglFallback: FC<{ error?: string }> = ({ error }) => (
           href="https://get.webgl.org/"
           target="_blank"
           rel="noreferrer"
-          style={{
-            padding: "10px 12px",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: 10,
-            color: "#e5e7eb",
-            textDecoration: "none",
-          }}
+          className="py-2.5 px-3 border border-[rgba(255,255,255,0.15)] rounded-[10px] text-[#e5e7eb] no-underline"
         >
           Check WebGL support →
         </a>
@@ -209,21 +148,13 @@ const WebglFallback: FC<{ error?: string }> = ({ error }) => (
 
 const WebglChecking: FC = () => (
   <div
-    style={{
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      background: "#0b1120",
-      color: "#cbd5e1",
-    }}
+    className="w-full h-full flex items-center justify-center bg-[#0b1120] text-[#cbd5e1]"
   >
-    <div style={{ textAlign: "center" }}>
-      <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 16 }}>
+    <div className="text-center">
+      <div className="mb-3 font-bold text-base">
         Checking graphics compatibility…
       </div>
-      <div style={{ fontSize: 13, color: "#94a3b8" }}>
+      <div className="text-[13px] text-[#94a3b8]">
         Preparing the 3D workspace
       </div>
     </div>
@@ -261,45 +192,23 @@ const ViewportContainer: FC<{
   return (
     <div
       ref={containerRef}
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        touchAction: "none",
-      }}
+      className="w-full h-full relative touch-none"
     >
       {/* CSS Grid Layout for Viewports */}
       <div
+        className="grid w-full h-full gap-[2px] bg-[#222]"
         style={{
-          display: "grid",
           gridTemplateColumns: layout === "SINGLE" ? "1fr" : "1fr 1fr",
           gridTemplateRows: layout === "SINGLE" ? "1fr" : "1fr 1fr",
-          width: "100%",
-          height: "100%",
-          gap: "2px",
-          backgroundColor: "#222",
         }}
       >
         {/* Main 3D Perspective View */}
         <div
           ref={mainRef}
-          style={{
-            position: "relative",
-            background: "#1a1a1a",
-            overflow: "hidden",
-          }}
+          className="relative bg-[#1a1a1a] overflow-hidden"
         >
           <div
-            style={{
-              position: "absolute",
-              top: 8,
-              left: 8,
-              color: "#fff",
-              zIndex: 10,
-              fontSize: "11px",
-              opacity: 0.8,
-              fontWeight: 500,
-            }}
+            className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
           >
             Perspective
           </div>
@@ -309,69 +218,30 @@ const ViewportContainer: FC<{
           <>
             <div
               ref={topRef}
-              style={{
-                position: "relative",
-                background: "#1a1a1a",
-                overflow: "hidden",
-              }}
+              className="relative bg-[#1a1a1a] overflow-hidden"
             >
               <div
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  left: 8,
-                  color: "#fff",
-                  zIndex: 10,
-                  fontSize: "11px",
-                  opacity: 0.8,
-                  fontWeight: 500,
-                }}
+                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
               >
                 Top
               </div>
             </div>
             <div
               ref={frontRef}
-              style={{
-                position: "relative",
-                background: "#1a1a1a",
-                overflow: "hidden",
-              }}
+              className="relative bg-[#1a1a1a] overflow-hidden"
             >
               <div
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  left: 8,
-                  color: "#fff",
-                  zIndex: 10,
-                  fontSize: "11px",
-                  opacity: 0.8,
-                  fontWeight: 500,
-                }}
+                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
               >
                 Front
               </div>
             </div>
             <div
               ref={rightRef}
-              style={{
-                position: "relative",
-                background: "#1a1a1a",
-                overflow: "hidden",
-              }}
+              className="relative bg-[#1a1a1a] overflow-hidden"
             >
               <div
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  left: 8,
-                  color: "#fff",
-                  zIndex: 10,
-                  fontSize: "11px",
-                  opacity: 0.8,
-                  fontWeight: 500,
-                }}
+                className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
               >
                 Right
               </div>
@@ -536,118 +406,57 @@ export const ViewportManager: FC = () => {
 
   return (
     <div
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        touchAction: "none",
-      }}
+      className="w-full h-full relative touch-none"
     >
       {/* Compact Controls Cluster - Top Right */}
       <div
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          zIndex: 50,
-          display: "flex",
-          flexDirection: "column",
-          gap: "6px",
-          alignItems: "flex-end",
-        }}
+        className="absolute top-2.5 right-2.5 z-50 flex flex-col gap-1.5 items-end"
       >
         {/* Graphics Engine Toggle - Collapsible */}
         {isGEMinimized ? (
           <button type="button"
             onClick={() => setIsGEMinimized(false)}
-            style={{
-              background: "rgba(0, 0, 0, 0.85)",
-              padding: "6px 10px",
-              borderRadius: "8px",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-              color: "#fff",
-              cursor: "pointer",
-              fontSize: "11px",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
+            className="bg-[rgba(0,0,0,0.85)] py-1.5 px-2.5 rounded-lg border border-[rgba(255,255,255,0.15)] shadow-[0_2px_8px_rgba(0,0,0,0.3)] text-white cursor-pointer text-[11px] flex items-center gap-1.5"
             title="Expand Graphics Engine Settings"
           >
             ⚙️ Display
           </button>
         ) : (
           <div
-            style={{
-              background: "rgba(0, 0, 0, 0.85)",
-              padding: "10px",
-              borderRadius: "10px",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-              minWidth: "120px",
-            }}
+            className="bg-[rgba(0,0,0,0.85)] p-2.5 rounded-[10px] border border-[rgba(255,255,255,0.15)] shadow-[0_4px_12px_rgba(0,0,0,0.4)] min-w-[120px]"
           >
             {/* Header with minimize */}
             <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "8px",
-              }}
+              className="flex justify-between items-center mb-2"
             >
               <div
-                style={{
-                  fontSize: "10px",
-                  color: "#888",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                  fontWeight: 600,
-                }}
+                className="text-[10px] text-[#888] uppercase tracking-[0.5px] font-semibold"
               >
                 Graphics Engine
               </div>
               <button type="button"
                 onClick={() => setIsGEMinimized(true)}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#888",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                }}
+                className="bg-transparent border-none text-[#888] cursor-pointer text-sm py-0.5 px-1.5 rounded"
                 title="Minimize"
               >
                 −
               </button>
             </div>
-            <div style={{ display: "flex", gap: "4px", marginBottom: "8px" }}>
+            <div className="flex gap-1 mb-2">
               <button type="button"
                 onClick={() => setUseWebGpu(false)}
+                className="flex-1 text-white border border-[rgba(255,255,255,0.1)] rounded-md p-1.5 cursor-pointer flex flex-col items-center gap-1"
                 style={{
-                  flex: 1,
-                  color: "#fff",
                   background: !useWebGpu ? "#444" : "transparent",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "6px",
-                  padding: "6px",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
                 }}
               >
                 <Cpu className="w-4 h-4" />
-                <span style={{ fontSize: "10px" }}>WebGL</span>
+                <span className="text-[10px]">WebGL</span>
               </button>
               <button type="button"
                 onClick={() => setUseWebGpu(true)}
+                className="flex-1 rounded-md p-1.5 cursor-pointer flex flex-col items-center gap-1"
                 style={{
-                  flex: 1,
                   color: useWebGpu ? "#10b981" : "#fff",
                   background: useWebGpu
                     ? "rgba(16, 185, 129, 0.2)"
@@ -655,58 +464,35 @@ export const ViewportManager: FC = () => {
                   border: useWebGpu
                     ? "1px solid #10b981"
                     : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "6px",
-                  padding: "6px",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
                 }}
               >
                 <Zap className="w-4 h-4" />
-                <span style={{ fontSize: "10px" }}>WebGPU</span>
+                <span className="text-[10px]">WebGPU</span>
               </button>
             </div>
 
             {/* Member Display Mode Toggle */}
             <div
-              style={{
-                fontSize: "10px",
-                color: "#888",
-                marginBottom: "4px",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                fontWeight: 600,
-              }}
+              className="text-[10px] text-[#888] mb-1 uppercase tracking-[0.5px] font-semibold"
             >
               Member Display
             </div>
-            <div style={{ display: "flex", gap: "4px", marginBottom: "8px" }}>
+            <div className="flex gap-1 mb-2">
               <button type="button"
                 onClick={() => setRenderMode3D(false)}
+                className="flex-1 text-white border border-[rgba(255,255,255,0.1)] rounded-md p-1.5 cursor-pointer flex flex-col items-center gap-1"
                 style={{
-                  flex: 1,
-                  color: "#fff",
                   background: !renderMode3D ? "#444" : "transparent",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "6px",
-                  padding: "6px",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
                 }}
                 title="Wireframe mode - fast rendering"
               >
                 <GitBranch className="w-4 h-4" />
-                <span style={{ fontSize: "10px" }}>Wire</span>
+                <span className="text-[10px]">Wire</span>
               </button>
               <button type="button"
                 onClick={() => setRenderMode3D(true)}
+                className="flex-1 rounded-md p-1.5 cursor-pointer flex flex-col items-center gap-1"
                 style={{
-                  flex: 1,
                   color: renderMode3D ? "#f59e0b" : "#fff",
                   background: renderMode3D
                     ? "rgba(245, 158, 11, 0.2)"
@@ -714,39 +500,24 @@ export const ViewportManager: FC = () => {
                   border: renderMode3D
                     ? "1px solid #f59e0b"
                     : "1px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "6px",
-                  padding: "6px",
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "4px",
                 }}
                 title="Solid 3D mode - realistic beam cross-sections"
               >
                 <Box className="w-4 h-4" />
-                <span style={{ fontSize: "10px" }}>Solid</span>
+                <span className="text-[10px]">Solid</span>
               </button>
             </div>
 
             <div
-              style={{
-                fontSize: "10px",
-                color: "#888",
-                marginBottom: "4px",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                fontWeight: 600,
-              }}
+              className="text-[10px] text-[#888] mb-1 uppercase tracking-[0.5px] font-semibold"
             >
               Layout
             </div>
-            <div style={{ display: "flex", gap: "4px" }}>
+            <div className="flex gap-1">
               <button type="button"
                 onClick={() => setLayout("SINGLE")}
+                className="flex-1 text-white rounded p-1.5 cursor-pointer text-[11px] font-medium"
                 style={{
-                  flex: 1,
-                  color: "#fff",
                   background:
                     layout === "SINGLE"
                       ? "#007bff"
@@ -755,31 +526,20 @@ export const ViewportManager: FC = () => {
                     layout === "SINGLE"
                       ? "1px solid #007bff"
                       : "1px solid rgba(255, 255, 255, 0.2)",
-                  borderRadius: "4px",
-                  padding: "6px",
-                  cursor: "pointer",
-                  fontSize: "11px",
-                  fontWeight: 500,
                 }}
               >
                 Single
               </button>
               <button type="button"
                 onClick={() => setLayout("QUAD")}
+                className="flex-1 text-white rounded p-1.5 cursor-pointer text-[11px] font-medium"
                 style={{
-                  flex: 1,
-                  color: "#fff",
                   background:
                     layout === "QUAD" ? "#007bff" : "rgba(255, 255, 255, 0.1)",
                   border:
                     layout === "QUAD"
                       ? "1px solid #007bff"
                       : "1px solid rgba(255, 255, 255, 0.2)",
-                  borderRadius: "4px",
-                  padding: "6px",
-                  cursor: "pointer",
-                  fontSize: "11px",
-                  fontWeight: 500,
                 }}
               >
                 Quad

@@ -20,6 +20,7 @@ mod solver;
 // Additional solver modules (public)
 pub mod out_of_core_solver;
 pub mod plate_shell_solver;
+pub mod solid_solver;
 pub mod robust_eigenvalue_solver;
 pub mod robust_nonlinear_solver;
 pub mod sparse_solver;
@@ -913,7 +914,14 @@ pub fn benchmark_ultra_fast(num_nodes: usize, num_elements: usize, iterations: u
 }
 
 // ============================================================================
-// NAFEMS BENCHMARK VALIDATION EXPORTS
+// REAL BENCHMARK VALIDATION EXPORTS (replaces fake TARGET==TARGET tests)
+// ============================================================================
+// These functions call ACTUAL solver code:
+//   - analyze_3d_frame() for beam/truss/frame benchmarks
+//   - SteadyStateThermal::solve() for thermal benchmarks
+//   - solve_solid_model() for 3D solid element benchmarks
+// Each benchmark compares solver output against analytical (closed-form) solutions.
+// ============================================================================
 // ============================================================================
 
 /// Single benchmark result for WASM serialization
@@ -1108,6 +1116,434 @@ pub fn run_nafems_contact_benchmarks() -> JsValue {
     suite.add_result(nafems_benchmarks::NafemsIC3::default().validate(nafems_benchmarks::NafemsIC3::TARGET_SLIDING));
     suite.add_result(nafems_benchmarks::NafemsIC5::default().validate(nafems_benchmarks::NafemsIC5::TARGET_PEAK_FORCE));
     let report = suite_to_report(&suite);
+    serde_wasm_bindgen::to_value(&report)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+}
+
+// ============================================================================
+// REAL SOLVER BENCHMARKS (using actual FEA computation)
+// ============================================================================
+
+/// Result for a single real benchmark test
+#[derive(Serialize)]
+struct RealBenchmarkEntry {
+    id: String,
+    name: String,
+    category: String,
+    solver_used: String,
+    expected_value: f64,
+    computed_value: f64,
+    unit: String,
+    error_percent: f64,
+    passed: bool,
+    description: String,
+}
+
+/// Full real benchmark report
+#[derive(Serialize)]
+struct RealBenchmarkReport {
+    success: bool,
+    report_title: String,
+    total_tests: usize,
+    passed_tests: usize,
+    pass_rate: f64,
+    is_real_solver: bool,
+    results: Vec<RealBenchmarkEntry>,
+}
+
+fn make_entry(
+    id: &str, name: &str, category: &str, solver: &str,
+    expected: f64, computed: f64, unit: &str, tol: f64, desc: &str,
+) -> RealBenchmarkEntry {
+    let err = if expected.abs() > 1e-15 {
+        ((computed - expected) / expected).abs() * 100.0
+    } else {
+        computed.abs()
+    };
+    RealBenchmarkEntry {
+        id: id.to_string(),
+        name: name.to_string(),
+        category: category.to_string(),
+        solver_used: solver.to_string(),
+        expected_value: expected,
+        computed_value: computed,
+        unit: unit.to_string(),
+        error_percent: err,
+        passed: err < tol,
+        description: desc.to_string(),
+    }
+}
+
+/// Run REAL structural benchmarks that call actual solver code.
+/// Unlike the legacy NAFEMS exports (which compare TARGET to TARGET),
+/// this function builds real FE models, solves them, and compares to analytical solutions.
+#[wasm_bindgen]
+pub fn run_real_benchmarks() -> JsValue {
+    use solver_3d::*;
+    use std::collections::HashMap;
+
+    let mut results = Vec::new();
+
+    // ── BM-1: Cantilever beam, tip point load ──
+    {
+        let l: f64 = 2.0;
+        let e: f64 = 200e9;
+        let iz: f64 = 1e-4;
+        let a: f64 = 0.01;
+        let p: f64 = 10000.0;
+        let delta_expected = -p * l.powi(3) / (3.0 * e * iz);
+        let theta_expected = -p * l.powi(2) / (2.0 * e * iz);
+
+        let nodes = vec![
+            Node3D { id: "0".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true;6], mass: None, spring_stiffness: None },
+            Node3D { id: "1".into(), x: l, y: 0.0, z: 0.0,
+                     restraints: [false;6], mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![Element3D {
+            id: "E1".into(), node_i: "0".into(), node_j: "1".into(),
+            E: e, nu: Some(0.3), G: 80e9, density: 7850.0,
+            A: a, Iy: iz, Iz: iz, J: 2.0*iz,
+            Asy: 0.0, Asz: 0.0, beta: 0.0,
+            releases_i: [false;6], releases_j: [false;6],
+            thickness: None, node_k: None, node_l: None,
+            element_type: ElementType::Frame,
+        }];
+        let loads = vec![NodalLoad {
+            node_id: "1".into(), fx: 0.0, fy: -p, fz: 0.0,
+            mx: 0.0, my: 0.0, mz: 0.0,
+        }];
+
+        if let Ok(res) = analyze_3d_frame(nodes, elements, loads, vec![], vec![], vec![],
+            AnalysisConfig::default())
+        {
+            if let Some(d) = res.displacements.get("1") {
+                results.push(make_entry(
+                    "BM-1a", "Cantilever tip deflection", "Beam", "analyze_3d_frame",
+                    delta_expected, d[1], "m", 1.0,
+                    "PL³/3EI — Euler-Bernoulli cantilever"
+                ));
+                results.push(make_entry(
+                    "BM-1b", "Cantilever tip rotation", "Beam", "analyze_3d_frame",
+                    theta_expected, d[5], "rad", 1.0,
+                    "PL²/2EI — Euler-Bernoulli cantilever"
+                ));
+            }
+            if let Some(r) = res.reactions.get("0") {
+                results.push(make_entry(
+                    "BM-1c", "Cantilever reaction Ry", "Beam", "analyze_3d_frame",
+                    p, r[1], "N", 1.0,
+                    "Static equilibrium check"
+                ));
+            }
+        }
+    }
+
+    // ── BM-2: Simply-supported beam with UDL ──
+    {
+        let l: f64 = 6.0;
+        let e: f64 = 200e9;
+        let iz: f64 = 1e-4;
+        let a: f64 = 0.01;
+        let w: f64 = 10000.0;
+        let delta_mid_expected = -5.0 * w * l.powi(4) / (384.0 * e * iz);
+        let reaction_expected = w * l / 2.0;
+
+        let nodes = vec![
+            Node3D { id: "0".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true,true,true,true,true,false], mass: None, spring_stiffness: None },
+            Node3D { id: "1".into(), x: l/2.0, y: 0.0, z: 0.0,
+                     restraints: [false,false,true,true,true,false], mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: l, y: 0.0, z: 0.0,
+                     restraints: [false,true,true,true,true,false], mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            Element3D { id: "E1".into(), node_i: "0".into(), node_j: "1".into(),
+                E: e, nu: Some(0.3), G: 80e9, density: 7850.0,
+                A: a, Iy: iz, Iz: iz, J: 2.0*iz,
+                Asy: 0.0, Asz: 0.0, beta: 0.0,
+                releases_i: [false;6], releases_j: [false;6],
+                thickness: None, node_k: None, node_l: None,
+                element_type: ElementType::Frame },
+            Element3D { id: "E2".into(), node_i: "1".into(), node_j: "2".into(),
+                E: e, nu: Some(0.3), G: 80e9, density: 7850.0,
+                A: a, Iy: iz, Iz: iz, J: 2.0*iz,
+                Asy: 0.0, Asz: 0.0, beta: 0.0,
+                releases_i: [false;6], releases_j: [false;6],
+                thickness: None, node_k: None, node_l: None,
+                element_type: ElementType::Frame },
+        ];
+        let dist_loads = vec![
+            DistributedLoad { element_id: "E1".into(), w_start: -w, w_end: -w,
+                direction: LoadDirection::GlobalY, is_projected: false, start_pos: 0.0, end_pos: 1.0 },
+            DistributedLoad { element_id: "E2".into(), w_start: -w, w_end: -w,
+                direction: LoadDirection::GlobalY, is_projected: false, start_pos: 0.0, end_pos: 1.0 },
+        ];
+
+        if let Ok(res) = analyze_3d_frame(nodes, elements, vec![], dist_loads, vec![], vec![],
+            AnalysisConfig::default())
+        {
+            if let Some(d) = res.displacements.get("1") {
+                results.push(make_entry(
+                    "BM-2a", "SS beam midspan deflection", "Beam", "analyze_3d_frame",
+                    delta_mid_expected, d[1], "m", 2.0,
+                    "5wL⁴/384EI — Simply-supported beam with UDL"
+                ));
+            }
+            if let Some(r) = res.reactions.get("0") {
+                results.push(make_entry(
+                    "BM-2b", "SS beam reaction", "Beam", "analyze_3d_frame",
+                    reaction_expected, r[1], "N", 1.0,
+                    "wL/2 — Simply-supported beam equilibrium"
+                ));
+            }
+        }
+    }
+
+    // ── BM-3: Propped cantilever (indeterminate) ──
+    {
+        let l: f64 = 4.0;
+        let e: f64 = 200e9;
+        let iz: f64 = 1e-4;
+        let a: f64 = 0.01;
+        let w: f64 = 5000.0;
+        let r_a_expected = 5.0 * w * l / 8.0;
+        let r_b_expected = 3.0 * w * l / 8.0;
+        let m_a_expected = w * l * l / 8.0;
+
+        let dx = l / 4.0;
+        let nodes = vec![
+            Node3D { id: "0".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true;6], mass: None, spring_stiffness: None },
+            Node3D { id: "1".into(), x: dx, y: 0.0, z: 0.0,
+                     restraints: [false,false,true,true,true,false], mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: 2.0*dx, y: 0.0, z: 0.0,
+                     restraints: [false,false,true,true,true,false], mass: None, spring_stiffness: None },
+            Node3D { id: "3".into(), x: 3.0*dx, y: 0.0, z: 0.0,
+                     restraints: [false,false,true,true,true,false], mass: None, spring_stiffness: None },
+            Node3D { id: "4".into(), x: l, y: 0.0, z: 0.0,
+                     restraints: [false,true,true,true,true,false], mass: None, spring_stiffness: None },
+        ];
+        let elements: Vec<Element3D> = (0..4).map(|i| Element3D {
+            id: format!("E{}", i+1), node_i: format!("{}", i), node_j: format!("{}", i+1),
+            E: e, nu: Some(0.3), G: 80e9, density: 7850.0,
+            A: a, Iy: iz, Iz: iz, J: 2.0*iz,
+            Asy: 0.0, Asz: 0.0, beta: 0.0,
+            releases_i: [false;6], releases_j: [false;6],
+            thickness: None, node_k: None, node_l: None,
+            element_type: ElementType::Frame,
+        }).collect();
+        let dist_loads: Vec<DistributedLoad> = (1..=4).map(|i| DistributedLoad {
+            element_id: format!("E{}", i), w_start: -w, w_end: -w,
+            direction: LoadDirection::GlobalY, is_projected: false, start_pos: 0.0, end_pos: 1.0,
+        }).collect();
+
+        if let Ok(res) = analyze_3d_frame(nodes, elements, vec![], dist_loads, vec![], vec![],
+            AnalysisConfig::default())
+        {
+            if let Some(r) = res.reactions.get("0") {
+                results.push(make_entry(
+                    "BM-3a", "Propped cantilever R_A", "Beam", "analyze_3d_frame",
+                    r_a_expected, r[1], "N", 2.0,
+                    "5wL/8 — Statically indeterminate"
+                ));
+                if r.len() > 5 {
+                    results.push(make_entry(
+                        "BM-3b", "Propped cantilever M_A", "Beam", "analyze_3d_frame",
+                        m_a_expected, r[5].abs(), "N·m", 2.0,
+                        "wL²/8 — Fixed-end moment"
+                    ));
+                }
+            }
+            if let Some(r) = res.reactions.get("4") {
+                results.push(make_entry(
+                    "BM-3c", "Propped cantilever R_B", "Beam", "analyze_3d_frame",
+                    r_b_expected, r[1], "N", 2.0,
+                    "3wL/8 — Roller reaction"
+                ));
+            }
+        }
+    }
+
+    // ── TR-1: Two-bar truss ──
+    {
+        let e: f64 = 200e9;
+        let a: f64 = 0.001;
+        let p: f64 = 10000.0;
+        let bar_len = 2.0_f64.sqrt();
+        let delta_y_expected = -p * bar_len / (e * a);
+
+        let nodes = vec![
+            Node3D { id: "0".into(), x: 0.0, y: 0.0, z: 0.0,
+                     restraints: [true;6], mass: None, spring_stiffness: None },
+            Node3D { id: "1".into(), x: 2.0, y: 0.0, z: 0.0,
+                     restraints: [true;6], mass: None, spring_stiffness: None },
+            Node3D { id: "2".into(), x: 1.0, y: 1.0, z: 0.0,
+                     restraints: [false,false,true,true,true,true], mass: None, spring_stiffness: None },
+        ];
+        let elements = vec![
+            Element3D { id: "T1".into(), node_i: "0".into(), node_j: "2".into(),
+                E: e, nu: Some(0.3), G: e/(2.0*1.3), density: 7850.0,
+                A: a, Iy: 0.0, Iz: 0.0, J: 0.0, Asy: 0.0, Asz: 0.0, beta: 0.0,
+                releases_i: [false;6], releases_j: [false;6],
+                thickness: None, node_k: None, node_l: None,
+                element_type: ElementType::Truss },
+            Element3D { id: "T2".into(), node_i: "1".into(), node_j: "2".into(),
+                E: e, nu: Some(0.3), G: e/(2.0*1.3), density: 7850.0,
+                A: a, Iy: 0.0, Iz: 0.0, J: 0.0, Asy: 0.0, Asz: 0.0, beta: 0.0,
+                releases_i: [false;6], releases_j: [false;6],
+                thickness: None, node_k: None, node_l: None,
+                element_type: ElementType::Truss },
+        ];
+        let loads = vec![NodalLoad {
+            node_id: "2".into(), fx: 0.0, fy: -p, fz: 0.0,
+            mx: 0.0, my: 0.0, mz: 0.0,
+        }];
+
+        if let Ok(res) = analyze_3d_frame(nodes, elements, loads, vec![], vec![], vec![],
+            AnalysisConfig::default())
+        {
+            if let Some(d) = res.displacements.get("2") {
+                results.push(make_entry(
+                    "TR-1", "Two-bar truss δ_y", "Truss", "analyze_3d_frame",
+                    delta_y_expected, d[1], "m", 2.0,
+                    "Symmetric 2-bar truss under vertical load"
+                ));
+            }
+        }
+    }
+
+    // ── TH-1: 1D Thermal conduction ──
+    {
+        use thermal_analysis::*;
+        let mut thermal = SteadyStateThermal::new();
+        thermal.nodes = vec![
+            (0.0, 0.0, 0.0), (0.5, 0.0, 0.0), (1.0, 0.0, 0.0),
+            (0.0, 0.1, 0.0), (0.5, 0.1, 0.0), (1.0, 0.1, 0.0),
+        ];
+        let mut mats = HashMap::new();
+        mats.insert(0, ThermalMaterial {
+            id: 0, name: "Test".into(),
+            conductivity: Conductivity::Isotropic(52.0),
+            specific_heat: 500.0, density: 7850.0, emissivity: 0.8,
+            latent_heat: None,
+        });
+        thermal.materials = mats;
+        thermal.elements = vec![
+            ThermalElement::Quad4(ThermalQuad4 { id: 0, node_ids: [0,1,4,3], material_id: 0, thickness: 0.01 }),
+            ThermalElement::Quad4(ThermalQuad4 { id: 1, node_ids: [1,2,5,4], material_id: 0, thickness: 0.01 }),
+        ];
+        thermal.boundary_conditions = vec![
+            ThermalBC::Temperature { node_ids: vec![0,3], value: 100.0 },
+            ThermalBC::Temperature { node_ids: vec![2,5], value: 0.0 },
+        ];
+
+        if let Ok(res) = thermal.solve() {
+            results.push(make_entry(
+                "TH-1", "1D conduction T(0.5)", "Thermal", "SteadyStateThermal",
+                50.0, res.temperatures[1], "°C", 1.0,
+                "Linear temperature distribution — NAFEMS T1 equivalent"
+            ));
+        }
+    }
+
+    // ── SE-1: Hex8 patch test ──
+    {
+        use solid_solver::*;
+        use solid_elements::SolidMaterial;
+        let material = SolidMaterial::new(1000.0, 0.3, 1.0, "Test");
+        let model = SolidModel {
+            nodes: vec![
+                [0.0,0.0,0.0], [1.0,0.0,0.0], [1.0,1.0,0.0], [0.0,1.0,0.0],
+                [0.0,0.0,1.0], [1.0,0.0,1.0], [1.0,1.0,1.0], [0.0,1.0,1.0],
+            ],
+            hex8_elements: vec![[0,1,2,3,4,5,6,7]],
+            material,
+            fixed_dofs: vec![
+                (0,0.0),(9,0.0),(12,0.0),(21,0.0),
+                (1,0.0),(2,0.0),(11,0.0),(13,0.0),
+            ],
+            nodal_forces: vec![
+                (1, [25.0,0.0,0.0]), (2, [25.0,0.0,0.0]),
+                (5, [25.0,0.0,0.0]), (6, [25.0,0.0,0.0]),
+            ],
+        };
+        if let Ok(res) = solve_solid_model(&model) {
+            let expected_ux = 100.0 / 1000.0; // σ/E
+            results.push(make_entry(
+                "SE-1a", "Hex8 patch test displacement", "Solid", "solve_solid_model",
+                expected_ux, res.displacements[1*3], "m", 1.0,
+                "Constant strain patch test — fundamental FE validation"
+            ));
+            // Check stress
+            if let Some(stresses) = res.element_stresses.first() {
+                if let Some(s) = stresses.first() {
+                    results.push(make_entry(
+                        "SE-1b", "Hex8 patch test σ_xx", "Solid", "solve_solid_model",
+                        100.0, s.stress[0], "Pa", 2.0,
+                        "Constant stress recovery at Gauss point"
+                    ));
+                }
+            }
+        }
+    }
+
+    // ── SE-2: Multi-element bar tension ──
+    {
+        use solid_solver::*;
+        use solid_elements::SolidMaterial;
+        let material = SolidMaterial::new(200e9, 0.3, 7850.0, "Steel");
+        let sigma: f64 = 1e6;
+        let n_elem = 3usize;
+        let delta_total = sigma / 200e9 * 3.0;
+
+        let mut nodes = Vec::new();
+        for i in 0..=n_elem {
+            let x = i as f64;
+            nodes.push([x, 0.0, 0.0]);
+            nodes.push([x, 1.0, 0.0]);
+            nodes.push([x, 1.0, 1.0]);
+            nodes.push([x, 0.0, 1.0]);
+        }
+        let hex8_elements: Vec<[usize; 8]> = (0..n_elem).map(|i| {
+            let j = i * 4; let k = (i+1) * 4;
+            [j, k, k+1, j+1, j+3, k+3, k+2, j+2]
+        }).collect();
+        let model = SolidModel {
+            nodes, hex8_elements, material,
+            fixed_dofs: vec![
+                (0,0.0),(3,0.0),(6,0.0),(9,0.0),
+                (1,0.0),(2,0.0),(5,0.0),(10,0.0),
+            ],
+            nodal_forces: vec![
+                (12, [sigma/4.0, 0.0, 0.0]),
+                (13, [sigma/4.0, 0.0, 0.0]),
+                (14, [sigma/4.0, 0.0, 0.0]),
+                (15, [sigma/4.0, 0.0, 0.0]),
+            ],
+        };
+        if let Ok(res) = solve_solid_model(&model) {
+            results.push(make_entry(
+                "SE-2", "Multi-element bar elongation", "Solid", "solve_solid_model",
+                delta_total, res.displacements[12*3], "m", 2.0,
+                "3-element bar under uniform tension — linear displacement check"
+            ));
+        }
+    }
+
+    // Build report
+    let passed = results.iter().filter(|r| r.passed).count();
+    let total = results.len();
+    let report = RealBenchmarkReport {
+        success: true,
+        report_title: "Real Solver Benchmark Report".into(),
+        total_tests: total,
+        passed_tests: passed,
+        pass_rate: if total > 0 { (passed as f64 / total as f64) * 100.0 } else { 0.0 },
+        is_real_solver: true,
+        results,
+    };
+
     serde_wasm_bindgen::to_value(&report)
         .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
 }

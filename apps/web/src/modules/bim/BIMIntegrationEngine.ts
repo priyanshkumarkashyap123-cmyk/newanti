@@ -26,7 +26,7 @@
 export interface IFCEntity {
   expressId: number;
   type: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   relationships: {
     parent?: number;
     children: number[];
@@ -48,7 +48,7 @@ export interface StructuralMember {
     profileArea?: number;
     length?: number;
   };
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   loads?: { type: string; value: number; direction: string }[];
 }
 
@@ -68,7 +68,7 @@ export interface PropertySet {
   properties: {
     name: string;
     type: 'single' | 'bounded' | 'enumerated' | 'list';
-    value: any;
+    value: string | number | boolean | null;
     unit?: string;
   }[];
 }
@@ -112,9 +112,27 @@ export interface IFCModel {
   structuralModel?: {
     nodes: StructuralNode[];
     members: StructuralMember[];
-    loads: any[];
-    loadCases: any[];
+    loads: IFCLoad[];
+    loadCases: IFCLoadCase[];
   };
+}
+
+/** Recursive IFC parsed value type */
+export type IFCValue = string | number | boolean | null | { ref: number } | IFCValue[];
+
+export interface IFCLoad {
+  ifcId: number;
+  type: string;
+  name: string;
+  properties: IFCValue[];
+}
+
+export interface IFCLoadCase {
+  ifcId: number;
+  name: string;
+  type: string;
+  actionType: string;
+  actionSource: string;
 }
 
 // ============================================================================
@@ -236,8 +254,8 @@ export class IFCParser {
   /**
    * Parse parameter string
    */
-  private parseParameters(paramString: string): any[] {
-    const params: any[] = [];
+  private parseParameters(paramString: string): IFCValue[] {
+    const params: IFCValue[] = [];
     let current = '';
     let depth = 0;
     let inString = false;
@@ -276,7 +294,7 @@ export class IFCParser {
   /**
    * Parse individual parameter value
    */
-  private parseValue(value: string): any {
+  private parseValue(value: string): IFCValue {
     // Null/undefined
     if (value === '$' || value === '*') return null;
 
@@ -318,13 +336,13 @@ export class IFCParser {
   private extractProjectInfo(model: IFCModel): void {
     for (const [id, entity] of this.entities) {
       if (entity.type === 'IFCPROJECT') {
-        const params = entity.properties._raw as any[];
+        const params = entity.properties._raw as IFCValue[];
         model.project.name = params[2] || 'Unnamed';
         model.project.description = params[3] || undefined;
       }
 
       if (entity.type === 'IFCSITE') {
-        const params = entity.properties._raw as any[];
+        const params = entity.properties._raw as IFCValue[];
         model.site = {
           name: params[2] || 'Site',
           latitude: params[5]?.[0],
@@ -334,7 +352,7 @@ export class IFCParser {
       }
 
       if (entity.type === 'IFCBUILDING') {
-        const params = entity.properties._raw as any[];
+        const params = entity.properties._raw as IFCValue[];
         model.building = {
           name: params[2] || 'Building',
           stories: []
@@ -342,7 +360,7 @@ export class IFCParser {
       }
 
       if (entity.type === 'IFCBUILDINGSTOREY') {
-        const params = entity.properties._raw as any[];
+        const params = entity.properties._raw as IFCValue[];
         if (model.building) {
           model.building.stories.push({
             name: params[2] || 'Story',
@@ -357,11 +375,11 @@ export class IFCParser {
   /**
    * Extract structural model from IFC
    */
-  private extractStructuralModel(): { nodes: StructuralNode[]; members: StructuralMember[]; loads: any[]; loadCases: any[] } {
+  private extractStructuralModel(): { nodes: StructuralNode[]; members: StructuralMember[]; loads: IFCLoad[]; loadCases: IFCLoadCase[] } {
     const nodes: StructuralNode[] = [];
     const members: StructuralMember[] = [];
-    const loads: any[] = [];
-    const loadCases: any[] = [];
+    const loads: IFCLoad[] = [];
+    const loadCases: IFCLoadCase[] = [];
 
     let nodeCounter = 1;
     let memberCounter = 1;
@@ -399,7 +417,7 @@ export class IFCParser {
    * Extract structural member from entity
    */
   private extractMember(entity: IFCEntity, counter: number): StructuralMember | null {
-    const params = entity.properties._raw as any[];
+    const params = entity.properties._raw as IFCValue[];
 
     const type = entity.type === 'IFCBEAM' ? 'beam' : 
                  entity.type === 'IFCCOLUMN' ? 'column' : 'brace';
@@ -410,7 +428,7 @@ export class IFCParser {
     return {
       id: `M${counter}`,
       ifcId: entity.expressId,
-      type: type as any,
+      type: type as StructuralMember['type'],
       name: params[2] || `${type}-${counter}`,
       material: 'Concrete', // Would need to traverse relationships
       section: 'Default', // Would need to traverse profile definition
@@ -427,7 +445,7 @@ export class IFCParser {
    * Extract geometry from entity
    */
   private extractGeometry(entity: IFCEntity): StructuralMember['geometry'] | null {
-    const params = entity.properties._raw as any[];
+    const params = entity.properties._raw as IFCValue[];
 
     // Look for placement reference
     const placementRef = params[5];
@@ -452,7 +470,7 @@ export class IFCParser {
    * Extract point from placement entity
    */
   private extractPoint(placement: IFCEntity): { x: number; y: number; z: number } | null {
-    const params = placement.properties._raw as any[];
+    const params = placement.properties._raw as IFCValue[];
 
     for (const param of params) {
       if (param?.ref) {
@@ -473,7 +491,7 @@ export class IFCParser {
    * Extract structural node
    */
   private extractNode(entity: IFCEntity, counter: number): StructuralNode | null {
-    const params = entity.properties._raw as any[];
+    const params = entity.properties._raw as IFCValue[];
 
     // Extract position from placement
     let position = { x: 0, y: 0, z: 0 };
@@ -492,7 +510,7 @@ export class IFCParser {
     if (conditionRef?.ref) {
       const condition = this.entities.get(conditionRef.ref);
       if (condition?.type === 'IFCBOUNDARYNODECONDITION') {
-        const condParams = condition.properties._raw as any[];
+        const condParams = condition.properties._raw as IFCValue[];
         // Parse boundary conditions
         restraints.fx = condParams[1] !== null;
         restraints.fy = condParams[2] !== null;
@@ -515,8 +533,8 @@ export class IFCParser {
   /**
    * Extract load from entity
    */
-  private extractLoad(entity: IFCEntity): any {
-    const params = entity.properties._raw as any[];
+  private extractLoad(entity: IFCEntity): IFCLoad {
+    const params = entity.properties._raw as IFCValue[];
 
     return {
       ifcId: entity.expressId,
@@ -529,8 +547,8 @@ export class IFCParser {
   /**
    * Extract load case
    */
-  private extractLoadCase(entity: IFCEntity): any {
-    const params = entity.properties._raw as any[];
+  private extractLoadCase(entity: IFCEntity): IFCLoadCase {
+    const params = entity.properties._raw as IFCValue[];
 
     return {
       ifcId: entity.expressId,
@@ -724,7 +742,7 @@ export class IFCWriter {
    * Write structural model
    */
   private writeStructuralModel(
-    structuralModel: { nodes: StructuralNode[]; members: StructuralMember[]; loads: any[]; loadCases: any[] },
+    structuralModel: { nodes: StructuralNode[]; members: StructuralMember[]; loads: IFCLoad[]; loadCases: IFCLoadCase[] },
     buildingId: number
   ): void {
     const ownerHistoryId = this.entityMap.get('ownerHistory')!;
