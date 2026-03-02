@@ -5,12 +5,15 @@
  */
 
 import { Router, Request, Response, type IRouter } from 'express';
+import { createHash } from 'crypto';
 import { modelGeneratorService } from '../../services/ai/index.js';
 import { aiRateLimiter } from '../../middleware/aiRateLimiter.js';
+import { requireAuth } from '../../middleware/authMiddleware.js';
 
 const router: IRouter = Router();
 
-// Apply rate limiting to all AI routes
+// SECURITY: All AI routes require authentication + rate limiting
+router.use(requireAuth());
 router.use(aiRateLimiter());
 
 /**
@@ -119,9 +122,16 @@ router.get('/templates', (_req: Request, res: Response) => {
 const GEMINI_API_KEY = process.env['GEMINI_API_KEY'] || '';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
-// Simple in-memory cache for responses (production: use Redis)
-const responseCache = new Map<string, { response: any; timestamp: number }>();
+// Bounded in-memory cache (production: use Redis)
+const MAX_CACHE_SIZE = 500;
+const responseCache = new Map<string, { response: unknown; timestamp: number }>();
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+/** Create a deterministic cache key from message + context + history */
+function makeCacheKey(message: string, context?: string, history?: unknown[]): string {
+  const payload = JSON.stringify({ m: message.slice(0, 500), c: context?.slice(0, 200), h: history?.length ?? 0 });
+  return createHash('sha256').update(payload).digest('hex');
+}
 
 /**
  * POST /api/ai/chat
@@ -153,8 +163,8 @@ router.post('/chat', async (req: Request, res: Response) => {
             });
         }
 
-        // Create cache key from message hash
-        const cacheKey = Buffer.from(message.slice(0, 200)).toString('base64');
+        // Create cache key from message + context + history
+        const cacheKey = makeCacheKey(message, context, history);
         const cached = responseCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
             console.log('[AI/Chat] Cache hit');
@@ -193,10 +203,13 @@ router.post('/chat', async (req: Request, res: Response) => {
             ]
         };
 
-        // Call Gemini API
-        const apiResponse = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        // Call Gemini API — key sent via header, NOT query string (prevents log leakage)
+        const apiResponse = await fetch(GEMINI_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': GEMINI_API_KEY,
+            },
             body: JSON.stringify(geminiRequest)
         });
 
@@ -212,13 +225,21 @@ router.post('/chat', async (req: Request, res: Response) => {
         const geminiResult = await apiResponse.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
         const responseText = geminiResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-        // Cache the response
+        // Cache the response (bounded)
         responseCache.set(cacheKey, { response: responseText, timestamp: Date.now() });
 
-        // Clean old cache entries
+        // Evict stale + enforce max size
+        const now = Date.now();
         for (const [key, value] of responseCache.entries()) {
-            if (Date.now() - value.timestamp > CACHE_TTL_MS) {
+            if (now - value.timestamp > CACHE_TTL_MS) {
                 responseCache.delete(key);
+            }
+        }
+        if (responseCache.size > MAX_CACHE_SIZE) {
+            // Remove oldest entries
+            const entries = [...responseCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+            for (let i = 0; i < entries.length - MAX_CACHE_SIZE; i++) {
+                responseCache.delete(entries[i][0]);
             }
         }
 

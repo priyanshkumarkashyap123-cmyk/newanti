@@ -15,21 +15,17 @@ import { useModelStore } from '../store/model';
 
 /** Lightweight fingerprint – we only care whether *something* changed. */
 function fingerprint(state: {
-  nodes: Map<string, unknown>;
-  members: Map<string, unknown>;
-  plates: Map<string, unknown>;
-  pointLoads: Map<string, unknown>;
-  distributedLoads: Map<string, unknown>;
+  nodes?: Map<string, unknown>;
+  members?: Map<string, unknown>;
+  plates?: Map<string, unknown>;
 }): string {
   return [
-    state.nodes.size,
-    state.members.size,
-    state.plates.size,
-    state.pointLoads.size,
-    state.distributedLoads.size,
+    state.nodes?.size ?? 0,
+    state.members?.size ?? 0,
+    state.plates?.size ?? 0,
     // Include first key of each map to detect replacements
-    state.nodes.keys().next().value ?? '',
-    state.members.keys().next().value ?? '',
+    state.nodes?.keys().next().value ?? '',
+    state.members?.keys().next().value ?? '',
   ].join('|');
 }
 

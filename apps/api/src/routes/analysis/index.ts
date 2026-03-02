@@ -13,9 +13,12 @@ import { v4 as uuidv4 } from "uuid";
 import { rustProxy } from "../../services/serviceProxy.js";
 import { validateBody, analyzeRequestSchema } from "../../middleware/validation.js";
 import { AnalysisJob } from "../../models.js";
-import { getAuth } from "../../middleware/authMiddleware.js";
+import { requireAuth, getAuth } from "../../middleware/authMiddleware.js";
 
 const router: Router = express.Router();
+
+// SECURITY: All analysis routes require authentication
+router.use(requireAuth());
 
 // ============================================
 // TYPES

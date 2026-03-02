@@ -18,6 +18,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { API_CONFIG } from '../config/env';
 import {
   // Icons
   Calculator,
@@ -230,7 +231,7 @@ export default function StructuralDesignCenter() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const apiUrl = (import.meta as any).env?.VITE_RUST_API_URL || 'https://beamlab-rust-api.azurewebsites.net';
+        const apiUrl = API_CONFIG.rustUrl;
         const res = await fetch(`${apiUrl}/api/structures`, { signal: AbortSignal.timeout(4000) });
         if (res.ok) {
           const data = await res.json();

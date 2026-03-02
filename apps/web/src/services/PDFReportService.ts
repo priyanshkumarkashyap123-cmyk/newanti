@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AnalysisResults } from '../store/model';
 import { SteelDesignResults } from './SteelDesignService';
+import { API_CONFIG } from '../config/env';
 
 interface ProjectInfo {
     name: string;
@@ -11,7 +12,7 @@ interface ProjectInfo {
     description: string;
 }
 
-const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net';
+const PYTHON_API_URL = API_CONFIG.pythonUrl;
 
 export const generateProfessionalReport = async (
     project: ProjectInfo,

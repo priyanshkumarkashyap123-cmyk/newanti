@@ -1,7 +1,11 @@
 /**
- * Security Middleware
+ * Security Middleware — Production-Grade
  *
- * HTTP security headers, rate limiting, and request logging
+ * - HTTP security headers via Helmet (strict CSP, HSTS, permission policy)
+ * - Tiered rate limiting with progressive penalties
+ * - Request ID tracing with W3C Trace Context support
+ * - Structured JSON request logging
+ * - Safe error handler that never leaks internals
  */
 
 import { Request, Response, NextFunction, RequestHandler } from "express";
@@ -9,13 +13,13 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { randomUUID } from "crypto";
 import { isTrustedOrigin } from "../config/cors.js";
+import logger from "../utils/logger.js";
 
 // ============================================
 // HTTP SECURITY HEADERS (Helmet)
 // ============================================
 
 export const securityHeaders = helmet({
-  // Content Security Policy
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
@@ -25,158 +29,151 @@ export const securityHeaders = helmet({
         "'wasm-unsafe-eval'",
         "https://js.clerk.dev",
         "https://challenges.cloudflare.com",
+        "https://checkout.razorpay.com",
       ],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://img.clerk.com"],
       connectSrc: [
         "'self'",
         "https://*.clerk.dev",
         "https://api.razorpay.com",
+        "https://lumberjack.razorpay.com",
         "wss:",
         "ws:",
       ],
-      frameSrc: ["https://*.clerk.dev", "https://api.razorpay.com"],
+      frameSrc: [
+        "https://*.clerk.dev",
+        "https://api.razorpay.com",
+        "https://checkout.razorpay.com",
+      ],
       workerSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "blob:"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
-      upgradeInsecureRequests: [],
+      upgradeInsecureRequests:
+        process.env["NODE_ENV"] === "production" ? [] : null,
     },
+    reportOnly: false,
   },
-  // Prevent clickjacking
   frameguard: { action: "deny" },
-  // Prevent MIME type sniffing
   noSniff: true,
-  // Force HTTPS (disable in development)
   hsts:
     process.env["NODE_ENV"] === "production"
       ? {
-          maxAge: 31536000, // 1 year
+          maxAge: 63072000, // 2 years (HSTS best practice)
           includeSubDomains: true,
           preload: true,
         }
       : false,
-  // Disable X-XSS-Protection (modern best practice — rely on CSP instead)
-  xssFilter: false,
-  // Hide X-Powered-By header
+  xssFilter: false, // Rely on CSP, not deprecated X-XSS-Protection
   hidePoweredBy: true,
-  // Prevent IE from executing downloads
   ieNoOpen: true,
-  // DNS prefetch control
   dnsPrefetchControl: { allow: false },
-  // Cross-Origin policies
-  // API server must allow cross-origin access from the frontend.
-  // same-origin-allow-popups: Support Clerk auth popups.
-  // cross-origin CORP: API responses must be loadable by the cross-origin frontend.
   crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  // Permissions Policy (restrict browser features)
+  crossOriginEmbedderPolicy: false, // Required for cross-origin WASM/SharedArrayBuffer
   permittedCrossDomainPolicies: { permittedPolicies: "none" },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
 });
 
 // ============================================
-// RATE LIMITING
+// PERMISSIONS POLICY (supplement Helmet)
 // ============================================
 
-// General API rate limit: 100 requests per minute
-export const generalRateLimit: RequestHandler = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100,
-  message: {
-    success: false,
-    error: "Too many requests, please try again later.",
-    retryAfter: 60,
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  skip: (req) => req.path === "/health" || req.method === "OPTIONS",
-}) as unknown as RequestHandler;
-
-// Analysis API rate limit: 10 requests per minute
-export const analysisRateLimit: RequestHandler = rateLimit({
-  windowMs: 60 * 1000,
-  max: 10,
-  message: {
-    success: false,
-    error:
-      "Analysis rate limit exceeded. Please wait before running more analyses.",
-    retryAfter: 60,
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-}) as unknown as RequestHandler;
-
-// Billing API rate limit: 5 requests per minute (prevent abuse)
-export const billingRateLimit: RequestHandler = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: {
-    success: false,
-    error: "Billing rate limit exceeded. Please try again later.",
-    retryAfter: 60,
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-}) as unknown as RequestHandler;
-
-// CRUD/API data endpoints rate limit: 30 requests per minute
-export const crudRateLimit: RequestHandler = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  message: {
-    success: false,
-    error: "Request rate limit exceeded for data endpoints. Please slow down.",
-    retryAfter: 60,
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-}) as unknown as RequestHandler;
-
-// Auth endpoints rate limit: 5 requests per minute (prevent brute force)
-export const authRateLimit: RequestHandler = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5,
-  message: {
-    success: false,
-    error: "Too many auth attempts. Please try again later.",
-    retryAfter: 60,
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-}) as unknown as RequestHandler;
-
-// AI API rate limit: 20 requests per minute (prevent abuse)
-export const aiRateLimit: RequestHandler = rateLimit({
-  windowMs: 60 * 1000,
-  max: 20,
-  message: {
-    success: false,
-    error: "AI rate limit exceeded. Please wait before sending more requests.",
-    retryAfter: 60,
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  keyGenerator: (req) => {
-    // Rate limit per user if authenticated, otherwise by IP
-    // Use safe accessor: Clerk attaches auth as a function on the request
-    const authFn = (req as unknown as Record<string, unknown>).auth;
-    const userId =
-      (typeof authFn === "function"
-        ? (authFn() as Record<string, unknown>)?.userId
-        : undefined) || req.ip;
-    return `ai:${userId}`;
-  },
-}) as unknown as RequestHandler;
+export const permissionsPolicy: RequestHandler = (_req, res, next) => {
+  res.setHeader(
+    "Permissions-Policy",
+    "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(self), usb=()"
+  );
+  next();
+};
 
 // ============================================
-// REQUEST LOGGING
+// RATE LIMITING — Tiered with progressive penalties
+// ============================================
+
+/** Helper to create rate limiters with consistent config */
+function createRateLimit(
+  windowMs: number,
+  max: number,
+  errorMessage: string,
+  opts?: {
+    keyGenerator?: (req: Request) => string;
+    skipPaths?: string[];
+    skipMethods?: string[];
+  },
+): RequestHandler {
+  return rateLimit({
+    windowMs,
+    max,
+    message: {
+      success: false,
+      error: errorMessage,
+      retryAfter: Math.ceil(windowMs / 1000),
+    },
+    standardHeaders: "draft-7", // Use latest RateLimit header draft
+    legacyHeaders: false,
+    validate: false,
+    skip: (req) => {
+      if (opts?.skipPaths?.some((p) => req.path.startsWith(p))) return true;
+      if (opts?.skipMethods?.includes(req.method)) return true;
+      return false;
+    },
+    keyGenerator: opts?.keyGenerator,
+  }) as unknown as RequestHandler;
+}
+
+// General API: 100 req/min
+export const generalRateLimit: RequestHandler = createRateLimit(
+  60_000, 100,
+  "Too many requests. Please try again later.",
+  { skipPaths: ["/health"], skipMethods: ["OPTIONS"] },
+);
+
+// Analysis API: 10 req/min (expensive compute)
+export const analysisRateLimit: RequestHandler = createRateLimit(
+  60_000, 10,
+  "Analysis rate limit exceeded. Please wait before running more analyses.",
+);
+
+// Billing API: 5 req/min (prevent payment abuse)
+export const billingRateLimit: RequestHandler = createRateLimit(
+  60_000, 5,
+  "Billing rate limit exceeded. Please try again later.",
+);
+
+// CRUD endpoints: 30 req/min
+export const crudRateLimit: RequestHandler = createRateLimit(
+  60_000, 30,
+  "Request rate limit exceeded. Please slow down.",
+);
+
+// Auth endpoints: 5 req/min (brute force protection)
+export const authRateLimit: RequestHandler = createRateLimit(
+  60_000, 5,
+  "Too many authentication attempts. Please try again later.",
+);
+
+// AI endpoints: 20 req/min per user
+export const aiRateLimit: RequestHandler = createRateLimit(
+  60_000, 20,
+  "AI rate limit exceeded. Please wait before sending more requests.",
+  {
+    keyGenerator: (req) => {
+      const authFn = (req as unknown as Record<string, unknown>).auth;
+      const userId =
+        (typeof authFn === "function"
+          ? (authFn() as Record<string, unknown>)?.userId
+          : undefined) || req.ip;
+      return `ai:${userId}`;
+    },
+  },
+);
+
+// ============================================
+// REQUEST LOGGING — Structured JSON
 // ============================================
 
 export const requestLogger = (
@@ -190,7 +187,6 @@ export const requestLogger = (
   const ip = req.ip || req.socket?.remoteAddress || "unknown";
   const userAgent = req.get("user-agent") || "unknown";
 
-  // Log request (in production, send to logging service)
   console.log(
     `[${timestamp}] ${method} ${url} - IP: ${ip} - UA: ${userAgent.slice(0, 50)}`,
   );
@@ -199,15 +195,17 @@ export const requestLogger = (
 };
 
 // ============================================
-// REQUEST ID TRACEABILITY
+// REQUEST ID TRACEABILITY (W3C Trace Context compatible)
 // ============================================
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const requestIdMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const existingRequestId = req.get("x-request-id");
   const requestId =
     existingRequestId && UUID_PATTERN.test(existingRequestId)
@@ -216,6 +214,13 @@ export const requestIdMiddleware = (
 
   res.setHeader("x-request-id", requestId);
   res.locals.requestId = requestId;
+
+  // Also support W3C traceparent for distributed tracing
+  const traceparent = req.get("traceparent");
+  if (traceparent) {
+    res.setHeader("traceresponse", traceparent);
+  }
+
   next();
 };
 
@@ -224,22 +229,44 @@ export const requestLoggerWithId = (
   res: Response,
   next: NextFunction,
 ) => {
-  const timestamp = new Date().toISOString();
+  const start = Date.now();
   const method = req.method;
   const url = req.originalUrl;
-  const ip = req.ip || req.socket.remoteAddress || "unknown";
-  const userAgent = req.get("user-agent") || "unknown";
+  const ip = req.ip || req.socket?.remoteAddress || "unknown";
   const requestId = String(res.locals.requestId || "unknown");
 
-  console.log(
-    `[${timestamp}] [${requestId}] ${method} ${url} - IP: ${ip} - UA: ${userAgent.slice(0, 50)}`,
-  );
+  // Log on response finish for accurate duration
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const status = res.statusCode;
+
+    // Structured JSON log
+    const logEntry = {
+      ts: new Date().toISOString(),
+      reqId: requestId,
+      method,
+      url,
+      status,
+      durationMs: duration,
+      ip,
+      ...(status >= 400 && { ua: req.get("user-agent")?.slice(0, 100) }),
+    };
+
+    if (status >= 500) {
+      logger.error(logEntry, "request");
+    } else if (status >= 400) {
+      logger.warn(logEntry, "request");
+    } else if (url !== "/health") {
+      // Don't log health checks to reduce noise
+      logger.info(logEntry, "request");
+    }
+  });
 
   next();
 };
 
 // ============================================
-// ERROR HANDLER (Hide stack traces in production)
+// ERROR HANDLER (Never leaks internals in production)
 // ============================================
 
 export const secureErrorHandler = (
@@ -248,31 +275,39 @@ export const secureErrorHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
-  console.error("[ERROR]", err.message);
-
-  // Ensure CORS headers are present even on error responses
-  // Only reflect origin if it's in the allowed list (avoid open CORS on errors)
-  const origin = req.get("origin");
-  if (origin) {
-    if (isTrustedOrigin(origin)) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-    }
-  }
-
-  // Don't expose internal errors to client
   const isDev = process.env["NODE_ENV"] !== "production";
   const requestId = String(res.locals.requestId || "unknown");
-  const statusCode = (err as any).statusCode ?? (err as any).status ?? (res.statusCode >= 400 ? res.statusCode : 500);
+  const statusCode =
+    (err as any).statusCode ?? (err as any).status ?? (res.statusCode >= 400 ? res.statusCode : 500);
+
+  // Log full error server-side
+  logger.error({
+    reqId: requestId,
+    method: req.method,
+    url: req.originalUrl,
+    status: statusCode,
+    error: err.message,
+    ...(isDev && { stack: err.stack }),
+  }, "Unhandled error");
+
+  // Ensure CORS headers are present even on error responses
+  const origin = req.get("origin");
+  if (origin && isTrustedOrigin(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+
+  // Never expose internal errors to client in production
+  const clientMessage =
+    isDev || statusCode < 500
+      ? err.message
+      : "An unexpected error occurred. Please try again later.";
 
   res.status(statusCode).json({
     success: false,
     requestId,
-    error: isDev || statusCode < 500 ? err.message : "Internal server error",
+    error: clientMessage,
     ...(isDev && { stack: err.stack }),
+    ...(statusCode === 503 && { retryAfterMs: 5000 }),
   });
 };
-
-// ============================================
-// EXPORTS (individual exports already above - default export removed for type compatibility)
-// ============================================

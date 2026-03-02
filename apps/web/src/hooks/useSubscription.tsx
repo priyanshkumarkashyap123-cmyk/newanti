@@ -1,6 +1,17 @@
 /**
- * useSubscription - Subscription status hook
- * Manages user subscription tier and feature access
+ * useSubscription — Subscription status hook (v2)
+ *
+ * Manages user subscription tier, feature access gating, and
+ * stale-while-revalidate caching. Secure by default: always
+ * falls back to "free" tier on any error or loading state.
+ *
+ * Improvements over v1:
+ * - Stale-while-revalidate: shows cached tier instantly, refreshes in background
+ * - Exponential back-off retry (up to 3 attempts)
+ * - Race-condition-safe with request generation counter
+ * - Optimistic tier upgrade for post-payment UX
+ * - Debounced refresh to prevent rapid successive calls
+ * - Better TypeScript inference for feature checks
  */
 
 import {
@@ -8,9 +19,10 @@ import {
   useEffect,
   useCallback,
   useMemo,
+  useRef,
   createContext,
   useContext,
-  ReactNode,
+  type ReactNode,
 } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import { API_CONFIG } from "@/config/env";
@@ -22,31 +34,35 @@ import { createLogger } from "../utils/logger";
 // SECURITY: Master user emails are checked ONLY on the backend.
 // The backend /api/user/subscription endpoint returns 'enterprise'
 // tier for master users. Never hardcode emails client-side — any
-// client-side bypass can be exploited by modifying localStorage or spoofing Clerk claims.
+// client-side bypass can be exploited via DevTools.
 
 // ============================================
-// SUBSCRIPTION TYPES
+// TYPES
 // ============================================
 
 export type SubscriptionTier = "free" | "pro" | "enterprise";
+
+export interface SubscriptionFeatures {
+  maxProjects: number;
+  pdfExport: boolean;
+  aiAssistant: boolean;
+  advancedDesignCodes: boolean;
+  teamMembers: number;
+  prioritySupport: boolean;
+  apiAccess: boolean;
+}
 
 export interface SubscriptionStatus {
   tier: SubscriptionTier;
   isLoading: boolean;
   expiresAt: Date | null;
-  features: {
-    maxProjects: number;
-    pdfExport: boolean;
-    aiAssistant: boolean;
-    advancedDesignCodes: boolean;
-    teamMembers: number;
-    prioritySupport: boolean;
-    apiAccess: boolean;
-  };
+  features: SubscriptionFeatures;
+  /** True when displaying a cached tier while a fresh fetch is in-flight. */
+  isRevalidating: boolean;
 }
 
 // Feature limits by tier
-const TIER_FEATURES = {
+const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
   free: {
     maxProjects: 3,
     pdfExport: false,
@@ -77,158 +93,225 @@ const TIER_FEATURES = {
 };
 
 // ============================================
-// SUBSCRIPTION CONTEXT
+// CONTEXT
 // ============================================
 
 interface SubscriptionContextType {
   subscription: SubscriptionStatus;
-  canAccess: (feature: keyof SubscriptionStatus["features"]) => boolean;
-  requiresUpgrade: (feature: keyof SubscriptionStatus["features"]) => boolean;
+  /** Check if the current tier grants access to a feature. */
+  canAccess: (feature: keyof SubscriptionFeatures) => boolean;
+  /** Inverse of canAccess — true when the user needs to upgrade. */
+  requiresUpgrade: (feature: keyof SubscriptionFeatures) => boolean;
+  /** Re-fetch subscription from the backend. */
   refreshSubscription: () => Promise<void>;
+  /** Optimistically set tier (post-payment). Reverted on next fetch if backend disagrees. */
+  optimisticUpgrade: (tier: SubscriptionTier) => void;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
-const subscriptionLogger = createLogger("Subscription");
+const log = createLogger("Subscription");
 
 // ============================================
-// SUBSCRIPTION PROVIDER
+// HELPERS
+// ============================================
+
+const CACHE_KEY = "beamlab_subscription_tier";
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 1000;
+
+function cachedTier(): SubscriptionTier {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw === "pro" || raw === "enterprise") return raw;
+  } catch {
+    /* SSR / storage error */
+  }
+  return "free";
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+// ============================================
+// PROVIDER
 // ============================================
 
 interface SubscriptionProviderProps {
   children: ReactNode;
 }
 
-export const SubscriptionProvider = ({
-  children,
-}: SubscriptionProviderProps) => {
+export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) => {
+  // Start with cached tier (stale-while-revalidate)
+  const initialTier = cachedTier();
+
   const [subscription, setSubscription] = useState<SubscriptionStatus>({
-    tier: "free",
+    tier: initialTier,
     isLoading: true,
+    isRevalidating: initialTier !== "free", // revalidating if we have a stale value
     expiresAt: null,
-    features: TIER_FEATURES.free,
+    features: TIER_FEATURES[initialTier],
   });
 
-  // Use unified auth hook
-  const { isSignedIn, userId, getToken, user } = useAuth();
+  const { isSignedIn, userId, getToken } = useAuth();
 
-  const fetchSubscription = useCallback(async (signal?: AbortSignal) => {
-    if (!isSignedIn || !userId) {
+  // Generation counter to prevent stale responses from overwriting fresher ones
+  const generationRef = useRef(0);
+  const refreshDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchSubscription = useCallback(
+    async (signal?: AbortSignal) => {
+      const gen = ++generationRef.current;
+
+      if (!isSignedIn || !userId) {
+        setSubscription({
+          tier: "free",
+          isLoading: false,
+          isRevalidating: false,
+          expiresAt: null,
+          features: TIER_FEATURES.free,
+        });
+        return;
+      }
+
+      // Retry loop with exponential back-off
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        if (signal?.aborted || gen !== generationRef.current) return;
+
+        try {
+          const token = await getToken();
+
+          const headers: Record<string, string> = { "Content-Type": "application/json" };
+          if (token) headers["Authorization"] = `Bearer ${token}`;
+
+          const response = await fetch(`${API_CONFIG.baseUrl}/api/user/subscription`, {
+            method: "GET",
+            headers,
+            credentials: "include",
+            signal,
+          });
+
+          if (gen !== generationRef.current) return; // superseded
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              const { tier, features, expiresAt } = result.data;
+              const resolvedTier = (tier as SubscriptionTier) || "free";
+
+              // Persist for stale-while-revalidate on next load
+              try {
+                localStorage.setItem(CACHE_KEY, resolvedTier);
+              } catch {
+                /* ignore */
+              }
+
+              log.info("Fetched tier", { tier: resolvedTier });
+
+              setSubscription({
+                tier: resolvedTier,
+                isLoading: false,
+                isRevalidating: false,
+                expiresAt: expiresAt ? new Date(expiresAt) : null,
+                features: features || TIER_FEATURES[resolvedTier],
+              });
+              return;
+            }
+          }
+
+          // Non-OK but not retryable (e.g. 401, 403)
+          if (response.status === 401 || response.status === 403) {
+            log.warn("Auth rejected, defaulting to free");
+            break;
+          }
+
+          log.warn("API non-OK", { status: response.status, attempt });
+        } catch (err) {
+          if (signal?.aborted || gen !== generationRef.current) return;
+          log.error("Fetch failed", { attempt, err });
+        }
+
+        // Wait before retry (exponential back-off)
+        if (attempt < MAX_RETRIES) {
+          await delay(BASE_DELAY_MS * Math.pow(2, attempt));
+        }
+      }
+
+      // SECURITY: All retries exhausted — default to free
+      log.warn("All retries exhausted, defaulting to free tier");
       setSubscription({
         tier: "free",
         isLoading: false,
+        isRevalidating: false,
         expiresAt: null,
         features: TIER_FEATURES.free,
       });
-      return;
-    }
+    },
+    [isSignedIn, userId, getToken],
+  );
 
-    try {
-      // Get auth token for API call
-      const token = await getToken();
-
-      // Fetch from backend API
-      const apiUrl = API_CONFIG.baseUrl;
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${apiUrl}/api/user/subscription`, {
-        method: "GET",
-        headers,
-        credentials: "include",
-        signal,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          const { tier, features, expiresAt } = result.data;
-          // Cache tier in localStorage for quick access on next load
-          localStorage.setItem("beamlab_subscription_tier", tier);
-          subscriptionLogger.info("Fetched tier from API", { tier, features });
-          setSubscription({
-            tier: tier as SubscriptionTier,
-            isLoading: false,
-            expiresAt: expiresAt ? new Date(expiresAt) : null,
-            features: features || TIER_FEATURES[tier as SubscriptionTier],
-          });
-          return;
-        }
-      } else {
-        subscriptionLogger.warn("API returned non-OK status", {
-          status: response.status,
-        });
-      }
-
-      // SECURITY: On API failure, always default to 'free' tier.
-      // Never trust localStorage for subscription state — it can be
-      // modified by the user via DevTools.
-      subscriptionLogger.warn('API unavailable, defaulting to free tier');
-      setSubscription({
-        tier: 'free',
-        isLoading: false,
-        expiresAt: null,
-        features: TIER_FEATURES.free,
-      });
-    } catch (error) {
-      subscriptionLogger.error("Failed to fetch subscription", error);
-      // SECURITY: Always default to free tier on error.
-      // Never trust localStorage for subscription decisions.
-      setSubscription({
-        tier: 'free',
-        isLoading: false,
-        expiresAt: null,
-        features: TIER_FEATURES.free,
-      });
-    }
-  }, [isSignedIn, userId, getToken]);
-
+  // Initial fetch
   useEffect(() => {
     const controller = new AbortController();
-    queueMicrotask(() => {
-      if (!controller.signal.aborted) {
-        fetchSubscription(controller.signal);
-      }
-    });
+    fetchSubscription(controller.signal);
     return () => controller.abort();
-  }, [isSignedIn, userId, fetchSubscription]);
-
-  const canAccess = useCallback((
-    feature: keyof SubscriptionStatus["features"],
-  ): boolean => {
-    // SECURITY: During loading, default to denying access.
-    // Never trust localStorage for subscription decisions — it can be
-    // modified by the user via DevTools.
-    if (subscription.isLoading) {
-      return false;
-    }
-    const value = subscription.features[feature];
-    if (typeof value === "boolean") return value;
-    if (typeof value === "number") return value !== 0;
-    return false;
-  }, [subscription.isLoading, subscription.features]);
-
-  const requiresUpgrade = useCallback((
-    feature: keyof SubscriptionStatus["features"],
-  ): boolean => {
-    return !canAccess(feature);
-  }, [canAccess]);
-
-  const refreshSubscription = useCallback(async () => {
-    setSubscription((prev) => ({ ...prev, isLoading: true }));
-    await fetchSubscription();
   }, [fetchSubscription]);
 
-  const contextValue = useMemo(() => ({
-    subscription,
-    canAccess,
-    requiresUpgrade,
-    refreshSubscription,
-  }), [subscription, canAccess, requiresUpgrade, refreshSubscription]);
+  // Public actions
+  const canAccess = useCallback(
+    (feature: keyof SubscriptionFeatures): boolean => {
+      // SECURITY: deny during loading
+      if (subscription.isLoading) return false;
+      const value = subscription.features[feature];
+      if (typeof value === "boolean") return value;
+      if (typeof value === "number") return value !== 0;
+      return false;
+    },
+    [subscription.isLoading, subscription.features],
+  );
+
+  const requiresUpgrade = useCallback(
+    (feature: keyof SubscriptionFeatures): boolean => !canAccess(feature),
+    [canAccess],
+  );
+
+  const refreshSubscription = useCallback(async () => {
+    // Debounce: ignore rapid successive calls (e.g. multiple components refreshing)
+    if (refreshDebounceRef.current) clearTimeout(refreshDebounceRef.current);
+    return new Promise<void>((resolve) => {
+      refreshDebounceRef.current = setTimeout(async () => {
+        setSubscription((prev) => ({ ...prev, isRevalidating: true }));
+        await fetchSubscription();
+        resolve();
+      }, 300);
+    });
+  }, [fetchSubscription]);
+
+  const optimisticUpgrade = useCallback((tier: SubscriptionTier) => {
+    log.info("Optimistic upgrade", { tier });
+    setSubscription((prev) => ({
+      ...prev,
+      tier,
+      features: TIER_FEATURES[tier],
+      isRevalidating: true, // will be confirmed on next refresh
+    }));
+    try {
+      localStorage.setItem(CACHE_KEY, tier);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      subscription,
+      canAccess,
+      requiresUpgrade,
+      refreshSubscription,
+      optimisticUpgrade,
+    }),
+    [subscription, canAccess, requiresUpgrade, refreshSubscription, optimisticUpgrade],
+  );
 
   return (
     <SubscriptionContext.Provider value={contextValue}>
@@ -244,18 +327,20 @@ export const SubscriptionProvider = ({
 export const useSubscription = (): SubscriptionContextType => {
   const context = useContext(SubscriptionContext);
 
-  // Return default values if not in provider (for components outside the provider)
+  // Graceful fallback for components outside the provider
   if (!context) {
     return {
       subscription: {
         tier: "free",
         isLoading: false,
+        isRevalidating: false,
         expiresAt: null,
         features: TIER_FEATURES.free,
       },
       canAccess: () => false,
       requiresUpgrade: () => true,
       refreshSubscription: async () => {},
+      optimisticUpgrade: () => {},
     };
   }
 
@@ -263,12 +348,13 @@ export const useSubscription = (): SubscriptionContextType => {
 };
 
 // ============================================
-// HELPER: Check if tier has access to feature
+// UTILITIES
 // ============================================
 
+/** Static check: does a given tier grant access to a feature? */
 export const tierHasFeature = (
   tier: SubscriptionTier,
-  feature: keyof SubscriptionStatus["features"],
+  feature: keyof SubscriptionFeatures,
 ): boolean => {
   const value = TIER_FEATURES[tier][feature];
   if (typeof value === "boolean") return value;
@@ -276,8 +362,8 @@ export const tierHasFeature = (
   return false;
 };
 
-// For demo: Set subscription tier
+/** Dev tool: force-set a subscription tier (reloads the page). */
 export const setDemoSubscriptionTier = (tier: SubscriptionTier) => {
-  localStorage.setItem("beamlab_subscription_tier", tier);
+  localStorage.setItem(CACHE_KEY, tier);
   window.location.reload();
 };

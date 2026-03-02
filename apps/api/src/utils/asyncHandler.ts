@@ -15,14 +15,22 @@ type AsyncRequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => Promise<void> | void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+) => Promise<any> | any;
 
 /**
  * Wrap an async Express handler so rejected promises call next(error).
  */
 export function asyncHandler(fn: AsyncRequestHandler): RequestHandler {
   return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
+    try {
+      const result = fn(req, res, next);
+      if (result instanceof Promise) {
+        result.catch(next);
+      }
+    } catch (err) {
+      next(err);
+    }
   };
 }
 

@@ -8,6 +8,7 @@ import { FC, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Send, CheckCircle, Phone } from "lucide-react";
+import { API_CONFIG } from '../config/env';
 import logger from "../lib/logger";
 import beamLabLogo from "../assets/beamlab_logo.png";
 import { Button } from "../components/ui/button";
@@ -28,7 +29,7 @@ export const ContactPage: FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'https://beamlab-backend-node.azurewebsites.net';
+      const apiUrl = API_CONFIG.baseUrl;
       const res = await fetch(`${apiUrl}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -1,16 +1,24 @@
 /**
  * ============================================================================
- * ENVIRONMENT CONFIGURATION
+ * ENVIRONMENT CONFIGURATION — Production-Grade
  * ============================================================================
  *
- * Centralized environment variable management with type safety and defaults.
- * All environment access should go through this module.
+ * Centralized environment variable management with:
+ *   - Type-safe accessors with compile-time guarantees
+ *   - Runtime validation with actionable error messages
+ *   - Frozen config objects (immutable after initialization)
+ *   - Performance-optimized (no re-reads from import.meta.env)
  *
- * @version 2.0.0
+ * @version 3.0.0
  */
 
+// ============================================
+// CORE ACCESSORS
+// ============================================
+
 /**
- * Validates and returns environment variable with fallback
+ * Validates and returns environment variable with fallback.
+ * Logs warnings in dev mode for missing required variables.
  */
 function getEnv(key: string, fallback: string = ""): string {
   const value = import.meta.env[key];
@@ -19,26 +27,29 @@ function getEnv(key: string, fallback: string = ""): string {
       `⚠️ Environment variable ${key} is not set. Using fallback: "${fallback}"`,
     );
   }
-  return value ?? fallback;
+  return (value ?? fallback) as string;
 }
 
 /**
- * Get boolean environment variable
+ * Get boolean environment variable (accepts "true", "1", "yes")
  */
 function getBoolEnv(key: string, fallback: boolean = false): boolean {
   const value = import.meta.env[key];
   if (value === undefined) return fallback;
-  return value === "true" || value === "1";
+  return value === "true" || value === "1" || value === "yes";
 }
 
 /**
- * Get numeric environment variable
+ * Get numeric environment variable with bounds checking
  */
-function getNumEnv(key: string, fallback: number): number {
+function getNumEnv(key: string, fallback: number, min?: number, max?: number): number {
   const value = import.meta.env[key];
   if (value === undefined) return fallback;
   const num = parseInt(value, 10);
-  return isNaN(num) ? fallback : num;
+  if (isNaN(num)) return fallback;
+  if (min !== undefined && num < min) return min;
+  if (max !== undefined && num > max) return max;
+  return num;
 }
 
 // ============================================
@@ -145,8 +156,12 @@ export const PAYMENT_CONFIG = {
 // PERFORMANCE
 // ============================================
 export const PERFORMANCE_CONFIG = {
-  maxWorkers: getNumEnv("VITE_MAX_WORKERS", navigator.hardwareConcurrency || 4),
+  maxWorkers: getNumEnv("VITE_MAX_WORKERS", navigator.hardwareConcurrency || 4, 1, 16),
   enablePreload: !import.meta.env.DEV, // Disable preload in dev for faster HMR
+  /** Maximum analysis computation time before timeout (ms) */
+  analysisTimeout: getNumEnv("VITE_ANALYSIS_TIMEOUT", 120_000, 10_000, 600_000),
+  /** Enable performance monitoring */
+  enablePerfMonitoring: getBoolEnv("VITE_ENABLE_PERF_MONITORING", import.meta.env.PROD),
 } as const;
 
 // ============================================
@@ -163,43 +178,57 @@ export const APP_ENV = {
 // VALIDATION
 // ============================================
 /**
- * Validates critical environment variables on app startup
+ * Validates critical environment variables on app startup.
+ * Separates warnings (non-fatal) from errors (fatal in production).
  * @throws Error if critical variables are missing in production
  */
-export function validateEnvironment(): void {
+export function validateEnvironment(): { valid: boolean; warnings: string[]; errors: string[] } {
+  const warnings: string[] = [];
   const errors: string[] = [];
 
   // Critical checks for production
   if (APP_ENV.isProd) {
     if (!AUTH_CONFIG.clerkPublishableKey) {
-      errors.push(
+      warnings.push(
         "VITE_CLERK_PUBLISHABLE_KEY is not configured. Authentication features will not work.",
       );
       console.warn(
-        "[Auth] ⚠️ VITE_CLERK_PUBLISHABLE_KEY is not configured. Authentication features may not work.",
+        "[Auth] ⚠️ VITE_CLERK_PUBLISHABLE_KEY is not configured.",
       );
     }
 
     if (!API_CONFIG.baseUrl.startsWith("https://")) {
       errors.push(
-        `VITE_API_URL is not using HTTPS in production. Current value: ${API_CONFIG.baseUrl}`,
+        `VITE_API_URL must use HTTPS in production. Current: ${API_CONFIG.baseUrl}`,
       );
-      console.error(
-        "[API] 🔴 VITE_API_URL is not using HTTPS in production. API calls may fail. Current value:",
-        API_CONFIG.baseUrl,
+    }
+
+    if (API_CONFIG.baseUrl.includes("localhost")) {
+      errors.push(
+        `VITE_API_URL points to localhost in production. Current: ${API_CONFIG.baseUrl}`,
       );
+    }
+
+    if (!MONITORING_CONFIG.sentryDsn) {
+      warnings.push("VITE_SENTRY_DSN not set — error monitoring is disabled in production.");
     }
   }
 
+  // Environment-agnostic checks
+  if (API_CONFIG.timeout < 5000) {
+    warnings.push(`API timeout is very low (${API_CONFIG.timeout}ms). This may cause premature failures.`);
+  }
+
   if (errors.length > 0) {
-    const msg = `❌ Environment Configuration Error:\n${errors.map((e) => `  - ${e}`).join("\n")}`;
-    // In production, only throw for non-HTTPS API URL (truly broken).
-    // Missing Clerk key is handled gracefully by AuthProvider's <MissingClerkKey /> UI.
-    const critical = errors.some((e) => e.includes('HTTPS'));
-    if (critical) {
+    const msg = `❌ Environment Configuration Errors:\n${errors.map((e) => `  - ${e}`).join("\n")}`;
+    if (APP_ENV.isProd) {
       throw new Error(msg);
     }
-    console.warn(msg);
+    console.error(msg);
+  }
+
+  if (warnings.length > 0) {
+    console.warn(`⚠️ Environment Warnings:\n${warnings.map((w) => `  - ${w}`).join("\n")}`);
   }
 
   // Log configuration in development
@@ -209,8 +238,11 @@ export function validateEnvironment(): void {
       api: API_CONFIG.baseUrl,
       pythonApi: API_CONFIG.pythonUrl,
       features: FEATURES,
+      payment: PAYMENT_CONFIG.isPaymentEnabled ? "enabled" : "disabled",
     });
   }
+
+  return { valid: errors.length === 0, warnings, errors };
 }
 
 // Export everything as default for convenient access

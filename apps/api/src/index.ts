@@ -496,25 +496,57 @@ httpServer.listen(PORT, () => {
 });
 
 // ===========================================================================
-// GRACEFUL SHUTDOWN
+// GRACEFUL SHUTDOWN WITH CONNECTION DRAINING
 // Ensures in-flight requests complete, DB connections close, and the process
 // exits cleanly — required for zero-downtime deploys (K8s, Azure App Service).
 // ===========================================================================
 const SHUTDOWN_TIMEOUT_MS = 15_000;
+let isShuttingDown = false;
+
+// Track active connections for draining
+const activeConnections = new Set<import("net").Socket>();
+httpServer.on("connection", (socket) => {
+  activeConnections.add(socket);
+  socket.on("close", () => activeConnections.delete(socket));
+});
+
+// Middleware: reject new requests during shutdown (return 503)
+app.use((_req, res, next) => {
+  if (isShuttingDown) {
+    res.setHeader("Connection", "close");
+    res.status(503).json({ success: false, error: "Server is shutting down" });
+    return;
+  }
+  next();
+});
 
 function gracefulShutdown(signal: string) {
+  if (isShuttingDown) return; // Prevent double shutdown
+  isShuttingDown = true;
   console.log(`\n⚠️  Received ${signal}. Starting graceful shutdown...`);
 
-  // 1. Stop accepting new connections
+  // 1. Stop accepting new connections & wait for in-flight requests to drain
   httpServer.close(() => {
-    console.log("✅ HTTP server closed — no new connections.");
+    console.log("✅ HTTP server closed — all in-flight requests drained.");
   });
 
   // 2. Close WebSocket connections
   socketServer.close();
   console.log("✅ WebSocket server closed.");
 
-  // 3. Close MongoDB connection
+  // 3. Destroy idle keep-alive connections (let active ones finish)
+  for (const socket of activeConnections) {
+    // If the socket has no pending data, destroy it
+    if (!socket.writableLength) {
+      socket.destroy();
+    } else {
+      // Let it finish writing, then close
+      socket.end();
+    }
+  }
+  console.log(`✅ ${activeConnections.size} idle connections closed.`);
+
+  // 4. Close MongoDB connection
   import("mongoose")
     .then((mongoose) => {
       mongoose.default.connection.close(false).then(() => {
@@ -526,7 +558,7 @@ function gracefulShutdown(signal: string) {
       process.exit(0);
     });
 
-  // 4. Force kill if graceful shutdown takes too long
+  // 5. Force kill if graceful shutdown takes too long
   setTimeout(() => {
     console.error("❌ Graceful shutdown timed out. Forcing exit.");
     process.exit(1);

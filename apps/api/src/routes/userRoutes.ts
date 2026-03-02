@@ -165,7 +165,7 @@ router.get('/subscription', requireAuth(), async (req: Request, res: Response) =
 
         // Use getEffectiveTier to check for master user elevation
         const tier = getEffectiveTier(userEmail, dbTier);
-        console.log(`[Subscription] User: ${userEmail}, DB Tier: ${dbTier}, Effective Tier: ${tier}, Master: ${isMasterUser(userEmail)}`);
+        console.log(`[Subscription] userId=${userId}, dbTier=${dbTier}, effectiveTier=${tier}`);
 
         const limits = TIER_LIMITS[tier];
 

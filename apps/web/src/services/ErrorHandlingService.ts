@@ -89,7 +89,14 @@ export const ERROR_CODES = {
 
     // Validation errors
     VALIDATION_FAILED: 'VAL_001',
-    VALIDATION_THRESHOLD_EXCEEDED: 'VAL_002'
+    VALIDATION_THRESHOLD_EXCEEDED: 'VAL_002',
+
+    // Billing errors
+    BILLING_ORDER_FAILED: 'BIL_001',
+    BILLING_VERIFICATION_FAILED: 'BIL_002',
+    BILLING_ALREADY_PRO: 'BIL_003',
+    BILLING_PAYMENT_CANCELLED: 'BIL_004',
+    BILLING_SUBSCRIPTION_EXPIRED: 'BIL_005',
 };
 
 // ============================================
@@ -103,6 +110,9 @@ export const BACKEND_ERROR_MAP: Record<string, string> = {
     'OUT_OF_MEMORY':       ERROR_CODES.ANALYSIS_CONVERGENCE_FAILED,
     'ANALYSIS_UNKNOWN':    ERROR_CODES.ANALYSIS_CONVERGENCE_FAILED,
     'SERVER_RESTART':      ERROR_CODES.NETWORK_SERVER_ERROR,
+    'ORDER_CREATION_FAILED': ERROR_CODES.BILLING_ORDER_FAILED,
+    'INVALID_SIGNATURE':   ERROR_CODES.BILLING_VERIFICATION_FAILED,
+    'ALREADY_PRO':         ERROR_CODES.BILLING_ALREADY_PRO,
 };
 
 /**
@@ -162,6 +172,11 @@ const USER_MESSAGES: Record<string, string> = {
     [ERROR_CODES.NETWORK_TIMEOUT]: 'Request timed out. Please try again.',
     [ERROR_CODES.DB_CONNECTION_FAILED]: 'Could not connect to database. Saving locally instead.',
     [ERROR_CODES.EXPORT_GENERATION_FAILED]: 'Export failed. Please try a different format.',
+    [ERROR_CODES.BILLING_ORDER_FAILED]: 'Payment could not be initiated. Please try again.',
+    [ERROR_CODES.BILLING_VERIFICATION_FAILED]: 'Payment verification failed. Contact support if charged.',
+    [ERROR_CODES.BILLING_ALREADY_PRO]: 'You already have an active Pro subscription.',
+    [ERROR_CODES.BILLING_PAYMENT_CANCELLED]: 'Payment was cancelled. No charge was made.',
+    [ERROR_CODES.BILLING_SUBSCRIPTION_EXPIRED]: 'Your subscription has expired. Renew to continue.',
 };
 
 // ============================================

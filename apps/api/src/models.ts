@@ -328,7 +328,7 @@ export interface ISubscription extends Document {
     stripeSubscriptionId?: string;
     /** @deprecated Use planType. */
     stripePriceId?: string;
-    status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
+    status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete' | 'expired';
     currentPeriodStart: Date;
     currentPeriodEnd: Date;
     cancelAtPeriodEnd: boolean;
@@ -362,7 +362,7 @@ const SubscriptionSchema = new Schema<ISubscription>({
     stripePriceId: { type: String },
     status: {
         type: String,
-        enum: ['active', 'canceled', 'past_due', 'trialing', 'incomplete'],
+        enum: ['active', 'canceled', 'past_due', 'trialing', 'incomplete', 'expired'],
         default: 'incomplete'
     },
     currentPeriodStart: {

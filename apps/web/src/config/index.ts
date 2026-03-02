@@ -11,6 +11,7 @@
 // Environment Configuration
 export { default as env } from './env';
 export * from './env';
+import { API_CONFIG } from './env';
 
 // Navigation Configuration
 export * from './navigation.config';
@@ -26,9 +27,9 @@ export const APP_CONFIG = {
   description: 'Professional civil & structural engineering design platform',
   author: 'Engineering Team',
   
-  // API Endpoints
+  // API Endpoints (delegates to centralized API_CONFIG in env.ts)
   api: {
-    baseUrl: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://beamlab-backend-node.azurewebsites.net' : 'http://localhost:3001'),
+    get baseUrl() { return API_CONFIG.baseUrl; },
     timeout: 30000,
   },
   

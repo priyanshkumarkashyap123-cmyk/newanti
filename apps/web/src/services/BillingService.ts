@@ -1,0 +1,240 @@
+/**
+ * BillingService — Centralized Billing & Subscription Management
+ *
+ * Single source of truth for all billing operations on the frontend.
+ * Uses the existing API client for consistent error handling, retries,
+ * and authentication.
+ *
+ * @version 1.0.0
+ */
+
+import { API_CONFIG } from '../config/env';
+import { createLogger } from '../utils/logger';
+
+const log = createLogger('BillingService');
+const API_URL = API_CONFIG.baseUrl;
+
+// ============================================
+// TYPES
+// ============================================
+
+export type PlanType = 'monthly' | 'yearly';
+export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'inactive';
+
+export interface BillingPlan {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  displayPrice: string;
+  interval: 'month' | 'year';
+  savings?: string;
+  features: string[];
+}
+
+export interface BillingStatus {
+  tier: 'free' | 'pro' | 'enterprise';
+  active: boolean;
+  expiresAt?: string;
+  planType?: PlanType;
+  daysRemaining?: number | null;
+  cancelAtPeriodEnd?: boolean;
+}
+
+export interface OrderResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+}
+
+export interface VerifyPaymentParams {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  planType: PlanType;
+}
+
+// ============================================
+// BILLING SERVICE
+// ============================================
+
+class BillingServiceClient {
+  private token: string | null = null;
+
+  /**
+   * Set the auth token for API calls.
+   * Should be called whenever the user's token refreshes.
+   */
+  setToken(token: string | null) {
+    this.token = token;
+  }
+
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    return headers;
+  }
+
+  /**
+   * Get available pricing plans from the backend.
+   * Falls back to hardcoded plans if the endpoint isn't available.
+   */
+  async getPlans(): Promise<BillingPlan[]> {
+    try {
+      const response = await fetch(`${API_URL}/api/billing/plans`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data?.plans) {
+          return result.data.plans;
+        }
+      }
+    } catch (err) {
+      log.warn('Failed to fetch plans from API, using defaults', err);
+    }
+
+    // Fallback — hardcoded plans
+    return [
+      {
+        id: 'pro_monthly',
+        name: 'Pro Monthly',
+        price: 99900,
+        currency: 'INR',
+        displayPrice: '₹999/month',
+        interval: 'month',
+        features: [
+          'Unlimited projects',
+          'Advanced analysis',
+          'All design codes',
+          'PDF reports',
+          'AI design assistant',
+          'Priority support',
+        ],
+      },
+      {
+        id: 'pro_yearly',
+        name: 'Pro Annual',
+        price: 999900,
+        currency: 'INR',
+        displayPrice: '₹9,999/year',
+        interval: 'year',
+        savings: 'Save 17%',
+        features: [
+          'Everything in Pro Monthly',
+          '2 months free',
+          'Locked-in pricing',
+        ],
+      },
+    ];
+  }
+
+  /**
+   * Get current subscription status for the authenticated user.
+   */
+  async getStatus(): Promise<BillingStatus> {
+    const response = await fetch(`${API_URL}/api/billing/status`, {
+      method: 'GET',
+      headers: this.getHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error((err as { message?: string }).message || 'Failed to fetch billing status');
+    }
+
+    const result = await response.json();
+    return result.data as BillingStatus;
+  }
+
+  /**
+   * Create a Razorpay order for payment.
+   * Supports idempotency via X-Idempotency-Key header.
+   */
+  async createOrder(
+    email: string,
+    planType: PlanType,
+    idempotencyKey?: string,
+  ): Promise<OrderResponse> {
+    const headers = this.getHeaders();
+    if (idempotencyKey) {
+      headers['X-Idempotency-Key'] = idempotencyKey;
+    }
+
+    const response = await fetch(`${API_URL}/api/billing/create-order`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ email, planType }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(
+        (err as { message?: string }).message || 'Failed to create payment order',
+      );
+    }
+
+    return response.json() as Promise<OrderResponse>;
+  }
+
+  /**
+   * Verify a completed Razorpay payment and activate the subscription.
+   */
+  async verifyPayment(params: VerifyPaymentParams): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${API_URL}/api/billing/verify-payment`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(
+        (err as { message?: string }).message || 'Payment verification failed',
+      );
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Check if the user's subscription is active and not expired.
+   */
+  async isSubscriptionActive(): Promise<boolean> {
+    try {
+      const status = await this.getStatus();
+      return status.active && status.tier !== 'free';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get human-readable subscription summary.
+   */
+  async getSubscriptionSummary(): Promise<string> {
+    try {
+      const status = await this.getStatus();
+      if (!status.active || status.tier === 'free') {
+        return 'Free plan — upgrade to unlock all features';
+      }
+      const planLabel = status.planType === 'yearly' ? 'Annual' : 'Monthly';
+      const daysLeft = status.daysRemaining ?? 0;
+      return `Pro ${planLabel} — ${daysLeft} days remaining`;
+    } catch {
+      return 'Unable to retrieve subscription info';
+    }
+  }
+}
+
+// Singleton instance
+export const billingService = new BillingServiceClient();
+export default billingService;

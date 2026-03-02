@@ -26,378 +26,287 @@
 import { Router, Request, Response, type IRouter } from 'express';
 import { aiArchitectEngine } from '../../services/ai/AIArchitectEngine.js';
 import { aiRateLimiter } from '../../middleware/aiRateLimiter.js';
+import { requireAuth } from '../../middleware/authMiddleware.js';
+import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
 
 const router: IRouter = Router();
 
-// Apply rate limiting to all AI routes
+// SECURITY: All AI routes require authentication + rate limiting
+router.use(requireAuth());
 router.use(aiRateLimiter());
 
 // ============================================
 // POST /api/ai/chat — Contextual AI Conversation
 // ============================================
 
-router.post('/chat', async (req: Request, res: Response) => {
-  try {
-    const { message, context, history } = req.body;
+router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
+  const { message, context, history } = req.body;
 
-    if (!message || typeof message !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required field: message',
-      });
-    }
-
-    if (message.length > 10000) {
-      return res.status(400).json({
-        success: false,
-        error: 'Message too long (max 10000 characters)',
-      });
-    }
-
-    console.log(`[AI/Chat] "${message.substring(0, 100)}..."`);
-
-    const result = await aiArchitectEngine.chat(message, context, history);
-
-    return res.json({
-      success: result.success,
-      response: result.response,
-      actions: result.actions,
-      model: result.model,
-      plan: result.plan,
-      metadata: result.metadata,
-    });
-  } catch (error) {
-    console.error('[AI/Chat] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to process AI request',
-    });
+  if (!message || typeof message !== 'string') {
+    throw new HttpError(400, 'Missing required field: message');
   }
-});
+
+  if (message.length > 10000) {
+    throw new HttpError(400, 'Message too long (max 10000 characters)');
+  }
+
+  console.log(`[AI/Chat] "${message.substring(0, 100)}..."`);
+
+  const result = await aiArchitectEngine.chat(message, context, history);
+
+  return res.json({
+    success: result.success,
+    response: result.response,
+    actions: result.actions,
+    model: result.model,
+    plan: result.plan,
+    metadata: result.metadata,
+  });
+}));
 
 // ============================================
 // POST /api/ai/generate — Generate Structure from NL
 // ============================================
 
-router.post('/generate', async (req: Request, res: Response) => {
-  try {
-    const { prompt, constraints } = req.body;
+router.post('/generate', asyncHandler(async (req: Request, res: Response) => {
+  const { prompt, constraints } = req.body;
 
-    if (!prompt || typeof prompt !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required field: prompt',
-      });
-    }
-
-    if (prompt.length > 2000) {
-      return res.status(400).json({
-        success: false,
-        error: 'Prompt too long (max 2000 characters)',
-      });
-    }
-
-    console.log(`[AI/Generate] "${prompt.substring(0, 100)}..."`);
-
-    const result = await aiArchitectEngine.generateStructure(prompt, constraints);
-
-    return res.json({
-      success: result.success,
-      model: result.model,
-      response: result.response,
-      actions: result.actions,
-      metadata: result.metadata,
-    });
-  } catch (error) {
-    console.error('[AI/Generate] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'AI generation failed',
-    });
+  if (!prompt || typeof prompt !== 'string') {
+    throw new HttpError(400, 'Missing required field: prompt');
   }
-});
+
+  if (prompt.length > 2000) {
+    throw new HttpError(400, 'Prompt too long (max 2000 characters)');
+  }
+
+  console.log(`[AI/Generate] "${prompt.substring(0, 100)}..."`);
+
+  const result = await aiArchitectEngine.generateStructure(prompt, constraints);
+
+  return res.json({
+    success: result.success,
+    model: result.model,
+    response: result.response,
+    actions: result.actions,
+    metadata: result.metadata,
+  });
+}));
 
 // ============================================
 // POST /api/ai/validate — Validate Model Structure
 // ============================================
 
-router.post('/validate', async (req: Request, res: Response) => {
-  try {
-    const { model } = req.body;
+router.post('/validate', asyncHandler(async (req: Request, res: Response) => {
+  const { model } = req.body;
 
-    if (!model || !model.nodes || !model.members) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid model structure. Required: { nodes: [], members: [] }',
-      });
-    }
-
-    // Convert to ModelContext for diagnosis
-    const context = {
-      nodes: model.nodes.map((n: any) => ({
-        id: n.id,
-        x: n.x,
-        y: n.y,
-        z: n.z || 0,
-        hasSupport: n.isSupport || (n.restraints && (n.restraints.fy || n.restraints.fx)),
-      })),
-      members: model.members.map((m: any) => ({
-        id: m.id,
-        startNode: m.s || m.startNode || m.startNodeId,
-        endNode: m.e || m.endNode || m.endNodeId,
-        section: m.section,
-      })),
-      loads: model.loads || [],
-    };
-
-    const diagnosis = await aiArchitectEngine.diagnoseModel(context);
-
-    return res.json({
-      success: true,
-      valid: diagnosis.overallHealth === 'good',
-      health: diagnosis.overallHealth,
-      issues: diagnosis.issues,
-      suggestions: diagnosis.suggestions,
-    });
-  } catch (error) {
-    console.error('[AI/Validate] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Validation failed',
-    });
+  if (!model || !model.nodes || !model.members) {
+    throw new HttpError(400, 'Invalid model structure. Required: { nodes: [], members: [] }');
   }
-});
+
+  // Convert to ModelContext for diagnosis
+  const context = {
+    nodes: model.nodes.map((n: any) => ({
+      id: n.id,
+      x: n.x,
+      y: n.y,
+      z: n.z || 0,
+      hasSupport: n.isSupport || (n.restraints && (n.restraints.fy || n.restraints.fx)),
+    })),
+    members: model.members.map((m: any) => ({
+      id: m.id,
+      startNode: m.s || m.startNode || m.startNodeId,
+      endNode: m.e || m.endNode || m.endNodeId,
+      section: m.section,
+    })),
+    loads: model.loads || [],
+  };
+
+  const diagnosis = await aiArchitectEngine.diagnoseModel(context);
+
+  return res.json({
+    success: true,
+    valid: diagnosis.overallHealth === 'good',
+    health: diagnosis.overallHealth,
+    issues: diagnosis.issues,
+    suggestions: diagnosis.suggestions,
+  });
+}));
 
 // ============================================
 // POST /api/ai/diagnose — Diagnose Model Issues
 // ============================================
 
-router.post('/diagnose', async (req: Request, res: Response) => {
-  try {
-    const { model, context } = req.body;
+router.post('/diagnose', asyncHandler(async (req: Request, res: Response) => {
+  const { model, context } = req.body;
 
-    // Accept either model or context
-    let modelContext = context;
-    if (!modelContext && model) {
-      modelContext = {
-        nodes: (model.nodes || []).map((n: any) => ({
-          id: n.id,
-          x: n.x,
-          y: n.y,
-          z: n.z || 0,
-          hasSupport: n.isSupport || !!(n.restraints && (n.restraints.fy || n.restraints.fx)),
-        })),
-        members: (model.members || []).map((m: any) => ({
-          id: m.id,
-          startNode: m.s || m.startNode,
-          endNode: m.e || m.endNode,
-          section: m.section,
-        })),
-        loads: model.loads || [],
-        analysisResults: model.analysisResults,
-      };
-    }
-
-    if (!modelContext) {
-      return res.status(400).json({
-        success: false,
-        error: 'No model or context provided',
-      });
-    }
-
-    const diagnosis = await aiArchitectEngine.diagnoseModel(modelContext);
-
-    return res.json(diagnosis);
-  } catch (error) {
-    console.error('[AI/Diagnose] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Diagnosis failed',
-    });
+  // Accept either model or context
+  let modelContext = context;
+  if (!modelContext && model) {
+    modelContext = {
+      nodes: (model.nodes || []).map((n: any) => ({
+        id: n.id,
+        x: n.x,
+        y: n.y,
+        z: n.z || 0,
+        hasSupport: n.isSupport || !!(n.restraints && (n.restraints.fy || n.restraints.fx)),
+      })),
+      members: (model.members || []).map((m: any) => ({
+        id: m.id,
+        startNode: m.s || m.startNode,
+        endNode: m.e || m.endNode,
+        section: m.section,
+      })),
+      loads: model.loads || [],
+      analysisResults: model.analysisResults,
+    };
   }
-});
+
+  if (!modelContext) {
+    throw new HttpError(400, 'No model or context provided');
+  }
+
+  const diagnosis = await aiArchitectEngine.diagnoseModel(modelContext);
+
+  return res.json(diagnosis);
+}));
 
 // ============================================
 // POST /api/ai/fix — Auto-Fix Model Issues
 // ============================================
 
-router.post('/fix', async (req: Request, res: Response) => {
+router.post('/fix', asyncHandler(async (req: Request, res: Response) => {
+  const { model, context, issues } = req.body;
+
+  if (!model && !context) {
+    throw new HttpError(400, 'No model or context provided');
+  }
+
+  // Proxy to Python backend for advanced fixes if available
   try {
-    const { model, context, issues } = req.body;
+    const pythonResult = await aiArchitectEngine.proxyToPython('fix', {
+      model: model || context,
+      issues,
+    });
+    return res.json({ success: true, ...pythonResult });
+  } catch {
+    // Fall back to engine's troubleshoot
+    const chatResult = await aiArchitectEngine.chat(
+      'Fix all issues in the model',
+      context || {
+        nodes: model.nodes?.map((n: any) => ({
+          id: n.id, x: n.x, y: n.y, z: n.z || 0,
+          hasSupport: n.isSupport || false,
+        })) || [],
+        members: model.members?.map((m: any) => ({
+          id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
+        })) || [],
+        loads: model.loads || [],
+      }
+    );
 
-    if (!model && !context) {
-      return res.status(400).json({
-        success: false,
-        error: 'No model or context provided',
-      });
-    }
-
-    // Proxy to Python backend for advanced fixes if available
-    try {
-      const pythonResult = await aiArchitectEngine.proxyToPython('fix', {
-        model: model || context,
-        issues,
-      });
-      return res.json({ success: true, ...pythonResult });
-    } catch {
-      // Fall back to engine's troubleshoot
-      const chatResult = await aiArchitectEngine.chat(
-        'Fix all issues in the model',
-        context || {
-          nodes: model.nodes?.map((n: any) => ({
-            id: n.id, x: n.x, y: n.y, z: n.z || 0,
-            hasSupport: n.isSupport || false,
-          })) || [],
-          members: model.members?.map((m: any) => ({
-            id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
-          })) || [],
-          loads: model.loads || [],
-        }
-      );
-
-      return res.json({
-        success: chatResult.success,
-        response: chatResult.response,
-        actions: chatResult.actions,
-        model: chatResult.model,
-      });
-    }
-  } catch (error) {
-    console.error('[AI/Fix] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Auto-fix failed',
+    return res.json({
+      success: chatResult.success,
+      response: chatResult.response,
+      actions: chatResult.actions,
+      model: chatResult.model,
     });
   }
-});
+}));
 
 // ============================================
 // POST /api/ai/modify — Modify Model via NL
 // ============================================
 
-router.post('/modify', async (req: Request, res: Response) => {
-  try {
-    const { instruction, model, context } = req.body;
+router.post('/modify', asyncHandler(async (req: Request, res: Response) => {
+  const { instruction, model, context } = req.body;
 
-    if (!instruction || typeof instruction !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required field: instruction',
-      });
-    }
-
-    const modelContext = context || (model ? {
-      nodes: model.nodes?.map((n: any) => ({
-        id: n.id, x: n.x, y: n.y, z: n.z || 0,
-        hasSupport: n.isSupport || false,
-      })) || [],
-      members: model.members?.map((m: any) => ({
-        id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
-      })) || [],
-      loads: model.loads || [],
-    } : undefined);
-
-    console.log(`[AI/Modify] "${instruction.substring(0, 100)}..."`);
-
-    const result = await aiArchitectEngine.chat(instruction, modelContext);
-
-    return res.json({
-      success: result.success,
-      response: result.response,
-      model: result.model,
-      actions: result.actions,
-      metadata: result.metadata,
-    });
-  } catch (error) {
-    console.error('[AI/Modify] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Modification failed',
-    });
+  if (!instruction || typeof instruction !== 'string') {
+    throw new HttpError(400, 'Missing required field: instruction');
   }
-});
+
+  const modelContext = context || (model ? {
+    nodes: model.nodes?.map((n: any) => ({
+      id: n.id, x: n.x, y: n.y, z: n.z || 0,
+      hasSupport: n.isSupport || false,
+    })) || [],
+    members: model.members?.map((m: any) => ({
+      id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
+    })) || [],
+    loads: model.loads || [],
+  } : undefined);
+
+  console.log(`[AI/Modify] "${instruction.substring(0, 100)}..."`);
+
+  const result = await aiArchitectEngine.chat(instruction, modelContext);
+
+  return res.json({
+    success: result.success,
+    response: result.response,
+    model: result.model,
+    actions: result.actions,
+    metadata: result.metadata,
+  });
+}));
 
 // ============================================
 // POST /api/ai/code-check — Design Code Compliance
 // ============================================
 
-router.post('/code-check', async (req: Request, res: Response) => {
-  try {
-    const { member, forces, code } = req.body;
+router.post('/code-check', asyncHandler(async (req: Request, res: Response) => {
+  const { member, forces, code } = req.body;
 
-    if (!member) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required field: member',
-      });
-    }
-
-    const result = await aiArchitectEngine.checkCodeCompliance(
-      {
-        section: member.section || 'ISMB300',
-        length: member.length || 3.0,
-        type: member.type || 'beam',
-      },
-      forces || {},
-      code || 'IS_800'
-    );
-
-    return res.json(result);
-  } catch (error) {
-    console.error('[AI/CodeCheck] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Code check failed',
-    });
+  if (!member) {
+    throw new HttpError(400, 'Missing required field: member');
   }
-});
+
+  const result = await aiArchitectEngine.checkCodeCompliance(
+    {
+      section: member.section || 'ISMB300',
+      length: member.length || 3.0,
+      type: member.type || 'beam',
+    },
+    forces || {},
+    code || 'IS_800'
+  );
+
+  return res.json(result);
+}));
 
 // ============================================
 // POST /api/ai/optimize — Section Optimization
 // ============================================
 
-router.post('/optimize', async (req: Request, res: Response) => {
-  try {
-    const { model, context, objective } = req.body;
+router.post('/optimize', asyncHandler(async (req: Request, res: Response) => {
+  const { model, context, objective } = req.body;
 
-    if (!model && !context) {
-      return res.status(400).json({
-        success: false,
-        error: 'No model or context provided',
-      });
-    }
-
-    const modelContext = context || {
-      nodes: model.nodes?.map((n: any) => ({
-        id: n.id, x: n.x, y: n.y, z: n.z || 0,
-        hasSupport: n.isSupport || false,
-      })) || [],
-      members: model.members?.map((m: any) => ({
-        id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
-      })) || [],
-      loads: model.loads || [],
-      analysisResults: model.analysisResults,
-    };
-
-    const result = await aiArchitectEngine.chat(
-      `Optimize sections${objective ? ` for ${objective}` : ''}`,
-      modelContext
-    );
-
-    return res.json({
-      success: result.success,
-      response: result.response,
-      actions: result.actions,
-      metadata: result.metadata,
-    });
-  } catch (error) {
-    console.error('[AI/Optimize] Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Optimization failed',
-    });
+  if (!model && !context) {
+    throw new HttpError(400, 'No model or context provided');
   }
-});
+
+  const modelContext = context || {
+    nodes: model.nodes?.map((n: any) => ({
+      id: n.id, x: n.x, y: n.y, z: n.z || 0,
+      hasSupport: n.isSupport || false,
+    })) || [],
+    members: model.members?.map((m: any) => ({
+      id: m.id, startNode: m.s || m.startNode, endNode: m.e || m.endNode, section: m.section,
+    })) || [],
+    loads: model.loads || [],
+    analysisResults: model.analysisResults,
+  };
+
+  const result = await aiArchitectEngine.chat(
+    `Optimize sections${objective ? ` for ${objective}` : ''}`,
+    modelContext
+  );
+
+  return res.json({
+    success: result.success,
+    response: result.response,
+    actions: result.actions,
+    metadata: result.metadata,
+  });
+}));
 
 // ============================================
 // GET /api/ai/templates — Model Templates
