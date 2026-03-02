@@ -14,6 +14,7 @@ import { useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import { Line, Cone, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useModelStore, Member, Node, MemberLoad } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 // ============================================
 // TYPES
@@ -269,14 +270,18 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
     previewMagnitude = 10,
     loadType = 'UDL'
 }) => {
-    // ---- Store ----
-    const nodes = useModelStore((s) => s.nodes);
-    const members = useModelStore((s) => s.members);
-    const activeTool = useModelStore((s) => s.activeTool);
+    // ---- Store (useShallow prevents re-renders from unrelated state changes) ----
+    const { nodes, members, activeTool, selectedIds } = useModelStore(
+        useShallow((s) => ({
+            nodes: s.nodes,
+            members: s.members,
+            activeTool: s.activeTool,
+            selectedIds: s.selectedIds,
+        }))
+    );
     const setTool = useModelStore((s) => s.setTool);
     const select = useModelStore((s) => s.select);
     const addMemberLoad = useModelStore((s) => s.addMemberLoad);
-    const selectedIds = useModelStore((s) => s.selectedIds);
 
     // ---- State ----
     const [hoveredMemberId, setHoveredMemberId] = useState<string | null>(null);

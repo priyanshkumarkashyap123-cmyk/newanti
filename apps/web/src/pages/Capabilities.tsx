@@ -439,7 +439,7 @@ export const Capabilities: FC = () => {
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
                             <Zap className="w-5 h-5 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
+                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab</span>
                     </Link>
                     <div className="flex items-center gap-4">
                         <Link to="/pricing" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">

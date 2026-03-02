@@ -5,7 +5,7 @@ import { ConnectionDesignPanel } from '../components/design/ConnectionDesignPane
 // App.tsx wraps them in RequireAuth, but layout might be inside the page or Dashboard
 
 export const ConnectionDesignPage: React.FC = () => {
-    useEffect(() => { document.title = 'Connection Design | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Connection Design | BeamLab'; }, []);
 
     return (
         <div className="min-h-screen bg-white dark:bg-black">

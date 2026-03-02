@@ -220,7 +220,7 @@ export function useReportCapture() {
                 clientName: projectData?.clientName || 'N/A',
                 engineerName: projectData?.engineerName || 'N/A',
                 projectNumber: projectData?.projectNumber || 'N/A',
-                description: projectData?.description || 'Structural analysis performed with BeamLab Ultimate',
+                description: projectData?.description || 'Structural analysis performed with BeamLab',
             });
 
             // 3. Capture 3D view

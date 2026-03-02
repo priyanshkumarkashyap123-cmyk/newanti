@@ -135,6 +135,37 @@ export function get_standard_combinations_is800(): any;
  */
 export function modal_analysis(nodes_val: any, elements_val: any, num_modes: number): any;
 
+/**
+ * Run ALL NAFEMS benchmark tests and return comprehensive results.
+ * Returns JSON with pass/fail for every benchmark across all categories.
+ */
+export function run_nafems_all_benchmarks(): any;
+
+/**
+ * Run only the Contact (IC) NAFEMS benchmarks
+ */
+export function run_nafems_contact_benchmarks(): any;
+
+/**
+ * Run only the Free Vibration (FV) NAFEMS benchmarks
+ */
+export function run_nafems_fv_benchmarks(): any;
+
+/**
+ * Run only the Linear Elastic (LE) NAFEMS benchmarks
+ */
+export function run_nafems_le_benchmarks(): any;
+
+/**
+ * Run only the Nonlinear (NL) NAFEMS benchmarks
+ */
+export function run_nafems_nl_benchmarks(): any;
+
+/**
+ * Run only the Thermal (T) NAFEMS benchmarks
+ */
+export function run_nafems_thermal_benchmarks(): any;
+
 export function set_panic_hook(): void;
 
 export function simulate_hysteresis_response(model: string, k0: number, fy: number, alpha: number, strain_history: Float64Array): Float64Array;
@@ -233,6 +264,12 @@ export interface InitOutput {
   readonly renderer_new: (a: number, b: number) => void;
   readonly renderer_resize: (a: number, b: number, c: number) => void;
   readonly renderer_width: (a: number) => number;
+  readonly run_nafems_all_benchmarks: () => number;
+  readonly run_nafems_contact_benchmarks: () => number;
+  readonly run_nafems_fv_benchmarks: () => number;
+  readonly run_nafems_le_benchmarks: () => number;
+  readonly run_nafems_nl_benchmarks: () => number;
+  readonly run_nafems_thermal_benchmarks: () => number;
   readonly simulate_hysteresis_response: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
   readonly solve_2d_frame_with_loads: (a: number, b: number, c: number) => number;
   readonly solve_3d_frame_extended: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;

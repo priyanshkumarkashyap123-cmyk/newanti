@@ -1,5 +1,5 @@
 /**
- * ExportService - Comprehensive Results Export for BeamLab Ultimate
+ * ExportService - Comprehensive Results Export for BeamLab
  * 
  * Supports multiple export formats:
  * - CSV: Spreadsheet-compatible tabular data
@@ -253,7 +253,7 @@ export class ExportService {
         const lines: string[] = [];
 
         // Add header metadata
-        lines.push(`# BeamLab Ultimate - ${title}`);
+        lines.push(`# BeamLab - ${title}`);
         lines.push(`# Project: ${this.data.projectName}`);
         lines.push(`# Engineer: ${this.data.engineer || 'N/A'}`);
         lines.push(`# Generated: ${format(this.data.timestamp, 'yyyy-MM-dd HH:mm:ss')}`);
@@ -278,7 +278,7 @@ export class ExportService {
     exportToJSON(pretty: boolean = true): Blob {
         const exportObject = {
             metadata: {
-                format: 'BeamLab Ultimate Export',
+                format: 'BeamLab Export',
                 version: '1.0',
                 projectName: this.data.projectName,
                 projectNumber: this.data.projectNumber,
@@ -355,7 +355,7 @@ export class ExportService {
         const lines: string[] = [];
 
         lines.push('*********************************************************');
-        lines.push('*       BeamLab Ultimate - Analysis Results             *');
+        lines.push('*       BeamLab - Analysis Results             *');
         lines.push('*       STAAD-Compatible Format                         *');
         lines.push('*********************************************************');
         lines.push('');
@@ -459,7 +459,7 @@ export class ExportService {
         // For now, create a combined CSV with all data sections
         const lines: string[] = [];
 
-        lines.push('# BeamLab Ultimate - Complete Results Export');
+        lines.push('# BeamLab - Complete Results Export');
         lines.push(`# Project: ${this.data.projectName}`);
         lines.push(`# Generated: ${format(this.data.timestamp, 'yyyy-MM-dd HH:mm:ss')}`);
         lines.push('');

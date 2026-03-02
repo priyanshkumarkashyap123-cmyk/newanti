@@ -219,7 +219,7 @@
       "rewrite": "/index.html"
     },
     {
-      "route": "/api/dashboard",
+      "route": "/integrations/api-dashboard",
       "rewrite": "/index.html"
     },
     {

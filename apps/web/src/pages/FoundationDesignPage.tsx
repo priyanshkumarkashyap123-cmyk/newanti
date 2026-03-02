@@ -83,7 +83,7 @@ export const FoundationDesignPage: React.FC = () => {
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => { document.title = 'Foundation Design | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Foundation Design | BeamLab'; }, []);
 
   // Input validation
   const validateInputs = useCallback((): string | null => {

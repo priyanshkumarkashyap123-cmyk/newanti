@@ -5,7 +5,7 @@
  * with progress tracking and zero-copy data transfer.
  */
 
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 
 // ============================================
 // TYPES (re-export from worker)
@@ -181,6 +181,14 @@ export function useStructuralSolver() {
         }
         setIsAnalyzing(false);
         setProgress(null);
+    }, []);
+
+    // Automatically terminate worker on unmount
+    useEffect(() => {
+        return () => {
+            workerRef.current?.terminate();
+            workerRef.current = null;
+        };
     }, []);
 
     /**

@@ -21,7 +21,7 @@ export default function BIMIntegrationPage() {
   const [validationStatus, setValidationStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => { document.title = 'BIM Integration | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'BIM Integration | BeamLab'; }, []);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

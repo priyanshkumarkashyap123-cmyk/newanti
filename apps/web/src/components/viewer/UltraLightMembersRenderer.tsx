@@ -19,6 +19,7 @@ import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { GpuResourcePool } from '../../utils/gpuResourcePool';
 
 // ============================================
@@ -176,11 +177,15 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
     const [isInitialized, setIsInitialized] = useState(false);
     const memberIndexMapRef = useRef<Map<number, string>>(new Map());
     
-    // Zustand store selectors
-    const members = useModelStore((state) => state.members);
-    const nodes = useModelStore((state) => state.nodes);
-    const selectedIds = useModelStore((state) => state.selectedIds);
-    const errorElementIds = useModelStore((state) => state.errorElementIds);
+    // Zustand store selectors (useShallow prevents re-renders from unrelated state changes)
+    const { members, nodes, selectedIds, errorElementIds } = useModelStore(
+        useShallow((state) => ({
+            members: state.members,
+            nodes: state.nodes,
+            selectedIds: state.selectedIds,
+            errorElementIds: state.errorElementIds,
+        }))
+    );
     const selectMember = useModelStore((state) => state.selectMember);
     
     const { camera, raycaster } = useThree();
@@ -308,18 +313,18 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
             
             // Continue if more to process
             if (currentIndex < toRender) {
-                requestAnimationFrame(processChunk);
+                rafId = requestAnimationFrame(processChunk);
             } else {
                 memberIndexMapRef.current = indexMap;
                 setIsInitialized(true);
-// console.log(`[UltraLightRenderer] Rendered ${toRender} members with ${config.cylinderSegments}-sided cylinders`);
             }
         };
         
         // Start processing
-        requestAnimationFrame(processChunk);
+        let rafId = requestAnimationFrame(processChunk);
         
         return () => {
+            cancelAnimationFrame(rafId);
             setIsInitialized(false);
         };
     }, [members, nodes, effectiveCount, config, selectedIds, errorElementIds]);
@@ -328,21 +333,32 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
     // HOVER HANDLING (only for smaller models)
     // ============================================
     
+    const hoverRafRef = useRef<number | null>(null);
+
+    // Cleanup rAF on unmount
+    useEffect(() => () => { if (hoverRafRef.current !== null) cancelAnimationFrame(hoverRafRef.current); }, []);
+
     const handlePointerMove = useCallback((event: ThreeEvent<PointerEvent>) => {
         if (!config.enableHover || !meshRef.current || !isInitialized) return;
         
         event.stopPropagation();
+
+        // Throttle raycasting to one per animation frame
+        if (hoverRafRef.current !== null) return;
+        hoverRafRef.current = requestAnimationFrame(() => {
+            hoverRafRef.current = null;
+            const mesh = meshRef.current;
+            if (!mesh) return;
+            const intersects = raycaster.intersectObject(mesh);
         
-        const mesh = meshRef.current;
-        const intersects = raycaster.intersectObject(mesh);
-        
-        if (intersects.length > 0 && intersects[0].instanceId !== undefined) {
-            setHoveredInstanceId(intersects[0].instanceId);
-            document.body.style.cursor = 'pointer';
-        } else {
-            setHoveredInstanceId(null);
-            document.body.style.cursor = 'default';
-        }
+            if (intersects.length > 0 && intersects[0].instanceId !== undefined) {
+                setHoveredInstanceId(intersects[0].instanceId);
+                document.body.style.cursor = 'pointer';
+            } else {
+                setHoveredInstanceId(null);
+                document.body.style.cursor = 'default';
+            }
+        });
     }, [config.enableHover, isInitialized, raycaster]);
     
     const handlePointerLeave = useCallback(() => {

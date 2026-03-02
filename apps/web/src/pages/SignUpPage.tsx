@@ -7,11 +7,12 @@
 import { useEffect } from 'react';
 import { ClerkLoaded, ClerkLoading, SignUp } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
-import { Cpu, Rocket, Shield, Zap } from 'lucide-react';
+import { Rocket, Shield, Zap } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { Logo } from '../components/branding';
 
 export const SignUpPage = () => {
-    useEffect(() => { document.title = 'Sign Up | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Sign Up | BeamLab'; }, []);
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 flex font-sans selection:bg-blue-500/30">
@@ -26,15 +27,7 @@ export const SignUpPage = () => {
                 {/* Content */}
                 <div className="relative z-10 flex flex-col justify-between p-16 text-slate-900 dark:text-slate-50 w-full">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-3 group w-fit">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
-                            <Cpu className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">BeamLab</span>
-                            <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full tracking-wide">ULTIMATE</span>
-                        </div>
-                    </Link>
+                    <Logo size="lg" href="/" />
 
                     {/* Tagline */}
                     <div className="space-y-8">
@@ -45,7 +38,7 @@ export const SignUpPage = () => {
                             </span>
                         </h1>
                         <p className="text-lg text-slate-600 dark:text-slate-400 max-w-lg leading-relaxed">
-                            Join thousands of engineers building better structures with BeamLab Ultimate.
+                            Join thousands of engineers building better structures with BeamLab.
                             Free to start, powerful enough to scale.
                         </p>
 
@@ -83,7 +76,7 @@ export const SignUpPage = () => {
 
                     {/* Footer */}
                     <div className="flex items-center gap-6 text-sm text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-800/50 pt-8">
-                        <span>© {new Date().getFullYear()} BeamLab Ultimate</span>
+                        <span>© {new Date().getFullYear()} BeamLab</span>
                         <Link to="/privacy" className="hover:text-slate-700 dark:text-slate-300 transition-colors">Privacy</Link>
                         <Link to="/terms" className="hover:text-slate-700 dark:text-slate-300 transition-colors">Terms</Link>
                     </div>
@@ -94,11 +87,8 @@ export const SignUpPage = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950 overflow-y-auto">
                 <div className="w-full max-w-[400px] space-y-8 my-auto">
                     {/* Mobile Logo */}
-                    <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <Cpu className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
+                    <div className="lg:hidden flex items-center justify-center mb-8">
+                        <Logo size="md" clickable={false} />
                     </div>
 
                     {/* Header */}

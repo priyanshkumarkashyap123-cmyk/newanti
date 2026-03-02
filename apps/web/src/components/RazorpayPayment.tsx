@@ -197,7 +197,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
         order_id: orderId,
         amount,
         currency,
-        name: "BeamLab Ultimate",
+        name: "BeamLab",
         description:
           planType === "yearly"
             ? "Annual Pro Subscription"
@@ -333,7 +333,7 @@ export function useRazorpayPayment() {
             order_id: orderId,
             amount,
             currency,
-            name: "BeamLab Ultimate",
+            name: "BeamLab",
             description: planType === "yearly" ? "Annual Pro" : "Monthly Pro",
             handler: async (response) => {
               try {

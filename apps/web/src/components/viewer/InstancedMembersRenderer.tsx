@@ -18,6 +18,7 @@ import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react'
 import { useThree, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { GpuResourcePool } from '../../utils/gpuResourcePool';
 
 // ============================================
@@ -85,11 +86,15 @@ export const InstancedMembersRenderer: React.FC = () => {
     const meshRef = useRef<THREE.InstancedMesh>(null);
     const [hoveredInstanceId, setHoveredInstanceId] = useState<number | null>(null);
     
-    // Zustand store selectors
-    const members = useModelStore((state) => state.members);
-    const nodes = useModelStore((state) => state.nodes);
-    const selectedIds = useModelStore((state) => state.selectedIds);
-    const errorElementIds = useModelStore((state) => state.errorElementIds);
+    // Zustand store selectors (useShallow prevents re-renders from unrelated state changes)
+    const { members, nodes, selectedIds, errorElementIds } = useModelStore(
+        useShallow((state) => ({
+            members: state.members,
+            nodes: state.nodes,
+            selectedIds: state.selectedIds,
+            errorElementIds: state.errorElementIds,
+        }))
+    );
     const selectMember = useModelStore((state) => state.selectMember);
     
     const { raycaster, camera } = useThree();
@@ -263,24 +268,35 @@ export const InstancedMembersRenderer: React.FC = () => {
     // RAYCASTING FOR SELECTION
     // ============================================
     
+    const hoverRafRef = useRef<number | null>(null);
+
+    // Cleanup rAF on unmount
+    useEffect(() => () => { if (hoverRafRef.current !== null) cancelAnimationFrame(hoverRafRef.current); }, []);
+
     const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
         if (!meshRef.current) return;
         
         event.stopPropagation();
+
+        // Throttle raycasting to one per animation frame
+        if (hoverRafRef.current !== null) return;
+        hoverRafRef.current = requestAnimationFrame(() => {
+            hoverRafRef.current = null;
+            const mesh = meshRef.current;
+            if (!mesh) return;
+            const intersects = raycaster.intersectObject(mesh);
         
-        const mesh = meshRef.current;
-        const intersects = raycaster.intersectObject(mesh);
-        
-        if (intersects.length > 0) {
-            const instanceId = intersects[0].instanceId;
-            if (instanceId !== undefined) {
-                setHoveredInstanceId(instanceId);
-                document.body.style.cursor = 'pointer';
+            if (intersects.length > 0) {
+                const instanceId = intersects[0].instanceId;
+                if (instanceId !== undefined) {
+                    setHoveredInstanceId(instanceId);
+                    document.body.style.cursor = 'pointer';
+                }
+            } else {
+                setHoveredInstanceId(null);
+                document.body.style.cursor = 'default';
             }
-        } else {
-            setHoveredInstanceId(null);
-            document.body.style.cursor = 'default';
-        }
+        });
     };
     
     const handlePointerLeave = () => {

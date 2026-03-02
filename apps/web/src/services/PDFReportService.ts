@@ -90,7 +90,7 @@ export const generateProfessionalReport = async (
             settings: {
                 project_name: project.name,
                 engineer_name: project.engineer,
-                company_name: "BeamLab Ultimate",
+                company_name: "BeamLab",
                 include_diagrams: true
             },
             analysis_data: {
@@ -189,7 +189,7 @@ export const generateBasicPDFReport = (
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...NAVY);
-    doc.text('BeamLab Ultimate', 20, 30);
+    doc.text('BeamLab', 20, 30);
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -199,8 +199,8 @@ export const generateBasicPDFReport = (
     // Right side branding
     doc.setFontSize(8);
     doc.setTextColor(...SLATE_500);
-    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
-    doc.text('support@beamlabultimate.tech', pageWidth - 20, 31, { align: 'right' });
+    doc.text('beamlab.app', pageWidth - 20, 26, { align: 'right' });
+    doc.text('support@beamlab.app', pageWidth - 20, 31, { align: 'right' });
 
     // Divider
     doc.setDrawColor(...SLATE_200);
@@ -451,9 +451,9 @@ export const generateBasicPDFReport = (
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...SLATE_500);
-        doc.text(`BeamLab Ultimate  \u2014  ${docRef}  Rev 00`, 14, pageHeight - 11);
+        doc.text(`BeamLab  \u2014  ${docRef}  Rev 00`, 14, pageHeight - 11);
         doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
-        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.text('beamlab.app', pageWidth - 14, pageHeight - 11, { align: 'right' });
         doc.setFontSize(6);
         doc.setTextColor(180, 180, 180);
         doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });
@@ -496,7 +496,7 @@ export const generateCivilReport = (
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...NAVY);
-    doc.text('BeamLab Ultimate', 20, 30);
+    doc.text('BeamLab', 20, 30);
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -504,8 +504,8 @@ export const generateCivilReport = (
     doc.text('CIVIL ENGINEERING DESIGN', 20, 36);
 
     doc.setFontSize(8);
-    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
-    doc.text('support@beamlabultimate.tech', pageWidth - 20, 31, { align: 'right' });
+    doc.text('beamlab.app', pageWidth - 20, 26, { align: 'right' });
+    doc.text('support@beamlab.app', pageWidth - 20, 31, { align: 'right' });
 
     // Centre title
     const centerY = pageHeight / 2 - 15;
@@ -546,7 +546,7 @@ export const generateCivilReport = (
         doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...SLATE_500);
-        doc.text(`BeamLab Ultimate  \u2014  ${title}`, 14, 8);
+        doc.text(`BeamLab  \u2014  ${title}`, 14, 8);
         doc.text(dateStr, pageWidth - 14, 8, { align: 'right' });
         doc.setDrawColor(...NAVY);
         doc.setLineWidth(0.5);
@@ -635,9 +635,9 @@ export const generateCivilReport = (
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...SLATE_500);
-        doc.text('BeamLab Ultimate  \u2014  Civil Engineering Design', 14, pageHeight - 11);
+        doc.text('BeamLab  \u2014  Civil Engineering Design', 14, pageHeight - 11);
         doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
-        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.text('beamlab.app', pageWidth - 14, pageHeight - 11, { align: 'right' });
         doc.setFontSize(6);
         doc.setTextColor(180, 180, 180);
         doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });

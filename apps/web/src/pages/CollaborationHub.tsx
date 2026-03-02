@@ -78,7 +78,7 @@ const CollaborationHub: React.FC = () => {
     "viewer" | "engineer" | "reviewer"
   >("viewer");
   const [shareLink] = useState(
-    `https://beamlabultimate.tech/project/${Date.now().toString(36)}`,
+    `https://beamlab.app/project/${Date.now().toString(36)}`,
   );
   const [linkCopied, setLinkCopied] = useState(false);
   const [accessSettings, setAccessSettings] = useState<Record<string, boolean>>(
@@ -91,7 +91,7 @@ const CollaborationHub: React.FC = () => {
     },
   );
 
-  useEffect(() => { document.title = 'Collaboration | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Collaboration | BeamLab'; }, []);
 
   // ============================================
   // REAL MULTIPLAYER CONNECTION

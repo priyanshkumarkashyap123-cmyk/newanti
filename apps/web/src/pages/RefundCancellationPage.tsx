@@ -2,7 +2,7 @@
  * RefundCancellationPage.tsx - Refund and Cancellation Policy
  * Legal document for digital products/services refund and cancellation terms
  *
- * Owner: Rakshit Tiwari trading as Beamlab Ultimate
+ * Owner: Rakshit Tiwari trading as Beamlab
  * Address: Rajapur Teonthar, Rewa, Madhya Pradesh 486220
  * Last updated: February 24, 2026
  */
@@ -71,7 +71,7 @@ function RefundCancellationPage() {
     }
   };
 
-  useEffect(() => { document.title = 'Refund & Cancellation | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Refund & Cancellation | BeamLab'; }, []);
 
   // Intersection observer to track active section on scroll
   useEffect(() => {
@@ -105,7 +105,7 @@ function RefundCancellationPage() {
                 <RefreshCcw className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold text-white">
-                BeamLab Ultimate
+                BeamLab
               </span>
             </Link>
 
@@ -239,7 +239,7 @@ function RefundCancellationPage() {
                 2026
               </p>
               <p className="text-slate-900/50 dark:text-white/50 text-sm mt-1">
-                Domain: beamlabultimate.tech
+                Domain: beamlab.app
               </p>
 
               {/* Important Notice */}
@@ -271,7 +271,7 @@ function RefundCancellationPage() {
                     cancel or seek a refund for a digital product or service
                     that you have purchased through the Platform operated by{" "}
                     <strong>Rakshit Tiwari</strong>, trading as{" "}
-                    <strong>Beamlab Ultimate</strong>. Under this policy, the
+                    <strong>Beamlab</strong>. Under this policy, the
                     following terms apply to all transactions made on the
                     Platform.
                   </p>
@@ -365,7 +365,7 @@ function RefundCancellationPage() {
                 </h2>
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
                   <strong>Rakshit Tiwari</strong>, trading as{" "}
-                  <strong>Beamlab Ultimate</strong>, does not accept
+                  <strong>Beamlab</strong>, does not accept
                   cancellation requests for immediately accessible digital
                   items, such as:
                 </p>
@@ -545,7 +545,7 @@ function RefundCancellationPage() {
                 <div className="p-5 bg-blue-500/10 border border-blue-500/30 rounded-xl">
                   <p className="text-blue-200 leading-relaxed">
                     In case of any refunds approved by{" "}
-                    <strong>Beamlab Ultimate</strong>, it will take{" "}
+                    <strong>Beamlab</strong>, it will take{" "}
                     <strong>15 days</strong> for the refund to be processed and
                     credited to you.
                   </p>
@@ -659,7 +659,7 @@ function RefundCancellationPage() {
                           Name
                         </p>
                         <p className="font-medium">
-                          Rakshit Tiwari (Proprietor, Beamlab Ultimate)
+                          Rakshit Tiwari (Proprietor, Beamlab)
                         </p>
                       </div>
                     </div>
@@ -695,12 +695,12 @@ function RefundCancellationPage() {
                           Website
                         </p>
                         <a
-                          href="https://beamlabultimate.tech"
+                          href="https://beamlab.app"
                           className="text-blue-400 hover:underline"
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          https://beamlabultimate.tech
+                          https://beamlab.app
                         </a>
                       </div>
                     </div>
@@ -853,7 +853,7 @@ function RefundCancellationPage() {
                       </p>
                       <p className="text-blue-200/60 text-xs mt-3">
                         Version 1.0 | Effective Date: February 24, 2026 |
-                        Rakshit Tiwari trading as Beamlab Ultimate
+                        Rakshit Tiwari trading as Beamlab
                       </p>
                     </div>
                   </div>
@@ -869,7 +869,7 @@ function RefundCancellationPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-900/50 dark:text-white/50 text-sm">
-              © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
+              © {new Date().getFullYear()} BeamLab. All rights reserved.
             </p>
             <div className="flex gap-6">
               <Link
@@ -900,7 +900,7 @@ function RefundCancellationPage() {
           </div>
           <div className="mt-4 text-center">
             <p className="text-slate-900/30 dark:text-white/30 text-xs">
-              Rakshit Tiwari trading as Beamlab Ultimate | Rajapur Teonthar,
+              Rakshit Tiwari trading as Beamlab | Rajapur Teonthar,
               Rewa, Madhya Pradesh 486220
             </p>
           </div>

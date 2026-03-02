@@ -105,7 +105,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [currentStep, setCurrentStep] = useState(0);
 
-  useEffect(() => { document.title = 'Nonlinear Analysis | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Nonlinear Analysis | BeamLab'; }, []);
 
   const validateInputs = useCallback((): string | null => {
     if (input.loadSteps < 1) return 'Number of load steps must be at least 1';

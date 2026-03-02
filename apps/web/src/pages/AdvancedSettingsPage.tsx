@@ -224,7 +224,7 @@ export default function AdvancedSettingsPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   
-  useEffect(() => { document.title = 'Advanced Settings | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Advanced Settings | BeamLab'; }, []);
 
   const toggleCategory = useCallback((id: string) => {
     setExpandedCategories(prev => {

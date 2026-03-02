@@ -11,6 +11,7 @@
 import { FC, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useModelStore, Plate, Node } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 // ============================================
 // TYPES
@@ -51,9 +52,13 @@ const BACK_MAT = new THREE.MeshStandardMaterial({
 // ============================================
 
 export const PlateRenderer: FC<PlateRendererProps> = ({ showStress: _showStress = false }) => {
-    const nodes = useModelStore((s) => s.nodes);
-    const plates = useModelStore((s) => s.plates);
-    const selectedIds = useModelStore((s) => s.selectedIds);
+    const { nodes, plates, selectedIds } = useModelStore(
+        useShallow((s) => ({
+            nodes: s.nodes,
+            plates: s.plates,
+            selectedIds: s.selectedIds,
+        }))
+    );
 
     const surfaceRef = useRef<THREE.Mesh>(null);
     const edgesRef = useRef<THREE.LineSegments>(null);

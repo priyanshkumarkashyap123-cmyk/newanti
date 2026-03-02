@@ -56,7 +56,7 @@ export const PushoverAnalysisPage: React.FC = () => {
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => { document.title = 'Pushover Analysis | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Pushover Analysis | BeamLab'; }, []);
 
   // Performance points (FEMA-356)
   const performancePoints: PerformancePoint[] = [

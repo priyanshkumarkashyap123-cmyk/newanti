@@ -79,7 +79,7 @@ const CodeComplianceChecker: React.FC = () => {
     "IS1893",
   ]);
 
-  useEffect(() => { document.title = 'Code Compliance | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Code Compliance | BeamLab'; }, []);
 
   const [codeStandards] = useState<CodeStandard[]>([
     {
@@ -911,7 +911,7 @@ const CodeComplianceChecker: React.FC = () => {
           setComplianceReport({
             projectName: `Model (${members.size} members, ${nodes.size} nodes)`,
             checkDate: new Date().toISOString().split("T")[0],
-            engineer: "BeamLab Ultimate",
+            engineer: "BeamLab",
             totalChecks: results.length,
             passed,
             failed,

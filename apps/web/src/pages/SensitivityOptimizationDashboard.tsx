@@ -133,7 +133,7 @@ const SensitivityOptimizationDashboard: React.FC = () => {
     mutationRate: 0.1,
   });
 
-  useEffect(() => { document.title = 'Sensitivity & Optimization | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Sensitivity & Optimization | BeamLab'; }, []);
 
   // Design variables
   const [variables] = useState<DesignVariable[]>([

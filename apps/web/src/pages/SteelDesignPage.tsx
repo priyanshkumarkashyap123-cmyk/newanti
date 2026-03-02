@@ -23,7 +23,7 @@ export function SteelDesignPage() {
     const [results, setResults] = useState<SteelDesignResults[]>([]);
     const [error, setError] = useState<string>('');
 
-    useEffect(() => { document.title = 'Steel Design | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Steel Design | BeamLab'; }, []);
 
     // Default design parameters
     const [params, setParams] = useState<DesignParameters>({

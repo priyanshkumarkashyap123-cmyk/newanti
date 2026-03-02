@@ -1,5 +1,5 @@
 /**
- * BeamLab Ultimate - Load Combinations Engine
+ * BeamLab - Load Combinations Engine
  * Comprehensive load combination generator per international codes
  * 
  * Supported Codes:

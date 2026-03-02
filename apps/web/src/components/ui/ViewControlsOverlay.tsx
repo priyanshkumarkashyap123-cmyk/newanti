@@ -16,6 +16,7 @@ import {
   Box,
   Axis3D,
   Camera,
+  Eye,
 } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 
@@ -29,6 +30,7 @@ const VIEWS = [
   { id: 'left', label: 'Left (YZ)', short: 'L' },
   { id: 'right', label: 'Right', short: 'R' },
   { id: 'top', label: 'Top (XZ)', short: 'T' },
+  { id: 'bottom', label: 'Bottom', short: 'Bo' },
   { id: 'iso', label: '3D Perspective', short: '3D' },
 ] as const;
 
@@ -105,6 +107,7 @@ export const ViewControlsOverlay: FC = memo(() => {
   // Local state for features not in global store
   const [showAxes, setShowAxes] = useState(true);
   const [activeView, setActiveView] = useState('iso');
+  const [isPerspective, setIsPerspective] = useState(true);
 
   // --- Camera operations via CustomEvents (handled by CameraFitController) ---
 
@@ -142,6 +145,12 @@ export const ViewControlsOverlay: FC = memo(() => {
     setRenderMode3D(!renderMode3D);
   }, [renderMode3D, setRenderMode3D]);
 
+  const handleTogglePerspective = useCallback(() => {
+    const next = !isPerspective;
+    setIsPerspective(next);
+    document.dispatchEvent(new CustomEvent('toggle-perspective', { detail: { perspective: next } }));
+  }, [isPerspective]);
+
   const handleScreenshot = useCallback(() => {
     const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
     if (!canvas) return;
@@ -175,6 +184,7 @@ export const ViewControlsOverlay: FC = memo(() => {
       <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
         <CompactBtn icon={Grid3X3} label="Toggle Grid (G)" onClick={toggleGrid} isActive={showGrid} />
         <CompactBtn icon={Axis3D} label="Toggle Axes" onClick={handleToggleAxes} isActive={showAxes} />
+        <CompactBtn icon={Eye} label={isPerspective ? 'Orthographic' : 'Perspective'} onClick={handleTogglePerspective} isActive={!isPerspective} />
         <CompactBtn icon={Box} label="3D Render Mode" onClick={handleToggle3D} isActive={renderMode3D} />
         <CompactBtn icon={Camera} label="Screenshot (PNG)" onClick={handleScreenshot} />
       </div>

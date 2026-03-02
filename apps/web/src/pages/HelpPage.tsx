@@ -185,7 +185,7 @@ export const HelpPage = () => {
                                 <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                                BeamLab Ultimate
+                                BeamLab
                             </span>
                         </Link>
                         <div className="hidden md:flex items-center gap-8">
@@ -321,7 +321,7 @@ export const HelpPage = () => {
             {/* Footer - Dark Theme */}
             <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
-                    <p>© {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
                     <div className="flex gap-6">
                         <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>

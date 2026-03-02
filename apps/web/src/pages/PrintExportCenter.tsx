@@ -129,7 +129,7 @@ const PrintExportCenter: React.FC = () => {
 
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("pdf");
 
-  useEffect(() => { document.title = 'Print & Export | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Print & Export | BeamLab'; }, []);
 
   // Export items
   const [exportItems, setExportItems] = useState<ExportItem[]>([
@@ -434,7 +434,7 @@ const PrintExportCenter: React.FC = () => {
 h2{color:#2b6cb0;margin-top:20px}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid #ccc;padding:6px 10px;text-align:right}
 th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pass{color:green}.fail{color:red}
 .header{display:flex;justify-content:space-between;align-items:center}.meta{color:#718096;font-size:0.9em}</style></head><body>`;
-      html += `<div class="header"><h1>Structural Analysis Report</h1><div class="meta">Generated: ${new Date().toLocaleDateString()}<br>BeamLab Ultimate</div></div>`;
+      html += `<div class="header"><h1>Structural Analysis Report</h1><div class="meta">Generated: ${new Date().toLocaleDateString()}<br>BeamLab</div></div>`;
       html += `<h2>Model Summary</h2><p>Nodes: ${nodes.size} | Members: ${members.size}</p>`;
 
       // Nodes table
@@ -957,7 +957,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           style={{ fontSize: 6 * (previewZoom / 100) }}
                         >
                           <span className="text-gray-600 dark:text-gray-400">
-                            BeamLab Ultimate
+                            BeamLab
                           </span>
                           {pageSettings.pageNumbers && (
                             <span className="text-gray-600 dark:text-gray-400">

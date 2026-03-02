@@ -36,7 +36,7 @@ interface TutorialOverlayProps {
 const STEPS: TutorialStep[] = [
     {
         id: 1,
-        title: "Welcome to BeamLab Ultimate!",
+        title: "Welcome to BeamLab!",
         description: "Let's take a quick tour of the essential features that will transform your structural engineering workflow.",
         icon: Sparkles,
         highlight: 'none',

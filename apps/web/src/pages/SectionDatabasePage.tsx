@@ -149,7 +149,7 @@ export const SectionDatabasePage: React.FC = () => {
   const [savedSections, setSavedSections] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
 
-  useEffect(() => { document.title = 'Section Database | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Section Database | BeamLab'; }, []);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);

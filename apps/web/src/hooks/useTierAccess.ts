@@ -130,7 +130,7 @@ export function useTierAccess(): TierAccess {
                             headers['Authorization'] = `Bearer ${token}`;
                         }
 
-                        const API_URL = import.meta.env.VITE_API_URL || 'https://api.beamlabultimate.tech';
+                        const API_URL = import.meta.env.VITE_API_URL || 'https://api.beamlab.app';
                         const response = await fetch(`${API_URL}/api/user/tier`, {
                             headers,
                             credentials: 'include',

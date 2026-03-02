@@ -1,7 +1,7 @@
 /**
  * IFCExportService.ts
  * 
- * Enhanced IFC4 Export for BeamLab Ultimate
+ * Enhanced IFC4 Export for BeamLab
  * 
  * Features:
  * - Complete geometry definitions with extrusions
@@ -166,7 +166,7 @@ export const generateIFC = (
     builder.addLine("ISO-10303-21;");
     builder.addLine("HEADER;");
     builder.addLine(`FILE_DESCRIPTION(('ViewDefinition [StructuralAnalysisView, CoordinationView]'),'2;1');`);
-    builder.addLine(`FILE_NAME('${projectParams.name}.ifc','${timestamp}',('${projectParams.author}'),('BeamLab Ultimate'),'IFC4 Export v2.0','BeamLab','');`);
+    builder.addLine(`FILE_NAME('${projectParams.name}.ifc','${timestamp}',('${projectParams.author}'),('BeamLab'),'IFC4 Export v2.0','BeamLab','');`);
     builder.addLine("FILE_SCHEMA(('IFC4'));");
     builder.addLine("ENDSEC;");
     builder.addLine("DATA;");
@@ -178,7 +178,7 @@ export const generateIFC = (
     const orgId = builder.addEntity("IFCORGANIZATION", "$,'BeamLab Inc.',$,$,$");
     const personId = builder.addEntity("IFCPERSON", `$,'${projectParams.author}',$,$,$,$,$,$`);
     const personOrgId = builder.addEntity("IFCPERSONANDORGANIZATION", `#${personId},#${orgId},$`);
-    const appId = builder.addEntity("IFCAPPLICATION", `#${orgId},'2.0','BeamLab Ultimate Structural','BEAMLAB'`);
+    const appId = builder.addEntity("IFCAPPLICATION", `#${orgId},'2.0','BeamLab Structural','BEAMLAB'`);
     const ownerId = builder.addEntity("IFCOWNERHISTORY", `#${personOrgId},#${appId},$,.NOCHANGE.,$,#${personOrgId},#${appId},${Math.floor(Date.now() / 1000)}`);
     builder.storeRef('owner', ownerId);
 

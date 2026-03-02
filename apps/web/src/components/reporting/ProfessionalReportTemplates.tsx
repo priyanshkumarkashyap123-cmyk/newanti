@@ -536,7 +536,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                         <div className="flex items-center gap-2">
                             <div className="w-10 h-10 bg-slate-100 rounded-lg border border-slate-200" />
                             <div>
-                                <div className="text-sm font-black text-[#12376A] tracking-tight">BeamLab Ultimate</div>
+                                <div className="text-sm font-black text-[#12376A] tracking-tight">BeamLab</div>
                                 <div className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.2em]">Structural Engineering</div>
                             </div>
                         </div>
@@ -544,7 +544,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
                         <div className="text-[8px] text-slate-400 uppercase tracking-wider">Company Logo</div>
                     )}
                     <div className="text-[8px] text-slate-500 text-right leading-relaxed">
-                        <div>beamlabultimate.tech</div>
+                        <div>beamlab.app</div>
                         <div>Doc Ref: RPT-{config.projectInfo.projectNumber || '0001'}</div>
                     </div>
                 </div>

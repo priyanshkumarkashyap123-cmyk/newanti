@@ -47,7 +47,7 @@ export const LoadCombinationPage: React.FC = () => {
   const [combinations, setCombinations] = useState<Combination[]>([]);
   const [generating, setGenerating] = useState(false);
 
-  useEffect(() => { document.title = 'Load Combinations | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Load Combinations | BeamLab'; }, []);
 
   const loadTypeIcons: Record<LoadType, any> = {
     dead: Weight,

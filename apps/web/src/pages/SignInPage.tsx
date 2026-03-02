@@ -7,11 +7,12 @@
 import { useEffect } from 'react';
 import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
-import { Cpu, CheckCircle, Star, Building2 } from 'lucide-react';
+import { CheckCircle, Star, Building2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { Logo } from '../components/branding';
 
 export const SignInPage = () => {
-    useEffect(() => { document.title = 'Sign In | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Sign In | BeamLab'; }, []);
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 flex font-sans selection:bg-blue-500/30">
@@ -35,15 +36,7 @@ export const SignInPage = () => {
                 {/* Content */}
                 <div className="relative z-10 flex flex-col justify-between p-16 text-slate-900 dark:text-slate-50 w-full">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-3 group w-fit">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all">
-                            <Cpu className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">BeamLab</span>
-                            <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full tracking-wide">ULTIMATE</span>
-                        </div>
-                    </Link>
+                    <Logo size="lg" href="/" />
 
                     {/* 3D Model Preview - per Figma §4.1 */}
                     <div className="flex-1 flex flex-col items-center justify-center space-y-8">
@@ -97,11 +90,8 @@ export const SignInPage = () => {
             <main className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950 overflow-y-auto">
                 <div className="w-full max-w-[400px] space-y-8">
                     {/* Mobile Logo */}
-                    <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <Cpu className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
+                    <div className="lg:hidden flex items-center justify-center mb-8">
+                        <Logo size="md" clickable={false} />
                     </div>
 
                     {/* Header */}

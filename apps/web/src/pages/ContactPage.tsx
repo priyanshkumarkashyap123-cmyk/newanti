@@ -59,7 +59,7 @@ export const ContactPage: FC = () => {
                 />
               </div>
               <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                BeamLab Ultimate
+                BeamLab
               </span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
@@ -126,10 +126,10 @@ export const ContactPage: FC = () => {
                     Our friendly team is here to help.
                   </p>
                   <a
-                    href="mailto:support@beamlabultimate.tech"
+                    href="mailto:support@beamlab.app"
                     className="text-blue-400 font-medium hover:text-blue-300 transition-colors"
                   >
-                    support@beamlabultimate.tech
+                    support@beamlab.app
                   </a>
                 </div>
               </div>
@@ -308,7 +308,7 @@ export const ContactPage: FC = () => {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 text-center text-sm text-slate-600 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
       </footer>
     </div>
   );

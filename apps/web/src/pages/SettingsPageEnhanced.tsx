@@ -1,5 +1,5 @@
 /**
- * SettingsPageEnhanced - BeamLab Ultimate Settings (Advanced Template)
+ * SettingsPageEnhanced - BeamLab Settings (Advanced Template)
  * Professional dark theme with advanced UI components and tabbed navigation
  */
 
@@ -85,7 +85,7 @@ export const SettingsPageEnhanced: FC = () => {
     };
 
     const handleResetSettings = () => {
-        if (window.confirm('Are you sure you want to reset all settings to defaults?')) {
+        if (confirm('Are you sure you want to reset all settings to defaults?')) {
             // Reset all settings
             setAutoSave(true);
             setCloudSync(false);
@@ -157,7 +157,7 @@ export const SettingsPageEnhanced: FC = () => {
                     {/* Version Info */}
                     <div className="mt-auto pt-4 border-t border-border-dark">
                         <div className="text-xs text-text-muted space-y-1">
-                            <p>BeamLab Ultimate</p>
+                            <p>BeamLab</p>
                             <p className="font-mono">v4.2.0-pro</p>
                             <p className="text-[10px]">© {new Date().getFullYear()} BeamLab</p>
                         </div>

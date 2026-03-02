@@ -220,6 +220,10 @@ app.use(express.json({
 }));
 app.use(cookieParser()); // Parse cookies for CSRF double-submit pattern
 
+// XSS sanitization — strip dangerous HTML/JS from all incoming strings
+import { xssSanitize } from "./middleware/xssSanitize.js";
+app.use(xssSanitize);
+
 // CSRF protection (issues cookie + validates on state-changing requests)
 app.use(csrfCookieMiddleware);
 app.use(csrfValidationMiddleware);

@@ -21,6 +21,7 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { useModelStore } from "../../store/model";
+import { useShallow } from 'zustand/react/shallow';
 import { InstancedMembersRenderer } from "./InstancedMembersRenderer";
 import { InstancedNodesRenderer } from "./InstancedNodesRenderer";
 import { UltraLightMembersRenderer } from "./UltraLightMembersRenderer";
@@ -223,8 +224,9 @@ export const _NodeMesh: FC<NodeMeshProps> = ({
 // ============================================
 
 const StructureRenderer: FC = () => {
-  const members = useModelStore((state) => state.members);
-  const nodes = useModelStore((state) => state.nodes);
+  const { members, nodes } = useModelStore(
+    useShallow((state) => ({ members: state.members, nodes: state.nodes }))
+  );
 
   const memberCount = members.size;
   const nodeCount = nodes.size;
@@ -320,8 +322,9 @@ const AxisLabels: FC = () => {
 // ============================================
 
 export const StructuralCanvas: FC<StructuralCanvasProps> = ({ children }) => {
-  const members = useModelStore((state) => state.members);
-  const nodes = useModelStore((state) => state.nodes);
+  const { members, nodes } = useModelStore(
+    useShallow((state) => ({ members: state.members, nodes: state.nodes }))
+  );
   const quality = useRenderQuality();
 
   const memberCount = members.size;

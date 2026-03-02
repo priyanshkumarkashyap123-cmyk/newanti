@@ -63,9 +63,7 @@ router.post("/track", requireAuth(), analyticsRateLimit, async (req: Request, re
   const event = req.body as AnalyticsEvent;
 
   if (!event?.name || !event?.sessionId) {
-    res
-      .status(400)
-      .json({ success: false, error: "Missing name or sessionId" });
+    res.fail('VALIDATION_ERROR', 'Missing name or sessionId', 400);
     return;
   }
 
@@ -75,7 +73,7 @@ router.post("/track", requireAuth(), analyticsRateLimit, async (req: Request, re
   // Best-effort persist to MongoDB
   const persisted = await persistToMongo(event);
 
-  res.status(202).json({ success: true, persisted });
+  res.ok({ persisted }, 202);
 });
 
 // ============================================
@@ -86,7 +84,7 @@ router.post("/batch", requireAuth(), analyticsRateLimit, async (req: Request, re
   const events = req.body?.events as AnalyticsEvent[] | undefined;
 
   if (!Array.isArray(events) || events.length === 0) {
-    res.status(400).json({ success: false, error: "events array required" });
+    res.fail('VALIDATION_ERROR', 'events array required', 400);
     return;
   }
 
@@ -97,7 +95,7 @@ router.post("/batch", requireAuth(), analyticsRateLimit, async (req: Request, re
     if (await persistToMongo(event)) persisted++;
   }
 
-  res.status(202).json({ success: true, accepted: events.length, persisted });
+  res.ok({ accepted: events.length, persisted }, 202);
 });
 
 // ============================================
@@ -105,8 +103,7 @@ router.post("/batch", requireAuth(), analyticsRateLimit, async (req: Request, re
 // ============================================
 
 router.get("/recent", requireAuth(), async (_req: Request, res: Response) => {
-  res.json({
-    success: true,
+  res.ok({
     count: eventBuffer.length,
     events: eventBuffer.slice(-100),
   });
@@ -126,8 +123,7 @@ router.get("/stats", requireAuth(), async (_req: Request, res: Response) => {
   // Unique sessions
   const sessions = new Set(eventBuffer.map((e) => e.sessionId));
 
-  res.json({
-    success: true,
+  res.ok({
     totalEvents: eventBuffer.length,
     uniqueSessions: sessions.size,
     eventCounts: counts,

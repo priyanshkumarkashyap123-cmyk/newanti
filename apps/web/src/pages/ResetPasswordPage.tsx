@@ -71,7 +71,7 @@ export const ResetPasswordPage = () => {
     const navigate = useNavigate();
     const { signIn, isLoaded } = useSignIn();
 
-    useEffect(() => { document.title = 'Reset Password | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Reset Password | BeamLab'; }, []);
     
     // Get reset code from URL (sent via email link)
     const resetCode = searchParams.get('code');
@@ -121,7 +121,7 @@ export const ResetPasswordPage = () => {
             <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 lg:px-10">
                 <Link to="/" className="flex items-center gap-3 text-slate-900 dark:text-white">
                     <img src={beamLabLogo} alt="BeamLab" className="w-8 h-8 rounded-lg" />
-                    <h2 className="text-lg font-bold tracking-tight">BeamLab Ultimate</h2>
+                    <h2 className="text-lg font-bold tracking-tight">BeamLab</h2>
                 </Link>
                 <Link
                     to="/help"

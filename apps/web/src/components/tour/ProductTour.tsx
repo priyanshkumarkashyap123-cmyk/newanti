@@ -39,7 +39,7 @@ interface TourStep {
 const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Welcome to BeamLab Ultimate!',
+    title: 'Welcome to BeamLab!',
     description: 'Let us show you around the most powerful structural analysis platform. This quick tour will help you get started.',
     icon: <Sparkles className="w-6 h-6" />,
     tip: 'You can skip this tour anytime and access it later from Help menu.'

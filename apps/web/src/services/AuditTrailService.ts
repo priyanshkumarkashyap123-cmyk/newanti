@@ -448,7 +448,7 @@ export class AuditTrailService {
 
         // Signature Block
         md += `## Certification\n\n`;
-        md += `This report has been prepared using BeamLab Ultimate structural analysis software.\n\n`;
+        md += `This report has been prepared using BeamLab structural analysis software.\n\n`;
         md += `| Field | Value |\n`;
         md += `|-------|-------|\n`;
         md += `| Prepared By | ${preparedBy} |\n`;

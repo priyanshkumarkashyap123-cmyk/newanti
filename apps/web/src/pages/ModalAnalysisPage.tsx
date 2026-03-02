@@ -110,7 +110,7 @@ export const ModalAnalysisPage: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [selectedMode, setSelectedMode] = useState<number>(1);
 
-  useEffect(() => { document.title = 'Modal Analysis | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Modal Analysis | BeamLab'; }, []);
 
   const validateInputs = useCallback((): string | null => {
     if (input.numModes < 1) return 'Number of modes must be at least 1';

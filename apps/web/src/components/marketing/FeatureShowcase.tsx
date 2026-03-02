@@ -132,12 +132,12 @@ export const PerformanceMetrics: FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="text-center p-6 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300"
+              className="text-center p-6 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-white/[0.06] hover:border-slate-300 dark:hover:border-white/[0.1] transition-all duration-300"
             >
               <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">
                 {metric.value}
               </div>
-              <div className="text-white font-medium mb-1">{metric.label}</div>
+              <div className="text-slate-900 dark:text-white font-medium mb-1">{metric.label}</div>
               <div className="text-xs text-slate-500 dark:text-slate-400">{metric.comparison}</div>
             </motion.div>
           ))}
@@ -319,7 +319,7 @@ export const Testimonials: FC = () => {
               <div className="flex items-center gap-3">
                 <div className={`relative w-12 h-12`}>
                   <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${t.gradient} blur-sm opacity-50 group-hover:opacity-100 transition-opacity`} />
-                  <div className={`relative w-12 h-12 rounded-full bg-gradient-to-r ${t.gradient} flex items-center justify-center text-slate-900 dark:text-white font-bold text-sm ring-2 ring-slate-800`}>
+                  <div className={`relative w-12 h-12 rounded-full bg-gradient-to-r ${t.gradient} flex items-center justify-center text-white font-bold text-sm ring-2 ring-slate-200 dark:ring-slate-800`}>
                     {t.avatar}
                   </div>
                 </div>
@@ -362,7 +362,7 @@ export const SecurityCompliance: FC = () => {
           </div>
           <div className="flex flex-wrap gap-4">
             {badges.map((badge, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-950/50 border border-white/[0.06]">
+              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-950/50 border border-slate-200/60 dark:border-white/[0.06]">
                 <div className="text-slate-500 dark:text-slate-400">{badge.icon}</div>
                 <div>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{badge.label}</p>
@@ -401,11 +401,11 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={onGetStarted}
-            className="w-full sm:w-auto px-10 py-4 rounded-full bg-white text-slate-950 font-bold text-lg hover:bg-blue-50 transition-all shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_40px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
+            className="w-full sm:w-auto px-10 py-4 rounded-full bg-blue-600 dark:bg-white text-white dark:text-slate-950 font-bold text-lg hover:bg-blue-700 dark:hover:bg-blue-50 transition-all shadow-[0_0_0_1px_rgba(59,130,246,0.3),0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.5),0_8px_40px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 active:scale-[0.98]"
           >
             Start Free Trial <ChevronRight className="w-5 h-5" />
           </button>
-          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-slate-900 dark:text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]">
+          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white font-medium hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:border-slate-400 dark:hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 active:scale-[0.98]">
             Schedule Demo
           </button>
         </div>

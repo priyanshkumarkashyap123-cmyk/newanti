@@ -10,7 +10,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================
-   BeamLab Ultimate Design System v2.0
+   BeamLab Design System v2.0
    Complete UI Overhaul - Professional & Vibrant
    ============================================ */
 
@@ -397,6 +397,37 @@ html:not(.dark) textarea:not([class*="rounded"])::placeholder {
 /* ============================================
    Animations
    ============================================ */
+
+/* Node creation pop-in (Figma §21 — viewport micro-interaction) */
+@keyframes node-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  70%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Selection ring pulse (Figma §21 — viewport selection feedback) */
+@keyframes selection-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+  100% { box-shadow: 0 0 0 8px rgba(59,130,246,0); }
+}
+
+/* Badge count bounce (Figma §21 — micro-interaction) */
+@keyframes badge-bounce {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.3); }
+}
+
+/* Panel slide-in from right (Figma §21 — inspector panel) */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* Panel slide-in from bottom (Figma §21 — results dock) */
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
 
 /* Input error shake animation (Figma §21.4) */
 @keyframes inputShake {

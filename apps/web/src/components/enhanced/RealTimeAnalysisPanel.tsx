@@ -535,8 +535,17 @@ export const RealTimeAnalysisPanel: React.FC<{
     return () => clearInterval(interval);
   }, [status]);
   
+  // Ref to track rAF for cleanup
+  const analysisRafRef = useRef<number>(0);
+
+  // Cancel any running analysis animation on unmount
+  useEffect(() => {
+    return () => cancelAnimationFrame(analysisRafRef.current);
+  }, []);
+
   // Simulation of analysis process
   const runAnalysis = useCallback(() => {
+    cancelAnimationFrame(analysisRafRef.current);
     setStatus('preparing');
     setProgress(0);
     setElapsedTime(0);
@@ -617,19 +626,21 @@ export const RealTimeAnalysisPanel: React.FC<{
       }
       
       if (currentStep < steps.length) {
-        requestAnimationFrame(updateProgress);
+        analysisRafRef.current = requestAnimationFrame(updateProgress);
       }
     };
     
-    requestAnimationFrame(updateProgress);
+    analysisRafRef.current = requestAnimationFrame(updateProgress);
   }, [onAnalysisComplete]);
   
   const pauseAnalysis = useCallback(() => {
+    cancelAnimationFrame(analysisRafRef.current);
     setStatus('paused');
     setLogs(prev => [...prev, { time: elapsedTime.toFixed(2).padStart(5, '0'), message: 'Analysis paused', type: 'warning' }]);
   }, [elapsedTime]);
   
   const stopAnalysis = useCallback(() => {
+    cancelAnimationFrame(analysisRafRef.current);
     setStatus('idle');
     setProgress(0);
     setElapsedTime(0);

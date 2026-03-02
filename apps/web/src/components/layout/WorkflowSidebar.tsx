@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, useMemo } from "react";
 import {
   Box,
   Layers,
@@ -11,8 +11,10 @@ import {
   Globe,
   ChevronsLeft,
   ChevronsRight,
+  Check,
 } from "lucide-react";
 import { Category, useUIStore } from "../../store/uiStore";
+import { useModelStore } from "../../store/model";
 
 interface WorkflowSidebarProps {
   activeCategory: Category;
@@ -103,8 +105,28 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
     setActiveStep(id);
   };
 
+  // Step completion tracking — Figma §3: checkmarks on completed steps
+  const nodes = useModelStore((s) => s.nodes);
+  const members = useModelStore((s) => s.members);
+  const loads = useModelStore((s) => s.loads);
+  const memberLoads = useModelStore((s) => s.memberLoads);
+  const analysisResults = useModelStore((s) => s.analysisResults);
+
+  const completedSteps = useMemo(() => {
+    const done = new Set<string>();
+    if (nodes.size > 0 || members.size > 0) done.add("MODELING");
+    if (members.size > 0) { done.add("PROPERTIES"); done.add("MATERIALS"); }
+    if (members.size > 0) done.add("SPECS");
+    // Supports: check if any node has a constraint
+    const hasSupports = Array.from(nodes.values()).some((n: any) => n.support || n.constraint || n.restraint);
+    if (hasSupports) done.add("SUPPORTS");
+    if (loads.length > 0 || memberLoads.length > 0) done.add("LOADING");
+    if (analysisResults) { done.add("ANALYSIS"); done.add("DESIGN"); }
+    return done;
+  }, [nodes, members, loads, memberLoads, analysisResults]);
+
   return (
-    <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-800/60 transition-all duration-250 ease-in-out ${collapsed ? 'w-12' : 'w-full'}`}>
+    <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-800/60 transition-all duration-300 ease-in-out ${collapsed ? 'w-12' : 'w-48'}`}>
       {/* Header */}
       <div className={`border-b border-slate-800/60 bg-white dark:bg-slate-950 flex items-center ${collapsed ? 'px-1.5 py-3 justify-center' : 'px-3 py-3 justify-between'}`}>
         {!collapsed && (
@@ -155,15 +177,19 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                   <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
                 ) : (
                   <>
-                    {/* Step number */}
+                    {/* Step number / completion check */}
                     <div
                       className={`
                         w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-colors flex-shrink-0
-                        ${isActive ? "bg-blue-500/20 text-blue-400" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
+                        ${completedSteps.has(item.id) && !isActive
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : isActive ? "bg-blue-500/20 text-blue-400" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
                       `}
                       aria-hidden="true"
                     >
-                      {index + 1}
+                      {completedSteps.has(item.id) && !isActive
+                        ? <Check className="w-3.5 h-3.5" />
+                        : index + 1}
                     </div>
                     <div className="flex flex-col items-start min-w-0">
                       <span className="text-[12px] font-semibold leading-none truncate">

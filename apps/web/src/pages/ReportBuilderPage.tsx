@@ -22,7 +22,7 @@ export default function ReportBuilderPage() {
     engineer: 'Lead Structural Engineer',
     date: new Date().toISOString().slice(0, 10),
     revision: 'A1',
-    companyName: 'BeamLab Ultimate',
+    companyName: 'BeamLab',
     format: 'markdown',
     includeTableOfContents: true,
     includePageNumbers: true,
@@ -39,7 +39,7 @@ export default function ReportBuilderPage() {
     { id: '5', title: 'Conclusions', level: 1, content: 'The structure is safe and serviceable under all design load combinations.' },
   ]);
 
-  useEffect(() => { document.title = 'Report Builder | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Report Builder | BeamLab'; }, []);
 
   const [showPreview, setShowPreview] = useState(false);
   const [newSection, setNewSection] = useState({ title: '', content: '' });

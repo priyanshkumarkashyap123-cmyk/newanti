@@ -219,7 +219,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<TimeHistoryResult | null>(null);
 
-  useEffect(() => { document.title = 'Time History Analysis | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Time History Analysis | BeamLab'; }, []);
   const [error, setError] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'input' | 'motion' | 'results'>('input');
   const [showAdvanced, setShowAdvanced] = useState(false);

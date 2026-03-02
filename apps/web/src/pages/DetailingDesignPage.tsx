@@ -5,7 +5,7 @@ import { FoundationDesignPanel } from '../components/design/FoundationDesignPane
 export const DetailingDesignPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'rc' | 'foundation'>('rc');
 
-    useEffect(() => { document.title = 'Detailing Design | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Detailing Design | BeamLab'; }, []);
 
     return (
         <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white p-4">

@@ -15,6 +15,7 @@ import { useThree, useFrame } from '@react-three/fiber';
 import { Line, Sphere, Ring } from '@react-three/drei';
 import * as THREE from 'three';
 import { useModelStore, Node } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 // ============================================
 // TYPES
@@ -202,7 +203,16 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
     gridPlaneY = 0
 }) => {
     // ---- Store ----
-    const { nodes, addNode, addMember, activeTool, getNextNodeId, getNextMemberId } = useModelStore();
+    const { nodes, addNode, addMember, activeTool, getNextNodeId, getNextMemberId } = useModelStore(
+        useShallow((s) => ({
+            nodes: s.nodes,
+            addNode: s.addNode,
+            addMember: s.addMember,
+            activeTool: s.activeTool,
+            getNextNodeId: s.getNextNodeId,
+            getNextMemberId: s.getNextMemberId,
+        }))
+    );
 
     // ---- State Machine ----
     const [drawingState, setDrawingState] = useState<DrawingState>('IDLE');

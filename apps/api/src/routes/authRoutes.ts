@@ -908,10 +908,10 @@ router.get("/me", async (req: Request, res: Response) => {
       });
     }
 
-    res.json({ success: true, data: sanitizeUser(user) });
+    res.ok({ user: sanitizeUser(user) });
   } catch (error) {
     console.error("Get user error:", error);
-    res.status(500).json({ success: false, error: "Failed to get user" });
+    res.fail('INTERNAL_ERROR', 'Failed to get user');
   }
 });
 
@@ -1137,12 +1137,10 @@ router.put(
         });
       }
 
-      res.json(sanitizeUser(user));
+      res.ok({ user: sanitizeUser(user) });
     } catch (error) {
       console.error("Update profile error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to update profile",
+      res.fail('INTERNAL_ERROR', 'Failed to update profile');
       });
     }
   },

@@ -68,14 +68,22 @@ export function useViewport(): ViewportState {
   });
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const handleResize = () => {
-      setViewport(getViewportState());
+      // Debounce via rAF to avoid rapid re-renders during resize drag
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setViewport(getViewportState());
+        rafId = null;
+      });
     };
 
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
 
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
     };

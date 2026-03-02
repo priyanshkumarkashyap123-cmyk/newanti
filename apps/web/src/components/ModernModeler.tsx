@@ -22,6 +22,7 @@ import {
   useMemo,
 } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useUnsavedChangesGuard } from "../hooks/useUnsavedChangesGuard";
 import {
   Box,
   Layers,
@@ -57,6 +58,7 @@ import {
 import { QuickStartModal } from "./QuickStartModal";
 import { ProjectDetailsDialog } from "./ProjectDetailsDialog";
 import { ResultsToolbar } from "./results/ResultsToolbar";
+import { ResultsTableDock } from "./results/ResultsTableDock";
 import ModalControls from "./ModalControls";
 import { AutonomousAIAgent, AIArchitectPanel } from "./ai";
 import { LoadInputDialog } from "./ui/LoadInputDialog";
@@ -364,7 +366,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
 
     if (collapsed) {
       return (
-        <div className="w-10 h-full bg-white dark:bg-slate-950 border-l border-slate-800/60 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none">
+        <div className="w-10 h-full bg-white dark:bg-slate-950 border-l border-slate-800/60 flex flex-col items-center py-2 absolute right-0 z-20 md:relative shadow-lg md:shadow-none transition-all duration-200 ease-in">
           <button
             onClick={onToggle}
             className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -377,7 +379,7 @@ const InspectorPanel: FC<{ collapsed: boolean; onToggle: () => void }> = memo(
     }
 
     return (
-      <div className="w-[280px] h-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-l border-slate-800/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none">
+      <div className="w-[280px] h-full bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm border-l border-slate-700/60 flex flex-col flex-shrink-0 absolute right-0 z-20 md:relative shadow-xl md:shadow-none transition-all duration-250 ease-out animate-[slideInRight_250ms_ease-out]">
         <div className="flex items-center justify-between px-3 py-2 border-b border-slate-800/60">
           <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             Properties
@@ -535,7 +537,7 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
 
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
-          {/* Model Statistics */}
+          {/* Model Statistics — Figma §6.1 N/M/P counters */}
           <span>
             <span className="text-slate-600">N:</span>
             <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{nodes.size}</span>
@@ -544,11 +546,23 @@ const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
             <span className="text-slate-600">M:</span>
             <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{members.size}</span>
           </span>
+          <span>
+            <span className="text-slate-600">P:</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{plates.size}</span>
+          </span>
 
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
 
-          {/* Units */}
-          <span>
+          {/* Active Load Case — Figma §6.1 */}
+          <span className="cursor-pointer hover:text-blue-400 transition-colors" title="Click to change load case">
+            <span className="text-slate-600">LC:</span>{" "}
+            <span className="text-cyan-400 font-mono">DL+LL</span>
+          </span>
+
+          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+
+          {/* Units — Figma §6.1 */}
+          <span className="cursor-pointer hover:text-blue-400 transition-colors" title="Click to change units">
             <span className="text-slate-600">Units:</span>{" "}
             <span className="text-slate-500 dark:text-slate-400">kN, m</span>
           </span>
@@ -616,6 +630,9 @@ export const ModernModeler: FC = () => {
   const { openPayment } = useRazorpayPayment();
   const { isFree } = useTierAccess();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Warn before leaving with unsaved changes
+  const { markClean: markModelClean } = useUnsavedChangesGuard();
 
   // Auto-trigger upgrade if requested via URL
   useEffect(() => {
@@ -865,6 +882,7 @@ export const ModernModeler: FC = () => {
     { nodes: number; members: number; dof: number; timeMs: number } | undefined
   >();
   const [showResultsToolbar, setShowResultsToolbar] = useState(false);
+  const [showResultsDock, setShowResultsDock] = useState(false);
 
   // Validation state
   const [validationErrors, setValidationErrors] = useState<any | null>(null);
@@ -918,9 +936,10 @@ export const ModernModeler: FC = () => {
   // Save project: localStorage + cloud (if authenticated)
   const handleProjectSave = useCallback(() => {
     saveProjectToStorage();
+    markModelClean();
     // Also persist to cloud/database so the project survives logout
     handleCloudSave();
-  }, [handleCloudSave]);
+  }, [handleCloudSave, markModelClean]);
 
   // Import new layout components handled at top of file
 
@@ -2604,8 +2623,9 @@ export const ModernModeler: FC = () => {
           dof: result.stats?.totalDof ?? nodes.size * 3,
           timeMs: endTime - startTime,
         });
-        // Show results toolbar after successful analysis
+        // Show results toolbar and docked results table after successful analysis
         setShowResultsToolbar(true);
+        setShowResultsDock(true);
         showNotification("success", "Analysis completed successfully!");
 
         // Calculate stresses automatically after successful analysis
@@ -2918,14 +2938,19 @@ export const ModernModeler: FC = () => {
     }
   }, [selectedIds, activeTool]); // Don't depend on members - it only changes when members are added/removed
 
-  // Show quick start on first load if model is empty
+  // Show quick start on first load if model is empty, only if no other overlay is active
+  const activeOverlay = useUIStore((s) => s.activeOverlay);
+  const setActiveOverlay = useUIStore((s) => s.setActiveOverlay);
   useEffect(() => {
-    if (nodes.size === 0 && members.size === 0) {
-      const timer = setTimeout(() => setShowQuickStart(true), 500);
+    if (nodes.size === 0 && members.size === 0 && activeOverlay === 'none') {
+      const timer = setTimeout(() => {
+        setActiveOverlay('quickstart');
+        setShowQuickStart(true);
+      }, 500);
       return () => clearTimeout(timer);
     }
     return undefined;
-  }, [nodes.size, members.size]);
+  }, [nodes.size, members.size, activeOverlay, setActiveOverlay]);
 
   // URL Parameter Handling - Connect Capabilities page to dialogs
   // Note: searchParams already declared at top of component
@@ -3184,6 +3209,14 @@ export const ModernModeler: FC = () => {
                 />
               </div>
             </div>
+
+            {/* Results Table Dock — Figma §11 post-processing tables */}
+            {showResultsDock && analysisResults && (
+              <ResultsTableDock
+                analysisResults={analysisResults}
+                onClose={() => setShowResultsDock(false)}
+              />
+            )}
           </div>
 
           {/* 3. Right Inspector Panel (Context Aware) */}

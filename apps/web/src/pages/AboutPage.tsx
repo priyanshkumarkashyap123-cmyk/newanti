@@ -30,7 +30,7 @@ export const AboutPage: FC = () => {
                                 <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                                BeamLab Ultimate
+                                BeamLab
                             </span>
                         </Link>
                         <div className="hidden md:flex items-center gap-8">
@@ -65,7 +65,7 @@ export const AboutPage: FC = () => {
                             </span>
                         </h1>
                         <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto">
-                            BeamLab Ultimate is a next-generation cloud platform designed to make professional structural analysis accessible, fast, and collaborative.
+                            BeamLab is a next-generation cloud platform designed to make professional structural analysis accessible, fast, and collaborative.
                         </p>
                     </motion.div>
                 </section>
@@ -232,7 +232,7 @@ export const AboutPage: FC = () => {
                             Ready to transform your workflow?
                         </h2>
                         <p className="text-slate-600 dark:text-slate-400 mb-8">
-                            Join thousands of engineers using BeamLab Ultimate every day.
+                            Join thousands of engineers using BeamLab every day.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Button asChild className="px-8 py-3 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-lg">
@@ -248,7 +248,7 @@ export const AboutPage: FC = () => {
 
             {/* Footer */}
             <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 text-center text-sm text-slate-600 dark:text-slate-400">
-                <p>© {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
             </footer>
         </div>
     );

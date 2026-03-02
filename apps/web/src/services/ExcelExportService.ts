@@ -169,7 +169,7 @@ export const exportToExcel = async (
     // ========================================
     if (includeSummary) {
         const summaryData = [
-            ['BeamLab Ultimate - Structural Analysis Report'],
+            ['BeamLab - Structural Analysis Report'],
             [],
             ['Project Information'],
             ['Project Name:', projectInfo.name],

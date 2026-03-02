@@ -1,5 +1,5 @@
 /**
- * Dashboard - BeamLab Ultimate Projects Dashboard
+ * Dashboard - BeamLab Projects Dashboard
  * Modern project hub with BeamLab Branding & New UI System
  */
 
@@ -136,7 +136,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   const userName = isSignedIn && user?.firstName ? user.firstName : "Engineer";
   const userEmail =
     (isSignedIn && (user as any)?.emailAddresses?.[0]?.emailAddress) ||
-    "engineer@beamlabultimate.tech";
+    "engineer@beamlab.app";
 
   // ============================================
   // REAL PROJECT DATA FROM MONGODB

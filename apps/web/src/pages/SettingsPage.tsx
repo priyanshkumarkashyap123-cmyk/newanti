@@ -1,5 +1,5 @@
 /**
- * SettingsPage - BeamLab Ultimate Settings
+ * SettingsPage - BeamLab Settings
  * Dark theme with sidebar navigation and analysis preferences
  */
 
@@ -230,7 +230,7 @@ export const SettingsPage: FC = () => {
     const [generateReport, setGenerateReport] = useState(savedSettings?.generateReport ?? true);
     const [settingsSaved, setSettingsSaved] = useState(false);
 
-    useEffect(() => { document.title = 'Settings | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Settings | BeamLab'; }, []);
 
     // Auto-save settings to localStorage whenever they change
     useEffect(() => {
@@ -551,7 +551,7 @@ export const SettingsPage: FC = () => {
                                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
                                     <div>
                                         <p className="text-slate-900 dark:text-white font-bold">User</p>
-                                        <p className="text-slate-500 dark:text-slate-400 text-sm">user@beamlabultimate.tech</p>
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm">user@beamlab.app</p>
                                     </div>
                                 </div>
                                 <Input

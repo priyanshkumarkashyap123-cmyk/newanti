@@ -23,7 +23,7 @@ export const VerifyEmailPage: React.FC = () => {
     const [resendSuccess, setResendSuccess] = useState(false);
     const email = searchParams.get('email') || user?.email || '';
 
-    useEffect(() => { document.title = 'Verify Email | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Verify Email | BeamLab'; }, []);
 
     // Auto-fill code if provided in URL
     useEffect(() => {

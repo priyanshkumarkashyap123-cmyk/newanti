@@ -1,5 +1,5 @@
 /**
- * BeamLab Ultimate - AI-Powered Structural Optimization Engine
+ * BeamLab - AI-Powered Structural Optimization Engine
  * Machine learning and genetic algorithm based optimization for structural design
  * 
  * Features:

@@ -288,7 +288,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activePanel, setActivePanel] = useState<'geometry' | 'material' | 'mesh' | 'loads' | 'boundary'>('geometry');
 
-  useEffect(() => { document.title = 'Plate & Shell Analysis | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Plate & Shell Analysis | BeamLab'; }, []);
 
   // Total DOF
   const totalNodes = (mesh.nx + 1) * (mesh.ny + 1);

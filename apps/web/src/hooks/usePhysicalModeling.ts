@@ -414,7 +414,7 @@ export function usePhysicalModeling(): UsePhysicalModelingReturn {
             const ismModel = {
                 version: '1.0',
                 schema: 'ISM',
-                application: 'BeamLab Ultimate',
+                application: 'BeamLab',
                 timestamp: new Date().toISOString(),
                 project: {
                     name: projectName,
@@ -461,7 +461,7 @@ export function usePhysicalModeling(): UsePhysicalModelingReturn {
                 metadata: {
                     nodeCount: nodes.size,
                     memberCount: members.size,
-                    createdBy: 'BeamLab Ultimate',
+                    createdBy: 'BeamLab',
                     exportedAt: new Date().toISOString()
                 }
             };

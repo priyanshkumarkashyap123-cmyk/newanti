@@ -21,7 +21,7 @@ export const ForgotPasswordPage = () => {
     const { forgotPassword } = useAuth();
     const isClerkEnabled = isUsingClerk();
 
-    useEffect(() => { document.title = 'Forgot Password | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Forgot Password | BeamLab'; }, []);
 
     // If using Clerk, redirect to Clerk's forgot password
     if (isClerkEnabled) {
@@ -159,7 +159,7 @@ export const ForgotPasswordPage = () => {
 
                 {/* Footer */}
                 <p className="text-center text-slate-500 dark:text-slate-400 text-sm mt-8">
-                    © {new Date().getFullYear()} BeamLab Ultimate. Professional Structural Analysis.
+                    © {new Date().getFullYear()} BeamLab. Professional Structural Analysis.
                 </p>
             </div>
         </div>

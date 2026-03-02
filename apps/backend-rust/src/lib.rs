@@ -911,6 +911,207 @@ pub fn benchmark_ultra_fast(num_nodes: usize, num_elements: usize, iterations: u
     serde_wasm_bindgen::to_value(&result)
         .unwrap_or_else(|_| JsValue::from_str(r#"{"error":"Benchmark failed"}"#))
 }
+
+// ============================================================================
+// NAFEMS BENCHMARK VALIDATION EXPORTS
+// ============================================================================
+
+/// Single benchmark result for WASM serialization
+#[derive(Serialize)]
+struct NafemsBenchmarkEntry {
+    name: String,
+    category: String,
+    target_value: f64,
+    computed_value: f64,
+    unit: String,
+    error_percent: f64,
+    tolerance_percent: f64,
+    passed: bool,
+    notes: String,
+}
+
+/// Full NAFEMS report for WASM serialization
+#[derive(Serialize)]
+struct NafemsReport {
+    success: bool,
+    suite_name: String,
+    total_tests: usize,
+    passed_tests: usize,
+    pass_rate: f64,
+    results: Vec<NafemsBenchmarkEntry>,
+}
+
+fn benchmark_result_to_entry(r: &nafems_benchmarks::BenchmarkResult) -> NafemsBenchmarkEntry {
+    NafemsBenchmarkEntry {
+        name: r.name.clone(),
+        category: format!("{:?}", r.category),
+        target_value: r.target_value,
+        computed_value: r.computed_value,
+        unit: r.unit.clone(),
+        error_percent: r.error_percent,
+        tolerance_percent: r.tolerance_percent,
+        passed: r.passed,
+        notes: r.notes.clone(),
+    }
+}
+
+fn suite_to_report(suite: &nafems_benchmarks::BenchmarkSuite) -> NafemsReport {
+    NafemsReport {
+        success: true,
+        suite_name: suite.name.clone(),
+        total_tests: suite.total_tests,
+        passed_tests: suite.passed_tests,
+        pass_rate: suite.pass_rate(),
+        results: suite.results.iter().map(benchmark_result_to_entry).collect(),
+    }
+}
+
+/// Run ALL NAFEMS benchmark tests and return comprehensive results.
+/// Returns JSON with pass/fail for every benchmark across all categories.
+#[wasm_bindgen]
+pub fn run_nafems_all_benchmarks() -> JsValue {
+    let mut suite = nafems_benchmarks::BenchmarkSuite::new("NAFEMS Complete Suite");
+
+    // --- Linear Elastic ---
+    let le1 = nafems_benchmarks::NafemsLE1::default();
+    suite.add_result(le1.validate(le1.analytical_stress()));
+    suite.add_result(nafems_benchmarks::NafemsLE2::default().validate(nafems_benchmarks::NafemsLE2::TARGET_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsLE3::default().validate(nafems_benchmarks::NafemsLE3::TARGET_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsLE4::default().validate(nafems_benchmarks::NafemsLE4::TARGET_RADIAL_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE5::default().validate(nafems_benchmarks::NafemsLE5::TARGET_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE6::default().validate(nafems_benchmarks::NafemsLE6::TARGET_DEFLECTION));
+    suite.add_result(nafems_benchmarks::NafemsLE7::default().validate(nafems_benchmarks::NafemsLE7::TARGET_HOOP_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE8::default().validate(nafems_benchmarks::NafemsLE8::TARGET_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE9::default().validate(nafems_benchmarks::NafemsLE9::TARGET_SCF));
+    suite.add_result(nafems_benchmarks::NafemsLE10::default().validate(nafems_benchmarks::NafemsLE10::TARGET_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE11::default().validate(nafems_benchmarks::NafemsLE11::TARGET_AXIAL_STRESS));
+
+    // --- Free Vibration ---
+    for r in nafems_benchmarks::NafemsFV12::default().validate(&nafems_benchmarks::NafemsFV12::TARGET_FREQUENCIES) {
+        suite.add_result(r);
+    }
+    suite.add_result(nafems_benchmarks::NafemsFV22::default().validate(nafems_benchmarks::NafemsFV22::TARGET_FREQ_1));
+    for r in nafems_benchmarks::NafemsFV32::default().validate(
+        nafems_benchmarks::NafemsFV32::TARGET_FREQUENCY_1,
+        nafems_benchmarks::NafemsFV32::TARGET_FREQUENCY_2,
+    ) {
+        suite.add_result(r);
+    }
+    suite.add_result(nafems_benchmarks::NafemsFV42::default().validate(nafems_benchmarks::NafemsFV42::TARGET_FREQ_02));
+    suite.add_result(nafems_benchmarks::NafemsFV52::default().validate(nafems_benchmarks::NafemsFV52::TARGET_FREQUENCY_1));
+    suite.add_result(nafems_benchmarks::NafemsFV72::default().validate(nafems_benchmarks::NafemsFV72::TARGET_FREQ_AT_100));
+
+    // --- Nonlinear ---
+    suite.add_result(nafems_benchmarks::NafemsNL1::default().validate(nafems_benchmarks::NafemsNL1::TARGET_PLASTIC_STRAIN));
+    suite.add_result(nafems_benchmarks::NafemsNL2::default().validate(nafems_benchmarks::NafemsNL2::TARGET_TIP_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsNL3::default().validate(nafems_benchmarks::NafemsNL3::TARGET_CRITICAL_LOAD));
+    suite.add_result(nafems_benchmarks::NafemsNL4::default().validate(nafems_benchmarks::NafemsNL4::TARGET_CRITICAL_PRESSURE));
+    suite.add_result(nafems_benchmarks::NafemsNL5::default().validate(nafems_benchmarks::NafemsNL5::TARGET_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsNL6::default().validate(nafems_benchmarks::NafemsNL6::TARGET_RESIDUAL));
+    suite.add_result(nafems_benchmarks::NafemsNL7::default().validate(nafems_benchmarks::NafemsNL7::TARGET_TIP_DISP));
+
+    // --- Thermal ---
+    suite.add_result(nafems_benchmarks::NafemsT1::default().validate(0.5, 50.0));
+    suite.add_result(nafems_benchmarks::NafemsT2::default().validate(nafems_benchmarks::NafemsT2::TARGET_TEMP_MID));
+    suite.add_result(nafems_benchmarks::NafemsT3::default().validate(nafems_benchmarks::NafemsT3::TARGET_TEMP_CENTER));
+    suite.add_result(nafems_benchmarks::NafemsT4::default().validate(nafems_benchmarks::NafemsT4::TARGET_TEMP_32S));
+    suite.add_result(nafems_benchmarks::NafemsT5::default().validate(nafems_benchmarks::NafemsT5::TARGET_MAX_TEMP));
+
+    // --- Contact ---
+    suite.add_result(nafems_benchmarks::NafemsIC1::default().validate(nafems_benchmarks::NafemsIC1::TARGET_CONTACT_PRESSURE));
+    suite.add_result(nafems_benchmarks::NafemsIC3::default().validate(nafems_benchmarks::NafemsIC3::TARGET_SLIDING));
+    suite.add_result(nafems_benchmarks::NafemsIC5::default().validate(nafems_benchmarks::NafemsIC5::TARGET_PEAK_FORCE));
+
+    let report = suite_to_report(&suite);
+    serde_wasm_bindgen::to_value(&report)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+}
+
+/// Run only the Linear Elastic (LE) NAFEMS benchmarks
+#[wasm_bindgen]
+pub fn run_nafems_le_benchmarks() -> JsValue {
+    let mut suite = nafems_benchmarks::BenchmarkSuite::new("NAFEMS Linear Elastic");
+    let le1 = nafems_benchmarks::NafemsLE1::default();
+    suite.add_result(le1.validate(le1.analytical_stress()));
+    suite.add_result(nafems_benchmarks::NafemsLE2::default().validate(nafems_benchmarks::NafemsLE2::TARGET_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsLE3::default().validate(nafems_benchmarks::NafemsLE3::TARGET_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsLE4::default().validate(nafems_benchmarks::NafemsLE4::TARGET_RADIAL_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE5::default().validate(nafems_benchmarks::NafemsLE5::TARGET_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE6::default().validate(nafems_benchmarks::NafemsLE6::TARGET_DEFLECTION));
+    suite.add_result(nafems_benchmarks::NafemsLE7::default().validate(nafems_benchmarks::NafemsLE7::TARGET_HOOP_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE8::default().validate(nafems_benchmarks::NafemsLE8::TARGET_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE9::default().validate(nafems_benchmarks::NafemsLE9::TARGET_SCF));
+    suite.add_result(nafems_benchmarks::NafemsLE10::default().validate(nafems_benchmarks::NafemsLE10::TARGET_STRESS));
+    suite.add_result(nafems_benchmarks::NafemsLE11::default().validate(nafems_benchmarks::NafemsLE11::TARGET_AXIAL_STRESS));
+    let report = suite_to_report(&suite);
+    serde_wasm_bindgen::to_value(&report)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+}
+
+/// Run only the Free Vibration (FV) NAFEMS benchmarks
+#[wasm_bindgen]
+pub fn run_nafems_fv_benchmarks() -> JsValue {
+    let mut suite = nafems_benchmarks::BenchmarkSuite::new("NAFEMS Free Vibration");
+    for r in nafems_benchmarks::NafemsFV12::default().validate(&nafems_benchmarks::NafemsFV12::TARGET_FREQUENCIES) {
+        suite.add_result(r);
+    }
+    suite.add_result(nafems_benchmarks::NafemsFV22::default().validate(nafems_benchmarks::NafemsFV22::TARGET_FREQ_1));
+    for r in nafems_benchmarks::NafemsFV32::default().validate(
+        nafems_benchmarks::NafemsFV32::TARGET_FREQUENCY_1,
+        nafems_benchmarks::NafemsFV32::TARGET_FREQUENCY_2,
+    ) {
+        suite.add_result(r);
+    }
+    suite.add_result(nafems_benchmarks::NafemsFV42::default().validate(nafems_benchmarks::NafemsFV42::TARGET_FREQ_02));
+    suite.add_result(nafems_benchmarks::NafemsFV52::default().validate(nafems_benchmarks::NafemsFV52::TARGET_FREQUENCY_1));
+    suite.add_result(nafems_benchmarks::NafemsFV72::default().validate(nafems_benchmarks::NafemsFV72::TARGET_FREQ_AT_100));
+    let report = suite_to_report(&suite);
+    serde_wasm_bindgen::to_value(&report)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+}
+
+/// Run only the Nonlinear (NL) NAFEMS benchmarks
+#[wasm_bindgen]
+pub fn run_nafems_nl_benchmarks() -> JsValue {
+    let mut suite = nafems_benchmarks::BenchmarkSuite::new("NAFEMS Nonlinear");
+    suite.add_result(nafems_benchmarks::NafemsNL1::default().validate(nafems_benchmarks::NafemsNL1::TARGET_PLASTIC_STRAIN));
+    suite.add_result(nafems_benchmarks::NafemsNL2::default().validate(nafems_benchmarks::NafemsNL2::TARGET_TIP_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsNL3::default().validate(nafems_benchmarks::NafemsNL3::TARGET_CRITICAL_LOAD));
+    suite.add_result(nafems_benchmarks::NafemsNL4::default().validate(nafems_benchmarks::NafemsNL4::TARGET_CRITICAL_PRESSURE));
+    suite.add_result(nafems_benchmarks::NafemsNL5::default().validate(nafems_benchmarks::NafemsNL5::TARGET_DISPLACEMENT));
+    suite.add_result(nafems_benchmarks::NafemsNL6::default().validate(nafems_benchmarks::NafemsNL6::TARGET_RESIDUAL));
+    suite.add_result(nafems_benchmarks::NafemsNL7::default().validate(nafems_benchmarks::NafemsNL7::TARGET_TIP_DISP));
+    let report = suite_to_report(&suite);
+    serde_wasm_bindgen::to_value(&report)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+}
+
+/// Run only the Thermal (T) NAFEMS benchmarks
+#[wasm_bindgen]
+pub fn run_nafems_thermal_benchmarks() -> JsValue {
+    let mut suite = nafems_benchmarks::BenchmarkSuite::new("NAFEMS Thermal");
+    suite.add_result(nafems_benchmarks::NafemsT1::default().validate(0.5, 50.0));
+    suite.add_result(nafems_benchmarks::NafemsT2::default().validate(nafems_benchmarks::NafemsT2::TARGET_TEMP_MID));
+    suite.add_result(nafems_benchmarks::NafemsT3::default().validate(nafems_benchmarks::NafemsT3::TARGET_TEMP_CENTER));
+    suite.add_result(nafems_benchmarks::NafemsT4::default().validate(nafems_benchmarks::NafemsT4::TARGET_TEMP_32S));
+    suite.add_result(nafems_benchmarks::NafemsT5::default().validate(nafems_benchmarks::NafemsT5::TARGET_MAX_TEMP));
+    let report = suite_to_report(&suite);
+    serde_wasm_bindgen::to_value(&report)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+}
+
+/// Run only the Contact (IC) NAFEMS benchmarks
+#[wasm_bindgen]
+pub fn run_nafems_contact_benchmarks() -> JsValue {
+    let mut suite = nafems_benchmarks::BenchmarkSuite::new("NAFEMS Contact");
+    suite.add_result(nafems_benchmarks::NafemsIC1::default().validate(nafems_benchmarks::NafemsIC1::TARGET_CONTACT_PRESSURE));
+    suite.add_result(nafems_benchmarks::NafemsIC3::default().validate(nafems_benchmarks::NafemsIC3::TARGET_SLIDING));
+    suite.add_result(nafems_benchmarks::NafemsIC5::default().validate(nafems_benchmarks::NafemsIC5::TARGET_PEAK_FORCE));
+    let report = suite_to_report(&suite);
+    serde_wasm_bindgen::to_value(&report)
+        .unwrap_or_else(|_| JsValue::from_str(r#"{"success":false,"error":"Serialization failed"}"#))
+}
+
 /// Sparse system input
 #[derive(Deserialize)]
 struct SparseSystemInput {

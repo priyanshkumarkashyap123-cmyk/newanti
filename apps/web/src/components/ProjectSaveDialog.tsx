@@ -27,6 +27,7 @@ import { Label } from './ui/label';
 import { useAuth } from '../providers/AuthProvider';
 import { useModelStore } from '../store/model';
 import { API_CONFIG } from '../config/env';
+import { useConfirm } from './ui/ConfirmDialog';
 
 // ============================================
 // TYPES
@@ -52,6 +53,7 @@ interface ProjectSaveDialogProps {
 
 export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose }) => {
     const { isSignedIn, getToken } = useAuth();
+    const confirmDialog = useConfirm();
     const nodes = useModelStore((s) => s.nodes);
     const members = useModelStore((s) => s.members);
     const loads = useModelStore((s) => s.loads);
@@ -297,7 +299,14 @@ export const ProjectSaveDialog: FC<ProjectSaveDialogProps> = ({ isOpen, onClose 
 
     // Delete project
     const handleDelete = useCallback(async (projectId: string, isLocal: boolean = false) => {
-        if (!window.confirm('Delete this project?')) return;
+        const shouldDelete = await confirmDialog({
+            title: 'Delete Project',
+            message: 'Are you sure you want to delete this project? This action cannot be undone.',
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            variant: 'danger',
+        });
+        if (!shouldDelete) return;
 
         try {
             if (isLocal) {

@@ -37,10 +37,7 @@ router.post('/', async (req: Request, res: Response) => {
         } = req.body;
 
         if (!projectId || !sessionId || !type || !action || !details) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required fields: projectId, sessionId, type, action, details'
-            });
+            return res.fail('VALIDATION_ERROR', 'Missing required fields: projectId, sessionId, type, action, details', 400);
         }
 
         const entry = await auditService.log({
@@ -55,15 +52,14 @@ router.post('/', async (req: Request, res: Response) => {
             metadata
         });
 
-        return res.json({
-            success: true,
+        return res.ok({
             id: entry.id,
             timestamp: entry.timestamp
         });
 
     } catch (error) {
         console.error('[Audit API] Error logging entry:', error);
-        return res.status(500).json({ success: false, error: 'Failed to log audit entry' });
+        return res.fail('INTERNAL_ERROR', 'Failed to log audit entry');
     }
 });
 
@@ -84,15 +80,14 @@ router.get('/:projectId', async (req: Request, res: Response) => {
             endDate: endDate ? new Date(endDate as string) : undefined
         });
 
-        return res.json({
-            success: true,
+        return res.ok({
             entries,
             count: entries.length
         });
 
     } catch (error) {
         console.error('[Audit API] Error fetching entries:', error);
-        return res.status(500).json({ success: false, error: 'Failed to fetch entries' });
+        return res.fail('INTERNAL_ERROR', 'Failed to fetch entries');
     }
 });
 
@@ -105,14 +100,11 @@ router.get('/:projectId/stats', async (req: Request, res: Response) => {
         const { projectId } = req.params;
         const stats = await auditService.getStats(projectId);
 
-        return res.json({
-            success: true,
-            stats
-        });
+        return res.ok({ stats });
 
     } catch (error) {
         console.error('[Audit API] Error fetching stats:', error);
-        return res.status(500).json({ success: false, error: 'Failed to fetch stats' });
+        return res.fail('INTERNAL_ERROR', 'Failed to fetch stats');
     }
 });
 
@@ -125,10 +117,7 @@ router.post('/sign', async (req: Request, res: Response) => {
         const { entryIds, engineerName, licenseNumber } = req.body;
 
         if (!entryIds || !engineerName || !licenseNumber) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required fields: entryIds, engineerName, licenseNumber'
-            });
+            return res.fail('VALIDATION_ERROR', 'Missing required fields: entryIds, engineerName, licenseNumber', 400);
         }
 
         const count = await auditService.signEntries(entryIds, {
@@ -137,14 +126,11 @@ router.post('/sign', async (req: Request, res: Response) => {
             signedAt: new Date()
         });
 
-        return res.json({
-            success: true,
-            signedCount: count
-        });
+        return res.ok({ signedCount: count });
 
     } catch (error) {
         console.error('[Audit API] Error signing entries:', error);
-        return res.status(500).json({ success: false, error: 'Failed to sign entries' });
+        return res.fail('INTERNAL_ERROR', 'Failed to sign entries');
     }
 });
 
@@ -158,10 +144,7 @@ router.get('/:projectId/report', async (req: Request, res: Response) => {
         const { engineer, license } = req.query;
 
         if (!engineer || !license) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing query parameters: engineer, license'
-            });
+            return res.fail('VALIDATION_ERROR', 'Missing query parameters: engineer, license', 400);
         }
 
         const report = await auditService.generateReport(
@@ -170,15 +153,14 @@ router.get('/:projectId/report', async (req: Request, res: Response) => {
             license as string
         );
 
-        return res.json({
-            success: true,
+        return res.ok({
             report,
             format: 'markdown'
         });
 
     } catch (error) {
         console.error('[Audit API] Error generating report:', error);
-        return res.status(500).json({ success: false, error: 'Failed to generate report' });
+        return res.fail('INTERNAL_ERROR', 'Failed to generate report');
     }
 });
 
@@ -204,7 +186,7 @@ router.get('/:projectId/export', async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error('[Audit API] Error exporting:', error);
-        return res.status(500).json({ success: false, error: 'Failed to export' });
+        return res.fail('INTERNAL_ERROR', 'Failed to export');
     }
 });
 

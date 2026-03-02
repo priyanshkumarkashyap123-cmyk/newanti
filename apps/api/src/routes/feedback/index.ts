@@ -41,10 +41,7 @@ router.post('/', async (req: Request, res: Response) => {
         const { type, feature, originalInput, originalOutput, correctedOutput, rating, comment, sessionId } = req.body;
 
         if (!type || !feature || !sessionId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required fields: type, feature, sessionId'
-            });
+            return res.fail('VALIDATION_ERROR', 'Missing required fields: type, feature, sessionId', 400);
         }
 
         const entry: FeedbackEntry = {
@@ -71,17 +68,11 @@ router.post('/', async (req: Request, res: Response) => {
 
         console.log(`[Feedback] ${type} received for ${feature}`);
 
-        return res.json({
-            success: true,
-            id: entry.id
-        });
+        return res.ok({ id: entry.id });
 
     } catch (error) {
         console.error('[Feedback] Error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Failed to submit feedback'
-        });
+        return res.fail('INTERNAL_ERROR', 'Failed to submit feedback');
     }
 });
 
@@ -105,8 +96,7 @@ router.get('/stats', async (_req: Request, res: Response) => {
         byType[entry.type] = (byType[entry.type] || 0) + 1;
     }
 
-    return res.json({
-        success: true,
+    return res.ok({
         stats: {
             total: feedbackStore.length,
             corrections: corrections.length,
@@ -147,10 +137,7 @@ router.post('/export', async (_req: Request, res: Response) => {
 
     console.log(`[Feedback] Exported ${corrections.length} corrections for training`);
 
-    return res.json({
-        success: true,
-        data: trainingData
-    });
+    return res.ok({ data: trainingData });
 });
 
 /**
@@ -161,8 +148,7 @@ router.get('/recent', async (req: Request, res: Response) => {
     const limit = Math.min(parseInt(req.query['limit'] as string) || 50, 100);
     const recent = feedbackStore.slice(-limit).reverse();
 
-    return res.json({
-        success: true,
+    return res.ok({
         entries: recent.map(e => ({
             id: e.id,
             type: e.type,

@@ -246,7 +246,7 @@ export const AICommandCenter: FC = () => {
 
         // Feature gate: Check AI usage limits
         if (!canAccess('aiAssistant') && dailyUsageCount >= FREE_TIER_DAILY_LIMIT) {
-            const shouldUpgrade = window.confirm(
+            const shouldUpgrade = confirm(
                 '🤖 AI Assistant - Daily Limit Reached\n\n' +
                 'Free tier users get 3 AI generations per day.\n\n' +
                 'Upgrade to Pro for unlimited AI access.\n\n' +

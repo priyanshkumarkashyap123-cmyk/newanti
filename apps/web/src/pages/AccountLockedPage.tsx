@@ -15,7 +15,7 @@ export const AccountLockedPage = () => {
     const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes default
 
     useEffect(() => {
-        document.title = 'Account Locked | BeamLab Ultimate';
+        document.title = 'Account Locked | BeamLab';
     }, []);
 
     useEffect(() => {
@@ -37,7 +37,7 @@ export const AccountLockedPage = () => {
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                         <Cpu className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
+                    <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab</span>
                 </Link>
 
                 {/* Card */}
@@ -73,7 +73,7 @@ export const AccountLockedPage = () => {
                                 Reset Password
                             </Button>
                         </Link>
-                        <a href="mailto:support@beamlabultimate.tech">
+                        <a href="mailto:support@beamlab.app">
                             <Button variant="outline" className="w-full">
                                 Contact Support
                             </Button>

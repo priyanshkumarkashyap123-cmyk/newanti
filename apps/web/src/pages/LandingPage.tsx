@@ -1,5 +1,5 @@
 /**
- * LandingPage - BeamLab Ultimate Landing Page
+ * LandingPage - BeamLab Landing Page
  * Premium Dark SaaS homepage with vibrant gradients
  * Merged with Enhanced features (v3.0)
  * Updated to match Figma spec 03_LANDING_MARKETING
@@ -32,7 +32,7 @@ import {
   Linkedin,
   Youtube,
 } from "lucide-react";
-import beamLabLogo from "../assets/beamlab_logo.png";
+import { Logo } from "../components/branding";
 import { Button } from "../components/ui/button";
 import {
   CompetitiveAdvantage,
@@ -67,7 +67,7 @@ export const LandingPage: FC = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
-    document.title = 'BeamLab Ultimate – Professional Structural Analysis Platform';
+    document.title = 'BeamLab – Professional Structural Analysis Platform';
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -150,22 +150,7 @@ export const LandingPage: FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link
-              to="/"
-              className="flex items-center gap-3 group flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg"
-              aria-label="BeamLab Ultimate - Home"
-            >
-              <div className="relative w-9 h-9 flex items-center justify-center rounded-lg shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
-                <img
-                  src={beamLabLogo}
-                  alt="BeamLab"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 whitespace-nowrap">
-                BeamLab Ultimate
-              </span>
-            </Link>
+            <Logo size="sm" />
 
             {/* Desktop Links - Properly centered with consistent spacing */}
             <div className="hidden md:flex items-center justify-center flex-1 px-8">
@@ -509,8 +494,8 @@ export const LandingPage: FC = () => {
             >
               {STATS.map((stat, i) => (
                 <div key={i} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-xs text-slate-400">{stat.label}</div>
+                  <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1">{stat.value}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">{stat.label}</div>
                 </div>
               ))}
             </motion.div>
@@ -527,7 +512,7 @@ export const LandingPage: FC = () => {
               {TRUST_LOGOS.map((logo, i) => (
                 <span
                   key={i}
-                  className="text-slate-400/50 hover:text-slate-300 transition-all duration-300 text-lg font-semibold tracking-wide cursor-default select-none"
+                  className="text-slate-500 dark:text-slate-400/50 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-300 text-lg font-semibold tracking-wide cursor-default select-none"
                 >
                   {logo}
                 </span>
@@ -548,7 +533,7 @@ export const LandingPage: FC = () => {
               >
                 Features
               </motion.span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400 px-4 tracking-[-0.02em]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-slate-900 to-slate-500 dark:from-white dark:to-slate-400 px-4 tracking-[-0.02em]">
                 Everything You Need for Structural Engineering
               </h2>
               <p className="mt-5 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-sm sm:text-base px-4 leading-relaxed">
@@ -676,7 +661,7 @@ export const LandingPage: FC = () => {
                   className={`relative flex flex-col rounded-2xl sm:rounded-3xl p-6 sm:p-8 ${
                     tier.popular
                       ? "bg-slate-50 dark:bg-slate-900/90 border-2 border-blue-500/50 shadow-[0_0_80px_rgba(59,130,246,0.15)] lg:scale-105 z-10 backdrop-blur-sm"
-                      : "bg-white dark:bg-slate-950/80 border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300"
+                      : "bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/[0.06] hover:border-slate-300 dark:hover:border-white/[0.12] transition-all duration-300"
                   }`}
                 >
                   {tier.popular && (
@@ -753,12 +738,7 @@ export const LandingPage: FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
             {/* Brand Column */}
             <div className="col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-9 h-9 flex items-center justify-center rounded-lg overflow-hidden">
-                  <img src={beamLabLogo} alt="" className="w-full h-full object-cover" aria-hidden="true" />
-                </div>
-                <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab Ultimate</span>
-              </div>
+              <Logo size="sm" clickable={false} className="mb-6" />
               <p className="text-slate-600 dark:text-slate-400 text-sm max-w-sm leading-relaxed mb-6">
                 Professional structural analysis software, reimagined for the modern web. Fast, accurate, and accessible anywhere — no installation required.
               </p>
@@ -825,7 +805,7 @@ export const LandingPage: FC = () => {
 
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-600 dark:text-slate-400 text-sm">
-              © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
+              © {new Date().getFullYear()} BeamLab. All rights reserved.
             </p>
             <p className="text-slate-600 dark:text-slate-400 text-xs">
               Made with ❤️ in India
@@ -873,7 +853,7 @@ const FeatureCard = ({
 }) => (
   <motion.div
     variants={fadeInUp}
-    className="relative p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-white/[0.06] hover:border-blue-500/40 transition-all duration-300 group h-full flex flex-col hover-lift focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 focus-within:ring-offset-slate-950 overflow-hidden hover:shadow-lg hover:shadow-blue-500/5"
+    className="relative p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/60 dark:border-white/[0.06] hover:border-blue-500/40 transition-all duration-300 group h-full flex flex-col hover-lift focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 focus-within:ring-offset-white dark:focus-within:ring-offset-slate-950 overflow-hidden hover:shadow-lg hover:shadow-blue-500/5"
   >
     {/* Top gradient accent */}
     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

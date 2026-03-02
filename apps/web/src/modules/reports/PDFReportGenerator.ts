@@ -1,5 +1,5 @@
 /**
- * BeamLab Ultimate - Professional PDF Report Generator
+ * BeamLab - Professional PDF Report Generator
  * Comprehensive structural engineering report generation with multi-code compliance
  * 
  * Features:
@@ -784,7 +784,7 @@ export class PDFReportGenerator {
           '',
           '5.3 SOFTWARE USED',
           '',
-          'BeamLab Ultimate v2.0 - Structural Analysis Suite',
+          'BeamLab v2.0 - Structural Analysis Suite',
           'Analysis validated against benchmark problems per software QA procedures.',
         ]
       },
@@ -1150,7 +1150,7 @@ export class PDFReportGenerator {
           '',
           'SOFTWARE:',
           '',
-          '• BeamLab Ultimate v2.0 - Structural Analysis and Design',
+          '• BeamLab v2.0 - Structural Analysis and Design',
           '• Analysis validated per AISC benchmark problems',
           '• Quality assurance documentation available on request',
         ]

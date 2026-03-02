@@ -422,7 +422,7 @@ export const EnhancedPricingPage: FC = () => {
   const { isSignedIn, user } = useAuth();
   const { refreshSubscription } = useSubscription();
 
-  useEffect(() => { document.title = 'Pricing | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Pricing | BeamLab'; }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1047,7 +1047,7 @@ export const EnhancedPricingPage: FC = () => {
               </div>
               <div className="p-10 bg-blue-900/10">
                 <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                  <Check className="w-6 h-6 text-blue-400" /> BeamLab Ultimate
+                  <Check className="w-6 h-6 text-blue-400" /> BeamLab
                 </h4>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3 text-slate-700 dark:text-slate-300">
@@ -1161,7 +1161,7 @@ export const EnhancedPricingPage: FC = () => {
       <footer className="border-t border-slate-200 dark:border-slate-800 py-8 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-slate-600 dark:text-slate-400 text-sm">
-            © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
+            © {new Date().getFullYear()} BeamLab. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link

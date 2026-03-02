@@ -95,9 +95,15 @@ const ModernModeler = lazy(() =>
     default: module.ModernModeler,
   })),
 );
+import { MobileGuard } from './components/ui/MobileGuard';
 const RustWasmDemo = lazy(() =>
   import("./pages/RustWasmDemo").then((module) => ({
     default: module.RustWasmDemo,
+  })),
+);
+const NafemsBenchmarkPage = lazy(() =>
+  import("./pages/NafemsBenchmarkPage").then((module) => ({
+    default: module.NafemsBenchmarkPage,
   })),
 );
 const UIShowcase = lazy(() =>
@@ -275,9 +281,6 @@ const PDeltaAnalysisPanel = lazy(() =>
   })),
 );
 
-// Toast Provider (full-featured: queueing, positions, pause-on-hover, ARIA)
-import { ToastProvider } from "./components/ui/ToastSystem";
-
 // Analytics Provider — sends events to POST /api/analytics/batch
 import { AnalyticsProvider } from "./providers/AnalyticsProvider";
 
@@ -312,7 +315,6 @@ function App() {
       <SkipLink />
       <OfflineBanner />
       <AnalyticsProvider>
-        <ToastProvider>
           <Suspense fallback={<PageLoader />}>
             <ScrollToTop />
             <main id="main-content">
@@ -468,12 +470,12 @@ function App() {
                 path="/app"
                 element={
                   <RequireAuth>
-                    <ModernModeler />
+                    <MobileGuard><ModernModeler /></MobileGuard>
                   </RequireAuth>
                 }
               />
               {/* Demo Route - Modern Modeler */}
-              <Route path="/demo" element={<ModernModeler />} />
+              <Route path="/demo" element={<MobileGuard><ModernModeler /></MobileGuard>} />
               {/* UI Component Showcase - Phase 13+ Integration Demo */}
               <Route path="/ui-showcase" element={<UIShowcase />} />
               {/* Codebase Error & Health Report */}
@@ -498,6 +500,8 @@ function App() {
               />
               {/* Rust WASM Performance Demo */}
               <Route path="/rust-wasm-demo" element={<RustWasmDemo />} />
+              {/* NAFEMS Benchmark Validation */}
+              <Route path="/nafems-benchmarks" element={<NafemsBenchmarkPage />} />
               {/* Worker Validation Route */}
               <Route path="/worker-test" element={<WorkerValidation />} />
               {/* Advanced Analysis Panels (Rust-powered, 20-100x faster) */}
@@ -774,7 +778,7 @@ function App() {
                 }
               />
               <Route
-                path="/api/dashboard"
+                path="/integrations/api-dashboard"
                 element={
                   <RequireAuth>
                     <APIIntegrationDashboard />
@@ -877,7 +881,6 @@ function App() {
             <BackToTopButton />
             <CookieConsent />
           </Suspense>
-        </ToastProvider>
       </AnalyticsProvider>
     </ErrorBoundary>
   );
@@ -886,7 +889,7 @@ function App() {
 // Helper to extract moduleType param - Now uses ModernModeler
 function WorkspacePageWrapper() {
   // All workspace routes now use ModernModeler with all new UI improvements
-  return <ModernModeler />;
+  return <MobileGuard><ModernModeler /></MobileGuard>;
 }
 
 export default App;

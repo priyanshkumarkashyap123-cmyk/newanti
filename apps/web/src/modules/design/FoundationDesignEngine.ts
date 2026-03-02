@@ -1,5 +1,5 @@
 /**
- * BeamLab Ultimate - Foundation Design Engine
+ * BeamLab - Foundation Design Engine
  * Comprehensive foundation design per international codes
  * 
  * Foundation Types:

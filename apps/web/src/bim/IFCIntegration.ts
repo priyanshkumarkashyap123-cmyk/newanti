@@ -1,7 +1,7 @@
 /**
  * IFCIntegration.ts
  * 
- * BIM/IFC Integration Module for BeamLab Ultimate:
+ * BIM/IFC Integration Module for BeamLab:
  * 1. IFC 2x3 and IFC 4 parsing
  * 2. IFC export/generation
  * 3. BIM coordination
@@ -653,7 +653,7 @@ export class IFCExporter {
     
     return `HEADER;
 FILE_DESCRIPTION(('ViewDefinition [CoordinationView]'),'2;1');
-FILE_NAME('${project.name}.ifc','${timestamp}',('${options.authorName || 'BeamLab'}'),('${options.organizationName || 'BeamLab'}'),'${options.applicationName || 'BeamLab Ultimate'}','${options.applicationName || 'BeamLab Ultimate'}','');
+FILE_NAME('${project.name}.ifc','${timestamp}',('${options.authorName || 'BeamLab'}'),('${options.organizationName || 'BeamLab'}'),'${options.applicationName || 'BeamLab'}','${options.applicationName || 'BeamLab'}','');
 FILE_SCHEMA(('${schema}'));
 ENDSEC;`;
   }
@@ -664,7 +664,7 @@ ENDSEC;`;
     const orgId = this.addEntity('IFCORGANIZATION', ["$", "'BeamLab'", "$", "$", "$"]);
     const personOrgId = this.addEntity('IFCPERSONANDORGANIZATION', [`#${personId}`, `#${orgId}`, "$"]);
     
-    const appId = this.addEntity('IFCAPPLICATION', [`#${orgId}`, "'1.0'", "'BeamLab Ultimate'", "'BeamLab'"]);
+    const appId = this.addEntity('IFCAPPLICATION', [`#${orgId}`, "'1.0'", "'BeamLab'", "'BeamLab'"]);
     const ownerHistoryId = this.addEntity('IFCOWNERHISTORY', [
       `#${personOrgId}`, `#${appId}`, "$", ".NOCHANGE.", "$", `#${personOrgId}`, `#${appId}`,
       `${Math.floor(Date.now() / 1000)}`,

@@ -48,7 +48,7 @@ export const UIShowcase: FC = () => {
     const confirm = useConfirm();
     const { toast } = useAppNotifications();
 
-    useEffect(() => { document.title = 'UI Showcase | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'UI Showcase | BeamLab'; }, []);
 
     // Demo data
     const sparklineData = [10, 25, 15, 30, 20, 45, 35, 50, 40, 60];

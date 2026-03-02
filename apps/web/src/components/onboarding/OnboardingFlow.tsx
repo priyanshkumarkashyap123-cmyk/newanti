@@ -66,7 +66,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
   const steps: OnboardingStep[] = useMemo(() => [
     {
       id: 'welcome',
-      title: 'Welcome to BeamLab Ultimate',
+      title: 'Welcome to BeamLab',
       subtitle: 'The most advanced structural analysis platform on the web',
       content: <WelcomeStep />
     },

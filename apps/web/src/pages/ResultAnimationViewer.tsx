@@ -109,7 +109,7 @@ const ResultAnimationViewer: React.FC = () => {
   const [selectedMode, setSelectedMode] = useState(1);
   const [timeHistory, setTimeHistory] = useState<TimeStep[]>([]);
 
-  useEffect(() => { document.title = 'Result Animation | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Result Animation | BeamLab'; }, []);
 
   useEffect(() => {
     // Attempt to pull real data from the model store

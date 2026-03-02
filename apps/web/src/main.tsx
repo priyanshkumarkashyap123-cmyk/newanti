@@ -62,7 +62,7 @@ const initializeApp = async () => {
                     ],
                     // Performance Monitoring (20% sample in production to control costs)
                     tracesSampleRate: 0.2,
-                    tracePropagationTargets: ["localhost", /^https:\/\/.*\.beamlabultimate\.tech/],
+                    tracePropagationTargets: ["localhost", /^https:\/\/.*\.beamlab\.app/],
                     // Session Replay
                     replaysSessionSampleRate: 0.1,
                     replaysOnErrorSampleRate: 1.0,

@@ -152,7 +152,7 @@ export default function PerformanceMonitorDashboard() {
   
   const metrics = useSimulatedMetrics(isAnalysisRunning);
 
-  useEffect(() => { document.title = 'Performance Monitor | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Performance Monitor | BeamLab'; }, []);
 
   const startAnalysis = useCallback(() => {
     setIsAnalysisRunning(true);

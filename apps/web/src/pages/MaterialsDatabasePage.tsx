@@ -58,7 +58,7 @@ const MaterialsDatabasePage: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { document.title = 'Materials Database | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Materials Database | BeamLab'; }, []);
 
   // Custom material form state
   const [customName, setCustomName] = useState('');

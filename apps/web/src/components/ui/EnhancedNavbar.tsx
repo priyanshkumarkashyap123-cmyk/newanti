@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent } from './dialog';
 import { useAuth } from '../../providers/AuthProvider';
-import beamLabLogo from '../../assets/beamlab_logo.png';
+import { Logo } from '../branding';
 
 // ============================================
 // MEGA MENU DATA
@@ -178,14 +178,7 @@ export const EnhancedNavbar: FC = () => {
       <nav className="fixed top-0 inset-x-0 z-50 h-16 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.06]">
         <div className="max-w-[1800px] mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-            <div className="w-9 h-9 rounded-lg overflow-hidden shadow-lg group-hover:shadow-blue-500/25 transition-all">
-              <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
-            </div>
-            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-              BeamLab
-            </span>
-          </Link>
+          <Logo size="sm" />
 
           {/* Center Navigation */}
           <div className="hidden lg:flex items-center gap-1" ref={menuRef}>

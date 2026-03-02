@@ -957,9 +957,9 @@ export class IFCExporter {
             header: {
                 fileName: `${projectName}.ifc`,
                 timestamp: new Date().toISOString(),
-                author: 'BeamLab Ultimate',
+                author: 'BeamLab',
                 organization: 'BeamLab',
-                application: 'BeamLab Ultimate v1.0'
+                application: 'BeamLab v1.0'
             },
             project: {
                 globalId: this.generateGUID(),

@@ -453,7 +453,7 @@ export const InHouseSignUp: React.FC = () => {
                         Start Engineering Smarter
                     </h2>
                     <p className="text-xl text-slate-900/80 dark:text-white/80 mb-8">
-                        Join thousands of structural engineers using BeamLab Ultimate for faster, more accurate designs.
+                        Join thousands of structural engineers using BeamLab for faster, more accurate designs.
                     </p>
 
                     <div className="grid grid-cols-3 gap-4 text-center">
@@ -473,7 +473,7 @@ export const InHouseSignUp: React.FC = () => {
                 </div>
 
                 <div className="text-slate-900/60 dark:text-white/60 text-sm">
-                    © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
+                    © {new Date().getFullYear()} BeamLab. All rights reserved.
                 </div>
             </div>
         </div>

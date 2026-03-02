@@ -601,12 +601,14 @@ export class EnhancedAnalysisEngine {
   private maxCacheSize: number = 20;
 
   constructor() {
-    this.initializeWorker();
+    // Worker initialization deferred — solverWorker is only
+    // needed if offloading to a Web Worker. runAnalysis() does
+    // all math on the main thread, so we avoid spawning an idle worker.
   }
 
   private initializeWorker(): void {
     try {
-      if (typeof Worker !== 'undefined' && typeof window !== 'undefined') {
+      if (!this.solverWorker && typeof Worker !== 'undefined' && typeof window !== 'undefined') {
         this.solverWorker = new Worker(
           new URL('../workers/StructuralSolverWorker.ts', import.meta.url),
           { type: 'module' }

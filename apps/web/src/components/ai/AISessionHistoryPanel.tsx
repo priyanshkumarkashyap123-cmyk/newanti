@@ -308,7 +308,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
   }, [exportSession]);
 
   const handleDelete = useCallback((sessionId: string) => {
-    if (window.confirm('Delete this session? This cannot be undone.')) {
+    if (confirm('Delete this session? This cannot be undone.')) {
       deleteSession(sessionId);
     }
   }, [deleteSession]);
@@ -333,7 +333,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
           {sessions.length > 0 && (
             <button
               onClick={() => {
-                if (window.confirm('Clear ALL session history?')) {
+                if (confirm('Clear ALL session history?')) {
                   clearAllSessions();
                 }
               }}

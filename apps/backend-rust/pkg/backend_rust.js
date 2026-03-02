@@ -834,6 +834,61 @@ export function modal_analysis(nodes_val, elements_val, num_modes) {
     return takeObject(ret);
 }
 
+/**
+ * Run ALL NAFEMS benchmark tests and return comprehensive results.
+ * Returns JSON with pass/fail for every benchmark across all categories.
+ * @returns {any}
+ */
+export function run_nafems_all_benchmarks() {
+    const ret = wasm.run_nafems_all_benchmarks();
+    return takeObject(ret);
+}
+
+/**
+ * Run only the Contact (IC) NAFEMS benchmarks
+ * @returns {any}
+ */
+export function run_nafems_contact_benchmarks() {
+    const ret = wasm.run_nafems_contact_benchmarks();
+    return takeObject(ret);
+}
+
+/**
+ * Run only the Free Vibration (FV) NAFEMS benchmarks
+ * @returns {any}
+ */
+export function run_nafems_fv_benchmarks() {
+    const ret = wasm.run_nafems_fv_benchmarks();
+    return takeObject(ret);
+}
+
+/**
+ * Run only the Linear Elastic (LE) NAFEMS benchmarks
+ * @returns {any}
+ */
+export function run_nafems_le_benchmarks() {
+    const ret = wasm.run_nafems_le_benchmarks();
+    return takeObject(ret);
+}
+
+/**
+ * Run only the Nonlinear (NL) NAFEMS benchmarks
+ * @returns {any}
+ */
+export function run_nafems_nl_benchmarks() {
+    const ret = wasm.run_nafems_nl_benchmarks();
+    return takeObject(ret);
+}
+
+/**
+ * Run only the Thermal (T) NAFEMS benchmarks
+ * @returns {any}
+ */
+export function run_nafems_thermal_benchmarks() {
+    const ret = wasm.run_nafems_thermal_benchmarks();
+    return takeObject(ret);
+}
+
 export function set_panic_hook() {
     wasm.set_panic_hook();
 }

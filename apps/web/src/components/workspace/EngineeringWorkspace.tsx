@@ -40,7 +40,7 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-xs tracking-wider uppercase">
                         <span className="material-symbols-outlined text-blue-500 text-[16px]">architecture</span>
-                        BeamLab Ultimate
+                        BeamLab
                     </div>
                     <nav className="flex items-center gap-4">
                         {['File', 'Edit', 'View', 'Analyze', 'Design'].map((item) => (

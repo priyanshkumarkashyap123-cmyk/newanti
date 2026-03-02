@@ -422,9 +422,13 @@ class AnalysisService {
 
       if (this.worker) {
         this.worker.addEventListener("message", handleMessage);
-        this.worker.addEventListener("error", (error) => {
+
+        const handleError = (error: ErrorEvent) => {
+          this.worker?.removeEventListener("message", handleMessage);
+          this.worker?.removeEventListener("error", handleError);
           reject(new Error(error.message));
-        });
+        };
+        this.worker.addEventListener("error", handleError);
       } else {
         reject(new Error("Worker initialization failed"));
         return;

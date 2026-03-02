@@ -385,7 +385,7 @@ export default function ConnectionDesignDatabase() {
   const [savedConnections, setSavedConnections] = useState<Set<string>>(new Set());
   const [showDesignMode, setShowDesignMode] = useState(false);
   
-  useEffect(() => { document.title = 'Connection Design | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Connection Design | BeamLab'; }, []);
 
   // Design mode inputs
   const [designInput, setDesignInput] = useState<DesignInput>({

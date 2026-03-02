@@ -23,6 +23,7 @@ import React, {
 import { useFrame, useThree, ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { useModelStore } from "../../store/model";
+import { useShallow } from 'zustand/react/shallow';
 import { GpuResourcePool } from "../../utils/gpuResourcePool";
 
 // ============================================
@@ -149,10 +150,14 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
   const [isInitialized, setIsInitialized] = useState(false);
   const nodeIndexMapRef = useRef<Map<number, string>>(new Map());
 
-  // Zustand store selectors
-  const nodes = useModelStore((state) => state.nodes);
-  const selectedIds = useModelStore((state) => state.selectedIds);
-  const errorElementIds = useModelStore((state) => state.errorElementIds);
+  // Zustand store selectors (useShallow prevents re-renders from unrelated state changes)
+  const { nodes, selectedIds, errorElementIds } = useModelStore(
+    useShallow((state) => ({
+      nodes: state.nodes,
+      selectedIds: state.selectedIds,
+      errorElementIds: state.errorElementIds,
+    }))
+  );
   const selectNode = useModelStore((state) => state.selectNode);
 
   const { raycaster } = useThree();
@@ -286,16 +291,17 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
       }
 
       if (currentIndex < toRender) {
-        requestAnimationFrame(processChunk);
+        rafId = requestAnimationFrame(processChunk);
       } else {
         nodeIndexMapRef.current = indexMap;
         setIsInitialized(true);
       }
     };
 
-    requestAnimationFrame(processChunk);
+    let rafId = requestAnimationFrame(processChunk);
 
     return () => {
+      cancelAnimationFrame(rafId);
       setIsInitialized(false);
     };
   }, [visibleNodes, effectiveCount, config, selectedIds, errorElementIds]);
@@ -304,22 +310,33 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
   // HOVER HANDLING
   // ============================================
 
+  const hoverRafRef = useRef<number | null>(null);
+
+  // Cleanup rAF on unmount
+  useEffect(() => () => { if (hoverRafRef.current !== null) cancelAnimationFrame(hoverRafRef.current); }, []);
+
   const handlePointerMove = useCallback(
     (event: ThreeEvent<PointerEvent>) => {
       if (!config.enableHover || !meshRef.current || !isInitialized) return;
 
       event.stopPropagation();
 
-      const mesh = meshRef.current;
-      const intersects = raycaster.intersectObject(mesh);
+      // Throttle raycasting to one per animation frame
+      if (hoverRafRef.current !== null) return;
+      hoverRafRef.current = requestAnimationFrame(() => {
+        hoverRafRef.current = null;
+        const mesh = meshRef.current;
+        if (!mesh) return;
+        const intersects = raycaster.intersectObject(mesh);
 
-      if (intersects.length > 0 && intersects[0].instanceId !== undefined) {
-        setHoveredInstanceId(intersects[0].instanceId);
-        document.body.style.cursor = "pointer";
-      } else {
-        setHoveredInstanceId(null);
-        document.body.style.cursor = "default";
-      }
+        if (intersects.length > 0 && intersects[0].instanceId !== undefined) {
+          setHoveredInstanceId(intersects[0].instanceId);
+          document.body.style.cursor = "pointer";
+        } else {
+          setHoveredInstanceId(null);
+          document.body.style.cursor = "default";
+        }
+      });
     },
     [config.enableHover, isInitialized, raycaster],
   );

@@ -124,7 +124,7 @@ const analysisTypes: AnalysisCard[] = [
 ];
 
 export const DynamicAnalysisPage: React.FC = () => {
-  useEffect(() => { document.title = 'Dynamic Analysis | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Dynamic Analysis | BeamLab'; }, []);
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">

@@ -120,7 +120,7 @@ const AdvancedMeshingDashboard: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [showQualityDetails, setShowQualityDetails] = useState(false);
 
-  useEffect(() => { document.title = 'Meshing | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Meshing | BeamLab'; }, []);
 
   const [metrics, setMetrics] = useState<MeshQualityMetrics>({
     totalElements: 45678,

@@ -2,7 +2,7 @@
  * StructureGallery.tsx - Iconic Civil Engineering Structures Showcase
  * 
  * Displays famous structures that users can load as templates
- * Demonstrates the capabilities of BeamLab Ultimate
+ * Demonstrates the capabilities of BeamLab
  */
 
 import { FC, useState } from 'react';

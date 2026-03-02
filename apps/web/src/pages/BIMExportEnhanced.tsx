@@ -195,7 +195,7 @@ const BIMExportEnhanced: React.FC = () => {
     },
   ]);
 
-  useEffect(() => { document.title = 'BIM Export | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'BIM Export | BeamLab'; }, []);
 
   const supportedFormats = [
     { id: 'IFC4', name: 'IFC 4.0', icon: '🏗️', description: 'Industry Foundation Classes 4.0 - Latest stable standard' },
@@ -235,7 +235,7 @@ const BIMExportEnhanced: React.FC = () => {
           'ISO-10303-21;',
           'HEADER;',
           `FILE_DESCRIPTION(('ViewDefinition [CoordinationView_V2.0]'),'2;1');`,
-          `FILE_NAME('${filename}.ifc','${new Date().toISOString()}',('BeamLab'),('BeamLab Ultimate'),'','BeamLab','');`,
+          `FILE_NAME('${filename}.ifc','${new Date().toISOString()}',('BeamLab'),('BeamLab'),'','BeamLab','');`,
           `FILE_SCHEMA(('${format === 'IFC2x3' ? 'IFC2X3' : 'IFC4'}'));`,
           'ENDSEC;',
           'DATA;',
@@ -243,8 +243,8 @@ const BIMExportEnhanced: React.FC = () => {
           `#2=IFCOWNERHISTORY(#3,#6,$,.NOCHANGE.,$,$,$,${Math.floor(Date.now() / 1000)});`,
           `#3=IFCPERSONANDORGANIZATION(#4,#5,$);`,
           `#4=IFCPERSON($,'BeamLab','User',$,$,$,$,$);`,
-          `#5=IFCORGANIZATION($,'BeamLab Ultimate','Structural Analysis Software',$,$);`,
-          `#6=IFCAPPLICATION(#5,'1.0','BeamLab Ultimate','BeamLab');`,
+          `#5=IFCORGANIZATION($,'BeamLab','Structural Analysis Software',$,$);`,
+          `#6=IFCAPPLICATION(#5,'1.0','BeamLab','BeamLab');`,
           `#7=IFCUNITASSIGNMENT((#8,#9,#10));`,
           `#8=IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);`,
           `#9=IFCSIUNIT(*,.FORCEUNIT.,.KILO.,.NEWTON.);`,

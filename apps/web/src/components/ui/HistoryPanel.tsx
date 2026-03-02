@@ -340,7 +340,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   );
 
   const handleClearHistory = useCallback(async () => {
-    if (window.confirm('Are you sure you want to clear all history? This cannot be undone.')) {
+    if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
       await clearHistory();
     }
   }, [clearHistory]);

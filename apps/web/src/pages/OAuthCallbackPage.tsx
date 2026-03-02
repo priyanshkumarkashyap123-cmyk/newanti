@@ -14,7 +14,7 @@ const OAuthCallbackPage = () => {
     const { setUser, setTokens } = useAuthStore();
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => { document.title = 'Authenticating... | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Authenticating... | BeamLab'; }, []);
 
     useEffect(() => {
         const handleCallback = async () => {

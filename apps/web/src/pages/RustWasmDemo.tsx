@@ -12,14 +12,14 @@ import { WgpuCanvas } from '../components/viewer/WgpuCanvas';
 import { WasmPerformanceDemo } from '../components/WasmPerformanceDemo';
 import { Phase52Benchmark } from '../components/Phase52Benchmark';
 import { useUIStore } from '../store/uiStore';
-import { Zap, Cpu, Activity, Info, FlaskConical } from 'lucide-react';
+import { Zap, Cpu, Activity, Info, FlaskConical, ShieldCheck } from 'lucide-react';
 
 export const RustWasmDemo: FC = () => {
     const [activeTab, setActiveTab] = useState<'solver' | 'renderer' | 'phase52'>('solver');
     const useWebGpu = useUIStore(state => state.useWebGpu);
     const setUseWebGpu = useUIStore(state => state.setUseWebGpu);
 
-    useEffect(() => { document.title = 'WASM Demo | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'WASM Demo | BeamLab'; }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
@@ -79,6 +79,13 @@ export const RustWasmDemo: FC = () => {
                         <FlaskConical className="w-5 h-5" />
                         Phase 52 (Advanced)
                     </button>
+                    <a
+                        href="/nafems-benchmarks"
+                        className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-500"
+                    >
+                        <ShieldCheck className="w-5 h-5" />
+                        NAFEMS Benchmarks
+                    </a>
                 </div>
 
                 {/* Content */}

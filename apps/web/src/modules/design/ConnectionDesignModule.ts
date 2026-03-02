@@ -1,5 +1,5 @@
 /**
- * BeamLab Ultimate - Connection Design Module
+ * BeamLab - Connection Design Module
  * Comprehensive steel and concrete connection design per international codes
  * 
  * Supported Connections:

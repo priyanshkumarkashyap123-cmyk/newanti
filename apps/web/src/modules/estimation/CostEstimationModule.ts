@@ -1,5 +1,5 @@
 /**
- * BeamLab Ultimate - Cost Estimation Module
+ * BeamLab - Cost Estimation Module
  * Comprehensive quantity takeoff and cost estimation for structural projects
  * 
  * Features:

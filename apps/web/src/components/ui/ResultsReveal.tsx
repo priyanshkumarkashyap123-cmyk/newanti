@@ -36,6 +36,7 @@ const useAnimatedCounter = (end: number, duration: number = 1000, start: number 
     useEffect(() => {
         const startTime = Date.now();
         const endValue = end;
+        let rafId: number;
 
         const updateValue = () => {
             const now = Date.now();
@@ -47,11 +48,13 @@ const useAnimatedCounter = (end: number, duration: number = 1000, start: number 
             setValue(start + (endValue - start) * eased);
 
             if (progress < 1) {
-                requestAnimationFrame(updateValue);
+                rafId = requestAnimationFrame(updateValue);
             }
         };
 
-        requestAnimationFrame(updateValue);
+        rafId = requestAnimationFrame(updateValue);
+
+        return () => cancelAnimationFrame(rafId);
     }, [end, duration, start]);
 
     return value;

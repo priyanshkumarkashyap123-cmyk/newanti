@@ -147,7 +147,7 @@ export const ConcreteDesignPage: React.FC = () => {
     supportType: 'simply-supported'
   });
 
-  useEffect(() => { document.title = 'Concrete Design | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Concrete Design | BeamLab'; }, []);
 
   // Input validation before API call
   const validateInputs = useCallback((): string | null => {

@@ -1,11 +1,12 @@
 /**
- * ReportGenerator - Professional PDF Report Generator for BeamLab Ultimate
+ * ReportGenerator - Professional PDF Report Generator for BeamLab
  * Generates analysis reports with project info, 3D snapshots, and results tables
  */
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
+import { LOGO_BASE64 } from "../utils/LogoData";
 
 // ============================================
 // TYPES
@@ -176,8 +177,8 @@ export class ReportGenerator {
       revision = '00',
       classification = 'CONFIDENTIAL',
       date = new Date(),
-      companyName = 'BeamLab Ultimate',
-      companyAddress = 'beamlabultimate.tech',
+      companyName = 'BeamLab',
+      companyAddress = 'beamlab.app',
     } = options;
 
     // Store metadata for headers/footers
@@ -203,14 +204,20 @@ export class ReportGenerator {
 
     // — Company branding area (top-left) —
     const brandY = 28;
+    // Add logo icon
+    try {
+      this.doc.addImage(LOGO_BASE64, 'PNG', this.margin, brandY - 16, 16, 16);
+    } catch (e) {
+      console.error('Could not add logo to cover page', e);
+    }
     this.doc.setFontSize(22);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setTextColor(...THEME.coverText);
-    this.doc.text('BeamLab', this.margin, brandY);
+    this.doc.text('BeamLab', this.margin + 20, brandY);
     this.doc.setFontSize(10);
     this.doc.setFont('helvetica', 'normal');
     this.doc.setTextColor(...THEME.coverAccent);
-    this.doc.text('STRUCTURAL ENGINEERING', this.margin, brandY + 7);
+    this.doc.text('STRUCTURAL ANALYSIS', this.margin + 20, brandY + 7);
 
     // — Classification badge (top-right) —
     this.doc.setFontSize(8);
@@ -394,7 +401,7 @@ export class ReportGenerator {
       startY: y,
       head: [['Name', 'Role', 'Organisation', 'Copies']],
       body: [
-        [engineerName || '—', 'Structural Engineer', 'BeamLab Ultimate', '1 (electronic)'],
+        [engineerName || '—', 'Structural Engineer', 'BeamLab', '1 (electronic)'],
       ],
       theme: 'grid',
       headStyles: {
@@ -717,10 +724,16 @@ export class ReportGenerator {
     const pw = this.pageWidth;
 
     // — Left: BeamLab branding + doc ref —
+    // Add small logo icon in header
+    try {
+      this.doc.addImage(LOGO_BASE64, 'PNG', this.margin, y - 5, 6, 6);
+    } catch (e) {
+      // Fallback: no logo
+    }
     this.doc.setFontSize(9);
     this.doc.setFont('helvetica', 'bold');
     this.doc.setTextColor(...THEME.primary);
-    this.doc.text('BeamLab', this.margin, y);
+    this.doc.text('BeamLab', this.margin + 8, y);
     this.doc.setFontSize(6);
     this.doc.setFont('helvetica', 'normal');
     this.doc.setTextColor(...THEME.textMuted);
@@ -800,7 +813,7 @@ export class ReportGenerator {
       this.doc.setFontSize(6.5);
       this.doc.setFont('helvetica', 'normal');
       this.doc.setTextColor(...THEME.textMuted);
-      this.doc.text(`© ${new Date().getFullYear()} BeamLab Ultimate`, pw - this.margin, y, { align: 'right' });
+      this.doc.text(`© ${new Date().getFullYear()} BeamLab`, pw - this.margin, y, { align: 'right' });
     }
   }
 
@@ -820,7 +833,7 @@ export class ReportGenerator {
       ['Client', project.clientName || 'N/A'],
       ['Design Engineer', project.engineerName || 'N/A'],
       ['Description', project.description || 'Structural Analysis Report'],
-      ['Software', 'BeamLab Ultimate — Advanced Structural Analysis'],
+      ['Software', 'BeamLab — Structural Analysis Platform'],
       ['Analysis Method', 'Direct Stiffness Method (3-D Frame)'],
     ];
 
@@ -1568,15 +1581,15 @@ export class ReportGenerator {
     const clauses = [
       {
         heading: '1.  PROFESSIONAL USE ONLY',
-        body: 'BeamLab Ultimate is a computational aid intended for use by qualified professional engineers. It is not a substitute for professional engineering judgment, independent analysis, or verification.',
+        body: 'BeamLab is a computational aid intended for use by qualified professional engineers. It is not a substitute for professional engineering judgment, independent analysis, or verification.',
       },
       {
         heading: '2.  NO WARRANTY',
-        body: 'The software is provided "as is" without any warranty of any kind, express or implied. The developers and operators of BeamLab Ultimate make no representations regarding the accuracy, reliability, or completeness of the analysis results.',
+        body: 'The software is provided "as is" without any warranty of any kind, express or implied. The developers and operators of BeamLab make no representations regarding the accuracy, reliability, or completeness of the analysis results.',
       },
       {
         heading: '3.  LIMITATION OF LIABILITY',
-        body: 'The user assumes full responsibility for the use of this software and the interpretation of its results. BeamLab Ultimate shall not be liable for any direct, indirect, incidental, special, or consequential damages arising out of the use or inability to use this software.',
+        body: 'The user assumes full responsibility for the use of this software and the interpretation of its results. BeamLab shall not be liable for any direct, indirect, incidental, special, or consequential damages arising out of the use or inability to use this software.',
       },
       {
         heading: '4.  VERIFICATION REQUIRED',
@@ -3704,7 +3717,7 @@ export class ReportGenerator {
 
   /**
    * Add a subtle watermark to all pages (skips the cover page).
-   * Uses a faint diagonal "BeamLab Ultimate" text and a thin
+   * Uses a faint diagonal "BeamLab" text and a thin
    * document-reference stamp at the bottom-right.
    */
   addWatermark(): void {
@@ -3756,8 +3769,8 @@ export class ReportGenerator {
     this.doc.setProperties({
       title: `${this.projectTitle} — Structural Analysis Report`,
       subject: 'Structural Engineering Analysis Report',
-      author: this.preparedBy || 'BeamLab Ultimate',
-      creator: 'BeamLab Ultimate',
+      author: this.preparedBy || 'BeamLab',
+      creator: 'BeamLab',
       keywords: 'structural analysis, engineering, report, BeamLab',
     });
 
@@ -4292,7 +4305,7 @@ export async function generateAnalysisReport(options: {
       projectName,
       clientName,
       engineerName,
-      description: "Structural Analysis Report generated by BeamLab Ultimate",
+      description: "Structural Analysis Report generated by BeamLab",
     },
     canvasImage,
     nodes,

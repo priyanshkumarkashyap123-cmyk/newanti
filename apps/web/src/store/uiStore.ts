@@ -264,6 +264,12 @@ interface UIState {
   renderMode3D: boolean; // Toggle for solid 3D beam cross-sections
   setRenderMode3D: (val: boolean) => void;
 
+  // Onboarding coordination — only one overlay at a time
+  activeOverlay: 'none' | 'onboarding' | 'tour' | 'quickstart';
+  setActiveOverlay: (overlay: UIState['activeOverlay']) => void;
+  onboardingCompleted: boolean;
+  markOnboardingCompleted: () => void;
+
   // Actions
   setCategory: (cat: Category) => void;
   setActiveStep: (step: string) => void;
@@ -407,7 +413,6 @@ export const useUIStore = create<UIState>()(
         // ----------------------------------------
         if (currentCategory === "MODELING") {
           set({ activeTool: null });
-          console.log("[UIStore] Left MODELING mode - cleared active tool");
         }
 
         // ----------------------------------------
@@ -434,7 +439,7 @@ export const useUIStore = create<UIState>()(
             );
             // Still allow switching, but show warning
           } else {
-            console.log("[UIStore] Model validated successfully");
+            // Model validated successfully
           }
         }
 
@@ -469,8 +474,6 @@ export const useUIStore = create<UIState>()(
           // Set default tool for new category
           activeTool: CATEGORY_TOOLS[cat][0] || null,
         });
-
-        console.log(`[UIStore] Switched to ${cat} category`);
       },
 
       setActiveStep: (step: string) => set({ activeStep: step }),
@@ -634,6 +637,12 @@ export const useUIStore = create<UIState>()(
       setGridSize: (size) => set({ gridSize: size }),
       toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
       toggleSnap: () => set((state) => ({ snapToGrid: !state.snapToGrid })),
+
+      // Onboarding coordination
+      activeOverlay: 'none' as UIState['activeOverlay'],
+      setActiveOverlay: (overlay: UIState['activeOverlay']) => set({ activeOverlay: overlay }),
+      onboardingCompleted: false,
+      markOnboardingCompleted: () => set({ onboardingCompleted: true, activeOverlay: 'none' }),
     }),
     {
       name: "beamlab-ui-store",
@@ -646,6 +655,7 @@ export const useUIStore = create<UIState>()(
         snapToGrid: state.snapToGrid,
         gridSize: state.gridSize,
         useWebGpu: state.useWebGpu,
+        onboardingCompleted: state.onboardingCompleted,
       }),
     },
   ),

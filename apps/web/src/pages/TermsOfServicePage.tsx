@@ -32,7 +32,7 @@ export const TermsOfServicePage = () => {
     const [activeSection, setActiveSection] = useState('acceptance');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    useEffect(() => { document.title = 'Terms of Service | BeamLab Ultimate'; }, []);
+    useEffect(() => { document.title = 'Terms of Service | BeamLab'; }, []);
 
     const scrollToSection = (id: string) => {
         const element = document.getElementById(id);
@@ -135,7 +135,7 @@ export const TermsOfServicePage = () => {
 
                             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                                 <p className="text-sm text-amber-900 dark:text-amber-100">
-                                    <strong>Important:</strong> Please read these terms carefully before using BeamLab Ultimate. 
+                                    <strong>Important:</strong> Please read these terms carefully before using BeamLab. 
                                     By accessing or using our service, you agree to be bound by these terms.
                                 </p>
                             </div>
@@ -146,11 +146,11 @@ export const TermsOfServicePage = () => {
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">1. Acceptance of Terms</h2>
                             <div className="prose dark:prose-invert max-w-none">
                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                                    Welcome to BeamLab Ultimate ("Service", "Platform", "we", "us", or "our"). These Terms of Service 
+                                    Welcome to BeamLab ("Service", "Platform", "we", "us", or "our"). These Terms of Service 
                                     ("Terms", "Agreement") govern your access to and use of our structural engineering analysis platform.
                                 </p>
                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                                    By creating an account or using BeamLab Ultimate, you acknowledge that you have read, understood, 
+                                    By creating an account or using BeamLab, you acknowledge that you have read, understood, 
                                     and agree to be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, 
                                     you may not access or use the Service.
                                 </p>
@@ -166,7 +166,7 @@ export const TermsOfServicePage = () => {
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">2. Service Description</h2>
                             <div className="prose dark:prose-invert max-w-none">
                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                                    BeamLab Ultimate provides cloud-based structural engineering analysis tools, including but not limited to:
+                                    BeamLab provides cloud-based structural engineering analysis tools, including but not limited to:
                                 </p>
                                 <ul className="list-disc list-inside text-slate-700 dark:text-slate-300 space-y-2 mb-4">
                                     <li>Finite Element Analysis (FEA) for structural systems</li>
@@ -218,7 +218,7 @@ export const TermsOfServicePage = () => {
                                 </h2>
                                 <div className="prose dark:prose-invert max-w-none">
                                     <p className="text-red-800 dark:text-red-200 leading-relaxed mb-4 font-semibold">
-                                        BEAMLAB ULTIMATE IS A COMPUTATIONAL TOOL ONLY. IT IS NOT A SUBSTITUTE FOR PROFESSIONAL 
+                                        BEAMLAB IS A COMPUTATIONAL TOOL ONLY. IT IS NOT A SUBSTITUTE FOR PROFESSIONAL 
                                         ENGINEERING JUDGMENT.
                                     </p>
                                     
@@ -235,7 +235,7 @@ export const TermsOfServicePage = () => {
 
                                     <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-3">No Professional Engineering Services</h3>
                                     <p className="text-red-800 dark:text-red-200 leading-relaxed mb-4">
-                                        BeamLab Ultimate does not provide professional engineering services, design recommendations, 
+                                        BeamLab does not provide professional engineering services, design recommendations, 
                                         or certifications. Users are solely responsible for:
                                     </p>
                                     <ul className="list-disc list-inside text-red-800 dark:text-red-200 space-y-2 mb-4">
@@ -248,7 +248,7 @@ export const TermsOfServicePage = () => {
 
                                     <h3 className="text-lg font-semibold text-red-900 dark:text-red-100 mb-3">Accuracy and Reliability</h3>
                                     <p className="text-red-800 dark:text-red-200 leading-relaxed">
-                                        While we strive for accuracy, BeamLab Ultimate makes no warranties regarding the accuracy, 
+                                        While we strive for accuracy, BeamLab makes no warranties regarding the accuracy, 
                                         reliability, or completeness of analysis results. Users acknowledge that:
                                     </p>
                                     <ul className="list-disc list-inside text-red-800 dark:text-red-200 space-y-2">
@@ -289,7 +289,7 @@ export const TermsOfServicePage = () => {
                                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Our Content</h3>
                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
                                     The Service, including all software, text, graphics, logos, and other content (excluding User Content), 
-                                    is owned by BeamLab Ultimate and protected by copyright, trademark, and other intellectual property laws.
+                                    is owned by BeamLab and protected by copyright, trademark, and other intellectual property laws.
                                 </p>
 
                                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Your Content</h3>
@@ -318,7 +318,7 @@ export const TermsOfServicePage = () => {
                                     </p>
                                     
                                     <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                                        <strong>BeamLab Ultimate and its officers, directors, employees, and agents shall not be liable for:</strong>
+                                        <strong>BeamLab and its officers, directors, employees, and agents shall not be liable for:</strong>
                                     </p>
                                     <ul className="list-disc list-inside text-slate-700 dark:text-slate-300 space-y-2 mb-4">
                                         <li>Any indirect, incidental, special, consequential, or punitive damages</li>
@@ -348,7 +348,7 @@ export const TermsOfServicePage = () => {
                             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">8. Indemnification</h2>
                             <div className="prose dark:prose-invert max-w-none">
                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
-                                    You agree to indemnify, defend, and hold harmless BeamLab Ultimate and its affiliates, officers, 
+                                    You agree to indemnify, defend, and hold harmless BeamLab and its affiliates, officers, 
                                     directors, employees, agents, and licensors from and against any claims, liabilities, damages, 
                                     losses, and expenses, including reasonable attorney's fees, arising out of or in any way connected with:
                                 </p>
@@ -412,7 +412,7 @@ export const TermsOfServicePage = () => {
                             <div className="prose dark:prose-invert max-w-none">
                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
                                     These Terms shall be governed by and construed in accordance with the laws of the jurisdiction 
-                                    in which BeamLab Ultimate operates, without regard to its conflict of law provisions.
+                                    in which BeamLab operates, without regard to its conflict of law provisions.
                                 </p>
                                 <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
                                     Any dispute arising out of or relating to these Terms or the Service shall be resolved through:
@@ -436,21 +436,21 @@ export const TermsOfServicePage = () => {
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900 dark:text-white">Email</p>
                                         <a 
-                                            href="mailto:legal@beamlabultimate.tech" 
+                                            href="mailto:legal@beamlab.app" 
                                             className="text-emerald-600 dark:text-emerald-400 hover:underline"
                                         >
-                                            legal@beamlabultimate.tech
+                                            legal@beamlab.app
                                         </a>
                                     </div>
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900 dark:text-white">Website</p>
                                         <a 
-                                            href="https://beamlabultimate.tech" 
+                                            href="https://beamlab.app" 
                                             className="text-emerald-600 dark:text-emerald-400 hover:underline"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            https://beamlabultimate.tech
+                                            https://beamlab.app
                                         </a>
                                     </div>
                                 </div>
@@ -461,7 +461,7 @@ export const TermsOfServicePage = () => {
                         <div className="border-t border-slate-200 dark:border-slate-700 pt-8">
                             <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-6">
                                 <p className="text-sm text-emerald-900 dark:text-emerald-100 mb-4">
-                                    <strong>Acknowledgment:</strong> By creating an account and using BeamLab Ultimate, you acknowledge 
+                                    <strong>Acknowledgment:</strong> By creating an account and using BeamLab, you acknowledge 
                                     that you have read, understood, and agree to be bound by these Terms of Service.
                                 </p>
                                 <p className="text-xs text-emerald-800 dark:text-emerald-200">
@@ -478,7 +478,7 @@ export const TermsOfServicePage = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                            © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
+                            © {new Date().getFullYear()} BeamLab. All rights reserved.
                         </p>
                         <div className="flex gap-6">
                             <Link to="/privacy-policy" className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -487,7 +487,7 @@ export const TermsOfServicePage = () => {
                             <Link to="/terms-of-service" className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                                 Terms of Service
                             </Link>
-                            <a href="mailto:legal@beamlabultimate.tech" className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                            <a href="mailto:legal@beamlab.app" className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                                 Contact
                             </a>
                         </div>

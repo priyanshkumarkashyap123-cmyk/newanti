@@ -24,6 +24,7 @@ import { ReportGenerator } from '../utils/ReportGenerator';
 import { useIsSignedIn } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
+import { useConfirm } from './ui/ConfirmDialog';
 
 // ============================================
 // TOOL BUTTON COMPONENT
@@ -108,15 +109,20 @@ export const Toolbar: FC = () => {
 
     // Subscription for feature gating
     const { subscription, canAccess } = useSubscription();
+    const confirm = useConfirm();
 
     const { analyze, prepareModel } = useStructuralSolver();
 
     const handleAnalyze = useCallback(async () => {
         // Security: Require login before analysis
         if (!isSignedIn) {
-            const shouldLogin = window.confirm(
-                'Sign in required\n\nPlease sign in to run structural analysis.\n\nClick OK to go to login page.'
-            );
+            const shouldLogin = await confirm({
+                title: 'Sign In Required',
+                message: 'Please sign in to run structural analysis.',
+                confirmText: 'Go to Login',
+                cancelText: 'Cancel',
+                variant: 'info',
+            });
             if (shouldLogin) {
                 window.location.href = '/sign-in';
             }
@@ -196,19 +202,37 @@ export const Toolbar: FC = () => {
         }
     }, [isSignedIn, analyze, prepareModel]);
 
-    const handleExportPDF = useCallback(() => {
+    const handleExportPDF = useCallback(async () => {
         if (!subscription.isLoading && !canAccess('pdfExport')) {
-            const shouldUpgrade = window.confirm(
-                'PDF Export — Pro Feature\n\nFull PDF reports with calculations require a Pro subscription.\n\nFree tier users can view results on screen.\n\nClick OK to view pricing, or Cancel to continue.'
-            );
+            const shouldUpgrade = await confirm({
+                title: 'PDF Export — Pro Feature',
+                message: 'Full PDF reports with calculations require a Pro subscription. Free tier users can view results on screen.',
+                confirmText: 'View Pricing',
+                cancelText: 'Cancel',
+                variant: 'warning',
+            });
             if (shouldUpgrade) window.location.href = '/pricing';
             return;
         }
 
         if (!analysisResults) {
-            if (!window.confirm('No analysis results found. Run analysis before exporting for a complete report.\n\nExport anyway?')) return;
+            const proceed = await confirm({
+                title: 'No Analysis Results',
+                message: 'No analysis results found. Run analysis before exporting for a complete report. Export anyway?',
+                confirmText: 'Export Anyway',
+                cancelText: 'Cancel',
+                variant: 'warning',
+            });
+            if (!proceed) return;
         } else {
-            if (!window.confirm('Export PDF Report?\n\nThis will generate a professional report with your analysis results.')) return;
+            const proceed = await confirm({
+                title: 'Export PDF Report',
+                message: 'This will generate a professional report with your analysis results.',
+                confirmText: 'Export',
+                cancelText: 'Cancel',
+                variant: 'info',
+            });
+            if (!proceed) return;
         }
 
         const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -216,7 +240,7 @@ export const Toolbar: FC = () => {
 
         const report = new ReportGenerator({
             projectName: 'Structural Analysis',
-            company: 'BeamLab Ultimate',
+            company: 'BeamLab',
         });
         report.generateReport(screenshot);
         setMessage('PDF Report exported successfully');

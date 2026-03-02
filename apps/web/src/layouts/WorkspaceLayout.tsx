@@ -31,6 +31,7 @@ import { Ribbon } from '../components/layout/Ribbon';
 import { CanvasWrapper } from '../components/layout/CanvasWrapper';
 import { RightPropertiesPanel } from '../components/layout/RightPropertiesPanel';
 import { DataTablesPanel } from '../components/layout/DataTablesPanel';
+import { Logo } from '../components/branding';
 
 // Icons
 import {
@@ -130,12 +131,13 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
             <header className="h-10 flex items-center justify-between px-4 bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
                 {/* Left: Logo & Navigation */}
                 <div className="flex items-center gap-3">
+                    <Logo size="xs" showLabel href="/" />
                     <button
                         onClick={handleGoHome}
                         className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors"
                     >
                         <Home className="w-4 h-4" />
-                        <span className="text-sm font-medium">BeamLab</span>
+                        <span className="text-sm font-medium">Home</span>
                     </button>
                     <span className="text-slate-600 dark:text-slate-700">/</span>
                     <span className="text-sm text-slate-700 dark:text-slate-300">Untitled Project</span>

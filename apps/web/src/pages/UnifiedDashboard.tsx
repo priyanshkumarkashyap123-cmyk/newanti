@@ -1,5 +1,5 @@
 /**
- * UnifiedDashboard.tsx — BeamLab Ultimate Command Center
+ * UnifiedDashboard.tsx — BeamLab Command Center
  *
  * Modern glass-morphism dashboard with:
  * - Real project data from API
@@ -381,7 +381,7 @@ export const UnifiedDashboard: FC<{
 
   useUserRegistration();
 
-  useEffect(() => { document.title = 'Dashboard | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Dashboard | BeamLab'; }, []);
 
   const { isSignedIn, user, signOut, getToken } = useAuth();
   const isClerkEnabled = isUsingClerk();
@@ -822,7 +822,7 @@ export const UnifiedDashboard: FC<{
 
             {/* Version info */}
             <div className="text-center text-[10px] text-slate-500 dark:text-slate-500 py-2">
-              BeamLab Ultimate v2.0 &middot; &copy; {new Date().getFullYear()}
+              BeamLab v2.0 &middot; &copy; {new Date().getFullYear()}
             </div>
           </div>
         </div>

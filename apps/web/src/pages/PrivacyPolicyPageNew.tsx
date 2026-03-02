@@ -3,7 +3,7 @@
  * Legal document compliant with Indian IT Act 2000, Consumer Protection Act 2019,
  * and IT (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021
  *
- * Owner: Rakshit Tiwari trading as Beamlab Ultimate
+ * Owner: Rakshit Tiwari trading as Beamlab
  * Address: Rajapur Teonthar, Rewa, Madhya Pradesh 486220
  * Last updated: February 24, 2026
  */
@@ -71,7 +71,7 @@ export const PrivacyPolicyPageNew = () => {
     }
   };
 
-  useEffect(() => { document.title = 'Privacy Policy | BeamLab Ultimate'; }, []);
+  useEffect(() => { document.title = 'Privacy Policy | BeamLab'; }, []);
 
   // Intersection observer to track active section on scroll
   useEffect(() => {
@@ -105,7 +105,7 @@ export const PrivacyPolicyPageNew = () => {
                 <Lock className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold text-white">
-                BeamLab Ultimate
+                BeamLab
               </span>
             </Link>
 
@@ -226,7 +226,7 @@ export const PrivacyPolicyPageNew = () => {
                 2026
               </p>
               <p className="text-slate-900/50 dark:text-white/50 text-sm mt-1">
-                Domain: beamlabultimate.tech
+                Domain: beamlab.app
               </p>
 
               {/* Important Notice */}
@@ -239,7 +239,7 @@ export const PrivacyPolicyPageNew = () => {
                     </p>
                     <p className="text-blue-200/70 text-sm mt-1">
                       This Privacy Policy describes how Rakshit Tiwari trading
-                      as Beamlab Ultimate and its affiliates collect, use,
+                      as Beamlab and its affiliates collect, use,
                       share, protect, or otherwise process your information and
                       personal data through our Platform. Please read this
                       policy carefully before using or accessing our Platform.
@@ -259,18 +259,18 @@ export const PrivacyPolicyPageNew = () => {
                 <p className="text-slate-900/80 dark:text-white/80 leading-relaxed">
                   This Privacy Policy describes how{" "}
                   <strong>Rakshit Tiwari</strong> trading as{" "}
-                  <strong>Beamlab Ultimate</strong> and its affiliates
-                  (collectively &quot;Beamlab Ultimate&quot;, &quot;we&quot;,
+                  <strong>Beamlab</strong> and its affiliates
+                  (collectively &quot;Beamlab&quot;, &quot;we&quot;,
                   &quot;our&quot;, &quot;us&quot;) collect, use, share, protect,
                   or otherwise process your information and personal data
                   through our website{" "}
                   <a
-                    href="https://beamlabultimate.tech"
+                    href="https://beamlab.app"
                     className="text-blue-400 hover:underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    beamlabultimate.tech
+                    beamlab.app
                   </a>{" "}
                   (hereinafter referred to as the &quot;
                   <strong>Platform</strong>&quot;).
@@ -355,7 +355,7 @@ export const PrivacyPolicyPageNew = () => {
                       <p className="text-red-200 font-bold">Fraud Warning</p>
                       <p className="text-red-200/70 text-sm mt-1">
                         If you receive an email, SMS, or phone call from a
-                        person/entity claiming to be Beamlab Ultimate seeking
+                        person/entity claiming to be Beamlab seeking
                         any sensitive personal data like debit/credit card PIN,
                         net-banking or mobile banking password, One Time
                         Password (OTP), etc.,{" "}
@@ -439,7 +439,7 @@ export const PrivacyPolicyPageNew = () => {
                     required to do so by law or in good faith belief that such
                     disclosure is reasonably necessary to respond to subpoenas,
                     court orders, legal processes, or to protect the rights,
-                    property, and safety of Beamlab Ultimate, its users, or the
+                    property, and safety of Beamlab, its users, or the
                     public.
                   </li>
                 </ul>
@@ -802,12 +802,12 @@ export const PrivacyPolicyPageNew = () => {
                         Website
                       </p>
                       <a
-                        href="https://beamlabultimate.tech"
+                        href="https://beamlab.app"
                         className="text-blue-400 hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        https://beamlabultimate.tech
+                        https://beamlab.app
                       </a>
                     </div>
                   </div>
@@ -862,7 +862,7 @@ export const PrivacyPolicyPageNew = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-900/50 dark:text-white/50 text-sm">
-              © {new Date().getFullYear()} BeamLab Ultimate. All rights reserved.
+              © {new Date().getFullYear()} BeamLab. All rights reserved.
             </p>
             <div className="flex gap-6">
               <Link
@@ -887,7 +887,7 @@ export const PrivacyPolicyPageNew = () => {
           </div>
           <div className="mt-4 text-center">
             <p className="text-slate-900/30 dark:text-white/30 text-xs">
-              Rakshit Tiwari trading as Beamlab Ultimate | Rajapur Teonthar,
+              Rakshit Tiwari trading as Beamlab | Rajapur Teonthar,
               Rewa, Madhya Pradesh 486220
             </p>
           </div>
