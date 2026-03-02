@@ -96,6 +96,7 @@ const ModernModeler = lazy(() =>
   })),
 );
 import { MobileGuard } from './components/ui/MobileGuard';
+import { ResponsiveProvider } from './hooks/useResponsive';
 const RustWasmDemo = lazy(() =>
   import("./pages/RustWasmDemo").then((module) => ({
     default: module.RustWasmDemo,
@@ -315,6 +316,7 @@ function App() {
   useDeviceSession();
 
   return (
+    <ResponsiveProvider>
     <ErrorBoundary>
       <SkipLink />
       <OfflineBanner />
@@ -887,6 +889,7 @@ function App() {
           </Suspense>
       </AnalyticsProvider>
     </ErrorBoundary>
+    </ResponsiveProvider>
   );
 }
 
