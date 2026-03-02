@@ -9,6 +9,8 @@ import { createHash } from 'crypto';
 import { modelGeneratorService } from '../../services/ai/index.js';
 import { aiRateLimiter } from '../../middleware/aiRateLimiter.js';
 import { requireAuth } from '../../middleware/authMiddleware.js';
+import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
+import { logger } from '../../utils/logger.js';
 
 const router: IRouter = Router();
 
@@ -20,84 +22,58 @@ router.use(aiRateLimiter());
  * POST /api/ai/generate
  * Generate a structural model from natural language prompt
  */
-router.post('/generate', async (req: Request, res: Response) => {
-    try {
-        const { prompt, constraints } = req.body;
+router.post('/generate', asyncHandler(async (req: Request, res: Response) => {
+    const { prompt, constraints } = req.body;
 
-        if (!prompt || typeof prompt !== 'string') {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required field: prompt'
-            });
-        }
-
-        if (prompt.length > 2000) {
-            return res.status(400).json({
-                success: false,
-                error: 'Prompt too long (max 2000 characters)'
-            });
-        }
-
-        console.log(`[AI] Generate request: "${prompt.substring(0, 100)}..."`);
-
-        const result = await modelGeneratorService.generate({
-            prompt,
-            constraints
-        });
-
-        if (!result.success) {
-            return res.status(500).json(result);
-        }
-
-        // Validate the generated model
-        const validation = modelGeneratorService.validateModel(result.model!);
-        if (!validation.valid) {
-            console.warn('[AI] Generated model has issues:', validation.issues);
-        }
-
-        return res.json({
-            ...result,
-            validation
-        });
-
-    } catch (error) {
-        console.error('[AI] Generation error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'AI generation failed'
-        });
+    if (!prompt || typeof prompt !== 'string') {
+        throw new HttpError(400, 'Missing required field: prompt');
     }
-});
+
+    if (prompt.length > 2000) {
+        throw new HttpError(400, 'Prompt too long (max 2000 characters)');
+    }
+
+    logger.info(`[AI] Generate request: "${prompt.substring(0, 100)}..."`);
+
+    const result = await modelGeneratorService.generate({
+        prompt,
+        constraints
+    });
+
+    if (!result.success) {
+        return res.status(500).json(result);
+    }
+
+    // Validate the generated model
+    const validation = modelGeneratorService.validateModel(result.model!);
+    if (!validation.valid) {
+        logger.warn({ issues: validation.issues }, '[AI] Generated model has issues');
+    }
+
+    return res.json({
+        ...result,
+        validation
+    });
+}));
 
 /**
  * POST /api/ai/validate
  * Validate a model structure
  */
-router.post('/validate', async (req: Request, res: Response) => {
-    try {
-        const { model } = req.body;
+router.post('/validate', asyncHandler(async (req: Request, res: Response) => {
+    const { model } = req.body;
 
-        if (!model || !model.nodes || !model.members) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid model structure'
-            });
-        }
-
-        const validation = modelGeneratorService.validateModel(model);
-
-        return res.json({
-            success: true,
-            ...validation
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            error: 'Validation failed'
-        });
+    if (!model || !model.nodes || !model.members) {
+        throw new HttpError(400, 'Invalid model structure');
     }
-});
+
+    const validation = modelGeneratorService.validateModel(model);
+
+    return res.json({
+        success: true,
+        ...validation
+    });
+}));
 
 /**
  * GET /api/ai/templates
@@ -137,161 +113,126 @@ function makeCacheKey(message: string, context?: string, history?: unknown[]): s
  * POST /api/ai/chat
  * Secure proxy for Gemini API chat - keeps API key server-side
  */
-router.post('/chat', async (req: Request, res: Response) => {
-    try {
-        const { message, context, history } = req.body;
+router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
+    const { message, context, history } = req.body;
 
-        if (!message || typeof message !== 'string') {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required field: message'
-            });
-        }
+    if (!message || typeof message !== 'string') {
+        throw new HttpError(400, 'Missing required field: message');
+    }
 
-        if (message.length > 10000) {
-            return res.status(400).json({
-                success: false,
-                error: 'Message too long (max 10000 characters)'
-            });
-        }
+    if (message.length > 10000) {
+        throw new HttpError(400, 'Message too long (max 10000 characters)');
+    }
 
-        if (!GEMINI_API_KEY) {
-            console.error('[AI/Chat] GEMINI_API_KEY not configured');
-            return res.status(503).json({
-                success: false,
-                error: 'AI service not configured'
-            });
-        }
+    if (!GEMINI_API_KEY) {
+        throw new HttpError(503, 'AI service not configured');
+    }
 
-        // Create cache key from message + context + history
-        const cacheKey = makeCacheKey(message, context, history);
-        const cached = responseCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-            console.log('[AI/Chat] Cache hit');
-            return res.json({
-                success: true,
-                response: cached.response,
-                cached: true
-            });
-        }
-
-        console.log(`[AI/Chat] Request: "${message.substring(0, 100)}..."`);
-
-        // Build Gemini request
-        const geminiRequest = {
-            contents: [
-                ...(history || []).map((h: any) => ({
-                    role: h.role === 'assistant' ? 'model' : 'user',
-                    parts: [{ text: h.content }]
-                })),
-                {
-                    role: 'user',
-                    parts: [{ text: context ? `${context}\n\n${message}` : message }]
-                }
-            ],
-            generationConfig: {
-                temperature: 0.7,
-                topP: 0.95,
-                topK: 40,
-                maxOutputTokens: 8192
-            },
-            safetySettings: [
-                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-            ]
-        };
-
-        // Call Gemini API — key sent via header, NOT query string (prevents log leakage)
-        const apiResponse = await fetch(GEMINI_API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': GEMINI_API_KEY,
-            },
-            body: JSON.stringify(geminiRequest)
-        });
-
-        if (!apiResponse.ok) {
-            const errorText = await apiResponse.text();
-            console.error('[AI/Chat] Gemini API error:', apiResponse.status, errorText);
-            return res.status(502).json({
-                success: false,
-                error: 'AI service temporarily unavailable'
-            });
-        }
-
-        const geminiResult = await apiResponse.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
-        const responseText = geminiResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-        // Cache the response (bounded)
-        responseCache.set(cacheKey, { response: responseText, timestamp: Date.now() });
-
-        // Evict stale + enforce max size
-        const now = Date.now();
-        for (const [key, value] of responseCache.entries()) {
-            if (now - value.timestamp > CACHE_TTL_MS) {
-                responseCache.delete(key);
-            }
-        }
-        if (responseCache.size > MAX_CACHE_SIZE) {
-            // Remove oldest entries
-            const entries = [...responseCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
-            for (let i = 0; i < entries.length - MAX_CACHE_SIZE; i++) {
-                responseCache.delete(entries[i][0]);
-            }
-        }
-
+    // Create cache key from message + context + history
+    const cacheKey = makeCacheKey(message, context, history);
+    const cached = responseCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+        logger.info('[AI/Chat] Cache hit');
         return res.json({
             success: true,
-            response: responseText,
-            cached: false
-        });
-
-    } catch (error) {
-        console.error('[AI/Chat] Error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Failed to process AI request'
+            response: cached.response,
+            cached: true
         });
     }
-});
+
+    logger.info(`[AI/Chat] Request: "${message.substring(0, 100)}..."`);
+
+    // Build Gemini request
+    const geminiRequest = {
+        contents: [
+            ...(history || []).map((h: any) => ({
+                role: h.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: h.content }]
+            })),
+            {
+                role: 'user',
+                parts: [{ text: context ? `${context}\n\n${message}` : message }]
+            }
+        ],
+        generationConfig: {
+            temperature: 0.7,
+            topP: 0.95,
+            topK: 40,
+            maxOutputTokens: 8192
+        },
+        safetySettings: [
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
+        ]
+    };
+
+    // Call Gemini API — key sent via header, NOT query string (prevents log leakage)
+    const apiResponse = await fetch(GEMINI_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': GEMINI_API_KEY,
+        },
+        body: JSON.stringify(geminiRequest)
+    });
+
+    if (!apiResponse.ok) {
+        await apiResponse.text(); // consume body
+        throw new HttpError(502, 'AI service temporarily unavailable');
+    }
+
+    const geminiResult = await apiResponse.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+    const responseText = geminiResult.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Cache the response (bounded)
+    responseCache.set(cacheKey, { response: responseText, timestamp: Date.now() });
+
+    // Evict stale + enforce max size
+    const now = Date.now();
+    for (const [key, value] of responseCache.entries()) {
+        if (now - value.timestamp > CACHE_TTL_MS) {
+            responseCache.delete(key);
+        }
+    }
+    if (responseCache.size > MAX_CACHE_SIZE) {
+        // Remove oldest entries
+        const entries = [...responseCache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
+        for (let i = 0; i < entries.length - MAX_CACHE_SIZE; i++) {
+            responseCache.delete(entries[i][0]);
+        }
+    }
+
+    return res.json({
+        success: true,
+        response: responseText,
+        cached: false
+    });
+}));
 
 /**
  * POST /api/ai/code-check
  * Run code compliance check on member data
  */
-router.post('/code-check', async (req: Request, res: Response) => {
-    try {
-        const { member, forces, code } = req.body;
+router.post('/code-check', asyncHandler(async (req: Request, res: Response) => {
+    const { member, forces, code } = req.body;
 
-        if (!member || !forces) {
-            return res.status(400).json({
-                success: false,
-                error: 'Missing required fields: member, forces'
-            });
-        }
-
-        // This would integrate with CodeComplianceEngine
-        // For now, return placeholder response
-        console.log(`[AI/CodeCheck] Checking ${member.section} under ${code || 'IS_800'}`);
-
-        return res.json({
-            success: true,
-            code: code || 'IS_800',
-            checks: [],
-            message: 'Code compliance check endpoint ready - integrate with CodeComplianceEngine'
-        });
-
-    } catch (error) {
-        console.error('[AI/CodeCheck] Error:', error);
-        return res.status(500).json({
-            success: false,
-            error: 'Code check failed'
-        });
+    if (!member || !forces) {
+        throw new HttpError(400, 'Missing required fields: member, forces');
     }
-});
+
+    // This would integrate with CodeComplianceEngine
+    // For now, return placeholder response
+    logger.info(`[AI/CodeCheck] Checking ${member.section} under ${code || 'IS_800'}`);
+
+    return res.json({
+        success: true,
+        code: code || 'IS_800',
+        checks: [],
+        message: 'Code compliance check endpoint ready - integrate with CodeComplianceEngine'
+    });
+}));
 
 /**
  * GET /api/ai/accuracy

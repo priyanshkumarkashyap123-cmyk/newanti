@@ -5,6 +5,7 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { logger } from '../../utils/logger.js';
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env['GEMINI_API_KEY'] || '');
@@ -109,19 +110,19 @@ export class AIArchitectService {
         try {
             // Check for API key
             if (!process.env['GEMINI_API_KEY']) {
-                console.warn('[AIArchitect] No GEMINI_API_KEY, using fallback');
+                logger.warn('[AIArchitect] No GEMINI_API_KEY, using fallback');
                 return this.generateFallback(userPrompt);
             }
 
             const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-            console.log(`[AIArchitect] Generating for: "${userPrompt.substring(0, 50)}..."`);
+            logger.info(`[AIArchitect] Generating for: "${userPrompt.substring(0, 50)}..."`);
 
             const result = await model.generateContent([SYSTEM_INSTRUCTION, userPrompt]);
             const response = await result.response;
             const text = response.text();
 
-            console.log('[AIArchitect] Raw response:', text.substring(0, 200));
+            logger.info({ rawResponse: text.substring(0, 200) }, '[AIArchitect] Raw response');
 
             // Clean and parse JSON
             const cleanedText = text
@@ -134,7 +135,7 @@ export class AIArchitectService {
             // Validate the model
             const validation = this.validateModel(parsedModel);
             if (!validation.valid) {
-                console.warn('[AIArchitect] Validation issues:', validation.issues);
+                logger.warn({ issues: validation.issues }, '[AIArchitect] Validation issues');
             }
 
             // Normalize the model (convert s/e to startNodeId/endNodeId if needed)
@@ -147,7 +148,7 @@ export class AIArchitectService {
             };
 
         } catch (error) {
-            console.error('[AIArchitect] Error:', error);
+            logger.error({ err: error }, '[AIArchitect] Error');
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'

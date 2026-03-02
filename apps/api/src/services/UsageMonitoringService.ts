@@ -15,6 +15,7 @@ import {
     IAnalysisResult, IReportGeneration,
     isMasterUser
 } from '../models.js';
+import { logger } from '../utils/logger.js';
 
 const isConnected = () => mongoose.connection.readyState === 1;
 
@@ -67,7 +68,7 @@ export class UsageMonitoringService {
             });
         } catch (error) {
             // Non-critical — never throw
-            console.error('[UsageMonitoringService] log error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] log error');
         }
     }
 
@@ -151,7 +152,7 @@ export class UsageMonitoringService {
 
             return result;
         } catch (error) {
-            console.error('[UsageMonitoringService] saveAnalysisResult error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] saveAnalysisResult error');
             return null;
         }
     }
@@ -189,7 +190,7 @@ export class UsageMonitoringService {
 
             return { results: results as IAnalysisResult[], total };
         } catch (error) {
-            console.error('[UsageMonitoringService] getAnalysisResults error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] getAnalysisResults error');
             return { results: [], total: 0 };
         }
     }
@@ -262,7 +263,7 @@ export class UsageMonitoringService {
 
             return report;
         } catch (error) {
-            console.error('[UsageMonitoringService] trackReportGeneration error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] trackReportGeneration error');
             return null;
         }
     }
@@ -280,7 +281,7 @@ export class UsageMonitoringService {
             });
             return true;
         } catch (error) {
-            console.error('[UsageMonitoringService] recordReportDownload error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] recordReportDownload error');
             return false;
         }
     }
@@ -318,7 +319,7 @@ export class UsageMonitoringService {
 
             return { reports: reports as IReportGeneration[], total };
         } catch (error) {
-            console.error('[UsageMonitoringService] getReports error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] getReports error');
             return { reports: [], total: 0 };
         }
     }
@@ -449,7 +450,7 @@ export class UsageMonitoringService {
                 }
             };
         } catch (error) {
-            console.error('[UsageMonitoringService] getUserUsageSummary error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] getUserUsageSummary error');
             return null;
         }
     }
@@ -523,7 +524,7 @@ export class UsageMonitoringService {
                 }))
             };
         } catch (error) {
-            console.error('[UsageMonitoringService] getSystemStats error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] getSystemStats error');
             return null;
         }
     }
@@ -569,7 +570,7 @@ export class UsageMonitoringService {
 
             return { logs, total };
         } catch (error) {
-            console.error('[UsageMonitoringService] getUsageLogs error:', error);
+            logger.error({ err: error }, '[UsageMonitoringService] getUsageLogs error');
             return { logs: [], total: 0 };
         }
     }

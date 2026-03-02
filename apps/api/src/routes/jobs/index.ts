@@ -7,6 +7,8 @@
 
 import express, { Router, Request, Response } from "express";
 import { pythonProxy } from "../../services/serviceProxy.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { logger } from "../../utils/logger.js";
 
 const router: Router = express.Router();
 
@@ -40,7 +42,7 @@ async function forwardToPython(
       });
     }
   } catch (error) {
-    console.error(`[Jobs/${label}] Error:`, error);
+    logger.error({ err: error }, `[Jobs/${label}] Error`);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : `${label} failed`,
@@ -52,19 +54,19 @@ async function forwardToPython(
 // POST /jobs - Submit a new job (alias for /jobs/submit)
 // ============================================
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython("POST", "/api/jobs/submit", req.body, res, "Submit");
-});
+}));
 
-router.post("/submit", async (req: Request, res: Response) => {
+router.post("/submit", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython("POST", "/api/jobs/submit", req.body, res, "Submit");
-});
+}));
 
 // ============================================
 // GET /jobs/queue/status - Queue statistics
 // ============================================
 
-router.get("/queue/status", async (_req: Request, res: Response) => {
+router.get("/queue/status", asyncHandler(async (_req: Request, res: Response) => {
   await forwardToPython(
     "GET",
     "/api/jobs/queue/status",
@@ -72,22 +74,22 @@ router.get("/queue/status", async (_req: Request, res: Response) => {
     res,
     "QueueStatus",
   );
-});
+}));
 
 // ============================================
 // GET /jobs/:id - Get job status
 // ============================================
 
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/:id", asyncHandler(async (req: Request, res: Response) => {
   const jobId = req.params["id"] ?? "";
   await forwardToPython("GET", `/api/jobs/${jobId}`, undefined, res, "Status");
-});
+}));
 
 // ============================================
 // DELETE /jobs/:id - Cancel a job
 // ============================================
 
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", asyncHandler(async (req: Request, res: Response) => {
   const jobId = req.params["id"] ?? "";
   await forwardToPython(
     "DELETE",
@@ -96,6 +98,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
     res,
     "Cancel",
   );
-});
+}));
 
 export default router;

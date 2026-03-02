@@ -11,7 +11,8 @@ interface ImportMetaEnv {
     readonly VITE_GEMINI_API_KEY?: string;
     readonly VITE_GEMINI_MODEL?: string;
     readonly VITE_GEMINI_TIMEOUT?: string;
-    readonly VITE_RAZORPAY_KEY_ID?: string;
+    readonly VITE_PHONEPE_MERCHANT_ID?: string;
+    readonly VITE_PHONEPE_ENV?: string;
     readonly VITE_DEBUG?: string;
     readonly VITE_ENABLE_WEBGPU?: string;
     readonly VITE_ENABLE_COLLABORATION?: string;

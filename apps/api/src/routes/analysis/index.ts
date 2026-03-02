@@ -14,6 +14,8 @@ import { rustProxy } from "../../services/serviceProxy.js";
 import { validateBody, analyzeRequestSchema } from "../../middleware/validation.js";
 import { AnalysisJob } from "../../models.js";
 import { requireAuth, getAuth } from "../../middleware/authMiddleware.js";
+import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
+import { logger } from "../../utils/logger.js";
 
 const router: Router = express.Router();
 
@@ -155,7 +157,7 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
     const nodeCount = model.nodes?.length || 0;
     const memberCount = model.members?.length || 0;
 
-    console.log(`[Analysis] -> Rust API | ${nodeCount} nodes, ${memberCount} members`);
+    logger.info(`[Analysis] -> Rust API | ${nodeCount} nodes, ${memberCount} members`);
 
     // For very large models, use async job
     if (nodeCount > 5000) {
@@ -176,13 +178,8 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
                 nodeCount,
                 memberCount,
             } as any);
-        } catch (dbErr) {
-            console.error("[Analysis] Failed to persist job:", dbErr);
-            res.status(500).json({
-                success: false,
-                error: "Failed to create analysis job",
-            });
-            return;
+        } catch {
+            throw new HttpError(500, "Failed to create analysis job");
         }
 
         runAnalysisAsync(jobId, model);
@@ -203,7 +200,6 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
     } else {
         const errorMsg = result.error || "Analysis failed";
         const { errorCode, details } = parseAnalysisError(errorMsg, model);
-        console.error("[Analysis] Rust API error:", errorMsg, "| Code:", errorCode);
         res.status(result.status || 500).json({
             success: false,
             error: errorMsg,
@@ -217,70 +213,58 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
 /**
  * POST /analyze - Run structural analysis via Rust API
  */
-router.post("/", validateBody(analyzeRequestSchema), handleAnalysisRequest);
-router.post("/solve", validateBody(analyzeRequestSchema), handleAnalysisRequest);
+router.post("/", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
+router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
 
 /**
  * GET /analyze/job/:jobId - Poll for async job status
  */
-router.get("/job/:jobId", async (req: Request, res: Response) => {
+router.get("/job/:jobId", asyncHandler(async (req: Request, res: Response) => {
     const { jobId } = req.params;
     if (!jobId) {
-        res.status(400).json({ success: false, error: "Missing jobId" });
-        return;
+        throw new HttpError(400, "Missing jobId");
     }
 
-    try {
-        const job = await AnalysisJob.findOne({ jobId }).lean();
-        if (!job) {
-            res.status(404).json({ success: false, error: "Job not found" });
-            return;
-        }
-        res.json({
-            success: true,
-            job: {
-                id: job.jobId,
-                status: job.status,
-                progress: job.progress,
-                result: job.result,
-                error: job.error,
-                errorCode: job.errorCode,
-                errorDetails: job.errorDetails,
-                nodeCount: job.nodeCount,
-                memberCount: job.memberCount,
-                createdAt: job.createdAt,
-                completedAt: job.completedAt,
-            },
-        });
-    } catch (err) {
-        console.error("[Analysis] Job lookup error:", err);
-        res.status(500).json({ success: false, error: "Failed to retrieve job status" });
+    const job = await AnalysisJob.findOne({ jobId }).lean();
+    if (!job) {
+        throw new HttpError(404, "Job not found");
     }
-});
+    res.json({
+        success: true,
+        job: {
+            id: job.jobId,
+            status: job.status,
+            progress: job.progress,
+            result: job.result,
+            error: job.error,
+            errorCode: job.errorCode,
+            errorDetails: job.errorDetails,
+            nodeCount: job.nodeCount,
+            memberCount: job.memberCount,
+            createdAt: job.createdAt,
+            completedAt: job.completedAt,
+        },
+    });
+}));
 
 /**
  * GET /analyze/jobs - List jobs for the current user
  */
-router.get("/jobs", async (req: Request, res: Response) => {
+router.get("/jobs", asyncHandler(async (req: Request, res: Response) => {
     let userId = "anonymous";
     try {
         const auth = getAuth(req);
         if (auth.userId) userId = auth.userId;
     } catch { /* anonymous fallback */ }
 
-    try {
-        const jobs = await AnalysisJob.find({ userId })
-            .select("jobId status progress nodeCount memberCount error errorCode createdAt completedAt")
-            .sort({ createdAt: -1 })
-            .limit(50)
-            .lean();
+    const jobs = await AnalysisJob.find({ userId })
+        .select("jobId status progress nodeCount memberCount error errorCode createdAt completedAt")
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean();
 
-        res.json({ success: true, jobs });
-    } catch (err) {
-        console.error("[Analysis] Jobs list error:", err);
-        res.status(500).json({ success: false, error: "Failed to list jobs" });
-    }
-});
+    res.json({ success: true, jobs });
+}));
 
 /**
  * POST /analyze/validate - Validate model without running analysis (local)
@@ -328,7 +312,7 @@ async function runAnalysisAsync(jobId: string, model: AnalyzeRequest): Promise<v
     try {
         await AnalysisJob.updateOne({ jobId }, { $set: { status: "running", progress: 0 } });
     } catch (err) {
-        console.error("[Analysis] Failed to update job status:", err);
+        logger.error({ err }, "[Analysis] Failed to update job status");
         return;
     }
 
@@ -376,7 +360,7 @@ async function runAnalysisAsync(jobId: string, model: AnalyzeRequest): Promise<v
                     completedAt: new Date(),
                 },
             },
-        ).catch((err) => console.error("[Analysis] Failed to save error state:", err));
+        ).catch((err) => logger.error({ err }, "[Analysis] Failed to save error state"));
     }
 }
 
@@ -391,7 +375,7 @@ async function runAnalysisAsync(jobId: string, model: AnalyzeRequest): Promise<v
             { $set: { status: "failed", error: "Server restarted during analysis", errorCode: "SERVER_RESTART", completedAt: new Date() } },
         );
         if (stale.modifiedCount > 0) {
-            console.log(`[Analysis] Recovered ${stale.modifiedCount} stale running job(s) from previous crash`);
+            logger.info(`[Analysis] Recovered ${stale.modifiedCount} stale running job(s) from previous crash`);
         }
     } catch {
         // MongoDB may not be connected yet — non-fatal

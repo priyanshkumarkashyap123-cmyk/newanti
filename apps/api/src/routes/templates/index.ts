@@ -8,6 +8,8 @@
 import express, { Router, Request, Response } from "express";
 import { rustProxy } from "../../services/serviceProxy.js";
 import { requireAuth } from "../../middleware/authMiddleware.js";
+import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
+import { logger } from "../../utils/logger.js";
 
 const router: Router = express.Router();
 
@@ -36,7 +38,7 @@ async function forwardToRust(
       });
     }
   } catch (error) {
-    console.error(`[Templates/${label}] Error:`, error);
+    logger.error({ err: error }, `[Templates/${label}] Error`);
     res.status(500).json({
       success: false,
       error: `${label} failed`,
@@ -50,35 +52,30 @@ async function forwardToRust(
 
 const TEMPLATE_TYPES = ["beam", "continuous-beam", "truss", "frame", "portal"];
 
-router.get("/:type", async (req: Request, res: Response) => {
+router.get("/:type", asyncHandler(async (req: Request, res: Response) => {
   const type = req.params["type"] ?? "";
   if (!TEMPLATE_TYPES.includes(type)) {
-    res.status(400).json({
-      success: false,
-      error: `Invalid template type: ${type}. Valid: ${TEMPLATE_TYPES.join(", ")}`,
-    });
-    return;
+    throw new HttpError(400, `Invalid template type: ${type}. Valid: ${TEMPLATE_TYPES.join(", ")}`);
   }
   const query: Record<string, string> = {};
   for (const [k, v] of Object.entries(req.query)) {
     if (typeof v === "string") query[k] = v;
   }
   await forwardToRust(`/api/templates/${type}`, query, res, type);
-});
+}));
 
 // ============================================
 // POST /templates/generate - Generic template generation
 // Accepts { type, params } body (backward-compat with Python /generate/template)
 // ============================================
 
-router.post("/generate", async (req: Request, res: Response) => {
+router.post("/generate", asyncHandler(async (req: Request, res: Response) => {
   const { type, params } = req.body as {
     type?: string;
     params?: Record<string, unknown>;
   };
   if (!type) {
-    res.status(400).json({ success: false, error: "Missing 'type' field" });
-    return;
+    throw new HttpError(400, "Missing 'type' field");
   }
 
   const typeMap: Record<string, string> = {
@@ -94,11 +91,7 @@ router.post("/generate", async (req: Request, res: Response) => {
 
   const rustType = typeMap[type] || type;
   if (!TEMPLATE_TYPES.includes(rustType)) {
-    res.status(400).json({
-      success: false,
-      error: `Unknown template type: ${type}. Valid: ${Object.keys(typeMap).join(", ")}`,
-    });
-    return;
+    throw new HttpError(400, `Unknown template type: ${type}. Valid: ${Object.keys(typeMap).join(", ")}`);
   }
 
   const query: Record<string, string> = {};
@@ -109,6 +102,6 @@ router.post("/generate", async (req: Request, res: Response) => {
   }
 
   await forwardToRust(`/api/templates/${rustType}`, query, res, rustType);
-});
+}));
 
 export default router;

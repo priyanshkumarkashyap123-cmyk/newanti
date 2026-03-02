@@ -69,7 +69,8 @@ jobs:
           VITE_RUST_API_URL: https://beamlab-rust-api.azurewebsites.net
           VITE_USE_CLERK: "true"
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-          VITE_RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+          VITE_PHONEPE_MERCHANT_ID: ${{ secrets.PHONEPE_MERCHANT_ID }}
+          VITE_PHONEPE_ENV: PRODUCTION
         run: pnpm run build
 
       - name: Deploy to Azure Static Web Apps

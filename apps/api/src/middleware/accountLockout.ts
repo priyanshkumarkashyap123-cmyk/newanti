@@ -9,6 +9,7 @@
  */
 
 import { Request, Response, NextFunction } from "express";
+import { logger } from "../utils/logger.js";
 
 interface LockoutEntry {
   failures: number;
@@ -71,8 +72,8 @@ export function checkLockout(
     const retryAfterSec = Math.ceil(
       (entry.lockedUntil - Date.now()) / 1000,
     );
-    console.warn(
-      `[LOCKOUT] Blocked attempt from ${key} — locked for ${retryAfterSec}s more`,
+    logger.warn(
+      `[LOCKOUT] Blocked attempt from ${key} -- locked for ${retryAfterSec}s more`,
     );
 
     res.status(429).json({
@@ -109,7 +110,7 @@ export function recordAuthFailure(req: Request): void {
 
   if (entry.failures >= MAX_FAILURES) {
     entry.lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
-    console.warn(
+    logger.warn(
       `[LOCKOUT] Account locked: ${key} after ${entry.failures} failures (${LOCKOUT_DURATION_MS / 60000} min)`,
     );
   }

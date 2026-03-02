@@ -27,7 +27,7 @@ import aiRoutes from "./routes/ai/index.js";
 import feedbackRoutes from "./routes/feedback/index.js";
 import sessionRoutes from "./routes/sessionRoutes.js";
 import usageRoutes from "./routes/usageRoutes.js";
-import { razorpayRouter } from "./razorpay.js";
+import { billingRouter } from "./phonepe.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
 import {
@@ -52,6 +52,7 @@ import {
 } from "./middleware/csrfProtection.js";
 import { checkLockout } from "./middleware/accountLockout.js";
 import { attachResponseHelpers } from "./middleware/response.js";
+import { logger } from "./utils/logger.js";
 import * as Sentry from "@sentry/node";
 
 // Initialize Sentry (profiling is optional — may not be available in bundled builds)
@@ -61,7 +62,7 @@ if (process.env.SENTRY_DSN) {
     const { nodeProfilingIntegration } = await import("@sentry/profiling-node");
     integrations = [nodeProfilingIntegration()];
   } catch {
-    console.log("ℹ️  Sentry profiling not available (optional dependency)");
+    logger.info("Sentry profiling not available (optional dependency)");
   }
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
@@ -172,7 +173,7 @@ const corsOptions: cors.CorsOptions = {
     }
     // Log blocked origins for debugging but still send CORS headers
     // (returning false = no Access-Control-Allow-Origin, but won't throw into error handler)
-    console.warn(`CORS blocked origin: ${origin}`);
+    logger.warn(`CORS blocked origin: ${origin}`);
     return callback(null, false);
   },
   credentials: true,
@@ -209,7 +210,7 @@ app.use(requestLoggerWithId);
 // Attach res.ok() / res.fail() unified envelope helpers
 app.use(attachResponseHelpers);
 
-// Save raw body buffer for webhook signature verification (Razorpay, Stripe, etc.)
+// Save raw body buffer for webhook signature verification (PhonePe, Stripe, etc.)
 // The `verify` callback runs BEFORE json parsing, giving us the original bytes.
 app.use(express.json({
   limit: "10mb",
@@ -290,10 +291,10 @@ app.get("/api/health", (_req: Request, res: Response) => {
 // Initialize authentication middleware based on provider
 // USE_CLERK=true -> Clerk, otherwise -> in-house JWT
 if (isUsingClerk()) {
-  console.log("🔐 Using Clerk authentication");
+  logger.info("Using Clerk authentication");
   app.use(clerkMiddleware() as unknown as RequestHandler);
 } else {
-  console.log("🔐 Using in-house JWT authentication");
+  logger.info("Using in-house JWT authentication");
   app.use(inHouseAuthMiddleware);
 }
 
@@ -420,9 +421,9 @@ app.use("/api/session", crudRateLimit, sessionRoutes);
 app.use("/api/v1/usage", crudRateLimit, usageRoutes);
 app.use("/api/usage", crudRateLimit, usageRoutes);
 
-// Razorpay Billing API (rate limited: 5/min)
-app.use("/api/v1/billing", billingRateLimit, razorpayRouter);
-app.use("/api/billing", billingRateLimit, razorpayRouter);
+// PhonePe Billing API (rate limited: 5/min)
+app.use("/api/v1/billing", billingRateLimit, billingRouter);
+app.use("/api/billing", billingRateLimit, billingRouter);
 
 // ============================================
 // PROTECTED ROUTES (require authentication)
@@ -480,18 +481,18 @@ app.use(secureErrorHandler);
 
 // Start server immediately to satisfy startup probes
 httpServer.listen(PORT, () => {
-  console.log(`🚀 BeamLab Ultimate API running on http://localhost:${PORT}`);
-  console.log(`🔌 WebSocket server ready for real-time collaboration`);
-  console.log(`🔒 Security middleware active: helmet, rate limiting, logging`);
+  logger.info(`BeamLab Ultimate API running on http://localhost:${PORT}`);
+  logger.info(`WebSocket server ready for real-time collaboration`);
+  logger.info(`Security middleware active: helmet, rate limiting, logging`);
 
   // Connect to MongoDB in background
   connectDB()
     .then(() => {
       dbReady = true;
-      console.log("✅ MongoDB connected successfully — API routes are now live");
+      logger.info("MongoDB connected successfully — API routes are now live");
     })
     .catch((err) => {
-      console.error("❌ Failed to connect to MongoDB:", err);
+      logger.error({ err }, "Failed to connect to MongoDB");
     });
 });
 
@@ -523,16 +524,16 @@ app.use((_req, res, next) => {
 function gracefulShutdown(signal: string) {
   if (isShuttingDown) return; // Prevent double shutdown
   isShuttingDown = true;
-  console.log(`\n⚠️  Received ${signal}. Starting graceful shutdown...`);
+  logger.info(`Received ${signal}. Starting graceful shutdown...`);
 
   // 1. Stop accepting new connections & wait for in-flight requests to drain
   httpServer.close(() => {
-    console.log("✅ HTTP server closed — all in-flight requests drained.");
+    logger.info("HTTP server closed — all in-flight requests drained.");
   });
 
   // 2. Close WebSocket connections
   socketServer.close();
-  console.log("✅ WebSocket server closed.");
+  logger.info("WebSocket server closed.");
 
   // 3. Destroy idle keep-alive connections (let active ones finish)
   for (const socket of activeConnections) {
@@ -544,13 +545,13 @@ function gracefulShutdown(signal: string) {
       socket.end();
     }
   }
-  console.log(`✅ ${activeConnections.size} idle connections closed.`);
+  logger.info(`${activeConnections.size} idle connections closed.`);
 
   // 4. Close MongoDB connection
   import("mongoose")
     .then((mongoose) => {
       mongoose.default.connection.close(false).then(() => {
-        console.log("✅ MongoDB connection closed.");
+        logger.info("MongoDB connection closed.");
         process.exit(0);
       });
     })
@@ -560,7 +561,7 @@ function gracefulShutdown(signal: string) {
 
   // 5. Force kill if graceful shutdown takes too long
   setTimeout(() => {
-    console.error("❌ Graceful shutdown timed out. Forcing exit.");
+    logger.error("Graceful shutdown timed out. Forcing exit.");
     process.exit(1);
   }, SHUTDOWN_TIMEOUT_MS);
 }

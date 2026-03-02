@@ -29,7 +29,7 @@ export const securityHeaders = helmet({
         "'wasm-unsafe-eval'",
         "https://js.clerk.dev",
         "https://challenges.cloudflare.com",
-        "https://checkout.razorpay.com",
+        "https://mercury.phonepe.com",
       ],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
@@ -37,15 +37,15 @@ export const securityHeaders = helmet({
       connectSrc: [
         "'self'",
         "https://*.clerk.dev",
-        "https://api.razorpay.com",
-        "https://lumberjack.razorpay.com",
+        "https://api.phonepe.com",
+        "https://api-preprod.phonepe.com",
         "wss:",
         "ws:",
       ],
       frameSrc: [
         "https://*.clerk.dev",
-        "https://api.razorpay.com",
-        "https://checkout.razorpay.com",
+        "https://api.phonepe.com",
+        "https://mercury.phonepe.com",
       ],
       workerSrc: ["'self'", "blob:"],
       childSrc: ["'self'", "blob:"],
@@ -181,14 +181,14 @@ export const requestLogger = (
   _res: Response,
   next: NextFunction,
 ) => {
-  const timestamp = new Date().toISOString();
   const method = req.method;
   const url = req.originalUrl;
   const ip = req.ip || req.socket?.remoteAddress || "unknown";
   const userAgent = req.get("user-agent") || "unknown";
 
-  console.log(
-    `[${timestamp}] ${method} ${url} - IP: ${ip} - UA: ${userAgent.slice(0, 50)}`,
+  logger.info(
+    { method, url, ip, userAgent: userAgent.slice(0, 50) },
+    `${method} ${url}`,
   );
 
   next();

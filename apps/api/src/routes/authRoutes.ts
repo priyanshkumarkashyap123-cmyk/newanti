@@ -41,6 +41,7 @@ import {
   recordAuthFailure,
   resetAuthFailures,
 } from "../middleware/accountLockout.js";
+import { asyncHandler, HttpError } from "../utils/asyncHandler.js";
 
 const router: Router = Router();
 
@@ -372,18 +373,14 @@ router.get("/linkedin/login", (req, res) => {
 /**
  * POST /api/auth/google - Google OAuth
  */
-router.post("/google", async (req: Request, res: Response) => {
+router.post("/google", asyncHandler(async (req: Request, res: Response) => {
   try {
     const { code } = req.body;
     if (!code)
-      return res
-        .status(400)
-        .json({ success: false, error: "Authorization code required" });
+      throw new HttpError(400, "Authorization code required");
 
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-      return res
-        .status(503)
-        .json({ success: false, error: "Google OAuth not configured" });
+      throw new HttpError(503, "Google OAuth not configured");
     }
 
     // Exchange code for tokens (circuit-breaker protected)
@@ -424,28 +421,22 @@ router.post("/google", async (req: Request, res: Response) => {
       refreshToken: result.refreshToken,
     });
   } catch (error: unknown) {
-    console.error("Google OAuth error:", getProviderErrorDetails(error));
-    res
-      .status(500)
-      .json({ success: false, error: "Google authentication failed" });
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(500, "Google authentication failed");
   }
-});
+}));
 
 /**
  * POST /api/auth/github - GitHub OAuth
  */
-router.post("/github", async (req: Request, res: Response) => {
+router.post("/github", asyncHandler(async (req: Request, res: Response) => {
   try {
     const { code } = req.body;
     if (!code)
-      return res
-        .status(400)
-        .json({ success: false, error: "Authorization code required" });
+      throw new HttpError(400, "Authorization code required");
 
     if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
-      return res
-        .status(503)
-        .json({ success: false, error: "GitHub OAuth not configured" });
+      throw new HttpError(503, "GitHub OAuth not configured");
     }
 
     // Exchange code for tokens (circuit-breaker protected)
@@ -508,28 +499,22 @@ router.post("/github", async (req: Request, res: Response) => {
       refreshToken: result.refreshToken,
     });
   } catch (error: unknown) {
-    console.error("GitHub OAuth error:", getProviderErrorDetails(error));
-    res
-      .status(500)
-      .json({ success: false, error: "GitHub authentication failed" });
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(500, "GitHub authentication failed");
   }
-});
+}));
 
 /**
  * POST /api/auth/linkedin - LinkedIn OAuth
  */
-router.post("/linkedin", async (req: Request, res: Response) => {
+router.post("/linkedin", asyncHandler(async (req: Request, res: Response) => {
   try {
     const { code } = req.body;
     if (!code)
-      return res
-        .status(400)
-        .json({ success: false, error: "Authorization code required" });
+      throw new HttpError(400, "Authorization code required");
 
     if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
-      return res
-        .status(503)
-        .json({ success: false, error: "LinkedIn OAuth not configured" });
+      throw new HttpError(503, "LinkedIn OAuth not configured");
     }
 
     // Exchange code for tokens
@@ -575,12 +560,10 @@ router.post("/linkedin", async (req: Request, res: Response) => {
       refreshToken: result.refreshToken,
     });
   } catch (error: unknown) {
-    console.error("LinkedIn OAuth error:", getProviderErrorDetails(error));
-    res
-      .status(500)
-      .json({ success: false, error: "LinkedIn authentication failed" });
+    if (error instanceof HttpError) throw error;
+    throw new HttpError(500, "LinkedIn authentication failed");
   }
-});
+}));
 
 // ============================================
 // ROUTES
@@ -592,8 +575,7 @@ router.post("/linkedin", async (req: Request, res: Response) => {
 router.post(
   "/signup",
   validateBody(signUpSchema),
-  async (req: Request, res: Response) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       // Body is already validated & transformed by Zod middleware
       const { email, password, firstName, lastName, company, phone } = req.body;
 
@@ -602,12 +584,7 @@ router.post(
         email: email.toLowerCase(),
       });
       if (existingUser) {
-        res.status(409).json({
-          success: false,
-          message: "An account with this email already exists",
-          errors: { email: "Email already registered" },
-        });
-        return;
+        throw new HttpError(409, "An account with this email already exists");
       }
 
       // Hash password
@@ -660,7 +637,6 @@ router.post(
           verificationCode,
         );
       } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
         // Continue signup even if email fails - user can request resend
       }
 
@@ -671,14 +647,7 @@ router.post(
         refreshToken,
         message: "Account created successfully. Please verify your email.",
       });
-    } catch (error) {
-      console.error("Signup error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to create account. Please try again.",
-      });
-    }
-  },
+  }),
 );
 
 /**
@@ -687,8 +656,7 @@ router.post(
 router.post(
   "/signin",
   validateBody(signInSchema),
-  async (req: Request, res: Response) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       // Body is already validated & transformed by Zod middleware
       const { email, password, rememberMe } = req.body;
 
@@ -696,20 +664,14 @@ router.post(
       const user = await UserModel.findOne({ email: email.toLowerCase() });
       if (!user) {
         recordAuthFailure(req);
-        return res.status(401).json({
-          success: false,
-          message: "Invalid email or password",
-        });
+        throw new HttpError(401, "Invalid email or password");
       }
 
       // Verify password
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         recordAuthFailure(req);
-        return res.status(401).json({
-          success: false,
-          message: "Invalid email or password",
-        });
+        throw new HttpError(401, "Invalid email or password");
       }
 
       // Successful login — reset failure counter
@@ -744,21 +706,13 @@ router.post(
         accessToken,
         refreshToken,
       });
-    } catch (error) {
-      console.error("Signin error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to sign in. Please try again.",
-      });
-    }
-  },
+  }),
 );
 
 /**
  * POST /api/auth/signout - Logout user
  */
-router.post("/signout", async (req: Request, res: Response) => {
-  try {
+router.post("/signout", asyncHandler(async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
 
     if (refreshToken) {
@@ -767,27 +721,16 @@ router.post("/signout", async (req: Request, res: Response) => {
     }
 
     res.json({ success: true, message: "Signed out successfully" });
-  } catch (error) {
-    console.error("Signout error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to sign out",
-    });
-  }
-});
+}));
 
 /**
  * POST /api/auth/refresh - Refresh access token
  */
-router.post("/refresh", async (req: Request, res: Response) => {
-  try {
+router.post("/refresh", asyncHandler(async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token required",
-      });
+      throw new HttpError(401, "Refresh token required");
     }
 
     // Verify refresh token
@@ -795,10 +738,7 @@ router.post("/refresh", async (req: Request, res: Response) => {
     try {
       decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
     } catch {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid or expired refresh token",
-      });
+      throw new HttpError(401, "Invalid or expired refresh token");
     }
 
     // Check if token exists in database
@@ -806,28 +746,19 @@ router.post("/refresh", async (req: Request, res: Response) => {
       token: refreshToken,
     });
     if (!storedToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token has been revoked",
-      });
+      throw new HttpError(401, "Refresh token has been revoked");
     }
 
     // Check if token is expired
     if (storedToken.expiresAt < new Date()) {
       await RefreshTokenModel.deleteOne({ _id: storedToken._id });
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token expired",
-      });
+      throw new HttpError(401, "Refresh token expired");
     }
 
     // Get user
     const user = await UserModel.findById(decoded.userId);
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new HttpError(401, "User not found");
     }
 
     // Generate new access token
@@ -855,10 +786,7 @@ router.post("/refresh", async (req: Request, res: Response) => {
       // Another request already consumed this token — potential replay attack.
       // Revoke all tokens for this user as a precaution.
       await RefreshTokenModel.deleteMany({ userId: decoded.userId });
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token already used — all sessions revoked",
-      });
+      throw new HttpError(401, "Refresh token already used — all sessions revoked");
     }
 
     res.json({
@@ -866,26 +794,15 @@ router.post("/refresh", async (req: Request, res: Response) => {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     });
-  } catch (error) {
-    console.error("Refresh error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to refresh token",
-    });
-  }
-});
+}));
 
 /**
  * GET /api/auth/me - Get current user
  */
-router.get("/me", async (req: Request, res: Response) => {
-  try {
+router.get("/me", asyncHandler(async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "No token provided",
-      });
+      throw new HttpError(401, "No token provided");
     }
 
     const token = authHeader.split(" ")[1];
@@ -894,37 +811,24 @@ router.get("/me", async (req: Request, res: Response) => {
     try {
       decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
     } catch {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid or expired token",
-      });
+      throw new HttpError(401, "Invalid or expired token");
     }
 
     const user = await UserModel.findById(decoded.userId);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new HttpError(404, "User not found");
     }
 
     res.ok({ user: sanitizeUser(user) });
-  } catch (error) {
-    console.error("Get user error:", error);
-    res.fail("INTERNAL_ERROR", "Failed to get user");
-  }
-});
+}));
 
 /**
  * POST /api/auth/verify-email - Verify email with code
  */
-router.post("/verify-email", async (req: Request, res: Response) => {
-  try {
+router.post("/verify-email", asyncHandler(async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res
-        .status(401)
-        .json({ success: false, error: "Not authenticated" });
+      throw new HttpError(401, "Not authenticated");
     }
 
     const token = authHeader.split(" ")[1];
@@ -932,10 +836,7 @@ router.post("/verify-email", async (req: Request, res: Response) => {
 
     const { code } = req.body;
     if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: "Verification code required",
-      });
+      throw new HttpError(400, "Verification code required");
     }
 
     // Find verification code
@@ -947,10 +848,7 @@ router.post("/verify-email", async (req: Request, res: Response) => {
     });
 
     if (!verification) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired verification code",
-      });
+      throw new HttpError(400, "Invalid or expired verification code");
     }
 
     // Update user
@@ -966,14 +864,7 @@ router.post("/verify-email", async (req: Request, res: Response) => {
       success: true,
       message: "Email verified successfully",
     });
-  } catch (error) {
-    console.error("Verify email error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to verify email",
-    });
-  }
-});
+}));
 
 /**
  * POST /api/auth/forgot-password - Request password reset
@@ -981,8 +872,7 @@ router.post("/verify-email", async (req: Request, res: Response) => {
 router.post(
   "/forgot-password",
   validateBody(forgotPasswordSchema),
-  async (req: Request, res: Response) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       // Body is already validated & transformed by Zod middleware
       const { email } = req.body;
 
@@ -1020,7 +910,6 @@ router.post(
           resetToken,
         );
       } catch (emailError) {
-        console.error("Failed to send password reset email:", emailError);
         // Continue - user can request to resend
       }
 
@@ -1029,14 +918,7 @@ router.post(
         message:
           "If an account exists with this email, you will receive a password reset link.",
       });
-    } catch (error) {
-      console.error("Forgot password error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to process request",
-      });
-    }
-  },
+  }),
 );
 
 /**
@@ -1045,8 +927,7 @@ router.post(
 router.post(
   "/reset-password",
   validateBody(resetPasswordSchema),
-  async (req: Request, res: Response) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       // Body is already validated by Zod middleware
       const { token, password: newPassword } = req.body;
 
@@ -1061,10 +942,7 @@ router.post(
       });
 
       if (!resetRecord) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid or expired reset token",
-        });
+        throw new HttpError(400, "Invalid or expired reset token");
       }
 
       // Hash new password
@@ -1087,14 +965,7 @@ router.post(
         message:
           "Password reset successfully. Please sign in with your new password.",
       });
-    } catch (error) {
-      console.error("Reset password error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to reset password",
-      });
-    }
-  },
+  }),
 );
 
 /**
@@ -1103,13 +974,10 @@ router.post(
 router.put(
   "/profile",
   validateBody(updateProfileSchema),
-  async (req: Request, res: Response) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res
-          .status(401)
-          .json({ success: false, error: "Not authenticated" });
+        throw new HttpError(401, "Not authenticated");
       }
 
       const token = authHeader.split(" ")[1];
@@ -1131,18 +999,11 @@ router.put(
       );
 
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
+        throw new HttpError(404, "User not found");
       }
 
       res.ok({ user: sanitizeUser(user) });
-    } catch (error) {
-      console.error("Update profile error:", error);
-      res.fail("INTERNAL_ERROR", "Failed to update profile");
-    }
-  },
+  }),
 );
 
 /**
@@ -1151,13 +1012,10 @@ router.put(
 router.post(
   "/change-password",
   validateBody(changePasswordSchema),
-  async (req: Request, res: Response) => {
-    try {
+  asyncHandler(async (req: Request, res: Response) => {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res
-          .status(401)
-          .json({ success: false, error: "Not authenticated" });
+        throw new HttpError(401, "Not authenticated");
       }
 
       const token = authHeader.split(" ")[1];
@@ -1168,10 +1026,7 @@ router.post(
 
       const user = await UserModel.findById(decoded.userId);
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found",
-        });
+        throw new HttpError(404, "User not found");
       }
 
       // Verify current password
@@ -1180,10 +1035,7 @@ router.post(
         user.password,
       );
       if (!isPasswordValid) {
-        return res.status(401).json({
-          success: false,
-          message: "Current password is incorrect",
-        });
+        throw new HttpError(401, "Current password is incorrect");
       }
 
       // Hash new password
@@ -1199,26 +1051,16 @@ router.post(
         success: true,
         message: "Password changed successfully",
       });
-    } catch (error) {
-      console.error("Change password error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to change password",
-      });
-    }
-  },
+  }),
 );
 
 /**
  * DELETE /api/auth/delete-account - Delete user account
  */
-router.delete("/delete-account", async (req: Request, res: Response) => {
-  try {
+router.delete("/delete-account", asyncHandler(async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res
-        .status(401)
-        .json({ success: false, error: "Not authenticated" });
+      throw new HttpError(401, "Not authenticated");
     }
 
     const token = authHeader.split(" ")[1];
@@ -1227,27 +1069,18 @@ router.delete("/delete-account", async (req: Request, res: Response) => {
     const { password } = req.body;
 
     if (!password) {
-      return res.status(400).json({
-        success: false,
-        message: "Password is required to delete account",
-      });
+      throw new HttpError(400, "Password is required to delete account");
     }
 
     const user = await UserModel.findById(decoded.userId);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new HttpError(404, "User not found");
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Incorrect password",
-      });
+      throw new HttpError(401, "Incorrect password");
     }
 
     // Delete user data
@@ -1259,24 +1092,16 @@ router.delete("/delete-account", async (req: Request, res: Response) => {
       success: true,
       message: "Account deleted successfully",
     });
-  } catch (error) {
-    console.error("Delete account error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete account",
-    });
-  }
-});
+}));
 
 /**
  * GET /api/auth/check-email - Check if email is available
  */
-router.get("/check-email", async (req: Request, res: Response) => {
-  try {
+router.get("/check-email", asyncHandler(async (req: Request, res: Response) => {
     const email = req.query["email"] as string;
 
     if (!email) {
-      return res.status(400).json({ available: false });
+      throw new HttpError(400, "Email parameter required");
     }
 
     // SECURITY: Add artificial delay to prevent timing-based email enumeration
@@ -1297,23 +1122,15 @@ router.get("/check-email", async (req: Request, res: Response) => {
     } else {
       res.json({ available: true });
     }
-  } catch (error) {
-    console.error("Check email error:", error);
-    res.json({ available: false });
-  }
-});
+}));
 
 /**
  * POST /api/auth/resend-verification - Resend verification email
  */
-router.post("/resend-verification", async (req: Request, res: Response) => {
-  try {
+router.post("/resend-verification", asyncHandler(async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "Not authenticated",
-      });
+      throw new HttpError(401, "Not authenticated");
     }
 
     const token = authHeader.split(" ")[1];
@@ -1321,17 +1138,11 @@ router.post("/resend-verification", async (req: Request, res: Response) => {
 
     const user = await UserModel.findById(decoded.userId);
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+      throw new HttpError(404, "User not found");
     }
 
     if (user.emailVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already verified",
-      });
+      throw new HttpError(400, "Email already verified");
     }
 
     // Generate new verification code
@@ -1359,24 +1170,13 @@ router.post("/resend-verification", async (req: Request, res: Response) => {
         verificationCode,
       );
     } catch (emailError) {
-      console.error("Failed to send verification email:", emailError);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to send verification email. Please try again later.",
-      });
+      throw new HttpError(500, "Failed to send verification email. Please try again later.");
     }
 
     res.json({
       success: true,
       message: "Verification email sent successfully",
     });
-  } catch (error) {
-    console.error("Resend verification error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to resend verification email",
-    });
-  }
-});
+}));
 
 export default router;

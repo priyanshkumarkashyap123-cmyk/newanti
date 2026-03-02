@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useAuth } from '../providers/AuthProvider';
-import beamLabLogo from '../assets/beamlab_logo.png';
+const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import { generateDesignReport } from '../services/PDFReportService';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
@@ -337,8 +337,8 @@ export const ReportsPage = () => {
             <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
                 <div className="flex items-center gap-4">
                     <Link to="/" className="flex items-center gap-3 group">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
-                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
                         </div>
                         <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">BeamLab</h2>
                     </Link>
@@ -397,8 +397,8 @@ export const ReportsPage = () => {
                         {/* Top band - branding */}
                         <div className="flex items-start justify-between mt-2">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200 print:border-slate-400 shadow-sm">
-                                    <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                                <div className="w-14 h-14 flex items-center justify-center">
+                                    <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">BeamLab</h1>

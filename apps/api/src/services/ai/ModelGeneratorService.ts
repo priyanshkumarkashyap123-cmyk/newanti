@@ -6,6 +6,7 @@
  */
 
 import OpenAI from 'openai';
+import { logger } from '../../utils/logger.js';
 
 // ============================================
 // TYPES
@@ -166,7 +167,7 @@ export class ModelGeneratorService {
             };
 
         } catch (error) {
-            console.error('[ModelGenerator] Error:', error);
+            logger.error({ err: error }, '[ModelGenerator] Error');
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error'
@@ -223,7 +224,7 @@ export class ModelGeneratorService {
             return parsed as GeneratedModel;
 
         } catch (e) {
-            console.error('[ModelGenerator] Parse error:', e);
+            logger.error({ err: e }, '[ModelGenerator] Parse error');
             return null;
         }
     }

@@ -11,7 +11,7 @@
 import React, { FC, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useRazorpayPayment } from '../components/RazorpayPayment';
+import { usePhonePePayment } from '../components/PhonePePayment';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import {
@@ -394,7 +394,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do you provide India-specific pricing?",
-    a: "Yes. All our prices are in Indian Rupees (₹). We offer UPI-friendly checkout via Razorpay, GST-ready invoicing, and flexible billing options for freelancers, firms, and institutions.",
+    a: "Yes. All our prices are in Indian Rupees (₹). We offer UPI-friendly checkout via PhonePe, GST-ready invoicing, and flexible billing options for freelancers, firms, and institutions.",
   },
   {
     q: "Can you provide GST-compliant invoices for Indian teams?",
@@ -418,7 +418,7 @@ export const EnhancedPricingPage: FC = () => {
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
   // Payment integration
-  const { openPayment, loading: paymentLoading } = useRazorpayPayment();
+  const { openPayment, loading: paymentLoading } = usePhonePePayment();
   const { isSignedIn, user } = useAuth();
   const { refreshSubscription } = useSubscription();
 
@@ -479,7 +479,7 @@ export const EnhancedPricingPage: FC = () => {
       return;
     }
 
-    // Pro / Business plans — trigger Razorpay checkout
+    // Pro / Business plans — trigger PhonePe checkout
     if (!isSignedIn || !user) {
       navigate(`/sign-up?plan=${planId}`);
       return;

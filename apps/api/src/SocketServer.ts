@@ -13,6 +13,7 @@ import { Server as HTTPServer } from 'http';
 import { verifySocketToken } from './middleware/authMiddleware.js';
 import { env } from './config/env.js';
 import { getAllowedOrigins } from './config/cors.js';
+import { logger } from './utils/logger.js';
 
 // ============================================
 // TYPES
@@ -219,13 +220,13 @@ export class SocketServer {
                 (socket as any).userId = payload.userId ?? payload.sub ?? payload.id;
                 next();
             } catch (err) {
-                console.error('Socket auth failed:', err);
+                logger.error({ err }, 'Socket auth failed');
                 next(new Error('Authentication failed'));
             }
         });
 
         this.setupEventHandlers();
-        console.log('🔌 Socket.IO server initialized (with auth middleware)');
+        logger.info('Socket.IO server initialized (with auth middleware)');
     }
 
     /**
@@ -233,7 +234,7 @@ export class SocketServer {
      */
     private setupEventHandlers(): void {
         this.io.on('connection', (socket: Socket) => {
-            console.log(`👤 User connected: ${socket.id}`);
+            logger.info(`User connected: ${socket.id}`);
 
             /** Rate-limited event handler — silently drops events over the limit */
             const onLimited = <T>(event: string, handler: (data: T) => void) => {
@@ -403,7 +404,7 @@ export class SocketServer {
             color: user.color
         });
 
-        console.log(`📂 ${user.name} joined project: ${data.projectId}`);
+        logger.info(`${user.name} joined project: ${data.projectId}`);
     }
 
     /**
@@ -460,7 +461,7 @@ export class SocketServer {
             version: project?.version
         });
 
-        console.log(`📍 Node ${data.nodeId} updated by ${user.name}`);
+        logger.info(`Node ${data.nodeId} updated by ${user.name}`);
     }
 
     /**
@@ -503,7 +504,7 @@ export class SocketServer {
             version: project?.version
         });
 
-        console.log(`🔗 Member ${data.memberId} updated by ${user.name}`);
+        logger.info(`Member ${data.memberId} updated by ${user.name}`);
     }
 
     /**
@@ -599,7 +600,7 @@ export class SocketServer {
                 this.broadcastUserLeft(socket, user.projectId, user);
             }
             this.users.delete(socket.id);
-            console.log(`👋 User disconnected: ${user.name}`);
+            logger.info(`User disconnected: ${user.name}`);
         }
     }
 

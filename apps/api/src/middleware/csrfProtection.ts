@@ -14,6 +14,7 @@
 import { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
 import { isTrustedOrigin } from "../config/cors.js";
+import { logger } from "../utils/logger.js";
 
 const CSRF_COOKIE = "csrf_token";
 const CSRF_HEADER = "x-csrf-token";
@@ -63,7 +64,7 @@ export function csrfValidationMiddleware(
   if (
     req.path === "/health" ||
     req.path.includes("/webhook") ||
-    req.path.includes("/razorpay")
+    req.path.includes("/phonepe")
   ) {
     return next();
   }
@@ -74,7 +75,7 @@ export function csrfValidationMiddleware(
 
   if (origin) {
     if (!isTrustedOrigin(origin)) {
-      console.warn(`[CSRF] Blocked request from disallowed origin: ${origin}`);
+      logger.warn(`[CSRF] Blocked request from disallowed origin: ${origin}`);
       res.status(403).json({
         success: false,
         error: "Forbidden — invalid origin",
@@ -85,7 +86,7 @@ export function csrfValidationMiddleware(
     try {
       const refOrigin = new URL(referer).origin;
       if (!isTrustedOrigin(refOrigin)) {
-        console.warn(
+        logger.warn(
           `[CSRF] Blocked request from disallowed referer: ${referer}`,
         );
         res.status(403).json({
@@ -118,8 +119,8 @@ export function csrfValidationMiddleware(
   }
 
   if (!cookieToken || !headerToken || cookieToken !== headerToken) {
-    console.warn(
-      `[CSRF] Token mismatch — cookie: ${!!cookieToken}, header: ${!!headerToken}`,
+    logger.warn(
+      `[CSRF] Token mismatch -- cookie: ${!!cookieToken}, header: ${!!headerToken}`,
     );
     res.status(403).json({
       success: false,

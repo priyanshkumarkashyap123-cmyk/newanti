@@ -27,13 +27,11 @@ const envSchema = z.object({
     STRIPE_PRO_MONTHLY_PRICE_ID: z.string().optional(),
     STRIPE_PRO_YEARLY_PRICE_ID: z.string().optional(),
     STRIPE_ENTERPRISE_MONTHLY_PRICE_ID: z.string().optional(),
-    // Razorpay
-    RAZORPAY_KEY_ID: z.string().optional(),
-    RAZORPAY_KEY_SECRET: z.string().optional(),
-    RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
-    RAZORPAY_PRO_MONTHLY_PLAN_ID: z.string().optional(),
-    RAZORPAY_PRO_YEARLY_PLAN_ID: z.string().optional(),
-    RAZORPAY_ENTERPRISE_MONTHLY_PLAN_ID: z.string().optional(),
+    // PhonePe
+    PHONEPE_MERCHANT_ID: z.string().optional(),
+    PHONEPE_SALT_KEY: z.string().optional(),
+    PHONEPE_SALT_INDEX: z.string().optional().default('1'),
+    PHONEPE_ENV: z.enum(['UAT', 'PRODUCTION']).optional().default('UAT'),
     // AI
     GEMINI_API_KEY: z.string().optional(),
     SENTRY_DSN: z.string().url().optional(),
@@ -68,18 +66,17 @@ describe('API env schema', () => {
         }
     });
 
-    it('accepts valid Razorpay env vars', () => {
+    it('accepts valid PhonePe env vars', () => {
         const result = envSchema.safeParse({
-            RAZORPAY_KEY_ID: 'rzp_test_key',
-            RAZORPAY_KEY_SECRET: 'rzp_secret',
-            RAZORPAY_PRO_MONTHLY_PLAN_ID: 'plan_monthly',
-            RAZORPAY_PRO_YEARLY_PLAN_ID: 'plan_yearly',
-            RAZORPAY_ENTERPRISE_MONTHLY_PLAN_ID: 'plan_ent',
+            PHONEPE_MERCHANT_ID: 'MERCHANT_TEST',
+            PHONEPE_SALT_KEY: 'salt_key_test',
+            PHONEPE_SALT_INDEX: '1',
+            PHONEPE_ENV: 'UAT',
         });
         expect(result.success).toBe(true);
         if (result.success) {
-            expect(result.data.RAZORPAY_KEY_ID).toBe('rzp_test_key');
-            expect(result.data.RAZORPAY_PRO_MONTHLY_PLAN_ID).toBe('plan_monthly');
+            expect(result.data.PHONEPE_MERCHANT_ID).toBe('MERCHANT_TEST');
+            expect(result.data.PHONEPE_ENV).toBe('UAT');
         }
     });
 
@@ -106,9 +103,8 @@ describe('API env schema', () => {
         expect(result.success).toBe(true);
         if (result.success) {
             expect(result.data.STRIPE_SECRET_KEY).toBeUndefined();
-            expect(result.data.RAZORPAY_KEY_ID).toBeUndefined();
+            expect(result.data.PHONEPE_MERCHANT_ID).toBeUndefined();
             expect(result.data.STRIPE_PRO_MONTHLY_PRICE_ID).toBeUndefined();
-            expect(result.data.RAZORPAY_PRO_MONTHLY_PLAN_ID).toBeUndefined();
         }
     });
 });

@@ -49,7 +49,7 @@ import {
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
 import { useUserRegistration } from "../hooks/useUserRegistration";
-import beamLabLogo from "../assets/beamlab_logo.png";
+const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import {
   ProjectService,
   Project as APIProject,
@@ -488,12 +488,9 @@ export const UnifiedDashboard: FC<{
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-7">
             <Link to="/" className="flex items-center gap-2.5">
-              <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7" />
+              <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7 object-contain" />
               <span className="text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
                 BeamLab
-              </span>
-              <span className="rounded-[5px] bg-blue-500/15 px-1.5 py-[1px] text-[10px] font-bold text-blue-400 leading-tight">
-                ULTIMATE
               </span>
             </Link>
 

@@ -326,6 +326,8 @@ export interface AnalysisResults {
     usedCloud?: boolean;
     fallbackFromLocal?: boolean;
   };
+  completed?: boolean;
+  timestamp?: number;
 }
 
 // Modal Analysis Results
@@ -354,8 +356,8 @@ export interface CivilResult {
     | "survey";
   type: string; // e.g. 'footing', 'curve'
   timestamp: number;
-  input: any;
-  output: any;
+  input: Record<string, unknown>;
+  output: Record<string, unknown>;
   linkedElementIds?: string[]; // IDs of 3D elements generated (e.g. Plate P1)
 }
 
@@ -567,9 +569,9 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
 
   // Restore nodes — support both tuple [id, node] and object { nodeId, ...node } formats
   const nodesMap = new Map<string, Node>();
-  data.nodes.forEach((entry: any) => {
+  data.nodes.forEach((entry: unknown) => {
     let id: string;
-    let node: any;
+    let node: Record<string, unknown>;
     if (Array.isArray(entry) && entry.length >= 2) {
       [id, node] = entry;
     } else if (entry && typeof entry === "object" && entry.nodeId) {
@@ -592,9 +594,9 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
 
   // Restore members — support both tuple [id, member] and object { memberId, ...member } formats
   const membersMap = new Map<string, Member>();
-  data.members.forEach((entry: any) => {
+  data.members.forEach((entry: unknown) => {
     let id: string;
-    let member: any;
+    let member: Record<string, unknown>;
     if (Array.isArray(entry) && entry.length >= 2) {
       [id, member] = entry;
     } else if (entry && typeof entry === "object" && entry.memberId) {
@@ -628,14 +630,14 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
   // Restore loads
   const loads = Array.isArray(data.loads) ? data.loads : [];
   const memberLoads = Array.isArray(data.memberLoads) ? data.memberLoads : [];
-  const loadCases = Array.isArray((data as any).loadCases) ? (data as any).loadCases : [];
-  const loadCombinations = Array.isArray((data as any).loadCombinations) ? (data as any).loadCombinations : [];
-  const floorLoads = Array.isArray((data as any).floorLoads) ? (data as any).floorLoads : [];
+  const loadCases = Array.isArray(data.loadCases) ? data.loadCases : [];
+  const loadCombinations = Array.isArray(data.loadCombinations) ? data.loadCombinations : [];
+  const floorLoads = Array.isArray(data.floorLoads) ? data.floorLoads : [];
 
   // Restore plates (may be tuples [id, plate] or objects with .id)
   const platesMap = new Map<string, Plate>();
-  if (Array.isArray((data as any).plates)) {
-    (data as any).plates.forEach((entry: any) => {
+  if (Array.isArray(data.plates)) {
+    data.plates.forEach((entry: unknown) => {
       if (Array.isArray(entry) && entry.length >= 2) {
         platesMap.set(entry[0], entry[1]);
       } else if (entry && typeof entry === 'object' && entry.id) {
@@ -2007,7 +2009,22 @@ export const useModelStore = create<ModelState>()(
             return { civilData: newCivilData };
           }),
       }),
-      { limit: 25 }, // Limit undo history — each snapshot holds full model state
+      { 
+        limit: 25, // Limit undo history
+        // Only track structural data in undo history — exclude volatile UI/analysis state
+        partialize: (state) => ({
+          nodes: state.nodes,
+          members: state.members,
+          plates: state.plates,
+          loads: state.loads,
+          memberLoads: state.memberLoads,
+          floorLoads: state.floorLoads,
+          loadCases: state.loadCases,
+          loadCombinations: state.loadCombinations,
+          projectInfo: state.projectInfo,
+          settings: state.settings,
+        }),
+      },
     ),
     {
       name: "StructuralModel",
@@ -2077,7 +2094,7 @@ export const saveProjectToStorage = (): boolean => {
     } catch (quotaError) {
       if (
         quotaError instanceof DOMException &&
-        (quotaError as any).code === 22
+        (quotaError as DOMException).code === 22
       ) {
         console.error("localStorage quota exceeded - clear some projects");
         return false;
@@ -2147,8 +2164,8 @@ function persistAnalysisResults(results: AnalysisResults | null): void {
       equilibriumCheck: results.equilibriumCheck,
       conditionNumber: results.conditionNumber,
       stats: results.stats,
-      completed: (results as any).completed,
-      timestamp: (results as any).timestamp ?? Date.now(),
+      completed: results.completed,
+      timestamp: results.timestamp ?? Date.now(),
     };
     const json = JSON.stringify(serializable);
     // sessionStorage limit is ~5 MB; skip if too big
@@ -2181,11 +2198,11 @@ export function hydrateAnalysisResults(): AnalysisResults | null {
       conditionNumber: data.conditionNumber,
       stats: data.stats,
     };
-    if ((data as any).completed !== undefined) {
-      (results as any).completed = data.completed;
+    if (data.completed !== undefined) {
+      results.completed = data.completed;
     }
-    if ((data as any).timestamp !== undefined) {
-      (results as any).timestamp = data.timestamp;
+    if (data.timestamp !== undefined) {
+      results.timestamp = data.timestamp;
     }
     return results;
   } catch (e) {

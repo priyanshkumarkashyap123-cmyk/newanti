@@ -43,7 +43,7 @@ type FeatureKey = keyof typeof TIER_FEATURES.free;
 
 function canAccess(tier: SubscriptionTier, feature: FeatureKey): boolean {
   const features = TIER_FEATURES[tier];
-  const value = features[feature];
+  const value: boolean | number = features[feature];
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return value !== 0;
   return false;

@@ -42,7 +42,7 @@ import {
     Car
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
-import beamLabLogo from '../assets/beamlab_logo.png';
+const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 
 // Lazy load heavy components
 const CivilPanel = lazy(() => import('../components/civil/CivilPanel'));

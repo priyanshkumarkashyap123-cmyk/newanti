@@ -5,7 +5,7 @@
  *   - Shows contextual feature info with icon mapping
  *   - Displays current tier vs required tier
  *   - Shows comparison table (Free vs Pro vs Enterprise)
- *   - Supports inline checkout via RazorpayPaymentModal
+ *   - Supports inline checkout via PhonePePaymentModal
  *   - Tracks conversion analytics
  *   - Fully accessible (ARIA, focus management)
  */
@@ -16,7 +16,7 @@ import { useSubscription, type SubscriptionTier } from '../hooks/useSubscription
 import { useAuth } from '../providers/AuthProvider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
-import { RazorpayPaymentModal } from './RazorpayPayment';
+import { PhonePePaymentModal } from './PhonePePayment';
 
 // ============================================
 // FEATURE REGISTRY
@@ -126,7 +126,7 @@ interface UpgradeModalProps {
     feature?: keyof typeof PREMIUM_FEATURES;
     customTitle?: string;
     customDescription?: string;
-    /** Show inline Razorpay checkout instead of redirecting to /pricing */
+    /** Show inline PhonePe checkout instead of redirecting to /pricing */
     enableInlineCheckout?: boolean;
 }
 
@@ -187,7 +187,7 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
     // Inline checkout view
     if (view === 'checkout' && userId && user?.email) {
         return (
-            <RazorpayPaymentModal
+            <PhonePePaymentModal
                 userId={userId}
                 email={user.email}
                 userName={user.firstName || undefined}

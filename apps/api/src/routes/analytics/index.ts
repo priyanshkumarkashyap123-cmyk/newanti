@@ -9,6 +9,7 @@
 import express, { Router, type Request, type Response } from "express";
 import { requireAuth } from "../../middleware/authMiddleware.js";
 import { generalRateLimit } from "../../middleware/security.js";
+import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
 
 const router: Router = express.Router();
 
@@ -59,12 +60,11 @@ async function persistToMongo(event: AnalyticsEvent): Promise<boolean> {
 // POST /api/analytics/track — ingest a single event
 // ============================================
 
-router.post("/track", requireAuth(), analyticsRateLimit, async (req: Request, res: Response) => {
+router.post("/track", requireAuth(), analyticsRateLimit, asyncHandler(async (req: Request, res: Response) => {
   const event = req.body as AnalyticsEvent;
 
   if (!event?.name || !event?.sessionId) {
-    res.fail('VALIDATION_ERROR', 'Missing name or sessionId', 400);
-    return;
+    throw new HttpError(400, "Missing name or sessionId");
   }
 
   // Always keep in ring buffer
@@ -74,18 +74,17 @@ router.post("/track", requireAuth(), analyticsRateLimit, async (req: Request, re
   const persisted = await persistToMongo(event);
 
   res.ok({ persisted }, 202);
-});
+}));
 
 // ============================================
 // POST /api/analytics/batch — ingest multiple events
 // ============================================
 
-router.post("/batch", requireAuth(), analyticsRateLimit, async (req: Request, res: Response) => {
+router.post("/batch", requireAuth(), analyticsRateLimit, asyncHandler(async (req: Request, res: Response) => {
   const events = req.body?.events as AnalyticsEvent[] | undefined;
 
   if (!Array.isArray(events) || events.length === 0) {
-    res.fail('VALIDATION_ERROR', 'events array required', 400);
-    return;
+    throw new HttpError(400, "events array required");
   }
 
   let persisted = 0;
@@ -96,24 +95,24 @@ router.post("/batch", requireAuth(), analyticsRateLimit, async (req: Request, re
   }
 
   res.ok({ accepted: events.length, persisted }, 202);
-});
+}));
 
 // ============================================
 // GET /api/analytics/recent — view recent events (auth required)
 // ============================================
 
-router.get("/recent", requireAuth(), async (_req: Request, res: Response) => {
+router.get("/recent", requireAuth(), asyncHandler(async (_req: Request, res: Response) => {
   res.ok({
     count: eventBuffer.length,
     events: eventBuffer.slice(-100),
   });
-});
+}));
 
 // ============================================
 // GET /api/analytics/stats — aggregate stats (auth required)
 // ============================================
 
-router.get("/stats", requireAuth(), async (_req: Request, res: Response) => {
+router.get("/stats", requireAuth(), asyncHandler(async (_req: Request, res: Response) => {
   // Event counts by name
   const counts: Record<string, number> = {};
   for (const e of eventBuffer) {
@@ -128,6 +127,6 @@ router.get("/stats", requireAuth(), async (_req: Request, res: Response) => {
     uniqueSessions: sessions.size,
     eventCounts: counts,
   });
-});
+}));
 
 export default router;

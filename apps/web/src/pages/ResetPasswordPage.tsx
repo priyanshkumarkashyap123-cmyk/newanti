@@ -11,7 +11,7 @@ import { Eye, EyeOff, Check, ArrowLeft, Lock } from 'lucide-react';
 import { authLogger } from '../lib/logger';
 import { useSignIn } from '@clerk/clerk-react';
 import { Button } from '../components/ui/button';
-import beamLabLogo from '../assets/beamlab_logo.png';
+const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 
 // ============================================
 // PASSWORD STRENGTH CALCULATOR
@@ -120,7 +120,7 @@ export const ResetPasswordPage = () => {
             {/* Header */}
             <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-4 lg:px-10">
                 <Link to="/" className="flex items-center gap-3 text-slate-900 dark:text-white">
-                    <img src={beamLabLogo} alt="BeamLab" className="w-8 h-8 rounded-lg" />
+                    <img src={beamLabLogo} alt="BeamLab" className="w-8 h-8 object-contain" />
                     <h2 className="text-lg font-bold tracking-tight">BeamLab</h2>
                 </Link>
                 <Link

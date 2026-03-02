@@ -148,8 +148,11 @@ export const FEATURES = {
 // PAYMENT
 // ============================================
 export const PAYMENT_CONFIG = {
-  razorpayKeyId: getEnv("VITE_RAZORPAY_KEY_ID"),
-  isPaymentEnabled: Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID),
+  /** PhonePe merchant ID (configured via VITE_PHONEPE_MERCHANT_ID) */
+  phonePeMerchantId: getEnv("VITE_PHONEPE_MERCHANT_ID"),
+  /** PhonePe environment: UAT (sandbox) or PRODUCTION */
+  phonePeEnv: getEnv("VITE_PHONEPE_ENV") || "UAT",
+  isPaymentEnabled: Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID),
 } as const;
 
 // ============================================

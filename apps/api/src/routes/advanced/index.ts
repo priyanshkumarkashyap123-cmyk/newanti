@@ -16,6 +16,8 @@ import {
     spectrumSchema,
     cableSchema,
 } from "../../middleware/validation.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { logger } from "../../utils/logger.js";
 
 const router: Router = express.Router();
 
@@ -35,7 +37,7 @@ async function forwardToRust(
         if (result.success) {
             res.json({ success: true, ...result.data as object });
         } else {
-            console.error(`[Advanced/${label}] Rust API error:`, result.error);
+            logger.error({ err: result.error }, `[Advanced/${label}] Rust API error`);
             res.status(result.status || 500).json({
                 success: false,
                 error: result.error || `${label} failed`,
@@ -43,7 +45,7 @@ async function forwardToRust(
             });
         }
     } catch (error) {
-        console.error(`[Advanced/${label}] Error:`, error);
+        logger.error({ err: error }, `[Advanced/${label}] Error`);
         res.status(500).json({
             success: false,
             error: `${label} failed`,
@@ -55,41 +57,41 @@ async function forwardToRust(
 // POST /advanced/pdelta - P-Delta (Geometric Nonlinear) Analysis
 // ============================================
 
-router.post("/pdelta", validateBody(pDeltaSchema), async (req: Request, res: Response) => {
+router.post("/pdelta", validateBody(pDeltaSchema), asyncHandler(async (req: Request, res: Response) => {
     await forwardToRust("/api/advanced/pdelta", req.body, res, "PDelta");
-});
+}));
 
 // ============================================
 // POST /advanced/modal - Modal (Eigenvalue) Analysis
 // ============================================
 
-router.post("/modal", validateBody(modalSchema), async (req: Request, res: Response) => {
+router.post("/modal", validateBody(modalSchema), asyncHandler(async (req: Request, res: Response) => {
     await forwardToRust("/api/advanced/modal", req.body, res, "Modal");
-});
+}));
 
 // ============================================
 // POST /advanced/spectrum - Response Spectrum Analysis
 // ============================================
 
-router.post("/spectrum", validateBody(spectrumSchema), async (req: Request, res: Response) => {
+router.post("/spectrum", validateBody(spectrumSchema), asyncHandler(async (req: Request, res: Response) => {
     await forwardToRust("/api/advanced/spectrum", req.body, res, "Spectrum", 180_000);
-});
+}));
 
 // ============================================
 // POST /advanced/buckling - Linear Buckling Analysis
 // ============================================
 
-router.post("/buckling", validateBody(bucklingSchema), async (req: Request, res: Response) => {
+router.post("/buckling", validateBody(bucklingSchema), asyncHandler(async (req: Request, res: Response) => {
     await forwardToRust("/api/advanced/buckling", req.body, res, "Buckling");
-});
+}));
 
 // ============================================
 // POST /advanced/cable - Cable/Tension-Only Member Analysis
 // ============================================
 
-router.post("/cable", validateBody(cableSchema), async (req: Request, res: Response) => {
+router.post("/cable", validateBody(cableSchema), asyncHandler(async (req: Request, res: Response) => {
     await forwardToRust("/api/advanced/cable", req.body, res, "Cable");
-});
+}));
 
 // ============================================
 // GET /advanced/capabilities - Available Capabilities (static)

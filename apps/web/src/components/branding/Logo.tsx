@@ -2,10 +2,10 @@
  * Logo Component - Centralized Branding
  * 
  * Provides consistent logo usage across the application with:
- * - Automatic dark mode switching
+ * - Automatic dark mode switching (colored icon or dark/white monochrome)
  * - Multiple variants (full, icon, wordmark)
  * - Responsive sizing
- * - Brand name image support
+ * - SVG-based brand assets
  * - Proper accessibility
  */
 
@@ -25,7 +25,7 @@ interface LogoProps {
   className?: string;
   /** Whether to show the brand name next to icon */
   showLabel?: boolean;
-  /** Custom text label (fallback if brand image fails) */
+  /** Custom text label (fallback alt text) */
   label?: string;
   /** Link destination (default: '/') */
   href?: string;
@@ -37,32 +37,32 @@ interface LogoProps {
 
 const SIZE_CLASSES = {
   xs: {
-    image: 'w-6 h-6',
-    brandName: 'h-4',
+    icon: 'w-6 h-6',
+    wordmark: 'h-5',
     text: 'text-sm',
     container: 'gap-2'
   },
   sm: {
-    image: 'w-8 h-8',
-    brandName: 'h-5',
+    icon: 'w-8 h-8',
+    wordmark: 'h-6',
     text: 'text-base',
     container: 'gap-2'
   },
   md: {
-    image: 'w-10 h-10',
-    brandName: 'h-6',
+    icon: 'w-10 h-10',
+    wordmark: 'h-7',
     text: 'text-lg',
     container: 'gap-3'
   },
   lg: {
-    image: 'w-12 h-12',
-    brandName: 'h-8',
+    icon: 'w-12 h-12',
+    wordmark: 'h-9',
     text: 'text-xl',
     container: 'gap-3'
   },
   xl: {
-    image: 'w-16 h-16',
-    brandName: 'h-10',
+    icon: 'w-16 h-16',
+    wordmark: 'h-12',
     text: 'text-2xl',
     container: 'gap-4'
   }
@@ -80,45 +80,23 @@ export const Logo: FC<LogoProps> = ({
 }) => {
   const sizeClasses = SIZE_CLASSES[size];
 
-  const getLogoSrc = () => '/branding/logo.png';
-  const getDarkLogoSrc = () => '/branding/logo-dark.png';
-
-  const LogoImage = () => (
-    <div
-      className={cn(
-        'relative rounded-lg overflow-hidden flex-shrink-0 shadow-sm',
-        sizeClasses.image,
-        clickable && 'group-hover:shadow-md transition-shadow'
-      )}
-    >
-      {/* Light mode logo */}
+  const LogoIcon = () => (
+    <div className={cn('relative flex-shrink-0', sizeClasses.icon)}>
+      {/* Colored icon — works on both light and dark backgrounds */}
       <img
-        src={getLogoSrc()}
-        alt="BeamLab Logo"
-        className="w-full h-full object-contain dark:hidden"
-      />
-      {/* Dark mode logo */}
-      <img
-        src={getDarkLogoSrc()}
-        alt="BeamLab Logo"
-        className="w-full h-full object-contain hidden dark:block"
+        src="/branding/beamlab_icon_colored.svg"
+        alt="BeamLab"
+        className="w-full h-full object-contain"
       />
     </div>
   );
 
-  const BrandName = () => (
-    <div className={cn('flex-shrink-0', sizeClasses.brandName)}>
-      {/* Light mode brand name */}
+  const Wordmark = () => (
+    <div className={cn('flex-shrink-0', sizeClasses.wordmark)}>
       <img
-        src="/branding/brandname.png"
+        src="/branding/beamlab_wordmark.svg"
         alt={label}
-        className={cn('h-full w-auto object-contain dark:hidden', sizeClasses.brandName)}
-      />
-      {/* Dark mode brand name */}
-      <img
-        src="/branding/brandname-dark.png"
-        alt={label}
-        className={cn('h-full w-auto object-contain hidden dark:block', sizeClasses.brandName)}
+        className={cn('h-full w-auto object-contain', sizeClasses.wordmark)}
       />
     </div>
   );
@@ -132,8 +110,8 @@ export const Logo: FC<LogoProps> = ({
         className
       )}
     >
-      {variant !== 'wordmark' && <LogoImage />}
-      {(showLabel || variant === 'wordmark' || variant === 'full') && <BrandName />}
+      {variant !== 'wordmark' && <LogoIcon />}
+      {(showLabel || variant === 'wordmark' || variant === 'full') && <Wordmark />}
     </div>
   );
 
@@ -167,7 +145,7 @@ export const Logo: FC<LogoProps> = ({
 /**
  * LogoIcon - Shorthand for icon-only variant
  */
-export const LogoIcon: FC<Omit<LogoProps, 'variant'>> = (props) => (
+export const LogoIconOnly: FC<Omit<LogoProps, 'variant'>> = (props) => (
   <Logo variant="icon" showLabel={false} {...props} />
 );
 
@@ -179,7 +157,7 @@ export const LogoWordmark: FC<Omit<LogoProps, 'variant'>> = (props) => (
 );
 
 /**
- * LogoFull - Shorthand for full logo with icon + brand name
+ * LogoFull - Shorthand for full logo with icon + wordmark
  */
 export const LogoFull: FC<Omit<LogoProps, 'variant' | 'showLabel'>> = (props) => (
   <Logo variant="full" showLabel {...props} />

@@ -22,6 +22,7 @@
  */
 
 import { GoogleGenerativeAI, type GenerativeModel } from '@google/generative-ai';
+import { logger } from '../../utils/logger.js';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -494,12 +495,12 @@ export class AIArchitectEngine {
       try {
         const genAI = new GoogleGenerativeAI(this.apiKey);
         this.model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-        console.log('[AIArchitectEngine] ✅ Gemini model initialized (gemini-2.0-flash)');
+        logger.info('[AIArchitectEngine] Gemini model initialized (gemini-2.0-flash)');
       } catch (err) {
-        console.error('[AIArchitectEngine] ❌ Failed to init Gemini:', err);
+        logger.error({ err }, '[AIArchitectEngine] Failed to init Gemini');
       }
     } else {
-      console.warn('[AIArchitectEngine] ⚠️  No GEMINI_API_KEY — using local fallback mode');
+      logger.warn('[AIArchitectEngine] No GEMINI_API_KEY -- using local fallback mode');
     }
   }
 
@@ -516,13 +517,13 @@ export class AIArchitectEngine {
 
     // Classify intent
     const { intent, confidence } = classifyIntent(message);
-    console.log(`[AIArchitectEngine] Intent: ${intent} (${(confidence * 100).toFixed(0)}%)`);
+    logger.info(`[AIArchitectEngine] Intent: ${intent} (${(confidence * 100).toFixed(0)}%)`);
 
     // Check cache for identical queries
     const cacheKey = `${intent}:${message.slice(0, 200)}`;
     const cached = this.responseCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-      console.log('[AIArchitectEngine] Cache hit');
+      logger.info('[AIArchitectEngine] Cache hit');
       return { ...cached.response, metadata: { ...cached.response.metadata!, processingTimeMs: 0 } };
     }
 
@@ -619,7 +620,7 @@ export class AIArchitectEngine {
       return result;
 
     } catch (error) {
-      console.error('[AIArchitectEngine] Error:', error);
+      logger.error({ err: error }, '[AIArchitectEngine] Error');
       return {
         success: false,
         response: `I encountered an error processing your request. ${error instanceof Error ? error.message : 'Please try again.'}`,
@@ -667,7 +668,7 @@ export class AIArchitectEngine {
       return localResult;
 
     } catch (error) {
-      console.error('[AIArchitectEngine] Generate error:', error);
+      logger.error({ err: error }, '[AIArchitectEngine] Generate error');
 
       // Final fallback
       const fallback = this.generateLocally(prompt);
@@ -854,7 +855,7 @@ export class AIArchitectEngine {
           issues.push(...aiDiagnosis);
         }
       } catch (err) {
-        console.warn('[AIArchitectEngine] Gemini diagnosis failed, using local only:', err);
+        logger.warn({ err }, '[AIArchitectEngine] Gemini diagnosis failed, using local only');
       }
     }
 
@@ -1144,7 +1145,7 @@ Output the complete modified model as JSON.`;
           metadata: { intent: 'modify_model', confidence: 0.85, processingTimeMs: 0, provider: 'gemini' },
         };
       } catch (err) {
-        console.warn('[AIArchitectEngine] Gemini modify failed:', err);
+        logger.warn({ err }, '[AIArchitectEngine] Gemini modify failed');
       }
     }
 
@@ -1228,7 +1229,7 @@ Output JSON array of load actions: [{"nodeId": "n1", "fx": 0, "fy": -50, "fz": 0
           actions,
         };
       } catch (err) {
-        console.warn('[AIArchitectEngine] Gemini load parse failed:', err);
+        logger.warn({ err }, '[AIArchitectEngine] Gemini load parse failed');
       }
     }
 
@@ -1441,7 +1442,7 @@ Suggest section optimization as JSON.`;
           metadata: { intent: 'optimize', confidence: 0.85, processingTimeMs: 0, provider: 'gemini' },
         };
       } catch (err) {
-        console.warn('[AIArchitectEngine] Gemini optimization failed:', err);
+        logger.warn({ err }, '[AIArchitectEngine] Gemini optimization failed');
       }
     }
 
@@ -1699,7 +1700,7 @@ User question: "${message}"`;
           metadata: { intent: 'explain', confidence: 0.85, processingTimeMs: 0, provider: 'gemini' },
         };
       } catch (err) {
-        console.warn('[AIArchitectEngine] Gemini explain failed:', err);
+        logger.warn({ err }, '[AIArchitectEngine] Gemini explain failed');
       }
     }
 
@@ -1734,7 +1735,7 @@ User question: "${message}"`;
           metadata: { intent: 'conversation', confidence: 0.7, processingTimeMs: 0, provider: 'gemini' },
         };
       } catch (err) {
-        console.warn('[AIArchitectEngine] Gemini conversation failed:', err);
+        logger.warn({ err }, '[AIArchitectEngine] Gemini conversation failed');
       }
     }
 
@@ -1772,7 +1773,7 @@ User question: "${message}"`;
 
       return await response.json();
     } catch (error) {
-      console.error(`[AIArchitectEngine] Python proxy error (${endpoint}):`, error);
+      logger.error({ err: error, endpoint }, '[AIArchitectEngine] Python proxy error');
       throw error;
     }
   }

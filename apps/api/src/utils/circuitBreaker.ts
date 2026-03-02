@@ -11,6 +11,8 @@
  * the external service, preventing cascade failures.
  */
 
+import { logger } from './logger.js';
+
 type CircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
 interface CircuitBreakerOptions {
@@ -211,7 +213,7 @@ export function getCircuitBreaker(name: string, options?: CircuitBreakerOptions)
         cb = new CircuitBreaker(name, {
             ...options,
             onStateChange: (from, to, n) => {
-                console.warn(`[circuit-breaker] ${n}: ${from} → ${to}`);
+                logger.warn(`[circuit-breaker] ${n}: ${from} -> ${to}`);
                 options?.onStateChange?.(from, to, n);
             },
         });

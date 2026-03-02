@@ -12,6 +12,7 @@
  */
 
 import { z } from "zod";
+import { logger } from "../utils/logger.js";
 
 // ============================================
 // SCHEMA
@@ -39,10 +40,11 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().optional().default(""),
   FRONTEND_URL: z.string().url().optional().default("http://localhost:5173"),
 
-  // Payments — Razorpay
-  RAZORPAY_KEY_ID: z.string().optional(),
-  RAZORPAY_KEY_SECRET: z.string().optional(),
-  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+  // Payments — PhonePe
+  PHONEPE_MERCHANT_ID: z.string().optional(),
+  PHONEPE_SALT_KEY: z.string().optional(),
+  PHONEPE_SALT_INDEX: z.string().optional().default("1"),
+  PHONEPE_ENV: z.enum(["UAT", "PRODUCTION"]).optional().default("UAT"),
 
   // AI
   GEMINI_API_KEY: z.string().optional(),
@@ -69,13 +71,13 @@ if (!result.success) {
   const isProduction = process.env.NODE_ENV === "production";
 
   if (isProduction) {
-    console.error(
-      `\n❌ FATAL: Environment validation failed in PRODUCTION:\n${formatted}\n`,
+    logger.error(
+      `FATAL: Environment validation failed in PRODUCTION:\n${formatted}`,
     );
     process.exit(1);
   } else {
-    console.warn(
-      `\n⚠️  Environment validation warnings (non-fatal in dev):\n${formatted}\n`,
+    logger.warn(
+      `Environment validation warnings (non-fatal in dev):\n${formatted}`,
     );
   }
 }

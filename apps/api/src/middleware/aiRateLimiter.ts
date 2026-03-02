@@ -16,6 +16,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+import { logger } from '../utils/logger.js';
 
 // ============================================================================
 // CONFIGURATION
@@ -189,7 +190,7 @@ export function aiRateLimiter(customConfig?: Partial<Record<string, RateLimitCon
 
     // Check if either limit is exceeded
     if (!endpointResult.allowed) {
-      console.warn(`[RateLimit] Endpoint limit hit: ${clientId} on ${endpointCategory}`);
+      logger.warn(`[RateLimit] Endpoint limit hit: ${clientId} on ${endpointCategory}`);
       res.setHeader('Retry-After', Math.ceil((endpointResult.resetAt - Date.now()) / 1000).toString());
       return res.status(429).json({
         success: false,
@@ -199,7 +200,7 @@ export function aiRateLimiter(customConfig?: Partial<Record<string, RateLimitCon
     }
 
     if (!globalResult.allowed) {
-      console.warn(`[RateLimit] Global limit hit: ${clientId}`);
+      logger.warn(`[RateLimit] Global limit hit: ${clientId}`);
       res.setHeader('Retry-After', Math.ceil((globalResult.resetAt - Date.now()) / 1000).toString());
       return res.status(429).json({
         success: false,

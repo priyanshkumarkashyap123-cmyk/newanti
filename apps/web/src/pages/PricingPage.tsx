@@ -7,11 +7,11 @@
 import { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useRazorpayPayment } from '../components/RazorpayPayment';
+import { usePhonePePayment } from '../components/PhonePePayment';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { CheckCircle, X, HelpCircle, ChevronRight } from 'lucide-react';
-import beamLabLogo from '../assets/beamlab_logo.png';
+const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import { Button } from '../components/ui/button';
 
 // ============================================
@@ -103,7 +103,7 @@ const FAQ_ITEMS = [
     },
     {
         question: 'What payment methods do you accept?',
-        answer: 'We accept all major credit/debit cards, UPI, net banking, and wallets through Razorpay. For Enterprise, we also support invoicing.'
+        answer: 'We accept all major credit/debit cards, UPI, net banking, and wallets through PhonePe. For Enterprise, we also support invoicing.'
     },
     {
         question: 'Is my data secure?',
@@ -126,8 +126,8 @@ export const PricingPage: FC = () => {
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
     const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
-    // Razorpay payment integration
-    const { openPayment, loading: paymentLoading } = useRazorpayPayment();
+    // PhonePe payment integration
+    const { openPayment, loading: paymentLoading } = usePhonePePayment();
     const { isSignedIn, user } = useAuth();
     const { refreshSubscription } = useSubscription();
 
@@ -155,7 +155,7 @@ export const PricingPage: FC = () => {
             return;
         }
 
-        // Pro plan - trigger Razorpay checkout
+        // Pro plan - trigger PhonePe checkout
         if (!isSignedIn || !user) {
             // User not signed in, navigate to sign up with plan param
             navigate('/sign-up?plan=pro');
@@ -188,8 +188,8 @@ export const PricingPage: FC = () => {
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-                            <div className="relative w-9 h-9 flex items-center justify-center rounded-lg shadow-lg group-hover:shadow-blue-500/25 transition-all overflow-hidden">
-                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                            <div className="relative w-9 h-9 flex items-center justify-center">
+                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
                             </div>
                             <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 whitespace-nowrap">
                                 BeamLab
@@ -421,8 +421,8 @@ export const PricingPage: FC = () => {
             <footer className="border-t border-slate-200 dark:border-slate-800 py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-950">
                 <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 flex items-center justify-center rounded-lg overflow-hidden">
-                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                        <div className="w-9 h-9 flex items-center justify-center">
+                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
                         </div>
                         <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab</span>
                     </div>

@@ -9,14 +9,21 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { BackToTopButton } from "./components/BackToTopButton";
 import { CookieConsent } from "./components/CookieConsent";
 
-// Eagerly loaded critical components (Landing, Auth)
-import { LandingPage } from "./pages/LandingPage";
-import { SignInPage } from "./pages/SignInPage";
-import { SignUpPage } from "./pages/SignUpPage";
+// Auth/layout (small, needed on every route)
 import { RequireAuth } from "./components/layout/RequireAuth";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./App.css";
-import "./utils/generateTestGrid";
+
+// Landing & Auth pages lazy-loaded (only needed on their specific routes)
+const LandingPage = lazy(() =>
+  import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })),
+);
+const SignInPage = lazy(() =>
+  import("./pages/SignInPage").then((m) => ({ default: m.SignInPage })),
+);
+const SignUpPage = lazy(() =>
+  import("./pages/SignUpPage").then((m) => ({ default: m.SignUpPage })),
+);
 import { SkipLink } from "./components/ui/SkipLink";
 import { OfflineBanner } from "./components/ui/OfflineBanner";
 
@@ -96,7 +103,6 @@ const ModernModeler = lazy(() =>
   })),
 );
 import { MobileGuard } from './components/ui/MobileGuard';
-import { ResponsiveProvider } from './hooks/useResponsive';
 const RustWasmDemo = lazy(() =>
   import("./pages/RustWasmDemo").then((module) => ({
     default: module.RustWasmDemo,
@@ -316,7 +322,6 @@ function App() {
   useDeviceSession();
 
   return (
-    <ResponsiveProvider>
     <ErrorBoundary>
       <SkipLink />
       <OfflineBanner />
@@ -889,7 +894,6 @@ function App() {
           </Suspense>
       </AnalyticsProvider>
     </ErrorBoundary>
-    </ResponsiveProvider>
   );
 }
 

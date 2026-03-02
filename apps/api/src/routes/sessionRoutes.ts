@@ -12,6 +12,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth, getAuth, verifySocketToken } from '../middleware/authMiddleware.js';
 import { DeviceSessionService } from '../services/DeviceSessionService.js';
+import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 
 const router: Router = Router();
 
@@ -57,265 +58,210 @@ function extractDeviceInfo(req: Request): {
 // POST /session/register - Register a new device session
 // ============================================
 
-router.post('/register', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId, sessionId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const deviceInfo = extractDeviceInfo(req);
-        if (!deviceInfo.deviceId) {
-            return res.fail('VALIDATION_ERROR', 'deviceId is required', 400);
-        }
-
-        const result = await DeviceSessionService.registerSession(
-            userId,
-            sessionId || 'unknown',
-            deviceInfo
-        );
-
-        return res.ok(result);
-    } catch (error) {
-        console.error('[SessionRoutes] /register error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.post('/register', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId, sessionId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const deviceInfo = extractDeviceInfo(req);
+    if (!deviceInfo.deviceId) {
+        throw new HttpError(400, 'deviceId is required');
+    }
+
+    const result = await DeviceSessionService.registerSession(
+        userId,
+        sessionId || 'unknown',
+        deviceInfo
+    );
+
+    return res.ok(result);
+}));
 
 // ============================================
 // POST /session/heartbeat - Keep session alive
 // ============================================
 
-router.post('/heartbeat', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
-        if (!deviceId) {
-            return res.fail('VALIDATION_ERROR', 'deviceId is required', 400);
-        }
-
-        const alive = await DeviceSessionService.heartbeat(userId, deviceId);
-        return res.ok({ alive });
-    } catch (error) {
-        console.error('[SessionRoutes] /heartbeat error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.post('/heartbeat', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
+    if (!deviceId) {
+        throw new HttpError(400, 'deviceId is required');
+    }
+
+    const alive = await DeviceSessionService.heartbeat(userId, deviceId);
+    return res.ok({ alive });
+}));
 
 // ============================================
 // POST /session/end - End current device session
 // ============================================
 
-router.post('/end', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
-        if (!deviceId) {
-            return res.fail('VALIDATION_ERROR', 'deviceId is required', 400);
-        }
-
-        await DeviceSessionService.endSession(userId, deviceId);
-        return res.ok({ ended: true });
-    } catch (error) {
-        console.error('[SessionRoutes] /end error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.post('/end', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
+    if (!deviceId) {
+        throw new HttpError(400, 'deviceId is required');
+    }
+
+    await DeviceSessionService.endSession(userId, deviceId);
+    return res.ok({ ended: true });
+}));
 
 // ============================================
 // POST /session/end-all - End all sessions (except current)
 // ============================================
 
-router.post('/end-all', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const exceptDeviceId = req.body?.exceptDeviceId as string | undefined;
-        const count = await DeviceSessionService.endAllSessions(userId, exceptDeviceId);
-
-        return res.ok({ terminated: count });
-    } catch (error) {
-        console.error('[SessionRoutes] /end-all error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.post('/end-all', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const exceptDeviceId = req.body?.exceptDeviceId as string | undefined;
+    const count = await DeviceSessionService.endAllSessions(userId, exceptDeviceId);
+
+    return res.ok({ terminated: count });
+}));
 
 // ============================================
 // GET /session/active - Get all active sessions
 // ============================================
 
-router.get('/active', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const sessions = await DeviceSessionService.getActiveSessions(userId);
-        return res.ok({ sessions });
-    } catch (error) {
-        console.error('[SessionRoutes] /active error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.get('/active', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const sessions = await DeviceSessionService.getActiveSessions(userId);
+    return res.ok({ sessions });
+}));
 
 // ============================================
 // GET /session/history - Get session history
 // ============================================
 
-router.get('/history', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const limit = parseInt(req.query.limit as string) || 50;
-        const sessions = await DeviceSessionService.getSessionHistory(userId, limit);
-        return res.ok({ sessions });
-    } catch (error) {
-        console.error('[SessionRoutes] /history error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.get('/history', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const limit = parseInt(req.query.limit as string) || 50;
+    const sessions = await DeviceSessionService.getSessionHistory(userId, limit);
+    return res.ok({ sessions });
+}));
 
 // ============================================
 // POST /session/analysis-lock/acquire - Acquire analysis lock
 // ============================================
 
-router.post('/analysis-lock/acquire', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
-        if (!deviceId) {
-            return res.fail('VALIDATION_ERROR', 'deviceId is required', 400);
-        }
-
-        const result = await DeviceSessionService.acquireAnalysisLock(userId, deviceId);
-
-        if (!result.granted) {
-            return res.status(409).json({
-                success: false,
-                code: 'ANALYSIS_LOCKED',
-                message: result.reason,
-                data: {
-                    currentLockDevice: result.currentLockDevice
-                }
-            });
-        }
-
-        return res.ok({ granted: true });
-    } catch (error) {
-        console.error('[SessionRoutes] /analysis-lock/acquire error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.post('/analysis-lock/acquire', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
+    if (!deviceId) {
+        throw new HttpError(400, 'deviceId is required');
+    }
+
+    const result = await DeviceSessionService.acquireAnalysisLock(userId, deviceId);
+
+    if (!result.granted) {
+        return res.status(409).json({
+            success: false,
+            code: 'ANALYSIS_LOCKED',
+            message: result.reason,
+            data: {
+                currentLockDevice: result.currentLockDevice
+            }
+        });
+    }
+
+    return res.ok({ granted: true });
+}));
 
 // ============================================
 // POST /session/analysis-lock/release - Release analysis lock
 // ============================================
 
-router.post('/analysis-lock/release', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
-        if (!deviceId) {
-            return res.fail('VALIDATION_ERROR', 'deviceId is required', 400);
-        }
-
-        await DeviceSessionService.releaseAnalysisLock(userId, deviceId);
-        return res.ok({ released: true });
-    } catch (error) {
-        console.error('[SessionRoutes] /analysis-lock/release error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.post('/analysis-lock/release', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const deviceId = (req.body?.deviceId || req.headers['x-device-id'] || '') as string;
+    if (!deviceId) {
+        throw new HttpError(400, 'deviceId is required');
+    }
+
+    await DeviceSessionService.releaseAnalysisLock(userId, deviceId);
+    return res.ok({ released: true });
+}));
 
 // ============================================
 // POST /session/analysis-lock/force-release - Force release from any device
 // ============================================
 
-router.post('/analysis-lock/force-release', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        await DeviceSessionService.forceReleaseAnalysisLock(userId);
-        return res.ok({ released: true });
-    } catch (error) {
-        console.error('[SessionRoutes] /analysis-lock/force-release error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.post('/analysis-lock/force-release', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    await DeviceSessionService.forceReleaseAnalysisLock(userId);
+    return res.ok({ released: true });
+}));
 
 // ============================================
 // GET /session/analysis-lock/check - Check analysis lock status
 // ============================================
 
-router.get('/analysis-lock/check', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const deviceId = (req.query.deviceId || req.headers['x-device-id'] || '') as string;
-        if (!deviceId) {
-            return res.fail('VALIDATION_ERROR', 'deviceId is required', 400);
-        }
-
-        const result = await DeviceSessionService.canRunAnalysis(userId, deviceId);
-        return res.ok(result);
-    } catch (error) {
-        console.error('[SessionRoutes] /analysis-lock/check error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.get('/analysis-lock/check', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const deviceId = (req.query.deviceId || req.headers['x-device-id'] || '') as string;
+    if (!deviceId) {
+        throw new HttpError(400, 'deviceId is required');
+    }
+
+    const result = await DeviceSessionService.canRunAnalysis(userId, deviceId);
+    return res.ok(result);
+}));
 
 // ============================================
 // DELETE /session/:deviceId - Terminate a specific session
 // ============================================
 
-router.delete('/:deviceId', requireAuth(), async (req: Request, res: Response) => {
-    try {
-        const { userId } = getAuth(req);
-        if (!userId) {
-            return res.fail('UNAUTHORIZED', 'Unauthorized', 401);
-        }
-
-        const { deviceId } = req.params;
-        if (!deviceId) {
-            return res.fail('VALIDATION_ERROR', 'deviceId is required', 400);
-        }
-
-        await DeviceSessionService.endSession(userId, deviceId);
-        return res.ok({ terminated: true });
-    } catch (error) {
-        console.error('[SessionRoutes] DELETE /:deviceId error:', error);
-        return res.fail('INTERNAL_ERROR', 'Server error');
+router.delete('/:deviceId', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) {
+        throw new HttpError(401, 'Unauthorized');
     }
-});
+
+    const { deviceId } = req.params;
+    if (!deviceId) {
+        throw new HttpError(400, 'deviceId is required');
+    }
+
+    await DeviceSessionService.endSession(userId, deviceId);
+    return res.ok({ terminated: true });
+}));
 
 // ============================================
 // POST /session/beacon-end - End session via sendBeacon (no auth header)
@@ -325,25 +271,20 @@ router.delete('/:deviceId', requireAuth(), async (req: Request, res: Response) =
 // manually. Used on page unload (beforeunload event).
 // ============================================
 
-router.post('/beacon-end', async (req: Request, res: Response) => {
-    try {
-        const { deviceId, token } = req.body || {};
-        if (!deviceId || !token) {
-            return res.status(400).json({ success: false, message: 'deviceId and token required' });
-        }
-
-        // Verify the JWT token from the body
-        const payload = await verifySocketToken(token);
-        if (!payload?.userId) {
-            return res.status(401).json({ success: false, message: 'Invalid token' });
-        }
-
-        await DeviceSessionService.endSession(payload.userId, deviceId);
-        return res.status(200).json({ success: true });
-    } catch (error) {
-        console.error('[SessionRoutes] /beacon-end error:', error);
-        return res.status(500).json({ success: false, message: 'Server error' });
+router.post('/beacon-end', asyncHandler(async (req: Request, res: Response) => {
+    const { deviceId, token } = req.body || {};
+    if (!deviceId || !token) {
+        throw new HttpError(400, 'deviceId and token required');
     }
-});
+
+    // Verify the JWT token from the body
+    const payload = await verifySocketToken(token);
+    if (!payload?.userId) {
+        throw new HttpError(401, 'Invalid token');
+    }
+
+    await DeviceSessionService.endSession(payload.userId, deviceId);
+    return res.status(200).json({ success: true });
+}));
 
 export default router;

@@ -279,16 +279,13 @@ export const LandingPage: FC = () => {
             aria-hidden="true"
           >
             <div
-              className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/15 rounded-full blur-[120px] animate-pulse"
-              style={{ animationDuration: "4s" }}
+              className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/15 rounded-full blur-3xl will-change-transform"
             />
             <div
-              className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-violet-600/15 rounded-full blur-[120px] animate-pulse"
-              style={{ animationDuration: "6s" }}
+              className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-violet-600/15 rounded-full blur-3xl will-change-transform"
             />
             <div
-              className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-[100px] animate-pulse"
-              style={{ animationDuration: "8s" }}
+              className="absolute bottom-0 left-1/3 w-[400px] h-[400px] bg-cyan-500/10 rounded-full blur-3xl will-change-transform"
             />
             {/* Subtle grid */}
             <div
@@ -626,7 +623,7 @@ export const LandingPage: FC = () => {
 
               {/* Monthly / Yearly Toggle */}
               <div className="inline-flex items-center bg-slate-200 dark:bg-slate-800 rounded-full p-1">
-                <button type="button"
+                <button
                   onClick={() => setBillingCycle('monthly')}
                   className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                     billingCycle === 'monthly'
@@ -636,7 +633,7 @@ export const LandingPage: FC = () => {
                 >
                   Monthly
                 </button>
-                <button type="button"
+                <button
                   onClick={() => setBillingCycle('yearly')}
                   className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                     billingCycle === 'yearly'

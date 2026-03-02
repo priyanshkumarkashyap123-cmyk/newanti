@@ -16,6 +16,8 @@ import {
   connectionDesignSchema,
   foundationDesignSchema,
 } from "../../middleware/validation.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { logger } from "../../utils/logger.js";
 
 const router: Router = express.Router();
 
@@ -48,7 +50,7 @@ async function forwardToPython(
       });
     }
   } catch (error) {
-    console.error(`[Design/${label}] Error:`, error);
+    logger.error({ err: error }, `[Design/${label}] Error`);
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : `${label} failed`,
@@ -63,9 +65,9 @@ async function forwardToPython(
 router.post(
   "/steel",
   validateBody(steelDesignSchema),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     await forwardToPython("/design/steel/check", req.body, res, "Steel");
-  },
+  }),
 );
 
 // ============================================
@@ -75,14 +77,14 @@ router.post(
 router.post(
   "/concrete/beam",
   validateBody(concreteBeamSchema),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     await forwardToPython(
       "/design/concrete/check",
       { ...req.body, element_type: "beam", code: "IS456" },
       res,
       "Concrete/Beam",
     );
-  },
+  }),
 );
 
 // ============================================
@@ -92,14 +94,14 @@ router.post(
 router.post(
   "/concrete/column",
   validateBody(concreteColumnSchema),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     await forwardToPython(
       "/design/concrete/check",
       { ...req.body, element_type: "column", code: "IS456" },
       res,
       "Concrete/Column",
     );
-  },
+  }),
 );
 
 // ============================================
@@ -109,14 +111,14 @@ router.post(
 router.post(
   "/connection",
   validateBody(connectionDesignSchema),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     await forwardToPython(
       "/design/connection/check",
       req.body,
       res,
       "Connection",
     );
-  },
+  }),
 );
 
 // ============================================
@@ -126,14 +128,14 @@ router.post(
 router.post(
   "/foundation",
   validateBody(foundationDesignSchema),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     await forwardToPython(
       "/design/foundation/check",
       req.body,
       res,
       "Foundation",
     );
-  },
+  }),
 );
 
 // ============================================
@@ -141,40 +143,40 @@ router.post(
 // Frontend calls /api/design/aisc, /is800, /steel/check, /concrete/check
 // ============================================
 
-router.post("/aisc", async (req: Request, res: Response) => {
+router.post("/aisc", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython(
     "/design/steel/check",
     { ...req.body, code: "AISC360" },
     res,
     "Steel/AISC",
   );
-});
+}));
 
-router.post("/is800", async (req: Request, res: Response) => {
+router.post("/is800", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython(
     "/design/steel/check",
     { ...req.body, code: "IS800" },
     res,
     "Steel/IS800",
   );
-});
+}));
 
-router.post("/steel/check", async (req: Request, res: Response) => {
+router.post("/steel/check", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython("/design/steel/check", req.body, res, "Steel/Check");
-});
+}));
 
-router.post("/concrete/check", async (req: Request, res: Response) => {
+router.post("/concrete/check", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython(
     "/design/concrete/check",
     req.body,
     res,
     "Concrete/Check",
   );
-});
+}));
 
-router.post("/optimize", async (req: Request, res: Response) => {
+router.post("/optimize", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython("/design/optimize", req.body, res, "Optimize", 60_000);
-});
+}));
 
 // ============================================
 // GET /design/codes - Available Design Codes (static)

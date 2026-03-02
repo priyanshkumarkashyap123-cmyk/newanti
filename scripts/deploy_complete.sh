@@ -21,9 +21,8 @@ WEB_APP_NAME="beamlab-web"
 BACKEND_NAME="beamlab-api"
 PYTHON_BACKEND_NAME="beamlab-python"
 REQUIRED_VARS=(
-    "RAZORPAY_KEY_ID"
-    "RAZORPAY_KEY_SECRET"
-    "RAZORPAY_WEBHOOK_SECRET"
+    "PHONEPE_MERCHANT_ID"
+    "PHONEPE_SALT_KEY"
     "MONGODB_URI"
     "CLERK_SECRET_KEY"
 )
@@ -262,9 +261,10 @@ az containerapp create \
         "NODE_ENV=production" \
         "MONGODB_URI=$MONGODB_URI" \
         "CLERK_SECRET_KEY=$CLERK_SECRET_KEY" \
-        "RAZORPAY_KEY_ID=$RAZORPAY_KEY_ID" \
-        "RAZORPAY_KEY_SECRET=$RAZORPAY_KEY_SECRET" \
-        "RAZORPAY_WEBHOOK_SECRET=$RAZORPAY_WEBHOOK_SECRET" \
+        "PHONEPE_MERCHANT_ID=$PHONEPE_MERCHANT_ID" \
+        "PHONEPE_SALT_KEY=$PHONEPE_SALT_KEY" \
+        "PHONEPE_SALT_INDEX=$PHONEPE_SALT_INDEX" \
+        "PHONEPE_ENV=PRODUCTION" \
     --output none
 
 BACKEND_URL=$(az containerapp show --name $BACKEND_NAME --resource-group $RESOURCE_GROUP --query "properties.configuration.ingress.fqdn" -o tsv)

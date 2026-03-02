@@ -4,6 +4,7 @@
  */
 
 import mongoose, { Schema, Document, Types } from 'mongoose';
+import { logger } from './utils/logger.js';
 
 // ============================================
 // MASTER USER CONFIGURATION
@@ -319,15 +320,19 @@ export const Project = mongoose.model<IProject>('Project', ProjectSchema);
 
 export interface ISubscription extends Document {
     user: Types.ObjectId;
-    razorpayPaymentId: string;
-    razorpayOrderId?: string;
+    phonepeTransactionId: string;
+    phonepeMerchantTransactionId?: string;
     planType?: string;
-    /** @deprecated Use razorpayPaymentId. Kept for data migration compatibility. */
+    /** @deprecated Legacy Stripe field. Kept for data migration compatibility. */
     stripeCustomerId?: string;
-    /** @deprecated Use razorpayOrderId. */
+    /** @deprecated Legacy Stripe field. */
     stripeSubscriptionId?: string;
-    /** @deprecated Use planType. */
+    /** @deprecated Legacy Stripe field. */
     stripePriceId?: string;
+    /** @deprecated Legacy Razorpay field. Kept for data migration. */
+    razorpayPaymentId?: string;
+    /** @deprecated Legacy Razorpay field. */
+    razorpayOrderId?: string;
     status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete' | 'expired';
     currentPeriodStart: Date;
     currentPeriodEnd: Date;
@@ -343,12 +348,12 @@ const SubscriptionSchema = new Schema<ISubscription>({
         required: true,
         unique: true
     },
-    razorpayPaymentId: {
+    phonepeTransactionId: {
         type: String,
-        required: true,
+        sparse: true,
         index: true
     },
-    razorpayOrderId: {
+    phonepeMerchantTransactionId: {
         type: String,
         sparse: true,
         index: true
@@ -356,10 +361,12 @@ const SubscriptionSchema = new Schema<ISubscription>({
     planType: {
         type: String
     },
-    // Deprecated Stripe fields — kept for data migration
+    // Deprecated legacy fields — kept for data migration
     stripeCustomerId: { type: String, sparse: true, index: true },
     stripeSubscriptionId: { type: String, sparse: true },
     stripePriceId: { type: String },
+    razorpayPaymentId: { type: String, sparse: true },
+    razorpayOrderId: { type: String, sparse: true },
     status: {
         type: String,
         enum: ['active', 'canceled', 'past_due', 'trialing', 'incomplete', 'expired'],
@@ -1204,17 +1211,17 @@ export async function connectDB(uri?: string): Promise<void> {
             connectTimeoutMS: 30000,
             socketTimeoutMS: 45000,
         });
-        console.log('✅ MongoDB connected successfully');
+        logger.info('MongoDB connected successfully');
     } catch (error) {
-        console.error('❌ MongoDB connection error:', error);
+        logger.error({ err: error }, 'MongoDB connection error');
         // Don't throw - let the app continue without DB if needed
-        console.warn('⚠️ App will continue without database - some features may be unavailable');
+        logger.warn('App will continue without database - some features may be unavailable');
     }
 }
 
 export async function disconnectDB(): Promise<void> {
     await mongoose.disconnect();
-    console.log('📤 MongoDB disconnected');
+    logger.info('MongoDB disconnected');
 }
 
 export default {

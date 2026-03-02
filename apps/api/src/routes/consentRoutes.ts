@@ -3,15 +3,16 @@ import { Consent } from "../models.js";
 import mongoose from "mongoose";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
 import { validateBody, recordConsentSchema } from "../middleware/validation.js";
+import { asyncHandler, HttpError } from "../utils/asyncHandler.js";
+import { logger } from "../utils/logger.js";
 
 const router: Router = Router();
 
 // POST /api/consent/record — requires authentication
-router.post("/record", requireAuth(), validateBody(recordConsentSchema), async (req: Request, res: Response) => {
-  try {
+router.post("/record", requireAuth(), validateBody(recordConsentSchema), asyncHandler(async (req: Request, res: Response) => {
     // Fail silently if DB is not connected
     if (mongoose.connection.readyState !== 1) {
-      console.warn("[Consent] Database disconnected, skipping consent record");
+      logger.warn("[Consent] Database disconnected, skipping consent record");
       return res.ok({ message: "Consent acknowledged (DB offline)" });
     }
 
@@ -27,7 +28,7 @@ router.post("/record", requireAuth(), validateBody(recordConsentSchema), async (
       "unknown";
 
     if (!userId || !consentType) {
-      return res.fail('VALIDATION_ERROR', 'Missing required fields: userId (from auth) and consentType are required', 400);
+      throw new HttpError(400, "Missing required fields: userId (from auth) and consentType are required");
     }
 
     const newConsent = new Consent({
@@ -41,13 +42,9 @@ router.post("/record", requireAuth(), validateBody(recordConsentSchema), async (
 
     await newConsent.save();
 
-    console.log(`[Consent] Recorded ${consentType} consent for user ${userId}`);
+    logger.info(`[Consent] Recorded ${consentType} consent for user ${userId}`);
 
     return res.ok({ message: "Consent recorded successfully", consent: newConsent });
-  } catch (error) {
-    console.error("Error recording consent:", error);
-    return res.fail('INTERNAL_ERROR', 'Internal server error');
-  }
-});
+}));
 
 export default router;

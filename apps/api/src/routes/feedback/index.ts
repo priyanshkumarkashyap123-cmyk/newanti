@@ -8,6 +8,8 @@
 
 import { Router, Request, Response, type IRouter } from 'express';
 import { requireAuth } from '../../middleware/authMiddleware.js';
+import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
+import { logger } from '../../utils/logger.js';
 
 const router: IRouter = Router();
 
@@ -36,51 +38,45 @@ const feedbackStore: FeedbackEntry[] = [];
  * POST /api/feedback
  * Submit user feedback
  */
-router.post('/', async (req: Request, res: Response) => {
-    try {
-        const { type, feature, originalInput, originalOutput, correctedOutput, rating, comment, sessionId } = req.body;
+router.post('/', asyncHandler(async (req: Request, res: Response) => {
+    const { type, feature, originalInput, originalOutput, correctedOutput, rating, comment, sessionId } = req.body;
 
-        if (!type || !feature || !sessionId) {
-            return res.fail('VALIDATION_ERROR', 'Missing required fields: type, feature, sessionId', 400);
-        }
-
-        const entry: FeedbackEntry = {
-            id: `fb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            timestamp: new Date(),
-            type,
-            feature,
-            sessionId,
-            userId: ((req as Record<string, unknown>).auth as Record<string, unknown> | undefined)?.userId as string | undefined,
-            originalInput: originalInput || '',
-            originalOutput,
-            correctedOutput,
-            rating,
-            comment,
-            processed: false
-        };
-
-        feedbackStore.push(entry);
-
-        // Keep only last 10,000 entries
-        if (feedbackStore.length > 10000) {
-            feedbackStore.shift();
-        }
-
-        console.log(`[Feedback] ${type} received for ${feature}`);
-
-        return res.ok({ id: entry.id });
-
-    } catch (error) {
-        console.error('[Feedback] Error:', error);
-        return res.fail('INTERNAL_ERROR', 'Failed to submit feedback');
+    if (!type || !feature || !sessionId) {
+        throw new HttpError(400, 'Missing required fields: type, feature, sessionId');
     }
-});
+
+    const entry: FeedbackEntry = {
+        id: `fb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date(),
+        type,
+        feature,
+        sessionId,
+        userId: ((req as unknown as Record<string, unknown>).auth as Record<string, unknown> | undefined)?.userId as string | undefined,
+        originalInput: originalInput || '',
+        originalOutput,
+        correctedOutput,
+        rating,
+        comment,
+        processed: false
+    };
+
+    feedbackStore.push(entry);
+
+    // Keep only last 10,000 entries
+    if (feedbackStore.length > 10000) {
+        feedbackStore.shift();
+    }
+
+    logger.info(`[Feedback] ${type} received for ${feature}`);
+
+    return res.ok({ id: entry.id });
+}));
 
 /**
  * GET /api/feedback/stats
  * Get feedback statistics
  */
-router.get('/stats', async (_req: Request, res: Response) => {
+router.get('/stats', asyncHandler(async (_req: Request, res: Response) => {
     const corrections = feedbackStore.filter(e => e.type === 'correction');
     const ratings = feedbackStore.filter(e => e.type === 'rating' && e.rating);
 
@@ -106,13 +102,13 @@ router.get('/stats', async (_req: Request, res: Response) => {
             pendingProcessing: feedbackStore.filter(e => !e.processed).length
         }
     });
-});
+}));
 
 /**
  * POST /api/feedback/export
  * Export corrections as training data
  */
-router.post('/export', async (_req: Request, res: Response) => {
+router.post('/export', asyncHandler(async (_req: Request, res: Response) => {
     const corrections = feedbackStore.filter(
         e => e.type === 'correction' && e.correctedOutput && !e.processed
     );
@@ -135,16 +131,16 @@ router.post('/export', async (_req: Request, res: Response) => {
         c.processed = true;
     });
 
-    console.log(`[Feedback] Exported ${corrections.length} corrections for training`);
+    logger.info(`[Feedback] Exported ${corrections.length} corrections for training`);
 
     return res.ok({ data: trainingData });
-});
+}));
 
 /**
  * GET /api/feedback/recent
  * Get recent feedback entries
  */
-router.get('/recent', async (req: Request, res: Response) => {
+router.get('/recent', asyncHandler(async (req: Request, res: Response) => {
     const limit = Math.min(parseInt(req.query['limit'] as string) || 50, 100);
     const recent = feedbackStore.slice(-limit).reverse();
 
@@ -158,6 +154,6 @@ router.get('/recent', async (req: Request, res: Response) => {
             hasCorrection: !!e.correctedOutput
         }))
     });
-});
+}));
 
 export default router;

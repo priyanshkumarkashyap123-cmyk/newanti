@@ -15,6 +15,7 @@
 
 import mongoose from 'mongoose';
 import { DeviceSession, IDeviceSession, User, UsageLog, isMasterUser } from '../models.js';
+import { logger } from '../utils/logger.js';
 
 const isConnected = () => mongoose.connection.readyState === 1;
 
@@ -129,7 +130,7 @@ export class DeviceSessionService {
                 activeSessions
             };
         } catch (error) {
-            console.error('[DeviceSessionService] registerSession error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] registerSession error');
             return { allowed: true }; // Fail open
         }
     }
@@ -163,7 +164,7 @@ export class DeviceSessionService {
 
             return !!result;
         } catch (error) {
-            console.error('[DeviceSessionService] heartbeat error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] heartbeat error');
             return true;
         }
     }
@@ -208,7 +209,7 @@ export class DeviceSessionService {
 
             return true;
         } catch (error) {
-            console.error('[DeviceSessionService] endSession error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] endSession error');
             return false;
         }
     }
@@ -256,7 +257,7 @@ export class DeviceSessionService {
 
             return result.modifiedCount;
         } catch (error) {
-            console.error('[DeviceSessionService] endAllSessions error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] endAllSessions error');
             return 0;
         }
     }
@@ -339,7 +340,7 @@ export class DeviceSessionService {
 
             return { granted: true };
         } catch (error) {
-            console.error('[DeviceSessionService] acquireAnalysisLock error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] acquireAnalysisLock error');
             return { granted: true }; // Fail open
         }
     }
@@ -363,7 +364,7 @@ export class DeviceSessionService {
 
             return true;
         } catch (error) {
-            console.error('[DeviceSessionService] releaseAnalysisLock error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] releaseAnalysisLock error');
             return false;
         }
     }
@@ -388,7 +389,7 @@ export class DeviceSessionService {
 
             return true;
         } catch (error) {
-            console.error('[DeviceSessionService] forceReleaseAnalysisLock error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] forceReleaseAnalysisLock error');
             return false;
         }
     }
@@ -427,7 +428,7 @@ export class DeviceSessionService {
                 }
             };
         } catch (error) {
-            console.error('[DeviceSessionService] canRunAnalysis error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] canRunAnalysis error');
             return { granted: true };
         }
     }
@@ -464,7 +465,7 @@ export class DeviceSessionService {
                 ipAddress: s.ipAddress
             }));
         } catch (error) {
-            console.error('[DeviceSessionService] getActiveSessions error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] getActiveSessions error');
             return [];
         }
     }
@@ -481,7 +482,7 @@ export class DeviceSessionService {
                 .limit(limit)
                 .lean();
         } catch (error) {
-            console.error('[DeviceSessionService] getSessionHistory error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] getSessionHistory error');
             return [];
         }
     }
@@ -539,7 +540,7 @@ export class DeviceSessionService {
 
             return result.modifiedCount;
         } catch (error) {
-            console.error('[DeviceSessionService] cleanStaleSessions error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] cleanStaleSessions error');
             return 0;
         }
     }
@@ -567,7 +568,7 @@ export class DeviceSessionService {
             });
         } catch (error) {
             // Non-critical — log and continue
-            console.error('[DeviceSessionService] logUsage error:', error);
+            logger.error({ err: error }, '[DeviceSessionService] logUsage error');
         }
     }
 }

@@ -94,7 +94,8 @@ function reportToConsole(metric: Metric) {
  */
 export async function initWebVitals() {
   try {
-    const { onCLS, onFCP, onFID, onINP, onLCP, onTTFB } = await import('web-vitals');
+    // web-vitals v5: onFID removed (replaced by INP)
+    const { onCLS, onFCP, onINP, onLCP, onTTFB } = await import('web-vitals');
 
     const handler = (metric: Metric) => {
       // Always log in dev
@@ -108,7 +109,6 @@ export async function initWebVitals() {
 
     onCLS(handler);
     onFCP(handler);
-    onFID(handler);
     onINP(handler);
     onLCP(handler);
     onTTFB(handler);

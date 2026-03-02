@@ -28,6 +28,7 @@ import { aiArchitectEngine } from '../../services/ai/AIArchitectEngine.js';
 import { aiRateLimiter } from '../../middleware/aiRateLimiter.js';
 import { requireAuth } from '../../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
+import { logger } from '../../utils/logger.js';
 
 const router: IRouter = Router();
 
@@ -50,7 +51,7 @@ router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
     throw new HttpError(400, 'Message too long (max 10000 characters)');
   }
 
-  console.log(`[AI/Chat] "${message.substring(0, 100)}..."`);
+  logger.info(`[AI/Chat] "${message.substring(0, 100)}..."`);
 
   const result = await aiArchitectEngine.chat(message, context, history);
 
@@ -79,7 +80,7 @@ router.post('/generate', asyncHandler(async (req: Request, res: Response) => {
     throw new HttpError(400, 'Prompt too long (max 2000 characters)');
   }
 
-  console.log(`[AI/Generate] "${prompt.substring(0, 100)}..."`);
+  logger.info(`[AI/Generate] "${prompt.substring(0, 100)}..."`);
 
   const result = await aiArchitectEngine.generateStructure(prompt, constraints);
 
@@ -235,7 +236,7 @@ router.post('/modify', asyncHandler(async (req: Request, res: Response) => {
     loads: model.loads || [],
   } : undefined);
 
-  console.log(`[AI/Modify] "${instruction.substring(0, 100)}..."`);
+  logger.info(`[AI/Modify] "${instruction.substring(0, 100)}..."`);
 
   const result = await aiArchitectEngine.chat(instruction, modelContext);
 

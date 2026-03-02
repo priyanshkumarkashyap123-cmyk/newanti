@@ -399,13 +399,13 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button type="button"
+          <button
             onClick={onGetStarted}
             className="w-full sm:w-auto px-10 py-4 rounded-full bg-blue-600 dark:bg-white text-white dark:text-slate-950 font-bold text-lg hover:bg-blue-700 dark:hover:bg-blue-50 transition-all shadow-[0_0_0_1px_rgba(59,130,246,0.3),0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_0_0_1px_rgba(59,130,246,0.5),0_8px_40px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 active:scale-[0.98]"
           >
             Start Free Trial <ChevronRight className="w-5 h-5" />
           </button>
-          <button type="button" className="w-full sm:w-auto px-10 py-4 rounded-full border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white font-medium hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:border-slate-400 dark:hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 active:scale-[0.98]">
+          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white font-medium hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:border-slate-400 dark:hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 active:scale-[0.98]">
             Schedule Demo
           </button>
         </div>

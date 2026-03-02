@@ -14,6 +14,7 @@ import {
   requireAuth as clerkRequireAuth,
   getAuth as clerkGetAuth,
 } from "@clerk/express";
+import { logger } from "../utils/logger.js";
 
 // ============================================
 // CONFIGURATION
@@ -23,7 +24,7 @@ export const isUsingClerk = (): boolean => {
   return process.env["USE_CLERK"] === "true";
 };
 
-console.log("🔐 API Auth Mode: Clerk");
+logger.info('API Auth Mode: Clerk');
 
 // ============================================
 // TYPES
@@ -149,7 +150,7 @@ export const requireRole = (roles: string[]): RequestHandler => {
         return;
       }
     } catch (error) {
-      console.error("[Auth] Role check failed:", error);
+      logger.error({ err: error }, '[Auth] Role check failed');
       // Fail closed — deny access if role check fails
       res.status(403).json({
         success: false,

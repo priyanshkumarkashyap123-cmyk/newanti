@@ -10,6 +10,7 @@
 
 import { User, IUser, isMasterUser } from '../models.js';
 import mongoose from 'mongoose';
+import { logger } from '../utils/logger.js';
 
 // Helper to check if DB is connected
 const isConnected = () => mongoose.connection.readyState === 1;
@@ -77,7 +78,7 @@ export class UserActivityService {
             );
             return user;
         } catch (error) {
-            console.error('[UserActivityService] recordLogin error:', error);
+            logger.error({ err: error }, '[UserActivityService] recordLogin error');
             return null;
         }
     }
@@ -124,7 +125,7 @@ export class UserActivityService {
             // New day - reset count
             return { allowed: true, remaining: limits.maxAnalysisPerDay };
         } catch (error) {
-            console.error('[UserActivityService] canRunAnalysis error:', error);
+            logger.error({ err: error }, '[UserActivityService] canRunAnalysis error');
             return { allowed: false, reason: 'Error checking limits' };
         }
     }
@@ -163,7 +164,7 @@ export class UserActivityService {
                 { new: true }
             );
         } catch (error) {
-            console.error('[UserActivityService] recordAnalysis error:', error);
+            logger.error({ err: error }, '[UserActivityService] recordAnalysis error');
             return null;
         }
     }
@@ -188,7 +189,7 @@ export class UserActivityService {
                 { new: true }
             );
         } catch (error) {
-            console.error('[UserActivityService] recordExport error:', error);
+            logger.error({ err: error }, '[UserActivityService] recordExport error');
             return null;
         }
     }
@@ -240,7 +241,7 @@ export class UserActivityService {
                 recentActivity: user.activityLog.slice(-10).reverse()
             };
         } catch (error) {
-            console.error('[UserActivityService] getActivitySummary error:', error);
+            logger.error({ err: error }, '[UserActivityService] getActivitySummary error');
             return null;
         }
     }
@@ -282,7 +283,7 @@ export class UserActivityService {
 
             return { allowed: true };
         } catch (error) {
-            console.error('[UserActivityService] checkModelLimits error:', error);
+            logger.error({ err: error }, '[UserActivityService] checkModelLimits error');
             return { allowed: true };
         }
     }
@@ -304,17 +305,17 @@ export class UserActivityService {
                     tier: isMaster ? 'enterprise' : 'free',
                     lastLogin: new Date()
                 });
-                console.log(`[UserActivityService] Created new user: ${email}${isMaster ? ' (MASTER USER)' : ''}`);
+                logger.info(`[UserActivityService] Created new user: ${email}${isMaster ? ' (MASTER USER)' : ''}`);
             } else if (isMaster && user.tier !== 'enterprise') {
                 // Upgrade existing master user to enterprise if not already
                 user.tier = 'enterprise';
                 await user.save();
-                console.log(`[UserActivityService] Upgraded master user to enterprise: ${email}`);
+                logger.info(`[UserActivityService] Upgraded master user to enterprise: ${email}`);
             }
 
             return user;
         } catch (error) {
-            console.error('[UserActivityService] getOrCreateUser error:', error);
+            logger.error({ err: error }, '[UserActivityService] getOrCreateUser error');
             return null;
         }
     }

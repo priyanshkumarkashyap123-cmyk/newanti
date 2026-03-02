@@ -42,7 +42,7 @@ import {
   createSectionFromDatabase,
 } from '../api/design';
 import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
-import beamLabLogo from '../assets/beamlab_logo.png';
+const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 
 // ================================================================
 // TYPES
@@ -1635,7 +1635,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div className="flex items-center gap-3">
-                <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7" />
+                <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7 object-contain" />
                 <div>
                   <h1 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     Design Hub

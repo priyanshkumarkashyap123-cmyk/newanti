@@ -17,6 +17,7 @@
 import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { logger } from '../utils/logger.js';
 
 // ============================================
 // TYPES
@@ -87,7 +88,7 @@ async function connectDB(): Promise<mongoose.Connection> {
     if (mongoose.connection.readyState === 0) {
         await mongoose.connect(uri);
     }
-    console.log(`[migrations] Connected to ${mongoose.connection.host}/${mongoose.connection.name}`);
+    logger.info(`[migrations] Connected to ${mongoose.connection.host}/${mongoose.connection.name}`);
     return mongoose.connection;
 }
 
@@ -102,17 +103,17 @@ export async function runPendingMigrations(): Promise<{ applied: string[]; skipp
     const pending = MIGRATIONS.filter((m) => !applied.includes(m.name));
 
     if (pending.length === 0) {
-        console.log('[migrations] No pending migrations.');
+        logger.info('[migrations] No pending migrations.');
         return { applied: [], skipped: MIGRATIONS.map((m) => m.name) };
     }
 
-    console.log(`[migrations] ${pending.length} pending migration(s) to apply.`);
+    logger.info(`[migrations] ${pending.length} pending migration(s) to apply.`);
     const newlyApplied: string[] = [];
 
     for (const entry of pending) {
         const mod = await entry.module();
         const start = Date.now();
-        console.log(`[migrations] Applying: ${entry.name} — ${mod.description}`);
+        logger.info(`[migrations] Applying: ${entry.name} -- ${mod.description}`);
 
         try {
             await mod.up(db);
@@ -125,10 +126,10 @@ export async function runPendingMigrations(): Promise<{ applied: string[]; skipp
                 durationMs,
             });
 
-            console.log(`[migrations] ✓ ${entry.name} (${durationMs}ms)`);
+            logger.info(`[migrations] ${entry.name} applied (${durationMs}ms)`);
             newlyApplied.push(entry.name);
         } catch (err) {
-            console.error(`[migrations] ✗ ${entry.name} FAILED:`, err);
+            logger.error({ err }, `[migrations] ${entry.name} FAILED`);
             throw err; // Stop on first failure — no partial runs
         }
     }
@@ -140,17 +141,17 @@ export async function showStatus(): Promise<void> {
     await connectDB();
     const applied = await getAppliedMigrations();
 
-    console.log('\n Migration Status');
-    console.log('─'.repeat(60));
+    logger.info('Migration Status');
+    logger.info('─'.repeat(60));
 
     for (const entry of MIGRATIONS) {
         const isApplied = applied.includes(entry.name);
         const status = isApplied ? '✓ applied' : '○ pending';
-        console.log(`  ${status}  ${entry.name}`);
+        logger.info(`  ${status}  ${entry.name}`);
     }
 
-    console.log('─'.repeat(60));
-    console.log(`  Total: ${MIGRATIONS.length}  Applied: ${applied.length}  Pending: ${MIGRATIONS.length - applied.length}\n`);
+    logger.info('─'.repeat(60));
+    logger.info(`  Total: ${MIGRATIONS.length}  Applied: ${applied.length}  Pending: ${MIGRATIONS.length - applied.length}`);
 }
 
 // ============================================
@@ -172,25 +173,25 @@ if (isMain) {
                 await connectDB();
                 const applied = await getAppliedMigrations();
                 if (applied.length === 0) {
-                    console.log('[migrations] Nothing to roll back.');
+                    logger.info('[migrations] Nothing to roll back.');
                 } else {
                     const last = applied[applied.length - 1]!;
                     const entry = MIGRATIONS.find((m) => m.name === last);
                     if (!entry) {
-                        console.error(`[migrations] Cannot find module for ${last}`);
+                        logger.error(`[migrations] Cannot find module for ${last}`);
                         process.exit(1);
                     }
                     const mod = await entry.module();
-                    console.log(`[migrations] Rolling back: ${last}`);
+                    logger.info(`[migrations] Rolling back: ${last}`);
                     await mod.down(mongoose.connection);
                     await MigrationModel.deleteOne({ name: last });
-                    console.log(`[migrations] ✓ Rolled back ${last}`);
+                    logger.info(`[migrations] Rolled back ${last}`);
                 }
             } else {
                 await runPendingMigrations();
             }
         } catch (err) {
-            console.error('[migrations] Fatal error:', err);
+            logger.error({ err }, '[migrations] Fatal error');
             process.exit(1);
         } finally {
             await mongoose.disconnect();

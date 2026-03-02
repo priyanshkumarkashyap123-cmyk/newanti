@@ -53,9 +53,10 @@ jobs:
       - name: Create environment file
         run: |
           cat > deploy-api/.env << EOF
-          RAZORPAY_KEY_ID=${{ secrets.RAZORPAY_KEY_ID }}
-          RAZORPAY_KEY_SECRET=${{ secrets.RAZORPAY_KEY_SECRET }}
-          RAZORPAY_WEBHOOK_SECRET=${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
+          PHONEPE_MERCHANT_ID=${{ secrets.PHONEPE_MERCHANT_ID }}
+          PHONEPE_SALT_KEY=${{ secrets.PHONEPE_SALT_KEY }}
+          PHONEPE_SALT_INDEX=${{ secrets.PHONEPE_SALT_INDEX }}
+          PHONEPE_ENV=PRODUCTION
           NODE_ENV=production
           PORT=8080
           EOF

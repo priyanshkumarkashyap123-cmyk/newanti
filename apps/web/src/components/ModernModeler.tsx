@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { useUIStore, Category } from "../store/uiStore";
 import { useModelStore, saveProjectToStorage } from "../store/model";
+import { useShallow } from 'zustand/react/shallow';
 import { ViewportManager } from "./ViewportManager";
 // import { Toolbar } from './Toolbar'; // Replaced by Ribbon
 import { PropertiesPanel } from "./PropertiesPanel";
@@ -316,7 +317,7 @@ function getAnalysisService() {
 import { API_CONFIG } from "../config/env";
 import { useHealthCheck, type HealthStatus } from "../lib/health-check";
 const IntegrationDiagnostics = lazy(() => import("./IntegrationDiagnostics"));
-import { useRazorpayPayment } from "./RazorpayPayment";
+import { usePhonePePayment } from "./PhonePePayment";
 import { useTierAccess } from "../hooks/useTierAccess";
 import { ProjectService, Project } from "../services/ProjectService";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
@@ -686,7 +687,7 @@ MultiplayerUI.displayName = "MultiplayerUI";
 export const ModernModeler: FC = () => {
   const { getToken, userId, user } = useAuth();
   const { subscription, refreshSubscription } = useSubscription();
-  const { openPayment } = useRazorpayPayment();
+  const { openPayment } = usePhonePePayment();
   const { isFree } = useTierAccess();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -748,16 +749,23 @@ export const ModernModeler: FC = () => {
     };
   }, []);
 
-  const nodes = useModelStore((state) => state.nodes);
-  const members = useModelStore((state) => state.members);
-  const plates = useModelStore((state) => state.plates);
-  const loads = useModelStore((state) => state.loads);
-  const memberLoads = useModelStore((state) => state.memberLoads);
-  const floorLoads = useModelStore((state) => state.floorLoads);
-  const modelSettings = useModelStore((state) => state.settings);
-  const analysisResults = useModelStore((state) => state.analysisResults);
-  const setAnalysisResults = useModelStore((state) => state.setAnalysisResults);
-  const setIsAnalyzing = useModelStore((state) => state.setIsAnalyzing);
+  const {
+    nodes, members, plates, loads, memberLoads, floorLoads,
+    settings: modelSettings, analysisResults, setAnalysisResults, setIsAnalyzing
+  } = useModelStore(
+    useShallow((state) => ({
+      nodes: state.nodes,
+      members: state.members,
+      plates: state.plates,
+      loads: state.loads,
+      memberLoads: state.memberLoads,
+      floorLoads: state.floorLoads,
+      settings: state.settings,
+      analysisResults: state.analysisResults,
+      setAnalysisResults: state.setAnalysisResults,
+      setIsAnalyzing: state.setIsAnalyzing,
+    }))
+  );
   // UI Store
   const {
     activeCategory,

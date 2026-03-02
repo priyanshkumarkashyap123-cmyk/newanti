@@ -45,7 +45,7 @@ class Logger {
     return levels.indexOf(level) >= levels.indexOf(this.config.level);
   }
 
-  private formatMessage(...args: any[]): any[] {
+  private formatMessage(...args: unknown[]): unknown[] {
     if (this.config.prefix) {
       return [`[${this.config.prefix}]`, ...args];
     }
@@ -55,7 +55,7 @@ class Logger {
   /**
    * Debug level - only in development with debug flag
    */
-  debug(...args: any[]) {
+  debug(...args: unknown[]) {
     if (this.shouldLog('debug')) {
       console.log(...this.formatMessage('🔍', ...args));
     }
@@ -64,7 +64,7 @@ class Logger {
   /**
    * Info level - general information in development
    */
-  info(...args: any[]) {
+  info(...args: unknown[]) {
     if (this.shouldLog('info')) {
       console.log(...this.formatMessage('ℹ️', ...args));
     }
@@ -73,14 +73,14 @@ class Logger {
   /**
    * Log - alias for info level (backward compatibility)
    */
-  log(...args: any[]) {
+  log(...args: unknown[]) {
     this.info(...args);
   }
 
   /**
    * Success level - success messages in development
    */
-  success(...args: any[]) {
+  success(...args: unknown[]) {
     if (this.shouldLog('info')) {
       console.log(...this.formatMessage('✅', ...args));
     }
@@ -89,7 +89,7 @@ class Logger {
   /**
    * Warning level - warnings in development
    */
-  warn(...args: any[]) {
+  warn(...args: unknown[]) {
     if (this.shouldLog('warn')) {
       console.warn(...this.formatMessage('⚠️', ...args));
     }
@@ -98,7 +98,7 @@ class Logger {
   /**
    * Error level - always logged, even in production
    */
-  error(...args: any[]) {
+  error(...args: unknown[]) {
     // Always log errors, even in production
     console.error(...this.formatMessage('❌', ...args));
   }
@@ -142,7 +142,7 @@ class Logger {
   /**
    * Log with conditional - only logs if condition is true
    */
-  logIf(condition: boolean, level: LogLevel, ...args: any[]) {
+  logIf(condition: boolean, level: LogLevel, ...args: unknown[]) {
     if (condition) {
       this[level](...args);
     }
@@ -151,7 +151,7 @@ class Logger {
   /**
    * Table logging for structured data
    */
-  table(data: any) {
+  table(data: Record<string, unknown> | unknown[]) {
     if (this.config.enabled) {
       console.table(data);
     }
@@ -181,12 +181,12 @@ export const modelerLogger = createLogger('Modeler');
  * Call from browser console: window.enableBeamLabDebug()
  */
 if (typeof window !== 'undefined') {
-  (window as any).enableBeamLabDebug = () => {
+  (window as unknown as Record<string, unknown>).enableBeamLabDebug = () => {
     localStorage.setItem('BEAMLAB_DEBUG', 'true');
     console.log('🔧 BeamLab debug mode enabled. Refresh the page.');
   };
 
-  (window as any).disableBeamLabDebug = () => {
+  (window as unknown as Record<string, unknown>).disableBeamLabDebug = () => {
     localStorage.removeItem('BEAMLAB_DEBUG');
     console.log('🔧 BeamLab debug mode disabled. Refresh the page.');
   };

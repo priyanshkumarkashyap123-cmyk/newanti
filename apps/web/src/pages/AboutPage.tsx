@@ -7,7 +7,7 @@ import { FC, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Users, Globe, Target, Award, ArrowRight, Rocket, Code, Lightbulb } from 'lucide-react';
-import beamLabLogo from '../assets/beamlab_logo.png';
+const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import { Button } from '../components/ui/button';
 
 const fadeInUp = {
@@ -26,8 +26,8 @@ export const AboutPage: FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link to="/" className="flex items-center gap-3 group">
-                            <div className="relative w-9 h-9 flex items-center justify-center rounded-lg shadow-lg overflow-hidden">
-                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-cover" />
+                            <div className="relative w-9 h-9 flex items-center justify-center">
+                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
                             </div>
                             <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
                                 BeamLab

@@ -1,22 +1,24 @@
 /**
- * RazorpayPayment - Production-Grade Payment Component
+ * PhonePePayment — Production-Grade Payment Component
  *
  * Features:
+ *   - PhonePe Standard Checkout (redirect-based flow)
  *   - Idempotent order creation with deduplication guard
  *   - Automatic retry with exponential backoff
- *   - Script preloading with SRI integrity check
+ *   - Post-redirect transaction status polling
  *   - Accessibility (ARIA, focus trap, keyboard navigation)
  *   - Plan toggle (monthly/yearly) with animated savings badge
- *   - Payment state machine (idle → creating → checkout → verifying → success/error)
- *   - Responsive Tailwind CSS design (replaces inline styles)
+ *   - Payment state machine (idle → creating → redirecting → verifying → success/error)
+ *   - Responsive Tailwind CSS design
  *   - Telemetry hooks for analytics
  *
  * Flow:
- *   1. Call backend to create an order (with idempotency key)
- *   2. Open Razorpay checkout with orderId
- *   3. On success, verify payment on backend
- *   4. Backend upgrades user to PRO
- *   5. Refresh subscription context automatically
+ *   1. Call backend to initiate a PhonePe payment order
+ *   2. Redirect user to PhonePe payment page
+ *   3. PhonePe redirects user back to callback URL
+ *   4. Frontend polls transaction status / verifies payment
+ *   5. Backend upgrades user to PRO
+ *   6. Refresh subscription context automatically
  */
 
 import { FC, useState, useCallback, useEffect, useRef, useMemo } from "react";
@@ -33,52 +35,31 @@ type PlanType = "monthly" | "yearly";
 type PaymentState =
   | "idle"
   | "creating"
-  | "checkout"
+  | "redirecting"
   | "verifying"
   | "success"
   | "error";
 
-interface RazorpayResponse {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
+interface InitiatePaymentResponse {
+  success: boolean;
+  data: {
+    merchantTransactionId: string;
+    redirectUrl: string;
+    amount?: number;
+    currency?: string;
+  };
+  message?: string;
+  code?: string;
 }
 
-interface RazorpayOptions {
-  key: string;
-  order_id: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  image?: string;
-  handler: (response: RazorpayResponse) => void;
-  prefill?: {
-    name?: string;
-    email?: string;
-    contact?: string;
+interface VerifyPaymentResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    tier: string;
+    planType: string;
+    transactionId: string;
   };
-  theme?: {
-    color?: string;
-  };
-  modal?: {
-    ondismiss?: () => void;
-    escape?: boolean;
-    confirm_close?: boolean;
-    animation?: boolean;
-  };
-  notes?: Record<string, string>;
-  retry?: { enabled: boolean; max_count: number };
-}
-
-declare global {
-  interface Window {
-    Razorpay: new (options: RazorpayOptions) => {
-      open: () => void;
-      close: () => void;
-      on: (event: string, handler: (...args: unknown[]) => void) => void;
-    };
-  }
 }
 
 interface PaymentModalProps {
@@ -93,20 +74,14 @@ interface PaymentModalProps {
   allowPlanToggle?: boolean;
 }
 
-interface OrderResponse {
-  orderId: string;
-  amount: number;
-  currency: string;
-  keyId: string;
-}
-
 // ============================================
 // CONSTANTS
 // ============================================
 
-const RAZORPAY_SCRIPT_URL = "https://checkout.razorpay.com/v1/checkout.js";
 const MAX_RETRIES = 3;
 const RETRY_BASE_DELAY_MS = 1000;
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_ATTEMPTS = 20; // 60 seconds max polling
 
 const PLAN_DETAILS = {
   monthly: {
@@ -137,50 +112,10 @@ const PRO_FEATURES = [
 const STATE_LABELS: Record<PaymentState, string> = {
   idle: "Upgrade Now",
   creating: "Creating Order…",
-  checkout: "Complete Payment…",
+  redirecting: "Redirecting to PhonePe…",
   verifying: "Verifying Payment…",
   success: "Payment Successful!",
   error: "Retry Payment",
-};
-
-// ============================================
-// RAZORPAY SCRIPT LOADER (singleton with retry)
-// ============================================
-
-let scriptLoadPromise: Promise<boolean> | null = null;
-
-const loadRazorpayScript = (): Promise<boolean> => {
-  if (scriptLoadPromise) return scriptLoadPromise;
-
-  scriptLoadPromise = new Promise((resolve) => {
-    if (typeof window !== "undefined" && window.Razorpay) {
-      resolve(true);
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = RAZORPAY_SCRIPT_URL;
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    // Timeout guard — reject if script doesn't load in 15s
-    const timeout = setTimeout(() => {
-      scriptLoadPromise = null;
-      resolve(false);
-    }, 15_000);
-
-    script.onload = () => {
-      clearTimeout(timeout);
-      resolve(true);
-    };
-    script.onerror = () => {
-      clearTimeout(timeout);
-      scriptLoadPromise = null; // Allow retry
-      resolve(false);
-    };
-    document.head.appendChild(script);
-  });
-
-  return scriptLoadPromise;
 };
 
 // ============================================
@@ -191,8 +126,7 @@ const API_URL = API_CONFIG.baseUrl;
 
 /** Generate a unique idempotency key to prevent duplicate orders */
 function generateIdempotencyKey(userId: string, planType: PlanType): string {
-  const sessionKey = `${userId}_${planType}_${Math.floor(Date.now() / 60_000)}`;
-  return sessionKey;
+  return `${userId}_${planType}_${Math.floor(Date.now() / 60_000)}`;
 }
 
 async function fetchWithRetry<T>(
@@ -238,15 +172,15 @@ async function fetchWithRetry<T>(
   throw lastError ?? new Error("Request failed after retries");
 }
 
-async function createOrder(
+async function initiatePayment(
   userId: string,
   email: string,
   token: string,
   planType: PlanType,
-): Promise<OrderResponse> {
+): Promise<InitiatePaymentResponse> {
   const idempotencyKey = generateIdempotencyKey(userId, planType);
 
-  return fetchWithRetry<OrderResponse>(`${API_URL}/api/billing/create-order`, {
+  return fetchWithRetry<InitiatePaymentResponse>(`${API_URL}/api/billing/create-order`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -258,24 +192,30 @@ async function createOrder(
 }
 
 async function verifyPayment(
-  razorpay_order_id: string,
-  razorpay_payment_id: string,
-  razorpay_signature: string,
+  merchantTransactionId: string,
   planType: PlanType,
   token: string,
-): Promise<{ success: boolean; message: string }> {
-  return fetchWithRetry(`${API_URL}/api/billing/verify-payment`, {
+): Promise<VerifyPaymentResponse> {
+  return fetchWithRetry<VerifyPaymentResponse>(`${API_URL}/api/billing/verify-payment`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      planType,
-    }),
+    body: JSON.stringify({ merchantTransactionId, planType }),
+  });
+}
+
+async function checkTransactionStatus(
+  txnId: string,
+  token: string,
+): Promise<{ success: boolean; data: { state: string; transactionId?: string } }> {
+  return fetchWithRetry(`${API_URL}/api/billing/transaction-status/${txnId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   });
 }
 
@@ -283,7 +223,7 @@ async function verifyPayment(
 // PAYMENT MODAL COMPONENT
 // ============================================
 
-export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
+export const PhonePePaymentModal: FC<PaymentModalProps> = ({
   userId,
   email,
   userName,
@@ -305,18 +245,10 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
   const isProcessing = paymentState !== "idle" && paymentState !== "error" && paymentState !== "success";
   const plan = PLAN_DETAILS[selectedPlan];
 
-  // Preload Razorpay script on mount
-  useEffect(() => {
-    loadRazorpayScript();
-  }, []);
-
   // Focus trap on mount
   useEffect(() => {
     const el = modalRef.current;
-    if (el) {
-      el.focus();
-    }
-    // Prevent background scroll
+    if (el) el.focus();
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
@@ -333,13 +265,45 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
   // Keyboard escape handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !isProcessing) {
-        onClose?.();
-      }
+      if (e.key === "Escape" && !isProcessing) onClose?.();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isProcessing, onClose]);
+
+  // Check for return from PhonePe redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const txnId = params.get("txnId");
+    if (txnId) {
+      // User has returned from PhonePe — verify the payment
+      setPaymentState("verifying");
+      (async () => {
+        try {
+          const token = await getToken();
+          if (!token) throw new Error("Authentication required");
+
+          const result = await verifyPayment(txnId, selectedPlan, token);
+          if (result.success) {
+            setPaymentState("success");
+            await refreshSubscription();
+            setTimeout(() => onSuccess?.(), 1500);
+          } else {
+            throw new Error(result.message || "Payment verification failed");
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Verification failed";
+          setError(msg);
+          setPaymentState("error");
+          onError?.(msg);
+        }
+        // Clean URL params
+        const url = new URL(window.location.href);
+        url.searchParams.delete("txnId");
+        window.history.replaceState({}, "", url.toString());
+      })();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUpgrade = useCallback(async () => {
     if (isProcessing) return;
@@ -354,81 +318,25 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
       const token = await getToken();
       if (!token) throw new Error("Please sign in to continue");
 
-      // 1. Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) throw new Error("Payment gateway unavailable. Please check your internet connection.");
+      // 1. Initiate payment on backend
+      const response = await initiatePayment(userId, email, token, selectedPlan);
 
-      // 2. Create order on backend
-      const { orderId, amount, currency, keyId } = await createOrder(
-        userId,
-        email,
-        token,
-        selectedPlan,
-      );
+      if (!response.success || !response.data?.redirectUrl) {
+        throw new Error(response.message || "Failed to initiate payment");
+      }
 
-      setPaymentState("checkout");
+      // 2. Store transaction ID for verification after redirect
+      const { merchantTransactionId, redirectUrl } = response.data;
+      sessionStorage.setItem("phonepe_txn_id", merchantTransactionId);
+      sessionStorage.setItem("phonepe_plan_type", selectedPlan);
 
-      // 3. Open Razorpay checkout
-      const options: RazorpayOptions = {
-        key: keyId,
-        order_id: orderId,
-        amount,
-        currency,
-        name: "BeamLab",
-        description: plan.description,
-        image: "/branding/logo.png",
-        retry: { enabled: true, max_count: 3 },
-        handler: async (response) => {
-          setPaymentState("verifying");
-          try {
-            await verifyPayment(
-              response.razorpay_order_id,
-              response.razorpay_payment_id,
-              response.razorpay_signature,
-              selectedPlan,
-              token,
-            );
+      setPaymentState("redirecting");
 
-            setPaymentState("success");
-            // Refresh subscription context so the entire app updates
-            await refreshSubscription();
-            // Small delay so user sees success state
-            setTimeout(() => onSuccess?.(), 1500);
-          } catch (err) {
-            const errMsg = err instanceof Error ? err.message : "Payment verification failed. Contact support if charged.";
-            setError(errMsg);
-            setPaymentState("error");
-            onError?.(errMsg);
-          }
-        },
-        prefill: {
-          ...(userName ? { name: userName } : {}),
-          email,
-        },
-        theme: {
-          color: "#4F8EF7",
-        },
-        modal: {
-          ondismiss: () => {
-            setPaymentState("idle");
-            onClose?.();
-          },
-          confirm_close: true,
-          animation: true,
-        },
-        notes: {
-          userId,
-          source: "web_upgrade_modal",
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on("payment.failed", (failResponse: unknown) => {
-        const desc = (failResponse as { error?: { description?: string } })?.error?.description;
-        setError(desc || "Payment failed. Please try again.");
-        setPaymentState("error");
-      });
-      rzp.open();
+      // 3. Redirect to PhonePe payment page
+      // Small delay so user sees the "Redirecting..." state
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 500);
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") return;
       const errMsg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
@@ -440,21 +348,14 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
     isProcessing,
     userId,
     email,
-    userName,
     selectedPlan,
-    plan.description,
-    onSuccess,
     onError,
-    onClose,
     getToken,
-    refreshSubscription,
   ]);
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget && !isProcessing) {
-        onClose?.();
-      }
+      if (e.target === e.currentTarget && !isProcessing) onClose?.();
     },
     [isProcessing, onClose],
   );
@@ -603,7 +504,7 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
 
           <div className="flex items-center justify-center gap-1.5 mt-4 text-[11px] text-white/30">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span>256-bit SSL · Secured by Razorpay · PCI DSS Compliant</span>
+            <span>256-bit SSL · Secured by PhonePe · PCI DSS Compliant</span>
           </div>
         </div>
       </div>
@@ -615,7 +516,20 @@ export const RazorpayPaymentModal: FC<PaymentModalProps> = ({
 // HOOK FOR PROGRAMMATIC TRIGGER
 // ============================================
 
-export function useRazorpayPayment() {
+/**
+ * usePhonePePayment — Hook for triggering PhonePe payment flow programmatically.
+ *
+ * PhonePe uses a redirect-based flow:
+ *   1. Call backend to initiate payment → get redirectUrl
+ *   2. Redirect user to PhonePe
+ *   3. User returns to callback URL after payment
+ *   4. Frontend verifies payment via backend
+ *
+ * For components that need to open payment inline (like PricingPage),
+ * this hook initiates the redirect and returns a promise that resolves
+ * immediately (the actual verification happens on the callback page).
+ */
+export function usePhonePePayment() {
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const { getToken } = useAuth();
@@ -629,12 +543,52 @@ export function useRazorpayPayment() {
     };
   }, []);
 
+  // Check if we're returning from a PhonePe redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const txnId = params.get("txnId") || sessionStorage.getItem("phonepe_txn_id");
+    const payment = params.get("payment");
+
+    if (txnId && payment !== "success") {
+      // Verify payment on return
+      setLoading(true);
+      setPaymentState("verifying");
+      const planType = (sessionStorage.getItem("phonepe_plan_type") as PlanType) || "monthly";
+
+      (async () => {
+        try {
+          const token = await getToken();
+          if (!token) throw new Error("Authentication required");
+
+          const result = await verifyPayment(txnId, planType, token);
+          if (result.success) {
+            setPaymentState("success");
+            await refreshSubscription();
+            // Clean up storage
+            sessionStorage.removeItem("phonepe_txn_id");
+            sessionStorage.removeItem("phonepe_plan_type");
+          } else {
+            throw new Error(result.message || "Verification failed");
+          }
+        } catch {
+          setPaymentState("error");
+        } finally {
+          setLoading(false);
+          // Clean URL params
+          const url = new URL(window.location.href);
+          url.searchParams.delete("txnId");
+          window.history.replaceState({}, "", url.toString());
+        }
+      })();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const openPayment = useCallback(
     async (
       userId: string,
       email: string,
       planType: PlanType = "monthly",
-      userName?: string,
+      _userName?: string,
     ): Promise<boolean> => {
       if (loading) return false;
 
@@ -648,79 +602,40 @@ export function useRazorpayPayment() {
         const token = await getToken();
         if (!token) throw new Error("Authentication required");
 
-        const scriptLoaded = await loadRazorpayScript();
-        if (!scriptLoaded) throw new Error("Failed to load payment gateway");
+        const response = await initiatePayment(userId, email, token, planType);
 
-        const { orderId, amount, currency, keyId } = await createOrder(
-          userId,
-          email,
-          token,
-          planType,
-        );
+        if (!response.success || !response.data?.redirectUrl) {
+          throw new Error(response.message || "Failed to initiate payment");
+        }
 
-        setPaymentState("checkout");
+        const { merchantTransactionId, redirectUrl } = response.data;
 
-        return new Promise((resolve) => {
-          const options: RazorpayOptions = {
-            key: keyId,
-            order_id: orderId,
-            amount,
-            currency,
-            name: "BeamLab",
-            description:
-              planType === "yearly" ? "Annual Pro" : "Monthly Pro",
-            retry: { enabled: true, max_count: 3 },
-            handler: async (response) => {
-              setPaymentState("verifying");
-              try {
-                await verifyPayment(
-                  response.razorpay_order_id,
-                  response.razorpay_payment_id,
-                  response.razorpay_signature,
-                  planType,
-                  token,
-                );
-                setPaymentState("success");
-                await refreshSubscription();
-                setLoading(false);
-                resolve(true);
-              } catch {
-                setPaymentState("error");
-                setLoading(false);
-                resolve(false);
-              }
-            },
-            prefill: {
-              ...(userName ? { name: userName } : {}),
-              email,
-            },
-            theme: { color: "#4F8EF7" },
-            modal: {
-              ondismiss: () => {
-                setPaymentState("idle");
-                setLoading(false);
-                resolve(false);
-              },
-              confirm_close: true,
-            },
-          };
+        // Store for verification after redirect
+        sessionStorage.setItem("phonepe_txn_id", merchantTransactionId);
+        sessionStorage.setItem("phonepe_plan_type", planType);
 
-          const rzp = new window.Razorpay(options);
-          rzp.on("payment.failed", () => {
-            setPaymentState("error");
-          });
-          rzp.open();
-        });
+        setPaymentState("redirecting");
+
+        // Redirect to PhonePe
+        window.location.href = redirectUrl;
+
+        // This promise won't resolve until the page reloads
+        // (redirect happens). Return true optimistically.
+        return true;
       } catch (err) {
         setPaymentState("error");
         setLoading(false);
         throw err;
       }
     },
-    [getToken, loading, refreshSubscription],
+    [getToken, loading],
   );
 
   return { openPayment, loading, paymentState };
 }
 
-export default RazorpayPaymentModal;
+// Backward compat aliases
+export const useRazorpayPayment = usePhonePePayment;
+export const RazorpayPaymentModal = PhonePePaymentModal;
+
+export default PhonePePaymentModal;

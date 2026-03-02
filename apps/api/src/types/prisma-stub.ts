@@ -9,6 +9,8 @@
  *   npx prisma generate
  */
 
+import { logger } from '../utils/logger.js';
+
 // ============================================
 // ENUMS
 // ============================================
@@ -269,11 +271,11 @@ export class PrismaClient {
   }
 
   async $connect(): Promise<void> {
-    console.log('[PrismaStub] Connected (in-memory mode)');
+    logger.info('[PrismaStub] Connected (in-memory mode)');
   }
 
   async $disconnect(): Promise<void> {
-    console.log('[PrismaStub] Disconnected');
+    logger.info('[PrismaStub] Disconnected');
   }
 }
 

@@ -240,7 +240,7 @@ export default function ProfessionalReportGenerator() {
     date: new Date().toISOString().slice(0, 10),
     revision: 'R0',
     companyName: 'BeamLab',
-    companyLogo: '/branding/logo.png'
+    companyLogo: '/branding/beamlab_icon_colored.svg'
   });
 
   // Report Configuration

@@ -6,6 +6,7 @@
  */
 
 import nodemailer from 'nodemailer';
+import { logger } from '../utils/logger.js';
 
 // ============================================
 // HTML ESCAPE UTILITY
@@ -281,8 +282,8 @@ let transporter: nodemailer.Transporter | null = null;
 
 if (EMAIL_SERVICE === 'nodemailer') {
     if (!SMTP_USER || !SMTP_PASSWORD) {
-        console.warn('⚠️  SMTP credentials not configured. Email sending will be disabled.');
-        console.warn('   Set SMTP_USER, SMTP_PASSWORD, and optionally SMTP_HOST, SMTP_PORT');
+        logger.warn('SMTP credentials not configured. Email sending will be disabled.');
+        logger.warn('Set SMTP_USER, SMTP_PASSWORD, and optionally SMTP_HOST, SMTP_PORT');
     } else {
         transporter = nodemailer.createTransport({
             host: SMTP_HOST,
@@ -297,9 +298,9 @@ if (EMAIL_SERVICE === 'nodemailer') {
         // Verify connection
         transporter.verify((error: Error | null, success: boolean) => {
             if (error) {
-                console.error('❌ Email service failed to initialize:', error.message);
+                logger.error({ err: error }, 'Email service failed to initialize');
             } else {
-                console.log('✅ Email service ready');
+                logger.info('Email service ready');
             }
         });
     }
@@ -316,7 +317,7 @@ export const emailService = {
     sendVerificationEmail: async (email: string, name: string, code: string): Promise<boolean> => {
         try {
             if (!transporter) {
-                console.log(`📧 [DEV MODE] Verification code for ${email}: ${code}`);
+                logger.info(`[DEV MODE] Verification code for ${email}: ${code}`);
                 return true;
             }
 
@@ -328,10 +329,10 @@ export const emailService = {
                 html: template.html
             });
 
-            console.log(`✅ Verification email sent to ${email}`);
+            logger.info(`Verification email sent to ${email}`);
             return true;
         } catch (error) {
-            console.error(`❌ Failed to send verification email to ${email}:`, error);
+            logger.error({ err: error }, `Failed to send verification email to ${email}`);
             return false;
         }
     },
@@ -342,7 +343,7 @@ export const emailService = {
     sendPasswordResetEmail: async (email: string, name: string, resetToken: string): Promise<boolean> => {
         try {
             if (!transporter) {
-                console.log(`📧 [DEV MODE] Password reset link for ${email}: /reset-password?token=${resetToken}`);
+                logger.info(`[DEV MODE] Password reset link for ${email}: /reset-password?token=${resetToken}`);
                 return true;
             }
 
@@ -354,10 +355,10 @@ export const emailService = {
                 html: template.html
             });
 
-            console.log(`✅ Password reset email sent to ${email}`);
+            logger.info(`Password reset email sent to ${email}`);
             return true;
         } catch (error) {
-            console.error(`❌ Failed to send password reset email to ${email}:`, error);
+            logger.error({ err: error }, `Failed to send password reset email to ${email}`);
             return false;
         }
     },
@@ -368,7 +369,7 @@ export const emailService = {
     sendWelcomeEmail: async (email: string, name: string): Promise<boolean> => {
         try {
             if (!transporter) {
-                console.log(`📧 [DEV MODE] Welcome email for ${email}`);
+                logger.info(`[DEV MODE] Welcome email for ${email}`);
                 return true;
             }
 
@@ -380,10 +381,10 @@ export const emailService = {
                 html: template.html
             });
 
-            console.log(`✅ Welcome email sent to ${email}`);
+            logger.info(`Welcome email sent to ${email}`);
             return true;
         } catch (error) {
-            console.error(`❌ Failed to send welcome email to ${email}:`, error);
+            logger.error({ err: error }, `Failed to send welcome email to ${email}`);
             return false;
         }
     },
@@ -394,7 +395,7 @@ export const emailService = {
     sendEmailChangeConfirmation: async (email: string, name: string, code: string): Promise<boolean> => {
         try {
             if (!transporter) {
-                console.log(`📧 [DEV MODE] Email change confirmation for ${email}: ${code}`);
+                logger.info(`[DEV MODE] Email change confirmation for ${email}: ${code}`);
                 return true;
             }
 
@@ -406,10 +407,10 @@ export const emailService = {
                 html: template.html
             });
 
-            console.log(`✅ Email change confirmation sent to ${email}`);
+            logger.info(`Email change confirmation sent to ${email}`);
             return true;
         } catch (error) {
-            console.error(`❌ Failed to send email change confirmation to ${email}:`, error);
+            logger.error({ err: error }, `Failed to send email change confirmation to ${email}`);
             return false;
         }
     },
@@ -420,7 +421,7 @@ export const emailService = {
     testEmailService: async (testEmail: string): Promise<boolean> => {
         try {
             if (!transporter) {
-                console.log('❌ Email service not configured');
+                logger.info('Email service not configured');
                 return false;
             }
 
@@ -431,10 +432,10 @@ export const emailService = {
                 html: '<p>This is a test email from BeamLab. Email service is working correctly!</p>'
             });
 
-            console.log('✅ Test email sent successfully:', result.messageId);
+            logger.info(`Test email sent successfully: ${result.messageId}`);
             return true;
         } catch (error) {
-            console.error('❌ Test email failed:', error);
+            logger.error({ err: error }, 'Test email failed');
             return false;
         }
     }

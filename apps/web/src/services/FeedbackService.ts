@@ -26,19 +26,19 @@ export interface FeedbackEntry {
 
     // AI's original output
     originalInput: string;
-    originalOutput: any;
+    originalOutput: Record<string, unknown>;
 
     // User's correction/feedback
-    correctedOutput?: any;
+    correctedOutput?: Record<string, unknown>;
     rating?: 1 | 2 | 3 | 4 | 5;
     comment?: string;
 
     // Metadata
     metadata?: {
-        modelContext?: any;
+        modelContext?: Record<string, unknown>;
         aiConfidence?: number;
         processingTime?: number;
-        [key: string]: any;
+        [key: string]: unknown;
     };
 
     // For ML pipeline
@@ -98,7 +98,7 @@ class FeedbackServiceClass {
         try {
             const data = this.storage.getItem(this.STORAGE_KEY);
             if (data) {
-                this.entries = JSON.parse(data).map((e: any) => ({
+                this.entries = JSON.parse(data).map((e: Record<string, unknown>) => ({
                     ...e,
                     timestamp: new Date(e.timestamp)
                 }));
@@ -133,8 +133,8 @@ class FeedbackServiceClass {
     logCorrection(
         feature: FeedbackEntry['feature'],
         originalInput: string,
-        originalOutput: any,
-        correctedOutput: any,
+        originalOutput: Record<string, unknown>,
+        correctedOutput: Record<string, unknown>,
         metadata?: FeedbackEntry['metadata']
     ): string {
         const entry: FeedbackEntry = {
@@ -164,7 +164,7 @@ class FeedbackServiceClass {
     logRating(
         feature: FeedbackEntry['feature'],
         originalInput: string,
-        originalOutput: any,
+        originalOutput: Record<string, unknown>,
         rating: 1 | 2 | 3 | 4 | 5,
         comment?: string
     ): string {
@@ -195,7 +195,7 @@ class FeedbackServiceClass {
     logSuggestion(
         feature: FeedbackEntry['feature'],
         suggestion: string,
-        context?: any
+        context?: Record<string, unknown>
     ): string {
         const entry: FeedbackEntry = {
             id: this.generateId(),
@@ -223,7 +223,7 @@ class FeedbackServiceClass {
     logError(
         feature: FeedbackEntry['feature'],
         originalInput: string,
-        error: any,
+        error: unknown,
         userDescription?: string
     ): string {
         const entry: FeedbackEntry = {
@@ -359,7 +359,7 @@ class FeedbackServiceClass {
 export interface QuickRatingProps {
     feature: FeedbackEntry['feature'];
     input: string;
-    output: any;
+    output: Record<string, unknown>;
     onRated?: (rating: number) => void;
 }
 
@@ -369,8 +369,8 @@ export interface QuickRatingProps {
 export interface CorrectionDialogData {
     feature: FeedbackEntry['feature'];
     input: string;
-    output: any;
-    correctedFields: Record<string, any>;
+    output: Record<string, unknown>;
+    correctedFields: Record<string, unknown>;
 }
 
 // ============================================

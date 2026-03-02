@@ -16,6 +16,7 @@
  */
 
 import { env } from '../config/env.js';
+import { logger } from '../utils/logger.js';
 
 // ============================================
 // SERVICE URLs (from environment or defaults)
@@ -66,7 +67,7 @@ function recordFailure(service: 'rust' | 'python'): void {
     circuit.lastFailure = Date.now();
     if (circuit.failures >= CIRCUIT_THRESHOLD) {
         circuit.isOpen = true;
-        console.error(`[ServiceProxy] Circuit OPEN for ${service} after ${circuit.failures} failures`);
+        logger.error(`[ServiceProxy] Circuit OPEN for ${service} after ${circuit.failures} failures`);
     }
 }
 
@@ -194,7 +195,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
             // 5xx → record failure and maybe retry
             recordFailure(service);
             lastError = errorBody || `${service} returned ${response.status}`;
-            console.warn(`[ServiceProxy] ${service} ${method} ${path} → ${response.status} (attempt ${attempt + 1})`);
+            logger.warn(`[ServiceProxy] ${service} ${method} ${path} -> ${response.status} (attempt ${attempt + 1})`);
 
         } catch (err: unknown) {
             const latencyMs = Date.now() - start;
@@ -207,7 +208,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
             }
 
             recordFailure(service);
-            console.warn(`[ServiceProxy] ${service} ${method} ${path} → error (attempt ${attempt + 1}): ${lastError}`);
+            logger.warn(`[ServiceProxy] ${service} ${method} ${path} -> error (attempt ${attempt + 1}): ${lastError}`);
         }
     }
 

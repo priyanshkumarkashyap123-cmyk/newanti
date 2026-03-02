@@ -42,16 +42,14 @@ export interface BillingStatus {
 }
 
 export interface OrderResponse {
-  orderId: string;
-  amount: number;
-  currency: string;
-  keyId: string;
+  merchantTransactionId: string;
+  redirectUrl: string;
+  amount?: number;
+  currency?: string;
 }
 
 export interface VerifyPaymentParams {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
+  merchantTransactionId: string;
   planType: PlanType;
 }
 
@@ -156,7 +154,8 @@ class BillingServiceClient {
   }
 
   /**
-   * Create a Razorpay order for payment.
+   * Create a PhonePe payment order.
+   * Returns merchantTransactionId + redirectUrl for PhonePe checkout.
    * Supports idempotency via X-Idempotency-Key header.
    */
   async createOrder(
@@ -182,11 +181,12 @@ class BillingServiceClient {
       );
     }
 
-    return response.json() as Promise<OrderResponse>;
+    const result = await response.json();
+    return result.data as OrderResponse;
   }
 
   /**
-   * Verify a completed Razorpay payment and activate the subscription.
+   * Verify a completed PhonePe payment and activate the subscription.
    */
   async verifyPayment(params: VerifyPaymentParams): Promise<{ success: boolean; message: string }> {
     const response = await fetch(`${API_URL}/api/billing/verify-payment`, {
