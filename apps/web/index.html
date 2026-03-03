@@ -227,8 +227,44 @@
   <!-- Skip link for keyboard users -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
+  <!-- ============================================ -->
+  <!-- CRITICAL: Clear old service workers & caches -->
+  <!-- This runs BEFORE any module scripts           -->
+  <!-- ============================================ -->
+  <script>
+    // Force clear any stale service workers from previous deployments
+    (function() {
+      try {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (var i = 0; i < registrations.length; i++) {
+              registrations[i].unregister();
+            }
+          });
+        }
+        // Clear all caches to prevent stale content
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (var i = 0; i < names.length; i++) {
+              caches.delete(names[i]);
+            }
+          });
+        }
+      } catch(e) {
+        console.warn('Cache cleanup failed:', e);
+      }
+    })();
+  </script>
+
   <!-- Initial loading state for CLS prevention -->
   <div id="root" role="main">
+    <!-- Visible loading screen so page is NEVER blank -->
+    <div id="initial-loader" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#0f172a;color:#f8fafc;font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif;">
+      <div style="width:60px;height:60px;border:3px solid #334155;border-top:3px solid #3b82f6;border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <p style="margin-top:24px;font-size:18px;font-weight:500;opacity:0.9;">Loading BeamLab Ultimate...</p>
+      <p style="margin-top:8px;font-size:13px;opacity:0.5;">Initializing structural analysis platform</p>
+      <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
+    </div>
     <noscript>
       <div style="padding: 2rem; text-align: center;">
         <h1>JavaScript Required</h1>
@@ -239,6 +275,58 @@
 
   <!-- Main application script -->
   <script type="module" src="/src/main.tsx"></script>
+
+  <!-- CRITICAL: Catch module load errors that prevent React from mounting -->
+  <script>
+    // If the module script fails to load/execute, show an error after 15 seconds
+    window.__beamlab_loaded__ = false;
+    setTimeout(function() {
+      if (!window.__beamlab_loaded__) {
+        var loader = document.getElementById('initial-loader');
+        if (loader) {
+          loader.innerHTML = '<div style="text-align:center;padding:40px;max-width:600px;">' +
+            '<div style="font-size:48px;margin-bottom:16px;">⚠️</div>' +
+            '<h1 style="color:#f87171;margin-bottom:16px;">App Loading Issue</h1>' +
+            '<p style="color:#94a3b8;margin-bottom:24px;">The application is taking longer than expected to load. This may be due to cached data from a previous version.</p>' +
+            '<button onclick="clearAndReload()" style="padding:12px 32px;background:#3b82f6;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:600;">Clear Cache & Reload</button>' +
+            '<p style="color:#475569;margin-top:16px;font-size:12px;">If this persists, try opening in an incognito/private window.</p>' +
+            '</div>';
+        }
+      }
+    }, 15000);
+
+    // Provide a global function to clear everything and reload
+    function clearAndReload() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(r) { r.unregister(); });
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          Promise.all(names.map(function(n) { return caches.delete(n); })).then(function() {
+            location.reload();
+          });
+        });
+      } else {
+        location.reload();
+      }
+    }
+
+    // Catch unhandled errors from module scripts
+    window.addEventListener('error', function(e) {
+      console.error('Global error caught:', e.error || e.message);
+      var loader = document.getElementById('initial-loader');
+      if (loader && !window.__beamlab_loaded__) {
+        loader.innerHTML = '<div style="text-align:center;padding:40px;max-width:600px;">' +
+          '<div style="font-size:48px;margin-bottom:16px;">❌</div>' +
+          '<h1 style="color:#f87171;margin-bottom:16px;">Loading Error</h1>' +
+          '<p style="color:#94a3b8;margin-bottom:8px;">' + (e.message || 'Unknown error') + '</p>' +
+          '<button onclick="clearAndReload()" style="padding:12px 32px;background:#3b82f6;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:600;margin-top:16px;">Clear Cache & Reload</button>' +
+          '</div>';
+      }
+    });
+  </script>
 
   <!-- Performance monitoring -->
   <script>

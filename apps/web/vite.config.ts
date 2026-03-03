@@ -1,17 +1,17 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import wasm from "vite-plugin-wasm";
-import topLevelAwait from "vite-plugin-top-level-await";
-import { VitePWA } from "vite-plugin-pwa";
-import { compression } from "vite-plugin-compression2";
-import path from "path";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import wasm from 'vite-plugin-wasm';
+import topLevelAwait from 'vite-plugin-top-level-await';
+import { VitePWA } from 'vite-plugin-pwa';
+import { compression } from 'vite-plugin-compression2';
+import path from 'path';
 
 // ============================================
 // SECURITY HEADERS CONFIGURATION
 // ============================================
 const securityHeaders = {
   // Content Security Policy - Restrict resource loading
-  "Content-Security-Policy": [
+  'Content-Security-Policy': [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://*.clerk.dev https://clerk.com https://*.clerk.com https://clerk.beamlabultimate.tech https://mercury.phonepe.com https://unpkg.com blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.clerk.com https://*.clerk.dev https://*.clerk.accounts.dev https://clerk.beamlabultimate.tech",
@@ -23,31 +23,31 @@ const securityHeaders = {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-  ].join("; "),
+  ].join('; '),
 
   // Prevent clickjacking
-  "X-Frame-Options": "SAMEORIGIN",
+  'X-Frame-Options': 'SAMEORIGIN',
 
   // Prevent MIME type sniffing
-  "X-Content-Type-Options": "nosniff",
+  'X-Content-Type-Options': 'nosniff',
 
   // XSS Protection (set to 0 — modern browsers should use CSP instead; '1; mode=block' can introduce vulnerabilities)
-  "X-XSS-Protection": "0",
+  'X-XSS-Protection': '0',
 
   // Control referrer information
-  "Referrer-Policy": "strict-origin-when-cross-origin",
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
 
   // Permissions Policy - Restrict browser features
-  "Permissions-Policy": [
-    "accelerometer=()",
-    "camera=()",
-    "geolocation=()",
-    "gyroscope=()",
-    "magnetometer=()",
-    "microphone=()",
-    "payment=()",
-    "usb=()",
-  ].join(", "),
+  'Permissions-Policy': [
+    'accelerometer=()',
+    'camera=()',
+    'geolocation=()',
+    'gyroscope=()',
+    'magnetometer=()',
+    'microphone=()',
+    'payment=()',
+    'usb=()',
+  ].join(', '),
 
   // Strict Transport Security (for production)
   // 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
@@ -60,40 +60,41 @@ export default defineConfig({
     wasm(),
     topLevelAwait(),
     VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
+      registerType: 'autoUpdate',
+      selfDestroying: true,
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: "BeamLab Ultimate",
-        short_name: "BeamLab",
-        description: "Advanced Structural Engineering Platform",
-        theme_color: "#0b1120",
-        background_color: "#0b1120",
+        name: 'BeamLab Ultimate',
+        short_name: 'BeamLab',
+        description: 'Advanced Structural Engineering Platform',
+        theme_color: '#0b1120',
+        background_color: '#0b1120',
         icons: [
           {
-            src: "pwa-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
           },
           {
-            src: "pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
           },
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,wasm}"],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,wasm}'],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB - for large WASM files
         // Don't cache cross-origin requests in the SW precache — only runtime cache them
-        navigateFallback: "index.html",
+        navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             // Google Fonts stylesheets (CSS)
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: "StaleWhileRevalidate",
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: "google-fonts-stylesheets",
+              cacheName: 'google-fonts-stylesheets',
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
@@ -103,9 +104,9 @@ export default defineConfig({
           {
             // Google Fonts webfont files (woff2, etc.)
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: "CacheFirst",
+            handler: 'CacheFirst',
             options: {
-              cacheName: "google-fonts-webfonts",
+              cacheName: 'google-fonts-webfonts',
               expiration: {
                 maxEntries: 30,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 365 days
@@ -121,56 +122,57 @@ export default defineConfig({
     // Pre-compress assets with gzip + Brotli for faster serving
     compression({
       algorithms: ['gzip', 'brotliCompress'],
-      threshold: 1024,     // Only compress files > 1KB
+      threshold: 1024, // Only compress files > 1KB
       exclude: [/\.(br|gz)$/],
     }),
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
-    dedupe: ["react", "react-dom", "react-router-dom", "three"],
+    dedupe: ['react', 'react-dom', 'react-router-dom', 'three'],
   },
   server: {
     port: 5173,
     strictPort: false,
-    host: "localhost",
+    host: 'localhost',
     cors: true,
     // Apply security headers in development
     headers: securityHeaders,
     hmr: {
-      host: "localhost",
+      host: 'localhost',
       port: 5173,
-      protocol: "http",
+      protocol: 'http',
     },
     proxy: {
-      "/api": {
-        target: "http://localhost:3001",
+      '/api': {
+        target: 'http://localhost:3001',
         changeOrigin: true,
         // Do NOT strip /api — the backend expects the /api prefix on all routes
       },
-      "/ws": {
-        target: "ws://localhost:3001",
+      '/ws': {
+        target: 'ws://localhost:3001',
         ws: true,
         changeOrigin: true,
       },
     },
     fs: {
       // Allow serving files from one level up to the project root
-      allow: [".."],
+      allow: ['..'],
     },
   },
   esbuild: {
     // Strip console.log and console.debug in production builds.
     // KEEP console.error and console.warn — they're essential for diagnosing production issues.
-    drop: process.env.NODE_ENV === "production" ? ["debugger"] : [],
-    pure: process.env.NODE_ENV === "production" ? ["console.log", "console.debug", "console.info"] : [],
+    drop: process.env.NODE_ENV === 'production' ? ['debugger'] : [],
+    pure:
+      process.env.NODE_ENV === 'production' ? ['console.log', 'console.debug', 'console.info'] : [],
   },
   build: {
-    outDir: "dist",
-    sourcemap: process.env.NODE_ENV !== "production",
-    minify: "esbuild",
-    target: "es2022",
+    outDir: 'dist',
+    sourcemap: process.env.NODE_ENV !== 'production',
+    minify: 'esbuild',
+    target: 'es2022',
     chunkSizeWarningLimit: 500,
     cssCodeSplit: true,
     // Disable modulepreload polyfill to prevent eager loading of lazy chunks
@@ -181,37 +183,34 @@ export default defineConfig({
       // Suppress warnings about unresolved dynamic imports for workers
       onwarn(warning, warn) {
         // Ignore dynamic import warnings for worker files
-        if (
-          warning.code === "UNRESOLVED_IMPORT" &&
-          warning.message?.includes("Worker")
-        ) {
+        if (warning.code === 'UNRESOLVED_IMPORT' && warning.message?.includes('Worker')) {
           return;
         }
         // Ignore MODULE_LEVEL_DIRECTIVE warnings from third-party modules
-        if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
           return;
         }
         warn(warning);
       },
       output: {
         manualChunks: {
-          "react-vendor": ["react", "react-dom"],
-          "router-vendor": ["react-router-dom"],
-          "three-vendor": ["three", "@react-three/fiber", "@react-three/drei"],
-          "animation-vendor": ["framer-motion"],
-          "chart-vendor": ["recharts"],
-          "clerk-vendor": ["@clerk/clerk-react"],
-          "ui-vendor": [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-select",
-            "@radix-ui/react-accordion",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-checkbox",
-            "@radix-ui/react-slider",
-            "@radix-ui/react-switch",
-            "@radix-ui/react-scroll-area",
+          'react-vendor': ['react', 'react-dom'],
+          'router-vendor': ['react-router-dom'],
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei'],
+          'animation-vendor': ['framer-motion'],
+          'chart-vendor': ['recharts'],
+          'clerk-vendor': ['@clerk/clerk-react'],
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-select',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-scroll-area',
           ],
-          "state-vendor": ["zustand"],
+          'state-vendor': ['zustand'],
           // lucide-react, mathjs, jspdf, xlsx, monaco removed from manual chunks
           // to enable tree-shaking and let them code-split into lazy routes
         },
@@ -219,17 +218,11 @@ export default defineConfig({
     },
   },
   worker: {
-    format: "es",
+    format: 'es',
     plugins: () => [wasm(), topLevelAwait()],
   },
   optimizeDeps: {
-    include: [
-      "react",
-      "react-dom",
-      "three",
-      "@react-three/fiber",
-      "@react-three/drei",
-    ],
-    exclude: ["solver-wasm"],
+    include: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei'],
+    exclude: ['solver-wasm'],
   },
 });
