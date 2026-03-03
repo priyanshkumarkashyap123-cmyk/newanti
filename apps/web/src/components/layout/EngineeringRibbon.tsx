@@ -1,4 +1,4 @@
-import { FC, memo, ReactNode } from "react";
+import { FC, memo, ReactNode, useMemo } from "react";
 import {
   MousePointer2,
   Box,
@@ -124,7 +124,7 @@ const ToolButton = memo<ToolButtonProps>(
                   ${className}
               `}
         >
-          <Icon className={`${iconSize[size]} flex-shrink-0`} />
+          <Icon className={`${iconSize[size]} flex-shrink-0`} aria-hidden="true" />
           {size !== 'compact' && (
             <span className="text-[10px] whitespace-nowrap text-center leading-tight max-w-[48px] truncate font-medium">
               {label}
@@ -170,7 +170,7 @@ const MiniButton = memo<{
       onClick={onClick}
       className={`flex items-center gap-1 px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-all text-[9px] ${className}`}
     >
-      <Icon className="w-3 h-3 flex-shrink-0" />
+      <Icon className="w-3 h-3 flex-shrink-0" aria-hidden="true" />
       <span className="font-medium">{label}</span>
     </button>
   </Tooltip>
@@ -213,7 +213,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const setCategory = useUIStore((s) => s.setCategory);
   const { undo, redo } = useModelStoreTemporal.getState();
 
-  const renderGeometryTab = () => (
+  const renderGeometryTab = useMemo(() => (
     <>
       <ToolGroup label="File">
         <ToolButton
@@ -325,9 +325,9 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         />
       </ToolGroup>
     </>
-  );
+  ), [activeTool, setTool, openModal, undo, redo]);
 
-  const renderPropertiesTab = () => (
+  const renderPropertiesTab = useMemo(() => (
     <>
       <ToolGroup label="Section">
         <ToolButton
@@ -360,9 +360,9 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton icon={Ruler} label="Offsets" onClick={() => openModal("memberOffsets")} tooltip="Member End Offsets" />
       </ToolGroup>
     </>
-  );
+  ), [openModal]);
 
-  const renderLoadingTab = () => (
+  const renderLoadingTab = useMemo(() => (
     <>
       <ToolGroup label="Load Cases">
         <ToolButton
@@ -456,9 +456,9 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         />
       </ToolGroup>
     </>
-  );
+  ), [activeTool, setTool, openModal]);
 
-  const renderAnalysisTab = () => (
+  const renderAnalysisTab = useMemo(() => (
     <>
       <ToolGroup label="Run">
         <ToolButton
@@ -535,7 +535,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         />
       </ToolGroup>
     </>
-  );
+  ), [isAnalyzing, openModal]);
 
   const activeTab = RIBBON_TABS.find(t => t.id === activeCategory);
   const activeColor = activeTab?.color || "blue";
@@ -603,13 +603,14 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <div className="flex items-center gap-3">
           <button type="button"
             onClick={() => document.dispatchEvent(new CustomEvent("trigger-upgrade"))}
+            aria-label="Upgrade to premium plan"
             className="flex items-center gap-1 px-2 py-0.5 text-amber-400/80 hover:text-amber-300 text-[9px] font-semibold transition-colors"
           >
-            <Crown className="w-3 h-3" />
+            <Crown className="w-3 h-3" aria-hidden="true" />
             Upgrade
           </button>
-          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono flex items-center gap-1">
-            <Check className="w-3 h-3 text-green-500" />
+          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-mono flex items-center gap-1" role="status" aria-live="polite">
+            <Check className="w-3 h-3 text-green-500" aria-hidden="true" />
             Auto-Saved
           </span>
         </div>
@@ -621,10 +622,10 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         role="group"
         aria-label={`${activeCategory} tools`}
       >
-        {activeCategory === "MODELING" && renderGeometryTab()}
-        {activeCategory === "PROPERTIES" && renderPropertiesTab()}
-        {activeCategory === "LOADING" && renderLoadingTab()}
-        {activeCategory === "ANALYSIS" && renderAnalysisTab()}
+        {activeCategory === "MODELING" && renderGeometryTab}
+        {activeCategory === "PROPERTIES" && renderPropertiesTab}
+        {activeCategory === "LOADING" && renderLoadingTab}
+        {activeCategory === "ANALYSIS" && renderAnalysisTab}
         {activeCategory === "DESIGN" && (
           <>
             <ToolGroup label="Code Check">

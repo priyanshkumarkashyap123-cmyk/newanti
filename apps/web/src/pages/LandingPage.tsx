@@ -5,7 +5,7 @@
  * Updated to match Figma spec 03_LANDING_MARKETING
  */
 
-import { FC, useState, useEffect, useRef } from "react";
+import { FC, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, Variants, useInView } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
@@ -75,13 +75,13 @@ export const LandingPage: FC = () => {
   const { isSignedIn, isLoaded, signOut } = useAuth();
   const isClerkEnabled = isUsingClerk();
 
-  const handleGetStarted = () => {
+  const handleGetStarted = useCallback(() => {
     if (isSignedIn) {
       navigate("/app");
     } else {
       navigate("/sign-up");
     }
-  };
+  }, [isSignedIn, navigate]);
 
   const renderAuthButtons = () => {
     if (!isLoaded) return null;
@@ -395,7 +395,7 @@ export const LandingPage: FC = () => {
                   {/* Sidebar mock */}
                   <div className="w-14 bg-slate-800/60 border-r border-white/[0.04] flex flex-col items-center py-3 gap-3">
                     {[Layers, FileText, Shield, Cpu].map((Icon, i) => (
-                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-blue-500/20 text-blue-400' : 'text-slate-600 hover:text-slate-400'} transition-colors`}>
+                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-blue-500/20 text-blue-400' : 'text-slate-600 hover:text-slate-400'} transition-colors`} aria-hidden="true">
                         <Icon className="w-4 h-4" />
                       </div>
                     ))}
@@ -566,24 +566,24 @@ export const LandingPage: FC = () => {
               </h2>
             </div>
             <div className="overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-white/[0.06]">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm" aria-label="Feature comparison between structural analysis platforms">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-slate-800/60">
-                    <th className="text-left py-4 px-6 font-semibold text-slate-900 dark:text-white">Feature</th>
-                    <th className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">STAAD.Pro</th>
-                    <th className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">ETABS</th>
-                    <th className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">SkyCiv</th>
-                    <th className="text-center py-4 px-4 font-semibold text-blue-400">BeamLab</th>
+                    <th scope="col" className="text-left py-4 px-6 font-semibold text-slate-900 dark:text-white">Feature</th>
+                    <th scope="col" className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">STAAD.Pro</th>
+                    <th scope="col" className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">ETABS</th>
+                    <th scope="col" className="text-center py-4 px-4 font-medium text-slate-500 dark:text-slate-400">SkyCiv</th>
+                    <th scope="col" className="text-center py-4 px-4 font-semibold text-blue-400">BeamLab</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200/60 dark:divide-white/[0.06]">
                   {COMPARISON_DATA.map((row, i) => (
                     <tr key={i} className="bg-white dark:bg-slate-950/50 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                       <td className="py-3 px-6 font-medium text-slate-700 dark:text-slate-300">{row.feature}</td>
-                      <td className="text-center py-3 px-4">{row.staad}</td>
-                      <td className="text-center py-3 px-4">{row.etabs}</td>
-                      <td className="text-center py-3 px-4">{row.skyciv}</td>
-                      <td className="text-center py-3 px-4">{row.beamlab}</td>
+                      <td className="text-center py-3 px-4" aria-label={`STAAD.Pro: ${row.staad === '✅' ? 'Yes' : row.staad === '❌' ? 'No' : row.staad === '⚠️' ? 'Partial' : row.staad}`}>{row.staad}</td>
+                      <td className="text-center py-3 px-4" aria-label={`ETABS: ${row.etabs === '✅' ? 'Yes' : row.etabs === '❌' ? 'No' : row.etabs === '⚠️' ? 'Partial' : row.etabs}`}>{row.etabs}</td>
+                      <td className="text-center py-3 px-4" aria-label={`SkyCiv: ${row.skyciv === '✅' ? 'Yes' : row.skyciv === '❌' ? 'No' : row.skyciv === '⚠️' ? 'Partial' : row.skyciv}`}>{row.skyciv}</td>
+                      <td className="text-center py-3 px-4" aria-label={`BeamLab: ${row.beamlab === '✅' ? 'Yes' : row.beamlab === '❌' ? 'No' : row.beamlab === '✨' ? 'Best in class' : row.beamlab}`}>{row.beamlab}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -622,9 +622,11 @@ export const LandingPage: FC = () => {
               </p>
 
               {/* Monthly / Yearly Toggle */}
-              <div className="inline-flex items-center bg-slate-200 dark:bg-slate-800 rounded-full p-1">
+              <div className="inline-flex items-center bg-slate-200 dark:bg-slate-800 rounded-full p-1" role="radiogroup" aria-label="Billing cycle">
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={billingCycle === 'monthly'}
                   onClick={() => setBillingCycle('monthly')}
                   className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
                     billingCycle === 'monthly'
@@ -636,6 +638,8 @@ export const LandingPage: FC = () => {
                 </button>
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={billingCycle === 'yearly'}
                   onClick={() => setBillingCycle('yearly')}
                   className={`px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
                     billingCycle === 'yearly'
@@ -804,7 +808,7 @@ export const LandingPage: FC = () => {
 
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-600 dark:text-slate-400 text-sm">
-              © {new Date().getFullYear()} BeamLab. All rights reserved.
+              © 2026 BeamLab. All rights reserved.
             </p>
             <p className="text-slate-600 dark:text-slate-400 text-xs">
               Made with ❤️ in India
@@ -856,7 +860,7 @@ const FeatureCard = ({
   >
     {/* Top gradient accent */}
     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-    <div className="w-11 h-11 rounded-xl bg-blue-500/[0.08] border border-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/15 group-hover:border-blue-500/20 group-hover:text-blue-400 text-slate-600 dark:text-slate-400 transition-all duration-300 flex-shrink-0">
+    <div className="w-11 h-11 rounded-xl bg-blue-500/[0.08] border border-blue-500/10 flex items-center justify-center mb-5 group-hover:bg-blue-500/15 group-hover:border-blue-500/20 group-hover:text-blue-400 text-slate-600 dark:text-slate-400 transition-all duration-300 flex-shrink-0" aria-hidden="true">
       {icon}
     </div>
     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2.5 tracking-[-0.01em]">

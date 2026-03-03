@@ -1,8 +1,0 @@
-{
-  "name": "@beamlab/solver",
-  "version": "1.0.0",
-  "private": true,
-  "description": "BeamLab structural solver core",
-  "main": "src/index.ts",
-  "types": "src/index.ts"
-}

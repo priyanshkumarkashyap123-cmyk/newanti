@@ -1,8 +1,0 @@
-{
-  "name": "@beamlab/analysis",
-  "version": "1.0.0",
-  "private": true,
-  "description": "BeamLab structural analysis utilities",
-  "main": "src/index.ts",
-  "types": "src/index.ts"
-}

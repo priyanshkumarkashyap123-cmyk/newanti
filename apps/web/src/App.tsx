@@ -108,7 +108,9 @@ const ModernModeler = lazy(() =>
     default: module.ModernModeler,
   })),
 );
-import { MobileGuard } from './components/ui/MobileGuard';
+const MobileGuard = lazy(() =>
+  import('./components/ui/MobileGuard').then((m) => ({ default: m.MobileGuard }))
+);
 const RustWasmDemo = lazy(() =>
   import("./pages/RustWasmDemo").then((module) => ({
     default: module.RustWasmDemo,

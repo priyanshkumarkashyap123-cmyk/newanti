@@ -74,6 +74,9 @@ importers:
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
+      compression:
+        specifier: ^1.8.1
+        version: 1.8.1
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -129,6 +132,9 @@ importers:
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
+      '@types/compression':
+        specifier: ^1.8.1
+        version: 1.8.1
       '@types/cookie-parser':
         specifier: ^1.4.10
         version: 1.4.10(@types/express@5.0.6)
@@ -4270,6 +4276,9 @@ packages:
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
+
+  '@types/compression@1.8.1':
+    resolution: {integrity: sha512-kCFuWS0ebDbmxs0AXYn6e2r2nrGAb5KwQhknjSPSPgJcGd8+HVSILlUyFhGqML2gk39HcG7D1ydW9/qpYkN00Q==}
 
   '@types/configstore@2.1.1':
     resolution: {integrity: sha512-YY+hm3afkDHeSM2rsFXxeZtu0garnusBWNG1+7MknmDWQHqcH2w21/xOU9arJUi8ch4qyFklidANLCu3ihhVwQ==}
@@ -15384,6 +15393,11 @@ snapshots:
     dependencies:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
+
+  '@types/compression@1.8.1':
+    dependencies:
+      '@types/express': 5.0.6
+      '@types/node': 22.19.3
 
   '@types/configstore@2.1.1': {}
 
