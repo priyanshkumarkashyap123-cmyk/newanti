@@ -55,6 +55,7 @@ import {
   ProjectService,
   Project as APIProject,
 } from "../services/ProjectService";
+import { TemplateExplorer } from "../components/learning/TemplateExplorer";
 
 // ============================================
 // TYPES
@@ -175,6 +176,15 @@ const TYPE_ICON: Record<Project["type"], React.ReactNode> = {
 // ============================================
 
 const QUICK_ACTIONS: QuickAction[] = [
+  {
+    id: "space-planning",
+    title: "Space Planning",
+    subtitle: "House design & layouts",
+    icon: <Building2 className="w-5 h-5" />,
+    route: "/space-planning",
+    accent: "group-hover:text-green-400",
+    badge: "New",
+  },
   {
     id: "new",
     title: "New Project",
@@ -520,9 +530,19 @@ export const UnifiedDashboard: FC<{
                   icon: <FileText className="w-3.5 h-3.5" />,
                 },
                 {
+                  to: "/space-planning",
+                  label: "Space Planning",
+                  icon: <Building2 className="w-3.5 h-3.5" />,
+                },
+                {
                   to: "/collaboration",
                   label: "Collaborate",
                   icon: <Users className="w-3.5 h-3.5" />,
+                },
+                {
+                  to: "/capabilities",
+                  label: "All Tools",
+                  icon: <Sparkles className="w-3.5 h-3.5" />,
                 },
               ].map((n) => (
                 <Link
@@ -754,6 +774,12 @@ export const UnifiedDashboard: FC<{
 
           {/* Right Sidebar */}
           <div className="space-y-5">
+            <TemplateExplorer
+              onStartTemplate={(templateId) =>
+                navigate(`/space-planning?template=${encodeURIComponent(templateId)}`)
+              }
+            />
+
             {/* Templates */}
             <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">

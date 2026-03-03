@@ -213,6 +213,8 @@ const Visualization3DEngine = lazy(() => import('./pages/Visualization3DEngine')
 const ResultAnimationViewer = lazy(() => import('./pages/ResultAnimationViewer'));
 const DigitalTwinDashboard = lazy(() => import('./pages/DigitalTwinDashboard'));
 const SpacePlanningPage = lazy(() => import('./pages/SpacePlanningPage'));
+const LearningCenter = lazy(() => import('./pages/LearningCenter'));
+const SitemapPage = lazy(() => import('./pages/SitemapPage'));
 
 // Analysis Panels (Lazy Loaded)
 const ModalAnalysisPanel = lazy(() =>
@@ -876,6 +878,15 @@ function App() {
                     <SpacePlanningPage />
                   </RequireAuth>
                 }
+              />
+              <Route
+                path="/learning"
+                element={<LearningCenter />}
+              />
+              {/* Sitemap & Navigation Discovery */}
+              <Route
+                path="/sitemap"
+                element={<SitemapPage />}
               />
               {/* Fallback - Show proper 404 page */}
               <Route path="*" element={<NotFoundPage />} />

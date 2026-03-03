@@ -38,6 +38,7 @@ jobs:
         run: |
           mkdir -p deploy-api
           cp -r apps/api/dist deploy-api/
+          cp apps/api/web.config deploy-api/
           # Create a deployment-specific package.json without build script
           node -e "
             const pkg = require('./apps/api/package.json');
@@ -59,6 +60,14 @@ jobs:
           PHONEPE_ENV=PRODUCTION
           NODE_ENV=production
           PORT=8080
+          FRONTEND_URL=https://beamlabultimate.tech
+          CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net
+          MONGODB_URI=${{ secrets.MONGODB_URI }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
+          PYTHON_BACKEND_URL=https://beamlab-backend-python.azurewebsites.net
+          RUST_BACKEND_URL=https://beamlab-rust-api.azurewebsites.net
           EOF
           cd deploy-api && zip -r ../api-app.zip .
 

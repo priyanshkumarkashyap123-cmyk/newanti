@@ -518,6 +518,162 @@ export const LandingPage: FC = () => {
           </div>
         </section>
 
+        {/* ===== NEW: How Structural Analysis Works Section ===== */}
+        <section className="py-24 sm:py-32 bg-gradient-to-b from-slate-950 to-slate-900 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <motion.span
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="inline-block text-emerald-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5"
+              >
+                Fundamentals
+              </motion.span>
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl sm:text-4xl font-bold text-white dark:text-white mb-6"
+              >
+                How Structural Analysis Works
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-lg text-slate-400 max-w-2xl mx-auto"
+              >
+                Whether you're new to engineering or already experienced, understand the fundamentals that power professional structural design.
+              </motion.p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-10 mb-12">
+              {/* Educational Content */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="space-y-6"
+              >
+                <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+                  <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <span className="rounded-full bg-blue-500 text-white w-6 h-6 flex items-center justify-center text-sm">1</span>
+                    Define Loads
+                  </h3>
+                  <p className="text-slate-400">
+                    What forces act on your structure? Point loads, distributed loads, wind, earthquakes—each has specific rules for application and combination per Indian Design Codes (IS 875, IS 1893).
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+                  <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <span className="rounded-full bg-purple-500 text-white w-6 h-6 flex items-center justify-center text-sm">2</span>
+                    Set Supports
+                  </h3>
+                  <p className="text-slate-400">
+                    How is the structure held up? Pinned, fixed, or roller supports each create different reaction patterns. Proper support definition is critical for accurate analysis.
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+                  <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <span className="rounded-full bg-orange-500 text-white w-6 h-6 flex items-center justify-center text-sm">3</span>
+                    Analyze Forces
+                  </h3>
+                  <p className="text-slate-400">
+                    BeamLab solves equilibrium equations (ΣF=0, ΣM=0) to find reactions, shear forces, and bending moments throughout your structure using finite element analysis.
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+                  <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <span className="rounded-full bg-green-500 text-white w-6 h-6 flex items-center justify-center text-sm">4</span>
+                    Design Members
+                  </h3>
+                  <p className="text-slate-400">
+                    Using results from analysis, design members per IS 800 (steel), IS 456 (concrete), or AISC. Our built-in design checks verify code compliance automatically.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Visual Example */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="flex flex-col justify-center"
+              >
+                <div className="rounded-xl bg-white/5 border border-white/10 p-8 mb-6">
+                  <h3 className="font-bold text-white mb-4">Simple Beam Example</h3>
+                  
+                  {/* SVG Diagram */}
+                  <svg viewBox="0 0 400 180" className="w-full mb-4 bg-slate-900/20 rounded p-3">
+                    {/* Structure */}
+                    <line x1="40" y1="80" x2="360" y2="80" stroke="white" strokeWidth="3" />
+                    
+                    {/* Supports */}
+                    <circle cx="40" cy="80" r="4" fill="white" />
+                    <polygon points="40,80 30,95 50,95" fill="white" />
+                    
+                    <circle cx="360" cy="80" r="4" fill="white" />
+                    <line x1="355" y1="85" x2="365" y2="85" stroke="white" strokeWidth="2" />
+                    <line x1="355" y1="90" x2="365" y2="90" stroke="white" strokeWidth="2" />
+                    
+                    {/* Load */}
+                    <line x1="200" y1="10" x2="200" y2="60" stroke="#3b82f6" strokeWidth="2" markerEnd="url(#arrowhead-blue)" />
+                    <text x="210" y="35" fill="#3b82f6" fontSize="12" fontWeight="bold">10 kN</text>
+                    
+                    {/* Labels */}
+                    <text x="30" y="110" fill="#94a3b8" fontSize="11">Pin</text>
+                    <text x="350" y="110" fill="#94a3b8" fontSize="11">Roller</text>
+                    <text x="185" y="145" fill="#94a3b8" fontSize="11">L = 10m</text>
+                  </svg>
+
+                  {/* Results */}
+                  <div className="bg-slate-800/50 rounded p-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Reaction A (Left):</span>
+                      <span className="text-emerald-400 font-mono">5.0 kN ↑</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Reaction B (Right):</span>
+                      <span className="text-emerald-400 font-mono">5.0 kN ↑</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Max Moment (Center):</span>
+                      <span className="text-blue-400 font-mono">12.5 kNm</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Max Deflection:</span>
+                      <span className="text-purple-400 font-mono">2.48 mm</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate('/learning')}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-medium rounded-lg hover:from-emerald-500 hover:to-teal-500 transition-all"
+                  >
+                    Start Learning Path
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex-1 px-6 py-3 border border-white/20 text-white font-medium rounded-lg hover:bg-white/5 transition-all"
+                  >
+                    View Example
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
         {/* Features Grid */}
         <section id="features" className="py-24 sm:py-32 bg-white dark:bg-slate-950 relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

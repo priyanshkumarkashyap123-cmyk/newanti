@@ -255,6 +255,17 @@ const FEATURES: Feature[] = [
         routeLabel: "Browse Sections",
         available: true
     },
+    {
+        title: "Space Planning",
+        description: "Complete house & building design with architectural, structural, MEP, and Vastu layouts.",
+        icon: Building2,
+        category: 'design',
+        color: "text-green-500",
+        bgColor: "bg-green-500/10",
+        route: "/space-planning",
+        routeLabel: "Start Space Planning",
+        available: true
+    },
 
     // Reporting
     {

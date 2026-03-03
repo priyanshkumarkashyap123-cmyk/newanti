@@ -15,9 +15,9 @@ const USE_CLERK = process.env['USE_CLERK'] === 'true';
 const authRequired = requireAuth();
 
 // Rate limiting on mutations
-router.post("*", crudRateLimit);
-router.put("*", crudRateLimit);
-router.delete("*", crudRateLimit);
+router.post("/{*path}", crudRateLimit);
+router.put("/{*path}", crudRateLimit);
+router.delete("/{*path}", crudRateLimit);
 
 /**
  * Resolve the DB user from auth context.
