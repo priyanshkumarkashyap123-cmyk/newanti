@@ -436,7 +436,7 @@ export const useUIStore = create<UIState>()(
       setUseWebGpu: (val) => set({ useWebGpu: val }),
       renderMode3D: false, // Default to wireframe for performance
       setRenderMode3D: (val) => set({ renderMode3D: val }),
-      viewMode: '2D' as '2D' | '3D', // Default to 2D for performance
+      viewMode: '3D' as '2D' | '3D', // Default to 3D for immediate visual feedback
       setViewMode: (mode) => set({ viewMode: mode }),
 
       // ========================================

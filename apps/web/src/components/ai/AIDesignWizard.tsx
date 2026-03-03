@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useModelStore } from '../../store/model';
+import { useAuth } from '../../providers/AuthProvider';
 
 const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'https://beamlab-backend-python.azurewebsites.net';
 
@@ -83,8 +84,7 @@ const DESIGN_STEPS: Array<{ step: DesignStep; title: string; description: string
 export const AIDesignWizard: React.FC<{
     onComplete?: (projectData: any) => void;
     initialData?: any;
-}> = ({ onComplete, initialData }) => {
-    const [state, setState] = useState<WizardState>({
+}> = ({ onComplete, initialData }) => {    const { getToken } = useAuth();    const [state, setState] = useState<WizardState>({
         currentStep: 'project_setup',
         completedSteps: [],
         projectData: initialData || {},
@@ -122,9 +122,12 @@ export const AIDesignWizard: React.FC<{
                 } : null
             };
 
+            const token = await getToken();
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
             const response = await fetch(`${PYTHON_API_URL}/ai/suggest`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(payload)
             });
 

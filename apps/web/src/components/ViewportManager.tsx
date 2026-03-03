@@ -299,7 +299,12 @@ const ViewportContainer: FC<{
             </>
           ) : (
             <>
-              <OrthographicCamera makeDefault position={[0, 0, 50]} zoom={15} />
+              <OrthographicCamera
+                makeDefault
+                position={[0, 50, 0.001]}
+                zoom={15}
+                up={[0, 0, -1]}
+              />
               <OrbitControls
                 makeDefault
                 enableRotate={false}
@@ -373,6 +378,7 @@ const ViewportContainer: FC<{
 export const ViewportManager: FC = () => {
   const [layout, setLayout] = useState<ViewportLayout>("SINGLE");
   const [isGEMinimized, setIsGEMinimized] = useState(true);
+  const [webGpuNoticeDismissed, setWebGpuNoticeDismissed] = useState(false);
   const [webglStatus, setWebglStatus] = useState<
     "pending" | "ok" | "unsupported"
   >("pending");
@@ -419,6 +425,15 @@ export const ViewportManager: FC = () => {
     return () => clearTimeout(timer);
   }, [setUseWebGpu]);
 
+  // WebGPU renderer is intentionally disabled in this build.
+  // If a persisted setting turns it on, force WebGL so viewport remains visible.
+  useEffect(() => {
+    if (useWebGpu) {
+      console.warn("[ViewportManager] WebGPU is unavailable in this build. Falling back to WebGL.");
+      setUseWebGpu(false);
+    }
+  }, [useWebGpu, setUseWebGpu]);
+
   if (webglStatus === "pending") {
     return <WebglChecking />;
   }
@@ -435,6 +450,24 @@ export const ViewportManager: FC = () => {
       <div
         className="absolute top-2.5 right-2.5 z-50 flex flex-col gap-1.5 items-end"
       >
+        {!webGpuNoticeDismissed && (
+          <div className="max-w-[280px] bg-[rgba(0,0,0,0.85)] border border-[rgba(255,255,255,0.12)] rounded-lg px-3 py-2 text-[11px] text-[#d1d5db] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+            <div className="flex items-start justify-between gap-2">
+              <span>
+                WebGPU is temporarily unavailable. Using WebGL for reliable 2D/3D rendering.
+              </span>
+              <button
+                type="button"
+                onClick={() => setWebGpuNoticeDismissed(true)}
+                className="text-[#9ca3af] hover:text-white"
+                aria-label="Dismiss WebGPU notice"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Graphics Engine Toggle - Collapsible */}
         {isGEMinimized ? (
           <button type="button"
@@ -477,17 +510,16 @@ export const ViewportManager: FC = () => {
                 <span className="text-[10px]">WebGL</span>
               </button>
               <button type="button"
-                onClick={() => setUseWebGpu(true)}
+                onClick={() => setUseWebGpu(false)}
+                disabled
                 className="flex-1 rounded-md p-1.5 cursor-pointer flex flex-col items-center gap-1"
                 style={{
-                  color: useWebGpu ? "#10b981" : "#fff",
-                  background: useWebGpu
-                    ? "rgba(16, 185, 129, 0.2)"
-                    : "transparent",
-                  border: useWebGpu
-                    ? "1px solid #10b981"
-                    : "1px solid rgba(255, 255, 255, 0.1)",
+                  color: "#6b7280",
+                  background: "transparent",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  opacity: 0.6,
                 }}
+                title="WebGPU renderer is temporarily unavailable"
               >
                 <Zap className="w-4 h-4" />
                 <span className="text-[10px]">WebGPU</span>

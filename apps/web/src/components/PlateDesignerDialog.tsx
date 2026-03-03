@@ -8,6 +8,7 @@ import axios from 'axios';
 import { API_CONFIG } from '../config/env';
 import { Grid3X3, Layers } from 'lucide-react';
 import { getApiErrorMessage } from '../lib/errorHandling';
+import { useAuth } from '../providers/AuthProvider';
 
 interface Node {
     id: string | number;
@@ -24,6 +25,7 @@ interface PlateDesignerDialogProps {
 }
 
 export function PlateDesignerDialog({ open, onClose, availableNodes, onPlateCreated }: PlateDesignerDialogProps) {
+    const { getToken } = useAuth();
     const [thickness, setThickness] = useState<number>(12.0);
     const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>(['', '', '', '']);
     const [materialId, setMaterialId] = useState<string>('');
@@ -58,7 +60,10 @@ export function PlateDesignerDialog({ open, onClose, availableNodes, onPlateCrea
                 material_id: materialId
             };
 
-            const response = await axios.post(`${API_CONFIG.pythonUrl}/elements/plate/create`, payload);
+            const token = await getToken();
+            const headers: Record<string, string> = {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            const response = await axios.post(`${API_CONFIG.pythonUrl}/elements/plate/create`, payload, { headers });
 
             if (response.data.success) {
                 if (onPlateCreated) {

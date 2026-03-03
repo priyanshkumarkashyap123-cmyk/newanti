@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import axios from 'axios';
 import { API_CONFIG } from '../config/env';
+import { useAuth } from '../providers/AuthProvider';
 
 interface MaterialSelectorProps {
     onMaterialSelect: (materialId: string) => void;
@@ -14,6 +15,7 @@ interface MaterialSelectorProps {
 }
 
 export function MaterialSelector({ onMaterialSelect, className }: MaterialSelectorProps) {
+    const { getToken } = useAuth();
     const [materialType, setMaterialType] = useState<'steel' | 'concrete'>('steel');
     const [createdMaterials, setCreatedMaterials] = useState<Array<{ id: string, name: string }>>([]);
     const [selectedMaterialId, setSelectedMaterialId] = useState<string>('');
@@ -47,7 +49,10 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
             }
 
 // console.log('Creating material:', payload);
-            const response = await axios.post(`${API_CONFIG.pythonUrl}/materials/create`, payload);
+            const token = await getToken();
+            const headers: Record<string, string> = {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            const response = await axios.post(`${API_CONFIG.pythonUrl}/materials/create`, payload, { headers });
 
             if (response.data.success) {
                 const newId = response.data.material_id;

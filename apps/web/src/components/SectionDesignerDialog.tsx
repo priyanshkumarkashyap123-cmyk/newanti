@@ -11,6 +11,7 @@ import { Calculator, Shapes, Save, Download, Upload } from 'lucide-react';
 import axios from 'axios';
 import { API_CONFIG } from '../config/env';
 import { getApiErrorMessage } from '../lib/errorHandling';
+import { useAuth } from '../providers/AuthProvider';
 
 interface Point {
     x: number;
@@ -43,6 +44,7 @@ interface SectionDesignerDialogProps {
 }
 
 export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesignerDialogProps) {
+    const { getToken } = useAuth();
     const [activeTab, setActiveTab] = useState<'standard' | 'custom'>('standard');
     const [shapeType, setShapeType] = useState('i_beam');
     const [dimensions, setDimensions] = useState<Record<string, number>>({
@@ -135,13 +137,20 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
         setError(null);
 
         try {
+            // Get auth token for authenticated API requests
+            const token = await getToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             if (activeTab === 'standard') {
                 // Use standard shape endpoint
                 const response = await axios.post(`${API_CONFIG.pythonUrl}/sections/standard/create`, {
                     shape_type: shapeType,
                     dimensions: dimensions,
                     name: sectionName,
-                });
+                }, { headers });
 
                 if (response.data.success) {
                     setPoints(response.data.section.points);
@@ -153,7 +162,7 @@ export function SectionDesignerDialog({ open, onClose, onSave }: SectionDesigner
                     points: points,
                     name: sectionName,
                     material_density: 7850,
-                });
+                }, { headers });
 
                 if (response.data.success) {
                     setProperties(response.data.section.properties);
