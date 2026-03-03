@@ -1,10 +1,15 @@
-import { FC, useMemo } from 'react';
+import { FC, memo, useMemo } from 'react';
 import * as THREE from 'three';
 import { Line } from '@react-three/drei';
 import { useModelStore } from '../store/model';
 import { MemberForcesCalculator, type ForcePoint } from '../utils/MemberForcesCalculator';
-import { MatrixUtils } from '../utils/MatrixUtils';
 import { calculateLocalAxes } from './results/DiagramUtils';
+
+/** Inline member length calc — avoids pulling mathjs via MatrixUtils */
+function getMemberLength(a: { x: number; y: number; z: number }, b: { x: number; y: number; z: number }): number {
+    const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+}
 
 export type DiagramType = 'MZ' | 'FY' | 'MY' | 'FZ' | 'FX' | 'TX';
 
@@ -44,7 +49,7 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
         if (!memberForces) return null;
 
         // Get member length and direction
-        const L = MatrixUtils.getMemberLength(startNode, endNode);
+        const L = getMemberLength(startNode, endNode);
         if (L < 1e-10) return null;
 
         // Direction vector (normalized)
@@ -319,13 +324,14 @@ export const AllMemberDiagrams: FC<{
     type: DiagramType;
     scale?: number;
     showFill?: boolean;
-}> = ({ type, scale = 0.1, showFill = true }) => {
+}> = memo(({ type, scale = 0.1, showFill = true }) => {
     const members = useModelStore((state) => state.members);
     const analysisResults = useModelStore((state) => state.analysisResults);
 
-    if (!analysisResults) return null;
+    // Memoize the member IDs array to avoid creating a new array every render
+    const memberIds = useMemo(() => Array.from(members.keys()), [members]);
 
-    const memberIds = Array.from(members.keys());
+    if (!analysisResults) return null;
 
     return (
         <group>
@@ -340,6 +346,6 @@ export const AllMemberDiagrams: FC<{
             ))}
         </group>
     );
-};
+});
 
 export default DiagramRenderer;

@@ -54,6 +54,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { geminiAI, AIAction, AIPlan, AIModelContext } from '../../services/GeminiAIService';
 import { getErrorMessage } from '../../lib/errorHandling';
 import { API_CONFIG } from '../../config/env';
@@ -115,15 +116,22 @@ export const AutonomousAIAgent: FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
   
-  // Model store
-  const nodes = useModelStore(s => s.nodes);
-  const members = useModelStore(s => s.members);
-  const loads = useModelStore(s => s.loads);
-  const addNode = useModelStore(s => s.addNode);
-  const addMember = useModelStore(s => s.addMember);
-  const addPlate = useModelStore(s => s.addPlate);
-  const addLoad = useModelStore(s => s.addLoad);
-  const clearModel = useModelStore(s => s.clearModel);
+  // Model store — batched selector to reduce re-renders
+  const {
+    nodes, members, loads,
+    addNode, addMember, addPlate, addLoad, clearModel,
+  } = useModelStore(
+    useShallow((s) => ({
+      nodes: s.nodes,
+      members: s.members,
+      loads: s.loads,
+      addNode: s.addNode,
+      addMember: s.addMember,
+      addPlate: s.addPlate,
+      addLoad: s.addLoad,
+      clearModel: s.clearModel,
+    }))
+  );
 
   // ============================================
   // INITIALIZATION

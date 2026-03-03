@@ -18,7 +18,12 @@
  * @author BeamLab Engineering Team
  */
 
-import * as XLSX from 'xlsx';
+// xlsx loaded on-demand (~300KB) — only fetched when user triggers export
+let _xlsxPromise: Promise<typeof import('xlsx')> | null = null;
+function getXLSX() {
+  if (!_xlsxPromise) _xlsxPromise = import('xlsx');
+  return _xlsxPromise;
+}
 import { AnalysisResults } from "../store/model";
 
 // ============================================================================
@@ -57,10 +62,11 @@ interface DesignCheck {
  * Create a styled worksheet with headers
  */
 function createStyledWorksheet(
+    xlsxMod: typeof import('xlsx'),
     headers: string[],
     data: (string | number)[][],
     title: string | undefined = undefined
-): XLSX.WorkSheet {
+) {
     const wsData: (string | number)[][] = [];
 
     // Add title row if provided
@@ -75,7 +81,7 @@ function createStyledWorksheet(
     // Add data
     wsData.push(...data);
 
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const ws = xlsxMod.utils.aoa_to_sheet(wsData);
 
     // Set column widths
     const colWidths = headers.map((h, i) => {
@@ -162,6 +168,7 @@ export const exportToExcel = async (
         },
     } = options;
 
+    const XLSX = await getXLSX();
     const wb = XLSX.utils.book_new();
 
     // ========================================
@@ -259,7 +266,7 @@ export const exportToExcel = async (
             n.restraints?.mz ? 'Yes' : 'No'
         ]);
         
-        const nodesWs = createStyledWorksheet(nodesHeaders, nodesData, 'Node Coordinates');
+        const nodesWs = createStyledWorksheet(XLSX, nodesHeaders, nodesData, 'Node Coordinates');
         XLSX.utils.book_append_sheet(wb, nodesWs, 'Nodes');
     }
 
@@ -300,7 +307,7 @@ export const exportToExcel = async (
             ];
         });
         
-        const membersWs = createStyledWorksheet(membersHeaders, membersData, 'Member Properties');
+        const membersWs = createStyledWorksheet(XLSX, membersHeaders, membersData, 'Member Properties');
         XLSX.utils.book_append_sheet(wb, membersWs, 'Members');
     }
 
@@ -333,7 +340,7 @@ export const exportToExcel = async (
             ];
         });
         
-        const dispWs = createStyledWorksheet(dispHeaders, dispData, 'Nodal Displacements');
+        const dispWs = createStyledWorksheet(XLSX, dispHeaders, dispData, 'Nodal Displacements');
         XLSX.utils.book_append_sheet(wb, dispWs, 'Displacements');
     }
 
@@ -359,7 +366,7 @@ export const exportToExcel = async (
             formatNumber(forces.torsion || 0, 2)
         ]);
         
-        const forcesWs = createStyledWorksheet(forcesHeaders, forcesData, 'Member Forces');
+        const forcesWs = createStyledWorksheet(XLSX, forcesHeaders, forcesData, 'Member Forces');
         XLSX.utils.book_append_sheet(wb, forcesWs, 'Forces');
     }
 
@@ -383,7 +390,7 @@ export const exportToExcel = async (
             formatNumber(react.mz || 0, 2)
         ]);
         
-        const reactionsWs = createStyledWorksheet(reactionsHeaders, reactionsData, 'Support Reactions');
+        const reactionsWs = createStyledWorksheet(XLSX, reactionsHeaders, reactionsData, 'Support Reactions');
         XLSX.utils.book_append_sheet(wb, reactionsWs, 'Reactions');
     }
 
@@ -405,7 +412,7 @@ export const exportToExcel = async (
             check.governingCase
         ]);
         
-        const checksWs = createStyledWorksheet(checksHeaders, checksData, 'Design Checks - IS 800:2007');
+        const checksWs = createStyledWorksheet(XLSX, checksHeaders, checksData, 'Design Checks - IS 800:2007');
         XLSX.utils.book_append_sheet(wb, checksWs, 'Design Checks');
     }
 
@@ -426,6 +433,7 @@ export const exportComparisonToExcel = async (
         parameters: Record<string, any>;
     }>
 ): Promise<void> => {
+    const XLSX = await getXLSX();
     const wb = XLSX.utils.book_new();
 
     // Create comparison summary
@@ -442,7 +450,7 @@ export const exportComparisonToExcel = async (
         summaryData.push(row);
     });
 
-    const summaryWs = createStyledWorksheet(summaryHeaders, summaryData, 'Parameter Comparison');
+    const summaryWs = createStyledWorksheet(XLSX, summaryHeaders, summaryData, 'Parameter Comparison');
     XLSX.utils.book_append_sheet(wb, summaryWs, 'Comparison');
 
     // Add individual result sheets
@@ -455,7 +463,7 @@ export const exportComparisonToExcel = async (
             formatNumber(forces.shearY || forces.shearZ || 0, 2)
         ]);
         
-        const forcesWs = createStyledWorksheet(forcesHeaders, forcesData);
+        const forcesWs = createStyledWorksheet(XLSX, forcesHeaders, forcesData);
         XLSX.utils.book_append_sheet(wb, forcesWs, `Case ${idx + 1}`);
     });
 

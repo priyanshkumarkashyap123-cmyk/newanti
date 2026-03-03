@@ -8,6 +8,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
+import { logger } from '../lib/logging/logger';
 import {
   Folder,
   Plus,
@@ -164,7 +165,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
       const projects = await ProjectService.listProjects(token);
       setCloudProjects(projects);
     } catch (err) {
-      console.error("[Dashboard] Failed to load projects:", err);
+      logger.error("[Dashboard] Failed to load projects", { error: err instanceof Error ? err.message : String(err) });
       setProjectsError("Failed to load projects. Check your connection.");
     } finally {
       setIsLoadingProjects(false);
@@ -210,7 +211,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
         navigate("/app");
       } catch (err) {
-        console.error("[Dashboard] Failed to open project:", err);
+        logger.error("[Dashboard] Failed to open project", { error: err instanceof Error ? err.message : String(err) });
         setProjectsError("Failed to open project. Please try again.");
       } finally {
         setIsLoadingOne(null);
@@ -255,7 +256,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         setCloudProjects(prev => prev.filter(p => p._id !== projectId));
       }
     } catch (err) {
-      console.error("[Dashboard] Delete failed:", err);
+      logger.error("[Dashboard] Delete failed", { error: err instanceof Error ? err.message : String(err) });
       setProjectsError("Failed to delete project.");
     }
     setProjectMenuId(null);
@@ -272,7 +273,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
       );
       fetchProjects(); // Refresh list
     } catch (err) {
-      console.error("[Dashboard] Duplicate failed:", err);
+      logger.error("[Dashboard] Duplicate failed", { error: err instanceof Error ? err.message : String(err) });
       setProjectsError("Failed to duplicate project.");
     }
     setProjectMenuId(null);
@@ -289,7 +290,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         );
       }
     } catch (err) {
-      console.error("[Dashboard] Rename failed:", err);
+      logger.error("[Dashboard] Rename failed", { error: err instanceof Error ? err.message : String(err) });
       setProjectsError("Failed to rename project.");
     }
     setRenamingProjectId(null);
@@ -308,7 +309,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("[Dashboard] Export failed:", err);
+      logger.error("[Dashboard] Export failed", { error: err instanceof Error ? err.message : String(err) });
     }
     setProjectMenuId(null);
   }, [getToken]);

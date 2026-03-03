@@ -309,9 +309,9 @@ export const FoundationDesignPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent mb-2">
             Foundation Design Center
@@ -327,7 +327,7 @@ export const FoundationDesignPage: React.FC = () => {
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Foundation Type & Code Selection */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <div className="grid grid-cols-2 gap-6">
                 {/* Foundation Type */}
                 <div>
@@ -385,7 +385,7 @@ export const FoundationDesignPage: React.FC = () => {
             </div>
 
             {/* Column Loads */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-amber-400 mb-4">Column Loads</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
@@ -437,7 +437,7 @@ export const FoundationDesignPage: React.FC = () => {
             </div>
 
             {/* Geometry */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-blue-400 mb-4">Geometry</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="col-span-2 md:col-span-3 mb-2">
@@ -507,7 +507,7 @@ export const FoundationDesignPage: React.FC = () => {
             {/* Soil & Materials */}
             <div className="grid grid-cols-2 gap-6">
               {/* Soil Properties */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-emerald-400 mb-4">Soil Properties</h3>
                 <div className="space-y-4">
                   <div>
@@ -532,7 +532,7 @@ export const FoundationDesignPage: React.FC = () => {
               </div>
 
               {/* Materials */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-purple-400 mb-4">Materials</h3>
                 <div className="space-y-4">
                   <div>
@@ -583,11 +583,11 @@ export const FoundationDesignPage: React.FC = () => {
             </button>
 
             {error && (
-              <div className="p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-start gap-3">
+              <div className="p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-red-400 font-medium">Design Error</p>
-                  <p className="text-red-300/80 text-sm mt-1">{error}</p>
+                  <p className="text-red-700 dark:text-red-400 text-sm mt-1">{error}</p>
                 </div>
               </div>
             )}
@@ -596,7 +596,7 @@ export const FoundationDesignPage: React.FC = () => {
           {/* Right Panel - Results */}
           <div className="lg:col-span-1">
             {results ? (
-              <div className="bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <CheckCircle2 className="w-6 h-6 text-emerald-400" />
                   Design Results
@@ -681,7 +681,7 @@ export const FoundationDesignPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700 h-full">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
                   <Layers className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Results Yet</h3>

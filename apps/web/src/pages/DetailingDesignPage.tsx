@@ -8,7 +8,7 @@ export const DetailingDesignPage: React.FC = () => {
     useEffect(() => { document.title = 'Detailing Design | BeamLab'; }, []);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white p-4">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white p-4">
             <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-emerald-400 to-blue-500 bg-clip-text text-transparent">
                 Structural Detailing Center
             </h1>

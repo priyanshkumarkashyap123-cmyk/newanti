@@ -81,6 +81,12 @@ futures = "0.3"
 # CPU count for worker pool
 num_cpus = "1.16"
 
+# In-memory caching for analysis results
+moka = { version = "0.12", features = ["future"] }
+
+# Hashing for cache keys
+sha2 = "0.10"
+
 [dev-dependencies]
 tokio-test = "0.4"
 

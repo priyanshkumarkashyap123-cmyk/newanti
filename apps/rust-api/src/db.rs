@@ -25,8 +25,9 @@ impl Database {
             .context("Failed to parse MongoDB URI")?;
         
         client_options.app_name = Some("BeamLab-Rust-API".to_string());
-        client_options.max_pool_size = Some(100);
+        client_options.max_pool_size = Some(20);
         client_options.min_pool_size = Some(5);
+        client_options.max_idle_time = Some(Duration::from_secs(30));
         client_options.connect_timeout = Some(Duration::from_secs(30));
         client_options.server_selection_timeout = Some(Duration::from_secs(30));
         

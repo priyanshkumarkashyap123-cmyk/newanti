@@ -210,17 +210,43 @@ function clientSideDesignSteel(input: ClientDesignInput): MemberDesignResult & {
   const Mp = Zpy * fy / 1e6; // kN·m
   let Md: number;
   if (code === 'IS800') {
-    // IS 800 Cl 8.2.2 — simplified
+    // IS 800 Cl 8.2.2 — LTB with proper J & Iw
     const beta_b = 1.0;
-    const Mcr_approx = (Math.PI ** 2 * E * Iz / (Lb ** 2)) * Math.sqrt(1 + (Lb ** 2 * 0.25 * s.tw ** 3 * s.D) / (Math.PI ** 2 * Iz));
+    const hw_ltb = s.D - 2 * s.tf;
+    // St. Venant torsion constant: J ≈ (1/3)(2·bf·tf³ + hw·tw³)
+    const J_ltb = (1 / 3) * (2 * s.bf * s.tf ** 3 + hw_ltb * s.tw ** 3);
+    // Warping constant: Iw ≈ (1 - βf)·βf·Iy·hs² for symmetric I: βf=0.5 → Iw = Iy·hs²/4
+    const hs_ltb = s.D - s.tf;
+    const Iw_ltb = Iy * hs_ltb ** 2 / 4; // mm⁶
+    const G_ltb = E / (2 * (1 + 0.3)); // Shear modulus
+    // Mcr = (π²EIz/Lb²)·√(Iw/Iz + Lb²GJ/(π²EIz))
+    const Mcr_approx = (Math.PI ** 2 * E * Iz / (Lb ** 2)) * Math.sqrt(Iw_ltb / Iz + (Lb ** 2 * G_ltb * J_ltb) / (Math.PI ** 2 * E * Iz));
     const lambda_lt = Math.sqrt(beta_b * Zpy * fy / (Mcr_approx > 0 ? Mcr_approx : 1e10));
     const alpha_lt = 0.49;
     const phi_lt = 0.5 * (1 + alpha_lt * (lambda_lt - 0.2) + lambda_lt ** 2);
     const chi_lt = Math.min(1.0 / (phi_lt + Math.sqrt(Math.max(phi_lt ** 2 - lambda_lt ** 2, 0.001))), 1.0);
     Md = beta_b * Zpy * fy * chi_lt / gamma_m0 / 1e6;
   } else {
-    // AISC F2 — simplified
-    Md = phi_b * Mp;
+    // AISC F2 — Full LTB check
+    const ry_aisc = Math.sqrt(Iz / A); // weak-axis radius of gyration
+    const hw_aisc = s.D - 2 * s.tf;
+    const J_aisc = (1 / 3) * (2 * s.bf * s.tf ** 3 + hw_aisc * s.tw ** 3);
+    const rts_sq = Math.sqrt(Iz * (s.D - s.tf) ** 2 / 4) / Zey; // rts ≈ √(√(Iy·Cw)/Sx)
+    const rts = Math.sqrt(Math.max(rts_sq, 1));
+    const c_aisc = 1.0; // doubly symmetric
+    const Lp_aisc = 1.76 * ry_aisc * Math.sqrt(E / fy);
+    const Lr_aisc = 1.95 * rts * (E / (0.7 * fy)) * Math.sqrt(J_aisc * c_aisc / (Zey * (s.D - s.tf)) + Math.sqrt((J_aisc * c_aisc / (Zey * (s.D - s.tf))) ** 2 + 6.76 * (0.7 * fy / E) ** 2));
+    if (Lb <= Lp_aisc) {
+      Md = phi_b * Mp;
+    } else if (Lb <= Lr_aisc) {
+      const Cb = 1.0; // conservative
+      const Mr = 0.7 * fy * Zey / 1e6; // Mp at flange yielding
+      Md = phi_b * Math.min(Cb * (Mp - (Mp - Mr) * (Lb - Lp_aisc) / (Lr_aisc - Lp_aisc)), Mp);
+    } else {
+      const Cb = 1.0;
+      const Fcr = Cb * Math.PI ** 2 * E / (Lb / rts) ** 2 * Math.sqrt(1 + 0.078 * J_aisc * c_aisc / (Zey * (s.D - s.tf)) * (Lb / rts) ** 2);
+      Md = phi_b * Math.min(Fcr * Zey / 1e6, Mp);
+    }
   }
 
   // -- Shear capacity --
@@ -246,7 +272,11 @@ function clientSideDesignSteel(input: ClientDesignInput): MemberDesignResult & {
   const axialRatio = forces.N >= 0 ? tensionRatio : compressionRatio;
   let interactionRatio: number;
   if (code === 'IS800') {
-    interactionRatio = axialRatio + flexureRatio; // simplified
+    // IS800 Cl 9.3.1 with Cm amplification
+    const Cm = 0.85; // conservative equivalent uniform moment factor
+    const Pe = Math.PI ** 2 * E * Iy / (lengthMM ** 2) / 1000; // Euler load, kN
+    const amplification = forces.N < 0 ? Cm / Math.max(1 - N / Math.max(Pe, 0.001), 0.01) : 1.0;
+    interactionRatio = axialRatio + amplification * flexureRatio;
   } else {
     // AISC H1-1a/b
     if (axialRatio >= 0.2) {

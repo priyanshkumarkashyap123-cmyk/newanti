@@ -13,6 +13,8 @@
 
 // ============================================
 // TYPES
+
+import { logger } from '../../lib/logging/logger';
 // ============================================
 
 export interface FineTuningDataset {
@@ -143,7 +145,7 @@ class VertexAIServiceClass {
             }
         };
 
-        console.log(`[VertexAI] Prepared dataset ${dataset.id} with ${dataset.examples.length} examples`);
+        logger.info(`[VertexAI] Prepared dataset ${dataset.id} with ${dataset.examples.length} examples`);
         return dataset;
     }
 
@@ -185,7 +187,7 @@ class VertexAIServiceClass {
         // In production, this would call Vertex AI API
         // const endpoint = `https://${this.location}-aiplatform.googleapis.com/v1/projects/${this.projectId}/locations/${this.location}/tuningJobs`;
 
-        console.log(`[VertexAI] Submitted training job ${job.id}`);
+        logger.info(`[VertexAI] Submitted training job ${job.id}`);
 
         // Simulate async training
         this.simulateTraining(job);
@@ -209,7 +211,7 @@ class VertexAIServiceClass {
         job.outputModel = `ft-${job.baseModel}-${Date.now()}`;
 
         this.trainingJobs.set(job.id, job);
-        console.log(`[VertexAI] Training job ${job.id} completed`);
+        logger.info(`[VertexAI] Training job ${job.id} completed`);
     }
 
     /**
@@ -250,7 +252,7 @@ class VertexAIServiceClass {
         versions.push(version);
         this.modelVersions.set(job.baseModel, versions);
 
-        console.log(`[VertexAI] Deployed model version ${version.id} with ${trafficPercent}% traffic`);
+        logger.info(`[VertexAI] Deployed model version ${version.id} with ${trafficPercent}% traffic`);
         return version;
     }
 
@@ -377,7 +379,7 @@ class VertexAIServiceClass {
         previous.status = 'production';
         previous.trafficPercent = 100;
 
-        console.log(`[VertexAI] Rolled back from ${latest.version} to ${previous.version}`);
+        logger.info(`[VertexAI] Rolled back from ${latest.version} to ${previous.version}`);
         return true;
     }
 }

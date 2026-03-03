@@ -41,6 +41,7 @@ import {
   Minimize2
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { useSubscription } from '../../hooks/useSubscription';
 
 // ============================================
@@ -140,11 +141,15 @@ export const AdvancedAIBrain: FC = () => {
   const recognitionRef = useRef<any>(null);
   
   const { subscription, canAccess } = useSubscription();
-  const nodes = useModelStore(s => s.nodes);
-  const members = useModelStore(s => s.members);
-  const addNode = useModelStore(s => s.addNode);
-  const addMember = useModelStore(s => s.addMember);
-  const clearModel = useModelStore(s => s.clearModel);
+  const { nodes, members, addNode, addMember, clearModel } = useModelStore(
+    useShallow((s) => ({
+      nodes: s.nodes,
+      members: s.members,
+      addNode: s.addNode,
+      addMember: s.addMember,
+      clearModel: s.clearModel,
+    }))
+  );
 
   // Scroll to bottom on new messages
   useEffect(() => {

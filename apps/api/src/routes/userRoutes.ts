@@ -15,6 +15,8 @@ import { logger } from '../utils/logger.js';
 
 // Check which auth mode is active
 const USE_CLERK = process.env['USE_CLERK'] === 'true';
+// TODO(payment): Set to false after payment gateway integration is live
+const TEMP_UNLOCK_ALL = true;
 
 const router: Router = Router();
 
@@ -82,9 +84,10 @@ router.get('/limits', requireAuth(), asyncHandler(async (req: Request, res: Resp
     }
 
     const tier = getEffectiveTier(userEmail, dbTier);
-    const limits = TIER_LIMITS[tier];
+    const accessTier = TEMP_UNLOCK_ALL ? 'enterprise' : tier;
+    const limits = TIER_LIMITS[accessTier];
 
-    return res.ok({ tier, limits });
+    return res.ok({ tier: accessTier, limits });
 }));
 
 // ============================================
@@ -94,22 +97,23 @@ router.get('/limits', requireAuth(), asyncHandler(async (req: Request, res: Resp
 router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
     const { userId, email: authEmail } = getAuth(req);
     if (!userId) {
-        // Return free tier for unauthenticated users instead of 401
+        // TODO(payment): Revert to restricted free-tier features after payment gateway integration
+        // TEMPORARY: All features unlocked for beta/testing
         return res.ok({
-            tier: 'free',
+            tier: TEMP_UNLOCK_ALL ? 'enterprise' : 'free',
             isLoading: false,
             expiresAt: null,
             subscription: null,
             features: {
-                maxProjects: 3,
-                pdfExport: false,
-                aiAssistant: false,
-                advancedDesignCodes: false,
-                teamMembers: 1,
-                prioritySupport: false,
-                apiAccess: false
+                maxProjects: -1,
+                pdfExport: true,
+                aiAssistant: true,
+                advancedDesignCodes: true,
+                teamMembers: -1,
+                prioritySupport: true,
+                apiAccess: true
             },
-            limits: TIER_LIMITS['free']
+            limits: TIER_LIMITS[TEMP_UNLOCK_ALL ? 'enterprise' : 'free']
         });
     }
 
@@ -152,23 +156,25 @@ router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res
 
     // Use getEffectiveTier to check for master user elevation
     const tier = getEffectiveTier(userEmail, dbTier);
-    logger.info(`[Subscription] userId=${userId}, dbTier=${dbTier}, effectiveTier=${tier}`);
+    const accessTier = TEMP_UNLOCK_ALL ? 'enterprise' : tier;
+    logger.info(`[Subscription] userId=${userId}, dbTier=${dbTier}, effectiveTier=${tier}, accessTier=${accessTier}`);
 
-    const limits = TIER_LIMITS[tier];
+    const limits = TIER_LIMITS[accessTier];
 
-    // Feature access based on tier
+    // TODO(payment): Revert to tier-based feature gating after payment gateway integration
+    // TEMPORARY: All features unlocked for beta/testing
     const features = {
-        maxProjects: tier === 'free' ? 3 : -1,
-        pdfExport: tier !== 'free',
-        aiAssistant: tier !== 'free',
-        advancedDesignCodes: tier !== 'free',
-        teamMembers: tier === 'free' ? 1 : tier === 'pro' ? 5 : -1,
-        prioritySupport: tier !== 'free',
-        apiAccess: tier === 'enterprise'
+        maxProjects: -1,
+        pdfExport: true,
+        aiAssistant: true,
+        advancedDesignCodes: true,
+        teamMembers: -1,
+        prioritySupport: true,
+        apiAccess: true
     };
 
     return res.ok({
-        tier,
+        tier: accessTier,
         isLoading: false,
         expiresAt: subscriptionData?.currentPeriodEnd || null,
         subscription: subscriptionData,

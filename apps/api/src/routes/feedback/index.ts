@@ -7,7 +7,7 @@
  */
 
 import { Router, Request, Response, type IRouter } from 'express';
-import { requireAuth } from '../../middleware/authMiddleware.js';
+import { requireAuth, requireRole } from '../../middleware/authMiddleware.js';
 import { asyncHandler, HttpError } from '../../utils/asyncHandler.js';
 import { logger } from '../../utils/logger.js';
 
@@ -76,7 +76,7 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
  * GET /api/feedback/stats
  * Get feedback statistics
  */
-router.get('/stats', asyncHandler(async (_req: Request, res: Response) => {
+router.get('/stats', requireRole(['admin']), asyncHandler(async (_req: Request, res: Response) => {
     const corrections = feedbackStore.filter(e => e.type === 'correction');
     const ratings = feedbackStore.filter(e => e.type === 'rating' && e.rating);
 
@@ -108,7 +108,7 @@ router.get('/stats', asyncHandler(async (_req: Request, res: Response) => {
  * POST /api/feedback/export
  * Export corrections as training data
  */
-router.post('/export', asyncHandler(async (_req: Request, res: Response) => {
+router.post('/export', requireRole(['admin']), asyncHandler(async (_req: Request, res: Response) => {
     const corrections = feedbackStore.filter(
         e => e.type === 'correction' && e.correctedOutput && !e.processed
     );

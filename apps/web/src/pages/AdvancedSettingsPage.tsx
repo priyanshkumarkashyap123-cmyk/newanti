@@ -1094,9 +1094,9 @@ export default function AdvancedSettingsPage() {
   };
   
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -1167,7 +1167,7 @@ export default function AdvancedSettingsPage() {
           {categories.map((category) => (
             <div
               key={category.id}
-              className="bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl overflow-hidden"
+              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden"
             >
               <button type="button"
                 onClick={() => toggleCategory(category.id)}
@@ -1200,7 +1200,7 @@ export default function AdvancedSettingsPage() {
         </div>
         
         {/* Preset Profiles */}
-        <div className="mt-8 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-6">
+        <div className="mt-8 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Gauge className="w-5 h-5 text-purple-400" />
             Preset Profiles

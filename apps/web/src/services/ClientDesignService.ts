@@ -4,6 +4,8 @@ interface AISCResult {
   Pn_tension: number; // lb
 }
 
+import { logger } from '../lib/logging/logger';
+
 interface MemberDesignInput {
   // Geometry
   d: number; // depth (in)
@@ -45,13 +47,13 @@ export class ClientDesignService {
       // when solver-wasm pkg hasn't been built yet
       this.wasm = await import(/* @vite-ignore */ "solver-wasm");
     } catch (e) {
-      console.warn("Failed to load Rust WASM module", e);
+      logger.warn("Failed to load Rust WASM module", { error: e instanceof Error ? e.message : String(e) });
     }
   }
 
   static checkAISC(member: MemberDesignInput): AISCResult | null {
     if (!this.wasm) {
-      console.error("WASM not initialized");
+      logger.error("WASM not initialized");
       return null;
     }
 
@@ -82,7 +84,7 @@ export class ClientDesignService {
 
       return res as AISCResult;
     } catch (e) {
-      console.error("Design Check Failed:", e);
+      logger.error("Design Check Failed", { error: e instanceof Error ? e.message : String(e) });
       return null;
     }
   }
@@ -100,7 +102,7 @@ export class ClientDesignService {
       console.timeEnd("WASM Modal Analysis");
       return res;
     } catch (e) {
-      console.error("Modal Analysis Failed:", e);
+      logger.error("Modal Analysis Failed", { error: e instanceof Error ? e.message : String(e) });
       return null;
     }
   }
@@ -137,7 +139,7 @@ export class ClientDesignService {
 
       return res;
     } catch (e) {
-      console.error("Seismic Analysis Failed:", e);
+      logger.error("Seismic Analysis Failed", { error: e instanceof Error ? e.message : String(e) });
       return null;
     }
   }

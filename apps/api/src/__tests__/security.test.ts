@@ -271,8 +271,8 @@ describe('secureErrorHandler', () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     const jsonArg = (res.json as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    expect(jsonArg.error).not.toContain('DB password');
-    expect(jsonArg.stack).toBeUndefined();
+    expect(jsonArg.error.message).not.toContain('DB password');
+    expect(jsonArg.error.stack).toBeUndefined();
 
     process.env['NODE_ENV'] = originalEnv;
   });
@@ -289,8 +289,8 @@ describe('secureErrorHandler', () => {
     secureErrorHandler(err, req, res, next);
 
     const jsonArg = (res.json as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    expect(jsonArg.error).toBe('Debug error');
-    expect(jsonArg.stack).toBeDefined();
+    expect(jsonArg.error.message).toBe('Debug error');
+    expect(jsonArg.error.stack).toBeDefined();
 
     process.env['NODE_ENV'] = originalEnv;
   });

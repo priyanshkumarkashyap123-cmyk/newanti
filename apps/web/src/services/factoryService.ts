@@ -10,6 +10,7 @@
 
 // Rust API for templates (100x faster), Python for AI generation
 import { API_CONFIG } from "../config/env";
+import { logger } from '../lib/logging/logger';
 const API_URL = API_CONFIG.pythonUrl; // AI generation
 const RUST_URL = API_CONFIG.rustUrl; // Templates
 
@@ -149,7 +150,7 @@ export async function fetchTemplate(
       throw new FactoryServiceError(data.error || "Template generation failed");
     }
 
-    console.log(
+    logger.info(
       `[FactoryService] Generated ${type}: ${data.model.nodes.length} nodes, ${data.model.members.length} members`,
     );
 
@@ -160,7 +161,7 @@ export async function fetchTemplate(
     }
 
     // Network or parsing error
-    console.error("[FactoryService] Template fetch error:", error);
+    logger.error("[FactoryService] Template fetch error", { error: error instanceof Error ? error.message : String(error) });
     throw new FactoryServiceError(
       error instanceof Error
         ? error.message
@@ -202,7 +203,7 @@ export async function generateFromAI(prompt: string): Promise<StructuralModel> {
       throw new FactoryServiceError(data.error || "AI generation failed");
     }
 
-    console.log(
+    logger.info(
       `[FactoryService] AI generated: ${data.model.nodes.length} nodes, ${data.model.members.length} members`,
     );
 
@@ -212,7 +213,7 @@ export async function generateFromAI(prompt: string): Promise<StructuralModel> {
       throw error;
     }
 
-    console.error("[FactoryService] AI generation error:", error);
+    logger.error("[FactoryService] AI generation error", { error: error instanceof Error ? error.message : String(error) });
     throw new FactoryServiceError(
       error instanceof Error ? error.message : "Failed to generate from AI",
     );
@@ -250,7 +251,7 @@ export async function validateModel(model: StructuralModel): Promise<{
 
     return await response.json();
   } catch (error) {
-    console.error("[FactoryService] Validation error:", error);
+    logger.error("[FactoryService] Validation error", { error: error instanceof Error ? error.message : String(error) });
     throw new FactoryServiceError(
       error instanceof Error ? error.message : "Failed to validate model",
     );
@@ -277,7 +278,7 @@ export async function checkHealth(): Promise<{
 
     return await response.json();
   } catch (error) {
-    console.error("[FactoryService] Health check failed:", error);
+    logger.error("[FactoryService] Health check failed", { error: error instanceof Error ? error.message : String(error) });
     throw new FactoryServiceError("Python backend is not running");
   }
 }

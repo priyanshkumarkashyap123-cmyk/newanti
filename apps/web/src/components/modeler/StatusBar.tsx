@@ -65,7 +65,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
     const selMembers = Array.from(selectedIds).filter(id => id.startsWith("M")).length;
 
     return (
-      <div className="h-6 bg-white/95 dark:bg-slate-900 backdrop-blur-sm border-t border-slate-800/60 flex items-center justify-between px-3 text-[11px] font-mono text-slate-500 flex-shrink-0 select-none font-medium">
+      <div className="h-6 bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 text-xs font-mono text-slate-500 dark:text-slate-400 flex-shrink-0 select-none">
         {/* Left Section — Status + Mode */}
         <div className="flex items-center gap-3">
           {/* Status Indicator */}

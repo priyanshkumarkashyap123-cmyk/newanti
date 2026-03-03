@@ -16,10 +16,10 @@ import { selfImprovement } from './SelfImprovementEngine';
 
 export interface Experience {
     id: string;
-    state: any;           // Input state
+    state: unknown;           // Input state
     action: string;       // AI decision/recommendation
     reward: number;       // -1 to 1 (negative = bad, positive = good)
-    nextState?: any;      // Resulting state
+    nextState?: unknown;      // Resulting state
     timestamp: Date;
 }
 
@@ -104,14 +104,14 @@ class ReinforcementLearningServiceClass {
     /**
      * Record positive feedback (user approved)
      */
-    recordSuccess(feature: string, action: string, state: any): void {
+    recordSuccess(feature: string, action: string, state: unknown): void {
         this.recordExperience(feature, { state, action, reward: 1.0 });
     }
 
     /**
      * Record negative feedback (user corrected)
      */
-    recordFailure(feature: string, action: string, state: any, correction?: string): void {
+    recordFailure(feature: string, action: string, state: unknown, correction?: string): void {
         this.recordExperience(feature, {
             state,
             action,
@@ -123,7 +123,7 @@ class ReinforcementLearningServiceClass {
     /**
      * Record neutral outcome (user made no change)
      */
-    recordNeutral(feature: string, action: string, state: any): void {
+    recordNeutral(feature: string, action: string, state: unknown): void {
         this.recordExperience(feature, { state, action, reward: 0.2 });
     }
 
@@ -339,18 +339,19 @@ class ReinforcementLearningServiceClass {
             if (data) {
                 const parsed = JSON.parse(data);
                 // Restore experiences
-                Object.entries(parsed.experiences || {}).forEach(([feature, exps]: [string, any]) => {
-                    this.experiences.set(feature, exps.map((e: any) => ({
+                Object.entries(parsed.experiences || {}).forEach(([feature, exps]: [string, unknown]) => {
+                    this.experiences.set(feature, (exps as Array<Record<string, unknown>>).map((e: Record<string, unknown>) => ({
                         ...e,
-                        timestamp: new Date(e.timestamp)
-                    })));
+                        timestamp: new Date(e.timestamp as string)
+                    } as Experience)));
                 });
                 // Restore policies
-                Object.entries(parsed.policies || {}).forEach(([feature, policy]: [string, any]) => {
+                Object.entries(parsed.policies || {}).forEach(([feature, policy]: [string, unknown]) => {
+                    const p = policy as Record<string, unknown>;
                     this.policies.set(feature, {
-                        ...policy,
-                        actionWeights: new Map(Object.entries(policy.actionWeights || {}))
-                    });
+                        ...p,
+                        actionWeights: new Map(Object.entries((p.actionWeights as Record<string, number>) || {}))
+                    } as Policy);
                 });
             }
         } catch (e) {

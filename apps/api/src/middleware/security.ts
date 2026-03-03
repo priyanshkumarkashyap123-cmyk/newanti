@@ -306,8 +306,11 @@ export const secureErrorHandler = (
   res.status(statusCode).json({
     success: false,
     requestId,
-    error: clientMessage,
-    ...(isDev && { stack: err.stack }),
+    error: {
+      code: (err as any).code ?? `ERR_${statusCode}`,
+      message: clientMessage,
+      ...(isDev && { stack: err.stack }),
+    },
     ...(statusCode === 503 && { retryAfterMs: 5000 }),
   });
 };

@@ -39,10 +39,23 @@ export function asyncHandler(fn: AsyncRequestHandler): RequestHandler {
  */
 export class HttpError extends Error {
   public readonly statusCode: number;
+  public readonly code?: string;
 
-  constructor(statusCode: number, message: string) {
+  constructor(statusCode: number, message: string, code?: string) {
     super(message);
     this.statusCode = statusCode;
+    this.code = code;
     this.name = "HttpError";
   }
+}
+
+/**
+ * Standardized success response helper.
+ * Usage: sendSuccess(res, data) or sendSuccess(res, data, 201)
+ */
+export function sendSuccess<T>(res: Response, data: T, statusCode = 200): void {
+  res.status(statusCode).json({
+    success: true,
+    data,
+  });
 }

@@ -9,6 +9,7 @@ import {
   createContext,
   useContext,
   useCallback,
+  useMemo,
   FC,
   ReactNode,
   useEffect,
@@ -259,12 +260,12 @@ export const AnalyticsProvider: FC<AnalyticsProviderProps> = ({
     }
   }, [page, trackTiming]);
 
-  const value: AnalyticsContextType = {
+  const value = useMemo<AnalyticsContextType>(() => ({
     track,
     identify,
     page,
     trackTiming,
-  };
+  }), [track, identify, page, trackTiming]);
 
   return (
     <AnalyticsContext.Provider value={value}>

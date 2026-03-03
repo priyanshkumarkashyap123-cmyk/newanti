@@ -547,9 +547,9 @@ export class UsageMonitoringService {
         try {
             const query: Record<string, unknown> = {};
             if (filters?.clerkId) query.clerkId = filters.clerkId;
-            if (filters?.email) query.email = { $regex: filters.email, $options: 'i' };
+            if (filters?.email) query.email = { $regex: filters.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
             if (filters?.category) query.category = filters.category;
-            if (filters?.action) query.action = { $regex: filters.action, $options: 'i' };
+            if (filters?.action) query.action = { $regex: filters.action.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
             if (filters?.startDate || filters?.endDate) {
                 query.createdAt = {};
                 if (filters?.startDate) (query.createdAt as Record<string, unknown>).$gte = filters.startDate;

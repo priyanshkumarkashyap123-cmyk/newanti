@@ -175,8 +175,13 @@ const DiagramRenderer: React.FC<DiagramRendererProps> = ({ diagram }) => {
 // DIAGRAM COMPONENTS (Simplified SVG representations)
 // ============================================================================
 
-const CrossSectionDiagram: React.FC<{ data: any }> = ({ data }) => {
-  const { b = 300, D = 500, d, cover = 40 } = data?.section || data || {};
+const CrossSectionDiagram: React.FC<{ data: Record<string, unknown> }> = ({ data }) => {
+  const section = (data?.section || data || {}) as Record<string, unknown>;
+  const b = (section.b as number) ?? 300;
+  const D = (section.D as number) ?? 500;
+  const d = section.d as number | undefined;
+  const cover = (section.cover as number) ?? 40;
+  void d; // used implicitly
   const scale = 0.4;
   
   return (
@@ -200,12 +205,12 @@ const CrossSectionDiagram: React.FC<{ data: any }> = ({ data }) => {
       </text>
       
       {/* Reinforcement indication */}
-      {data?.tension?.bars && (
+      {Boolean((data?.tension as Record<string, unknown>)?.bars) && (
         <g>
           <circle cx={20 + cover * scale} cy={20 + D * scale - cover * scale} r={5} fill="#333" />
           <circle cx={20 + b * scale - cover * scale} cy={20 + D * scale - cover * scale} r={5} fill="#333" />
           <text x={20 + b * scale / 2} y={20 + D * scale - cover * scale + 4} fontSize={8} textAnchor="middle">
-            {data.tension.bars}
+            {(data.tension as Record<string, unknown>).bars as React.ReactNode}
           </text>
         </g>
       )}
@@ -213,7 +218,7 @@ const CrossSectionDiagram: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-const StressDiagram: React.FC<{ data: any }> = ({ data }) => {
+const StressDiagram: React.FC<{ data: Record<string, unknown> }> = ({ data }) => {
   return (
     <svg width={300} height={200} className="bg-slate-50 dark:bg-slate-900">
       {/* Section outline */}
@@ -242,7 +247,7 @@ const StressDiagram: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-const MomentDiagram: React.FC<{ data: any }> = ({ data }) => {
+const MomentDiagram: React.FC<{ data: Record<string, unknown> }> = ({ data }) => {
   return (
     <svg width={300} height={150} className="bg-slate-50 dark:bg-slate-900">
       {/* Beam line */}
@@ -266,7 +271,7 @@ const MomentDiagram: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-const ShearDiagram: React.FC<{ data: any }> = ({ data }) => {
+const ShearDiagram: React.FC<{ data: Record<string, unknown> }> = ({ data }) => {
   return (
     <svg width={300} height={150} className="bg-slate-50 dark:bg-slate-900">
       {/* Beam line */}
@@ -292,7 +297,7 @@ const ShearDiagram: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-const ReinforcementLayout: React.FC<{ data: any }> = ({ data }) => {
+const ReinforcementLayout: React.FC<{ data: Record<string, unknown> }> = ({ data }) => {
   return (
     <svg width={350} height={200} className="bg-slate-50 dark:bg-slate-900">
       {/* Beam elevation */}
@@ -318,7 +323,7 @@ const ReinforcementLayout: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-const LoadingDiagram: React.FC<{ data: any }> = ({ data }) => {
+const LoadingDiagram: React.FC<{ data: Record<string, unknown> }> = ({ data }) => {
   return (
     <svg width={300} height={180} className="bg-slate-50 dark:bg-slate-900">
       {/* Building outline */}
@@ -344,7 +349,7 @@ const LoadingDiagram: React.FC<{ data: any }> = ({ data }) => {
   );
 };
 
-const GenericDiagram: React.FC<{ data: any; title: string }> = ({ data, title }) => {
+const GenericDiagram: React.FC<{ data: Record<string, unknown>; title: string }> = ({ data, title }) => {
   return (
     <div className="w-full h-40 bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-600 rounded-lg flex items-center justify-center">
       <div className="text-center text-slate-500 dark:text-slate-400">
@@ -620,7 +625,7 @@ export const DetailedCalculationView: React.FC<DetailedCalculationViewProps> = (
           {['calculations', 'diagrams', 'summary'].map((tab) => (
             <button type="button"
               key={tab}
-              onClick={() => setActiveTab(tab as any)}
+              onClick={() => setActiveTab(tab as 'calculations' | 'diagrams' | 'summary')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab
                   ? 'border-blue-600 text-blue-600'

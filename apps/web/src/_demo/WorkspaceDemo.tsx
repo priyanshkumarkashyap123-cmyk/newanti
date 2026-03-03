@@ -154,7 +154,7 @@ export const WorkspaceDemo: FC = () => {
                                             {
                                                 accessor: 'fx',
                                                 header: 'FX (kN)',
-                                                cell: ({ row }: any) => (
+                                                cell: ({ row }: { row: { original: typeof sampleReactions[0] } }) => (
                                                     <span className={row.original.fx === 0 ? 'text-slate-500' : 'text-slate-900 dark:text-white'}>
                                                         {row.original.fx.toFixed(1)}
                                                     </span>
@@ -163,14 +163,14 @@ export const WorkspaceDemo: FC = () => {
                                             {
                                                 accessor: 'fy',
                                                 header: 'FY (kN)',
-                                                cell: ({ row }: any) => (
+                                                cell: ({ row }: { row: { original: typeof sampleReactions[0] } }) => (
                                                     <span className="text-slate-900 dark:text-white font-semibold">{row.original.fy.toFixed(1)}</span>
                                                 ),
                                             },
                                             {
                                                 accessor: 'fz',
                                                 header: 'FZ (kN)',
-                                                cell: ({ row }: any) => (
+                                                cell: ({ row }: { row: { original: typeof sampleReactions[0] } }) => (
                                                     <span className={row.original.fz === 0 ? 'text-slate-500' : 'text-slate-900 dark:text-white'}>
                                                         {row.original.fz.toFixed(1)}
                                                     </span>
@@ -179,7 +179,7 @@ export const WorkspaceDemo: FC = () => {
                                             {
                                                 accessor: 'status',
                                                 header: 'Status',
-                                                cell: ({ row }: any) => (
+                                                cell: ({ row }: { row: { original: typeof sampleReactions[0] } }) => (
                                                     <StatusBadge variant={row.original.status} size="sm">
                                                         {row.original.status.toUpperCase()}
                                                     </StatusBadge>
@@ -205,18 +205,18 @@ export const WorkspaceDemo: FC = () => {
                                             {
                                                 accessor: 'axial',
                                                 header: 'Axial (kN)',
-                                                cell: ({ row }: any) => (
+                                                cell: ({ row }: { row: { original: typeof sampleForces[0] } }) => (
                                                     <span className={row.original.axial < 0 ? 'text-blue-400' : 'text-red-400'}>
                                                         {row.original.axial.toFixed(1)}
                                                     </span>
                                                 ),
                                             },
-                                            { accessor: 'shear', header: 'Shear (kN)', cell: ({ row }: any) => row.original.shear.toFixed(1) },
-                                            { accessor: 'moment', header: 'Moment (kN·m)', cell: ({ row }: any) => row.original.moment.toFixed(1) },
+                                            { accessor: 'shear', header: 'Shear (kN)', cell: ({ row }: { row: { original: typeof sampleForces[0] } }) => row.original.shear.toFixed(1) },
+                                            { accessor: 'moment', header: 'Moment (kN·m)', cell: ({ row }: { row: { original: typeof sampleForces[0] } }) => row.original.moment.toFixed(1) },
                                             {
                                                 accessor: 'status',
                                                 header: 'Check',
-                                                cell: ({ row }: any) => (
+                                                cell: ({ row }: { row: { original: typeof sampleForces[0] } }) => (
                                                     <StatusBadge variant={row.original.status} size="sm">
                                                         {row.original.status === 'pass' ? '✓' : '✗'}
                                                     </StatusBadge>

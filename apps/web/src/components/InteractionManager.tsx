@@ -1,9 +1,10 @@
 import React from 'react';
-import { FC, useRef, useState, useCallback, useMemo, useEffect } from 'react';
+import { FC, useRef, useState, useCallback, useMemo, useEffect, memo } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { useModelStore } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 // ============================================
 // UTILITY: Snap to Grid Function
@@ -33,7 +34,7 @@ interface InteractionManagerProps {
 // ============================================
 // INTERACTION MANAGER COMPONENT
 // ============================================
-export const InteractionManager: FC<InteractionManagerProps> = ({
+export const InteractionManager: FC<InteractionManagerProps> = memo(({
     active = true,
     gridStep = 1.0,
     workingPlane = 'XZ',
@@ -44,12 +45,18 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
     // Access Three.js context
     const { raycaster, pointer, camera, scene } = useThree();
 
-    // Store access
-    const activeTool = useModelStore((state) => state.activeTool);
-    const nodes = useModelStore((state) => state.nodes);
-    const addNode = useModelStore((state) => state.addNode);
-    const addMember = useModelStore((state) => state.addMember);
-    const selectNode = useModelStore((state) => state.selectNode);
+    // Store access — batched with useShallow to prevent cascading re-renders
+    const {
+        activeTool, nodes, addNode, addMember, selectNode,
+    } = useModelStore(
+        useShallow((state) => ({
+            activeTool: state.activeTool,
+            nodes: state.nodes,
+            addNode: state.addNode,
+            addMember: state.addMember,
+            selectNode: state.selectNode,
+        }))
+    );
 
     // Refs
     const planeRef = useRef<THREE.Mesh>(null!);
@@ -100,6 +107,11 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
         return positions;
     }, [nodes]);
 
+    // Pre-allocate reusable vectors for raycasting — avoids GC pressure at 60fps
+    const _toNode = useMemo(() => new THREE.Vector3(), []);
+    const _closestPoint = useMemo(() => new THREE.Vector3(), []);
+    const _rayDir = useMemo(() => new THREE.Vector3(), []);
+
     // 2. Event Loop: useFrame for raycasting
     useFrame(() => {
         if (!active || !planeRef.current || !cursorRef.current) return;
@@ -110,22 +122,23 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
         // First: Try to find existing nodes near the ray
         hoveredNodeId.current = null;
         const pickRadius = 0.4; // Radius for node picking
+        const pickRadiusSq = pickRadius * pickRadius; // Avoid sqrt in distance check
         let closestNode: { id: string; distance: number } | null = null;
 
-        for (const { id, position } of nodePositions) {
-            // Calculate distance from ray to node position
-            const rayOrigin = raycaster.ray.origin;
-            const rayDirection = raycaster.ray.direction;
+        const rayOrigin = raycaster.ray.origin;
+        const rayDirection = raycaster.ray.direction;
 
-            const toNode = position.clone().sub(rayOrigin);
-            const projectionLength = toNode.dot(rayDirection);
+        for (const { id, position } of nodePositions) {
+            // Reuse pre-allocated vectors instead of .clone()
+            _toNode.subVectors(position, rayOrigin);
+            const projectionLength = _toNode.dot(rayDirection);
 
             if (projectionLength < 0) continue; // Node is behind camera
 
-            const closestPointOnRay = rayOrigin.clone().add(rayDirection.clone().multiplyScalar(projectionLength));
-            const distance = closestPointOnRay.distanceTo(position);
+            _closestPoint.copy(rayDirection).multiplyScalar(projectionLength).add(rayOrigin);
+            const distSq = _closestPoint.distanceToSquared(position);
 
-            if (distance < pickRadius) {
+            if (distSq < pickRadiusSq) {
                 if (!closestNode || projectionLength < closestNode.distance) {
                     closestNode = { id, distance: projectionLength };
                 }
@@ -342,7 +355,7 @@ export const InteractionManager: FC<InteractionManagerProps> = ({
             )}
         </>
     );
-};
+});
 
 // ============================================
 // RUBBER BAND HELPER COMPONENT
@@ -353,20 +366,28 @@ interface RubberBandProps {
 }
 
 const RubberBand: FC<RubberBandProps> = ({ start, endRef }) => {
-    const [endPoint, setEndPoint] = useState(start.clone());
+    const lineRef = useRef<any>(null);
 
     useFrame(() => {
-        // Update end point state each frame to trigger re-render with new line
-        if (!endRef.current.equals(endPoint)) {
-            setEndPoint(endRef.current.clone());
+        // Directly update geometry via ref — avoids setState → re-render at 60fps
+        if (lineRef.current) {
+            const positions = lineRef.current.geometry?.attributes?.instanceStart;
+            if (positions) {
+                // For drei <Line>, update points via the exposed API
+                lineRef.current.geometry.setPositions([
+                    start.x, start.y, start.z,
+                    endRef.current.x, endRef.current.y, endRef.current.z,
+                ]);
+            }
         }
     });
 
     return (
         <Line
+            ref={lineRef}
             color="#ffcc00"
             lineWidth={2}
-            points={[start, endPoint]}
+            points={[start, endRef.current.clone()]}
             dashed
             dashScale={2}
         />

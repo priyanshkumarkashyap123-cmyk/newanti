@@ -1216,6 +1216,9 @@ export async function connectDB(uri?: string): Promise<void> {
 
     try {
         await mongoose.connect(connectionUri, {
+            maxPoolSize: 20,        // Max connections in pool (default: 100, reduced for typical workloads)
+            minPoolSize: 5,         // Keep warm connections ready
+            maxIdleTimeMS: 30000,   // Close idle connections after 30s
             serverSelectionTimeoutMS: 30000,
             connectTimeoutMS: 30000,
             socketTimeoutMS: 45000,

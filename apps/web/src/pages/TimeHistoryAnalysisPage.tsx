@@ -395,9 +395,9 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link to="/stream" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
@@ -453,9 +453,9 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-center gap-3">
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-red-300 text-sm">{error}</p>
+            <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
           </div>
         )}
 
@@ -464,7 +464,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Integration Method */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-blue-400 mb-4 flex items-center gap-2">
                   <Sliders className="w-4 h-4" />
                   Integration Method
@@ -572,7 +572,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               </div>
 
               {/* Damping */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-green-400 mb-4 flex items-center gap-2">
                   <Activity className="w-4 h-4" />
                   Damping Model
@@ -658,7 +658,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               </button>
 
               {/* Selected Ground Motion Summary */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-amber-400 mb-3">Selected Ground Motion</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -691,7 +691,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
               </div>
 
               {/* Analysis Info */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-purple-400 mb-3 flex items-center gap-2">
                   <Info className="w-4 h-4" />
                   Method Info
@@ -724,7 +724,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
         {/* Ground Motion Tab */}
         {activeTab === 'motion' && (
           <div className="space-y-6">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-amber-400 mb-4 flex items-center gap-2">
                 <Database className="w-4 h-4" />
                 Ground Motion Database
@@ -741,7 +741,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                     className={`p-4 rounded-xl text-left transition-all ${
                       selectedMotion.id === motion.id
                         ? 'bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-2 border-amber-500'
-                        : 'bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        : 'bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
                     <div className="font-medium text-slate-900 dark:text-white mb-1">{motion.name}</div>
@@ -757,7 +757,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             </div>
 
             {/* Scale Factor & Direction */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-blue-400 mb-4">Application Settings</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -805,7 +805,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
             </div>
 
             {/* Upload Custom Record */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700 border-dashed">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 border-dashed">
               <div className="flex items-center gap-4">
                 <Upload className="w-8 h-8 text-slate-600 dark:text-slate-400" />
                 <div>
@@ -863,7 +863,7 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
                 </div>
 
                 {/* Response Charts */}
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Response Time Histories</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <ResponseChart

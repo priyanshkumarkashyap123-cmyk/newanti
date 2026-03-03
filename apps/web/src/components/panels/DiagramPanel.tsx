@@ -233,7 +233,7 @@ const styles = {
 // COMPONENT
 // ============================================
 
-export const DiagramPanel: React.FC<DiagramPanelProps> = ({
+export const DiagramPanel: React.FC<DiagramPanelProps> = React.memo(({
     memberForces,
     selectedMemberId: externalSelectedId,
     onMemberSelect,
@@ -733,6 +733,8 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
             </div>
         </div>
     );
-};
+});
+
+(DiagramPanel as unknown as { displayName: string }).displayName = 'DiagramPanel';
 
 export default DiagramPanel;

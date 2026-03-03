@@ -13,6 +13,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { API_CONFIG } from '../config/env';
+import { logger } from '../lib/logging/logger';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -155,7 +156,7 @@ async function saveSessionToDB(session: AISession): Promise<void> {
       tx.onerror = () => reject(tx.error);
     });
   } catch (e) {
-    console.warn('[AISessionStore] IndexedDB write failed, using localStorage fallback', e);
+    logger.warn('[AISessionStore] IndexedDB write failed, using localStorage fallback', { error: e instanceof Error ? e.message : String(e) });
   }
 }
 
@@ -170,7 +171,7 @@ async function loadAllSessionsFromDB(): Promise<AISession[]> {
       request.onerror = () => reject(request.error);
     });
   } catch (e) {
-    console.warn('[AISessionStore] IndexedDB read failed', e);
+    logger.warn('[AISessionStore] IndexedDB read failed', { error: e instanceof Error ? e.message : String(e) });
     return [];
   }
 }
@@ -181,7 +182,7 @@ async function deleteSessionFromDB(sessionId: string): Promise<void> {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     tx.objectStore(STORE_NAME).delete(sessionId);
   } catch (e) {
-    console.warn('[AISessionStore] IndexedDB delete failed', e);
+    logger.warn('[AISessionStore] IndexedDB delete failed', { error: e instanceof Error ? e.message : String(e) });
   }
 }
 
@@ -405,7 +406,7 @@ export const useAISessionStore = create<AISessionState>()(
 
           return { synced: data.synced || 0 };
         } catch (error) {
-          console.error('[AISessionStore] Cloud sync failed:', error);
+          logger.error('[AISessionStore] Cloud sync failed', { error: error instanceof Error ? error.message : String(error) });
           return { synced: 0 };
         }
       },
@@ -467,7 +468,7 @@ export const useAISessionStore = create<AISessionState>()(
 
           return { loaded: 0 };
         } catch (error) {
-          console.error('[AISessionStore] Cloud load failed:', error);
+          logger.error('[AISessionStore] Cloud load failed', { error: error instanceof Error ? error.message : String(error) });
           return { loaded: 0 };
         }
       },

@@ -209,12 +209,17 @@ impl ConstitutiveMatrix {
 pub struct Quad4Plate;
 
 impl Quad4Plate {
-    /// Gauss points for 2x2 integration
+    /// Gauss points for 2x2 integration (bending/membrane)
     const GAUSS_2X2: [(f64, f64, f64); 4] = [
         (-0.577350269, -0.577350269, 1.0),
         ( 0.577350269, -0.577350269, 1.0),
         ( 0.577350269,  0.577350269, 1.0),
         (-0.577350269,  0.577350269, 1.0),
+    ];
+
+    /// Gauss point for 1x1 reduced integration (shear — prevents shear locking)
+    const GAUSS_1X1: [(f64, f64, f64); 1] = [
+        (0.0, 0.0, 4.0),
     ];
 
     /// Shape functions N(xi, eta)
@@ -310,7 +315,9 @@ impl Quad4Plate {
     }
 
     /// Bending stiffness matrix (12x12 for 4 nodes with w, θx, θy DOFs)
-    /// Using Mindlin-Reissner plate theory
+    /// Using Mindlin-Reissner plate theory with selective reduced integration
+    /// - 2×2 Gauss for bending (curvature terms) — full integration
+    /// - 1×1 Gauss for shear (γ terms) — reduced integration to prevent shear locking
     pub fn bending_stiffness(
         coords: &[[f64; 2]; 4],
         e: f64,
@@ -323,9 +330,9 @@ impl Quad4Plate {
         
         let mut k = DMatrix::zeros(12, 12);
 
-        // Full integration for bending (2x2)
+        // Full integration (2×2) for BENDING terms only
         for (xi, eta, w) in Self::GAUSS_2X2.iter() {
-            let n = Self::shape_functions(*xi, *eta);
+            let _n = Self::shape_functions(*xi, *eta);
             let dn = Self::shape_derivatives(*xi, *eta);
             let (j, det_j) = Self::jacobian(coords, *xi, *eta);
             
@@ -349,6 +356,25 @@ impl Quad4Plate {
                 bb[(2, 3*i+2)] = dn_dx;
             }
 
+            // Bending contribution only (2×2 integration)
+            let db_mat = DMatrix::from_row_slice(3, 3, db.as_slice());
+            let bbt = bb.transpose();
+            k += &bbt * &db_mat * &bb * (det_j * w);
+        }
+
+        // Reduced integration (1×1) for SHEAR terms — prevents shear locking
+        for (xi, eta, w) in Self::GAUSS_1X1.iter() {
+            let n = Self::shape_functions(*xi, *eta);
+            let dn = Self::shape_derivatives(*xi, *eta);
+            let (j, det_j) = Self::jacobian(coords, *xi, *eta);
+            
+            if det_j <= 0.0 { continue; }
+
+            let j_inv = nalgebra::Matrix2::new(
+                j[(1, 1)] / det_j, -j[(0, 1)] / det_j,
+                -j[(1, 0)] / det_j, j[(0, 0)] / det_j,
+            );
+
             // Shear B matrix
             let mut bs = DMatrix::zeros(2, 12);
             for i in 0..4 {
@@ -362,12 +388,7 @@ impl Quad4Plate {
                 bs[(1, 3*i+2)] = n[i];  // θy
             }
 
-            // Bending contribution
-            let db_mat = DMatrix::from_row_slice(3, 3, db.as_slice());
-            let bbt = bb.transpose();
-            k += &bbt * &db_mat * &bb * (det_j * w);
-
-            // Shear contribution
+            // Shear contribution (1×1 reduced integration)
             let ds_mat = DMatrix::from_row_slice(2, 2, ds.as_slice());
             let bst = bs.transpose();
             k += &bst * &ds_mat * &bs * (det_j * w);

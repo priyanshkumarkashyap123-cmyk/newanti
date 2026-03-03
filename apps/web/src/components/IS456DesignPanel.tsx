@@ -52,7 +52,10 @@ interface MemberDesignResult {
   memberName: string;
   checks: DesignCheck[];
   overallUtilization: number;
+  overallRatio?: number;
+  details?: Record<string, unknown>;
   status: "pass" | "warning" | "fail";
+  [key: string]: unknown;
 }
 
 interface IS456DesignPanelProps {
@@ -75,7 +78,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
   const rebarGrade = IS456_REBAR_GRADES.find((g) => g.grade === "Fe500")!;
 
   // State for results
-  const [apiResults, setApiResults] = useState<any[]>([]);
+  const [apiResults, setApiResults] = useState<MemberDesignResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // ── Smart Design hook ──
@@ -137,7 +140,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
 
       // Design each member individually
       const designModule = await import("../api/design");
-      const results: any[] = [];
+      const results: MemberDesignResult[] = [];
 
       for (const input of designInputs) {
         try {
@@ -158,7 +161,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                 fy: input.fy,
               },
             });
-            results.push({ id: input.id, ...result });
+            results.push({ id: input.id, ...result } as unknown as MemberDesignResult);
           }
         } catch (e) {
           console.warn(`Failed to design member ${input.id}:`, e);
@@ -199,13 +202,13 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
   const summary = useMemo(() => {
     const total = designResults.length;
     const passing = designResults.filter(
-      (r: any) => r.status === "pass",
+      (r: MemberDesignResult) => r.status === "pass",
     ).length;
     const warnings = designResults.filter(
-      (r: any) => r.status === "warning",
+      (r: MemberDesignResult) => r.status === "warning",
     ).length;
     const failing = designResults.filter(
-      (r: any) => r.status === "fail",
+      (r: MemberDesignResult) => r.status === "fail",
     ).length;
     return { total, passing, warnings, failing };
   }, [designResults]);
@@ -394,7 +397,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
 
       {/* Results List */}
       <div className="max-h-96 overflow-y-auto">
-        {designResults.map((result: any) => (
+        {designResults.map((result: MemberDesignResult) => (
           <details
             key={result.memberId}
             className="border-b border-slate-200 dark:border-slate-800 group"
@@ -415,14 +418,14 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
               <div className="flex items-center gap-3">
                 <span
                   className={`text-sm ${
-                    result.overallRatio > 1
+                    (result.overallRatio ?? result.overallUtilization) > 1
                       ? "text-red-400"
-                      : result.overallRatio > 0.9
+                      : (result.overallRatio ?? result.overallUtilization) > 0.9
                         ? "text-yellow-400"
                         : "text-green-400"
                   }`}
                 >
-                  {(result.overallRatio * 100).toFixed(0)}%
+                  {((result.overallRatio ?? result.overallUtilization) * 100).toFixed(0)}%
                 </span>
                 <ChevronDown className="w-4 h-4 text-slate-500 dark:text-slate-400 group-open:rotate-180 transition-transform" />
               </div>
@@ -440,7 +443,7 @@ export const IS456DesignPanel: FC<IS456DesignPanelProps> = ({
                 ))}
               </div>
 
-              {result.checks.map((check: any, i: number) => (
+              {result.checks.map((check: DesignCheck, i: number) => (
                 <div
                   key={i}
                   className="flex items-center justify-between text-sm py-2 border-t border-slate-800/50"

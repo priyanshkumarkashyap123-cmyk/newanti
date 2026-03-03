@@ -38,6 +38,7 @@
  * @version 3.0.0
  */
 
+import { logger } from '../../lib/logging/logger';
 import type {
   AIProviderType,
   AIProviderConfig,
@@ -252,7 +253,7 @@ export class AIOrchestrator {
       if (this.config.features.promptSafety) {
         const safetyResult = this.guardrails.checkPromptSafety(request.prompt);
         if (!safetyResult.safe) {
-          console.warn(`[Orchestrator] Prompt safety issues: ${safetyResult.threats.join(', ')}`);
+          logger.warn(`[Orchestrator] Prompt safety issues: ${safetyResult.threats.join(', ')}`);
           request.prompt = safetyResult.sanitizedPrompt;
         }
       }
@@ -274,7 +275,7 @@ export class AIOrchestrator {
           const budgetCheck = this.tokenBudget.canAfford(estimatedTokens);
           if (!budgetCheck.allowed) {
             // Try with local AI instead
-            console.warn(`[Orchestrator] Budget exceeded: ${budgetCheck.reason}`);
+            logger.warn(`[Orchestrator] Budget exceeded: ${budgetCheck.reason}`);
             request.preferredProvider = 'local';
           }
         }
@@ -314,7 +315,7 @@ export class AIOrchestrator {
 
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
-      console.error(`[Orchestrator] Unhandled error for ${requestId}:`, err);
+      logger.error(`[Orchestrator] Unhandled error for ${requestId}`, { error: err.message });
       return this.createErrorResponse(requestId, request, err.message, 'unknown');
     }
   }
@@ -767,7 +768,7 @@ export class AIOrchestrator {
         this.circuitBreaker.recordFailure(provider, err.message);
         fallbackChain.push({ provider, model: providerConfig.model, status: 'failed', error: err.message });
 
-        console.warn(`[Orchestrator] Provider ${provider} failed:`, err.message);
+        logger.warn(`[Orchestrator] Provider ${provider} failed`, { error: err.message });
 
         // If error recovery is enabled, try to recover before moving to next provider
         if (this.config.features.errorRecovery && providers.indexOf(provider) === providers.length - 1) {
@@ -1105,7 +1106,7 @@ export class AIOrchestrator {
           },
         };
       } catch (err) {
-        console.warn('[Orchestrator] Autonomous engine fallback to legacy:', err);
+        logger.warn('[Orchestrator] Autonomous engine fallback to legacy', { error: err instanceof Error ? err.message : String(err) });
         // Fall through to legacy local provider
       }
     }

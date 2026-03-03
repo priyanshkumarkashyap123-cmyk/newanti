@@ -171,7 +171,8 @@ export default defineConfig({
     sourcemap: process.env.NODE_ENV !== "production",
     minify: "esbuild",
     target: "es2022",
-    chunkSizeWarningLimit: 1200,
+    chunkSizeWarningLimit: 500,
+    cssCodeSplit: true,
     // Disable modulepreload polyfill to prevent eager loading of lazy chunks
     modulePreload: {
       polyfill: false,
@@ -200,6 +201,17 @@ export default defineConfig({
           "animation-vendor": ["framer-motion"],
           "chart-vendor": ["recharts"],
           "clerk-vendor": ["@clerk/clerk-react"],
+          "ui-vendor": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-select",
+            "@radix-ui/react-accordion",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-checkbox",
+            "@radix-ui/react-slider",
+            "@radix-ui/react-switch",
+            "@radix-ui/react-scroll-area",
+          ],
+          "state-vendor": ["zustand"],
           // lucide-react, mathjs, jspdf, xlsx, monaco removed from manual chunks
           // to enable tree-shaking and let them code-split into lazy routes
         },

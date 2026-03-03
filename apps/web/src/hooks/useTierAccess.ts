@@ -37,22 +37,35 @@ export interface TierAccess {
     userEmail: string | null;
 }
 
+// TODO(payment): Set to false after payment gateway integration is live
+const TEMP_UNLOCK_ALL = true;
+
 // ============================================
 // TIER LIMITS CONFIGURATION
 // ============================================
 
+// ⚠️  TEMPORARY: All tiers unlocked for beta/testing until payment
+//    gateway (PhonePe / Razorpay) is integrated.
+//    When payment is live, restore free-tier limits:
+//    maxNodes: 10, maxMembers: 15, maxProjects: 1,
+//    maxAnalysisPerDay: 3, maxPdfExportsPerDay: 1,
+//    canSaveProjects: false, canExportCleanPDF: false,
+//    hasDesignCodes: false, hasAIFeatures: true (limited),
+//    hasAdvancedAnalysis: false
+// TODO(payment): Revert free tier limits after payment gateway integration
+
 export const TIER_LIMITS: Record<UserTier, TierLimits> = {
     free: {
-        maxNodes: 10,
-        maxMembers: 15,
-        maxProjects: 1,
-        maxAnalysisPerDay: 3,
-        maxPdfExportsPerDay: 1,
-        canSaveProjects: false,
-        canExportCleanPDF: false,
-        hasDesignCodes: false,
-        hasAIFeatures: true, // Limited AI
-        hasAdvancedAnalysis: false,
+        maxNodes: Infinity,
+        maxMembers: Infinity,
+        maxProjects: Infinity,
+        maxAnalysisPerDay: Infinity,
+        maxPdfExportsPerDay: Infinity,
+        canSaveProjects: true,
+        canExportCleanPDF: true,
+        hasDesignCodes: true,
+        hasAIFeatures: true,
+        hasAdvancedAnalysis: true,
     },
     pro: {
         maxNodes: Infinity,
@@ -162,13 +175,14 @@ export function useTierAccess(): TierAccess {
     }, [isAuthenticated, userEmail, getToken]);
 
     const effectiveTier = getEffectiveTier(userEmail, tier);
-    const limits = TIER_LIMITS[effectiveTier];
+    const accessTier: UserTier = TEMP_UNLOCK_ALL ? 'enterprise' : effectiveTier;
+    const limits = TIER_LIMITS[accessTier];
 
     return {
-        tier: effectiveTier,
-        isFree: effectiveTier === 'free',
-        isPro: effectiveTier === 'pro' || effectiveTier === 'enterprise', // Enterprise includes all Pro features
-        isEnterprise: effectiveTier === 'enterprise',
+        tier: accessTier,
+        isFree: accessTier === 'free',
+        isPro: accessTier === 'pro' || accessTier === 'enterprise', // Enterprise includes all Pro features
+        isEnterprise: accessTier === 'enterprise',
         isMasterUser: false, // Master user status is determined server-side only
         isAuthenticated,
         isLoading,
@@ -221,23 +235,10 @@ export function incrementPdfExportCount(): number {
     return newCount;
 }
 
-export function canExportPdf(tier: UserTier): { allowed: boolean; remaining: number; message?: string } {
-    if (tier !== 'free') {
-        return { allowed: true, remaining: Infinity };
-    }
-
-    const count = getPdfExportCount();
-    const limit = TIER_LIMITS.free.maxPdfExportsPerDay;
-
-    if (count >= limit) {
-        return {
-            allowed: false,
-            remaining: 0,
-            message: `Daily PDF limit reached (${limit}/day). Upgrade to Pro for unlimited exports.`,
-        };
-    }
-
-    return { allowed: true, remaining: limit - count };
+export function canExportPdf(_tier: UserTier): { allowed: boolean; remaining: number; message?: string } {
+    // TODO(payment): Restore free-tier PDF limits after payment gateway integration
+    // For now, all users get unlimited exports during beta/testing period
+    return { allowed: true, remaining: Infinity };
 }
 
 export default useTierAccess;

@@ -97,43 +97,43 @@ export const IPE_SECTIONS: Record<string, EC3Section> = {
         name: 'IPE200', type: 'IPE',
         h: 200, b: 100, tw: 5.6, tf: 8.5, r: 12,
         A: 28.5, Iy: 1943, Iz: 142, Wpl_y: 221, Wpl_z: 44.6,
-        Wel_y: 194, Wel_z: 28.5, iy: 8.26, iz: 2.24, It: 6.98
+        Wel_y: 194, Wel_z: 28.5, iy: 8.26, iz: 2.24, It: 6.98, Iw: 12990
     },
     'IPE240': {
         name: 'IPE240', type: 'IPE',
         h: 240, b: 120, tw: 6.2, tf: 9.8, r: 15,
         A: 39.1, Iy: 3892, Iz: 284, Wpl_y: 367, Wpl_z: 73.9,
-        Wel_y: 324, Wel_z: 47.3, iy: 9.97, iz: 2.69, It: 12.9
+        Wel_y: 324, Wel_z: 47.3, iy: 9.97, iz: 2.69, It: 12.9, Iw: 37390
     },
     'IPE300': {
         name: 'IPE300', type: 'IPE',
         h: 300, b: 150, tw: 7.1, tf: 10.7, r: 15,
         A: 53.8, Iy: 8356, Iz: 604, Wpl_y: 628, Wpl_z: 125,
-        Wel_y: 557, Wel_z: 80.5, iy: 12.5, iz: 3.35, It: 20.1
+        Wel_y: 557, Wel_z: 80.5, iy: 12.5, iz: 3.35, It: 20.1, Iw: 126000
     },
     'IPE360': {
         name: 'IPE360', type: 'IPE',
         h: 360, b: 170, tw: 8.0, tf: 12.7, r: 18,
         A: 72.7, Iy: 16270, Iz: 1043, Wpl_y: 1019, Wpl_z: 191,
-        Wel_y: 904, Wel_z: 123, iy: 15.0, iz: 3.79, It: 37.3
+        Wel_y: 904, Wel_z: 123, iy: 15.0, iz: 3.79, It: 37.3, Iw: 313600
     },
     'IPE400': {
         name: 'IPE400', type: 'IPE',
         h: 400, b: 180, tw: 8.6, tf: 13.5, r: 21,
         A: 84.5, Iy: 23130, Iz: 1318, Wpl_y: 1307, Wpl_z: 229,
-        Wel_y: 1156, Wel_z: 146, iy: 16.5, iz: 3.95, It: 51.1
+        Wel_y: 1156, Wel_z: 146, iy: 16.5, iz: 3.95, It: 51.1, Iw: 490000
     },
     'IPE500': {
         name: 'IPE500', type: 'IPE',
         h: 500, b: 200, tw: 10.2, tf: 16.0, r: 21,
         A: 116, Iy: 48200, Iz: 2142, Wpl_y: 2194, Wpl_z: 335,
-        Wel_y: 1928, Wel_z: 214, iy: 20.4, iz: 4.31, It: 89.3
+        Wel_y: 1928, Wel_z: 214, iy: 20.4, iz: 4.31, It: 89.3, Iw: 1249000
     },
     'IPE600': {
         name: 'IPE600', type: 'IPE',
         h: 600, b: 220, tw: 12.0, tf: 19.0, r: 24,
         A: 156, Iy: 92080, Iz: 3387, Wpl_y: 3512, Wpl_z: 485,
-        Wel_y: 3069, Wel_z: 308, iy: 24.3, iz: 4.66, It: 165
+        Wel_y: 3069, Wel_z: 308, iy: 24.3, iz: 4.66, It: 165, Iw: 2846000
     },
 };
 
@@ -142,25 +142,25 @@ export const HE_SECTIONS: Record<string, EC3Section> = {
         name: 'HEA200', type: 'HEA',
         h: 190, b: 200, tw: 6.5, tf: 10, r: 18,
         A: 53.8, Iy: 3692, Iz: 1336, Wpl_y: 429, Wpl_z: 203,
-        Wel_y: 389, Wel_z: 134, iy: 8.28, iz: 4.98, It: 21.0
+        Wel_y: 389, Wel_z: 134, iy: 8.28, iz: 4.98, It: 21.0, Iw: 108000
     },
     'HEA300': {
         name: 'HEA300', type: 'HEA',
         h: 290, b: 300, tw: 8.5, tf: 14, r: 27,
         A: 112, Iy: 18260, Iz: 6310, Wpl_y: 1383, Wpl_z: 641,
-        Wel_y: 1260, Wel_z: 421, iy: 12.7, iz: 7.49, It: 85.2
+        Wel_y: 1260, Wel_z: 421, iy: 12.7, iz: 7.49, It: 85.2, Iw: 1070000
     },
     'HEB200': {
         name: 'HEB200', type: 'HEB',
         h: 200, b: 200, tw: 9.0, tf: 15, r: 18,
         A: 78.1, Iy: 5696, Iz: 2003, Wpl_y: 642, Wpl_z: 305,
-        Wel_y: 570, Wel_z: 200, iy: 8.54, iz: 5.07, It: 59.3
+        Wel_y: 570, Wel_z: 200, iy: 8.54, iz: 5.07, It: 59.3, Iw: 171100
     },
     'HEB300': {
         name: 'HEB300', type: 'HEB',
         h: 300, b: 300, tw: 11.0, tf: 19, r: 27,
         A: 149, Iy: 25170, Iz: 8563, Wpl_y: 1869, Wpl_z: 870,
-        Wel_y: 1678, Wel_z: 571, iy: 13.0, iz: 7.58, It: 185
+        Wel_y: 1678, Wel_z: 571, iy: 13.0, iz: 7.58, It: 185, Iw: 1688000
     },
 };
 
@@ -291,8 +291,18 @@ export class Eurocode3Checker {
         const λ_z = (Lcr_z / iz) / λ1;
         const λ_bar = Math.max(λ_y, λ_z);
 
-        // 6.3.1.2(1): Buckling curve selection (simplified - curve 'b')
-        const α = 0.34; // Curve b for rolled H-sections about weak axis
+        // 6.3.1.2(1): Buckling curve selection per Table 6.2
+        // h/b > 1.2 → curve a (y-axis), curve b (z-axis) → use governing axis
+        // h/b ≤ 1.2 → curve b (y-axis), curve c (z-axis)
+        const hOverB = section.h / section.b;
+        let α: number;
+        if (λ_z > λ_y) {
+            // Weak axis governs
+            α = hOverB > 1.2 ? 0.34 : 0.49; // curve b or c
+        } else {
+            // Strong axis governs
+            α = hOverB > 1.2 ? 0.21 : 0.34; // curve a or b
+        }
 
         // 6.3.1.2(1): Reduction factor χ
         const Φ = 0.5 * (1 + α * (λ_bar - 0.2) + λ_bar ** 2);
@@ -350,9 +360,14 @@ export class Eurocode3Checker {
         const L = member.L_LT || member.Lcr_z;
         const C1 = member.C1 || 1.0;
 
-        // 6.3.2.2: Mcr - Elastic critical moment (simplified)
+        // 6.3.2.2: Mcr - Elastic critical moment
+        // Mcr = C1 * (π²EIz/L²) * √(Iw/Iz + L²GIt/(π²EIz))
+        // Iw in cm⁶ → mm⁶ (×1e6), It in cm⁴ → mm⁴ (×1e4)
+        // If Iw not available, approximate: Iw ≈ Iz·(h−tf)²/4
+        const Iw_cm6 = section.Iw ?? (section.Iz * ((section.h - section.tf) / 10) ** 2 / 4);
+        const Iw = Iw_cm6 * 1e6; // cm⁶ → mm⁶
         const Mcr = C1 * (Math.PI ** 2 * E * Iz / (L ** 2)) *
-            Math.sqrt(It / Iz + (L ** 2 * G * It) / (Math.PI ** 2 * E * Iz)) / 1e6; // kN·m
+            Math.sqrt(Iw / Iz + (L ** 2 * G * It) / (Math.PI ** 2 * E * Iz)) / 1e6; // kN·m
 
         // 6.3.2.2(1): Non-dimensional slenderness
         const λ_LT = Math.sqrt(Wy * fy / 1e6 / Mcr);
@@ -403,34 +418,97 @@ export class Eurocode3Checker {
     }
 
     /**
-     * 6.2.9: Combined Bending and Axial Force
+     * 6.3.3: Combined Bending and Axial Force (Member Buckling)
+     * EN 1993-1-1 Equations 6.61 and 6.62
      */
     checkCombined(member: EC3Member, forces: EC3Forces): EC3Check {
-        const { section, material } = member;
+        const { section, material, Lcr_y, Lcr_z } = member;
         const { NEd, My_Ed, Mz_Ed } = forces;
         const fy = material.fy;
+        const E = material.E;
 
         const A = section.A * 100;
         const Wpl_y = section.Wpl_y * 1000;
         const Wpl_z = section.Wpl_z * 1000;
+        const iy = section.iy * 10;
+        const iz = section.iz * 10;
 
-        const Npl_Rd = (A * fy / this.γM0) / 1000;
-        const Mpl_y_Rd = (Wpl_y * fy / this.γM0) / 1e6;
-        const Mpl_z_Rd = (Wpl_z * fy / this.γM0) / 1e6;
+        // --- Buckling reductions ---
+        const λ1 = Math.PI * Math.sqrt(E / fy);
+        const λ_y = (Lcr_y / iy) / λ1;
+        const λ_z = (Lcr_z / iz) / λ1;
 
-        // 6.2.9.1(5): Criterion for I-sections
-        const n = Math.abs(NEd) / Npl_Rd;
-        const a = Math.min((A - 2 * section.b * section.tf) / A, 0.5);
+        // Buckling curve per Table 6.2
+        const hOverB = section.h / section.b;
+        const α_y = hOverB > 1.2 ? 0.21 : 0.34;
+        const α_z = hOverB > 1.2 ? 0.34 : 0.49;
 
-        // Simplified interaction check
-        const ratio = n + Math.abs(My_Ed) / Mpl_y_Rd + Math.abs(Mz_Ed || 0) / Mpl_z_Rd;
+        const Φ_y = 0.5 * (1 + α_y * (λ_y - 0.2) + λ_y ** 2);
+        const χ_y = λ_y > 0.2 ? Math.min(1.0, 1 / (Φ_y + Math.sqrt(Math.max(Φ_y ** 2 - λ_y ** 2, 0)))) : 1.0;
+
+        const Φ_z = 0.5 * (1 + α_z * (λ_z - 0.2) + λ_z ** 2);
+        const χ_z = λ_z > 0.2 ? Math.min(1.0, 1 / (Φ_z + Math.sqrt(Math.max(Φ_z ** 2 - λ_z ** 2, 0)))) : 1.0;
+
+        // LTB reduction
+        const G = material.G;
+        const Iz = section.Iz * 10000;
+        const It = (section.It || 1) * 10000;
+        const Iw_cm6 = section.Iw ?? (section.Iz * ((section.h - section.tf) / 10) ** 2 / 4);
+        const Iw = Iw_cm6 * 1e6;
+        const L_LT = member.L_LT || Lcr_z;
+        const Mcr = (Math.PI ** 2 * E * Iz / (L_LT ** 2)) *
+            Math.sqrt(Iw / Iz + (L_LT ** 2 * G * It) / (Math.PI ** 2 * E * Iz)) / 1e6;
+        const λ_LT = Math.sqrt(Wpl_y * fy / 1e6 / (Mcr > 0 ? Mcr : 1e10));
+        const αLT = 0.34;
+        const λLT_0 = 0.4;
+        const β_lt = 0.75;
+        const Φ_LT = 0.5 * (1 + αLT * (λ_LT - λLT_0) + β_lt * λ_LT ** 2);
+        const χ_LT = λ_LT > λLT_0 ? Math.min(1.0, 1 / (Φ_LT + Math.sqrt(Math.max(Φ_LT ** 2 - β_lt * λ_LT ** 2, 0)))) : 1.0;
+
+        // Design resistances
+        const NRk = A * fy / 1000; // kN
+        const My_Rk = Wpl_y * fy / 1e6; // kN·m
+        const Mz_Rk = Wpl_z * fy / 1e6;
+
+        // Interaction factors (Annex B, Table B.1/B.2 — simplified)
+        const N_abs = Math.abs(NEd);
+        const Ncr_y = Math.PI ** 2 * E * (section.Iy * 10000) / (Lcr_y ** 2) / 1000;
+        const Ncr_z = Math.PI ** 2 * E * Iz / (Lcr_z ** 2) / 1000;
+        const Cmy = 0.9; // Conservative uniform moment factor
+        const Cmz = 0.9;
+        const CmLT = 0.9;
+
+        const kyy = Math.min(
+            Cmy * (1 + (λ_y - 0.2) * N_abs / (χ_y * NRk / this.γM1)),
+            Cmy * (1 + 0.8 * N_abs / (χ_y * NRk / this.γM1))
+        );
+        const kzz = Math.min(
+            Cmz * (1 + (2 * λ_z - 0.6) * N_abs / (χ_z * NRk / this.γM1)),
+            Cmz * (1 + 1.4 * N_abs / (χ_z * NRk / this.γM1))
+        );
+        const kyz = 0.6 * kzz;
+        const kzy = Math.max(1 - 0.1 * λ_z * N_abs / ((CmLT - 0.25) * (χ_z * NRk / this.γM1)), 
+            1 - 0.1 * N_abs / ((CmLT - 0.25) * (χ_z * NRk / this.γM1)));
+
+        // Eq 6.61: y-axis buckling
+        const ratio_661 = N_abs / (χ_y * NRk / this.γM1) +
+            kyy * Math.abs(My_Ed) / (χ_LT * My_Rk / this.γM1) +
+            kyz * Math.abs(Mz_Ed || 0) / (Mz_Rk / this.γM1);
+
+        // Eq 6.62: z-axis buckling
+        const ratio_662 = N_abs / (χ_z * NRk / this.γM1) +
+            kzy * Math.abs(My_Ed) / (χ_LT * My_Rk / this.γM1) +
+            kzz * Math.abs(Mz_Ed || 0) / (Mz_Rk / this.γM1);
+
+        const ratio = Math.max(ratio_661, ratio_662);
+        const govEq = ratio_661 >= ratio_662 ? '6.61' : '6.62';
 
         return {
-            clause: '6.2.9',
-            title: 'Combined N + M',
+            clause: '6.3.3',
+            title: `Combined N+M (Eq ${govEq})`,
             ratio: ratio,
             status: ratio <= 1.0 ? 'OK' : 'NG',
-            equation: 'NEd/Npl + My,Ed/Mpl,y + Mz,Ed/Mpl,z ≤ 1.0'
+            equation: `EN 1993-1-1 Eq ${govEq}: N/(χ·NRk/γM1) + k·M/(χLT·MRk/γM1) ≤ 1.0`
         };
     }
 

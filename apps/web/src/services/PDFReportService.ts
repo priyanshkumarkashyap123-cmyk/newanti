@@ -1,6 +1,4 @@
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { AnalysisResults, Node, Member } from '../store/model';
 import { SteelDesignResults } from './SteelDesignService';
 import { API_CONFIG } from '../config/env';
@@ -150,13 +148,17 @@ export const generateProfessionalReport = async (
  * Professional PDF report generator using jsPDF directly (fallback)
  * Styled to match the ReportsPage's ARUP/WSP-grade engineering report quality
  */
-export const generateBasicPDFReport = (
+export const generateBasicPDFReport = async (
     project: ProjectInfo,
     members: Member[],
     nodes: Node[],
     analysisResults: AnalysisResults | null,
     designResults: Map<string, SteelDesignResults>
 ) => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
@@ -464,12 +466,16 @@ export const generateBasicPDFReport = (
     doc.save(`BeamLab_Report_${project.name.replace(/\s+/g, '_')}.pdf`);
 };
 
-export const generateCivilReport = (
+export const generateCivilReport = async (
     title: string,
     inputs: Record<string, string | number>,
     results: Record<string, string | number>,
     sections: Array<{ title: string; data: Array<[string, string | number]> }> = []
 ) => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;

@@ -14,6 +14,8 @@ export interface BeamConfig {
     boundary: 'simply_supported' | 'cantilever' | 'fixed_fixed';
 }
 
+import { logger } from '../lib/logging/logger';
+
 export interface TrainingConfig {
     epochs?: number;
     learning_rate?: number;
@@ -68,10 +70,10 @@ async function loadWasm(): Promise<boolean> {
         await wasmModule.default(wasmBytes);
 
         wasmReady = true;
-        console.log('[PINNService] WASM loaded successfully');
+        logger.info('[PINNService] WASM loaded successfully');
         return true;
     } catch (error) {
-        console.error('[PINNService] Failed to load WASM:', error);
+        logger.error('[PINNService] Failed to load WASM', { error: error instanceof Error ? error.message : String(error) });
         return false;
     }
 }
@@ -83,7 +85,7 @@ async function loadWasm(): Promise<boolean> {
 export async function runPINNDemo(): Promise<PINNDemoResult | null> {
     const ready = await loadWasm();
     if (!ready || !wasmModule) {
-        console.error('[PINNService] WASM not available');
+        logger.error('[PINNService] WASM not available');
         return null;
     }
 
@@ -91,7 +93,7 @@ export async function runPINNDemo(): Promise<PINNDemoResult | null> {
         const resultJson = wasmModule.pinn_demo();
         return JSON.parse(resultJson) as PINNDemoResult;
     } catch (error) {
-        console.error('[PINNService] Demo failed:', error);
+        logger.error('[PINNService] Demo failed', { error: error instanceof Error ? error.message : String(error) });
         return null;
     }
 }
@@ -107,7 +109,7 @@ export async function trainBeamPINN(
 ): Promise<PINNResult | null> {
     const ready = await loadWasm();
     if (!ready || !wasmModule) {
-        console.error('[PINNService] WASM not available');
+        logger.error('[PINNService] WASM not available');
         return null;
     }
 
@@ -134,7 +136,7 @@ export async function trainBeamPINN(
         const resultJson = wasmModule.train_beam_pinn(JSON.stringify(config));
         return JSON.parse(resultJson) as PINNResult;
     } catch (error) {
-        console.error('[PINNService] Training failed:', error);
+        logger.error('[PINNService] Training failed', { error: error instanceof Error ? error.message : String(error) });
         return null;
     }
 }

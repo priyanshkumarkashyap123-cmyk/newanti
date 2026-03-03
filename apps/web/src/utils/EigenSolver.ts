@@ -4,7 +4,7 @@
  * Finds natural frequencies and mode shapes for structural dynamics
  */
 
-import { eigs, flatten, type Complex, type MathCollection } from 'mathjs';
+import type { Complex, MathCollection } from 'mathjs';
 
 // ============================================
 // TYPES & INTERFACES
@@ -304,7 +304,7 @@ export class EigenSolver {
      * Solves: K * v = ω² * M * v
      * Transformed to standard form: M^(-1) * K * v = ω² * v
      */
-    solveWithMathjs(numModes: number = 10): EigenResult {
+    async solveWithMathjs(numModes: number = 10): Promise<EigenResult> {
         // Extract matrices for free DOFs
         const Kff = this.extractSubmatrix(this.K, this.freeDofs);
         const Mff = this.extractSubmatrix(this.M, this.freeDofs);
@@ -328,6 +328,8 @@ export class EigenSolver {
         }
 
         try {
+            // Lazy-load mathjs to avoid ~600KB in main bundle
+            const { eigs, flatten } = await import('mathjs');
             // Use mathjs eigs function
             const result = eigs(A);
             const eigenvalues = result.values as MathCollection;
@@ -540,12 +542,12 @@ export class EigenSolver {
     /**
      * Main solve method - chooses appropriate solver
      */
-    solve(numModes: number = 10): EigenResult {
+    async solve(numModes: number = 10): Promise<EigenResult> {
         const n = this.freeDofs.length;
 
         if (n <= 100) {
             // Use mathjs for small problems
-            return this.solveWithMathjs(numModes);
+            return await this.solveWithMathjs(numModes);
         } else {
             // Use power iteration for larger problems
             return this.solveWithPowerIteration(numModes);

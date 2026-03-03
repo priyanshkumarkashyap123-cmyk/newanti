@@ -1,12 +1,17 @@
-import { FC, useEffect, useRef } from 'react';
+import { FC, memo, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { TransformControls } from '@react-three/drei';
 import { useModelStore } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
-export const SelectionTransform: FC = () => {
-    const selectedIds = useModelStore((state) => state.selectedIds);
-    const updateNodePosition = useModelStore((state) => state.updateNodePosition);
-    const nodes = useModelStore((state) => state.nodes);
+export const SelectionTransform: FC = memo(() => {
+    const { selectedIds, updateNodePosition, nodes } = useModelStore(
+        useShallow((state) => ({
+            selectedIds: state.selectedIds,
+            updateNodePosition: state.updateNodePosition,
+            nodes: state.nodes,
+        }))
+    );
 
     // For now, we only support transforming a single selected node
     const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
@@ -47,4 +52,4 @@ export const SelectionTransform: FC = () => {
             />
         </>
     );
-};
+});

@@ -17,6 +17,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Check, Scissors, Info, Plus, Trash2 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { v4 as uuidv4 } from 'uuid';
 
 interface DivideMemberDialogProps {
@@ -27,12 +28,16 @@ interface DivideMemberDialogProps {
 type DivideMode = 'equal' | 'custom';
 
 export const DivideMemberDialog: React.FC<DivideMemberDialogProps> = ({ isOpen, onClose }) => {
-  const members = useModelStore(s => s.members);
-  const nodes = useModelStore(s => s.nodes);
-  const selectedIds = useModelStore(s => s.selectedIds);
-  const addNode = useModelStore(s => s.addNode);
-  const addMember = useModelStore(s => s.addMember);
-  const removeNode = useModelStore(s => s.removeNode);
+  const { members, nodes, selectedIds, addNode, addMember, removeNode } = useModelStore(
+    useShallow((s) => ({
+      members: s.members,
+      nodes: s.nodes,
+      selectedIds: s.selectedIds,
+      addNode: s.addNode,
+      addMember: s.addMember,
+      removeNode: s.removeNode,
+    }))
+  );
 
   const [mode, setMode] = useState<DivideMode>('equal');
   const [numSegments, setNumSegments] = useState(2);

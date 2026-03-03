@@ -10,6 +10,7 @@
  */
 
 import { FC } from 'react';
+import { logger } from '../../lib/logging/logger';
 // import init, { Renderer } from 'backend-rust';
 // import { useUIStore } from '../../store/uiStore';
 
@@ -60,12 +61,12 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                     throw new Error('No WebGPU adapter found. Your GPU may not support WebGPU.');
                 }
 
-// console.log('[WgpuCanvas] WebGPU available, initializing WASM...');
+// logger.info('[WgpuCanvas] WebGPU available, initializing WASM...');
 
                 // Initialize WASM
                 await init();
 
-// console.log('[WgpuCanvas] Creating WebGPU renderer...');
+// logger.info('[WgpuCanvas] Creating WebGPU renderer...');
 
                 // Initialize Renderer
                 const renderer = await Renderer.new(canvasRef.current);
@@ -76,7 +77,7 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                 setIsReady(true);
                 setUseWebGpu(true);
 
-// console.log('[WgpuCanvas] ✓ WebGPU Renderer initialized successfully');
+// logger.info('[WgpuCanvas] ✓ WebGPU Renderer initialized successfully');
 
                 // Render loop
                 const render = () => {
@@ -84,7 +85,7 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                         try {
                             rendererRef.current.render();
                         } catch (e) {
-                            console.error('[WgpuCanvas] Render error:', e);
+                            logger.error('[WgpuCanvas] Render error', { error: e instanceof Error ? e.message : String(e) });
                         }
                     }
                     if (isMounted) {
@@ -95,8 +96,8 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                 render();
             } catch (err: unknown) {
                 const errorMessage = err.message || err.toString() || 'Unknown error';
-                console.warn('[WgpuCanvas] WebGPU initialization failed:', errorMessage);
-                console.warn('[WgpuCanvas] Falling back to WebGL renderer...');
+                logger.warn('[WgpuCanvas] WebGPU initialization failed', { errorMessage });
+                logger.warn('[WgpuCanvas] Falling back to WebGL renderer...');
 
                 if (isMounted) {
                     setError(errorMessage);
@@ -105,7 +106,7 @@ export const WgpuCanvasOriginal: FC<WgpuCanvasProps> = ({ className }) => {
                     // Automatically clear error and switch to WebGL after showing message
                     setTimeout(() => {
                         if (isMounted) {
-// console.log('[WgpuCanvas] ✓ Switched to WebGL renderer');
+// logger.info('[WgpuCanvas] ✓ Switched to WebGL renderer');
                             // Error will be hidden by parent switching to WebGL renderer
                         }
                     }, 2000);

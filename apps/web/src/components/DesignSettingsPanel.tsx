@@ -9,9 +9,22 @@ import { ScrollArea } from './ui/scroll-area';
 import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, ChevronRight, Zap } from 'lucide-react';
 import { ClientDesignService } from '../services/ClientDesignService';
 
+interface DesignCheckResult {
+    ratio: number;
+    status: 'PASS' | 'FAIL';
+    governing: string;
+    capacity?: Record<string, unknown>;
+    log?: string[];
+}
+
+interface DesignSettings {
+    code: string;
+    method: string;
+}
+
 interface DesignSettingsPanelProps {
-    onRunDesign: (settings: any) => void;
-    results?: any;
+    onRunDesign: (settings: DesignSettings) => void;
+    results?: Record<string, DesignCheckResult>;
     loading?: boolean;
 }
 
@@ -19,7 +32,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
     const [code, setCode] = useState('AISC360-16');
     const [method, setMethod] = useState('LRFD');
     const [executionMode, setExecutionMode] = useState<'server' | 'client'>('server');
-    const [clientResult, setClientResult] = useState<any>(null);
+    const [clientResult, setClientResult] = useState<Record<string, DesignCheckResult> | null>(null);
 
     const handleCheck = async () => {
         // Mode 1: Server-Side (Python)
@@ -60,7 +73,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                         ratio: ratio,
                         status: ratio <= 1.0 ? "PASS" : "FAIL",
                         governing: "Client-Side Rust Check",
-                        capacity: res,
+                        capacity: res as unknown as Record<string, unknown>,
                         log: ["Computed locally via WASM"]
                     }
                 });
@@ -74,8 +87,8 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
 
     // Helper stats
     const totalChecked = activeResults ? Object.keys(activeResults).length : 0;
-    const passed = activeResults ? Object.values(activeResults).filter((r: any) => r.status === 'PASS').length : 0;
-    const failed = activeResults ? Object.values(activeResults).filter((r: any) => r.status === 'FAIL').length : 0;
+    const passed = activeResults ? Object.values(activeResults).filter((r: DesignCheckResult) => r.status === 'PASS').length : 0;
+    const failed = activeResults ? Object.values(activeResults).filter((r: DesignCheckResult) => r.status === 'FAIL').length : 0;
 
     return (
         <Card className="w-full h-full flex flex-col">
@@ -93,7 +106,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                     <div className="space-y-3">
                         <div className="space-y-1">
                             <Label>Execution Engine</Label>
-                            <Tabs value={executionMode} onValueChange={(v: any) => setExecutionMode(v)} className="w-full">
+                            <Tabs value={executionMode} onValueChange={(v: string) => setExecutionMode(v as 'server' | 'client')} className="w-full">
                                 <TabsList className="grid w-full grid-cols-2">
                                     <TabsTrigger value="server">Cloud (Python)</TabsTrigger>
                                     <TabsTrigger value="client" className="gap-2">
@@ -171,7 +184,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                             <Label className="text-xs text-slate-500 mt-2">Member Details</Label>
                             <ScrollArea className="h-64 border rounded-md">
                                 <div className="divide-y">
-                                    {Object.entries(activeResults).map(([id, res]: [string, any]) => (
+                                    {Object.entries(activeResults).map(([id, res]: [string, DesignCheckResult]) => (
                                         <div key={id} className="p-3 hover:bg-slate-50 flex justify-between items-center text-sm">
                                             <div className="space-y-1">
                                                 <div className="font-medium flex items-center gap-2">
@@ -182,7 +195,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
                                                     }
                                                 </div>
                                                 <div className="text-xs text-slate-500">{res.governing}</div>
-                                                {isClient && <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Pn_c: {res.capacity?.Pn_compression?.toFixed(0)}</div>}
+                                                {isClient && <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Pn_c: {(res.capacity?.Pn_compression as number)?.toFixed(0)}</div>}
                                             </div>
                                             <div className="text-right">
                                                 <div className={`font-bold ${res.ratio > 1.0 ? 'text-red-600' : 'text-green-600'}`}>

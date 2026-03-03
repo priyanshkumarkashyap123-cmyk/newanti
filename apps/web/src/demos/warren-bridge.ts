@@ -10,11 +10,41 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface Point { x: number; y: number; z: number; }
 
+export interface WarrenNode {
+    id: string;
+    x: number;
+    y: number;
+    z: number;
+    isFixed: boolean;
+    restraints: number[];
+}
+
+export interface WarrenMember {
+    id: string;
+    startNodeId: string;
+    endNodeId: string;
+    E: number;
+    A: number;
+    I: number;
+    type: string;
+}
+
+export interface WarrenLoad {
+    id: string;
+    nodeId: string;
+    fx: number;
+    fy: number;
+    fz: number;
+    mx: number;
+    my: number;
+    mz: number;
+}
+
 export interface ModelData {
-    nodes: any[];
-    members: any[];
-    loads: any[];
-    settings?: any;
+    nodes: WarrenNode[];
+    members: WarrenMember[];
+    loads: WarrenLoad[];
+    settings?: Record<string, unknown>;
 }
 
 /**
@@ -30,9 +60,9 @@ export function generateWarrenBridge(
     panels: number = 10,
     loadPerNode: number = 100
 ): ModelData {
-    const nodes: any[] = [];
-    const members: any[] = [];
-    const loads: any[] = [];
+    const nodes: WarrenNode[] = [];
+    const members: WarrenMember[] = [];
+    const loads: WarrenLoad[] = [];
 
     const panelWidth = span / panels;
 

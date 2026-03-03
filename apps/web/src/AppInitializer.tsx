@@ -312,28 +312,12 @@ async function loadUserPreferences() {
 
 const LoadingScreen = () => (
   <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100vh",
-      background: "linear-gradient(135deg, #0a0a0f 0%, #1a1a2f 100%)",
-      color: "#fff",
-    }}
+    className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-[#0a0a0f] to-[#1a1a2f] text-white"
   >
     <div
-      style={{
-        width: 60,
-        height: 60,
-        border: "3px solid #333",
-        borderTopColor: "#3b82f6",
-        borderRadius: "50%",
-        animation: "spin 1s linear infinite",
-      }}
+      className="w-[60px] h-[60px] border-[3px] border-gray-700 border-t-blue-500 rounded-full animate-spin"
     />
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    <p style={{ marginTop: 24, opacity: 0.7 }}>Initializing BeamLab...</p>
+    <p className="mt-6 opacity-70">Initializing BeamLab...</p>
   </div>
 );
 
@@ -345,32 +329,14 @@ const ErrorScreen = ({
   onRetry: () => void;
 }) => (
   <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100vh",
-      background: "#0a0a0f",
-      color: "#fff",
-      textAlign: "center",
-      padding: 40,
-    }}
+    className="flex flex-col items-center justify-center h-screen bg-[#0a0a0f] text-white text-center p-10"
   >
-    <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
-    <h1 style={{ marginBottom: 16, color: "#ef4444" }}>Initialization Error</h1>
-    <p style={{ opacity: 0.7, marginBottom: 24 }}>{error}</p>
+    <div className="text-5xl mb-4">⚠️</div>
+    <h1 className="mb-4 text-red-500">Initialization Error</h1>
+    <p className="opacity-70 mb-6">{error}</p>
     <button type="button"
       onClick={onRetry}
-      style={{
-        padding: "12px 24px",
-        background: "#3b82f6",
-        border: "none",
-        borderRadius: 8,
-        color: "#fff",
-        cursor: "pointer",
-        fontWeight: "bold",
-      }}
+      className="px-6 py-3 bg-blue-500 border-none rounded-lg text-white cursor-pointer font-bold hover:bg-blue-600"
     >
       Retry
     </button>

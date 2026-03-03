@@ -16,6 +16,7 @@ import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Check, Unlink, Info } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 interface MemberReleasesDialogProps {
   isOpen: boolean;
@@ -95,9 +96,13 @@ const DOF_LABELS = {
 };
 
 export const MemberReleasesDialog: React.FC<MemberReleasesDialogProps> = ({ isOpen, onClose }) => {
-  const members = useModelStore(s => s.members);
-  const selectedIds = useModelStore(s => s.selectedIds);
-  const updateMember = useModelStore(s => s.updateMember);
+  const { members, selectedIds, updateMember } = useModelStore(
+    useShallow((s) => ({
+      members: s.members,
+      selectedIds: s.selectedIds,
+      updateMember: s.updateMember,
+    }))
+  );
 
   const [releases, setReleases] = useState<ReleaseState>({ ...DEFAULT_RELEASES });
 

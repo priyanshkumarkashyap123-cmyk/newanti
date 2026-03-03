@@ -217,7 +217,7 @@ app.use(attachResponseHelpers);
 // Save raw body buffer for webhook signature verification (PhonePe, Stripe, etc.)
 // The `verify` callback runs BEFORE json parsing, giving us the original bytes.
 app.use(express.json({
-  limit: "10mb",
+  limit: "2mb",
   verify: (req, _res, buf) => {
     // Only save raw body for webhook routes to avoid unnecessary memory usage
     if (req.url?.includes('/webhook')) {

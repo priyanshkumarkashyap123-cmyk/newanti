@@ -17,6 +17,7 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Check, Thermometer, Info } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 interface TemperatureLoadDialogProps {
   isOpen: boolean;
@@ -26,9 +27,13 @@ interface TemperatureLoadDialogProps {
 type TempLoadType = 'uniform' | 'gradient';
 
 export const TemperatureLoadDialog: React.FC<TemperatureLoadDialogProps> = ({ isOpen, onClose }) => {
-  const members = useModelStore(s => s.members);
-  const selectedIds = useModelStore(s => s.selectedIds);
-  const updateMember = useModelStore(s => s.updateMember);
+  const { members, selectedIds, updateMember } = useModelStore(
+    useShallow((s) => ({
+      members: s.members,
+      selectedIds: s.selectedIds,
+      updateMember: s.updateMember,
+    }))
+  );
 
   const [loadType, setLoadType] = useState<TempLoadType>('uniform');
   const [uniformDeltaT, setUniformDeltaT] = useState(20); // °C

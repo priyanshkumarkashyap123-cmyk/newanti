@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 use crate::error::{ApiError, ApiResult};
+use crate::cache::AnalysisCache;
 use crate::solver::{
     AnalysisInput, AnalysisResult, Solver,
     ModalSolver, ModalConfig, MassMatrixType,
@@ -23,7 +24,7 @@ use crate::AppState;
 
 /// POST /api/analyze - Run structural analysis
 pub async fn analyze(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Json(input): Json<AnalysisInput>,
 ) -> ApiResult<Json<AnalysisResponse>> {
     // Validate input
@@ -45,9 +46,27 @@ pub async fn analyze(
         )));
     }
 
+    // Check cache first
+    let cache_key = AnalysisCache::cache_key("analyze", &input);
+    if let Some(result) = state.analysis_cache.get::<AnalysisResult>(&cache_key).await {
+        tracing::debug!("Cache HIT for analysis ({} nodes, {} members)", input.nodes.len(), input.members.len());
+        return Ok(Json(AnalysisResponse {
+            success: true,
+            message: format!(
+                "Analysis complete (cached) ({} nodes, {} members)",
+                input.nodes.len(),
+                input.members.len()
+            ),
+            result,
+        }));
+    }
+
     // Run analysis
     let solver = Solver::new();
     let result = solver.analyze(&input).map_err(|e| ApiError::AnalysisFailed(e))?;
+
+    // Cache the result
+    state.analysis_cache.insert(cache_key, &result).await;
 
     Ok(Json(AnalysisResponse {
         success: true,
@@ -102,12 +121,12 @@ pub async fn batch_analyze(
 
 /// POST /api/analyze/stream - Stream analysis progress (for large models)
 pub async fn stream_analyze(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Json(input): Json<AnalysisInput>,
 ) -> ApiResult<Json<AnalysisResponse>> {
-    // For now, same as regular analyze
+    // For now, same as regular analyze (with caching)
     // TODO: Implement SSE streaming for progress updates
-    analyze(State(_state), Json(input)).await
+    analyze(State(state), Json(input)).await
 }
 
 #[derive(Serialize)]

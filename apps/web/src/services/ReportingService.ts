@@ -1,6 +1,4 @@
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { ProjectInfo, AnalysisResults, Node, Member } from '../store/model';
 import { SteelDesignResults } from './SteelDesignService';
 
@@ -72,13 +70,17 @@ export const ReportingService = {
     /**
      * Generate Detailed Calculation Book (PDF)
      */
-    generateCalculationBook(
+    async generateCalculationBook(
         project: ProjectInfo,
         nodes: Map<string, Node>,
         members: Map<string, Member>,
         analysisResults: AnalysisResults | null,
         designResults: Map<string, SteelDesignResults> | null
     ) {
+        const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+          import('jspdf'),
+          import('jspdf-autotable'),
+        ]);
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;

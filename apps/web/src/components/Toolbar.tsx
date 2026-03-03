@@ -239,7 +239,7 @@ export const Toolbar: FC = () => {
         const canvas = document.querySelector('canvas') as HTMLCanvasElement;
         const screenshot = ReportGenerator.captureCanvas(canvas);
 
-        const report = new ReportGenerator({
+        const report = await ReportGenerator.create({
             projectName: 'Structural Analysis',
             company: 'BeamLab',
         });

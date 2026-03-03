@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, memo, useMemo } from "react";
 import { Grid, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { ModelRenderer } from "./ModelRenderer";
 import { SelectionTransform } from "./SelectionTransform";
@@ -17,7 +17,7 @@ import { useModelStore } from "../store/model";
 import { useShallow } from "zustand/react/shallow";
 import { Html } from "@react-three/drei";
 
-export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({
+const SharedSceneInner: FC<{ remoteUsers?: RemoteUser[] }> = ({
   remoteUsers = [],
 }) => {
   const {
@@ -170,20 +170,11 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({
 
       {/* Deflected Shape Animation */}
       {showDeflectedShape && analysisResults && (
-        <AnimatedDeflection
-          nodes={Array.from(nodes.values())}
-          members={Array.from(members.values())}
-          displacements={Array.from(
-            analysisResults.displacements.entries(),
-          ).map(([id, d]) => ({
-            nodeId: id,
-            ...d,
-          }))}
-          scale={displacementScale}
-          animationSpeed={1.0}
-          showOriginal={true}
-          showLabels={false}
-          colorByMagnitude={true}
+        <MemoizedDeflection
+          nodes={nodes}
+          members={members}
+          analysisResults={analysisResults}
+          displacementScale={displacementScale}
         />
       )}
 
@@ -199,3 +190,42 @@ export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({
     </>
   );
 };
+
+/**
+ * Memoized wrapper for AnimatedDeflection — avoids re-creating
+ * Array.from() arrays on every render by moving them into useMemo.
+ */
+const MemoizedDeflection: FC<{
+  nodes: Map<string, any>;
+  members: Map<string, any>;
+  analysisResults: any;
+  displacementScale: number;
+}> = memo(({ nodes, members, analysisResults, displacementScale }) => {
+  const nodesList = useMemo(() => Array.from(nodes.values()), [nodes]);
+  const membersList = useMemo(() => Array.from(members.values()), [members]);
+  const displacements = useMemo(
+    () => {
+      const entries: [string, any][] = Array.from(analysisResults.displacements.entries());
+      return entries.map(([id, d]) => ({ nodeId: id, ...d }));
+    },
+    [analysisResults.displacements]
+  );
+
+  return (
+    <AnimatedDeflection
+      nodes={nodesList}
+      members={membersList}
+      displacements={displacements}
+      scale={displacementScale}
+      animationSpeed={1.0}
+      showOriginal={true}
+      showLabels={false}
+      colorByMagnitude={true}
+    />
+  );
+});
+
+/** SharedScene wrapped in React.memo — prevents re-render when parent
+ *  (ViewportManager) re-renders but props haven't changed. Critical in
+ *  QUAD layout where 4 instances exist. */
+export const SharedScene = memo(SharedSceneInner);

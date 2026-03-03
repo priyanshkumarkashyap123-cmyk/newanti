@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '../../lib/logging/logger';
 import { API_CONFIG } from '../../config/env';
 
 // Types
@@ -41,11 +42,11 @@ class RealtimeService {
         }
 
         this.isIntentionalDisconnect = false;
-        console.log(`[Realtime] Connecting as ${this.userId}...`);
+        logger.info(`[Realtime] Connecting as ${this.userId}...`);
         this.socket = new WebSocket(`${this.WS_URL}/${this.userId}`);
 
         this.socket.onopen = () => {
-            console.log('[Realtime] Connected');
+            logger.info('[Realtime] Connected');
             this.reconnectAttempts = 0;
             this.notifyListeners('connection_status', { connected: true });
             
@@ -61,18 +62,18 @@ class RealtimeService {
                 const message = JSON.parse(event.data);
                 this.handleMessage(message);
             } catch (e) {
-                console.error('[Realtime] Failed to parse message', e);
+                logger.error('[Realtime] Failed to parse message', { error: e instanceof Error ? e.message : String(e) });
             }
         };
 
         this.socket.onclose = () => {
-            console.log('[Realtime] Disconnected');
+            logger.info('[Realtime] Disconnected');
             this.notifyListeners('connection_status', { connected: false });
             
             // Auto-reconnect with exponential backoff
             if (!this.isIntentionalDisconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
                 const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
-                console.log(`[Realtime] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+                logger.info(`[Realtime] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
                 this.reconnectTimer = setTimeout(() => {
                     this.reconnectAttempts++;
                     this.connect();
@@ -81,7 +82,7 @@ class RealtimeService {
         };
 
         this.socket.onerror = (error) => {
-            console.error('[Realtime] WebSocket error', error);
+            logger.error('[Realtime] WebSocket error', { error: error instanceof Error ? (error as Error).message : String(error) });
         };
     }
 

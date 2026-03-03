@@ -1,5 +1,15 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// jsPDF + autoTable loaded on-demand (~250KB) — only fetched when user generates a report
+let _jspdfMod: typeof import('jspdf') | null = null;
+let _autoTableMod: typeof import('jspdf-autotable') | null = null;
+async function loadPdfLibs() {
+  if (!_jspdfMod || !_autoTableMod) {
+    [_jspdfMod, _autoTableMod] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
+  }
+  return { jsPDF: _jspdfMod.jsPDF, autoTable: _autoTableMod.default };
+}
 import { useModelStore, type AnalysisResults } from '../store/model';
 import { LOGO_BASE64 } from './LogoData';
 
@@ -47,18 +57,26 @@ const formatDate = (): string => {
 };
 
 export class ReportGenerator {
-    private doc: jsPDF;
+    private doc: any;
     private pageWidth: number;
     private pageHeight: number;
     private margin: number = 20;
     private currentY: number = 20;
     private config: ReportConfig;
+    private autoTable: any;
 
-    constructor(config: Partial<ReportConfig> = {}) {
-        this.config = { ...DEFAULT_CONFIG, ...config };
-        this.doc = new jsPDF('p', 'mm', 'a4');
+    private constructor(config: ReportConfig, doc: any, autoTable: any) {
+        this.config = config;
+        this.doc = doc;
+        this.autoTable = autoTable;
         this.pageWidth = this.doc.internal.pageSize.getWidth();
         this.pageHeight = this.doc.internal.pageSize.getHeight();
+    }
+
+    static async create(config: Partial<ReportConfig> = {}): Promise<ReportGenerator> {
+        const { jsPDF, autoTable } = await loadPdfLibs();
+        const doc = new jsPDF('p', 'mm', 'a4');
+        return new ReportGenerator({ ...DEFAULT_CONFIG, ...config }, doc, autoTable);
     }
 
     /**
@@ -213,7 +231,7 @@ export class ReportGenerator {
             ['Applied Loads', loadCount.toString()]
         ];
 
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Property', 'Value']],
             body: statsData,
@@ -248,7 +266,7 @@ export class ReportGenerator {
             fmt(load.mz ?? 0)
         ]);
 
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['ID', 'Node', 'Fx (kN)', 'Fy (kN)', 'Fz (kN)', 'Mx (kN·m)', 'My (kN·m)', 'Mz (kN·m)']],
             body: loadData,
@@ -294,7 +312,7 @@ export class ReportGenerator {
             return;
         }
 
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Node', 'Rx (kN)', 'Ry (kN)', 'Rz (kN)', 'Mx (kN·m)', 'My (kN·m)', 'Mz (kN·m)']],
             body: reactionData,
@@ -337,7 +355,7 @@ export class ReportGenerator {
             return;
         }
 
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Member', 'N (kN)', 'Vy (kN)', 'Vz (kN)', 'My (kN·m)', 'Mz (kN·m)', 'T (kN·m)']],
             body: forceData,

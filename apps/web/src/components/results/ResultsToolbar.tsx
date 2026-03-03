@@ -11,6 +11,7 @@
  */
 
 import React, { FC, useState, useEffect, useMemo } from "react";
+import { logger } from '../../lib/logging/logger';
 import { Link } from "react-router-dom";
 import {
   TrendingDown,
@@ -503,7 +504,7 @@ const convertToAnalysisResultsData = (
 // COMPONENT
 // ============================================
 
-export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
+export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) => {
   const analysisResults = useModelStore(
     (s) => s.analysisResults,
   ) as AnalysisResults | null;
@@ -746,7 +747,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               supportsInfo,
             );
           } catch (error) {
-            console.warn("Failed to add FBD to PDF:", error);
+            logger.warn("Failed to add FBD to PDF", { error: error instanceof Error ? error.message : String(error) });
           }
         }
 
@@ -825,7 +826,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
               "AFD",
             );
           } catch (error) {
-            console.warn("Failed to add combined diagrams to PDF:", error);
+            logger.warn("Failed to add combined diagrams to PDF", { error: error instanceof Error ? error.message : String(error) });
           }
         }
 
@@ -901,9 +902,9 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
 
             report.addDetailedMemberDiagrams(detailedMembers);
           } catch (error) {
-            console.warn(
-              "Failed to add detailed member diagrams to PDF:",
-              error,
+            logger.warn(
+              "Failed to add detailed member diagrams to PDF",
+              { error: error instanceof Error ? error.message : String(error) },
             );
           }
         }
@@ -912,7 +913,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
       report.save("BeamLab_Analysis_Report");
       showNotification("success", "PDF Report generated successfully");
     } catch (error) {
-      console.error("PDF export failed:", error);
+      logger.error("PDF export failed", { error: error instanceof Error ? error.message : String(error) });
       showNotification("error", "Failed to generate PDF report");
     } finally {
       setIsExporting(false);
@@ -995,7 +996,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("CSV export failed:", error);
+      logger.error("CSV export failed", { error: error instanceof Error ? error.message : String(error) });
       showNotification("error", "Failed to export CSV");
     } finally {
       setIsExporting(false);
@@ -1680,6 +1681,8 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = ({ onClose }) => {
       </Dialog>
     </>
   );
-};
+});
+
+(ResultsToolbar as unknown as { displayName: string }).displayName = 'ResultsToolbar';
 
 export default ResultsToolbar;

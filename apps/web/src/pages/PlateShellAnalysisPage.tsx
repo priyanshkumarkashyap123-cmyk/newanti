@@ -380,9 +380,9 @@ export const PlateShellAnalysisPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4 mb-2">
             <button type="button"
@@ -414,7 +414,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
           {/* ═══════ Left Panel ═══════ */}
           <div className="lg:col-span-1 space-y-4">
             {/* Panel selector */}
-            <div className="flex flex-wrap gap-1 bg-slate-50 dark:bg-slate-900 rounded-xl p-1 border border-slate-300 dark:border-slate-700">
+            <div className="flex flex-wrap gap-1 bg-slate-50 dark:bg-slate-900 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
               {(['geometry', 'material', 'mesh', 'loads', 'boundary'] as const).map(panel => (
                 <button type="button"
                   key={panel}
@@ -432,7 +432,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
 
             {/* ──── Geometry Panel ──── */}
             {activePanel === 'geometry' && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Maximize2 className="w-4 h-4 text-violet-400" />
                   Plate Geometry
@@ -475,7 +475,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
 
             {/* ──── Material Panel ──── */}
             {activePanel === 'material' && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Layers className="w-4 h-4 text-violet-400" />
                   Material Properties
@@ -526,7 +526,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
 
             {/* ──── Mesh Panel ──── */}
             {activePanel === 'mesh' && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Grid3X3 className="w-4 h-4 text-violet-400" />
                   Mesh Configuration
@@ -579,7 +579,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
 
             {/* ──── Loads Panel ──── */}
             {activePanel === 'loads' && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <ZapIcon className="w-4 h-4 text-violet-400" />
                   Applied Loads
@@ -651,7 +651,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
 
             {/* ──── Boundary Panel ──── */}
             {activePanel === 'boundary' && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700 space-y-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                   <Box className="w-4 h-4 text-violet-400" />
                   Boundary Conditions
@@ -750,7 +750,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
             )}
 
             {/* Visualization area */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden" style={{ minHeight: 480 }}>
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden" style={{ minHeight: 480 }}>
               {!results ? (
                 <div className="flex flex-col items-center justify-center h-[480px] text-center px-6">
                   <Grid3X3 className="w-16 h-16 text-slate-700 mb-4" />
@@ -815,7 +815,7 @@ export const PlateShellAnalysisPage: React.FC = () => {
                 </div>
 
                 {/* Nodal displacement table (top 10 max) */}
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                   <div className="px-5 py-3 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                       <BarChart3 className="w-4 h-4 text-violet-400" />
@@ -915,7 +915,7 @@ const ResultCard: React.FC<{
   sub?: string;
   color: string;
 }> = ({ label, value, sub, color }) => (
-  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
+  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
     <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">{label}</p>
     <p className={`text-lg font-bold text-${color}-400 font-mono`}>{value}</p>
     {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
@@ -935,7 +935,7 @@ const DisplacementHeatmap: React.FC<{
   return (
     <div className="flex justify-center">
       <div
-        className="grid border border-slate-300 dark:border-slate-700 rounded"
+        className="grid border border-slate-200 dark:border-slate-700 rounded"
         style={{
           gridTemplateColumns: `repeat(${mesh.nx + 1}, ${Math.min(cellW, 50)}px)`,
           gridTemplateRows: `repeat(${mesh.ny + 1}, ${Math.min(cellH / mesh.ny, 50)}px)`,
@@ -975,7 +975,7 @@ const ElementHeatmap: React.FC<{
   return (
     <div className="flex justify-center">
       <div
-        className="grid border border-slate-300 dark:border-slate-700 rounded"
+        className="grid border border-slate-200 dark:border-slate-700 rounded"
         style={{
           gridTemplateColumns: `repeat(${mesh.nx}, ${Math.min(cellW, 50)}px)`,
           gridTemplateRows: `repeat(${mesh.ny}, ${Math.min(cellH / mesh.ny, 50)}px)`,

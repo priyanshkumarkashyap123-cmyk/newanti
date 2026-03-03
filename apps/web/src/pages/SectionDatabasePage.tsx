@@ -234,9 +234,9 @@ export const SectionDatabasePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
             Section Database Browser
@@ -252,7 +252,7 @@ export const SectionDatabasePage: React.FC = () => {
           {/* Left Panel - Search & List */}
           <div className="lg:col-span-2 space-y-6">
             {/* Search Bar */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
               <div className="flex gap-3">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -272,7 +272,7 @@ export const SectionDatabasePage: React.FC = () => {
             </div>
 
             {/* Standard Filter */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-purple-400 mb-4">Standard</h3>
               <div className="flex flex-wrap gap-2">
                 <button type="button"
@@ -302,7 +302,7 @@ export const SectionDatabasePage: React.FC = () => {
             </div>
 
             {/* Section List */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
                   {filteredSections.length} sections found
@@ -369,7 +369,7 @@ export const SectionDatabasePage: React.FC = () => {
           {/* Right Panel - Details */}
           <div className="lg:col-span-1">
             {selectedSection ? (
-              <div className="bg-gradient-to-br from-slate-50 dark:from-slate-900 to-slate-800 rounded-xl p-6 border border-slate-300 dark:border-slate-700 sticky top-6">
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 sticky top-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-white">{selectedSection.designation}</h2>
                   <button type="button"
@@ -499,7 +499,7 @@ export const SectionDatabasePage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700 h-full">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 h-full">
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
                   <Ruler className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Section Selected</h3>

@@ -50,6 +50,38 @@ export interface BridgeResponse {
   error?: string;
 }
 
+/** Return type from trainPINN */
+export interface PINNTrainResult {
+  job_id: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
+/** Return type from getPINNStatus */
+export interface PINNStatusResult {
+  progress: number;
+  status: string;
+  model_id?: string;
+  [key: string]: unknown;
+}
+
+/** Return type from loadProject */
+export interface ProjectData {
+  id?: string;
+  name?: string;
+  nodes?: Record<string, unknown>[];
+  members?: Record<string, unknown>[];
+  civilData?: Record<string, unknown>[];
+  [key: string]: unknown;
+}
+
+/** Return type from listProjects */
+export interface ProjectListItem {
+  id: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
 export type TemplateType =
   | "beam"
   | "continuous_beam"
@@ -167,14 +199,14 @@ export const Bridge = {
       const bridgeResponse: BridgeResponse = {
         success: data.success,
         model: {
-          nodes: data.nodes.map((n: any) => ({
+          nodes: data.nodes.map((n: Record<string, unknown>) => ({
             id: n.id,
             x: n.x,
             y: n.y,
             z: n.z,
             support: "NONE",
           })),
-          members: data.members.map((m: any) => ({
+          members: data.members.map((m: Record<string, unknown>) => ({
             id: m.id,
             start_node: m.startNodeId || m.start_node_id,
             end_node: m.endNodeId || m.end_node_id,
@@ -341,7 +373,7 @@ export const Bridge = {
   /**
    * List all saved projects
    */
-  async listProjects(): Promise<any[]> {
+  async listProjects(): Promise<ProjectListItem[]> {
     try {
       const response = await fetch(`${NODE_API}/api/project`, {
         method: "GET",
@@ -360,7 +392,7 @@ export const Bridge = {
   /**
    * Save project to backend
    */
-  async saveProject(data: any): Promise<{ id: string; status: string } | null> {
+  async saveProject(data: Record<string, unknown>): Promise<{ id: string; status: string } | null> {
     try {
       const response = await fetch(`${NODE_API}/api/project`, {
         method: "POST",
@@ -381,7 +413,7 @@ export const Bridge = {
   /**
    * Load project from backend
    */
-  async loadProject(id: string): Promise<any | null> {
+  async loadProject(id: string): Promise<ProjectData | null> {
     try {
       const response = await fetch(`${NODE_API}/api/project/${id}`, {
         method: "GET",
@@ -418,7 +450,7 @@ export const Bridge = {
   /**
    * Train a Physics-Informed Neural Network
    */
-  async trainPINN(config: any): Promise<any> {
+  async trainPINN(config: Record<string, unknown>): Promise<PINNTrainResult | null> {
     try {
       const response = await fetch(`${PYTHON_API}/pinn/train`, {
         method: "POST",
@@ -435,7 +467,7 @@ export const Bridge = {
   /**
    * Get PINN Training Status
    */
-  async getPINNStatus(jobId: string): Promise<any> {
+  async getPINNStatus(jobId: string): Promise<PINNStatusResult | null> {
     try {
       const response = await fetch(`${PYTHON_API}/pinn/status/${jobId}`, {
         method: "GET",
@@ -449,7 +481,7 @@ export const Bridge = {
   /**
    * Predict using trained PINN
    */
-  async predictPINN(modelId: string, points = 100): Promise<any> {
+  async predictPINN(modelId: string, points = 100): Promise<Record<string, unknown> | null> {
     try {
       const response = await fetch(`${PYTHON_API}/pinn/predict`, {
         method: "POST",

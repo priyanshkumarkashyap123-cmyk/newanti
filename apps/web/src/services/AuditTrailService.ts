@@ -13,6 +13,8 @@
 
 // ============================================
 // TYPES
+
+import { logger } from '../lib/logging/logger';
 // ============================================
 
 export interface AuditEntry {
@@ -161,7 +163,7 @@ export class AuditTrailService {
         this.trimEntries();
         this.saveToStorage();
 
-        console.log(`[Audit] ${category}: ${action} - ${description}`);
+        logger.info(`[Audit] ${category}: ${action} - ${description}`);
 
         return entry;
     }
@@ -563,7 +565,7 @@ export class AuditTrailService {
             };
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
         } catch (e) {
-            console.warn('Could not save audit trail:', e);
+            logger.warn('Could not save audit trail', { error: e instanceof Error ? e.message : String(e) });
         }
     }
 
@@ -591,7 +593,7 @@ export class AuditTrailService {
                 this.projectName = parsed.projectName || 'Untitled Project';
             }
         } catch (e) {
-            console.warn('Could not load audit trail:', e);
+            logger.warn('Could not load audit trail', { error: e instanceof Error ? e.message : String(e) });
         }
     }
 
@@ -612,7 +614,7 @@ export class AuditTrailService {
         this.modelVersions = [];
         this.currentVersion = 0;
         localStorage.removeItem(this.STORAGE_KEY);
-        console.log('[Audit] Audit trail cleared');
+        logger.info('[Audit] Audit trail cleared');
     }
 
     /**
@@ -658,7 +660,7 @@ export class AuditTrailService {
             this.currentVersion = this.modelVersions.length;
             this.saveToStorage();
         } catch (e) {
-            console.error('Failed to import audit trail:', e);
+            logger.error('Failed to import audit trail', { error: e instanceof Error ? e.message : String(e) });
             throw new Error('Invalid audit trail JSON');
         }
     }

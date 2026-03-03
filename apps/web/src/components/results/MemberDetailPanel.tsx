@@ -67,7 +67,7 @@ interface MemberDetailPanelProps {
 // COMPONENT
 // ============================================
 
-export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
+export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
     memberId,
     memberForces,
     memberLength = 5,
@@ -526,6 +526,8 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = ({
             </div>
         </div>
     );
-};
+});
+
+(MemberDetailPanel as unknown as { displayName: string }).displayName = 'MemberDetailPanel';
 
 export default MemberDetailPanel;

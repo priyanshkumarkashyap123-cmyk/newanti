@@ -2,6 +2,7 @@
 //! 
 //! High-performance structural analysis library
 
+pub mod cache;
 pub mod solver;
 pub mod config;
 pub mod db;
@@ -20,6 +21,7 @@ pub use solver::section_database::SectionDatabase;
 pub use solver::ws_progress::ProgressBroadcaster;
 
 // Re-export AppState for integration tests
+pub use crate::cache::AnalysisCache;
 pub use crate::config::Config;
 pub use crate::db::Database;
 
@@ -27,4 +29,5 @@ pub use crate::db::Database;
 pub struct AppState {
     pub db: Database,
     pub config: Config,
+    pub analysis_cache: AnalysisCache,
 }

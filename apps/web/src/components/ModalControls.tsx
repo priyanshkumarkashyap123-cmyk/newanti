@@ -94,10 +94,10 @@ export const ModalControls: FC = () => {
                 {isAnimating ? '⏸️ Pause' : '▶️ Play'}
             </button>
 
-            <div style={{ width: '1px', height: '30px', background: 'rgba(100, 150, 255, 0.3)' }} />
+            <div className="w-px h-[30px] bg-blue-400/30" />
 
             {/* Mode Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="flex items-center gap-2">
                 <span style={labelStyle}>Mode:</span>
                 <select
                     style={selectStyle}
@@ -114,7 +114,7 @@ export const ModalControls: FC = () => {
 
             {/* Frequency Display */}
             {activeMode && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="flex items-center gap-2">
                     <span style={labelStyle}>Frequency:</span>
                     <span style={valueStyle}>{activeMode.frequency.toFixed(2)} Hz</span>
                 </div>
@@ -122,16 +122,16 @@ export const ModalControls: FC = () => {
 
             {/* Period Display */}
             {activeMode && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="flex items-center gap-2">
                     <span style={labelStyle}>Period:</span>
                     <span style={valueStyle}>{activeMode.period.toFixed(3)} s</span>
                 </div>
             )}
 
-            <div style={{ width: '1px', height: '30px', background: 'rgba(100, 150, 255, 0.3)' }} />
+            <div className="w-px h-[30px] bg-blue-400/30" />
 
             {/* Amplitude Slider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="flex items-center gap-2">
                 <span style={labelStyle}>Amplitude:</span>
                 <input
                     type="range"
@@ -142,7 +142,7 @@ export const ModalControls: FC = () => {
                     onChange={(e) => setModeAmplitude(Number(e.target.value))}
                     style={sliderStyle}
                 />
-                <span style={{ color: '#4fc3f7', fontSize: '12px', minWidth: '30px' }}>
+                <span className="text-sky-300 text-xs min-w-[30px]">
                     {modeAmplitude.toFixed(1)}x
                 </span>
             </div>

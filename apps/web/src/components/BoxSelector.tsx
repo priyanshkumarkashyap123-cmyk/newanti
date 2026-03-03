@@ -1,13 +1,18 @@
-import { FC, useEffect, useRef } from 'react';
+import { FC, memo, useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
-export const BoxSelector: FC = () => {
+export const BoxSelector: FC = memo(() => {
     const { gl, camera } = useThree();
-    const nodes = useModelStore((state) => state.nodes);
-    const members = useModelStore((state) => state.members);
-    const selectMultiple = useModelStore((state) => state.selectMultiple);
+    const { nodes, members, selectMultiple } = useModelStore(
+        useShallow((state) => ({
+            nodes: state.nodes,
+            members: state.members,
+            selectMultiple: state.selectMultiple,
+        }))
+    );
 
     // Keep stable refs to the latest store values so event handlers
     // never capture stale closures (avoids the re-attach treadmill).
@@ -165,4 +170,4 @@ export const BoxSelector: FC = () => {
     }, [gl, camera]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return null;
-};
+});

@@ -260,7 +260,7 @@ function createMomentGeometry(
 
 // Main component that renders all member loads
 // Calculates maxLoadMagnitude ONCE and passes to children
-export const MemberLoadRenderer: FC = () => {
+export const MemberLoadRenderer: FC = memo(() => {
     const memberLoads = useModelStore((state) => state.memberLoads);
 
     // Calculate maxLoadMagnitude once in parent - prevents N recalculations in children
@@ -286,6 +286,6 @@ export const MemberLoadRenderer: FC = () => {
             ))}
         </group>
     );
-};
+});
 
 export default MemberLoadRenderer;

@@ -56,6 +56,7 @@ import {
   Grid3X3,
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { geminiAI } from '../../services/GeminiAIService';
 import { 
   aiPowerEngine, 
@@ -475,9 +476,13 @@ export const PowerAIPanel: FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Model store
-  const nodes = useModelStore(s => s.nodes);
-  const members = useModelStore(s => s.members);
-  const loads = useModelStore(s => s.loads);
+  const { nodes, members, loads } = useModelStore(
+    useShallow((s) => ({
+      nodes: s.nodes,
+      members: s.members,
+      loads: s.loads,
+    }))
+  );
 
   // Effects
   useEffect(() => {

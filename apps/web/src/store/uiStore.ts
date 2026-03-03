@@ -271,6 +271,11 @@ interface UIState {
     mergeNodes: boolean;
     // Advanced dynamic analysis
     timeHistoryAnalysis: boolean;
+    // Structure generators
+    trussGenerator: boolean;
+    archGenerator: boolean;
+    frameGenerator: boolean;
+    cablePatternGenerator: boolean;
   };
 
   // Graphics State
@@ -419,6 +424,11 @@ export const useUIStore = create<UIState>()(
         divideMember: false,
         mergeNodes: false,
         timeHistoryAnalysis: false,
+        // Structure generators
+        trussGenerator: false,
+        archGenerator: false,
+        frameGenerator: false,
+        cablePatternGenerator: false,
       },
 
       // Graphics State
@@ -672,6 +682,11 @@ export const useUIStore = create<UIState>()(
             divideMember: false,
             mergeNodes: false,
             timeHistoryAnalysis: false,
+            // Structure generators
+            trussGenerator: false,
+            archGenerator: false,
+            frameGenerator: false,
+            cablePatternGenerator: false,
           },
         }),
       // Grid Settings

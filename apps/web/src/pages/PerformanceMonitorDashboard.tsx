@@ -191,9 +191,9 @@ export default function PerformanceMonitorDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -267,7 +267,7 @@ export default function PerformanceMonitorDashboard() {
           <div className="space-y-6">
             {/* Progress Bar */}
             {isAnalysisRunning && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Analysis Progress</h3>
@@ -314,7 +314,7 @@ export default function PerformanceMonitorDashboard() {
             {/* Resource Usage Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* CPU */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Cpu className="w-5 h-5 text-blue-400" />
@@ -336,7 +336,7 @@ export default function PerformanceMonitorDashboard() {
               </div>
 
               {/* Memory */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <MemoryStick className="w-5 h-5 text-purple-400" />
@@ -358,7 +358,7 @@ export default function PerformanceMonitorDashboard() {
               </div>
 
               {/* GPU */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Zap className="w-5 h-5 text-green-400" />
@@ -380,7 +380,7 @@ export default function PerformanceMonitorDashboard() {
               </div>
 
               {/* FPS */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Monitor className="w-5 h-5 text-cyan-400" />
@@ -405,7 +405,7 @@ export default function PerformanceMonitorDashboard() {
             {/* Detailed Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Solver Stats */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-purple-400" />
                   Solver Statistics
@@ -440,7 +440,7 @@ export default function PerformanceMonitorDashboard() {
               </div>
 
               {/* System Info */}
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-purple-400" />
                   System Configuration
@@ -484,7 +484,7 @@ export default function PerformanceMonitorDashboard() {
         )}
 
         {selectedTab === 'history' && (
-          <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Analyses</h3>
               <button type="button" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1">
@@ -541,7 +541,7 @@ export default function PerformanceMonitorDashboard() {
 
         {selectedTab === 'benchmark' && (
           <div className="space-y-6">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Performance Benchmarks</h3>
@@ -594,7 +594,7 @@ export default function PerformanceMonitorDashboard() {
             </div>
 
             {/* Comparison Chart */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Speed Comparison</h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">Elements processed per second (higher is better)</p>
               

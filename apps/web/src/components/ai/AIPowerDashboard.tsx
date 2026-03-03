@@ -41,6 +41,7 @@ import {
 import { aiPowerEngine } from '../../services/AIPowerEngine';
 import { geminiAI } from '../../services/GeminiAIService';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 // ============================================
 // TYPES
@@ -134,9 +135,13 @@ export const AIPowerDashboard: FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Model store
-  const nodes = useModelStore(s => s.nodes);
-  const members = useModelStore(s => s.members);
-  const loads = useModelStore(s => s.loads);
+  const { nodes, members, loads } = useModelStore(
+    useShallow((s) => ({
+      nodes: s.nodes,
+      members: s.members,
+      loads: s.loads,
+    }))
+  );
 
   // Refresh metrics periodically
   useEffect(() => {

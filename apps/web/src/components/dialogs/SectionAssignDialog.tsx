@@ -21,6 +21,7 @@ import {
   Search, Ruler, RectangleHorizontal, Circle, Square, Check, AlertCircle, BoxSelect,
 } from 'lucide-react';
 import { useModelStore, type Member } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 interface SectionAssignDialogProps {
   isOpen: boolean;
@@ -101,9 +102,13 @@ const SHAPE_ICONS: Record<SectionShape, React.ReactNode> = {
 };
 
 export const SectionAssignDialog: React.FC<SectionAssignDialogProps> = ({ isOpen, onClose }) => {
-  const members = useModelStore(s => s.members);
-  const selectedIds = useModelStore(s => s.selectedIds);
-  const updateMember = useModelStore(s => s.updateMember);
+  const { members, selectedIds, updateMember } = useModelStore(
+    useShallow((s) => ({
+      members: s.members,
+      selectedIds: s.selectedIds,
+      updateMember: s.updateMember,
+    }))
+  );
 
   const [tab, setTab] = useState<'library' | 'custom'>('library');
   const [standard, setStandard] = useState('IS (Indian Standard)');

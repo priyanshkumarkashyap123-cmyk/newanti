@@ -23,6 +23,7 @@ import {
     Zap, ShieldCheck
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { logger } from '../../lib/logging/logger';
 
 // WASM Module Loading
 let wasmAI: any = null;
@@ -33,9 +34,9 @@ async function initWasmAI() {
         wasmAI = await import('backend-rust');
         await wasmAI.default();
         wasmReady = true;
-// console.log('[AI Assistant] Rust AI Engine Loaded');
+// logger.info('[AI Assistant] Rust AI Engine Loaded');
     } catch (e) {
-        console.warn('[AI Assistant] Rust AI Engine failed to load:', e);
+        logger.warn('[AI Assistant] Rust AI Engine failed to load', { error: e instanceof Error ? e.message : String(e) });
     }
 }
 
@@ -221,7 +222,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                 });
             }
         } catch (error) {
-            console.error('Diagnosis failed:', error);
+            logger.error('Diagnosis failed', { error: error instanceof Error ? error.message : String(error) });
             addMessage({
                 role: 'assistant',
                 content: 'Could not connect to the AI service. Please check your connection.',
@@ -269,7 +270,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                 });
             }
         } catch (error) {
-            console.error('Auto-fix failed:', error);
+            logger.error('Auto-fix failed', { error: error instanceof Error ? error.message : String(error) });
             addMessage({
                 role: 'assistant',
                 content: 'Auto-fix failed. Please try modifying manually.',
@@ -329,7 +330,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                 });
             }
         } catch (error) {
-            console.error('Modification failed:', error);
+            logger.error('Modification failed', { error: error instanceof Error ? error.message : String(error) });
             addMessage({
                 role: 'assistant',
                 content: 'Failed to modify the model. Please try again.',
@@ -370,7 +371,7 @@ export const AIAssistantChat: FC<AIAssistantChatProps> = ({
                 ]
             });
         } catch (error) {
-            console.error('Local diagnosis failed:', error);
+            logger.error('Local diagnosis failed', { error: error instanceof Error ? error.message : String(error) });
             addMessage({
                 role: 'assistant',
                 content: 'Local AI diagnosis failed. Falling back to cloud AI...',

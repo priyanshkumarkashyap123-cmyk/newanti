@@ -485,9 +485,9 @@ export default function ConnectionDesignDatabase() {
   const displayConnections = showDesignMode ? suitableConnections : filteredConnections;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -532,7 +532,7 @@ export default function ConnectionDesignDatabase() {
           <div className="lg:col-span-1 space-y-6">
             {showDesignMode ? (
               /* Design Mode Input */
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Calculator className="w-5 h-5 text-purple-400" />
                   Design Requirements
@@ -594,7 +594,7 @@ export default function ConnectionDesignDatabase() {
             ) : (
               /* Browse Mode Filters */
               <>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 dark:text-slate-400" />
                     <input
@@ -607,7 +607,7 @@ export default function ConnectionDesignDatabase() {
                   </div>
                 </div>
                 
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                   <h3 className="text-sm font-semibold text-purple-400 mb-4">Categories</h3>
                   
                   <div className="space-y-2">
@@ -651,7 +651,7 @@ export default function ConnectionDesignDatabase() {
             
             {/* Saved Connections */}
             {savedConnections.size > 0 && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-purple-400 mb-4 flex items-center gap-2">
                   <BookmarkCheck className="w-4 h-4" />
                   Saved ({savedConnections.size})
@@ -776,7 +776,7 @@ export default function ConnectionDesignDatabase() {
               })}
               
               {displayConnections.length === 0 && (
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-8 border border-slate-300 dark:border-slate-700 text-center">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-8 border border-slate-200 dark:border-slate-700 text-center">
                   <AlertTriangle className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-slate-600 dark:text-slate-400 mb-2">
                     {showDesignMode ? 'No suitable connections found' : 'No connections found'}
@@ -795,7 +795,7 @@ export default function ConnectionDesignDatabase() {
           {/* Right Panel - Details */}
           <div className="lg:col-span-1">
             {selectedConnection ? (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 sticky top-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 sticky top-4">
                 <div className="p-6 border-b border-slate-300 dark:border-slate-700">
                   <div className="flex items-center justify-between mb-4">
                     <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded">
@@ -909,7 +909,7 @@ export default function ConnectionDesignDatabase() {
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-8 border border-slate-300 dark:border-slate-700 text-center sticky top-4">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-8 border border-slate-200 dark:border-slate-700 text-center sticky top-4">
                 <Eye className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-slate-600 dark:text-slate-400 mb-2">Select a Connection</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400">

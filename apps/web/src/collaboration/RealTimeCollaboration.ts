@@ -272,7 +272,7 @@ class OTEngine {
   /**
    * Apply operation to local state
    */
-  applyOperation(state: any, operation: Operation): any {
+  applyOperation(state: Record<string, unknown>, operation: Operation): Record<string, unknown> {
     if (!operation.data) return state; // No-op
     
     const path = operation.path;
@@ -296,7 +296,8 @@ class OTEngine {
     return newState;
   }
   
-  private insertAtPath(obj: any, path: string[], value: any): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private insertAtPath(obj: Record<string, any>, path: string[], value: unknown): void {
     let current = obj;
     for (let i = 0; i < path.length - 1; i++) {
       if (!current[path[i]]) {
@@ -311,11 +312,12 @@ class OTEngine {
     if (Array.isArray(current) && !isNaN(idx)) {
       current.splice(idx, 0, value);
     } else {
-      current[lastKey] = value;
+      (current as Record<string, unknown>)[lastKey] = value;
     }
   }
   
-  private deleteAtPath(obj: any, path: string[]): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private deleteAtPath(obj: Record<string, any>, path: string[]): void {
     let current = obj;
     for (let i = 0; i < path.length - 1; i++) {
       if (!current[path[i]]) return;
@@ -328,11 +330,12 @@ class OTEngine {
     if (Array.isArray(current) && !isNaN(idx)) {
       current.splice(idx, 1);
     } else {
-      delete current[lastKey];
+      delete (current as Record<string, unknown>)[lastKey];
     }
   }
   
-  private updateAtPath(obj: any, path: string[], value: any): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private updateAtPath(obj: Record<string, any>, path: string[], value: unknown): void {
     let current = obj;
     for (let i = 0; i < path.length - 1; i++) {
       if (!current[path[i]]) return;
@@ -341,9 +344,11 @@ class OTEngine {
     current[path[path.length - 1]] = value;
   }
   
-  private moveAtPath(obj: any, fromPath: string[], toPath: string[]): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private moveAtPath(obj: Record<string, any>, fromPath: string[], toPath: string[]): void {
     // Get value at fromPath
-    let current: any = obj;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let current: Record<string, any> = obj;
     for (let i = 0; i < fromPath.length - 1; i++) {
       if (!current[fromPath[i]]) return;
       current = current[fromPath[i]];

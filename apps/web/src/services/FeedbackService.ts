@@ -14,6 +14,8 @@
 // TYPES
 // ============================================
 
+import { logger } from '../lib/logging/logger';
+
 export interface FeedbackEntry {
     id: string;
     timestamp: Date;
@@ -104,7 +106,7 @@ class FeedbackServiceClass {
                 }));
             }
         } catch (e) {
-            console.warn('[FeedbackService] Failed to load from storage:', e);
+            logger.warn('[FeedbackService] Failed to load from storage', { error: e instanceof Error ? e.message : String(e) });
         }
     }
 
@@ -115,7 +117,7 @@ class FeedbackServiceClass {
             const toSave = this.entries.slice(-this.MAX_ENTRIES);
             this.storage.setItem(this.STORAGE_KEY, JSON.stringify(toSave));
         } catch (e) {
-            console.warn('[FeedbackService] Failed to save to storage:', e);
+            logger.warn('[FeedbackService] Failed to save to storage', { error: e instanceof Error ? e.message : String(e) });
         }
     }
 
@@ -154,7 +156,7 @@ class FeedbackServiceClass {
         this.entries.push(entry);
         this.saveToStorage();
 
-        console.log(`[FeedbackService] Correction logged for ${feature}`);
+        logger.info(`[FeedbackService] Correction logged for ${feature}`);
         return entry.id;
     }
 
@@ -185,7 +187,7 @@ class FeedbackServiceClass {
         this.entries.push(entry);
         this.saveToStorage();
 
-        console.log(`[FeedbackService] Rating ${rating}/5 logged for ${feature}`);
+        logger.info(`[FeedbackService] Rating ${rating}/5 logged for ${feature}`);
         return entry.id;
     }
 
@@ -242,7 +244,7 @@ class FeedbackServiceClass {
         this.entries.push(entry);
         this.saveToStorage();
 
-        console.log(`[FeedbackService] Error reported for ${feature}`);
+        logger.info(`[FeedbackService] Error reported for ${feature}`);
         return entry.id;
     }
 

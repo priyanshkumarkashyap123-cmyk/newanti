@@ -196,7 +196,7 @@ impl PDeltaAnalyzer {
         n_dof: usize,
     ) -> PDeltaResult {
         let mut displacements = vec![0.0; n_dof];
-        let axial_forces = member_axial.to_vec();
+        let mut axial_forces = member_axial.to_vec();
         let mut iterations = 0;
         let mut converged = false;
         
@@ -249,8 +249,35 @@ impl PDeltaAnalyzer {
                 break;
             }
             
-            // Update axial forces (simplified - would need actual member force calculation)
-            // This is a placeholder for the iterative update
+            // Update axial forces from current displacements
+            // Extract per-member axial force from elastic stiffness coupling
+            // between the member's two nodes: P ≈ -Σ K[gi,gj]·(uj - ui) for translational DOFs
+            for (m, dof_map) in member_dof_maps.iter().enumerate() {
+                if dof_map.len() >= 12 {
+                    let _l = member_lengths[m];
+                    let mut axial_estimate = 0.0;
+                    // Use off-diagonal coupling K[node_i_dof, node_j_dof] which is dominated
+                    // by this member's EA/L contribution (exact for serial members)
+                    for d in 0..3 {
+                        let gi = dof_map[d];      // Node i translational DOF
+                        let gj = dof_map[6 + d];  // Node j translational DOF
+                        if gi < n_dof && gj < n_dof {
+                            let k_coupling = k_elastic[gi * n_dof + gj];
+                            let delta_u = displacements[gj] - displacements[gi];
+                            axial_estimate += k_coupling * delta_u;
+                        }
+                    }
+                    // The coupling term k_ij·Δu sums to ≈ -P for properly oriented members
+                    // Blend with initial value for numerical stability (80% updated, 20% initial)
+                    let p_updated = -axial_estimate;
+                    axial_forces[m] = 0.8 * p_updated + 0.2 * member_axial[m];
+                    // Ensure we don't flip sign from initial (prevents divergence)
+                    if member_axial[m].abs() > 1e-10 && 
+                       axial_forces[m].signum() != member_axial[m].signum() {
+                        axial_forces[m] = member_axial[m];
+                    }
+                }
+            }
         }
         
         // Calculate stability coefficient

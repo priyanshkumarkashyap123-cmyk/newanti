@@ -11,6 +11,7 @@ import { FC, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Loader2, Zap, CheckCircle, Lock } from 'lucide-react';
 import { TEMPLATE_BANK } from '../../data/templates';
+import { logger } from '../../lib/logging/logger';
 import { useModelStore } from '../../store/model';
 import { useSubscription } from '../../hooks/useSubscription';
 
@@ -107,11 +108,11 @@ const findMatchingTemplate = (prompt: string): string | null => {
 
 const toast = {
     success: (message: string) => {
-// console.log('✅', message);
+// logger.info('✅', message);
         // Could integrate with a toast library here
     },
     error: (message: string) => {
-        console.error('❌', message);
+        logger.error('❌', { message });
     }
 };
 
@@ -278,17 +279,17 @@ export const AICommandCenter: FC = () => {
                 // Use pre-defined template (instant, no API call)
                 model = TEMPLATE_BANK[matchedKey as keyof typeof TEMPLATE_BANK];
                 source = `Template: ${TEMPLATE_BANK[matchedKey as keyof typeof TEMPLATE_BANK].name}`;
-// console.log(`[AICommandCenter] ✓ Matched template: ${matchedKey}`);
+// logger.info(`[AICommandCenter] ✓ Matched template: ${matchedKey}`);
             } else {
                 // Fallback to LLM for custom geometry
-// console.log('[AICommandCenter] No template match, trying LLM...');
+// logger.info('[AICommandCenter] No template match, trying LLM...');
                 try {
                     model = await api.post('/ai/generate', { prompt });
                     source = 'AI Generated';
-// console.log('[AICommandCenter] ✓ Generated via LLM');
+// logger.info('[AICommandCenter] ✓ Generated via LLM');
                 } catch (err) {
                     // If LLM fails, use a sensible default
-                    console.warn('[AICommandCenter] LLM failed, using default beam');
+                    logger.warn('[AICommandCenter] LLM failed, using default beam');
                     model = TEMPLATE_BANK['SIMPLY_SUPPORTED_BEAM'];
                     source = 'Default: Simply Supported Beam';
                 }
@@ -306,7 +307,7 @@ export const AICommandCenter: FC = () => {
             toast.success("Analysis Complete!");
 
         } catch (error) {
-            console.error('[AICommandCenter] Error:', error);
+            logger.error('[AICommandCenter] Error', { error: error instanceof Error ? error.message : String(error) });
             toast.error(error instanceof Error ? error.message : 'Generation failed');
             setStatus('idle');
         } finally {

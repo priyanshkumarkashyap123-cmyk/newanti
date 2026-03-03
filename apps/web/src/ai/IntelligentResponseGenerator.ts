@@ -98,13 +98,13 @@ export interface FollowUpQuestion {
 
 export interface StructureGenerationData {
   type: string;
-  nodes: any[];
-  members: any[];
-  loads: any[];
-  supports: any[];
-  materials: any[];
-  sections: any[];
-  metadata: Record<string, any>;
+  nodes: Record<string, unknown>[];
+  members: Record<string, unknown>[];
+  loads: Record<string, unknown>[];
+  supports: Record<string, unknown>[];
+  materials: Record<string, unknown>[];
+  sections: Record<string, unknown>[];
+  metadata: Record<string, unknown>;
 }
 
 export interface LearningResource {
@@ -286,7 +286,7 @@ class KnowledgeRetriever {
   /**
    * Get section properties
    */
-  getSectionProperties(sectionName: string): Record<string, any> | null {
+  getSectionProperties(sectionName: string): Record<string, unknown> | null {
     const sections = STRUCTURAL_ENGINEERING.sections.indianStandard;
     
     // Try ISMB
@@ -1193,7 +1193,7 @@ export class IntelligentResponseGenerator {
       };
     }
 
-    const params: Record<string, any> = {};
+    const params: Record<string, unknown> = {};
     for (const dim of dimensionEntities) {
       if (dim.metadata?.dimensionType === 'span') params.span = dim.value;
       if (dim.metadata?.dimensionType === 'height') params.height = dim.value;

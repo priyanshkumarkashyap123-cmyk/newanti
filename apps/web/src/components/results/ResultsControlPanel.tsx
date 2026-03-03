@@ -340,7 +340,7 @@ interface ResultsControlPanelProps {
   onSettingsChange?: (settings: DisplaySettings) => void;
 }
 
-export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
+export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
   className = "",
   onSettingsChange,
 }) => {
@@ -788,6 +788,8 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = ({
       </div>
     </div>
   );
-};
+});
+
+(ResultsControlPanel as unknown as { displayName: string }).displayName = 'ResultsControlPanel';
 
 export default ResultsControlPanel;

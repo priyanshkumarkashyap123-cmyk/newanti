@@ -15,7 +15,7 @@
 export interface UserPreference {
     category: 'section' | 'material' | 'template' | 'code' | 'workflow';
     key: string;
-    value: any;
+    value: unknown;
     frequency: number;
     lastUsed: Date;
     confidence: number; // 0-1
@@ -25,8 +25,8 @@ export interface LearningEvent {
     id: string;
     type: 'selection' | 'correction' | 'override' | 'approval' | 'rejection';
     context: string;
-    aiSuggestion?: any;
-    userChoice: any;
+    aiSuggestion?: unknown;
+    userChoice: unknown;
     timestamp: Date;
 }
 
@@ -113,7 +113,7 @@ class AdaptiveLearningServiceClass {
     /**
      * Record AI correction (user changed AI suggestion)
      */
-    recordCorrection(aiSuggestion: any, userCorrection: any, context: string): void {
+    recordCorrection(aiSuggestion: unknown, userCorrection: unknown, context: string): void {
         this.recordEvent({
             type: 'correction',
             context,
@@ -297,13 +297,13 @@ class AdaptiveLearningServiceClass {
             const data = localStorage.getItem('ai_architect_adaptive_learning');
             if (data) {
                 const parsed = JSON.parse(data);
-                parsed.profiles?.forEach((p: any) => {
+                parsed.profiles?.forEach((p: Record<string, unknown>) => {
                     p.preferences = new Map(Object.entries(p.preferences || {}));
-                    p.learningEvents = p.learningEvents?.map((e: any) => ({
+                    p.learningEvents = (p.learningEvents as Array<Record<string, unknown>>)?.map((e: Record<string, unknown>) => ({
                         ...e,
-                        timestamp: new Date(e.timestamp)
+                        timestamp: new Date(e.timestamp as string)
                     })) || [];
-                    this.profiles.set(p.userId, p);
+                    this.profiles.set(p.userId as string, p as unknown as UserProfile);
                 });
             }
         } catch (e) {

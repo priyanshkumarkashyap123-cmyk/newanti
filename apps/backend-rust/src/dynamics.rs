@@ -15,6 +15,12 @@ pub struct ModalResult {
     pub periods: Vec<f64>,          // Natural periods (s)
     pub mode_shapes: Vec<HashMap<String, Vec<f64>>>, // Mode shapes per node
     pub mass_participation: Vec<HashMap<String, f64>>, // Mass participation factors
+    #[serde(default)]
+    pub raw_eigenvectors: Vec<Vec<f64>>,      // Raw mode shapes in reduced DOF space
+    #[serde(default)]
+    pub effective_modal_masses: Vec<f64>,      // Effective modal mass per mode (X-direction, kN)
+    #[serde(default)]
+    pub total_mass: f64,                       // Total structural mass (kg)
 }
 
 // ============================================
@@ -109,9 +115,69 @@ pub fn assemble_mass_matrix(
 }
 
 #[allow(non_snake_case)]
-fn consistent_mass_frame(_elem: &Element3D, _L: f64) -> DMatrix<f64> {
-    // Placeholder for 12x12 consistent mass matrix
-    DMatrix::zeros(12, 12)
+fn consistent_mass_frame(elem: &Element3D, L: f64) -> DMatrix<f64> {
+    // Standard 12x12 consistent mass matrix for a 3D Euler-Bernoulli beam
+    // Reference: Przemieniecki, "Theory of Matrix Structural Analysis"
+    // DOFs: [u1,v1,w1,θx1,θy1,θz1, u2,v2,w2,θx2,θy2,θz2]
+    let rho = elem.density;
+    let A = elem.A;
+    let factor = rho * A * L / 420.0;
+
+    let mut m = DMatrix::zeros(12, 12);
+
+    // Axial (u): DOFs 0, 6
+    m[(0, 0)] = 140.0 * factor;
+    m[(0, 6)] = 70.0 * factor;
+    m[(6, 0)] = 70.0 * factor;
+    m[(6, 6)] = 140.0 * factor;
+
+    // Bending in xy-plane (v, θz): DOFs 1,5, 7,11
+    m[(1, 1)] = 156.0 * factor;
+    m[(1, 5)] = 22.0 * L * factor;
+    m[(1, 7)] = 54.0 * factor;
+    m[(1, 11)] = -13.0 * L * factor;
+    m[(5, 1)] = 22.0 * L * factor;
+    m[(5, 5)] = 4.0 * L * L * factor;
+    m[(5, 7)] = 13.0 * L * factor;
+    m[(5, 11)] = -3.0 * L * L * factor;
+    m[(7, 1)] = 54.0 * factor;
+    m[(7, 5)] = 13.0 * L * factor;
+    m[(7, 7)] = 156.0 * factor;
+    m[(7, 11)] = -22.0 * L * factor;
+    m[(11, 1)] = -13.0 * L * factor;
+    m[(11, 5)] = -3.0 * L * L * factor;
+    m[(11, 7)] = -22.0 * L * factor;
+    m[(11, 11)] = 4.0 * L * L * factor;
+
+    // Bending in xz-plane (w, θy): DOFs 2,4, 8,10
+    // Sign flips on coupling terms due to θy = -dw/dx convention
+    m[(2, 2)] = 156.0 * factor;
+    m[(2, 4)] = -22.0 * L * factor;
+    m[(2, 8)] = 54.0 * factor;
+    m[(2, 10)] = 13.0 * L * factor;
+    m[(4, 2)] = -22.0 * L * factor;
+    m[(4, 4)] = 4.0 * L * L * factor;
+    m[(4, 8)] = -13.0 * L * factor;
+    m[(4, 10)] = -3.0 * L * L * factor;
+    m[(8, 2)] = 54.0 * factor;
+    m[(8, 4)] = -13.0 * L * factor;
+    m[(8, 8)] = 156.0 * factor;
+    m[(8, 10)] = 22.0 * L * factor;
+    m[(10, 2)] = 13.0 * L * factor;
+    m[(10, 4)] = -3.0 * L * L * factor;
+    m[(10, 8)] = 22.0 * L * factor;
+    m[(10, 10)] = 4.0 * L * L * factor;
+
+    // Torsion (θx): DOFs 3, 9
+    // Rotary inertia: ρ·Ip·L/420, where Ip ≈ Iy + Iz
+    let ip = elem.Iy + elem.Iz;
+    let t_factor = rho * ip * L / 420.0;
+    m[(3, 3)] = 140.0 * t_factor;
+    m[(3, 9)] = 70.0 * t_factor;
+    m[(9, 3)] = 70.0 * t_factor;
+    m[(9, 9)] = 140.0 * t_factor;
+
+    m
 }
 
 // ============================================
@@ -183,7 +249,10 @@ pub fn solve_eigenvalues(
     let count = num_modes.min(modes.len());
     let mut frequencies = Vec::new();
     let mut periods = Vec::new();
-    let _mode_shapes_vec: Vec<HashMap<String, Vec<f64>>> = Vec::new();
+    let mut raw_eigenvectors: Vec<Vec<f64>> = Vec::new();
+    
+    // Compute total mass from diagonal of M
+    let total_mass: f64 = (0..dof).step_by(6).map(|i| m_global[(i, i)]).sum();
     
     for k in 0..count {
         let (lambda, idx) = modes[k];
@@ -200,12 +269,10 @@ pub fn solve_eigenvalues(
         
         // Normalize so max displacement is 1.0 for visualization
         let max_disp = x.iter().fold(0.0f64, |acc, &val| acc.max(val.abs()));
-        let _x_norm = if max_disp > 1e-15 { x / max_disp } else { x };
+        let x_norm = if max_disp > 1e-15 { &x / max_disp } else { x.clone() };
         
-        // Store in HashMap format
-        // Need node mapping passed here or reconstruct? 
-        // We will return raw vector for now and mapper handles it?
-        // Let's return raw vector logic placeholder
+        // Store raw eigenvector (reduced DOF space, normalized)
+        raw_eigenvectors.push(x_norm.iter().cloned().collect());
     }
 
     Ok(ModalResult {
@@ -213,8 +280,11 @@ pub fn solve_eigenvalues(
         error: None,
         frequencies,
         periods,
-        mode_shapes: vec![], // To be filled by mapper
-        mass_participation: vec![], // To be filled
+        mode_shapes: vec![], // Populated by modal_analysis after DOF expansion
+        mass_participation: vec![], // Populated by modal_analysis
+        raw_eigenvectors,
+        effective_modal_masses: vec![], // Populated by modal_analysis
+        total_mass,
     })
 }
 
@@ -256,12 +326,16 @@ pub fn calculate_response_spectrum(
         // Ah = (Z * I * Sa/g) / (2 * R)
         let ah = (zone_factor * importance_factor * sa_g) / (2.0 * response_reduction);
         
-        // 3. Modal Mass (Mk)
-        // Need participation factors. For now assume unity or user provided mock.
-        // In real impl, Mk = (phi * M * r)^2 / (phi * M * phi)
-        // Let's assume a simplified Modal Mass for the MVP demo based on equal distribution
-        // or mock participation for the first few modes (e.g., 80% mass in mode 1)
-        let effective_weight = if i == 0 { 100000.0 } else { 10000.0 }; // Mock weight (kN)
+        // 3. Effective modal mass (from modal analysis)
+        // Use real computed effective modal masses if available, else estimate
+        let effective_weight = if i < modal_results.effective_modal_masses.len() {
+            // effective_modal_masses stored in kg, convert to weight in kN (force = mass * g)
+            modal_results.effective_modal_masses[i] * 9.81 / 1000.0
+        } else {
+            // Fallback: distribute remaining mass across higher modes
+            let total_weight = modal_results.total_mass * 9.81 / 1000.0;
+            if i == 0 { total_weight * 0.7 } else { total_weight * 0.1 }
+        };
         
         let shear_k = ah * effective_weight;
         modal_shears.push(shear_k);

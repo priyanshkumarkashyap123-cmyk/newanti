@@ -58,7 +58,7 @@ interface StressCheck {
   summary: string;
 }
 
-interface MemberStress {
+export interface MemberStress {
   member_id: string;
   stress_points: StressPoint[];
   contours: ContourData;

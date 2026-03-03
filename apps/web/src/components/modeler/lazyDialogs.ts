@@ -208,3 +208,25 @@ export const TimeHistoryDialog = lazy(() =>
   })),
 );
 export const IntegrationDiagnostics = lazy(() => import("../IntegrationDiagnostics"));
+
+// Structure Generator Dialogs
+export const TrussGeneratorDialog = lazy(() =>
+  import("../toolbar/GeneratorDialogs").then((m) => ({
+    default: m.TrussGeneratorDialog,
+  })),
+);
+export const ArchGeneratorDialog = lazy(() =>
+  import("../toolbar/GeneratorDialogs").then((m) => ({
+    default: m.ArchGeneratorDialog,
+  })),
+);
+export const FrameGeneratorDialog = lazy(() =>
+  import("../toolbar/GeneratorDialogs").then((m) => ({
+    default: m.FrameGeneratorDialog,
+  })),
+);
+export const CablePatternDialog = lazy(() =>
+  import("../toolbar/GeneratorDialogs").then((m) => ({
+    default: m.CablePatternDialog,
+  })),
+);

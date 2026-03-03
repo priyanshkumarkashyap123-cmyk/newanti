@@ -86,9 +86,9 @@ const loadSchema = z.object({
 });
 
 export const analyzeRequestSchema = z.object({
-    nodes: z.array(nodeSchema).min(2, 'At least 2 nodes are required'),
-    members: z.array(memberSchema).min(1, 'At least 1 member is required'),
-    loads: z.array(loadSchema).optional().default([]),
+    nodes: z.array(nodeSchema).min(2, 'At least 2 nodes are required').max(50000, 'Maximum 50,000 nodes allowed'),
+    members: z.array(memberSchema).min(1, 'At least 1 member is required').max(100000, 'Maximum 100,000 members allowed'),
+    loads: z.array(loadSchema).max(100000, 'Maximum 100,000 loads allowed').optional().default([]),
     dofPerNode: z.number().int().min(1).max(6).optional().default(3),
     options: z.object({
         method: z.enum(['spsolve', 'cg', 'gmres']).optional().default('spsolve'),
@@ -282,9 +282,9 @@ const supportSchema = z.object({
 });
 
 export const pDeltaSchema = z.object({
-    nodes: z.array(advancedNodeSchema).min(2),
-    members: z.array(advancedMemberSchema).min(1),
-    supports: z.array(supportSchema).min(1),
+    nodes: z.array(advancedNodeSchema).min(2).max(50000),
+    members: z.array(advancedMemberSchema).min(1).max(100000),
+    supports: z.array(supportSchema).min(1).max(50000),
     loads: z.array(z.object({
         nodeId: z.number(),
         fx: z.number().finite().optional(),
@@ -298,9 +298,9 @@ export const pDeltaSchema = z.object({
 });
 
 export const modalSchema = z.object({
-    nodes: z.array(advancedNodeSchema).min(2),
-    members: z.array(advancedMemberSchema).min(1),
-    supports: z.array(supportSchema).min(1),
+    nodes: z.array(advancedNodeSchema).min(2).max(50000),
+    members: z.array(advancedMemberSchema).min(1).max(100000),
+    supports: z.array(supportSchema).min(1).max(50000),
     masses: z.array(z.object({
         nodeId: z.number(),
         mass: z.number().positive(),
@@ -310,9 +310,9 @@ export const modalSchema = z.object({
 });
 
 export const bucklingSchema = z.object({
-    nodes: z.array(advancedNodeSchema).min(2),
-    members: z.array(advancedMemberSchema).min(1),
-    supports: z.array(supportSchema).min(1),
+    nodes: z.array(advancedNodeSchema).min(2).max(50000),
+    members: z.array(advancedMemberSchema).min(1).max(100000),
+    supports: z.array(supportSchema).min(1).max(50000),
     loads: z.array(z.object({
         nodeId: z.number(),
         fx: z.number().finite().optional(),
@@ -323,15 +323,15 @@ export const bucklingSchema = z.object({
 });
 
 export const cableSchema = z.object({
-    nodes: z.array(advancedNodeSchema).min(2),
-    members: z.array(advancedMemberSchema).min(1),
-    supports: z.array(supportSchema).min(1),
+    nodes: z.array(advancedNodeSchema).min(2).max(50000),
+    members: z.array(advancedMemberSchema).min(1).max(100000),
+    supports: z.array(supportSchema).min(1).max(50000),
     cables: z.array(z.object({
         memberId: z.number(),
         weight: z.number().positive().optional().default(10),
         pretension: z.number().finite().optional().default(0),
         sagRatio: z.number().positive().optional(),
-    })).min(1),
+    })).min(1).max(100000),
     loads: z.array(z.object({
         nodeId: z.number(),
         fx: z.number().finite().optional(),
@@ -341,9 +341,9 @@ export const cableSchema = z.object({
 });
 
 export const spectrumSchema = z.object({
-    nodes: z.array(advancedNodeSchema).min(2),
-    members: z.array(advancedMemberSchema).min(1),
-    supports: z.array(supportSchema).min(1),
+    nodes: z.array(advancedNodeSchema).min(2).max(50000),
+    members: z.array(advancedMemberSchema).min(1).max(100000),
+    supports: z.array(supportSchema).min(1).max(50000),
     numModes: z.number().int().positive().optional().default(12),
     spectrum: z.object({
         type: z.enum(['IS1893', 'custom']),
@@ -371,10 +371,10 @@ const passwordSchema = z.string()
 export const signUpSchema = z.object({
     email: z.string().email('Please enter a valid email address').transform(e => e.toLowerCase().trim()),
     password: passwordSchema,
-    firstName: z.string().min(1, 'First name is required').trim(),
-    lastName: z.string().min(1, 'Last name is required').trim(),
-    company: z.string().trim().optional(),
-    phone: z.string().trim().optional(),
+    firstName: z.string().min(1, 'First name is required').max(100).trim(),
+    lastName: z.string().min(1, 'Last name is required').max(100).trim(),
+    company: z.string().max(200).trim().optional(),
+    phone: z.string().max(20).trim().optional(),
 });
 
 export const signInSchema = z.object({
@@ -449,7 +449,10 @@ export { z };
 export const createProjectSchema = z.object({
     name: z.string().min(1, 'Project name is required').max(200).trim(),
     description: z.string().max(2000).trim().optional(),
-    data: z.record(z.unknown()).optional().default({}),
+    data: z.record(z.unknown()).optional().default({}).refine(
+        (val) => JSON.stringify(val).length <= 10_000_000,
+        'Project data must be under 10MB'
+    ),
     thumbnail: z.string().url().optional(),
 });
 

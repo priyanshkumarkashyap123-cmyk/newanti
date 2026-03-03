@@ -127,7 +127,7 @@ export const DynamicAnalysisPage: React.FC = () => {
   useEffect(() => { document.title = 'Dynamic Analysis | BeamLab'; }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 via-indigo-900/30 to-slate-50 dark:to-slate-900">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -157,19 +157,19 @@ export const DynamicAnalysisPage: React.FC = () => {
 
           {/* Quick Stats */}
           <div className="mt-8 grid grid-cols-4 gap-4">
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
               <div className="text-2xl font-bold text-slate-900 dark:text-white">8</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Analysis Types</div>
             </div>
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
               <div className="text-2xl font-bold text-emerald-400">53x</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Faster (Rust WASM)</div>
             </div>
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
               <div className="text-2xl font-bold text-blue-400">17+</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Design Codes</div>
             </div>
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
               <div className="text-2xl font-bold text-purple-400">100%</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">Cloud Native</div>
             </div>
@@ -186,7 +186,7 @@ export const DynamicAnalysisPage: React.FC = () => {
               <Link
                 key={analysis.id}
                 to={analysis.status === 'coming' ? '#' : analysis.link}
-                className={`group relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-700 overflow-hidden transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl ${
+                className={`group relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl ${
                   analysis.status === 'coming' ? 'opacity-60 cursor-not-allowed' : ''
                 }`}
               >
@@ -239,7 +239,7 @@ export const DynamicAnalysisPage: React.FC = () => {
         </div>
 
         {/* Additional Info Section */}
-        <div className="mt-12 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800 rounded-2xl p-8 border border-slate-300 dark:border-slate-700">
+        <div className="mt-12 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-lg font-bold text-white mb-3">Industry-Standard Methods</h3>

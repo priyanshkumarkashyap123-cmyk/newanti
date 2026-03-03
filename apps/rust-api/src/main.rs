@@ -6,6 +6,7 @@
 //! - Zero garbage collection pauses
 //! - Native multi-threading with Rayon
 
+mod cache;
 mod config;
 mod db;
 mod error;
@@ -28,6 +29,7 @@ use tower_http::{
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+use crate::cache::AnalysisCache;
 use crate::config::Config;
 use crate::db::Database;
 
@@ -35,6 +37,7 @@ use crate::db::Database;
 pub struct AppState {
     pub db: Database,
     pub config: Config,
+    pub analysis_cache: AnalysisCache,
 }
 
 #[tokio::main]
@@ -92,7 +95,10 @@ async fn main() -> anyhow::Result<()> {
     let state = Arc::new(AppState {
         db,
         config: config.clone(),
+        analysis_cache: AnalysisCache::default_analysis(),
     });
+
+    tracing::info!("🗄️  Analysis result cache initialized (256 entries, 10min TTL)");
 
     // Build CORS layer
     // Note: When allow_credentials(true) is set, we cannot use Any for headers or methods

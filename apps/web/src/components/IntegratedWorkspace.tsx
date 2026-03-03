@@ -63,20 +63,24 @@ export const IntegratedWorkspace: FC = () => {
             const membersRaw = Array.from(model.members.values());
 
             // Coerce IDs to numbers for WASM solver compatibility
-            const nodes = nodesRaw.map((n: any, idx: number) => ({ ...n, id: Number(n.id ?? idx + 1) }));
-            const members = membersRaw.map((m: any, idx: number) => ({ ...m, id: Number(m.id ?? idx + 1) }));
+            const nodes = nodesRaw.map((n, idx: number) => ({ ...n, id: Number(n.id ?? idx + 1) }));
+            const members = membersRaw.map((m, idx: number) => ({ ...m, id: Number(m.id ?? idx + 1) }));
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result = await beamlab.solver.analyze(
                 nodes as any,
                 members as any,
                 [],
-                nodes.filter((n: any) => n.restraints)
+                nodes.filter((n) => n.restraints)
             );
 
             // Compute max displacement magnitude from map if available
             const dispValues = result?.displacements ? Object.values(result.displacements) : [];
             const maxDisp = dispValues.length
-                ? Math.max(...dispValues.map((d: any) => Math.sqrt((d.dx || 0) ** 2 + (d.dy || 0) ** 2 + (d.dz || 0) ** 2)))
+                ? Math.max(...dispValues.map((d: unknown) => {
+                    const disp = d as Record<string, number>;
+                    return Math.sqrt((disp.dx || 0) ** 2 + (disp.dy || 0) ** 2 + (disp.dz || 0) ** 2);
+                  }))
                 : 0.015;
             
             setAnalysisResult({
@@ -171,12 +175,12 @@ export const IntegratedWorkspace: FC = () => {
     // ============================================
 
     useEffect(() => {
-        const handleVoiceResult = (e: any) => {
-// console.log('[Voice] Command executed:', e.detail);
+        const handleVoiceResult = (e: Event) => {
+// console.log('[Voice] Command executed:', (e as CustomEvent).detail);
         };
 
-        const handleError = (e: any) => {
-            console.error('[Error]', e.detail);
+        const handleError = (e: Event) => {
+            console.error('[Error]', (e as CustomEvent).detail);
         };
 
         window.addEventListener('voiceResult', handleVoiceResult);

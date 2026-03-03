@@ -19,6 +19,7 @@ import { WgpuCanvas } from "./viewer/WgpuCanvas";
 import { SafeCanvasWrapper } from "./viewer/SafeCanvasWrapper";
 import { CameraFitController } from "./viewer/CameraFitController";
 import { useUIStore } from "../store/uiStore";
+import { useShallow } from "zustand/react/shallow";
 import { useMultiplayerContextSafe } from "./collaborators/MultiplayerContext";
 import { Cpu, Zap, Box, GitBranch, Square, Rotate3d } from "lucide-react";
 
@@ -256,7 +257,7 @@ const ViewportContainer: FC<{
         className="absolute top-0 left-0 w-full h-full"
         eventSource={containerRef as MutableRefObject<HTMLElement>}
         shadows
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         gl={{
           preserveDrawingBuffer: true,
           antialias: true,
@@ -370,18 +371,26 @@ const ViewportContainer: FC<{
 };
 
 export const ViewportManager: FC = () => {
-  const [layout, setLayout] = useState<ViewportLayout>("QUAD");
+  const [layout, setLayout] = useState<ViewportLayout>("SINGLE");
   const [isGEMinimized, setIsGEMinimized] = useState(true);
   const [webglStatus, setWebglStatus] = useState<
     "pending" | "ok" | "unsupported"
   >("pending");
   const [webglError, setWebglError] = useState<string | null>(null);
-  const useWebGpu = useUIStore((state) => state.useWebGpu);
-  const setUseWebGpu = useUIStore((state) => state.setUseWebGpu);
-  const renderMode3D = useUIStore((state) => state.renderMode3D);
-  const setRenderMode3D = useUIStore((state) => state.setRenderMode3D);
-  const viewMode = useUIStore((state) => state.viewMode);
-  const setViewMode = useUIStore((state) => state.setViewMode);
+  const {
+    useWebGpu, setUseWebGpu,
+    renderMode3D, setRenderMode3D,
+    viewMode, setViewMode,
+  } = useUIStore(
+    useShallow((state) => ({
+      useWebGpu: state.useWebGpu,
+      setUseWebGpu: state.setUseWebGpu,
+      renderMode3D: state.renderMode3D,
+      setRenderMode3D: state.setRenderMode3D,
+      viewMode: state.viewMode,
+      setViewMode: state.setViewMode,
+    }))
+  );
 
   useEffect(() => {
     // Check WebGL support with a small delay to avoid racing with other canvas initializations

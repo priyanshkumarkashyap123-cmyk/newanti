@@ -754,7 +754,7 @@ interface ResultsTablePanelProps {
   defaultTab?: ResultsTab;
 }
 
-export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
+export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
   className = "",
   defaultTab = "members",
 }) => {
@@ -889,6 +889,8 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = ({
       )}
     </div>
   );
-};
+});
+
+(ResultsTablePanel as unknown as { displayName: string }).displayName = 'ResultsTablePanel';
 
 export default ResultsTablePanel;

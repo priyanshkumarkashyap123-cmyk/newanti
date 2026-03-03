@@ -1,16 +1,24 @@
-import { FC, useMemo } from 'react';
+import { FC, memo, useMemo } from 'react';
 import { useModelStore } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { NodesRenderer } from './NodesRenderer';
 import { MembersRenderer } from './MembersRenderer';
 import ModeShapeRenderer, { ModeShapeData } from './results/ModeShapeRenderer';
 
-export const ModelRenderer: FC = () => {
-    const modalResults = useModelStore(s => s.modalResults);
-    const activeModeIndex = useModelStore(s => s.activeModeIndex);
-    const modeAmplitude = useModelStore(s => s.modeAmplitude);
-    const isAnimating = useModelStore(s => s.isAnimating);
-    const nodes = useModelStore(s => s.nodes);
-    const members = useModelStore(s => s.members);
+export const ModelRenderer: FC = memo(() => {
+    const {
+        modalResults, activeModeIndex, modeAmplitude,
+        isAnimating, nodes, members,
+    } = useModelStore(
+        useShallow((state) => ({
+            modalResults: state.modalResults,
+            activeModeIndex: state.activeModeIndex,
+            modeAmplitude: state.modeAmplitude,
+            isAnimating: state.isAnimating,
+            nodes: state.nodes,
+            members: state.members,
+        }))
+    );
 
     const activeMode = useMemo(() => {
         if (!modalResults || activeModeIndex < 0 || activeModeIndex >= modalResults.modes.length) return null;
@@ -68,4 +76,4 @@ export const ModelRenderer: FC = () => {
             <MembersRenderer />
         </group>
     );
-};
+});

@@ -353,8 +353,8 @@ export const ModelingSidebar: FC = () => {
                                 const fullProject = await Bridge.loadProject(latest.id);
                                 if (fullProject) {
                                     clearModel();
-                                    fullProject.nodes.forEach((n: any) => addNode(n));
-                                    fullProject.members.forEach((m: any) => addMember(m));
+                                    fullProject.nodes?.forEach((n: any) => addNode(n));
+                                    fullProject.members?.forEach((m: any) => addMember(m));
                                     // Load civil data if stored
                                     if (fullProject.civilData) {
                                         // We haven't exposed addCivilResult in component props, but we can get from store

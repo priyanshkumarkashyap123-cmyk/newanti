@@ -2356,19 +2356,77 @@ pub fn modal_analysis(
     }
     
     // Solve
-    let raw_result = solve_eigenvalues(&k_reduced, &m_reduced, num_modes)?;
+    let mut raw_result = solve_eigenvalues(&k_reduced, &m_reduced, num_modes)?;
     
-    // 4. Map back to full mode shapes (insert zeros for fixed DOFs)
-    // raw_result.mode_shapes is currently empty from dynamics.rs, we construct it here
+    // 4. Map raw eigenvectors to full mode shapes and compute participation
+    let mut mode_shapes_out: Vec<HashMap<String, Vec<f64>>> = Vec::new();
+    let mut mass_participation_out: Vec<HashMap<String, f64>> = Vec::new();
+    let mut effective_modal_masses_x: Vec<f64> = Vec::new();
     
-    // Reconstruct full mode shape vectors
-    // Warning: solve_eigenvalues currently doesn't return eigenvectors in the struct properly
-    // We need to update dynamics.rs to actually return vectors, or handle it inside there.
-    // For now, let's assume solve_eigenvalues handles basic part and we populate the HashMap part here.
+    for raw_vec in &raw_result.raw_eigenvectors {
+        // Expand reduced eigenvector to full DOF space
+        let mut full_vec = vec![0.0f64; num_dof];
+        for (i, &dof_idx) in free_dofs.iter().enumerate() {
+            if i < raw_vec.len() {
+                full_vec[dof_idx] = raw_vec[i];
+            }
+        }
+        
+        // Build per-node mode shape HashMap
+        let mut node_shapes: HashMap<String, Vec<f64>> = HashMap::new();
+        for (idx, node) in nodes.iter().enumerate() {
+            let base = idx * 6;
+            node_shapes.insert(node.id.clone(), vec![
+                full_vec[base],     // ux
+                full_vec[base + 1], // uy
+                full_vec[base + 2], // uz
+                full_vec[base + 3], // rx
+                full_vec[base + 4], // ry
+                full_vec[base + 5], // rz
+            ]);
+        }
+        mode_shapes_out.push(node_shapes);
+        
+        // Compute mass participation factors
+        // Γ_k = (φ_k^T M r) / (φ_k^T M φ_k)
+        // Effective mass M*_k = (φ_k^T M r)² / (φ_k^T M φ_k)
+        // r = influence vector (1 in X-translational DOFs, 0 elsewhere)
+        let mut phi_m_r_x = 0.0f64;
+        let mut phi_m_r_y = 0.0f64;
+        let mut phi_m_r_z = 0.0f64;
+        let mut phi_m_phi = 0.0f64;
+        
+        for i in 0..num_dof {
+            let m_phi_i = m_global[(i, i)] * full_vec[i]; // Lumped mass: M is diagonal
+            phi_m_phi += full_vec[i] * m_phi_i;
+            let dof_type = i % 6;
+            match dof_type {
+                0 => phi_m_r_x += m_phi_i, // X-translation
+                1 => phi_m_r_y += m_phi_i, // Y-translation
+                2 => phi_m_r_z += m_phi_i, // Z-translation
+                _ => {} // Rotational DOFs don't contribute to translational participation
+            }
+        }
+        
+        let total_mass = raw_result.total_mass.max(1e-10);
+        let phi_m_phi_safe = phi_m_phi.max(1e-20);
+        
+        let eff_mass_x = phi_m_r_x * phi_m_r_x / phi_m_phi_safe;
+        let eff_mass_y = phi_m_r_y * phi_m_r_y / phi_m_phi_safe;
+        let eff_mass_z = phi_m_r_z * phi_m_r_z / phi_m_phi_safe;
+        
+        let mut participation = HashMap::new();
+        participation.insert("X".to_string(), eff_mass_x / total_mass * 100.0);
+        participation.insert("Y".to_string(), eff_mass_y / total_mass * 100.0);
+        participation.insert("Z".to_string(), eff_mass_z / total_mass * 100.0);
+        mass_participation_out.push(participation);
+        
+        effective_modal_masses_x.push(eff_mass_x);
+    }
     
-    // [Simulated Result for MVP until dynamics.rs is fully fleshed out with eigenvectors return]
-    // Since dynamics.rs is a placeholder, we return the dummy result for now.
-    // raw_result is already of type dynamics::ModalResult
+    raw_result.mode_shapes = mode_shapes_out;
+    raw_result.mass_participation = mass_participation_out;
+    raw_result.effective_modal_masses = effective_modal_masses_x;
     
     Ok(raw_result)
 }

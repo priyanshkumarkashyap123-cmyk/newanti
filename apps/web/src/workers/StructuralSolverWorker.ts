@@ -941,20 +941,47 @@ function assembleStiffnessMatrixAndForces(
           F[baseDofI + 2] = (F[baseDofI + 2] || 0) - FEM_corrected;
           F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + FEM_corrected;
         } else if (dofPerNode === 6) {
-          // 3D frame: Need to transform global -Y UDL to local transverse components
-          // For now, apply FEM in global Mz (DOF 5) for horizontal members
+          // 3D frame: Transform gravity (-Y) to local axes, apply FEF in both Mz and My
           const cx_m = dx / L;
           const cy_m = dy / L;
-          // Transverse component in local y = component of gravity perpendicular to member
-          // For a member at angle: transverse_gravity = w_sw * sqrt(1 - cy²) ≈ w_sw for near-horizontal
-          const transverseRatio = Math.sqrt(1 - cy_m * cy_m);
-          if (transverseRatio > 1e-6) {
-            const FEM_3d = (w_sw * transverseRatio * L * L) / 12;
-            // Apply as Mz moment (DOF 5) — FEF convention:
-            //   M_start = −FEM·(cx/L), M_end = +FEM·(cx/L)
-            // cx_m carries the sign, so gravity-induced moments are correct.
-            F[baseDofI + 5] = (F[baseDofI + 5] || 0) - FEM_3d * cx_m;
-            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + FEM_3d * cx_m;
+          const cz_m = dz / L;
+          // Build local axes consistent with stiffness assembly
+          const tol_sw = 1e-6;
+          const isVert_sw = Math.abs(cx_m) < tol_sw && Math.abs(cz_m) < tol_sw;
+          let ly_sw: number[];
+          if (isVert_sw) {
+            const sign_sw = cy_m > 0 ? 1 : -1;
+            ly_sw = [-sign_sw, 0, 0];
+          } else {
+            const lzLen_sw = Math.sqrt(cz_m * cz_m + cx_m * cx_m);
+            const lz_sw = [-cz_m / lzLen_sw, 0, cx_m / lzLen_sw];
+            ly_sw = [
+              lz_sw[1] * cz_m - lz_sw[2] * cy_m,
+              lz_sw[2] * cx_m - lz_sw[0] * cz_m,
+              lz_sw[0] * cy_m - lz_sw[1] * cx_m,
+            ];
+          }
+          const lz_sw = [
+            cy_m * ly_sw[2] - cz_m * ly_sw[1],
+            cz_m * ly_sw[0] - cx_m * ly_sw[2],
+            cx_m * ly_sw[1] - cy_m * ly_sw[0],
+          ];
+          // Gravity = [0, -1, 0] in global → project onto local axes
+          // wLocal_y = ly_sw · [0, -w_sw, 0] = -w_sw * ly_sw[1]
+          // wLocal_z = lz_sw · [0, -w_sw, 0] = -w_sw * lz_sw[1]
+          const wLy_sw = -w_sw * ly_sw[1];
+          const wLz_sw = -w_sw * lz_sw[1];
+          // Local Y bending → Mz (DOF 5)
+          if (Math.abs(wLy_sw) > 1e-10) {
+            const FEM_y = (wLy_sw * L * L) / 12;
+            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + FEM_y;
+            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - FEM_y;
+          }
+          // Local Z bending → My (DOF 4) — opposite sign convention
+          if (Math.abs(wLz_sw) > 1e-10) {
+            const FEM_z = (wLz_sw * L * L) / 12;
+            F[baseDofI + 4] = (F[baseDofI + 4] || 0) - FEM_z;
+            F[baseDofJ + 4] = (F[baseDofJ + 4] || 0) + FEM_z;
           }
         }
       }
@@ -1013,11 +1040,74 @@ function assembleStiffnessMatrixAndForces(
             F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + (w * L) / 2;
             F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) - (w * L * L) / 12;
           } else if (dofPerNode === 6) {
-            // 3D frame: apply in local Y → DOF 1 (shear), DOF 5 (Mz)
-            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + (w * L) / 2;
-            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + (w * L * L) / 12;
-            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + (w * L) / 2;
-            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - (w * L * L) / 12;
+            // 3D frame: determine which DOFs receive the load based on direction
+            const dir = ml.direction ?? "local_y";
+            if (dir === "local_z") {
+              // Local Z bending → shear in DOF 2 (uz), moment in DOF 4 (θy)
+              F[baseDofI + 2] = (F[baseDofI + 2] || 0) + (w * L) / 2;
+              F[baseDofI + 4] = (F[baseDofI + 4] || 0) - (w * L * L) / 12;
+              F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + (w * L) / 2;
+              F[baseDofJ + 4] = (F[baseDofJ + 4] || 0) + (w * L * L) / 12;
+            } else if (dir === "local_x" || dir === "axial") {
+              // Axial → DOF 0 (ux)
+              F[baseDofI + 0] = (F[baseDofI + 0] || 0) + (w * L) / 2;
+              F[baseDofJ + 0] = (F[baseDofJ + 0] || 0) + (w * L) / 2;
+            } else if (dir === "global_x" || dir === "global_y" || dir === "global_z") {
+              // Global direction: project load onto local axes via rotation matrix
+              // Build R3 consistent with stiffness assembly
+              const lx_m = [dx / L, dy / L, dz / L];
+              const cx_m = lx_m[0], cy_m = lx_m[1], cz_m = lx_m[2];
+              const tol_v = 1e-6;
+              const isVertical_m = Math.abs(cx_m) < tol_v && Math.abs(cz_m) < tol_v;
+              let ly_m: number[];
+              if (isVertical_m) {
+                const sign_m = cy_m > 0 ? 1 : -1;
+                ly_m = [-sign_m, 0, 0];
+              } else {
+                const lzLen_m = Math.sqrt(cz_m * cz_m + cx_m * cx_m);
+                const lz_m = [-cz_m / lzLen_m, 0, cx_m / lzLen_m];
+                ly_m = [
+                  lz_m[1] * cz_m - lz_m[2] * cy_m,
+                  lz_m[2] * cx_m - lz_m[0] * cz_m,
+                  lz_m[0] * cy_m - lz_m[1] * cx_m,
+                ];
+              }
+              const lz_m = [
+                cy_m * ly_m[2] - cz_m * ly_m[1],
+                cz_m * ly_m[0] - cx_m * ly_m[2],
+                cx_m * ly_m[1] - cy_m * ly_m[0],
+              ];
+              // R3 rows = [lx, ly, lz]; globalVec → localVec = R3 * globalVec
+              const gCol = dir === "global_x" ? 0 : dir === "global_y" ? 1 : 2;
+              const wLx = lx_m[gCol] * w;
+              const wLy = ly_m[gCol] * w;
+              const wLz = lz_m[gCol] * w;
+              // Axial component
+              if (Math.abs(wLx) > 1e-15) {
+                F[baseDofI + 0] = (F[baseDofI + 0] || 0) + (wLx * L) / 2;
+                F[baseDofJ + 0] = (F[baseDofJ + 0] || 0) + (wLx * L) / 2;
+              }
+              // Local Y → DOF 1, DOF 5
+              if (Math.abs(wLy) > 1e-15) {
+                F[baseDofI + 1] = (F[baseDofI + 1] || 0) + (wLy * L) / 2;
+                F[baseDofI + 5] = (F[baseDofI + 5] || 0) + (wLy * L * L) / 12;
+                F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + (wLy * L) / 2;
+                F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - (wLy * L * L) / 12;
+              }
+              // Local Z → DOF 2, DOF 4
+              if (Math.abs(wLz) > 1e-15) {
+                F[baseDofI + 2] = (F[baseDofI + 2] || 0) + (wLz * L) / 2;
+                F[baseDofI + 4] = (F[baseDofI + 4] || 0) - (wLz * L * L) / 12;
+                F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + (wLz * L) / 2;
+                F[baseDofJ + 4] = (F[baseDofJ + 4] || 0) + (wLz * L * L) / 12;
+              }
+            } else {
+              // Default: local_y → DOF 1 (shear), DOF 5 (Mz)
+              F[baseDofI + 1] = (F[baseDofI + 1] || 0) + (w * L) / 2;
+              F[baseDofI + 5] = (F[baseDofI + 5] || 0) + (w * L * L) / 12;
+              F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + (w * L) / 2;
+              F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) - (w * L * L) / 12;
+            }
           }
         } else {
           // Partial or trapezoidal load — use numerical integration (Simpson's rule)
@@ -1059,10 +1149,20 @@ function assembleStiffnessMatrixAndForces(
             F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
             F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + M2_fef;
           } else if (dofPerNode === 6) {
-            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
-            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_fef;
-            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
-            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_fef;
+            // Determine DOFs based on load direction (same as full-span logic)
+            const dir_p = ml.direction ?? "local_y";
+            if (dir_p === "local_z") {
+              F[baseDofI + 2] = (F[baseDofI + 2] || 0) + R1;
+              F[baseDofI + 4] = (F[baseDofI + 4] || 0) - M1_fef;
+              F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + R2;
+              F[baseDofJ + 4] = (F[baseDofJ + 4] || 0) - M2_fef;
+            } else {
+              // Default local_y → DOF 1 and DOF 5
+              F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+              F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_fef;
+              F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
+              F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_fef;
+            }
           }
         }
       } else if (type === "point") {
@@ -1090,10 +1190,18 @@ function assembleStiffnessMatrixAndForces(
           F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
           F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + M2_pt;
         } else if (dofPerNode === 6) {
-          F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
-          F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_pt;
-          F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
-          F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_pt;
+          const dir_pt = ml.direction ?? "local_y";
+          if (dir_pt === "local_z") {
+            F[baseDofI + 2] = (F[baseDofI + 2] || 0) + R1;
+            F[baseDofI + 4] = (F[baseDofI + 4] || 0) - M1_pt;
+            F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + R2;
+            F[baseDofJ + 4] = (F[baseDofJ + 4] || 0) - M2_pt;
+          } else {
+            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_pt;
+            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) + R2;
+            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_pt;
+          }
         }
       } else if (type === "moment") {
         // Applied moment at distance a from start
@@ -1118,10 +1226,18 @@ function assembleStiffnessMatrixAndForces(
           F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) - R1;
           F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) + M2_mom;
         } else if (dofPerNode === 6) {
-          F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
-          F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_mom;
-          F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) - R1;
-          F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_mom;
+          const dir_mm = ml.direction ?? "local_y";
+          if (dir_mm === "local_z") {
+            F[baseDofI + 2] = (F[baseDofI + 2] || 0) + R1;
+            F[baseDofI + 4] = (F[baseDofI + 4] || 0) - M1_mom;
+            F[baseDofJ + 2] = (F[baseDofJ + 2] || 0) - R1;
+            F[baseDofJ + 4] = (F[baseDofJ + 4] || 0) - M2_mom;
+          } else {
+            F[baseDofI + 1] = (F[baseDofI + 1] || 0) + R1;
+            F[baseDofI + 5] = (F[baseDofI + 5] || 0) + M1_mom;
+            F[baseDofJ + 1] = (F[baseDofJ + 1] || 0) - R1;
+            F[baseDofJ + 5] = (F[baseDofJ + 5] || 0) + M2_mom;
+          }
         }
       }
     }
@@ -1732,7 +1848,9 @@ function computeMemberEndForces(
       const tol3d = 1e-6;
       const isVert = Math.abs(cx) < tol3d && Math.abs(cz) < tol3d;
       if (isVert) {
-        ly3d = [0, 0, 1];
+        // Must match stiffness assembly: local Y = -sign * globalX
+        const sign = cy > 0 ? 1 : -1;
+        ly3d = [-sign, 0, 0];
       } else {
         const lz_tmp = [-cz, 0, cx];
         const lzLen = Math.sqrt(

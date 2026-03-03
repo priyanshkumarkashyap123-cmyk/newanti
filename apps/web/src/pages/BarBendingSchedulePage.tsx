@@ -406,9 +406,9 @@ export const BarBendingSchedulePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4 mb-4">
             <button type="button"
@@ -457,7 +457,7 @@ export const BarBendingSchedulePage: React.FC = () => {
         {activeTab === 'input' && (
           <div className="space-y-6">
             {/* Project Info */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-blue-400" />
                 Project Information
@@ -535,7 +535,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                 return (
                   <div
                     key={idx}
-                    className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden"
+                    className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
                   >
                     {/* Member header */}
                     <button type="button"
@@ -593,7 +593,7 @@ export const BarBendingSchedulePage: React.FC = () => {
               })}
 
               {members.length === 0 && (
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 p-12 text-center">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
                   <Layers className="w-12 h-12 mx-auto text-slate-600 mb-4" />
                   <p className="text-slate-600 dark:text-slate-400 mb-2">No members defined</p>
                   <p className="text-xs text-slate-500">Add beams, columns, or slabs using the buttons above</p>
@@ -621,7 +621,7 @@ export const BarBendingSchedulePage: React.FC = () => {
         {activeTab === 'schedule' && (
           <div className="space-y-6">
             {!schedule ? (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 p-12 text-center">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
                 <ClipboardList className="w-12 h-12 mx-auto text-slate-600 mb-3" />
                 <p className="text-slate-600 dark:text-slate-400">No schedule generated yet</p>
                 <p className="text-xs text-slate-500 mt-1">Go to Member Input tab and click "Generate BBS"</p>
@@ -646,7 +646,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                 </div>
 
                 {/* BBS Table */}
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
@@ -706,7 +706,7 @@ export const BarBendingSchedulePage: React.FC = () => {
         {activeTab === 'summary' && (
           <div className="space-y-6">
             {!schedule ? (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 p-12 text-center">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
                 <BarChart3 className="w-12 h-12 mx-auto text-slate-600 mb-3" />
                 <p className="text-slate-600 dark:text-slate-400">Generate a schedule first to see the summary</p>
               </div>
@@ -714,28 +714,28 @@ export const BarBendingSchedulePage: React.FC = () => {
               <>
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Total Entries</p>
                     <p className="text-2xl font-bold text-slate-900 dark:text-white">{schedule.entries.length}</p>
                   </div>
-                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Steel Weight</p>
                     <p className="text-2xl font-bold text-emerald-400">{schedule.totalWeight.toFixed(1)} kg</p>
                   </div>
-                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Wastage ({schedule.wastageFactor}%)</p>
                     <p className="text-2xl font-bold text-amber-400">
                       {(schedule.totalWeightWithWastage - schedule.totalWeight).toFixed(1)} kg
                     </p>
                   </div>
-                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+                  <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                     <p className="text-xs text-slate-500 mb-1">Total with Wastage</p>
                     <p className="text-2xl font-bold text-orange-400">{schedule.totalWeightWithWastage.toFixed(1)} kg</p>
                   </div>
                 </div>
 
                 {/* Summary by Diameter */}
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                   <div className="px-5 py-4 border-b border-slate-300 dark:border-slate-700">
                     <h3 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                       <Columns3 className="w-4 h-4 text-blue-400" />
@@ -789,7 +789,7 @@ export const BarBendingSchedulePage: React.FC = () => {
                 </div>
 
                 {/* IS Code Reference */}
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                     <Info className="w-4 h-4 text-blue-400" />
                     Design Code References

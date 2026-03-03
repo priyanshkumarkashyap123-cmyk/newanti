@@ -19,6 +19,7 @@ import { Label } from '../ui/label';
 import { Check, GitMerge, Info, Search, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 interface MergeNodesDialogProps {
   isOpen: boolean;
@@ -34,9 +35,13 @@ interface NodePair {
 }
 
 export const MergeNodesDialog: React.FC<MergeNodesDialogProps> = ({ isOpen, onClose }) => {
-  const nodes = useModelStore(s => s.nodes);
-  const members = useModelStore(s => s.members);
-  const selectedIds = useModelStore(s => s.selectedIds);
+  const { nodes, members, selectedIds } = useModelStore(
+    useShallow((s) => ({
+      nodes: s.nodes,
+      members: s.members,
+      selectedIds: s.selectedIds,
+    }))
+  );
 
   const [tolerance, setTolerance] = useState(0.01); // meters
   const [selectedPairs, setSelectedPairs] = useState<Set<string>>(new Set());

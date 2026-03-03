@@ -4,364 +4,25 @@ import { temporal } from "zundo";
 import type { TemporalState } from "zundo";
 import { logger } from '../lib/logging/logger';
 
-export interface ProjectInfo {
-  name: string;
-  client: string;
-  engineer: string;
-  jobNo: string;
-  rev: string;
-  date: Date;
-  description: string;
-  cloudId?: string; // ID from database if saved
-}
+// Types re-exported from modelTypes.ts for backward compatibility
+export type {
+  ProjectInfo, Restraints, Node, NodeLoad, MemberLoadType, MemberLoad,
+  LoadCaseType, LoadCase, LoadCombination, FloorLoad, SectionType,
+  SectionDimensions, Member, Plate, MemberForceData, AnalysisResults,
+  ModeShape, ModalResult, CivilResult, SavedProjectData,
+} from './modelTypes';
 
-export interface Restraints {
-  fx: boolean;
-  fy: boolean;
-  fz: boolean;
-  mx: boolean;
-  my: boolean;
-  mz: boolean;
-}
+import type {
+  ProjectInfo, Restraints, Node, NodeLoad, MemberLoad, LoadCase,
+  LoadCombination, FloorLoad, Member, Plate, MemberForceData,
+  AnalysisResults, ModalResult, CivilResult, SavedProjectData,
+} from './modelTypes';
 
-export interface Node {
-  id: string;
-  x: number;
-  y: number;
-  z: number;
-  restraints?: Restraints; // Optional: Support conditions
-}
-
-export interface NodeLoad {
-  id: string;
-  nodeId: string;
-  fx?: number;
-  fy?: number;
-  fz?: number; // Forces (kN)
-  mx?: number;
-  my?: number;
-  mz?: number; // Moments (kN-m)
-}
-
-// Member Loads (applied on members)
-export type MemberLoadType = "UDL" | "UVL" | "point" | "moment";
-
-export interface MemberLoad {
-  id: string;
-  memberId: string;
-  type: MemberLoadType;
-  // For distributed loads (UDL/UVL)
-  w1?: number; // Intensity at start (kN/m) - for UDL, w1 = w2
-  w2?: number; // Intensity at end (kN/m)
-  // For point loads
-  P?: number; // Point load magnitude (kN)
-  M?: number; // Point moment magnitude (kN·m)
-  a?: number; // Distance from start node (m or as ratio 0-1)
-  // Direction: 'local_y' is perpendicular to member, 'global_y' is vertical
-  direction:
-    | "local_y"
-    | "local_z"
-    | "global_x"
-    | "global_y"
-    | "global_z"
-    | "axial";
-  // Start and end positions for partial loads (0-1 as ratio of length)
-  startPos?: number; // Default 0
-  endPos?: number; // Default 1
-}
-
-// Load Cases & Combinations (industry standard feature)
-export type LoadCaseType =
-  | "dead"
-  | "live"
-  | "wind"
-  | "seismic"
-  | "snow"
-  | "temperature"
-  | "self_weight"
-  | "custom";
-
-export interface LoadCase {
-  id: string;
-  name: string;
-  type: LoadCaseType;
-  loads: NodeLoad[];
-  memberLoads: MemberLoad[];
-  selfWeight?: boolean; // Auto-compute self-weight for this case
-  factor?: number; // Scale factor (default 1.0)
-}
-
-export interface LoadCombination {
-  id: string;
-  name: string;
-  code?: string; // Design code reference (e.g., 'IS 875', 'ASCE 7', 'ASCE 7-22')
-  factors: { loadCaseId: string; factor: number }[];
-}
-
-// Floor / Area Load (distributed to beams via yield-line method at analysis time)
-export interface FloorLoad {
-  id: string;
-  pressure: number; // Load intensity (kN/m²) — negative = downward
-  yLevel: number; // Floor Y coordinate (m)
-  xMin: number; // Bounding box min X (-Infinity for all)
-  xMax: number;
-  zMin: number;
-  zMax: number;
-  distributionOverride?:
-    | "one_way"
-    | "two_way_triangular"
-    | "two_way_trapezoidal";
-  loadCase?: string;
-}
-
-export type SectionType =
-  | "I-BEAM"
-  | "TUBE"
-  | "L-ANGLE"
-  | "RECTANGLE"
-  | "CIRCLE"
-  | "C-CHANNEL"
-  | "T-SECTION"
-  | "DOUBLE-ANGLE"
-  | "PIPE"
-  | "TAPERED"
-  | "BUILT-UP";
-
-export interface SectionDimensions {
-  // I-BEAM dimensions
-  height?: number;
-  width?: number;
-  webThickness?: number;
-  flangeThickness?: number;
-
-  // TUBE/BOX dimensions
-  outerWidth?: number;
-  outerHeight?: number;
-  thickness?: number;
-
-  // L-ANGLE dimensions
-  legWidth?: number;
-  legHeight?: number;
-
-  // RECTANGLE/PLATE dimensions
-  rectWidth?: number;
-  rectHeight?: number;
-
-  // CIRCLE/CABLE dimensions
-  diameter?: number;
-
-  // C-CHANNEL dimensions
-  channelHeight?: number;
-  channelWidth?: number;
-  channelThickness?: number;
-
-  // T-SECTION dimensions
-  tFlangeWidth?: number;
-  tFlangeThickness?: number;
-  tStemHeight?: number;
-  tStemThickness?: number;
-
-  // DOUBLE-ANGLE dimensions
-  daLegWidth?: number;
-  daLegHeight?: number;
-  daThickness?: number;
-  daGap?: number; // gap between angles (mm)
-
-  // PIPE dimensions (circular hollow)
-  pipeOuterDiameter?: number;
-  pipeWallThickness?: number;
-
-  // TAPERED section (haunched beams)
-  startDepth?: number;
-  endDepth?: number;
-  taperFlangeWidth?: number;
-  taperWebThickness?: number;
-  taperFlangeThickness?: number;
-
-  // BUILT-UP composite section
-  builtUpType?: "plate_girder" | "box_girder" | "compound";
-  builtUpWebHeight?: number;
-  builtUpWebThickness?: number;
-  builtUpTopFlangeWidth?: number;
-  builtUpTopFlangeThickness?: number;
-  builtUpBotFlangeWidth?: number;
-  builtUpBotFlangeThickness?: number;
-}
-
-export interface Member {
-  id: string;
-  startNodeId: string;
-  endNodeId: string;
-  sectionId?: string; // Made optional with default 'Default'
-
-  // Section geometry for 3D rendering
-  sectionType?: SectionType;
-  dimensions?: SectionDimensions;
-
-  // Default properties for analysis
-  E?: number; // Young's Modulus (kN/m²)
-  A?: number; // Cross-sectional Area (m²)
-  I?: number; // Moment of Inertia (m⁴)
-  Iy?: number; // Moment of inertia about local y-axis (m⁴)
-  Iz?: number; // Moment of inertia about local z-axis (m⁴)
-  J?: number; // Torsion constant (m⁴)
-  G?: number; // Shear Modulus (kN/m²)
-  rho?: number; // Material density (kg/m³), default 7850 for steel
-  // Member releases (hinges) - full 3D releases for all 6 DOFs at each end
-  releases?: {
-    startMoment?: boolean; // Legacy: Release moment at start
-    endMoment?: boolean; // Legacy: Release moment at end
-    // Full 3D releases
-    fxStart?: boolean;
-    fyStart?: boolean;
-    fzStart?: boolean;
-    mxStart?: boolean;
-    myStart?: boolean;
-    mzStart?: boolean;
-    fxEnd?: boolean;
-    fyEnd?: boolean;
-    fzEnd?: boolean;
-    mxEnd?: boolean;
-    myEnd?: boolean;
-    mzEnd?: boolean;
-  };
-  // Rigid zone offsets (for beam-column connections)
-  startOffset?: { x: number; y: number; z: number };
-
-  endOffset?: { x: number; y: number; z: number };
-  betaAngle?: number; // Rotation angle in degrees
-}
-
-// Plate/Shell element (quadrilateral)
-export interface Plate {
-  id: string;
-  nodeIds: [string, string, string, string]; // 4 corner nodes (CCW order)
-  thickness: number; // Plate thickness (m)
-  E?: number; // Young's Modulus (kN/m²), default 200e6 for steel
-  nu?: number; // Poisson's ratio, default 0.3
-  pressure?: number; // Applied pressure (kN/m²), positive = downward
-  materialType?: "steel" | "concrete" | "custom";
-}
-
-// Member Force Results with diagram data
-export interface MemberForceData {
-  // Primary values (typically start-end values; kept for backward compat)
-  axial: number;
-  shearY: number;
-  shearZ: number;
-  momentY: number;
-  momentZ: number;
-  torsion: number;
-  // Start / end forces (preserves full information from solver)
-  startForces?: {
-    axial: number;
-    shearY: number;
-    shearZ?: number;
-    momentY?: number;
-    momentZ: number;
-    torsion?: number;
-  };
-  endForces?: {
-    axial: number;
-    shearY: number;
-    shearZ?: number;
-    momentY?: number;
-    momentZ: number;
-    torsion?: number;
-  };
-  // Diagram data arrays for visualization (SFD, BMD, deflection)
-  diagramData?: {
-    x_values: number[];
-    shear_y: number[];
-    shear_z: number[];
-    moment_y: number[];
-    moment_z: number[];
-    axial: number[];
-    torsion: number[];
-    deflection_y: number[];
-    deflection_z: number[];
-  };
-}
-
-// Analysis Results
-export interface AnalysisResults {
-  displacements: Map<
-    string,
-    { dx: number; dy: number; dz: number; rx: number; ry: number; rz: number }
-  >;
-  reactions: Map<
-    string,
-    { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }
-  >;
-  memberForces: Map<string, MemberForceData>;
-  // Plate/shell element results (optional)
-  plateResults?: Record<
-    string,
-    {
-      stress_xx?: number;
-      stress_yy?: number;
-      stress_xy?: number;
-      stress_x?: number;
-      stress_y?: number;
-      moment_xx?: number;
-      moment_yy?: number;
-      moment_xy?: number;
-      displacement?: number;
-      von_mises?: number;
-    }
-  >;
-  // Industry-standard equilibrium verification
-  equilibriumCheck?: {
-    applied_forces: number[]; // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
-    reaction_forces: number[]; // [Fx, Fy, Fz, Mx, My, Mz] in N/N·m
-    residual: number[]; // should be ~0
-    error_percent: number; // < 0.1% is acceptable
-    pass: boolean;
-  };
-  // Condition number estimate for numerical quality
-  conditionNumber?: number;
-  stats?: {
-    solveTimeMs: number;
-    assemblyTimeMs?: number;
-    totalTimeMs?: number;
-    method?: string;
-    usedCloud?: boolean;
-    fallbackFromLocal?: boolean;
-  };
-  completed?: boolean;
-  timestamp?: number;
-}
-
-// Modal Analysis Results
-export interface ModeShape {
-  modeNumber: number;
-  frequency: number; // Hz
-  period: number; // seconds
-  angularFrequency: number; // rad/s
-  shape: Map<string, number[]>; // nodeId -> [dx, dy, dz, rx, ry, rz]
-}
-
-export interface ModalResult {
-  modes: ModeShape[];
-  totalMass: number;
-}
-
-// Civil Engineering Data (Results/State)
-export interface CivilResult {
-  id: string;
-  moduleId:
-    | "geotech"
-    | "transport"
-    | "hydraulics"
-    | "enviro"
-    | "const"
-    | "survey";
-  type: string; // e.g. 'footing', 'curve'
-  timestamp: number;
-  input: Record<string, unknown>;
-  output: Record<string, unknown>;
-  linkedElementIds?: string[]; // IDs of 3D elements generated (e.g. Plate P1)
-}
+// Re-export persistence functions for backward compatibility
+export {
+  saveProjectToStorage, loadProjectFromStorage, hydrateAnalysisResults,
+  hasSavedProject, getSavedProjectInfo, clearSavedProject,
+} from './persistence';
 
 interface ModelState {
   // 2. State using Maps for O(1) lookup
@@ -697,6 +358,58 @@ const withDevtools = <T,>(fn: T): T => {
   }
   return fn;
 };
+
+// Session persistence for analysis results (kept here to avoid circular imports)
+const ANALYSIS_SESSION_KEY = "beamlab_analysis_results";
+
+function serializeAnalysisMap<V>(map: Map<string, V> | undefined): [string, V][] | undefined {
+  if (!map || map.size === 0) return undefined;
+  return Array.from(map.entries());
+}
+
+/** Persist analysis results to sessionStorage — deferred to idle time
+ *  so JSON.stringify doesn't block the main thread during interactions. */
+let _persistTimer: ReturnType<typeof setTimeout> | null = null;
+function persistAnalysisResults(results: AnalysisResults | null): void {
+  // Cancel any pending persist
+  if (_persistTimer) { clearTimeout(_persistTimer); _persistTimer = null; }
+
+  if (!results) {
+    sessionStorage.removeItem(ANALYSIS_SESSION_KEY);
+    return;
+  }
+
+  // Defer heavy serialization to idle time (or 200ms fallback)
+  const doPersist = () => {
+    try {
+      const serializable = {
+        displacements: serializeAnalysisMap(results.displacements),
+        reactions: serializeAnalysisMap(results.reactions),
+        memberForces: serializeAnalysisMap(results.memberForces),
+        plateResults: results.plateResults,
+        equilibriumCheck: results.equilibriumCheck,
+        conditionNumber: results.conditionNumber,
+        stats: results.stats,
+        completed: results.completed,
+        timestamp: results.timestamp ?? Date.now(),
+      };
+      const json = JSON.stringify(serializable);
+      if (json.length > 4.5 * 1024 * 1024) {
+        logger.warn('Analysis results too large for sessionStorage, skipping persist');
+        return;
+      }
+      sessionStorage.setItem(ANALYSIS_SESSION_KEY, json);
+    } catch (e) {
+      logger.warn('Could not persist analysis results', { error: e });
+    }
+  };
+
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(doPersist, { timeout: 2000 });
+  } else {
+    _persistTimer = setTimeout(doPersist, 200);
+  }
+}
 
 export const useModelStore = create<ModelState>()(
   withDevtools(
@@ -2044,247 +1757,3 @@ export const useModelStore = create<ModelState>()(
 export const useModelStoreTemporal = (useModelStore as unknown as {
   temporal: { getState: () => TemporalState<ModelState> };
 }).temporal;
-
-// ============================================
-// LOCAL STORAGE PERSISTENCE
-// ============================================
-
-const STORAGE_KEY = "beamlab_project";
-
-export interface SavedProjectData {
-  projectInfo: ProjectInfo;
-  nodes: [string, Node][];
-  members: [string, Member][];
-  loads: NodeLoad[];
-  memberLoads: MemberLoad[];
-  loadCases?: LoadCase[];
-  loadCombinations?: LoadCombination[];
-  plates?: [string, Plate][];
-  floorLoads?: FloorLoad[];
-  savedAt: string;
-}
-
-/**
- * Save current project to localStorage
- */
-export const saveProjectToStorage = (): boolean => {
-  try {
-    const state = useModelStore.getState();
-    const projectData: SavedProjectData = {
-      projectInfo: state.projectInfo,
-      nodes: Array.from(state.nodes.entries()),
-      members: Array.from(state.members.entries()),
-      loads: state.loads || [],
-      memberLoads: state.memberLoads || [],
-      loadCases: state.loadCases || [],
-      loadCombinations: state.loadCombinations || [],
-      plates: Array.from(state.plates.entries()),
-      floorLoads: state.floorLoads || [],
-      savedAt: new Date().toISOString(),
-    };
-
-    // Validate data before saving
-    if (projectData.nodes.length === 0) {
-      logger.warn('Attempting to save empty project');
-    }
-
-    const jsonString = JSON.stringify(projectData);
-
-    // Check approximate size (localStorage typically 5-10MB limit)
-    if (jsonString.length > 5 * 1024 * 1024) {
-      logger.error('Project too large to save locally');
-      return false;
-    }
-
-    try {
-      localStorage.setItem(STORAGE_KEY, jsonString);
-    } catch (quotaError) {
-      if (
-        quotaError instanceof DOMException &&
-        (quotaError as DOMException).code === 22
-      ) {
-        logger.error('localStorage quota exceeded - clear some projects');
-        return false;
-      }
-      throw quotaError;
-    }
-
-    return true;
-  } catch (e) {
-    logger.error('Failed to save project', { error: e });
-    return false;
-  }
-};
-
-/**
- * Load project from localStorage
- */
-export const loadProjectFromStorage = (): boolean => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return false;
-
-    // Validate JSON before parsing
-    let data: SavedProjectData;
-    try {
-      data = JSON.parse(stored);
-    } catch {
-      logger.error('Corrupted localStorage data, clearing');
-      localStorage.removeItem(STORAGE_KEY);
-      return false;
-    }
-
-    const hydrated = hydrateProjectData(data);
-    if (!hydrated) return false;
-
-    useModelStore.setState(hydrated);
-    return true;
-  } catch (e) {
-    logger.error('Failed to load project', { error: e });
-    return false;
-  }
-};
-
-// ============================================================
-// Analysis Results Session Persistence
-// ============================================================
-const ANALYSIS_SESSION_KEY = "beamlab_analysis_results";
-
-/** Serialize Map → array-of-entries for JSON storage */
-function serializeAnalysisMap<V>(map: Map<string, V> | undefined): [string, V][] | undefined {
-  if (!map || map.size === 0) return undefined;
-  return Array.from(map.entries());
-}
-
-/** Save analysis results to sessionStorage (survives SPA nav + soft refresh) */
-function persistAnalysisResults(results: AnalysisResults | null): void {
-  try {
-    if (!results) {
-      sessionStorage.removeItem(ANALYSIS_SESSION_KEY);
-      return;
-    }
-    const serializable = {
-      displacements: serializeAnalysisMap(results.displacements),
-      reactions: serializeAnalysisMap(results.reactions),
-      memberForces: serializeAnalysisMap(results.memberForces),
-      plateResults: results.plateResults,
-      equilibriumCheck: results.equilibriumCheck,
-      conditionNumber: results.conditionNumber,
-      stats: results.stats,
-      completed: results.completed,
-      timestamp: results.timestamp ?? Date.now(),
-    };
-    const json = JSON.stringify(serializable);
-    // sessionStorage limit is ~5 MB; skip if too big
-    if (json.length > 4.5 * 1024 * 1024) {
-      logger.warn('Analysis results too large for sessionStorage, skipping persist');
-      return;
-    }
-    sessionStorage.setItem(ANALYSIS_SESSION_KEY, json);
-  } catch (e) {
-    logger.warn('Could not persist analysis results', { error: e });
-  }
-}
-
-/**
- * Restore analysis results from sessionStorage.
- * Called by pages that need results (e.g. Design Hub) when the
- * in-memory store is empty (page was refreshed / hard-navigated).
- */
-export function hydrateAnalysisResults(): AnalysisResults | null {
-  try {
-    const raw = sessionStorage.getItem(ANALYSIS_SESSION_KEY);
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    const results: AnalysisResults = {
-      displacements: new Map(data.displacements ?? []),
-      reactions: new Map(data.reactions ?? []),
-      memberForces: new Map(data.memberForces ?? []),
-      plateResults: data.plateResults,
-      equilibriumCheck: data.equilibriumCheck,
-      conditionNumber: data.conditionNumber,
-      stats: data.stats,
-    };
-    if (data.completed !== undefined) {
-      results.completed = data.completed;
-    }
-    if (data.timestamp !== undefined) {
-      results.timestamp = data.timestamp;
-    }
-    return results;
-  } catch (e) {
-    logger.warn('Could not restore analysis results', { error: e });
-    return null;
-  }
-}
-
-/**
- * Check if a saved project exists
- */
-export const hasSavedProject = (): boolean => {
-  return localStorage.getItem(STORAGE_KEY) !== null;
-};
-
-/**
- * Get saved project metadata without loading it
- */
-export const getSavedProjectInfo = (): {
-  name: string;
-  savedAt: string;
-} | null => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
-
-    const data: SavedProjectData = JSON.parse(stored);
-    return {
-      name: data.projectInfo.name,
-      savedAt: data.savedAt,
-    };
-  } catch {
-    return null;
-  }
-};
-
-/**
- * Clear saved project from localStorage
- */
-export const clearSavedProject = (): void => {
-  localStorage.removeItem(STORAGE_KEY);
-};
-
-// ============================================
-// AUTO-SAVE (debounced subscription)
-// ============================================
-
-const AUTO_SAVE_DELAY_MS = 2000; // 2 seconds after last change
-
-let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
-
-/**
- * Subscribe to store changes and auto-save to localStorage.
- * Only saves when structural data (nodes, members, loads) changes.
- */
-useModelStore.subscribe(
-  (state, prevState) => {
-    // Only auto-save when structural data changes (not UI state or analysis results)
-    const structuralChanged =
-      state.nodes !== prevState.nodes ||
-      state.members !== prevState.members ||
-      state.loads !== prevState.loads ||
-      state.memberLoads !== prevState.memberLoads ||
-      state.projectInfo !== prevState.projectInfo;
-
-    if (!structuralChanged) return;
-
-    // Debounce: clear previous timer and set a new one
-    if (autoSaveTimer) clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(() => {
-      try {
-        saveProjectToStorage();
-      } catch {
-        // Silently fail — user can still manually save
-      }
-    }, AUTO_SAVE_DELAY_MS);
-  }
-);

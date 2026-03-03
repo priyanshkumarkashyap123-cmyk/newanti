@@ -163,123 +163,135 @@ export function computeGeometricStiffness(
         // We will stick to this "Sway P-Delta" matrix for simplicity and robustness first.
 
     } else {
-        // Assume default behavior is String Stiffness for now 
-        // until we add full Beam-Column Kg.
-        const idx_v1 = 1;
-        const idx_w1 = 2;
-        const idx_v2 = 7;
-        const idx_w2 = 8;
+        // FRAME: Consistent Beam-Column Geometric Stiffness (McGuire Eq 9.14)
+        // Accounts for P-δ (member-level buckling) in addition to P-Δ (sway)
+        // Factor: P / (30 * L)
+        const f = P / (30.0 * L);
+        const L2 = L * L;
 
-        kgLocal[idx_v1][idx_v1] = q;
-        kgLocal[idx_w1][idx_w1] = q;
-        kgLocal[idx_v2][idx_v2] = q;
-        kgLocal[idx_w2][idx_w2] = q;
+        // Bending in xy-plane (v, θz): DOFs 1,5,7,11
+        kgLocal[1][1]   =  36 * f;
+        kgLocal[1][5]   =  3 * L * f;
+        kgLocal[1][7]   = -36 * f;
+        kgLocal[1][11]  =  3 * L * f;
+        kgLocal[5][1]   =  3 * L * f;
+        kgLocal[5][5]   =  4 * L2 * f;
+        kgLocal[5][7]   = -3 * L * f;
+        kgLocal[5][11]  = -L2 * f;
+        kgLocal[7][1]   = -36 * f;
+        kgLocal[7][5]   = -3 * L * f;
+        kgLocal[7][7]   =  36 * f;
+        kgLocal[7][11]  = -3 * L * f;
+        kgLocal[11][1]  =  3 * L * f;
+        kgLocal[11][5]  = -L2 * f;
+        kgLocal[11][7]  = -3 * L * f;
+        kgLocal[11][11] =  4 * L2 * f;
 
-        kgLocal[idx_v1][idx_v2] = -q;
-        kgLocal[idx_v2][idx_v1] = -q;
-        kgLocal[idx_w1][idx_w2] = -q;
-        kgLocal[idx_w2][idx_w1] = -q;
+        // Bending in xz-plane (w, θy): DOFs 2,4,8,10
+        // Sign changes on θy coupling due to θy = -dw/dx convention
+        kgLocal[2][2]   =  36 * f;
+        kgLocal[2][4]   = -3 * L * f;
+        kgLocal[2][8]   = -36 * f;
+        kgLocal[2][10]  = -3 * L * f;
+        kgLocal[4][2]   = -3 * L * f;
+        kgLocal[4][4]   =  4 * L2 * f;
+        kgLocal[4][8]   =  3 * L * f;
+        kgLocal[4][10]  = -L2 * f;
+        kgLocal[8][2]   = -36 * f;
+        kgLocal[8][4]   =  3 * L * f;
+        kgLocal[8][8]   =  36 * f;
+        kgLocal[8][10]  =  3 * L * f;
+        kgLocal[10][2]  = -3 * L * f;
+        kgLocal[10][4]  = -L2 * f;
+        kgLocal[10][8]  =  3 * L * f;
+        kgLocal[10][10] =  4 * L2 * f;
     }
 
     // 2. Transform to Global: Kg_global = T^T * Kg_local * T
-    // Build Transformation Matrix T (12x12)
-    // T = diag(t, t, t, t) where t is 3x3 rotation
-    // t rows are: x' (axis), y', z' (principal axes)
-
-    // Calculate local axes
-    // x' = [cx, cy, cz]
-    const u = [cx, cy, cz];
+    // Build rotation matrix t (3×3)
+    const uVec = [cx, cy, cz]; // Member axis direction
 
     // Help vector for y' and z'
-    // If vertical member (cx~0, cz~0), use global X as help?
-    // Standard logic:
     let v_help = [0, 1, 0]; // Global Y
     if (Math.abs(cx) < 1e-4 && Math.abs(cz) < 1e-4) {
-        // Vertical element
-        v_help = [1, 0, 0]; // Global X
+        v_help = [1, 0, 0]; // Vertical element → use Global X
     }
 
-    // z' = x' cross v_help
-    let w = crossProduct(u, v_help);
+    // z' = x' × v_help
+    let w = crossProduct(uVec, v_help);
     let magW = Math.sqrt(w[0] * w[0] + w[1] * w[1] + w[2] * w[2]);
-    if (magW < 1e-9) {
-        // Singularity? Should be handled by v_help check
-        w = [0, 0, 1]; magW = 1;
-    }
+    if (magW < 1e-9) { w = [0, 0, 1]; magW = 1; }
     w = w.map(val => val / magW);
 
-    // y' = z' cross x'
-    const v = crossProduct(w, u);
-    // Normalize v (should be unit)
+    // y' = z' × x'
+    const vDir = crossProduct(w, uVec);
 
-    // Rotation Matrix t (3x3)
-    // [ cx cy cz ] (Row 1 is x')
-    // [ vx vy vz ] (Row 2 is y')
-    // [ wx wy wz ] (Row 3 is z')
-
-    const t = [
-        [u[0], u[1], u[2]],
-        [v[0], v[1], v[2]],
-        [w[0], w[1], w[2]]
+    // 3×3 rotation matrix
+    const tRot = [
+        [uVec[0], uVec[1], uVec[2]],
+        [vDir[0], vDir[1], vDir[2]],
+        [w[0],    w[1],    w[2]]
     ];
 
-    // Full T (12x12) or 6x6
-    const size = (dofPerNode === 3) ? 6 : 12;
-    const numNodes = 2;
-
-    // Perform Transformation
-    // K_global = T^T * K_local * T
-    // Since K_local is 12x12 (or virtual), we map it manually or multiply.
-    // Optimization: Matrix calc
-
-    // For String Stiffness, Kg_local corresponds to:
-    // v, w terms.
-    // Actually, String stiffness in Global coordinates is simply:
-    // Kg_global = (P/L) * [ I - n*n^T   -(I - n*n^T) ]
-    //             [ -(I - n*n^T)   I - n*n^T   ]
-    // where n is unit vector (cx,cy,cz) and I is 3x3 identity.
-    // (I - n*n^T) is the projection onto the plane perpendicular to the member.
-    // This is mathematically equivalent to T^T * [0 0 0; 0 1 0; 0 0 1] * T.
-
-    // This formula is much simpler and avoids explicit T construction for Truss/String Kg.
-    // Formula: K_sub = (P/L) * (I_3x3 - n * n^T)
-    // n = [cx, cy, cz]
-
-    const I3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
-    const n = [cx, cy, cz];
-
-    const subK: number[][] = [];
-    for (let r = 0; r < 3; r++) {
-        const row: number[] = [];
-        for (let c = 0; c < 3; c++) {
-            const val = q * (I3[r][c] - n[r] * n[c]);
-            row.push(val);
-        }
-        subK.push(row);
-    }
-
-    // Assembly into full matrix
-    // Dimensions
+    // Build 12×12 transformation matrix T = diag(t, t, t, t)
     const matSize = dofPerNode * 2;
     const K = Array(matSize).fill(0).map(() => Array(matSize).fill(0));
 
-    // Indices for Translation
-    // Node 1: 0,1,2
-    // Node 2: dofPerNode, dofPerNode+1, dofPerNode+2
-    const n1 = 0;
-    const n2 = dofPerNode;
+    if (type === 'truss' || dofPerNode === 3) {
+        // For truss/3-DOF: use analytical formula (P/L)(I - n·nᵀ)
+        const I3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+        const nDir = [cx, cy, cz];
+        const subK: number[][] = [];
+        for (let r = 0; r < 3; r++) {
+            const row: number[] = [];
+            for (let c = 0; c < 3; c++) {
+                row.push(q * (I3[r][c] - nDir[r] * nDir[c]));
+            }
+            subK.push(row);
+        }
+        const n1 = 0;
+        const n2 = dofPerNode;
+        for (let r = 0; r < 3; r++) {
+            for (let c = 0; c < 3; c++) {
+                K[n1 + r][n1 + c] = subK[r][c];
+                K[n2 + r][n2 + c] = subK[r][c];
+                K[n1 + r][n2 + c] = -subK[r][c];
+                K[n2 + r][n1 + c] = -subK[r][c];
+            }
+        }
+    } else {
+        // Frame (6 DOF/node): full T^T * Kg_local * T transformation
+        // Construct full 12×12 T matrix
+        const T: number[][] = Array(12).fill(0).map(() => Array(12).fill(0));
+        for (let block = 0; block < 4; block++) {
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 3; c++) {
+                    T[block * 3 + r][block * 3 + c] = tRot[r][c];
+                }
+            }
+        }
 
-    for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-            const val = subK[r][c];
-            // K11
-            K[n1 + r][n1 + c] = val;
-            // K22
-            K[n2 + r][n2 + c] = val;
-            // K12
-            K[n1 + r][n2 + c] = -val;
-            // K21
-            K[n2 + r][n1 + c] = -val;
+        // Kg_global = T^T * kgLocal * T
+        // Step 1: temp = kgLocal * T
+        const temp: number[][] = Array(12).fill(0).map(() => Array(12).fill(0));
+        for (let i = 0; i < 12; i++) {
+            for (let j = 0; j < 12; j++) {
+                let sum = 0;
+                for (let k = 0; k < 12; k++) {
+                    sum += kgLocal[i][k] * T[k][j];
+                }
+                temp[i][j] = sum;
+            }
+        }
+        // Step 2: K = T^T * temp
+        for (let i = 0; i < 12; i++) {
+            for (let j = 0; j < 12; j++) {
+                let sum = 0;
+                for (let k = 0; k < 12; k++) {
+                    sum += T[k][i] * temp[k][j]; // T^T[i][k] = T[k][i]
+                }
+                K[i][j] = sum;
+            }
         }
     }
 

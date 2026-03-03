@@ -217,7 +217,7 @@ interface PropertyInspectorProps {
     selectedMemberId?: string | null;
 }
 
-export const PropertyInspector: FC<PropertyInspectorProps> = ({ selectedMemberId: propSelectedId }) => {
+export const PropertyInspector: FC<PropertyInspectorProps> = React.memo(({ selectedMemberId: propSelectedId }) => {
     // Store connection
     const { members, updateMember, selectedIds } = useModelStore();
 
@@ -487,6 +487,8 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({ selectedMemberId
             </div>
         </div>
     );
-};
+});
+
+(PropertyInspector as unknown as { displayName: string }).displayName = 'PropertyInspector';
 
 export default PropertyInspector;

@@ -61,16 +61,22 @@ export interface SubscriptionStatus {
   isRevalidating: boolean;
 }
 
-// Feature limits by tier
+// ⚠️  TEMPORARY: All tiers unlocked for beta/testing until payment
+//    gateway (PhonePe / Razorpay) is integrated.
+//    When payment is live, restore free-tier limits:
+//    maxProjects: 3, pdfExport: false, aiAssistant: false,
+//    advancedDesignCodes: false, teamMembers: 1,
+//    prioritySupport: false, apiAccess: false
+// TODO(payment): Revert free tier limits after payment gateway integration
 const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
   free: {
-    maxProjects: 3,
-    pdfExport: false,
-    aiAssistant: false,
-    advancedDesignCodes: false,
-    teamMembers: 1,
-    prioritySupport: false,
-    apiAccess: false,
+    maxProjects: -1,
+    pdfExport: true,
+    aiAssistant: true,
+    advancedDesignCodes: true,
+    teamMembers: -1,
+    prioritySupport: true,
+    apiAccess: true,
   },
   pro: {
     maxProjects: -1, // unlimited
@@ -91,6 +97,9 @@ const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
     apiAccess: true,
   },
 };
+
+// TODO(payment): Set to false after payment gateway integration is live
+const TEMP_UNLOCK_ALL = true;
 
 // ============================================
 // CONTEXT
@@ -260,6 +269,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
   // Public actions
   const canAccess = useCallback(
     (feature: keyof SubscriptionFeatures): boolean => {
+      if (TEMP_UNLOCK_ALL) return true;
       // SECURITY: deny during loading
       if (subscription.isLoading) return false;
       const value = subscription.features[feature];
@@ -271,7 +281,10 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
   );
 
   const requiresUpgrade = useCallback(
-    (feature: keyof SubscriptionFeatures): boolean => !canAccess(feature),
+    (feature: keyof SubscriptionFeatures): boolean => {
+      if (TEMP_UNLOCK_ALL) return false;
+      return !canAccess(feature);
+    },
     [canAccess],
   );
 
@@ -304,7 +317,13 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
 
   const contextValue = useMemo(
     () => ({
-      subscription,
+      subscription: TEMP_UNLOCK_ALL
+        ? {
+            ...subscription,
+            tier: "enterprise" as SubscriptionTier,
+            features: TIER_FEATURES.enterprise,
+          }
+        : subscription,
       canAccess,
       requiresUpgrade,
       refreshSubscription,
@@ -337,8 +356,9 @@ export const useSubscription = (): SubscriptionContextType => {
         expiresAt: null,
         features: TIER_FEATURES.free,
       },
-      canAccess: () => false,
-      requiresUpgrade: () => true,
+      // TODO(payment): Revert to () => false / () => true after payment gateway integration
+      canAccess: () => true,
+      requiresUpgrade: () => false,
       refreshSubscription: async () => {},
       optimisticUpgrade: () => {},
     };

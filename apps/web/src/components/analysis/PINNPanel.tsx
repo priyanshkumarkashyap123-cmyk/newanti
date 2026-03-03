@@ -53,9 +53,9 @@ export const PINNPanel: FC = () => {
             if (status.status === 'completed') {
                 clearInterval(interval);
                 setTraining(false);
-                setModelId(status.model_id);
+                setModelId(status.model_id ?? null);
                 showNotification('success', 'AI Model Trained Successfully!');
-                runPrediction(status.model_id);
+                runPrediction(status.model_id ?? '');
             } else if (status.status === 'failed') {
                 clearInterval(interval);
                 setTraining(false);

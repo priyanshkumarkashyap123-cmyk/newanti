@@ -299,9 +299,9 @@ export const ModalAnalysisPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-900 to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link to="/stream" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
@@ -331,9 +331,9 @@ export const ModalAnalysisPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-center gap-3">
+          <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <p className="text-red-300 text-sm">{error}</p>
+            <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
           </div>
         )}
 
@@ -341,7 +341,7 @@ export const ModalAnalysisPage: React.FC = () => {
           {/* Left Panel - Input */}
           <div className="lg:col-span-2 space-y-6">
             {/* Solver Settings */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-indigo-400 mb-4 flex items-center gap-2">
                 <Settings className="w-4 h-4" />
                 Eigenvalue Solver
@@ -370,7 +370,7 @@ export const ModalAnalysisPage: React.FC = () => {
             </div>
 
             {/* Parameters */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-green-400 mb-4 flex items-center gap-2">
                 <BarChart2 className="w-4 h-4" />
                 Analysis Parameters
@@ -449,7 +449,7 @@ export const ModalAnalysisPage: React.FC = () => {
 
             {/* Results Table */}
             {results && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                     <Waves className="w-4 h-4 text-indigo-400" />
@@ -534,7 +534,7 @@ export const ModalAnalysisPage: React.FC = () => {
 
             {/* Mode Shape Visualization */}
             {results && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-indigo-400 mb-3 flex items-center gap-2">
                   <Layers className="w-4 h-4" />
                   Mode Shape - Mode {selectedMode}
@@ -551,7 +551,7 @@ export const ModalAnalysisPage: React.FC = () => {
 
             {/* Performance & Code Info */}
             {results && (
-              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+              <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
                   <Zap className="w-4 h-4" />
                   Performance
@@ -588,7 +588,7 @@ export const ModalAnalysisPage: React.FC = () => {
             )}
 
             {/* Info Panel */}
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-300 dark:border-slate-700">
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-purple-400 mb-3 flex items-center gap-2">
                 <Info className="w-4 h-4" />
                 Code Requirements

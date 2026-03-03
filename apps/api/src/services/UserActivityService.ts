@@ -19,16 +19,24 @@ const isConnected = () => mongoose.connection.readyState === 1;
 // TIER LIMITS
 // ============================================
 
+// ⚠️  TEMPORARY: All tiers unlocked for beta/testing until payment
+//    gateway (PhonePe / Razorpay) is integrated.
+//    When payment is live, restore free-tier limits:
+//    maxNodes: 10, maxMembers: 15, maxProjects: 1,
+//    maxAnalysisPerDay: 3, canSaveProjects: false,
+//    canExportCleanPDF: false, hasDesignCodes: false,
+//    templates: ['SIMPLY_SUPPORTED_BEAM', 'CANTILEVER_BEAM', 'PORTAL_FRAME', 'PRATT_TRUSS_12M', 'G_PLUS_1_FRAME']
+// TODO(payment): Revert free tier limits after payment gateway integration
 export const TIER_LIMITS = {
     free: {
-        maxNodes: 10,
-        maxMembers: 15,
-        maxProjects: 1,
-        maxAnalysisPerDay: 3,
-        canSaveProjects: false,
-        canExportCleanPDF: false,
-        hasDesignCodes: false,
-        templates: ['SIMPLY_SUPPORTED_BEAM', 'CANTILEVER_BEAM', 'PORTAL_FRAME', 'PRATT_TRUSS_12M', 'G_PLUS_1_FRAME']
+        maxNodes: Infinity,
+        maxMembers: Infinity,
+        maxProjects: Infinity,
+        maxAnalysisPerDay: Infinity,
+        canSaveProjects: true,
+        canExportCleanPDF: true,
+        hasDesignCodes: true,
+        templates: ['ALL']
     },
     pro: {
         maxNodes: Infinity,

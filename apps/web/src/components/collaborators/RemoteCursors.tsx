@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, memo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Text, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -53,7 +53,7 @@ const Cursor: React.FC<{ user: RemoteUser }> = ({ user }) => {
     );
 };
 
-export const RemoteCursors: React.FC<RemoteCursorsProps> = ({ users }) => {
+export const RemoteCursors: React.FC<RemoteCursorsProps> = memo(({ users }) => {
     return (
         <group>
             {users.map(user => (
@@ -61,4 +61,4 @@ export const RemoteCursors: React.FC<RemoteCursorsProps> = ({ users }) => {
             ))}
         </group>
     );
-};
+});

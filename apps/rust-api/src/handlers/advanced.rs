@@ -9,6 +9,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
+use crate::cache::AnalysisCache;
 use crate::error::{ApiError, ApiResult};
 use crate::solver::{AnalysisInput, Solver};
 use crate::AppState;
@@ -30,7 +31,7 @@ pub struct PDeltaRequest {
 fn default_max_iterations() -> usize { 10 }
 fn default_tolerance() -> f64 { 1e-6 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PDeltaResponse {
     pub success: bool,
     pub converged: bool,
@@ -41,7 +42,7 @@ pub struct PDeltaResponse {
     pub performance_ms: f64,
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DisplacementResult {
     pub node_id: String,
     pub dx: f64,
@@ -51,9 +52,16 @@ pub struct DisplacementResult {
 
 /// POST /api/advanced/pdelta - P-Delta geometric nonlinear analysis
 pub async fn pdelta_analysis(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Json(req): Json<PDeltaRequest>,
 ) -> ApiResult<Json<PDeltaResponse>> {
+    // Check cache
+    let cache_key = AnalysisCache::cache_key("pdelta", &(&req.input, req.max_iterations, req.tolerance.to_bits()));
+    if let Some(cached) = state.analysis_cache.get::<PDeltaResponse>(&cache_key).await {
+        tracing::debug!("Cache HIT for P-Delta analysis");
+        return Ok(Json(cached));
+    }
+
     let start = std::time::Instant::now();
     let solver = Solver::new();
 
@@ -95,7 +103,7 @@ pub async fn pdelta_analysis(
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
 
-    Ok(Json(PDeltaResponse {
+    let response = PDeltaResponse {
         success: true,
         converged,
         iterations,
@@ -108,7 +116,9 @@ pub async fn pdelta_analysis(
         }).collect(),
         amplification_factor: amplification,
         performance_ms,
-    }))
+    };
+    state.analysis_cache.insert(cache_key, &response).await;
+    Ok(Json(response))
 }
 
 // ============================================
@@ -314,7 +324,7 @@ pub struct BucklingRequest {
     pub num_modes: usize,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BucklingResponse {
     pub success: bool,
     pub buckling_modes: Vec<BucklingModeResult>,
@@ -322,7 +332,7 @@ pub struct BucklingResponse {
     pub performance_ms: f64,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BucklingModeResult {
     pub mode_number: usize,
     pub load_factor: f64,
@@ -330,7 +340,7 @@ pub struct BucklingModeResult {
     pub buckled_members: Vec<BuckledMember>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BuckledMember {
     pub member_id: String,
     pub euler_load: f64,
@@ -339,9 +349,16 @@ pub struct BuckledMember {
 
 /// POST /api/advanced/buckling - Buckling eigenvalue analysis
 pub async fn buckling_analysis(
-    State(_state): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Json(req): Json<BucklingRequest>,
 ) -> ApiResult<Json<BucklingResponse>> {
+    // Check cache
+    let cache_key = AnalysisCache::cache_key("buckling", &(&req.input, req.num_modes));
+    if let Some(cached) = state.analysis_cache.get::<BucklingResponse>(&cache_key).await {
+        tracing::debug!("Cache HIT for buckling analysis");
+        return Ok(Json(cached));
+    }
+
     let start = std::time::Instant::now();
     let solver = Solver::new();
 
@@ -406,12 +423,14 @@ pub async fn buckling_analysis(
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
 
-    Ok(Json(BucklingResponse {
+    let response = BucklingResponse {
         success: true,
         buckling_modes,
         critical_load_factor: critical_factor,
         performance_ms,
-    }))
+    };
+    state.analysis_cache.insert(cache_key, &response).await;
+    Ok(Json(response))
 }
 
 // ============================================

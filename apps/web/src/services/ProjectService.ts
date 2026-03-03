@@ -5,6 +5,7 @@
 
 import { fetchJson, postJson } from '../utils/fetchUtils';
 import { API_CONFIG } from '../config/env';
+import { logger } from '../lib/logging/logger';
 
 export interface Project {
     _id: string;
@@ -35,7 +36,7 @@ export const ProjectService = {
 
             return result.projects || [];
         } catch (error) {
-            console.error('[ProjectService] listProjects failed:', error);
+            logger.error('[ProjectService] listProjects failed', { error: error instanceof Error ? error.message : String(error) });
             throw new Error(
                 error instanceof Error ? error.message : 'Failed to load projects. Please check your network connection.'
             );
@@ -56,7 +57,7 @@ export const ProjectService = {
 
             return result.project;
         } catch (error) {
-            console.error('[ProjectService] getProject failed:', error);
+            logger.error('[ProjectService] getProject failed', { error: error instanceof Error ? error.message : String(error) });
             throw new Error(
                 error instanceof Error ? error.message : 'Failed to load project. Please check your network connection.'
             );
@@ -92,7 +93,7 @@ export const ProjectService = {
             const payload = data?.data ?? data;
             return payload.project;
         } catch (error) {
-            console.error('[ProjectService] createProject failed:', error);
+            logger.error('[ProjectService] createProject failed', { error: error instanceof Error ? error.message : String(error) });
             throw error instanceof Error ? error : new Error('Failed to create project');
         }
     },
@@ -126,7 +127,7 @@ export const ProjectService = {
             const payload = data?.data ?? data;
             return payload.project;
         } catch (error) {
-            console.error('[ProjectService] updateProject failed:', error);
+            logger.error('[ProjectService] updateProject failed', { error: error instanceof Error ? error.message : String(error) });
             throw error instanceof Error ? error : new Error('Failed to update project');
         }
     },
@@ -147,7 +148,7 @@ export const ProjectService = {
                 throw new Error('Failed to delete project');
             }
         } catch (error) {
-            console.error('[ProjectService] deleteProject failed:', error);
+            logger.error('[ProjectService] deleteProject failed', { error: error instanceof Error ? error.message : String(error) });
             throw error instanceof Error ? error : new Error('Failed to delete project');
         }
     }

@@ -22,6 +22,7 @@ import {
   Search, Check, Layers, Plus, Pencil,
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 
 interface MaterialLibraryDialogProps {
   isOpen: boolean;
@@ -92,9 +93,13 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export const MaterialLibraryDialog: React.FC<MaterialLibraryDialogProps> = ({ isOpen, onClose, mode = 'library' }) => {
-  const members = useModelStore(s => s.members);
-  const selectedIds = useModelStore(s => s.selectedIds);
-  const updateMember = useModelStore(s => s.updateMember);
+  const { members, selectedIds, updateMember } = useModelStore(
+    useShallow((s) => ({
+      members: s.members,
+      selectedIds: s.selectedIds,
+      updateMember: s.updateMember,
+    }))
+  );
 
   const [activeTab, setActiveTab] = useState<'browse' | 'custom'>(mode === 'properties' ? 'custom' : 'browse');
   const [searchQuery, setSearchQuery] = useState('');

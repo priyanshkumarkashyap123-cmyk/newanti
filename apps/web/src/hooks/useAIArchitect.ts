@@ -28,6 +28,7 @@ export interface AIAction {
   type: 'addNode' | 'addMember' | 'addSupport' | 'addLoad' | 'removeMember' |
         'removeNode' | 'changeSection' | 'runAnalysis' | 'optimize' | 'applyModel' |
         'clearModel' | 'report';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: Record<string, any>;
   description: string;
 }
@@ -116,6 +117,7 @@ export interface ModelContext {
 
 const AI_API_BASE = `${API_CONFIG.baseUrl}/api/ai`;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function callAIApi(endpoint: string, body: Record<string, any>): Promise<AIResponse> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
@@ -149,7 +151,7 @@ async function callAIApi(endpoint: string, body: Record<string, any>): Promise<A
   }
 }
 
-async function fetchAIApi(endpoint: string): Promise<any> {
+async function fetchAIApi(endpoint: string): Promise<unknown> {
   const response = await fetch(`${AI_API_BASE}/${endpoint}`);
   if (!response.ok) throw new Error(`AI service returned ${response.status}`);
   return response.json();
@@ -177,7 +179,7 @@ export function useAIArchitect() {
   // ============================================
 
   const modelContext: ModelContext = useMemo(() => {
-    const nodes = Array.from(store.nodes.values()).map((n: any) => ({
+    const nodes = Array.from(store.nodes.values()).map((n) => ({
       id: n.id,
       x: n.x,
       y: n.y,
@@ -185,7 +187,7 @@ export function useAIArchitect() {
       hasSupport: !!(n.restraints && (n.restraints.fx || n.restraints.fy)),
     }));
 
-    const members = Array.from(store.members.values()).map((m: any) => ({
+    const members = Array.from(store.members.values()).map((m) => ({
       id: m.id,
       startNode: m.startNodeId,
       endNode: m.endNodeId,
@@ -229,7 +231,7 @@ export function useAIArchitect() {
       // Compute max displacement from displacements map
       let maxDisp = 0;
       if (results.displacements) {
-        results.displacements.forEach((d: any) => {
+        results.displacements.forEach((d: Record<string, number>) => {
           const mag = Math.sqrt((d.dx || 0) ** 2 + (d.dy || 0) ** 2 + (d.dz || 0) ** 2);
           if (mag > maxDisp) maxDisp = mag;
         });
@@ -239,16 +241,18 @@ export function useAIArchitect() {
       let maxMoment = 0;
       let maxShear = 0;
       if (results.memberForces) {
-        results.memberForces.forEach((f: any) => {
+        results.memberForces.forEach((f) => {
           if (f.startForces) {
-            const mz = Math.abs(f.startForces.mz || 0);
-            const fy = Math.abs(f.startForces.fy || 0);
+            const sf = f.startForces as Record<string, number>;
+            const mz = Math.abs(sf.mz || 0);
+            const fy = Math.abs(sf.fy || 0);
             if (mz > maxMoment) maxMoment = mz;
             if (fy > maxShear) maxShear = fy;
           }
           if (f.endForces) {
-            const mz = Math.abs(f.endForces.mz || 0);
-            const fy = Math.abs(f.endForces.fy || 0);
+            const ef = f.endForces as Record<string, number>;
+            const mz = Math.abs(ef.mz || 0);
+            const fy = Math.abs(ef.fy || 0);
             if (mz > maxMoment) maxMoment = mz;
             if (fy > maxShear) maxShear = fy;
           }
@@ -587,7 +591,7 @@ export function useAIArchitect() {
   // DIAGNOSE MODEL
   // ============================================
 
-  const diagnoseModel = useCallback(async (): Promise<any> => {
+  const diagnoseModel = useCallback(async (): Promise<AIResponse | null> => {
     try {
       const response = await callAIApi('diagnose', { context: modelContext });
       return response;
