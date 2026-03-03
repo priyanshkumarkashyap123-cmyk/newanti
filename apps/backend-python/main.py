@@ -442,6 +442,7 @@ from routers.design import router as design_int_router
 from routers.load_gen import router as load_gen_router
 from routers.is_code_checks import router as is_code_router
 from routers.layout import router as layout_router
+from routers.layout_v2 import router as layout_v2_router
 
 app.include_router(jobs_router)
 app.include_router(meshing_router)
@@ -454,8 +455,9 @@ app.include_router(design_int_router)
 app.include_router(load_gen_router)
 app.include_router(is_code_router)
 app.include_router(layout_router)
+app.include_router(layout_v2_router)
 
-logger.info("Internal routers registered: jobs, meshing, analysis, stress_dynamic, sections, reports, ai, design, load_gen, is_codes, layout")
+logger.info("Internal routers registered: jobs, meshing, analysis, stress_dynamic, sections, reports, ai, design, load_gen, is_codes, layout, layout_v2")
 
 
 # ── Model validation (uses StructuralModel from models.py) ──

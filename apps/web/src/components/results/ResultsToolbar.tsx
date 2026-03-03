@@ -38,6 +38,7 @@ import {
   Waves,
 } from "lucide-react";
 import { useModelStore, type AnalysisResults } from "../../store/model";
+import { useShallow } from 'zustand/react/shallow';
 import { useUIStore } from "../../store/uiStore";
 import {
   AnalysisResultsDashboard,
@@ -505,22 +506,38 @@ const convertToAnalysisResultsData = (
 // ============================================
 
 export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) => {
-  const analysisResults = useModelStore(
-    (s) => s.analysisResults,
-  ) as AnalysisResults | null;
-  const displacementScale = useModelStore((s) => s.displacementScale) as number;
-  const setShowSFD = useModelStore((s) => s.setShowSFD);
-  const setShowBMD = useModelStore((s) => s.setShowBMD);
-  const setShowAFD = useModelStore((s) => s.setShowAFD);
-  const setShowBMDMy = useModelStore((s) => s.setShowBMDMy);
-  const setShowShearZ = useModelStore((s) => s.setShowShearZ);
-  const setShowStressOverlay = useModelStore((s) => s.setShowStressOverlay);
-  const setShowDeflectedShape = useModelStore((s) => s.setShowDeflectedShape);
-  const setDisplacementScale = useModelStore((s) => s.setDisplacementScale);
+  // Batched selector — single subscription instead of 12 individual ones
+  const {
+    analysisResults,
+    displacementScale,
+    setShowSFD,
+    setShowBMD,
+    setShowAFD,
+    setShowBMDMy,
+    setShowShearZ,
+    setShowStressOverlay,
+    setShowDeflectedShape,
+    setDisplacementScale,
+    nodes,
+    members,
+  } = useModelStore(
+    useShallow((s) => ({
+      analysisResults: s.analysisResults as AnalysisResults | null,
+      displacementScale: s.displacementScale as number,
+      setShowSFD: s.setShowSFD,
+      setShowBMD: s.setShowBMD,
+      setShowAFD: s.setShowAFD,
+      setShowBMDMy: s.setShowBMDMy,
+      setShowShearZ: s.setShowShearZ,
+      setShowStressOverlay: s.setShowStressOverlay,
+      setShowDeflectedShape: s.setShowDeflectedShape,
+      setDisplacementScale: s.setDisplacementScale,
+      nodes: s.nodes,
+      members: s.members,
+    }))
+  );
   const openModal = useUIStore((s) => s.openModal);
   const showNotification = useUIStore((s) => s.showNotification);
-  const nodes = useModelStore((s) => s.nodes);
-  const members = useModelStore((s) => s.members);
 
   // Local state
   const [isExpanded, setIsExpanded] = useState(true);

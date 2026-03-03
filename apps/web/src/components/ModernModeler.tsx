@@ -59,24 +59,20 @@ import { LoadInputDialog } from "./ui/LoadInputDialog";
 import { validateStructure } from "../utils/structuralValidation";
 
 // ---- Lazy-loaded dialogs & panels (extracted to modeler/lazyDialogs.ts) ----
+// Only import dialogs that need COMPLEX props/callbacks and cannot be in ModalPortal
 import {
-  StructureWizard, FoundationDesignDialog, IS875LoadDialog, GeometryToolsPanel,
-  ValidationErrorDisplay, ValidationDialog, StressVisualization, InteroperabilityDialog,
-  RailwayBridgeDialog, MeshingPanel, AdvancedSelectionPanel, LoadDialog,
-  WindLoadDialog, SeismicLoadDialog, MovingLoadDialog, SplitMemberDialog,
-  MemberSpecificationsDialog, ASCE7SeismicLoadDialog, ASCE7WindLoadDialog,
-  LoadCombinationsDialog, IS1893SeismicLoadDialog, SectionBrowserDialog,
+  StructureWizard,
+  ValidationErrorDisplay, ValidationDialog, StressVisualization,
+  SplitMemberDialog,
+  MemberSpecificationsDialog,
   AdvancedAnalysisDialog, DesignCodesDialog, ModalAnalysisPanel, ExportDialog,
-  CloudProjectManager, StructureGallery, PlateCreationDialog, FloorSlabDialog,
-  BoundaryConditionsDialog, SelectionToolbar, DeadLoadGenerator, CurvedStructureDialog,
-  DetailedDesignPanel, SteelDesignDialog, ConcreteDesignDialog, ConnectionDesignDialog,
-  CivilEngineeringDialog, GenerativeDesignPanel, SeismicDesignStudio,
-  SectionAssignDialog, MaterialLibraryDialog, SectionDesignerDialog,
-  BetaAngleDialog, MemberReleasesDialog, MemberOffsetsDialog,
-  TemperatureLoadDialog, DivideMemberDialog, MergeNodesDialog, TimeHistoryDialog,
+  CloudProjectManager,
+  MaterialLibraryDialog,
+  GenerativeDesignPanel, SeismicDesignStudio,
   IntegrationDiagnostics,
-  TrussGeneratorDialog, ArchGeneratorDialog, FrameGeneratorDialog, CablePatternDialog,
 } from "./modeler/lazyDialogs";
+// ModalPortal handles the remaining 41 simple dialogs with isolated subscriptions
+import { ModalPortal } from "./modeler/ModalPortal";
 import { useToast } from "./ui/ToastSystem";
 import { ModelingToolbar } from "./toolbar/ModelingToolbar";
 import type { Node, Member } from "../store/model";
@@ -198,13 +194,12 @@ export const ModernModeler: FC = () => {
       setIsAnalyzing: state.setIsAnalyzing,
     }))
   );
-  // UI Store
+  // UI Store — only subscribe to actions, NOT the full modals object
   const {
     activeCategory,
     setCategory,
     activeTool,
     setActiveTool,
-    modals,
     openModal,
     closeModal,
     notification,
@@ -586,15 +581,18 @@ export const ModernModeler: FC = () => {
   // const openModal = useUIStore((s) => s.openModal); // Moved to top
   // const closeModal = useUIStore((s) => s.closeModal); // Moved to top
 
-  // Alias modal states for cleaner code
-  const _showStructureWizard = modals.structureWizard;
-  void _showStructureWizard; // accessed via modals.structureWizard directly
-  const showFoundationDesign = modals.foundationDesign;
-  const showIS875Load = modals.is875Load;
-  const showGeometryTools = modals.geometryTools;
-  const showInterop = modals.interoperability;
-  const showRailwayBridge = modals.railwayBridge;
-  const showLoadingManager = modals.loadDialog;
+  // Individual modal selectors for complex dialogs still rendered here
+  // Each selector returns a primitive boolean → no re-render when OTHER modals change
+  const showStructureWizard = useUIStore((s) => s.modals.structureWizard);
+  const showAdvancedAnalysis = useUIStore((s) => s.modals.advancedAnalysis);
+  const showPDeltaAnalysis = useUIStore((s) => s.modals.pDeltaAnalysis);
+  const showBucklingAnalysis = useUIStore((s) => s.modals.bucklingAnalysis);
+  const showDesignCodes = useUIStore((s) => s.modals.designCodes);
+  const showMaterialLibrary = useUIStore((s) => s.modals.materialLibrary);
+  const showMaterialAssign = useUIStore((s) => s.modals.materialAssign);
+  const showMaterialProperties = useUIStore((s) => s.modals.materialProperties);
+  const showGenerativeDesign = useUIStore((s) => s.modals.generativeDesign);
+  const showSeismicStudio = useUIStore((s) => s.modals.seismicStudio);
 
   const loadStructure = useModelStore((state) => state.loadStructure);
 
@@ -1025,16 +1023,6 @@ export const ModernModeler: FC = () => {
 
         {/* Modals & Overlays */}
 
-        {/* Integration Diagnostics Modal */}
-        {diagnosticsOpen && (
-          <Suspense fallback={null}>
-            <IntegrationDiagnostics
-              open={diagnosticsOpen}
-              onClose={() => setDiagnosticsOpen(false)}
-            />
-          </Suspense>
-        )}
-
         {/* Keyboard Shortcuts Overlay (? key) */}
         <KeyboardShortcutsOverlay isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
 
@@ -1064,8 +1052,6 @@ export const ModernModeler: FC = () => {
             <ResultsToolbar onClose={() => setShowResultsToolbar(false)} />
           )}
 
-          {/* Tools & Dialogs */}
-          <AdvancedSelectionPanel />
           <QuickStartModal
             isOpen={showQuickStart}
             onClose={() => setShowQuickStart(false)}
@@ -1082,12 +1068,11 @@ export const ModernModeler: FC = () => {
             isNewProject={isNewProject}
           />
 
-          {/* Global Dialogs triggered by Ribbon */}
+          {/* Structure Wizard — complex onGenerate callback */}
           <StructureWizard
-            isOpen={modals.structureWizard}
+            isOpen={showStructureWizard}
             onClose={() => closeModal("structureWizard")}
             onGenerate={(structure) => {
-              // Convert generated structure to model format with material props
               const nodes: Node[] = structure.nodes.map((n) => ({
                 id: n.id,
                 x: n.x,
@@ -1104,10 +1089,8 @@ export const ModernModeler: FC = () => {
                 A: (m as any).A,
                 I: (m as any).I,
               }));
-              // loadStructure clears loads, so we add loads after
               loadStructure(nodes, members);
 
-              // Add wizard-generated loads (nodal + member)
               const store = useModelStore.getState();
               if (structure.loads) {
                 for (const l of structure.loads) {
@@ -1142,102 +1125,7 @@ export const ModernModeler: FC = () => {
             }}
           />
 
-          {/* Structure Generator Dialogs */}
-          <TrussGeneratorDialog
-            isOpen={modals.trussGenerator}
-            onClose={() => closeModal("trussGenerator")}
-          />
-          <ArchGeneratorDialog
-            isOpen={modals.archGenerator}
-            onClose={() => closeModal("archGenerator")}
-          />
-          <FrameGeneratorDialog
-            isOpen={modals.frameGenerator}
-            onClose={() => closeModal("frameGenerator")}
-          />
-          <CablePatternDialog
-            isOpen={modals.cablePatternGenerator}
-            onClose={() => closeModal("cablePatternGenerator")}
-          />
-
-          {/* Foundation Design Dialog */}
-          <FoundationDesignDialog
-            isOpen={showFoundationDesign}
-            onClose={() => closeModal("foundationDesign")}
-          />
-
-          {/* IS 875 Load Generator Dialog */}
-          <IS875LoadDialog
-            isOpen={showIS875Load}
-            onClose={() => closeModal("is875Load")}
-          />
-
-          {/* Geometry Tools Panel */}
-          <GeometryToolsPanel
-            isOpen={showGeometryTools}
-            onClose={() => closeModal("geometryTools")}
-          />
-
-          {/* Import/Export Dialog */}
-          <InteroperabilityDialog
-            isOpen={showInterop}
-            onClose={() => closeModal("interoperability")}
-          />
-
-          {/* Railway Bridge Design Dialog */}
-          <RailwayBridgeDialog
-            isOpen={showRailwayBridge}
-            onClose={() => closeModal("railwayBridge")}
-          />
-
-          {/* FEA Meshing Panel */}
-          <MeshingPanel
-            isOpen={modals.meshing}
-            onClose={() => closeModal("meshing")}
-          />
-
-          {/* Plate Creation Dialog */}
-          <PlateCreationDialog
-            isOpen={modals.plateDialog}
-            onClose={() => closeModal("plateDialog")}
-          />
-
-          {/* Floor Slab Dialog — auto-detect panels & create slabs */}
-          <FloorSlabDialog
-            isOpen={modals.floorSlabDialog}
-            onClose={() => closeModal("floorSlabDialog")}
-          />
-
-          {/* Comprehensive Loading Manager */}
-          <LoadDialog
-            isOpen={showLoadingManager}
-            onClose={() => closeModal("loadDialog")}
-          />
-
-          {/* Wind / Seismic / Moving Load Generators — only mount when modal is open */}
-          {modals.windLoadDialog && <WindLoadDialog />}
-          {modals.seismicLoadDialog && <SeismicLoadDialog />}
-          {modals.movingLoadDialog && <MovingLoadDialog />}
-
-          {/* Boundary Conditions Dialog */}
-          <BoundaryConditionsDialog
-            open={modals.boundaryConditionsDialog}
-            onClose={() => closeModal("boundaryConditionsDialog")}
-          />
-
-          {/* Advanced Selection Toolbar */}
-          <SelectionToolbar
-            open={modals.selectionToolbar}
-            onClose={() => closeModal("selectionToolbar")}
-          />
-
-          {/* Dead Load Generator - NEW */}
-          <DeadLoadGenerator
-            open={modals.deadLoadGenerator}
-            onClose={() => closeModal("deadLoadGenerator")}
-          />
-
-          {/* UI Dialogs */}
+          {/* Dialogs with local state (memberId, etc.) */}
           <MemberSpecificationsDialog
             isOpen={showSpecDialog}
             onClose={() => setShowSpecDialog(false)}
@@ -1256,18 +1144,18 @@ export const ModernModeler: FC = () => {
             }
           />
 
-          {/* Split Member Dialog */}
           <SplitMemberDialog
             isOpen={showSplitDialog}
             onClose={() => setShowSplitDialog(false)}
             memberId={splitMemberId ?? undefined}
           />
 
+          {/* Advanced Analysis — needs subscription & multi-modal state */}
           <AdvancedAnalysisDialog
             isOpen={
-              modals.advancedAnalysis ||
-              modals.pDeltaAnalysis ||
-              modals.bucklingAnalysis
+              showAdvancedAnalysis ||
+              showPDeltaAnalysis ||
+              showBucklingAnalysis
             }
             onClose={() => {
               closeModal("advancedAnalysis");
@@ -1279,17 +1167,17 @@ export const ModernModeler: FC = () => {
               subscription?.tier === "enterprise"
             }
             initialTab={
-              modals.bucklingAnalysis
+              showBucklingAnalysis
                 ? "buckling"
-                : modals.pDeltaAnalysis
+                : showPDeltaAnalysis
                   ? "pdelta"
                   : "pdelta"
             }
           />
 
-          {/* DesignCodes Dialog */}
+          {/* Design Codes — needs subscription */}
           <DesignCodesDialog
-            isOpen={modals.designCodes}
+            isOpen={showDesignCodes}
             onClose={() => closeModal("designCodes")}
             isPro={
               subscription?.tier === "pro" ||
@@ -1297,14 +1185,24 @@ export const ModernModeler: FC = () => {
             }
           />
 
-          {/* ASCE 7 Load Generators — only mount when modal is open */}
-          {modals.asce7SeismicDialog && <ASCE7SeismicLoadDialog />}
-          {modals.asce7WindDialog && <ASCE7WindLoadDialog />}
-          {modals.loadCombinationsDialog && <LoadCombinationsDialog />}
-          {modals.is1893SeismicDialog && <IS1893SeismicLoadDialog />}
-          {modals.sectionBrowserDialog && <SectionBrowserDialog />}
+          {/* Material Library — 3 modes, rendered 3 times */}
+          <MaterialLibraryDialog
+            isOpen={showMaterialLibrary}
+            onClose={() => closeModal("materialLibrary")}
+            mode="library"
+          />
+          <MaterialLibraryDialog
+            isOpen={showMaterialAssign}
+            onClose={() => closeModal("materialAssign")}
+            mode="assign"
+          />
+          <MaterialLibraryDialog
+            isOpen={showMaterialProperties}
+            onClose={() => closeModal("materialProperties")}
+            mode="properties"
+          />
 
-          {/* Structural Validation Dialog - Shows errors BEFORE analysis */}
+          {/* Validation Dialog — complex callbacks */}
           <ValidationDialog
             isOpen={showValidationDialog}
             onClose={() => setShowValidationDialog(false)}
@@ -1312,16 +1210,12 @@ export const ModernModeler: FC = () => {
             warnings={structuralValidationWarnings}
             onProceedAnyway={() => {
               setShowValidationDialog(false);
-              // User wants to proceed despite warnings - run analysis
               setTimeout(() => executeAnalysis(), 100);
             }}
             onRevalidate={() => {
-              // Re-run validation after auto-fix
               const validationResult = validateStructure(nodes, members);
               setStructuralValidationErrors(validationResult.errors);
               setStructuralValidationWarnings(validationResult.warnings);
-
-              // If all errors fixed, close dialog and optionally run analysis
               if (
                 validationResult.valid &&
                 validationResult.errors.length === 0
@@ -1341,12 +1235,9 @@ export const ModernModeler: FC = () => {
                 setValidationErrors(null);
               }}
               onAutoFix={(_issue) => {
-                // Run auto-fix from model store
                 const result = useModelStore.getState().autoFixModel();
                 uiLogger.log("Auto-fix result:", result);
-
                 if (result.fixed.length > 0) {
-                  // Re-validate after fix
                   setValidationErrors(null);
                   setShowValidationErrors(false);
                 }
@@ -1364,7 +1255,6 @@ export const ModernModeler: FC = () => {
               }}
               onStressTypeChange={(type) => {
                 setCurrentStressType(type);
-                // Recalculate with new stress type
                 if (analysisResults?.memberForces) {
                   calculateStresses(analysisResults.memberForces, members);
                 }
@@ -1372,7 +1262,7 @@ export const ModernModeler: FC = () => {
             />
           )}
 
-          {/* Modal Analysis Controls - Shows when modal results exist */}
+          {/* Modal Analysis Controls */}
           <ModalControls />
 
           {/* Modal Analysis Panel */}
@@ -1388,10 +1278,8 @@ export const ModernModeler: FC = () => {
             onLoad={handleCloudLoad}
           />
 
-          {/* Unified AI Architect - Single Powerful AI Interface */}
+          {/* AI Architect */}
           <AutonomousAIAgent />
-
-          {/* AI Architect Panel — full-featured sidebar with Generate/Modify/Chat */}
           {showAIArchitect && (
             <div className="fixed right-0 top-0 bottom-0 w-[380px] z-40 shadow-2xl">
               <AIArchitectPanel />
@@ -1405,50 +1293,8 @@ export const ModernModeler: FC = () => {
             </div>
           )}
 
-          {/* Structure Gallery - Iconic Civil Engineering Structures */}
-          <StructureGallery
-            isOpen={modals.structureGallery}
-            onClose={() => closeModal("structureGallery")}
-          />
-
-          {/* Curved Structure Generator - Domes, Tunnels, Arches, Shells */}
-          <CurvedStructureDialog
-            isOpen={modals.curvedStructure}
-            onClose={() => closeModal("curvedStructure")}
-          />
-
-          {/* Detailed Section Design - RC Beam/Slab/Column, Steel */}
-          <DetailedDesignPanel
-            isOpen={modals.detailedDesign}
-            onClose={() => closeModal("detailedDesign")}
-          />
-
-          {/* Steel Design Studio - IS 800 / AISC 360 / EN 1993 */}
-          <SteelDesignDialog
-            isOpen={modals.steelDesign}
-            onClose={() => closeModal("steelDesign")}
-          />
-
-          {/* Concrete Design Studio - IS 456 / ACI 318 / EN 1992 */}
-          <ConcreteDesignDialog
-            isOpen={modals.concreteDesign}
-            onClose={() => closeModal("concreteDesign")}
-          />
-
-          {/* Connection Design - Bolt, Weld, Base Plate */}
-          <ConnectionDesignDialog
-            isOpen={modals.connectionDesign}
-            onClose={() => closeModal("connectionDesign")}
-          />
-
-          {/* Civil Engineering Hub - Geotech, Hydraulics, Transport, Construction */}
-          <CivilEngineeringDialog
-            isOpen={modals.civilEngineering}
-            onClose={() => closeModal("civilEngineering")}
-          />
-
-          {/* Generative Design / Topology Optimization */}
-          {modals.generativeDesign && (
+          {/* Generative Design — custom wrapper */}
+          {showGenerativeDesign && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -1461,8 +1307,7 @@ export const ModernModeler: FC = () => {
                       Generative Design / Topology Optimization
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      AI-powered structural optimization with density-based
-                      topology
+                      AI-powered structural optimization with density-based topology
                     </p>
                   </div>
                   <button type="button"
@@ -1479,8 +1324,8 @@ export const ModernModeler: FC = () => {
             </div>
           )}
 
-          {/* Seismic Design Studio */}
-          {modals.seismicStudio && (
+          {/* Seismic Design Studio — custom wrapper */}
+          {showSeismicStudio && (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
               <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -1493,8 +1338,7 @@ export const ModernModeler: FC = () => {
                       Seismic Design Studio
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Response Spectrum · Time History · Pushover — IS 1893,
-                      ASCE 7, EC8
+                      Response Spectrum · Time History · Pushover — IS 1893, ASCE 7, EC8
                     </p>
                   </div>
                   <button type="button"
@@ -1511,65 +1355,17 @@ export const ModernModeler: FC = () => {
             </div>
           )}
 
-          {/* ── Industry-Standard Properties Dialogs ── */}
-          <SectionAssignDialog
-            isOpen={modals.sectionAssign}
-            onClose={() => closeModal("sectionAssign")}
-          />
-          <SectionDesignerDialog
-            open={modals.sectionBuilder}
-            onClose={() => closeModal("sectionBuilder")}
-          />
-          <MaterialLibraryDialog
-            isOpen={modals.materialLibrary}
-            onClose={() => closeModal("materialLibrary")}
-            mode="library"
-          />
-          <MaterialLibraryDialog
-            isOpen={modals.materialAssign}
-            onClose={() => closeModal("materialAssign")}
-            mode="assign"
-          />
-          <MaterialLibraryDialog
-            isOpen={modals.materialProperties}
-            onClose={() => closeModal("materialProperties")}
-            mode="properties"
-          />
-          <BetaAngleDialog
-            isOpen={modals.betaAngle}
-            onClose={() => closeModal("betaAngle")}
-          />
-          <MemberReleasesDialog
-            isOpen={modals.memberReleases}
-            onClose={() => closeModal("memberReleases")}
-          />
-          <MemberOffsetsDialog
-            isOpen={modals.memberOffsets}
-            onClose={() => closeModal("memberOffsets")}
-          />
-
-          {/* ── Editing Tool Dialogs ── */}
-          <DivideMemberDialog
-            isOpen={modals.divideMember}
-            onClose={() => closeModal("divideMember")}
-          />
-          <MergeNodesDialog
-            isOpen={modals.mergeNodes}
-            onClose={() => closeModal("mergeNodes")}
-          />
-
-          {/* ── Additional Load Dialogs ── */}
-          <TemperatureLoadDialog
-            isOpen={modals.temperatureLoad}
-            onClose={() => closeModal("temperatureLoad")}
-          />
-
-          {/* ── Advanced Dynamic Analysis ── */}
-          <TimeHistoryDialog
-            isOpen={modals.timeHistoryAnalysis}
-            onClose={() => closeModal("timeHistoryAnalysis")}
+          <IntegrationDiagnostics
+            open={diagnosticsOpen}
+            onClose={() => setDiagnosticsOpen(false)}
           />
         </Suspense>
+
+        {/* ══════════════════════════════════════════════════════
+            ModalPortal — 41 simple dialogs, each with ISOLATED
+            Zustand subscriptions. Zero cascade re-renders.
+            ══════════════════════════════════════════════════════ */}
+        <ModalPortal />
 
         {/* Command Palette - Quick Access (Cmd+K) */}
         <CommandPalette

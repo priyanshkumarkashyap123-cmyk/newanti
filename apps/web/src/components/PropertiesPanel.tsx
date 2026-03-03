@@ -8,6 +8,7 @@
 import React from 'react';
 import { FC, useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useModelStore, type Restraints, type MemberLoad as StoreMemberLoad } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { STEEL_SECTIONS, MATERIALS_DATABASE, type SectionProperties, type Material } from '../data/SectionDatabase';
 import {
   CircleDot,
@@ -221,20 +222,29 @@ const Divider: FC = () => <hr className="border-slate-200/60 dark:border-slate-7
 // PROPERTIES PANEL COMPONENT
 // ============================================
 export const PropertiesPanel: FC = () => {
-    const selectedIds = useModelStore((state) => state.selectedIds);
-    const nodes = useModelStore((state) => state.nodes);
-    const members = useModelStore((state) => state.members);
-    const loads = useModelStore((state) => state.loads);
-    const memberLoads = useModelStore((state) => state.memberLoads);
-    const analysisResults = useModelStore((state) => state.analysisResults);
-    const updateNodePosition = useModelStore((state) => state.updateNodePosition);
-    const updateMember = useModelStore((state) => state.updateMember);
-    const updateMembers = useModelStore((state) => state.updateMembers);
-    const setNodeRestraints = useModelStore((state) => state.setNodeRestraints);
-    const addLoad = useModelStore((state) => state.addLoad);
-    const removeLoad = useModelStore((state) => state.removeLoad);
-    const addMemberLoad = useModelStore((state) => state.addMemberLoad);
-    const removeMemberLoad = useModelStore((state) => state.removeMemberLoad);
+    // Batched single subscription — instead of 14 individual useModelStore calls
+    const {
+        selectedIds, nodes, members, loads, memberLoads, analysisResults,
+        updateNodePosition, updateMember, updateMembers, setNodeRestraints,
+        addLoad, removeLoad, addMemberLoad, removeMemberLoad,
+    } = useModelStore(
+        useShallow((s) => ({
+            selectedIds: s.selectedIds,
+            nodes: s.nodes,
+            members: s.members,
+            loads: s.loads,
+            memberLoads: s.memberLoads,
+            analysisResults: s.analysisResults,
+            updateNodePosition: s.updateNodePosition,
+            updateMember: s.updateMember,
+            updateMembers: s.updateMembers,
+            setNodeRestraints: s.setNodeRestraints,
+            addLoad: s.addLoad,
+            removeLoad: s.removeLoad,
+            addMemberLoad: s.addMemberLoad,
+            removeMemberLoad: s.removeMemberLoad,
+        }))
+    );
 
     // Local state for new nodal load input
     const [newLoadFx, setNewLoadFx] = useState(0);

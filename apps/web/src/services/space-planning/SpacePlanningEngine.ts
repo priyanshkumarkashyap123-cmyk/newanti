@@ -639,7 +639,7 @@ export class SpacePlanningEngine {
     // Generate corridors
     const corridors = this.generateCorridors(placedRooms, buildableWidth, buildableDepth);
 
-    const floorHeight = preferences.style === 'luxury' ? 3.6 : 3.0;
+    const floorHeight = preferences.budget === 'luxury' ? 3.6 : 3.0;
 
     return {
       floor,

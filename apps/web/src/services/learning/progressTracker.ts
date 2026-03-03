@@ -2,8 +2,13 @@ export interface Certificate {
   id: string;
   type: 'module' | 'path' | 'milestone';
   title: string;
-  issuedTo?: string;
+  issuedTo: string;
   issuedDate: string;
+  moduleId?: string;
+  pathId?: string;
+  milestoneId?: string;
+  verificationCode: string;
+  signatureImage?: string;
 }
 
 export interface AchievementBadge {
@@ -11,6 +16,7 @@ export interface AchievementBadge {
   milestoneId: string;
   earnedDate: string;
   title: string;
+  icon: string;
 }
 
 export interface ModuleProgress {

@@ -15,6 +15,7 @@ import { FC, useState, useEffect, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
 import { useUIStore, CATEGORY_TOOLS } from "../../store/uiStore";
 import { useModelStore } from "../../store/model";
+import { useShallow } from "zustand/react/shallow";
 import {
   MODELING_TOOL_GROUPS,
   TOOL_DEFINITIONS,
@@ -183,7 +184,7 @@ export const ModelingToolbar: FC = () => {
   const activeTool = useUIStore((state) => state.activeTool);
   const activeCategory = useUIStore((state) => state.activeCategory);
   const setActiveTool = useUIStore((state) => state.setActiveTool);
-  const { setTool: setModelTool } = useModelStore();
+  const setModelTool = useModelStore((state) => state.setTool);
 
   // Helper function to set tool in both stores
   const handleToolSelect = useCallback(

@@ -214,7 +214,7 @@ function clientSideDesignSteel(input: ClientDesignInput): MemberDesignResult & {
     const beta_b = 1.0;
     const hw_ltb = s.D - 2 * s.tf;
     // St. Venant torsion constant: J ≈ (1/3)(2·bf·tf³ + hw·tw³)
-    const J_ltb = (1 / 3) * (2 * s.bf * s.tf ** 3 + hw_ltb * s.tw ** 3);
+    const J_ltb = (1 / 3) * (2 * s.B * s.tf ** 3 + hw_ltb * s.tw ** 3);
     // Warping constant: Iw ≈ (1 - βf)·βf·Iy·hs² for symmetric I: βf=0.5 → Iw = Iy·hs²/4
     const hs_ltb = s.D - s.tf;
     const Iw_ltb = Iy * hs_ltb ** 2 / 4; // mm⁶
@@ -230,7 +230,7 @@ function clientSideDesignSteel(input: ClientDesignInput): MemberDesignResult & {
     // AISC F2 — Full LTB check
     const ry_aisc = Math.sqrt(Iz / A); // weak-axis radius of gyration
     const hw_aisc = s.D - 2 * s.tf;
-    const J_aisc = (1 / 3) * (2 * s.bf * s.tf ** 3 + hw_aisc * s.tw ** 3);
+    const J_aisc = (1 / 3) * (2 * s.B * s.tf ** 3 + hw_aisc * s.tw ** 3);
     const rts_sq = Math.sqrt(Iz * (s.D - s.tf) ** 2 / 4) / Zey; // rts ≈ √(√(Iy·Cw)/Sx)
     const rts = Math.sqrt(Math.max(rts_sq, 1));
     const c_aisc = 1.0; // doubly symmetric

@@ -28,7 +28,7 @@ import {
   specMemberIdAtom,
   modalAtomsMap,
   isAnyModalOpenAtom,
-} from './uiAtoms';
+} from '../store/uiAtoms';
 
 /**
  * Main hook for UI state

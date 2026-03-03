@@ -11,6 +11,7 @@
 import React from 'react';
 import { FC, useState, useEffect, useMemo, useCallback } from 'react';
 import { useModelStore, Member } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import sectionsData from '../../data/sections.json';
 
 // ============================================
@@ -219,7 +220,9 @@ interface PropertyInspectorProps {
 
 export const PropertyInspector: FC<PropertyInspectorProps> = React.memo(({ selectedMemberId: propSelectedId }) => {
     // Store connection
-    const { members, updateMember, selectedIds } = useModelStore();
+    const { members, updateMember, selectedIds } = useModelStore(
+        useShallow((state) => ({ members: state.members, updateMember: state.updateMember, selectedIds: state.selectedIds }))
+    );
 
     // Use prop or store selection
     const selectedMemberId = propSelectedId ?? (selectedIds.size === 1 ? [...selectedIds][0] : null);

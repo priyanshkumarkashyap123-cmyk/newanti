@@ -5,16 +5,17 @@
 import { FC, useState, useEffect, useMemo, memo } from "react";
 import { useModelStore } from "../../store/model";
 import { useUIStore } from "../../store/uiStore";
+import { useModelCounts, useDebouncedModelSelect } from "../../hooks/useDebouncedModelSelect";
 import { CoordinateInputBar } from "../ui/CoordinateInputBar";
 import { API_CONFIG } from "../../config/env";
 import { useHealthCheck, type HealthStatus } from "../../lib/health-check";
 
 export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
   memo(({ isAnalyzing, onOpenDiagnostics }) => {
-    const nodes = useModelStore((state) => state.nodes);
-    const members = useModelStore((state) => state.members);
-    const plates = useModelStore((state) => state.plates);
-    const selectedIds = useModelStore((state) => state.selectedIds);
+    // Debounced counts — only re-renders when count ACTUALLY changes, checked every 200ms
+    const { nodeCount, memberCount, plateCount, selectedCount } = useModelCounts();
+    // Debounced selectedIds for selection breakdown (200ms)
+    const selectedIds = useDebouncedModelSelect((s) => s.selectedIds, 200);
     const analysisResults = useModelStore((state) => state.analysisResults);
     const { activeCategory, activeTool, showGrid, snapToGrid, gridSize, toggleSnap } = useUIStore();
 
@@ -60,7 +61,7 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
     );
 
     // Selection info
-    const selCount = selectedIds.size;
+    const selCount = selectedCount;
     const selNodes = Array.from(selectedIds).filter(id => id.startsWith("N")).length;
     const selMembers = Array.from(selectedIds).filter(id => id.startsWith("M")).length;
 
@@ -141,15 +142,15 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
           {/* Model Statistics — Figma §6.1 N/M/P counters */}
           <span>
             <span className="text-slate-600">N:</span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{nodes.size}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{nodeCount}</span>
           </span>
           <span>
             <span className="text-slate-600">M:</span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{members.size}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{memberCount}</span>
           </span>
           <span>
             <span className="text-slate-600">P:</span>
-            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{plates.size}</span>
+            <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{plateCount}</span>
           </span>
 
           <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />

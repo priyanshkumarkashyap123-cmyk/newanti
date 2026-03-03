@@ -71,7 +71,7 @@ export const IntegratedWorkspace: FC = () => {
                 nodes as any,
                 members as any,
                 [],
-                nodes.filter((n) => n.restraints)
+                nodes.filter((n) => n.restraints) as any
             );
 
             // Compute max displacement magnitude from map if available
