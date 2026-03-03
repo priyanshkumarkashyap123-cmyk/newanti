@@ -42,7 +42,7 @@ import {
   Thermometer,
   PanelTopOpen,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FloorPlanRenderer, OverlayMode } from '../components/space-planning/FloorPlanRenderer';
 import { ElevationSectionViewer } from '../components/space-planning/ElevationSectionViewer';
 import { VastuCompass } from '../components/space-planning/VastuCompass';
@@ -91,6 +91,8 @@ const PLAN_TABS: { key: PlanTab; label: string; icon: typeof Building2; group: s
 
 export function SpacePlanningPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const templateId = searchParams.get('template') || undefined;
   const [activeTab, setActiveTab] = useState<PlanTab>('wizard');
   const [project, setProject] = useState<HousePlanProject | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -281,6 +283,7 @@ export function SpacePlanningPage() {
               {/* ======================== WIZARD ======================== */}
               {activeTab === 'wizard' && (
                 <RoomConfigWizard
+                  initialTemplateId={templateId}
                   onGenerate={handleGenerate}
                   isGenerating={isGenerating}
                   className="max-w-2xl mx-auto"

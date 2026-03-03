@@ -10,7 +10,7 @@
  * Step 7: Review & Generate
  */
 
-import { FC, useState, useCallback } from 'react';
+import { FC, useState, useCallback, useEffect } from 'react';
 import {
   Home,
   Compass,
@@ -37,6 +37,11 @@ import type {
   WizardStep,
 } from '../../services/space-planning/types';
 import { spacePlanningEngine } from '../../services/space-planning/SpacePlanningEngine';
+import generateSmartDefaults, {
+  type SmartDefaults,
+  type SmartDefaultsInput,
+} from '../../services/learning/smartDefaults';
+import { getTemplateById } from '../../data/educationalTemplates';
 
 // ============================================
 // TYPES
@@ -46,6 +51,7 @@ interface RoomConfigWizardProps {
   onGenerate: (config: WizardConfig) => void;
   isGenerating?: boolean;
   className?: string;
+  initialTemplateId?: string;
 }
 
 export interface WizardConfig {
@@ -88,6 +94,78 @@ const ROOM_CATEGORIES: { label: string; types: RoomType[] }[] = [
 
 const DIRECTIONS: CardinalDirection[] = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 
+const ROOM_PRESETS: Record<
+  'residential' | 'commercial' | 'industrial' | 'bridge' | 'tower',
+  Array<[RoomType, { count: number; floor: number }]>
+> = {
+  residential: [
+    ['living', { count: 1, floor: 0 }],
+    ['dining', { count: 1, floor: 0 }],
+    ['kitchen', { count: 1, floor: 0 }],
+    ['master_bedroom', { count: 1, floor: 1 }],
+    ['bedroom', { count: 2, floor: 1 }],
+    ['bathroom', { count: 2, floor: 1 }],
+    ['toilet', { count: 1, floor: 0 }],
+    ['staircase', { count: 1, floor: 0 }],
+    ['entrance_lobby', { count: 1, floor: 0 }],
+    ['balcony', { count: 1, floor: 1 }],
+    ['parking', { count: 1, floor: 0 }],
+  ],
+  commercial: [
+    ['entrance_lobby', { count: 1, floor: 0 }],
+    ['home_office', { count: 3, floor: 0 }],
+    ['study', { count: 2, floor: 1 }],
+    ['toilet', { count: 2, floor: 0 }],
+    ['bathroom', { count: 2, floor: 1 }],
+    ['staircase', { count: 1, floor: 0 }],
+    ['lift', { count: 1, floor: 0 }],
+    ['parking', { count: 1, floor: 0 }],
+  ],
+  industrial: [
+    ['workshop', { count: 1, floor: 0 }],
+    ['mechanical_room', { count: 1, floor: 0 }],
+    ['electrical_panel', { count: 1, floor: 0 }],
+    ['home_office', { count: 1, floor: 0 }],
+    ['toilet', { count: 2, floor: 0 }],
+    ['staircase', { count: 1, floor: 0 }],
+    ['parking', { count: 1, floor: 0 }],
+  ],
+  bridge: [
+    ['home_office', { count: 1, floor: 0 }],
+    ['mechanical_room', { count: 1, floor: 0 }],
+    ['electrical_panel', { count: 1, floor: 0 }],
+    ['toilet', { count: 1, floor: 0 }],
+  ],
+  tower: [
+    ['home_office', { count: 2, floor: 0 }],
+    ['mechanical_room', { count: 1, floor: 0 }],
+    ['electrical_panel', { count: 1, floor: 0 }],
+    ['staircase', { count: 1, floor: 0 }],
+    ['lift', { count: 1, floor: 0 }],
+  ],
+};
+
+type QuickBuildingType = keyof typeof ROOM_PRESETS;
+
+const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
+
+const inferProblemTypeFromTemplate = (templateId: string): SmartDefaultsInput['problemType'] => {
+  if (templateId.includes('beam')) return 'beam';
+  if (templateId.includes('truss')) return 'truss';
+  if (templateId.includes('arch')) return 'arch';
+  if (templateId.includes('frame') || templateId.includes('cable') || templateId.includes('space')) return 'frame';
+  return 'other';
+};
+
+const inferBuildingTypeFromTemplate = (
+  templateId: string,
+): QuickBuildingType => {
+  if (templateId.includes('cable') || templateId.includes('truss')) return 'bridge';
+  if (templateId.includes('space')) return 'industrial';
+  if (templateId.includes('frame')) return 'commercial';
+  return 'residential';
+};
+
 // ============================================
 // COMPONENT
 // ============================================
@@ -96,8 +174,11 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
   onGenerate,
   isGenerating = false,
   className = '',
+  initialTemplateId,
 }) => {
   const [step, setStep] = useState(0);
+  const [smartDefaults, setSmartDefaults] = useState<SmartDefaults | null>(null);
+  const [appliedTemplateId, setAppliedTemplateId] = useState<string | null>(null);
 
   // Plot
   const [plot, setPlot] = useState<PlotDimensions>({
@@ -171,6 +252,92 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
     state: 'Telangana',
     country: 'India',
   });
+
+  const applySmartProfile = useCallback(
+    (problemType: SmartDefaultsInput['problemType'], buildingType: QuickBuildingType) => {
+      const span = clamp(plot.width, 8, 40);
+      const defaults = generateSmartDefaults({
+        problemType,
+        span,
+        height: constraints.maxHeight,
+        buildingType,
+        code: buildingType === 'residential' ? 'IS 456:2000' : 'Both',
+        seismicZone: 'III',
+        userLevel: 'beginner',
+      });
+
+      setSmartDefaults(defaults);
+
+      const preset = ROOM_PRESETS[buildingType];
+      setSelectedRooms(new Map(preset));
+
+      const estimatedFloors = clamp(Math.round((constraints.maxHeight || 9) / 3.3), 1, 8);
+      setConstraints((c) => ({
+        ...c,
+        maxFloors: estimatedFloors,
+        buildingType: buildingType === 'residential' ? 'residential' : 'commercial',
+      }));
+
+      setPreferences((p) => ({
+        ...p,
+        budget: buildingType === 'residential' ? 'standard' : 'premium',
+        style: buildingType === 'industrial' ? 'modern' : 'contemporary',
+      }));
+    },
+    [constraints.maxHeight, plot.width],
+  );
+
+  useEffect(() => {
+    if (!initialTemplateId || appliedTemplateId === initialTemplateId) return;
+
+    const template = getTemplateById(initialTemplateId);
+    if (!template) return;
+
+    const inferredProblemType = inferProblemTypeFromTemplate(template.id);
+    const inferredBuildingType = inferBuildingTypeFromTemplate(template.id);
+    const defaults = generateSmartDefaults({
+      problemType: inferredProblemType,
+      span: template.plotDimensions.length,
+      height: template.plotDimensions.height,
+      buildingType: inferredBuildingType,
+      code: inferredBuildingType === 'residential' ? 'IS 456:2000' : 'Both',
+      seismicZone: 'III',
+      userLevel: template.difficulty === 'BEGINNER' ? 'beginner' : 'intermediate',
+    });
+
+    setSmartDefaults(defaults);
+
+    const suggestedWidth = clamp(Math.round((template.plotDimensions.length * 1.2) * 10) / 10, 12, 60);
+    const suggestedDepth = clamp(Math.round((template.plotDimensions.length * 1.6) * 10) / 10, 14, 80);
+    setPlot((p) => ({
+      ...p,
+      width: suggestedWidth,
+      depth: suggestedDepth,
+      area: suggestedWidth * suggestedDepth,
+      shape: template.id.includes('arch') ? 'trapezoidal' : 'rectangular',
+      unit: 'meters',
+    }));
+
+    setConstraints((c) => ({
+      ...c,
+      maxHeight: clamp(Math.max(template.plotDimensions.height * 2, 9), 9, 45),
+      maxFloors: clamp(Math.max(Math.round(template.plotDimensions.height / 3), 2), 2, 12),
+      buildingType: inferredBuildingType === 'residential' ? 'residential' : 'commercial',
+    }));
+
+    const preset = ROOM_PRESETS[inferredBuildingType];
+    setSelectedRooms(new Map(preset));
+    setPreferences((p) => ({
+      ...p,
+      style: inferredBuildingType === 'industrial' ? 'modern' : 'contemporary',
+      budget: template.difficulty === 'ADVANCED' ? 'luxury' : 'premium',
+      climate: 'composite',
+      naturalLighting: 'balanced',
+    }));
+
+    setAppliedTemplateId(initialTemplateId);
+    setStep(0);
+  }, [appliedTemplateId, initialTemplateId]);
 
   // Helpers
   const updatePlot = useCallback((key: keyof PlotDimensions, value: unknown) => {
@@ -277,6 +444,47 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         {/* Step 0: Plot Details */}
         {step === 0 && (
           <div className="space-y-4">
+            {smartDefaults && (
+              <div className="rounded-lg border border-blue-200 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-900/20 p-3">
+                <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">
+                  Smart Defaults Applied
+                </div>
+                <div className="text-[11px] text-blue-600 dark:text-blue-400 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                  <div>Material: {smartDefaults.recommendedMaterial}</div>
+                  <div>Deflection: {smartDefaults.deflectionLimit}</div>
+                  <div>Code: {smartDefaults.primaryCode}</div>
+                  <div>Template: {smartDefaults.recommendedTemplate}</div>
+                </div>
+              </div>
+            )}
+
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3">
+              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Quick Start Profiles</div>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => applySmartProfile('frame', 'residential')}
+                  className="px-2.5 py-1 text-[10px] rounded bg-blue-600 text-white hover:bg-blue-500"
+                >
+                  Residential Villa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applySmartProfile('frame', 'commercial')}
+                  className="px-2.5 py-1 text-[10px] rounded bg-indigo-600 text-white hover:bg-indigo-500"
+                >
+                  Commercial Block
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applySmartProfile('truss', 'industrial')}
+                  className="px-2.5 py-1 text-[10px] rounded bg-amber-600 text-white hover:bg-amber-500"
+                >
+                  Industrial Shed
+                </button>
+              </div>
+            </div>
+
             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <Home className="w-4 h-4 text-blue-500" /> Plot Details
             </h3>

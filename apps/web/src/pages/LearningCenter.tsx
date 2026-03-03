@@ -31,7 +31,17 @@ import {
   Target,
 } from 'lucide-react';
 // Import educational templates library
-import { ALL_EDUCATIONAL_TEMPLATES, getTemplatesByDifficulty } from '../data/educationalTemplates';
+import { ALL_EDUCATIONAL_TEMPLATES } from '../data/educationalTemplates';
+import { CODE_REFERENCE_SUMMARY } from '../data/codeReferences';
+import {
+  getLearningProgress,
+  getModuleProgressPercent,
+  isModuleCompleted,
+  markLessonCompletion,
+  saveLearningProgress,
+  setModuleCompleted,
+  type LearningProgressState,
+} from '../services/learning/progressTracker';
 
 // ============================================
 // TYPES
@@ -295,10 +305,29 @@ export function LearningCenter() {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [progressState, setProgressState] = useState<LearningProgressState>(() => getLearningProgress());
 
   useEffect(() => {
     document.title = 'Learning Center | BeamLab';
   }, []);
+
+  useEffect(() => {
+    saveLearningProgress(progressState);
+  }, [progressState]);
+
+  const activePathProgress = useMemo(() => {
+    if (!selectedPath) return 0;
+    const path = LEARNING_PATHS.find((p) => p.id === selectedPath);
+    if (!path || path.modules.length === 0) return 0;
+
+    const total = path.modules.reduce((sum, m) => sum + m.lessons.length, 0);
+    const done = path.modules.reduce(
+      (sum, m) => sum + (progressState.modules[m.id]?.completedLessons?.length || 0),
+      0,
+    );
+    if (total === 0) return 0;
+    return Math.round((done / total) * 100);
+  }, [progressState.modules, selectedPath]);
 
   const filteredPaths = useMemo(() => {
     return LEARNING_PATHS.filter(path =>
@@ -349,6 +378,14 @@ export function LearningCenter() {
             path={LEARNING_PATHS.find(p => p.id === selectedPath)!}
             expandedModule={expandedModule}
             onExpandModule={setExpandedModule}
+            progressState={progressState}
+            pathProgress={activePathProgress}
+            onToggleLesson={(moduleId, lessonId, done) =>
+              setProgressState((prev) => markLessonCompletion(prev, moduleId, lessonId, done))
+            }
+            onCompleteModule={(moduleId) =>
+              setProgressState((prev) => setModuleCompleted(prev, moduleId))
+            }
             onBack={() => setSelectedPath(null)}
           />
         )}
@@ -507,8 +544,21 @@ const PathDetail: React.FC<{
   path: LearningPath;
   expandedModule: string | null;
   onExpandModule: (id: string | null) => void;
+  progressState: LearningProgressState;
+  pathProgress: number;
+  onToggleLesson: (moduleId: string, lessonId: string, done: boolean) => void;
+  onCompleteModule: (moduleId: string) => void;
   onBack: () => void;
-}> = ({ path, expandedModule, onExpandModule, onBack }) => (
+}> = ({
+  path,
+  expandedModule,
+  onExpandModule,
+  progressState,
+  pathProgress,
+  onToggleLesson,
+  onCompleteModule,
+  onBack,
+}) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -542,8 +592,25 @@ const PathDetail: React.FC<{
         </div>
         <div className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
           <p className="text-xs text-slate-500">Progress</p>
-          <p className="text-lg font-bold text-white">0%</p>
+          <p className="text-lg font-bold text-white">{pathProgress}%</p>
         </div>
+      </div>
+    </div>
+
+    <div className="mb-8 rounded-xl border border-white/10 bg-white/5 p-5">
+      <h3 className="font-bold text-white mb-3">Contextual Code Help</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        {Object.entries(CODE_REFERENCE_SUMMARY)
+          .slice(0, 4)
+          .map(([code, details]) => (
+            <div key={code} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+              <div className="font-semibold text-slate-100">{code}</div>
+              <div className="text-slate-400 text-xs mt-1">{details.subject}</div>
+              <div className="text-slate-500 text-xs mt-1">
+                Safety factor: {details.safetyFactor} · Deflection: {details.deflectionLimit}
+              </div>
+            </div>
+          ))}
       </div>
     </div>
 
@@ -570,6 +637,11 @@ const PathDetail: React.FC<{
           <ModuleCard
             key={module.id}
             module={module}
+            completedLessonIds={progressState.modules[module.id]?.completedLessons || []}
+            progress={getModuleProgressPercent(progressState, module.id, module.lessons.length)}
+            completed={isModuleCompleted(progressState, module.id, module.lessons.length)}
+            onToggleLesson={(lessonId, done) => onToggleLesson(module.id, lessonId, done)}
+            onCompleteModule={() => onCompleteModule(module.id)}
             isExpanded={expandedModule === module.id}
             onToggle={() => onExpandModule(expandedModule === module.id ? null : module.id)}
           />
@@ -581,9 +653,23 @@ const PathDetail: React.FC<{
 
 const ModuleCard: React.FC<{
   module: Module;
+  completedLessonIds: string[];
+  progress: number;
+  completed: boolean;
+  onToggleLesson: (lessonId: string, done: boolean) => void;
+  onCompleteModule: () => void;
   isExpanded: boolean;
   onToggle: () => void;
-}> = ({ module, isExpanded, onToggle }) => (
+}> = ({
+  module,
+  completedLessonIds,
+  progress,
+  completed,
+  onToggleLesson,
+  onCompleteModule,
+  isExpanded,
+  onToggle,
+}) => (
   <div
     onClick={onToggle}
     className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.08] transition-colors cursor-pointer overflow-hidden"
@@ -593,9 +679,15 @@ const ModuleCard: React.FC<{
         <div className="flex items-center gap-3 mb-2">
           <h4 className="font-bold text-white">{module.title}</h4>
           {module.status === 'LOCKED' && <Lock className="w-4 h-4 text-slate-500" />}
-          {module.status === 'COMPLETED' && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+          {(module.status === 'COMPLETED' || completed) && <CheckCircle2 className="w-4 h-4 text-green-500" />}
         </div>
         <p className="text-sm text-slate-400 mb-3">{module.description}</p>
+        <div className="mb-3">
+          <div className="h-1.5 w-full rounded bg-white/10 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="mt-1 text-[11px] text-slate-500">Progress: {progress}%</div>
+        </div>
         <div className="flex items-center gap-4 text-xs text-slate-500">
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" /> {module.duration}h
@@ -621,12 +713,36 @@ const ModuleCard: React.FC<{
           <ul className="space-y-2">
             {module.lessons.map((lesson) => (
               <li key={lesson.id} className="flex items-center gap-3 text-sm text-slate-300">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleLesson(lesson.id, !completedLessonIds.includes(lesson.id));
+                  }}
+                  className={`w-4 h-4 rounded border flex items-center justify-center ${
+                    completedLessonIds.includes(lesson.id)
+                      ? 'bg-green-500 border-green-400'
+                      : 'bg-transparent border-slate-500'
+                  }`}
+                  aria-label={`Toggle lesson completion: ${lesson.title}`}
+                >
+                  {completedLessonIds.includes(lesson.id) ? '✓' : ''}
+                </button>
                 <span>{lesson.title}</span>
                 <span className="text-xs text-slate-500 ml-auto">{lesson.duration}m</span>
               </li>
             ))}
           </ul>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCompleteModule();
+            }}
+            className="mt-4 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500"
+          >
+            Mark Module Complete
+          </button>
         </motion.div>
       )}
     </AnimatePresence>
