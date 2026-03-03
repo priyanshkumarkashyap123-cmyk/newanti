@@ -168,4 +168,3 @@ export function getTemplatesCompletedCount(state: LearningProgressState): number
 export function getTemplatesStartedCount(state: LearningProgressState): number {
   return state.templatesStarted.length;
 }
-}
