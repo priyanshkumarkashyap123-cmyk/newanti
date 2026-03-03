@@ -527,19 +527,7 @@ export function FeatureFlagsDevTools(): JSX.Element | null {
     return (
       <button type="button"
         onClick={() => setIsOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: 16,
-          left: 16,
-          padding: '8px 12px',
-          background: '#1f2937',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontSize: 12,
-          zIndex: 9992,
-        }}
+        className="fixed bottom-4 left-4 px-3 py-2 bg-gray-800 text-white border-none rounded-lg cursor-pointer text-xs z-[9992]"
       >
         🚩 Flags
       </button>
@@ -548,76 +536,40 @@ export function FeatureFlagsDevTools(): JSX.Element | null {
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        bottom: 16,
-        left: 16,
-        width: 320,
-        maxHeight: 400,
-        background: '#1f2937',
-        color: '#fff',
-        borderRadius: 8,
-        padding: 16,
-        overflow: 'auto',
-        zIndex: 9992,
-        fontSize: 12,
-      }}
+      className="fixed bottom-4 left-4 w-80 max-h-[400px] bg-gray-800 text-white rounded-lg p-4 overflow-auto z-[9992] text-xs"
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+      <div className="flex justify-between mb-3">
         <strong>🚩 Feature Flags</strong>
-        <button type="button" onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>
+        <button type="button" onClick={() => setIsOpen(false)} className="bg-transparent border-none text-white cursor-pointer">✕</button>
       </div>
       
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+      <div className="flex gap-2 mb-3">
         <button type="button"
           onClick={() => refresh()}
           disabled={isLoading}
-          style={{
-            padding: '4px 8px',
-            background: '#3b82f6',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontSize: 11,
-          }}
+          className="px-2 py-1 bg-blue-500 text-white border-none rounded cursor-pointer text-[11px]"
         >
           {isLoading ? 'Loading...' : 'Refresh'}
         </button>
         <button type="button"
           onClick={handleClearOverrides}
-          style={{
-            padding: '4px 8px',
-            background: '#6b7280',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 4,
-            cursor: 'pointer',
-            fontSize: 11,
-          }}
+          className="px-2 py-1 bg-gray-500 text-white border-none rounded cursor-pointer text-[11px]"
         >
           Clear Overrides
         </button>
       </div>
       
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="flex flex-col gap-2">
         {Object.entries(flags).map(([key, flag]) => (
           <div
             key={key}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: 8,
-              background: '#374151',
-              borderRadius: 4,
-            }}
+            className="flex items-center justify-between p-2 bg-gray-700 rounded"
           >
             <div>
-              <div style={{ fontWeight: 500 }}>{key}</div>
-              <div style={{ color: '#9ca3af', fontSize: 10 }}>{flag.description}</div>
+              <div className="font-medium">{key}</div>
+              <div className="text-gray-400 text-[10px]">{flag.description}</div>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <label className="flex items-center gap-1">
               <input
                 type="checkbox"
                 checked={isEnabled(key)}

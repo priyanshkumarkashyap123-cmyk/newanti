@@ -239,11 +239,11 @@ function VirtualListInner<T>(
   return (
     <div
       ref={containerRef}
-      className={`overflow-auto ${className}`}
-      style={{ ...style, position: 'relative' }}
+      className={`overflow-auto relative ${className}`}
+      style={style}
       onScroll={handleScroll}
     >
-      <div style={{ height: totalHeight, position: 'relative' }}>
+      <div className="relative" style={{ height: totalHeight }}>
         {visibleItems}
       </div>
     </div>
@@ -350,11 +350,10 @@ export function VirtualGrid<T>({
   return (
     <div
       ref={containerRef}
-      className={`overflow-auto ${className}`}
-      style={{ position: 'relative' }}
+      className={`overflow-auto relative ${className}`}
       onScroll={handleScroll}
     >
-      <div style={{ height: totalHeight, position: 'relative' }}>
+      <div className="relative" style={{ height: totalHeight }}>
         {visibleItems}
       </div>
     </div>
@@ -432,16 +431,13 @@ export function VirtualTable<T>({
       rendered.push(
         <div
           key={key}
-          className={`flex border-b border-slate-200 dark:border-slate-700 ${
+          className={`flex border-b border-slate-200 dark:border-slate-700 absolute inset-x-0 ${
             isSelected
               ? 'bg-blue-50 dark:bg-blue-900/20'
               : 'hover:bg-slate-50 dark:hover:bg-slate-800'
           } ${onRowClick ? 'cursor-pointer' : ''}`}
           style={{
-            position: 'absolute',
             top,
-            left: 0,
-            right: 0,
             height: rowHeight,
           }}
           onClick={() => onRowClick?.(item, i)}
@@ -486,7 +482,7 @@ export function VirtualTable<T>({
         className="flex-1 overflow-auto"
         onScroll={handleScroll}
       >
-        <div style={{ height: totalHeight, position: 'relative' }}>
+        <div className="relative" style={{ height: totalHeight }}>
           {visibleRows}
         </div>
       </div>

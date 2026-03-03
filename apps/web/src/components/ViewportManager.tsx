@@ -253,13 +253,7 @@ const ViewportContainer: FC<{
 
       {/* Single Canvas with Views */}
       <Canvas
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-        }}
+        className="absolute top-0 left-0 w-full h-full"
         eventSource={containerRef as MutableRefObject<HTMLElement>}
         shadows
         dpr={[1, 2]}

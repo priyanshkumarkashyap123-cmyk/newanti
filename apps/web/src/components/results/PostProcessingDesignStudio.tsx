@@ -1340,8 +1340,7 @@ const RCBeamTab: FC<{
                           </div>
                           <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-amber-500/60 rounded-full"
-                              style={{ width: "100%" }}
+                              className="h-full bg-amber-500/60 rounded-full w-full"
                             />
                           </div>
                         </div>

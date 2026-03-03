@@ -341,11 +341,10 @@ const HeatmapTooltip: React.FC<HeatmapTooltipProps> = ({ data, unit }) => {
     
     return (
         <div
-            className="absolute z-50 px-3 py-2 bg-slate-50/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl pointer-events-none"
+            className="absolute z-50 px-3 py-2 bg-slate-50/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl pointer-events-none -translate-y-full"
             style={{
                 left: data.x + 10,
                 top: data.y - 10,
-                transform: 'translateY(-100%)'
             }}
         >
             <div className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -690,10 +689,9 @@ export const ResultsHeatmap: React.FC<ResultsHeatmapProps> = ({
                             ref={svgRef}
                             width={width}
                             height={height}
-                            className="bg-white dark:bg-slate-950"
+                            className="bg-white dark:bg-slate-950 origin-center"
                             style={{ 
-                                transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-                                transformOrigin: 'center'
+                                transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`
                             }}
                         >
                             {/* Background */}
