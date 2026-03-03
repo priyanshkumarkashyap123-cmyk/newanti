@@ -830,14 +830,38 @@ export default function ConnectionDesignDatabase() {
                   </div>
                 </div>
                 
-                {/* Connection Diagram Placeholder */}
+                {/* Connection Diagram Visualization */}
                 <div className="p-6 border-b border-slate-300 dark:border-slate-700">
-                  <div className="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <Box className="w-16 h-16 text-slate-500 mx-auto mb-2" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Connection Detail</span>
-                    </div>
-                  </div>
+                  <svg className="w-full aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg p-4" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+                    {/* Steel column section */}
+                    <rect x="400" y="200" width="200" height="80" fill="#667eea" opacity="0.8" stroke="#4c63d2" strokeWidth="2" />
+                    <text x="600" y="250" textAnchor="middle" fontSize="14" fill="white" fontWeight="bold">Beam</text>
+                    
+                    {/* Connection bolts */}
+                    <circle cx="450" cy="300" r="15" fill="#ef4444" opacity="0.7" stroke="#dc2626" strokeWidth="2" />
+                    <circle cx="550" cy="300" r="15" fill="#ef4444" opacity="0.7" stroke="#dc2626" strokeWidth="2" />
+                    <circle cx="450" cy="380" r="15" fill="#ef4444" opacity="0.7" stroke="#dc2626" strokeWidth="2" />
+                    <circle cx="550" cy="380" r="15" fill="#ef4444" opacity="0.7" stroke="#dc2626" strokeWidth="2" />
+                    
+                    {/* Column section */}
+                    <rect x="420" y="400" width="160" height="300" fill="#3b82f6" opacity="0.8" stroke="#1d4ed8" strokeWidth="2" />
+                    <text x="500" y="575" textAnchor="middle" fontSize="14" fill="white" fontWeight="bold">Column</text>
+                    
+                    {/* Welds */}
+                    <path d="M 420 400 L 410 410 M 440 400 L 430 410 M 460 400 L 450 410 M 480 400 L 470 410 M 500 400 L 490 410 M 520 400 L 510 410 M 540 400 L 530 410 M 560 400 L 550 410 M 580 400 L 570 410" stroke="#f59e0b" strokeWidth="2" opacity="0.6" />
+                    
+                    {/* Dimension lines */}
+                    <line x1="300" y1="250" x2="700" y2="250" stroke="#6b7280" strokeWidth="1" strokeDasharray="5,5" opacity="0.5" />
+                    <text x="320" y="240" fontSize="12" fill="#6b7280">Connection Detail</text>
+                    
+                    {/* Stress flow arrows */}
+                    <defs>
+                      <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                        <polygon points="0 0, 10 3, 0 6" fill="#06b6d4" opacity="0.6" />
+                      </marker>
+                    </defs>
+                    <path d="M 500 150 L 500 190" stroke="#06b6d4" strokeWidth="3" markerEnd="url(#arrowhead)" opacity="0.6" />
+                  </svg>
                 </div>
                 
                 {/* Properties */}
