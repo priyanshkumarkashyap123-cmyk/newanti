@@ -49,6 +49,9 @@ import { VastuCompass } from '../components/space-planning/VastuCompass';
 import { RoomConfigWizard, WizardConfig } from '../components/space-planning/RoomConfigWizard';
 import { spacePlanningEngine } from '../services/space-planning/SpacePlanningEngine';
 import type { HousePlanProject, ColorScheme } from '../services/space-planning/types';
+import { getLearningProgress, saveLearningProgress, completeTemplate } from '../services/learning/progressTracker';
+import { checkMilestoneUnlocks, applyMilestoneUnlocks } from '../services/learning/milestoneUnlocker';
+import { recordSessionEnd, recordTemplateCompletion } from '../services/learning/analyticsTracker';
 
 // ============================================
 // TABS
@@ -100,35 +103,70 @@ export function SpacePlanningPage() {
   const [overlayMode, setOverlayMode] = useState<OverlayMode>('none');
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const sessionStartRef = useRef<number>(Date.now());
 
   useEffect(() => {
     document.title = 'Space Planning | BeamLab';
+    // Record session start
+    sessionStartRef.current = Date.now();
   }, []);
 
-  const handleGenerate = useCallback(async (config: WizardConfig) => {
-    setIsGenerating(true);
-    try {
-      // Small delay for UI feedback
-      await new Promise((r) => setTimeout(r, 300));
+  const handleTemplateCompletion = useCallback(() => {
+    if (!templateId) return;
 
-      const result = spacePlanningEngine.generateCompletePlan(
-        config.plot,
-        config.orientation,
-        config.constraints,
-        config.roomSpecs,
-        config.preferences,
-        config.location,
-      );
+    // Update learning progress
+    let progressState = getLearningProgress();
+    progressState = completeTemplate(progressState, templateId);
+    saveLearningProgress(progressState);
 
-      setProject(result);
-      setActiveTab('floor_plan');
-      setSelectedFloor(0);
-    } catch (err) {
-      console.error('Plan generation failed:', err);
-    } finally {
-      setIsGenerating(false);
+    // Record analytics
+    recordTemplateCompletion();
+    const sessionDurationMs = Date.now() - sessionStartRef.current;
+    recordSessionEnd(sessionStartRef.current, Math.floor(sessionDurationMs / 60000));
+
+    // Check for milestone unlocks
+    const unlockResult = checkMilestoneUnlocks(progressState, 'Learner');
+    if (unlockResult.unlockedMilestones.length > 0) {
+      progressState = applyMilestoneUnlocks(progressState, unlockResult);
+      saveLearningProgress(progressState);
+
+      // Show milestone notification (could use toast here)
+      console.log('Milestones unlocked:', unlockResult.unlockedMilestones);
     }
-  }, []);
+  }, [templateId]);
+
+  const handleGenerate = useCallback(
+    async (config: WizardConfig) => {
+      setIsGenerating(true);
+      try {
+        // Small delay for UI feedback
+        await new Promise((r) => setTimeout(r, 300));
+
+        const result = spacePlanningEngine.generateCompletePlan(
+          config.plot,
+          config.orientation,
+          config.constraints,
+          config.roomSpecs,
+          config.preferences,
+          config.location,
+        );
+
+        setProject(result);
+        setActiveTab('floor_plan');
+        setSelectedFloor(0);
+
+        // Mark template as completed if this was a guided template
+        if (templateId) {
+          handleTemplateCompletion();
+        }
+      } catch (err) {
+        console.error('Plan generation failed:', err);
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [templateId, handleTemplateCompletion],
+  );
 
   const currentFloorPlan =
     project?.floorPlans.find((fp) => fp.floor === selectedFloor) || project?.floorPlans[0];

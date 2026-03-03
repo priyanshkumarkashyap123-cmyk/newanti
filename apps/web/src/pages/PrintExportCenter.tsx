@@ -918,36 +918,90 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         </div>
                       )}
 
-                      {/* Content placeholder */}
-                      <div className="space-y-2">
-                        <div
-                          className="h-2 bg-slate-200 rounded w-3/4"
-                          style={{ height: 8 * (previewZoom / 100) }}
-                        />
-                        <div
-                          className="h-2 bg-slate-200 rounded w-full"
-                          style={{ height: 8 * (previewZoom / 100) }}
-                        />
-                        <div
-                          className="h-2 bg-slate-200 rounded w-5/6"
-                          style={{ height: 8 * (previewZoom / 100) }}
-                        />
-                        <div
-                          className="h-2 bg-slate-200 rounded w-2/3"
-                          style={{ height: 8 * (previewZoom / 100) }}
-                        />
-                        <div
-                          className="my-4 h-20 bg-slate-100 rounded"
-                          style={{ height: 80 * (previewZoom / 100) }}
-                        />
-                        <div
-                          className="h-2 bg-slate-200 rounded w-full"
-                          style={{ height: 8 * (previewZoom / 100) }}
-                        />
-                        <div
-                          className="h-2 bg-slate-200 rounded w-4/5"
-                          style={{ height: 8 * (previewZoom / 100) }}
-                        />
+                      {/* Report Content — real data from store */}
+                      <div className="space-y-3" style={{ fontSize: 7 * (previewZoom / 100) }}>
+                        {/* Summary */}
+                        <div>
+                          <h3 className="font-bold text-slate-700 mb-1" style={{ fontSize: 9 * (previewZoom / 100) }}>
+                            Analysis Summary
+                          </h3>
+                          <div className="text-slate-600">
+                            Nodes: {nodes.size} &nbsp;|&nbsp; Members: {members.size} &nbsp;|&nbsp;
+                            Status: {analysisResults ? '✓ Solved' : '— Not solved'}
+                          </div>
+                        </div>
+
+                        {/* Node Table Preview */}
+                        <div>
+                          <h4 className="font-semibold text-slate-700 mb-1" style={{ fontSize: 8 * (previewZoom / 100) }}>
+                            Node Coordinates
+                          </h4>
+                          <table className="w-full border-collapse text-slate-600" style={{ fontSize: 6 * (previewZoom / 100) }}>
+                            <thead>
+                              <tr className="border-b border-slate-300">
+                                <th className="text-left p-0.5">Node</th>
+                                <th className="text-right p-0.5">X (m)</th>
+                                <th className="text-right p-0.5">Y (m)</th>
+                                <th className="text-right p-0.5">Z (m)</th>
+                                {analysisResults && <>
+                                  <th className="text-right p-0.5">ΔX (mm)</th>
+                                  <th className="text-right p-0.5">ΔY (mm)</th>
+                                </>}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Array.from(nodes.entries()).slice(0, 8).map(([id, node]) => {
+                                const disp = analysisResults?.displacements.get(id);
+                                return (
+                                  <tr key={id} className="border-b border-slate-100">
+                                    <td className="p-0.5">{id}</td>
+                                    <td className="text-right p-0.5">{node.x.toFixed(2)}</td>
+                                    <td className="text-right p-0.5">{node.y.toFixed(2)}</td>
+                                    <td className="text-right p-0.5">{(node.z ?? 0).toFixed(2)}</td>
+                                    {analysisResults && <>
+                                      <td className="text-right p-0.5">{((disp?.dx ?? 0) * 1000).toFixed(3)}</td>
+                                      <td className="text-right p-0.5">{((disp?.dy ?? 0) * 1000).toFixed(3)}</td>
+                                    </>}
+                                  </tr>
+                                );
+                              })}
+                              {nodes.size > 8 && (
+                                <tr><td colSpan={6} className="text-center text-slate-400 italic p-0.5">
+                                  ... {nodes.size - 8} more nodes
+                                </td></tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Reactions preview (if available) */}
+                        {analysisResults && analysisResults.reactions.size > 0 && (
+                          <div>
+                            <h4 className="font-semibold text-slate-700 mb-1" style={{ fontSize: 8 * (previewZoom / 100) }}>
+                              Support Reactions
+                            </h4>
+                            <table className="w-full border-collapse text-slate-600" style={{ fontSize: 6 * (previewZoom / 100) }}>
+                              <thead>
+                                <tr className="border-b border-slate-300">
+                                  <th className="text-left p-0.5">Node</th>
+                                  <th className="text-right p-0.5">Fx (kN)</th>
+                                  <th className="text-right p-0.5">Fy (kN)</th>
+                                  <th className="text-right p-0.5">Mz (kN·m)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {Array.from(analysisResults.reactions.entries()).slice(0, 6).map(([nodeId, rxn]) => (
+                                  <tr key={nodeId} className="border-b border-slate-100">
+                                    <td className="p-0.5">{nodeId}</td>
+                                    <td className="text-right p-0.5">{((rxn as any).fx ?? 0).toFixed(2)}</td>
+                                    <td className="text-right p-0.5">{((rxn as any).fy ?? 0).toFixed(2)}</td>
+                                    <td className="text-right p-0.5">{((rxn as any).mz ?? 0).toFixed(2)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </div>
 
                       {/* Footer */}

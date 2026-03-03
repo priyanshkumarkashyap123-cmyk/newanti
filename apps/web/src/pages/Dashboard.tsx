@@ -429,22 +429,30 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             </Button>
           ))}
 
-          {/* Favorites & Trash - per Figma §5.1 */}
-          <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent opacity-60 cursor-not-allowed" title="Coming soon">
+          {/* Favorites & Trash - filter views */}
+          <Button variant="ghost" onClick={() => setActiveTab('favorites')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2 transition-colors ${
+            activeTab === 'favorites'
+              ? 'bg-blue-500/[0.12] text-blue-400 border-blue-500'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-transparent'
+          }`}>
             <Star className="w-4 h-4" />
             Favorites
           </Button>
-          <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-transparent opacity-60 cursor-not-allowed" title="Coming soon">
+          <Button variant="ghost" onClick={() => setActiveTab('trash')} className={`w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium border-l-2 transition-colors ${
+            activeTab === 'trash'
+              ? 'bg-blue-500/[0.12] text-blue-400 border-blue-500'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-transparent'
+          }`}>
             <Trash2 className="w-4 h-4" />
             Trash
           </Button>
 
           <div className="pt-4 mt-4 border-t border-white/[0.06]">
-            <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white opacity-60 cursor-not-allowed" title="Coming soon">
+            <Button variant="ghost" onClick={() => navigate('/analytics')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
               <BarChart3 className="w-4 h-4" />
               Analytics
             </Button>
-            <Button variant="ghost" disabled className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white opacity-60 cursor-not-allowed" title="Coming soon">
+            <Button variant="ghost" onClick={() => navigate('/export')} className="w-full justify-start gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
               <FileSpreadsheet className="w-4 h-4" />
               Reports
             </Button>
@@ -945,6 +953,24 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 icon={<Users className="w-8 h-8" />}
               />
             )}
+          </TabPanel>
+
+          {/* Favorites - shows favorite projects */}
+          <TabPanel isActive={activeTab === "favorites"}>
+            <EmptyState
+              title="No favorite projects yet"
+              description="Star your most-used projects for quick access. Click the star icon on any project card."
+              icon={<Star className="w-8 h-8" />}
+            />
+          </TabPanel>
+
+          {/* Trash - shows deleted projects */}
+          <TabPanel isActive={activeTab === "trash"}>
+            <EmptyState
+              title="Trash is empty"
+              description="Deleted projects will appear here. You can restore them within 30 days."
+              icon={<Trash2 className="w-8 h-8" />}
+            />
           </TabPanel>
         </PageTransition>
 

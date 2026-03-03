@@ -87,9 +87,9 @@ const analysisTypes: AnalysisCard[] = [
     description: 'Steady-state response to harmonic loading, frequency response functions, resonance detection',
     icon: Radio,
     color: 'from-pink-600 to-rose-600',
-    link: '/analysis/harmonic',
+    link: '/analysis/time-history-page?mode=harmonic',
     tags: ['FRF', 'Resonance', 'Machinery'],
-    status: 'beta'
+    status: 'ready'
   },
   {
     id: 'random-vibration',
@@ -97,9 +97,9 @@ const analysisTypes: AnalysisCard[] = [
     description: 'Power spectral density analysis, RMS response, fatigue life estimation from random excitation',
     icon: Volume2,
     color: 'from-violet-600 to-purple-600',
-    link: '/analysis/random',
+    link: '/analysis/time-history-page?mode=random',
     tags: ['PSD', 'RMS', 'Fatigue'],
-    status: 'coming'
+    status: 'ready'
   },
   {
     id: 'floor-vibration',

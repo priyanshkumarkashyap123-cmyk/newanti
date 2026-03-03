@@ -1748,6 +1748,22 @@ export const useModelStore = create<ModelState>()(
           projectInfo: state.projectInfo,
           settings: state.settings,
         }),
+        // Prevent duplicate snapshots when structural data hasn't actually changed.
+        // Uses a fast length + reference check before falling back to JSON comparison.
+        equality: (pastState, currentState) => {
+          const keys = Object.keys(pastState) as (keyof typeof pastState)[];
+          for (const key of keys) {
+            const a = pastState[key];
+            const b = currentState[key];
+            if (a === b) continue; // Same reference — skip
+            if (Array.isArray(a) && Array.isArray(b)) {
+              if (a.length !== b.length) return false; // Different count — not equal
+            }
+            // Deep-compare only when refs differ and lengths match
+            if (JSON.stringify(a) !== JSON.stringify(b)) return false;
+          }
+          return true;
+        },
       },
     ),
   ),

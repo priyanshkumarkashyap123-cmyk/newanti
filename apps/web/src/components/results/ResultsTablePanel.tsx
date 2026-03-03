@@ -30,6 +30,13 @@ import {
   FileSpreadsheet,
   Copy,
 } from "lucide-react";
+import {
+  ExportData,
+  exportNodesCSV,
+  exportMembersCSV,
+  exportReactionsCSV,
+  exportAllCSV,
+} from "../../services/ExportService";
 
 // ============================================
 // TYPES
@@ -762,6 +769,9 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
   const analysisResults = useModelStore((state) => state.analysisResults);
+  const nodes = useModelStore((state) => state.nodes);
+  const members = useModelStore((state) => state.members);
+  const projectInfo = useModelStore((state) => state.projectInfo);
 
   const tabs: { id: ResultsTab; label: string; icon: React.ReactNode }[] = [
     {
@@ -782,8 +792,84 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
   ];
 
   const handleExportCSV = useCallback(() => {
-    // Export current table to CSV — feature not yet implemented
-  }, [activeTab]);
+    if (!analysisResults) return;
+
+    // Build ExportData from store
+    const nodeResults = Array.from(nodes.entries()).map(([id, node]) => {
+      const disp = analysisResults.displacements.get(id);
+      return {
+        id,
+        x: node.x,
+        y: node.y,
+        z: node.z,
+        dx: disp?.dx ?? 0,
+        dy: disp?.dy ?? 0,
+        dz: disp?.dz ?? 0,
+        rx: disp?.rx ?? 0,
+        ry: disp?.ry ?? 0,
+        rz: disp?.rz ?? 0,
+      };
+    });
+
+    const memberResults = Array.from(members.entries()).map(([id, member]) => {
+      const forces = analysisResults.memberForces.get(id);
+      return {
+        id,
+        startNodeId: member.startNodeId,
+        endNodeId: member.endNodeId,
+        axialStart: forces?.startForces?.axial ?? forces?.axial ?? 0,
+        axialEnd: forces?.endForces?.axial ?? -(forces?.axial ?? 0),
+        shearYStart: forces?.startForces?.shearY ?? forces?.shearY ?? 0,
+        shearYEnd: forces?.endForces?.shearY ?? -(forces?.shearY ?? 0),
+        shearZStart: forces?.startForces?.shearZ ?? forces?.shearZ ?? 0,
+        shearZEnd: forces?.endForces?.shearZ ?? -(forces?.shearZ ?? 0),
+        momentYStart: forces?.startForces?.momentY ?? forces?.momentY ?? 0,
+        momentYEnd: forces?.endForces?.momentY ?? -(forces?.momentY ?? 0),
+        momentZStart: forces?.startForces?.momentZ ?? forces?.momentZ ?? 0,
+        momentZEnd: forces?.endForces?.momentZ ?? -(forces?.momentZ ?? 0),
+        torsionStart: forces?.startForces?.torsion ?? forces?.torsion ?? 0,
+        torsionEnd: forces?.endForces?.torsion ?? -(forces?.torsion ?? 0),
+      };
+    });
+
+    const reactionResults = Array.from(analysisResults.reactions.entries()).map(
+      ([nodeId, rxn]) => ({
+        nodeId,
+        fx: rxn.fx ?? 0,
+        fy: rxn.fy ?? 0,
+        fz: rxn.fz ?? 0,
+        mx: rxn.mx ?? 0,
+        my: rxn.my ?? 0,
+        mz: rxn.mz ?? 0,
+      })
+    );
+
+    const exportData: ExportData = {
+      projectName: projectInfo?.name || 'BeamLab_Project',
+      engineer: projectInfo?.engineer || '',
+      client: projectInfo?.client || '',
+      timestamp: new Date(),
+      nodes: nodeResults,
+      members: memberResults,
+      reactions: reactionResults,
+    };
+
+    // Export based on active tab
+    switch (activeTab) {
+      case 'nodes':
+        exportNodesCSV(exportData);
+        break;
+      case 'members':
+        exportMembersCSV(exportData);
+        break;
+      case 'reactions':
+        exportReactionsCSV(exportData);
+        break;
+      default:
+        exportAllCSV(exportData);
+        break;
+    }
+  }, [activeTab, analysisResults, nodes, members, projectInfo]);
 
   const handleCopyTable = useCallback(() => {
     setCopied(true);
@@ -827,9 +913,14 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
             {copied ? <span className="text-xs text-green-500 font-medium">✓ Copied!</span> : <Copy size={16} />}
           </button>
           <button type="button"
-            disabled
-            className="p-1.5 text-slate-400 dark:text-slate-500 cursor-not-allowed rounded"
-            title="CSV Export: Coming soon"
+            onClick={handleExportCSV}
+            disabled={!analysisResults}
+            className={`p-1.5 rounded transition-colors ${
+              analysisResults
+                ? 'text-slate-500 hover:text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'text-slate-400 dark:text-slate-500 cursor-not-allowed'
+            }`}
+            title={analysisResults ? `Export ${activeTab} to CSV` : 'Run analysis first'}
           >
             <FileSpreadsheet size={16} />
           </button>

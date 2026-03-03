@@ -15,7 +15,7 @@
  * Industry Standard: Matches ETABS, SAP2000, ANSYS post-processors
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   Play,
   Pause,
@@ -44,9 +44,11 @@ import {
   Eye,
   EyeOff,
   Clock,
-  Zap
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useModelStore } from '../store/model';
 
 // Types
 type AnimationType = 'deformation' | 'modal' | 'time-history' | 'stress' | 'force-diagram' | 'buckling';
@@ -104,6 +106,15 @@ const ResultAnimationViewer: React.FC = () => {
   const animationRef = useRef<number | null>(null);
 
   // Try to load real data from analysis store
+  const storeNodes = useModelStore((s) => s.nodes);
+  const storeMembers = useModelStore((s) => s.members);
+  const analysisResults = useModelStore((s) => s.analysisResults);
+  const modalResults = useModelStore((s) => s.modalResults);
+  const storeLCs = useModelStore((s) => s.loadCases);
+
+  const hasRealData = useMemo(() => !!(analysisResults && storeNodes.size > 0), [analysisResults, storeNodes]);
+  const isUsingDemoData = !hasRealData;
+
   const [loadCases, setLoadCases] = useState<LoadCase[]>([]);
   const [modeShapes, setModeShapes] = useState<ModeShape[]>([]);
   const [selectedMode, setSelectedMode] = useState(1);
@@ -112,68 +123,59 @@ const ResultAnimationViewer: React.FC = () => {
   useEffect(() => { document.title = 'Result Animation | BeamLab'; }, []);
 
   useEffect(() => {
-    // Attempt to pull real data from the model store
-    (async () => {
-      try {
-        const { useModelStore } = await import('../store/model');
-        const state = useModelStore.getState();
+    // Load real data from the model store (already imported above)
+    // Load cases
+    if (storeLCs && storeLCs.length > 0) {
+      setLoadCases(storeLCs.map((lc: any) => ({
+        id: lc.id,
+        name: lc.name || lc.id,
+        type: lc.type || 'static',
+        selected: false,
+      })));
+    }
 
-        // Load cases from store
-        if (state.loadCases && state.loadCases.length > 0) {
-          setLoadCases(state.loadCases.map((lc: any) => ({
-            id: lc.id,
-            name: lc.name || lc.id,
-            type: lc.type || 'static',
-            selected: false,
-          })));
-        }
-
-        // Modal results from store
-        if (state.modalResults) {
-          const mr = state.modalResults as any;
-          if (mr.frequencies && mr.frequencies.length > 0) {
-            setModeShapes(mr.frequencies.map((freq: number, i: number) => ({
-              mode: i + 1,
-              frequency: freq,
-              period: freq > 0 ? 1 / freq : 0,
-              description: `Mode ${i + 1}`,
-              participation: mr.participation_factors?.[i] || { x: 0, y: 0, z: 0 },
-            })));
-          }
-        }
-      } catch {
-        // Store not available
+    // Modal results
+    if (modalResults) {
+      const mr = modalResults as any;
+      if (mr.frequencies && mr.frequencies.length > 0) {
+        setModeShapes(mr.frequencies.map((freq: number, i: number) => ({
+          mode: i + 1,
+          frequency: freq,
+          period: freq > 0 ? 1 / freq : 0,
+          description: `Mode ${i + 1}`,
+          participation: mr.participation_factors?.[i] || { x: 0, y: 0, z: 0 },
+        })));
       }
+    }
 
-      // If no real data loaded, use defaults
-      setLoadCases(prev => prev.length > 0 ? prev : [
-        { id: 'lc1', name: 'Dead Load (DL)', type: 'static', selected: false },
-        { id: 'lc2', name: 'Live Load (LL)', type: 'static', selected: false },
-        { id: 'lc3', name: 'Seismic X (EQX)', type: 'seismic', selected: true },
-        { id: 'lc4', name: 'Seismic Y (EQY)', type: 'seismic', selected: false },
-        { id: 'lc5', name: 'Wind Load (WL)', type: 'static', selected: false },
-        { id: 'lc6', name: 'Combination 1 (1.5DL+1.5LL)', type: 'static', selected: false },
-      ]);
+    // If no real data loaded, use defaults
+    setLoadCases(prev => prev.length > 0 ? prev : [
+      { id: 'lc1', name: 'Dead Load (DL)', type: 'static', selected: false },
+      { id: 'lc2', name: 'Live Load (LL)', type: 'static', selected: false },
+      { id: 'lc3', name: 'Seismic X (EQX)', type: 'seismic', selected: true },
+      { id: 'lc4', name: 'Seismic Y (EQY)', type: 'seismic', selected: false },
+      { id: 'lc5', name: 'Wind Load (WL)', type: 'static', selected: false },
+      { id: 'lc6', name: 'Combination 1 (1.5DL+1.5LL)', type: 'static', selected: false },
+    ]);
 
-      setModeShapes(prev => prev.length > 0 ? prev : [
-        { mode: 1, frequency: 1.25, period: 0.80, description: 'First Translation X', participation: { x: 72, y: 5, z: 2 } },
-        { mode: 2, frequency: 1.42, period: 0.70, description: 'First Translation Y', participation: { x: 4, y: 68, z: 3 } },
-        { mode: 3, frequency: 1.85, period: 0.54, description: 'First Torsion', participation: { x: 2, y: 3, z: 45 } },
-        { mode: 4, frequency: 3.65, period: 0.27, description: 'Second Translation X', participation: { x: 12, y: 1, z: 0 } },
-        { mode: 5, frequency: 4.12, period: 0.24, description: 'Second Translation Y', participation: { x: 1, y: 10, z: 0 } },
-        { mode: 6, frequency: 5.25, period: 0.19, description: 'Second Torsion', participation: { x: 0, y: 0, z: 8 } },
-      ]);
+    setModeShapes(prev => prev.length > 0 ? prev : [
+      { mode: 1, frequency: 1.25, period: 0.80, description: 'First Translation X', participation: { x: 72, y: 5, z: 2 } },
+      { mode: 2, frequency: 1.42, period: 0.70, description: 'First Translation Y', participation: { x: 4, y: 68, z: 3 } },
+      { mode: 3, frequency: 1.85, period: 0.54, description: 'First Torsion', participation: { x: 2, y: 3, z: 45 } },
+      { mode: 4, frequency: 3.65, period: 0.27, description: 'Second Translation X', participation: { x: 12, y: 1, z: 0 } },
+      { mode: 5, frequency: 4.12, period: 0.24, description: 'Second Translation Y', participation: { x: 1, y: 10, z: 0 } },
+      { mode: 6, frequency: 5.25, period: 0.19, description: 'Second Torsion', participation: { x: 0, y: 0, z: 8 } },
+    ]);
 
-      setTimeHistory(prev => prev.length > 0 ? prev : 
-        Array.from({ length: 200 }, (_, i) => ({
-          time: i * 0.05,
-          displacement: Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 0.05,
-          velocity: Math.cos(i * 0.1) * Math.exp(-i * 0.01) * 0.3,
-          acceleration: -Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 2.0
-        }))
-      );
-    })();
-  }, []);
+    setTimeHistory(prev => prev.length > 0 ? prev : 
+      Array.from({ length: 200 }, (_, i) => ({
+        time: i * 0.05,
+        displacement: Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 0.05,
+        velocity: Math.cos(i * 0.1) * Math.exp(-i * 0.01) * 0.3,
+        acceleration: -Math.sin(i * 0.1) * Math.exp(-i * 0.01) * 2.0
+      }))
+    );
+  }, [storeLCs, modalResults]);
 
   // Animation loop
   useEffect(() => {
@@ -367,24 +369,95 @@ const ResultAnimationViewer: React.FC = () => {
 
           {/* Main Viewport */}
           <div className="lg:col-span-2 space-y-4">
-            {/* 3D Viewport */}
+            {/* 3D Viewport — SVG structural model */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 aspect-video relative overflow-hidden">
-              {/* Placeholder for 3D animation */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <Box className="w-20 h-20 text-slate-500 mx-auto mb-4" 
-                    style={{ 
-                      transform: `scale(${1 + getAnimationPhase() * 0.1}) rotate(${getAnimationPhase() * 5}deg)`,
-                      transition: 'transform 0.1s'
-                    }} 
-                  />
-                  <p className="text-slate-600 dark:text-slate-400">
-                    {settings.type === 'modal' && `Mode ${selectedMode} Animation`}
-                    {settings.type === 'deformation' && 'Deformed Shape Animation'}
-                    {settings.type === 'time-history' && 'Time History Response'}
-                    {settings.type === 'stress' && 'Stress Contour Animation'}
-                  </p>
+              {/* Demo Data Badge */}
+              {isUsingDemoData && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-amber-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                  <AlertTriangle className="w-3 h-3" />
+                  Demo Data — Run analysis for real results
                 </div>
+              )}
+
+              {/* SVG Viewport — renders real model geometry with deformed shape */}
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                {hasRealData ? (() => {
+                  // Build node array and compute bounds
+                  const nodeArr = Array.from(storeNodes.entries());
+                  const xs = nodeArr.map(([, n]) => n.x);
+                  const ys = nodeArr.map(([, n]) => n.y);
+                  const minX = Math.min(...xs), maxX = Math.max(...xs);
+                  const minY = Math.min(...ys), maxY = Math.max(...ys);
+                  const spanX = maxX - minX || 1;
+                  const spanY = maxY - minY || 1;
+                  const pad = 40;
+                  const svgW = 640, svgH = 360;
+                  const innerW = svgW - 2 * pad, innerH = svgH - 2 * pad;
+                  const scaleVal = Math.min(innerW / spanX, innerH / spanY);
+                  const phase = getAnimationPhase();
+                  const defScale = settings.scale * 0.01 * phase; // animation scale
+
+                  const toSvg = (x: number, y: number, dx = 0, dy = 0) => ({
+                    sx: pad + (x - minX + dx * defScale) * scaleVal,
+                    sy: svgH - pad - (y - minY + dy * defScale) * scaleVal, // flip Y
+                  });
+
+                  return (
+                    <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full h-full">
+                      {/* Undeformed (ghost) */}
+                      {settings.showUndeformed && Array.from(storeMembers.values()).map((m, i) => {
+                        const nA = storeNodes.get(m.startNodeId);
+                        const nB = storeNodes.get(m.endNodeId);
+                        if (!nA || !nB) return null;
+                        const a = toSvg(nA.x, nA.y);
+                        const b = toSvg(nB.x, nB.y);
+                        return <line key={`u${i}`} x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy}
+                          stroke="#64748b" strokeWidth={1} strokeDasharray="4 3" opacity={0.4} />;
+                      })}
+
+                      {/* Deformed members */}
+                      {Array.from(storeMembers.values()).map((m, i) => {
+                        const nA = storeNodes.get(m.startNodeId);
+                        const nB = storeNodes.get(m.endNodeId);
+                        if (!nA || !nB) return null;
+                        const dA = analysisResults?.displacements.get(m.startNodeId);
+                        const dB = analysisResults?.displacements.get(m.endNodeId);
+                        const a = toSvg(nA.x, nA.y, dA?.dx ?? 0, dA?.dy ?? 0);
+                        const b = toSvg(nB.x, nB.y, dB?.dx ?? 0, dB?.dy ?? 0);
+                        // Color by utilization (magnitude of displacement)
+                        const magA = Math.sqrt((dA?.dx ?? 0) ** 2 + (dA?.dy ?? 0) ** 2) * 1000;
+                        const magB = Math.sqrt((dB?.dx ?? 0) ** 2 + (dB?.dy ?? 0) ** 2) * 1000;
+                        const avg = (magA + magB) / 2;
+                        const hue = Math.max(0, 240 - avg * 200); // blue→red
+                        return <line key={`d${i}`} x1={a.sx} y1={a.sy} x2={b.sx} y2={b.sy}
+                          stroke={`hsl(${hue}, 80%, 55%)`} strokeWidth={2.5} strokeLinecap="round" />;
+                      })}
+
+                      {/* Nodes */}
+                      {nodeArr.map(([id, node]) => {
+                        const d = analysisResults?.displacements.get(id);
+                        const p = toSvg(node.x, node.y, d?.dx ?? 0, d?.dy ?? 0);
+                        return <circle key={id} cx={p.sx} cy={p.sy} r={3} fill="#a78bfa" stroke="#7c3aed" strokeWidth={1} />;
+                      })}
+                    </svg>
+                  );
+                })() : (
+                  <div className="text-center">
+                    <Box className="w-20 h-20 text-slate-500 mx-auto mb-4" 
+                      style={{ 
+                        transform: `scale(${1 + getAnimationPhase() * 0.1}) rotate(${getAnimationPhase() * 5}deg)`,
+                        transition: 'transform 0.1s'
+                      }} 
+                    />
+                    <p className="text-slate-600 dark:text-slate-400">
+                      {settings.type === 'modal' && `Mode ${selectedMode} Animation`}
+                      {settings.type === 'deformation' && 'Deformed Shape Animation'}
+                      {settings.type === 'time-history' && 'Time History Response'}
+                      {settings.type === 'stress' && 'Stress Contour Animation'}
+                    </p>
+                    <p className="text-slate-500 text-sm mt-2">Run analysis to view real structural animation</p>
+                  </div>
+                )}
               </div>
 
               {/* Frame Counter */}

@@ -43,6 +43,7 @@ import {
   type LearningProgressState,
 } from '../services/learning/progressTracker';
 import { AchievementDisplay } from '../components/learning/AchievementDisplay';
+import { AnalyticsDashboard } from '../components/learning/AnalyticsDashboard';
 
 // ============================================
 // TYPES
@@ -369,6 +370,11 @@ export function LearningCenter() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-12">
+        {/* Analytics Dashboard */}
+        <div className="mb-12">
+          <AnalyticsDashboard />
+        </div>
+
         {selectedPath === null ? (
           <PathOverview
             paths={filteredPaths}

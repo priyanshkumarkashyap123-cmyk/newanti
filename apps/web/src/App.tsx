@@ -530,11 +530,10 @@ function App() {
                 path="/analysis/nonlinear"
                 element={
                   <RequireAuth>
-                    <PDeltaAnalysisPanel />
+                    <NonlinearAnalysisPage />
                   </RequireAuth>
                 }
-              />{' '}
-              {/* Alias for P-Delta */}
+              />
               {/* Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14) */}
               <Route
                 path="/analysis/modal-page"

@@ -136,6 +136,7 @@ export interface ModelData {
   memberLoadsForRecovery?: MemberLoadItem[]; // Member loads used ONLY for force recovery (f = k*u − FEF)
   temperatureLoads?: TemperatureLoadData[]; // Temperature loads on elements
   pointLoadsOnMembers?: PointLoadOnMemberData[]; // Concentrated loads along members
+  prescribedDisplacements?: Record<number, number>; // DOF index → prescribed value (settlement)
   dofPerNode: 2 | 3 | 6;
   options?: SolverConfig;
   settings?: { selfWeight?: boolean }; // Alternative path from AnalysisService
@@ -259,6 +260,7 @@ export interface ResultData {
   reactions?: Float64Array; // Transferable (per DOF)
   memberForces?: MemberForceResult[]; // Small payload; object array for clarity
   densities?: Record<string, number>; // Topology optimization densities
+  timeHistory?: Float64Array[]; // Displacement history for dynamic analysis animation
   equilibrium_check?: {
     applied_forces: number[];
     reaction_forces: number[];
@@ -2759,6 +2761,78 @@ async function waitForWasm(): Promise<void> {
 }
 
 // Analysis Implementation
+
+/**
+ * Pure JavaScript fallback solver using Gauss elimination with partial pivoting.
+ * Used when WASM is unavailable. Limited to small models (≤3000 DOF).
+ * Converts sparse COO to dense matrix, then solves Ax=b in-place.
+ */
+function solveSystemJSFallback(
+  rows: Uint32Array,
+  cols: Uint32Array,
+  vals: Float64Array,
+  F: Float64Array,
+  dof: number,
+): Float64Array {
+  // Build dense matrix from COO triplets
+  const A = new Float64Array(dof * dof); // row-major
+  for (let k = 0; k < rows.length; k++) {
+    const r = rows[k], c = cols[k];
+    if (r < dof && c < dof) {
+      A[r * dof + c] += vals[k];
+    }
+  }
+
+  // Copy RHS
+  const b = new Float64Array(dof);
+  for (let i = 0; i < dof; i++) b[i] = F[i];
+
+  // Gauss elimination with partial pivoting
+  for (let k = 0; k < dof; k++) {
+    // Partial pivoting — find max in column k below row k
+    let maxVal = Math.abs(A[k * dof + k]);
+    let maxRow = k;
+    for (let i = k + 1; i < dof; i++) {
+      const v = Math.abs(A[i * dof + k]);
+      if (v > maxVal) { maxVal = v; maxRow = i; }
+    }
+    // Swap rows
+    if (maxRow !== k) {
+      for (let j = k; j < dof; j++) {
+        const tmp = A[k * dof + j];
+        A[k * dof + j] = A[maxRow * dof + j];
+        A[maxRow * dof + j] = tmp;
+      }
+      const tmpB = b[k]; b[k] = b[maxRow]; b[maxRow] = tmpB;
+    }
+
+    const pivot = A[k * dof + k];
+    if (Math.abs(pivot) < 1e-30) continue; // singular / zero row
+
+    // Eliminate below
+    for (let i = k + 1; i < dof; i++) {
+      const factor = A[i * dof + k] / pivot;
+      if (factor === 0) continue;
+      for (let j = k; j < dof; j++) {
+        A[i * dof + j] -= factor * A[k * dof + j];
+      }
+      b[i] -= factor * b[k];
+    }
+  }
+
+  // Back substitution
+  const x = new Float64Array(dof);
+  for (let i = dof - 1; i >= 0; i--) {
+    let sum = b[i];
+    for (let j = i + 1; j < dof; j++) {
+      sum -= A[i * dof + j] * x[j];
+    }
+    const pivot = A[i * dof + i];
+    x[i] = Math.abs(pivot) > 1e-30 ? sum / pivot : 0;
+  }
+  return x;
+}
+
 // Helper to call WASM sparse solver with TypedArrays (Zero-Copy-ish)
 // Overload 1: Pre-built TypedArrays (fast path — zero intermediate allocations)
 // Overload 2: Object-array entries (legacy path — for dynamic_time_history)
@@ -3169,6 +3243,7 @@ function applyPenaltyBC(
   F: Float64Array,
   fixedDofs: Set<number>,
   penalty: number = 1e20,
+  prescribedDisplacements?: Record<number, number>,
 ): { rows: Uint32Array; cols: Uint32Array; vals: Float64Array } {
   const bcCount = fixedDofs.size;
   const totalNnz = nnz + bcCount;
@@ -3183,7 +3258,13 @@ function applyPenaltyBC(
     rows[idx] = dof;
     cols[idx] = dof;
     vals[idx] = penalty;
-    F[dof] = 0;
+    // Check for prescribed non-zero displacement (settlement)
+    const prescribed = prescribedDisplacements?.[dof];
+    if (prescribed !== undefined && prescribed !== 0) {
+      F[dof] = prescribed * penalty; // Penalty method: F = u_prescribed * penalty
+    } else {
+      F[dof] = 0;
+    }
     idx++;
   }
   return { rows, cols, vals };
@@ -3454,11 +3535,16 @@ async function analyze(model: ModelData): Promise<ResultData> {
           );
       }
 
+      // Recover member forces from final displacement state
+      sendProgress("solving", 100, "Recovering member forces from final state...");
+      const finalMemberForces = computeMemberEndForces(model, u, nodeIndexMap);
+
       return {
         type: "result",
         success: true,
         displacements: u, // Final state
-        memberForces: [], // Skip force calc for history for now
+        memberForces: finalMemberForces,
+        timeHistory: history, // displacement history for animation
         stats: {
           assemblyTimeMs: 0,
           solveTimeMs: 0,
@@ -3516,6 +3602,8 @@ async function analyze(model: ModelData): Promise<ResultData> {
           pdResult.nnz,
           F,
           fixedDofs,
+          1e20,
+          model.prescribedDisplacements,
         );
 
         if (wasmReady && wasmModule) {
@@ -3635,6 +3723,8 @@ async function analyze(model: ModelData): Promise<ResultData> {
           topoResult.nnz,
           F,
           fixedDofs,
+          1e20,
+          model.prescribedDisplacements,
         );
 
         // Solve
@@ -3875,6 +3965,8 @@ async function analyze(model: ModelData): Promise<ResultData> {
         linResult.nnz,
         F,
         linResult.fixedDofs,
+        1e20,
+        model.prescribedDisplacements,
       );
       const assemblyTimeMs = performance.now() - assemblyStart;
 
@@ -3883,7 +3975,15 @@ async function analyze(model: ModelData): Promise<ResultData> {
       if (wasmReady && wasmModule) {
         displacements = solveSystemWasmTyped(bcRows, bcCols, bcVals, F, dof);
       } else {
-        throw new Error("WASM not ready");
+        // JS fallback: sparse COO → dense → Gauss elimination (small models only)
+        if (dof > 3000) {
+          throw new Error(
+            `WASM not available. Model has ${dof} DOFs which exceeds the JS fallback limit of 3000. ` +
+            `Please reload the page to reinitialize the WASM solver.`
+          );
+        }
+        sendProgress("solving", 0, "WASM unavailable — using JS fallback solver...");
+        displacements = solveSystemJSFallback(bcRows, bcCols, bcVals, F, dof);
       }
       const solveTimeMs = performance.now() - solveStart;
 
