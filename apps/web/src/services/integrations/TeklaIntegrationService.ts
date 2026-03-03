@@ -61,6 +61,8 @@ export interface FabricationData {
 // TEKLA INTEGRATION SERVICE
 // ============================================
 
+import { logger } from '../../lib/logging/logger';
+
 class TeklaIntegrationServiceClass {
     private config: TeklaConfig | null = null;
     private connected = false;
@@ -71,7 +73,7 @@ class TeklaIntegrationServiceClass {
      */
     initialize(config: TeklaConfig): void {
         this.config = config;
-        console.log('[Tekla] Integration initialized');
+        logger.info('[Tekla] Integration initialized');
     }
 
     /**
@@ -84,11 +86,11 @@ class TeklaIntegrationServiceClass {
 
         try {
             // In production, would use Tekla Open API
-            console.log('[Tekla] Connected to Tekla Structures');
+            logger.info('[Tekla] Connected to Tekla Structures');
             this.connected = true;
             return true;
         } catch (error) {
-            console.error('[Tekla] Connection failed:', error);
+            logger.error('[Tekla] Connection failed', { error: error instanceof Error ? error.message : String(error) });
             return false;
         }
     }
@@ -111,10 +113,10 @@ class TeklaIntegrationServiceClass {
                 assemblies: []
             };
 
-            console.log('[Tekla] Model imported');
+            logger.info('[Tekla] Model imported');
             return this.currentModel;
         } catch (error) {
-            console.error('[Tekla] Import failed:', error);
+            logger.error('[Tekla] Import failed', { error: error instanceof Error ? error.message : String(error) });
             return null;
         }
     }
@@ -129,10 +131,10 @@ class TeklaIntegrationServiceClass {
 
         try {
             const teklaObjects = this.convertToTeklaFormat(beamlabModel);
-            console.log(`[Tekla] Exported ${teklaObjects.length} objects`);
+            logger.info(`[Tekla] Exported ${teklaObjects.length} objects`);
             return true;
         } catch (error) {
-            console.error('[Tekla] Export failed:', error);
+            logger.error('[Tekla] Export failed', { error: error instanceof Error ? error.message : String(error) });
             return false;
         }
     }

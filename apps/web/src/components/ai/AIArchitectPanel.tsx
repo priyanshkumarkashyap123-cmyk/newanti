@@ -42,6 +42,7 @@ import { interpretCommand, isActionCommand } from "./AICommandInterpreter";
 import { executeCommand } from "./AIModelExecutor";
 import type { ExecutionResult } from "./AIModelExecutor";
 import { aiOrchestrator } from "./AIOrchestrator";
+import { logger } from '../../lib/logging/logger';
 
 // ============================================
 // CONFIGURATION
@@ -536,7 +537,7 @@ export const AIArchitectPanel: FC = () => {
         });
       }
     } catch (err) {
-      console.error("[AI Brain] Error:", err);
+      logger.error('[AI Brain] Error', { error: err instanceof Error ? err.message : String(err) });
 
       // Try orchestrator as fallback (local + Gemini)
       try {
@@ -748,10 +749,9 @@ export const AIArchitectPanel: FC = () => {
       });
       setPrompt("");
     } catch (err) {
-      console.warn(
-        "[AIArchitect] Backend failed, trying local EnhancedAIArchitect:",
-        err,
-      );
+      logger.warn('[AIArchitect] Backend failed, trying local EnhancedAIArchitect', {
+        error: err instanceof Error ? err.message : String(err),
+      });
 
       // FALLBACK: Use local EnhancedAIArchitect
       try {
@@ -821,7 +821,7 @@ export const AIArchitectPanel: FC = () => {
                     direction: "global_y",
                   });
                 } catch (e) {
-                  console.warn("Failed to add member load:", e);
+                  logger.warn('Failed to add member load', { error: e instanceof Error ? e.message : String(e) });
                 }
               } else if (load.type === "node_force" && load.nodeId) {
                 try {
@@ -835,7 +835,7 @@ export const AIArchitectPanel: FC = () => {
                     fz: load.values?.[2] || 0,
                   });
                 } catch (e) {
-                  console.warn("Failed to add node load:", e);
+                  logger.warn('Failed to add node load', { error: e instanceof Error ? e.message : String(e) });
                 }
               }
             }
@@ -870,7 +870,7 @@ export const AIArchitectPanel: FC = () => {
           });
         }
       } catch (localErr) {
-        console.error("[AIArchitect] Both backends failed:", localErr);
+        logger.error('[AIArchitect] Both backends failed', { error: localErr instanceof Error ? localErr.message : String(localErr) });
         const errorMsg =
           err instanceof TypeError &&
           (err as TypeError).message.includes("fetch")
@@ -1014,7 +1014,7 @@ export const AIArchitectPanel: FC = () => {
         );
       }
     } catch (err) {
-      console.error("[AIChat] All paths failed:", err);
+      logger.error('[AIChat] All paths failed', { error: err instanceof Error ? err.message : String(err) });
 
       // Ultimate fallback: local EnhancedAIArchitect
       let fallbackResponse: string;

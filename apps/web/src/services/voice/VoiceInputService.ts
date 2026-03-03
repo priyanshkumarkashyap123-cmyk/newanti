@@ -1,4 +1,5 @@
 import { useModelStore } from '../../store/model';
+import { logger } from '../../lib/logging/logger';
 
 /**
  * VoiceInputService.ts
@@ -254,7 +255,7 @@ class VoiceInputServiceClass {
             (window as any).webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
-            console.warn('[VoiceInput] Speech recognition not supported');
+            logger.warn('[VoiceInput] Speech recognition not supported');
             return;
         }
 
@@ -266,16 +267,16 @@ class VoiceInputServiceClass {
 
         this.recognition.onstart = () => {
             this.updateState({ isListening: true, error: undefined });
-            console.log('[VoiceInput] Started listening');
+            logger.info('[VoiceInput] Started listening');
         };
 
         this.recognition.onend = () => {
             this.updateState({ isListening: false });
-            console.log('[VoiceInput] Stopped listening');
+            logger.info('[VoiceInput] Stopped listening');
         };
 
         this.recognition.onerror = (event: { error: string }) => {
-            console.error('[VoiceInput] Error:', event.error);
+            logger.error('[VoiceInput] Error', { error: event.error });
             this.updateState({ error: event.error, isListening: false });
         };
 
@@ -300,7 +301,7 @@ class VoiceInputServiceClass {
         try {
             this.recognition.start();
         } catch (e) {
-            console.error('[VoiceInput] Failed to start:', e);
+            logger.error('[VoiceInput] Failed to start', { error: e instanceof Error ? e.message : String(e) });
         }
     }
 
@@ -373,7 +374,7 @@ class VoiceInputServiceClass {
             listener(command);
         }
 
-        console.log('[VoiceInput] Command:', command);
+        logger.info('[VoiceInput] Command', { command });
     }
 
     /**
@@ -424,7 +425,7 @@ class VoiceInputServiceClass {
                 }
             } else {
                 // Ambiguous - ask for clarification (Future feature)
-                console.warn('[Voice] Context request but no selection');
+                logger.warn('[Voice] Context request but no selection');
             }
         }
 

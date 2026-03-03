@@ -76,4 +76,4 @@ lto = true
 
 # Memory settings
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-O3", "-g"]
+wasm-opt = ["-O3", "--strip-debug"]

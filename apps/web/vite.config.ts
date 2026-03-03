@@ -118,9 +118,9 @@ export default defineConfig({
         ],
       },
     }),
-    // Pre-compress assets with gzip for faster serving
+    // Pre-compress assets with gzip + Brotli for faster serving
     compression({
-      algorithm: 'gzip',
+      algorithms: ['gzip', 'brotliCompress'],
       threshold: 1024,     // Only compress files > 1KB
       exclude: [/\.(br|gz)$/],
     }),

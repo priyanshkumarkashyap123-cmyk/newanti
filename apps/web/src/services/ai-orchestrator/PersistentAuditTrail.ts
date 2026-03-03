@@ -22,6 +22,7 @@ import type {
   GuardrailSummary,
   UserFeedback,
 } from './types';
+import { logger } from '../../lib/logging/logger';
 
 // ============================================================================
 // INDEXEDDB AUDIT STORE
@@ -52,7 +53,7 @@ export class PersistentAuditTrail {
 
   private async initialize(): Promise<void> {
     if (typeof indexedDB === 'undefined') {
-      console.warn('[AuditTrail] IndexedDB not available, using memory fallback');
+      logger.warn('[AuditTrail] IndexedDB not available, using memory fallback');
       this.isInitialized = true;
       return;
     }
@@ -89,7 +90,7 @@ export class PersistentAuditTrail {
       // Run maintenance on startup
       await this.runMaintenance();
     } catch (error) {
-      console.warn('[AuditTrail] Failed to initialize IndexedDB:', error);
+      logger.warn('[AuditTrail] Failed to initialize IndexedDB', { error: error instanceof Error ? error.message : String(error) });
       this.isInitialized = true; // Use memory fallback
     }
   }
@@ -120,7 +121,7 @@ export class PersistentAuditTrail {
       try {
         await this.dbPut(STORE_NAME, fullEntry);
       } catch (error) {
-        console.warn('[AuditTrail] DB write failed, using memory fallback:', error);
+        logger.warn('[AuditTrail] DB write failed, using memory fallback', { error: error instanceof Error ? error.message : String(error) });
         this.memoryFallback.push(fullEntry);
       }
     } else {
@@ -152,7 +153,7 @@ export class PersistentAuditTrail {
           await this.dbPut(STORE_NAME, entry);
         }
       } catch (error) {
-        console.warn('[AuditTrail] Feedback write failed:', error);
+        logger.warn('[AuditTrail] Feedback write failed', { error: error instanceof Error ? error.message : String(error) });
       }
     }
   }
@@ -407,7 +408,7 @@ export class PersistentAuditTrail {
           }
         }
       } catch (error) {
-        console.warn('[AuditTrail] Maintenance failed:', error);
+        logger.warn('[AuditTrail] Maintenance failed', { error: error instanceof Error ? error.message : String(error) });
       }
     } else {
       // Memory fallback maintenance
@@ -418,7 +419,7 @@ export class PersistentAuditTrail {
       deletedCount = beforeCount - this.memoryFallback.length;
     }
 
-    console.log(`[AuditTrail] Maintenance: deleted ${deletedCount} old entries`);
+    logger.info(`[AuditTrail] Maintenance: deleted ${deletedCount} old entries`);
     return { deletedCount };
   }
 
@@ -433,7 +434,7 @@ export class PersistentAuditTrail {
         await this.dbClear(STORE_NAME);
         await this.dbClear(FEEDBACK_STORE);
       } catch (error) {
-        console.warn('[AuditTrail] Clear failed:', error);
+        logger.warn('[AuditTrail] Clear failed', { error: error instanceof Error ? error.message : String(error) });
       }
     }
     this.memoryFallback = [];

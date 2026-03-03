@@ -80,6 +80,8 @@ export interface RevitPushPayload {
 // REVIT INTEGRATION SERVICE
 // ============================================
 
+import { logger } from '../../lib/logging/logger';
+
 class RevitIntegrationServiceClass {
     private config: RevitConfig | null = null;
     private accessToken: string | null = null;
@@ -94,7 +96,7 @@ class RevitIntegrationServiceClass {
      */
     initialize(config: RevitConfig): void {
         this.config = config;
-        console.log('[Revit] Integration initialized');
+        logger.info('[Revit] Integration initialized');
     }
 
     /**
@@ -128,11 +130,11 @@ class RevitIntegrationServiceClass {
             this.accessToken = data.access_token;
             this.tokenExpiry = new Date(Date.now() + data.expires_in * 1000);
 
-            console.log('[Revit] Authenticated successfully');
+            logger.info('[Revit] Authenticated successfully');
             return true;
 
         } catch (error) {
-            console.error('[Revit] Authentication failed:', error);
+            logger.error('[Revit] Authentication failed', { error: error instanceof Error ? error.message : String(error) });
             return false;
         }
     }
@@ -195,12 +197,12 @@ class RevitIntegrationServiceClass {
             };
 
             this.emit('model_pulled', this.currentModel);
-            console.log(`[Revit] Pulled model with ${elements.length} elements`);
+            logger.info(`[Revit] Pulled model with ${elements.length} elements`);
 
             return this.currentModel;
 
         } catch (error) {
-            console.error('[Revit] Pull failed:', error);
+            logger.error('[Revit] Pull failed', { error: error instanceof Error ? error.message : String(error) });
             return null;
         }
     }
@@ -293,11 +295,11 @@ class RevitIntegrationServiceClass {
             }
 
             this.emit('changes_pushed', result);
-            console.log(`[Revit] Pushed ${payload.elements.length} changes`);
+            logger.info(`[Revit] Pushed ${payload.elements.length} changes`);
 
         } catch (error) {
             result.success = false;
-            console.error('[Revit] Push failed:', error);
+            logger.error('[Revit] Push failed', { error: error instanceof Error ? error.message : String(error) });
         }
 
         return result;

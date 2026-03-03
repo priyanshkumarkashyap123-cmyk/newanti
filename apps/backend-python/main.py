@@ -535,7 +535,7 @@ async def mesh_plate_endpoint(request: MeshPlateRequest):
         if request.hard_points:
             hard_pts = [(p["x"], p["y"], p.get("z", 0)) for p in request.hard_points]
         
-        result = mesh_plate(corners, request.nx, request.ny, hard_pts)
+        result = await asyncio.to_thread(mesh_plate, corners, request.nx, request.ny, hard_pts)
         return {"success": True, **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -556,7 +556,7 @@ async def triangulate_endpoint(request: TriangulateRequest):
         if request.holes:
             holes = [[(p["x"], p["y"]) for p in hole] for hole in request.holes]
         
-        result = triangulate_with_holes(boundary, holes)
+        result = await asyncio.to_thread(triangulate_with_holes, boundary, holes)
         return {"success": True, **result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -626,9 +626,9 @@ async def analyze_beam(request: BeamAnalysisRequest):
             I=request.I or 1e-4
         )
         
-        # Solve
+        # Solve (offload CPU-bound work to thread pool to avoid blocking event loop)
         solver = BeamSolver(beam_input)
-        result = solver.solve()
+        result = await asyncio.to_thread(solver.solve)
         
         return {
             "success": result.success,
@@ -796,8 +796,8 @@ async def analyze_3d_frame(request: FrameAnalysisRequest):
         
         logger.info("FEA running analysis")
         
-        # Run analysis
-        result = analyze_frame(model_dict)
+        # Run analysis (offload CPU-bound FEA to thread pool)
+        result = await asyncio.to_thread(analyze_frame, model_dict)
         
         if not result['success']:
             error_msg = result.get('error', 'Analysis failed')
@@ -861,7 +861,7 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
         n_members = len(request.members) if request.members else 0
         n_loads = len(request.node_loads) if request.node_loads else 0
         
-        print(f"[SPARSE] Received request: {n_nodes} nodes, {n_members} members, {n_loads} loads")
+        logger.info("Sparse solver request", extra={"nodes": n_nodes, "members": n_members, "loads": n_loads})
         
         # Validate model has required data
         if n_nodes == 0:
@@ -878,12 +878,12 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
             )
         
         n_dof = n_nodes * 6
-        print(f"[SPARSE] Total DOF: {n_dof}")
+        logger.info("Sparse solver DOF", extra={"n_dof": n_dof})
         
         # Import solver after validation passes
         from analysis.sparse_solver import analyze_large_frame as solve_large
         
-        print(f"[SPARSE] Large model analysis: {n_nodes} nodes ({n_dof} DOF), {n_members} members")
+        logger.info("Sparse solver running", extra={"nodes": n_nodes, "dof": n_dof, "members": n_members})
         
         # Convert to dict format
         nodes = [
@@ -933,8 +933,9 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
                 elif support == "roller":
                     fixed_dofs.append(base_dof + 1)  # Y only
         
-        # Run sparse analysis
-        result = solve_large(
+        # Run sparse analysis (offload CPU-bound solver to thread pool)
+        result = await asyncio.to_thread(
+            solve_large,
             nodes=nodes,
             members=members,
             loads=loads,
@@ -945,11 +946,10 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
         total_time = (time.perf_counter() - start_time) * 1000
         
         if not result['success']:
-            print(f"[SPARSE] Analysis failed: {result.get('error')}")
+            logger.warning("Sparse solver failed", extra={"error": result.get('error')})
             raise HTTPException(status_code=400, detail=result.get('error', 'Sparse solver failed'))
         
-        print(f"[SPARSE] Analysis complete in {result.get('solve_time_ms', 0):.1f}ms (total: {total_time:.1f}ms)")
-        print(f"[SPARSE] Method: {result.get('method')}, Max disp: {result.get('max_displacement_mm', 0):.3f}mm")
+        logger.info("Sparse solver complete", extra={"solve_ms": result.get('solve_time_ms', 0), "total_ms": total_time, "method": result.get('method'), "max_disp_mm": result.get('max_displacement_mm', 0)})
         
         # Return results - already sanitized by solve_large
         return {
@@ -971,13 +971,13 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
         }
         
     except ImportError as e:
-        print(f"[SPARSE] ImportError: {e}")
+        logger.error("Sparse solver ImportError: %s", e, exc_info=True)
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Sparse solver import error: {str(e)}")
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[SPARSE] Exception: {e}")
+        logger.error("Sparse solver exception: %s", e, exc_info=True)
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Large model analysis error: {str(e)}")
 
@@ -1032,7 +1032,7 @@ async def generate_report_endpoint(request: ReportRequest):
             with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as tmp:
                 output_path = tmp.name
                 
-            generator.generate_report(request.analysis_data, output_path)
+            await asyncio.to_thread(generator.generate_report, request.analysis_data, output_path)
             
             # Read back as base64
             with open(output_path, "rb") as f:
@@ -1129,20 +1129,20 @@ async def recommend_section(request: SectionRecommendationRequest):
         recommender = SectionRecommender()
         
         if request.member_type.lower() == "beam":
-            sections = recommender.recommend_for_beam(
+            sections = await asyncio.to_thread(lambda: recommender.recommend_for_beam(
                 required_Mx=request.required_Mx,
                 required_My=request.required_My,
                 length=request.length,
                 section_type=request.section_type,
                 safety_factor=request.safety_factor
-            )
+            ))
         elif request.member_type.lower() == "column":
-            sections = recommender.recommend_for_column(
+            sections = await asyncio.to_thread(lambda: recommender.recommend_for_column(
                 required_P=request.required_P,
                 length=request.length,
                 section_type=request.section_type,
                 safety_factor=request.safety_factor
-            )
+            ))
         else:
             raise HTTPException(status_code=400, detail="member_type must be 'beam' or 'column'")
         
@@ -1258,7 +1258,7 @@ async def calculate_custom_section(request: CustomSectionRequest):
         section = CustomSection(section_points, request.name or "Custom Section")
         
         # Calculate all properties
-        properties = section.get_all_properties(request.material_density or 7850.0)
+        properties = await asyncio.to_thread(section.get_all_properties, request.material_density or 7850.0)
         
         return {
             "success": True,
@@ -1435,7 +1435,7 @@ async def create_standard_section(request: StandardSectionRequest):
             )
         
         # Get all properties
-        properties = section.get_all_properties(request.material_density or 7850.0)
+        properties = await asyncio.to_thread(section.get_all_properties, request.material_density or 7850.0)
         
         return {
             "success": True,
@@ -1698,7 +1698,7 @@ async def run_nonlinear_analysis(request: NonlinearAnalysisRequest):
         # Run analysis (currently linear, to be upgraded to non-linear loop)
         # For Phase 2 Demo, we run linear analysis with the new Plate elements.
         # True non-linear loop requires updating Stiffness at each step.
-        result = solver.solve(model)
+        result = await asyncio.to_thread(solver.solve, model)
         
         return result
 
@@ -1767,7 +1767,7 @@ async def check_design(request: DesignCheckRequest):
                 )
                 
                 # Run Check
-                res = code.check_member(member)
+                res = await asyncio.to_thread(code.check_member, member)
                 
                 # Simplify result for JSON response
                 results[member.id] = {
@@ -1885,7 +1885,7 @@ async def generate_pdf_report(request: GenerateReportRequest):
                 output_path = tmp.name
             
             # Generate PDF
-            generator.generate_report(request.analysis_data, output_path)
+            await asyncio.to_thread(generator.generate_report, request.analysis_data, output_path)
             
             # Return as downloadable file — use BackgroundTask to clean up after response
             from starlette.background import BackgroundTask
@@ -1961,19 +1961,19 @@ async def calculate_stress(request: StressCalculateRequest):
             member_id = member.id
             
             # Calculate stress points
-            stress_points = calculator.calculate_member_stresses(
+            stress_points = await asyncio.to_thread(lambda: calculator.calculate_member_stresses(
                 member_id=member_id,
                 member_forces=member.forces.model_dump(),
                 section_properties=member.section.model_dump(),
                 member_length=member.length,
                 num_points=20
-            )
+            ))
             
             # Get contour data
-            contours = calculator.get_stress_contours(stress_points, stress_type)
+            contours = await asyncio.to_thread(calculator.get_stress_contours, stress_points, stress_type)
             
             # Check stress limits
-            check = calculator.check_stress_limits(stress_points, fy, safety_factor)
+            check = await asyncio.to_thread(calculator.check_stress_limits, stress_points, fy, safety_factor)
             
             results.append({
                 'member_id': member_id,
@@ -2057,7 +2057,7 @@ async def time_history_analysis(request: TimeHistoryRequest):
         if analysis_type == 'modal':
             # Modal analysis only
             num_modes = request.num_modes
-            modes = analyzer.modal_analysis(M, K, num_modes)
+            modes = await asyncio.to_thread(analyzer.modal_analysis, M, K, num_modes)
             
             results = {
                 'success': True,
@@ -2093,7 +2093,7 @@ async def time_history_analysis(request: TimeHistoryRequest):
             beta = damping_ratio * 2 / (omega1 + omega2)
             C = alpha * M + beta * K
             
-            response = analyzer.newmark_beta_integration(M, K, C, ground_motion)
+            response = await asyncio.to_thread(analyzer.newmark_beta_integration, M, K, C, ground_motion)
             
             results = {
                 'success': True,
@@ -2122,7 +2122,7 @@ async def time_history_analysis(request: TimeHistoryRequest):
             ground_motion = load_ground_motion(gm_name, scale_factor)
             
             periods = np.array(request.periods if request.periods else np.linspace(0.1, 4.0, 40))
-            spectrum = analyzer.get_response_spectrum(ground_motion, periods, damping_ratio)
+            spectrum = await asyncio.to_thread(analyzer.get_response_spectrum, ground_motion, periods, damping_ratio)
             
             results = {
                 'success': True,
@@ -2689,7 +2689,7 @@ async def design_beam(request: BeamDesignRequest):
             cover=request.cover
         )
         
-        result = designer.design_beam(section, request.Mu, request.Vu)
+        result = await asyncio.to_thread(designer.design_beam, section, request.Mu, request.Vu)
         
         return {
             "success": True,
@@ -2734,14 +2734,14 @@ async def design_column(request: ColumnDesignRequest):
             cover=request.cover
         )
         
-        result = designer.design_column(
+        result = await asyncio.to_thread(lambda: designer.design_column(
             section,
             Pu=request.Pu,
             Mux=request.Mux,
             Muy=request.Muy,
             unsupported_length=request.unsupported_length,
             effective_length_factor=request.effective_length_factor
-        )
+        ))
         
         return {
             "success": True,
@@ -2784,23 +2784,23 @@ async def design_slab(request: SlabDesignRequest):
         # Determine slab type
         if request.ly == 0 or request.ly / request.lx > 2:
             # One-way slab
-            result = design_simply_supported_slab(
+            result = await asyncio.to_thread(lambda: design_simply_supported_slab(
                 span=request.lx,
                 live_load=request.live_load,
                 fck=request.fck,
                 fy=request.fy,
                 floor_finish=request.floor_finish
-            )
+            ))
         else:
             # Two-way slab
-            result = design_two_way_floor_slab(
+            result = await asyncio.to_thread(lambda: design_two_way_floor_slab(
                 lx=request.lx,
                 ly=request.ly,
                 live_load=request.live_load,
                 edge_conditions=request.edge_conditions,
                 fck=request.fck,
                 fy=request.fy
-            )
+            ))
         
         return {
             "success": True,
@@ -2910,7 +2910,7 @@ async def generate_asce7_seismic_loads(request: ASCE7SeismicRequest):
         dead_loads = request.dead_loads or {}
         live_loads = request.live_loads or {}
         
-        result = generator.analyze(nodes, dead_loads, live_loads)
+        result = await asyncio.to_thread(generator.analyze, nodes, dead_loads, live_loads)
         
         return {
             "success": result.success,
@@ -2981,7 +2981,7 @@ async def generate_asce7_wind_loads(request: ASCE7WindRequest):
         generator = ASCE7WindGenerator(params)
         
         nodes = request.nodes or {}
-        result = generator.analyze(nodes)
+        result = await asyncio.to_thread(generator.analyze, nodes)
         
         return {
             "success": result.success,
@@ -3073,10 +3073,12 @@ async def generate_is1893_seismic_loads(request: IS1893SeismicRequest):
         live_loads = request.live_loads or {}
         
         if nodes and dead_loads:
-            generator.compute_floor_masses(nodes, dead_loads, live_loads)
-            generator.calculate_base_shear()
-            generator.distribute_lateral_forces()
-            generator.generate_nodal_loads()
+            def _compute_is1893():
+                generator.compute_floor_masses(nodes, dead_loads, live_loads)
+                generator.calculate_base_shear()
+                generator.distribute_lateral_forces()
+                generator.generate_nodal_loads()
+            await asyncio.to_thread(_compute_is1893)
         
         return {
             "success": True,
@@ -3255,7 +3257,7 @@ async def validate_structure_model(request: ValidateModelRequest):
     Checks for stability, connectivity, and geometry issues.
     """
     try:
-        return validate_model(request.model_dump())
+        return await asyncio.to_thread(validate_model, request.model_dump())
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -3266,7 +3268,7 @@ async def check_steel_member(request: SteelDesignRequest):
     Check steel member capacity per IS 800:2007.
     """
     try:
-        return check_member_is800(
+        return await asyncio.to_thread(lambda: check_member_is800(
             section_name=request.section,
             steel_grade=request.grade,
             Pu=request.Pu,
@@ -3275,7 +3277,7 @@ async def check_steel_member(request: SteelDesignRequest):
             Lx=request.Lx,
             Ly=request.Ly,
             Lb=request.Lb
-        )
+        ))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -3286,13 +3288,13 @@ async def generate_floor_loads(request: FloorLoadRequest):
     Calculate floor loads per IS 875 Part 1 & 2.
     """
     try:
-        return calculate_floor_loads(
+        return await asyncio.to_thread(lambda: calculate_floor_loads(
             occupancy=request.occupancy,
             slab_thickness_mm=request.slabThickness,
             floor_finish=request.floorFinish,
             tributary_area=request.area,
             num_floors=request.floors
-        )
+        ))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -3308,11 +3310,11 @@ async def generate_wind_loads(request: WindLoadRequest):
         terrain_map = {1: TerrainCategory.CATEGORY_1, 2: TerrainCategory.CATEGORY_2, 
                        3: TerrainCategory.CATEGORY_3, 4: TerrainCategory.CATEGORY_4}
         
-        return calculate_wind_pressure(
+        return await asyncio.to_thread(lambda: calculate_wind_pressure(
             Vb=request.windSpeed,
             height=request.height,
             terrain=terrain_map.get(request.terrainCategory, TerrainCategory.CATEGORY_2)
-        )
+        ))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -3331,14 +3333,14 @@ async def design_concrete_beam(request: ConcreteDesignRequest):
     Design concrete beam reinforcement per IS 456:2000.
     """
     try:
-        return design_beam_flexure(
+        return await asyncio.to_thread(lambda: design_beam_flexure(
             b=request.b,
             D=request.D,
             cover=request.cover,
             fck=request.fck,
             fy=request.fy,
             Mu=request.Mu
-        )
+        ))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -3358,17 +3360,17 @@ async def calculate_seismic_loads(request: SeismicLoadRequest):
         from is_codes import SeismicZone, SoilType, calculate_period_approx
         
         # Approximate period if not provided
-        T = calculate_period_approx(request.height)
+        T = await asyncio.to_thread(calculate_period_approx, request.height)
         
         zone_map = {"II": SeismicZone.II, "III": SeismicZone.III, "IV": SeismicZone.IV, "V": SeismicZone.V}
         soil_map = {1: SoilType.HARD, 2: SoilType.MEDIUM, 3: SoilType.SOFT}
         
-        return calculate_base_shear(
+        return await asyncio.to_thread(lambda: calculate_base_shear(
             W=request.weight,
             T=T,
             zone=zone_map.get(request.zone, SeismicZone.III),
             soil_type=soil_map.get(request.soilType, SoilType.MEDIUM)
-        )
+        ))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

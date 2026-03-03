@@ -68,6 +68,8 @@ export interface HistoricalAnalysis {
 // DIGITAL TWIN SERVICE
 // ============================================
 
+import { logger } from '../../lib/logging/logger';
+
 class DigitalTwinServiceClass {
   private sensorData: Map<string, SensorData[]> = new Map();
   private healthIndicators: Map<string, HealthIndicator> = new Map();
@@ -110,10 +112,7 @@ class DigitalTwinServiceClass {
           );
           if (probe.ok) {
             this.connected = true;
-            console.log(
-              "[DigitalTwin] Connected to remote IoT stream:",
-              config.endpoint,
-            );
+            logger.info('[DigitalTwin] Connected to remote IoT stream', { endpoint: config.endpoint });
             this.startMonitoring();
             return true;
           }
@@ -123,15 +122,13 @@ class DigitalTwinServiceClass {
       }
 
       // Simulation mode: generate synthetic sensor data for demo / offline dev
-      console.log(
-        "[DigitalTwin] Remote IoT unreachable — starting simulation mode",
-      );
+      logger.info('[DigitalTwin] Remote IoT unreachable — starting simulation mode');
       this.connected = true;
       this.startSimulation(config.projectId);
       this.startMonitoring();
       return true;
     } catch (error) {
-      console.error("[DigitalTwin] Connection failed:", error);
+      logger.error('[DigitalTwin] Connection failed', { error: error instanceof Error ? error.message : String(error) });
       return false;
     }
   }
@@ -208,11 +205,7 @@ class DigitalTwinServiceClass {
       }
     }, 1000);
 
-    console.log(
-      "[DigitalTwin] Simulation started with",
-      sensorConfigs.length,
-      "virtual sensors",
-    );
+    logger.info('[DigitalTwin] Simulation started', { virtualSensors: sensorConfigs.length });
   }
 
   /**
@@ -235,7 +228,7 @@ class DigitalTwinServiceClass {
       this.processLatestData();
     }, intervalMs);
 
-    console.log("[DigitalTwin] Monitoring started");
+    logger.info('[DigitalTwin] Monitoring started');
   }
 
   /**
@@ -246,7 +239,7 @@ class DigitalTwinServiceClass {
       clearInterval(this.updateInterval);
       this.updateInterval = null;
     }
-    console.log("[DigitalTwin] Monitoring stopped");
+    logger.info('[DigitalTwin] Monitoring stopped');
   }
 
   /**
@@ -559,7 +552,7 @@ class DigitalTwinServiceClass {
     this.stopMonitoring();
     this.connected = false;
     this.connectionConfig = null;
-    console.log("[DigitalTwin] Disconnected");
+    logger.info('[DigitalTwin] Disconnected');
   }
 }
 

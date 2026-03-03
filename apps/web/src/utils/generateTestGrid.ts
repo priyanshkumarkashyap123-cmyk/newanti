@@ -10,6 +10,7 @@
  */
 
 import { useModelStore } from '../store/model';
+import { logger } from '../lib/logging/logger';
 
 export interface GridConfig {
     rows: number;
@@ -47,7 +48,7 @@ export function generateTestGrid(
     store.memberLoads = [];
     store.selectedIds.clear();
 
-    console.log(`🏗️ Generating ${rows}×${cols}×${stories} grid...`);
+    logger.info(`Generating ${rows}×${cols}×${stories} grid...`);
 
     const nodes: Map<string, any> = new Map();
     const members: Map<string, any> = new Map();
@@ -173,10 +174,11 @@ export function generateTestGrid(
         time: generationTime
     };
 
-    console.log(`✅ Grid generated successfully!`);
-    console.log(`   Nodes: ${result.nodes.toLocaleString()}`);
-    console.log(`   Members: ${result.members.toLocaleString()}`);
-    console.log(`   Time: ${result.time.toFixed(2)}ms`);
+    logger.info('Grid generated successfully', {
+        nodes: result.nodes,
+        members: result.members,
+        timeMs: result.time.toFixed(2)
+    });
 
     return result;
 }
@@ -198,7 +200,7 @@ export const TEST_CONFIGURATIONS = {
  */
 export function generateTestModel(configName: keyof typeof TEST_CONFIGURATIONS): void {
     const config = TEST_CONFIGURATIONS[configName];
-    console.log(`🎯 Generating ${configName} test model: ${config.label}`);
+    logger.info(`Generating ${configName} test model: ${config.label}`);
     generateTestGrid(config.rows, config.cols, config.stories);
 }
 
@@ -208,7 +210,5 @@ if (typeof window !== 'undefined') {
     (window as any).generateTestModel = generateTestModel;
     (window as any).TEST_CONFIGURATIONS = TEST_CONFIGURATIONS;
 
-    console.log('✨ Test grid generator loaded!');
-    console.log('Usage: generateTestModel("LARGE_10K")');
-    console.log('Or: generateTestGrid(rows, cols, stories)');
+    logger.info('Test grid generator loaded. Usage: generateTestModel("LARGE_10K") or generateTestGrid(rows, cols, stories)');
 }

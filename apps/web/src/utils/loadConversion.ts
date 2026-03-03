@@ -38,6 +38,8 @@ export function setLoadConversionDebug(options: Partial<typeof DEBUG>) {
 // NUMERICAL TOLERANCES
 // ============================================
 
+import { logger } from '../lib/logging/logger';
+
 const EPSILON = 1e-10;       // Near-zero check
 const LENGTH_TOL = 1e-6;     // Minimum member length (meters)
 const LOAD_TOL = 1e-9;       // Minimum load value to consider
@@ -110,7 +112,7 @@ function calculateMemberLength(startNode: Node, endNode: Node): number {
     const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
     
     if (!isFinite(length) || isNaN(length)) {
-        console.error('[LoadConversion] Invalid member length calculated');
+        logger.error('[LoadConversion] Invalid member length calculated');
         return 0;
     }
     
@@ -123,7 +125,7 @@ function calculateMemberLength(startNode: Node, endNode: Node): number {
 function validateLoad(value: number, name: string): number {
     if (!isFinite(value) || isNaN(value)) {
         if (DEBUG.logConversions) {
-            console.warn(`[LoadConversion] Invalid ${name}: ${value}, using 0`);
+            logger.warn(`[LoadConversion] Invalid ${name}: ${value}, using 0`);
         }
         return 0;
     }
@@ -465,7 +467,7 @@ function convertUDL(
     }
 
     if (DEBUG.logMoments) {
-        console.log(`[UDL] w=${w}, L=${L}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+        logger.debug(`[UDL] w=${w}, L=${L}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
 
     R1 = validateLoad(R1, 'R1');
@@ -545,7 +547,7 @@ function convertTriangular(
     M2 = M2_u + M2_t;
 
     if (DEBUG.logMoments) {
-        console.log(`[Triangular] w1=${w1}, w2=${w2}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+        logger.debug(`[Triangular] w1=${w1}, w2=${w2}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
 
     R1 = validateLoad(R1, 'R1');
@@ -600,7 +602,7 @@ function convertPointLoad(
     M2 = validateLoad(M2, 'M2');
 
     if (DEBUG.logMoments) {
-        console.log(`[Point] P=${P}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+        logger.debug(`[Point] P=${P}, a=${a}, b=${b}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
 
     return [
@@ -654,7 +656,7 @@ function convertMomentLoad(
     M2 = validateLoad(M2, 'M2');
 
     if (DEBUG.logMoments) {
-        console.log(`[Moment] M0=${M0}, a=${a}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
+        logger.debug(`[Moment] M0=${M0}, a=${a}, R1=${R1}, R2=${R2}, M1=${M1}, M2=${M2}`);
     }
 
     return [
@@ -766,9 +768,9 @@ export function convertMemberLoadsToNodal(
     };
 
     if (DEBUG.logConversions) {
-        console.log(`[LoadConversion] Summary:`, summary);
-        if (warnings.length > 0) console.warn('[LoadConversion] Warnings:', warnings);
-        if (errors.length > 0) console.error('[LoadConversion] Errors:', errors);
+        logger.debug('[LoadConversion] Summary', { summary });
+        if (warnings.length > 0) logger.warn('[LoadConversion] Warnings', { warnings });
+        if (errors.length > 0) logger.error('[LoadConversion] Errors', { errors });
     }
 
     return { nodalLoads, summary, errors, warnings };

@@ -14,6 +14,7 @@
 import { vertexAI } from './VertexAIService';
 import { feedbackService } from '../FeedbackService';
 import { learningPipeline } from '../learning/LearningPipelineService';
+import { logger } from '../../lib/logging/logger';
 
 // ============================================
 // TYPES
@@ -87,7 +88,7 @@ class SelfImprovementEngineClass {
         if (this.isMonitoring) return;
 
         this.isMonitoring = true;
-        console.log('[SelfImprovement] Started continuous monitoring');
+        logger.info('[SelfImprovement] Started continuous monitoring');
 
         this.monitoringInterval = setInterval(async () => {
             await this.runMonitoringCycle();
@@ -106,14 +107,14 @@ class SelfImprovementEngineClass {
             this.monitoringInterval = null;
         }
         this.isMonitoring = false;
-        console.log('[SelfImprovement] Stopped monitoring');
+        logger.info('[SelfImprovement] Stopped monitoring');
     }
 
     /**
      * Run a single monitoring cycle
      */
     async runMonitoringCycle(): Promise<void> {
-        console.log('[SelfImprovement] Running monitoring cycle...');
+        logger.info('[SelfImprovement] Running monitoring cycle...');
 
         const features = [
             'model_generation',
@@ -136,7 +137,7 @@ class SelfImprovementEngineClass {
                     }
                 }
             } catch (error) {
-                console.error(`[SelfImprovement] Error monitoring ${feature}:`, error);
+                logger.error(`[SelfImprovement] Error monitoring ${feature}`, { error: error instanceof Error ? error.message : String(error) });
             }
         }
     }
@@ -219,7 +220,7 @@ class SelfImprovementEngineClass {
      * Execute an optimization action
      */
     async executeAction(action: OptimizationAction): Promise<void> {
-        console.log(`[SelfImprovement] Executing action: ${action.type} for ${action.feature}`);
+        logger.info(`[SelfImprovement] Executing action: ${action.type} for ${action.feature}`);
         action.status = 'in_progress';
         action.executedAt = new Date();
 
@@ -255,7 +256,7 @@ class SelfImprovementEngineClass {
                     break;
 
                 case 'alert':
-                    console.warn(`[ALERT] ${action.feature}: ${action.reason}`);
+                    logger.warn(`[ALERT] ${action.feature}: ${action.reason}`);
                     action.result = 'Alert sent';
                     action.status = 'completed';
                     break;
@@ -303,7 +304,7 @@ class SelfImprovementEngineClass {
         templates.push(optimized);
         this.prompts.set(feature, templates);
 
-        console.log(`[SelfImprovement] Optimized prompt for ${feature} to v${optimized.version}`);
+        logger.info(`[SelfImprovement] Optimized prompt for ${feature} to v${optimized.version}`);
         return optimized;
     }
 

@@ -12,6 +12,7 @@
 import { historyDB, HistorySnapshot, HistoryBranch } from './indexeddb-history';
 import type { TemporalState } from 'zundo';
 import { useEffect, useCallback, useRef, useState } from 'react';
+import { logger } from './logging/logger';
 
 // ============================================================================
 // TYPES
@@ -65,7 +66,7 @@ function broadcastMessage(message: SyncMessage): void {
     try {
       channel.postMessage(message);
     } catch (e) {
-      console.warn('[HistorySync] Failed to broadcast:', e);
+      logger.warn('[HistorySync] Failed to broadcast', { error: e instanceof Error ? e.message : String(e) });
     }
   }
 }
@@ -164,17 +165,17 @@ export function usePersistentHistory<TState extends object>(
               isRestoringRef.current = true;
               useStore.setState(snapshot.state as Partial<TState>);
               isRestoringRef.current = false;
-              console.log('[PersistentHistory] Restored last state from IndexedDB');
+              logger.info('[PersistentHistory] Restored last state from IndexedDB');
             }
           }
         }
         
         await refreshState();
         setIsReady(true);
-        console.log('[PersistentHistory] Initialized for project:', projectId);
+        logger.info('[PersistentHistory] Initialized for project', { projectId });
         
       } catch (error) {
-        console.error('[PersistentHistory] Init failed:', error);
+        logger.error('[PersistentHistory] Init failed', { error: error instanceof Error ? error.message : String(error) });
       }
     };
     
@@ -199,7 +200,7 @@ export function usePersistentHistory<TState extends object>(
       const msg = event.data;
       if (msg.tabId === TAB_ID || msg.projectId !== projectId) return;
       
-      console.log('[PersistentHistory] Received cross-tab message:', msg.type);
+      logger.info('[PersistentHistory] Received cross-tab message', { type: msg.type });
       
       switch (msg.type) {
         case 'SAVE':
@@ -346,7 +347,7 @@ export function usePersistentHistory<TState extends object>(
       await refreshState();
       return branch;
     } catch (e) {
-      console.error('[PersistentHistory] Failed to create branch:', e);
+      logger.error('[PersistentHistory] Failed to create branch', { error: e instanceof Error ? e.message : String(e) });
       return null;
     }
   }, [projectId, refreshState]);
@@ -376,7 +377,7 @@ export function usePersistentHistory<TState extends object>(
       await refreshState();
       return true;
     } catch (e) {
-      console.error('[PersistentHistory] Failed to delete branch:', e);
+      logger.error('[PersistentHistory] Failed to delete branch', { error: e instanceof Error ? e.message : String(e) });
       return false;
     }
   }, [projectId, refreshState]);

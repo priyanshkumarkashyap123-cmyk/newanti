@@ -117,6 +117,8 @@ const GPUShaderStage = {
   COMPUTE: 0x0004,
 };
 
+import { logger } from '../../lib/logging/logger';
+
 // ============================================
 // WGSL COMPUTE SHADERS
 // ============================================
@@ -535,7 +537,7 @@ export class GPUAcceleratedSolver {
     try {
       // Check WebGPU support
       if (!navigator.gpu) {
-        console.warn('WebGPU not supported, falling back to CPU');
+        logger.warn('WebGPU not supported, falling back to CPU');
         return false;
       }
       
@@ -544,7 +546,7 @@ export class GPUAcceleratedSolver {
       });
       
       if (!adapter) {
-        console.warn('No GPU adapter found');
+        logger.warn('No GPU adapter found');
         return false;
       }
       
@@ -565,11 +567,11 @@ export class GPUAcceleratedSolver {
       this.preallocateBuffers();
       
       this.initialized = true;
-      console.log('GPU Solver initialized successfully');
+      logger.info('GPU Solver initialized successfully');
       
       return true;
     } catch (error) {
-      console.error('GPU initialization failed:', error);
+      logger.error('GPU initialization failed', { error: error instanceof Error ? error.message : String(error) });
       return false;
     }
   }
@@ -872,7 +874,7 @@ export class HybridStructuralSolver {
   
   async initialize(): Promise<void> {
     this.useGPU = await this.gpuSolver.initialize();
-    console.log(`Hybrid solver using: ${this.useGPU ? 'GPU' : 'CPU'}`);
+    logger.info(`Hybrid solver using: ${this.useGPU ? 'GPU' : 'CPU'}`);
   }
   
   /**
@@ -887,12 +889,12 @@ export class HybridStructuralSolver {
     const useGPUForThisProblem = this.useGPU && n > 500;
     
     if (useGPUForThisProblem) {
-      console.log(`Using GPU for ${n} DOFs`);
+      logger.info(`Using GPU for ${n} DOFs`);
       const result = await this.gpuSolver.conjugateGradient(K, f, n);
-      console.log(`GPU CG: ${result.iterations} iterations, residual: ${result.residualNorm.toExponential(2)}`);
+      logger.info(`GPU CG: ${result.iterations} iterations, residual: ${result.residualNorm.toExponential(2)}`);
       return result.x;
     } else {
-      console.log(`Using CPU for ${n} DOFs`);
+      logger.info(`Using CPU for ${n} DOFs`);
       return this.solveCPU(K, f, n);
     }
   }
