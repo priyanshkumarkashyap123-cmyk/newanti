@@ -23,6 +23,7 @@ const useModelStoreWithTemporal = useModelStore as unknown as typeof useModelSto
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './dialog';
 import { Button } from './button';
 import { Input } from './input';
+import { useConfirm } from './ConfirmDialog';
 
 // ============================================================================
 // TYPES
@@ -304,6 +305,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   isOpen,
   onClose,
 }) => {
+  const confirm = useConfirm();
   const [showBranchDialog, setShowBranchDialog] = useState(false);
 
   const {
@@ -345,10 +347,10 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
   );
 
   const handleClearHistory = useCallback(async () => {
-    if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
+    if (await confirm({ title: 'Clear History', message: 'Are you sure you want to clear all history? This cannot be undone.', variant: 'danger' })) {
       await clearHistory();
     }
-  }, [clearHistory]);
+  }, [clearHistory, confirm]);
 
   const formatBytes = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;

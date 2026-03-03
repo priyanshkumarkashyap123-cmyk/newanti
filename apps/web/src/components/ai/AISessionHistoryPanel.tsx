@@ -28,6 +28,7 @@ import {
   Tag
 } from 'lucide-react';
 import { useAISessionStore, AISession, AIMessage } from '../../store/aiSessionStore';
+import { useConfirm } from '../ui/ConfirmDialog';
 
 // ============================================
 // TYPES
@@ -224,6 +225,7 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
   onResumeSession,
   onClose,
 }) => {
+  const confirm = useConfirm();
   const sessions = useAISessionStore(s => s.sessions);
   const deleteSession = useAISessionStore(s => s.deleteSession);
   const exportSession = useAISessionStore(s => s.exportSession);
@@ -307,11 +309,11 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
     URL.revokeObjectURL(url);
   }, [exportSession]);
 
-  const handleDelete = useCallback((sessionId: string) => {
-    if (confirm('Delete this session? This cannot be undone.')) {
+  const handleDelete = useCallback(async (sessionId: string) => {
+    if (await confirm({ title: 'Delete Session', message: 'Delete this session? This cannot be undone.', variant: 'danger' })) {
       deleteSession(sessionId);
     }
-  }, [deleteSession]);
+  }, [deleteSession, confirm]);
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900">
@@ -332,8 +334,8 @@ export const AISessionHistoryPanel: FC<SessionHistoryPanelProps> = ({
           </div>
           {sessions.length > 0 && (
             <button type="button"
-              onClick={() => {
-                if (confirm('Clear ALL session history?')) {
+              onClick={async () => {
+                if (await confirm({ title: 'Clear History', message: 'Clear ALL session history?', variant: 'danger' })) {
                   clearAllSessions();
                 }
               }}

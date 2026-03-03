@@ -5,10 +5,6 @@
  * Provides unified access to all platform capabilities.
  */
 
-// Allow CommonJS require() for lazy service loading
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-declare const require: (id: string) => Record<string, unknown>;
-
 // ============================================
 // CORE SERVICES
 // ============================================
@@ -70,44 +66,40 @@ export { auditTrail } from './AuditTrailService';
 // UNIFIED SERVICE INTERFACE
 // ============================================
 
+import { wasmSolver } from './wasmSolverService';
+import { database } from './DatabaseService';
 import { errorHandler } from './ErrorHandlingService';
+import { geminiAI } from './GeminiAIService';
+import { aiValidation } from './AIValidationService';
+import { codeCompliance } from './CodeComplianceEngine';
+import { connectionDesign } from './ConnectionDesignService';
+import { loadCombinations } from './loads/LoadCombinationsService';
+import { voiceInput } from './voice/VoiceInputService';
+import { voiceExecutor } from './voice/VoiceCommandExecutor';
+import { peReport } from './reports/PEReadyReportGenerator';
+import { generateIFC } from './IFCExportService';
+import { enhancedDXF } from './EnhancedDXFExportService';
 
 /**
  * Unified service interface for CEO-level access
- * Services are lazily loaded on first access to avoid loading everything at startup
+ * Exposes unified service access for app initialization and workflows.
  */
 export class BeamLabServices {
-    // Core — only error handler loaded eagerly
+     // Core
     readonly errors = errorHandler;
 
-    // Lazy service accessors — require() returns dynamic modules, any is unavoidable
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    private _solver: any = null;
-    private _db: any = null;
-    private _ai: any = null;
-    private _validation: any = null;
-    private _codes: any = null;
-    private _connections: any = null;
-    private _loadCombos: any = null;
-    private _voice: any = null;
-    private _voiceCommands: any = null;
-    private _reports: any = null;
-    private _ifc: any = null;
-    private _dxf: any = null;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-
-    get solver() { if (!this._solver) { this._solver = require('./wasmSolverService').wasmSolver; } return this._solver; }
-    get db() { if (!this._db) { this._db = require('./DatabaseService').database; } return this._db; }
-    get ai() { if (!this._ai) { this._ai = require('./GeminiAIService').geminiAI; } return this._ai; }
-    get validation() { if (!this._validation) { this._validation = require('./AIValidationService').aiValidation; } return this._validation; }
-    get codes() { if (!this._codes) { this._codes = require('./CodeComplianceEngine').codeCompliance; } return this._codes; }
-    get connections() { if (!this._connections) { this._connections = require('./ConnectionDesignService').connectionDesign; } return this._connections; }
-    get loadCombos() { if (!this._loadCombos) { this._loadCombos = require('./loads/LoadCombinationsService').loadCombinations; } return this._loadCombos; }
-    get voice() { if (!this._voice) { this._voice = require('./voice/VoiceInputService').voiceInput; } return this._voice; }
-    get voiceCommands() { if (!this._voiceCommands) { this._voiceCommands = require('./voice/VoiceCommandExecutor').voiceExecutor; } return this._voiceCommands; }
-    get reports() { if (!this._reports) { this._reports = require('./reports/PEReadyReportGenerator').peReport; } return this._reports; }
-    get ifc() { if (!this._ifc) { this._ifc = { generate: require('./IFCExportService').generateIFC }; } return this._ifc; }
-    get dxf() { if (!this._dxf) { this._dxf = require('./EnhancedDXFExportService').enhancedDXF; } return this._dxf; }
+     get solver() { return wasmSolver; }
+     get db() { return database; }
+     get ai() { return geminiAI; }
+     get validation() { return aiValidation; }
+     get codes() { return codeCompliance; }
+     get connections() { return connectionDesign; }
+     get loadCombos() { return loadCombinations; }
+     get voice() { return voiceInput; }
+     get voiceCommands() { return voiceExecutor; }
+     get reports() { return peReport; }
+     get ifc() { return { generate: generateIFC }; }
+     get dxf() { return enhancedDXF; }
 
     /**
      * Initialize all services

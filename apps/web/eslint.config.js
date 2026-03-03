@@ -55,6 +55,7 @@ export default tseslint.config(
             '@typescript-eslint/no-unsafe-declaration-merging': 'off',
             '@typescript-eslint/no-empty-object-type': 'off',
             'no-loss-of-precision': 'warn',
+            '@typescript-eslint/no-require-imports': 'error',
         },
     },
 

@@ -14,6 +14,7 @@ import { TEMPLATE_BANK } from '../../data/templates';
 import { logger } from '../../lib/logging/logger';
 import { useModelStore } from '../../store/model';
 import { useSubscription } from '../../hooks/useSubscription';
+import { useConfirm } from '../ui/ConfirmDialog';
 
 // ============================================
 // TYPES
@@ -121,6 +122,7 @@ const toast = {
 // ============================================
 
 export const AICommandCenter: FC = () => {
+    const confirm = useConfirm();
     const [prompt, setPrompt] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [status, setStatus] = useState<'idle' | 'generating' | 'analyzing' | 'done'>('idle');
@@ -247,12 +249,13 @@ export const AICommandCenter: FC = () => {
 
         // Feature gate: Check AI usage limits
         if (!canAccess('aiAssistant') && dailyUsageCount >= FREE_TIER_DAILY_LIMIT) {
-            const shouldUpgrade = confirm(
-                '🤖 AI Assistant - Daily Limit Reached\n\n' +
-                'Free tier users get 3 AI generations per day.\n\n' +
-                'Upgrade to Pro for unlimited AI access.\n\n' +
-                'Click OK to view pricing.'
-            );
+            const shouldUpgrade = await confirm({
+                title: 'AI Daily Limit Reached',
+                message: 'Free tier users get 3 AI generations per day. Upgrade to Pro for unlimited AI access.',
+                confirmText: 'View Pricing',
+                cancelText: 'Cancel',
+                variant: 'info',
+            });
             if (shouldUpgrade) {
                 window.location.href = '/pricing';
             }

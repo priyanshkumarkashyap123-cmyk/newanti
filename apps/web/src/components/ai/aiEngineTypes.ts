@@ -2,6 +2,11 @@
  * Shared types for BeamLabAIEngine and its handler modules.
  */
 
+import type { useModelStore } from "../../store/model";
+
+/** The shape returned by useModelStore.getState() */
+export type ModelStoreState = ReturnType<typeof useModelStore.getState>;
+
 export interface BeamLabAIResponse {
   text: string;
   source: "beamlab-ai";
@@ -46,5 +51,5 @@ export interface AIHandlerContext {
     suggestions?: string[],
     calculations?: CalculationStep[],
   ) => BeamLabAIResponse;
-  getStore: () => any;
+  getStore: () => ModelStoreState;
 }

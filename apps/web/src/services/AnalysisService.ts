@@ -11,6 +11,7 @@
 import { analysisLogger } from "../utils/logger";
 import { API_CONFIG } from "../config/env";
 import { getOptimalDofPerNode } from "../utils/structureDimensionality";
+import { WorkerPool } from "./WorkerPool";
 
 // ============================================
 // TYPES
@@ -155,8 +156,19 @@ const CONFIG = {
 // ============================================
 
 class AnalysisService {
-  private worker: Worker | null = null;
+  private workerPool: WorkerPool;
   private abortController: AbortController | null = null;
+
+  constructor() {
+    this.workerPool = new WorkerPool(
+      () =>
+        new Worker(
+          new URL("../workers/StructuralSolverWorker.ts", import.meta.url),
+          { type: "module" },
+        ),
+      { size: Math.min(navigator.hardwareConcurrency ?? 2, 4), name: "SolverPool" },
+    );
+  }
 
   // Debounce state for rapid updates (e.g., slider manipulation)
   private pendingAnalysis: {
@@ -308,24 +320,7 @@ class AnalysisService {
   }
 
   /**
-   * Initialize the Web Worker if not already active
-   */
-  private initializeWorker(): void {
-    if (!this.worker) {
-      this.worker = new Worker(
-        new URL("../workers/StructuralSolverWorker.ts", import.meta.url),
-        { type: "module" },
-      );
-
-      // Handle worker errors
-      this.worker.onerror = (error) => {
-        analysisLogger.error("Worker Error:", error);
-      };
-    }
-  }
-
-  /**
-   * Run analysis locally using Web Worker
+   * Run analysis locally using Web Worker (pool-backed)
    */
   private async analyzeLocal(
     model: ModelData,
@@ -333,9 +328,14 @@ class AnalysisService {
   ): Promise<AnalysisResult> {
     onProgress?.("assembling", 10, "Starting local solver...");
 
-    return new Promise((resolve, reject) => {
-      // Create worker if not exists
-      this.initializeWorker();
+    const worker = await this.workerPool.acquire();
+
+    return new Promise<AnalysisResult>((resolve, reject) => {
+      const cleanup = () => {
+        worker.removeEventListener("message", handleMessage);
+        worker.removeEventListener("error", handleError);
+        this.workerPool.release(worker);
+      };
 
       const handleMessage = (event: MessageEvent) => {
         const data = event.data;
@@ -344,7 +344,7 @@ class AnalysisService {
           const stage = data.stage as AnalysisStage;
           onProgress?.(stage, data.percent, data.message);
         } else if (data.type === "result") {
-          this.worker?.removeEventListener("message", handleMessage);
+          cleanup();
 
           if (data.success) {
             const dofPerNode = model.dofPerNode ?? 3;
@@ -420,19 +420,13 @@ class AnalysisService {
         }
       };
 
-      if (this.worker) {
-        this.worker.addEventListener("message", handleMessage);
+      const handleError = (error: ErrorEvent) => {
+        cleanup();
+        reject(new Error(error.message));
+      };
 
-        const handleError = (error: ErrorEvent) => {
-          this.worker?.removeEventListener("message", handleMessage);
-          this.worker?.removeEventListener("error", handleError);
-          reject(new Error(error.message));
-        };
-        this.worker.addEventListener("error", handleError);
-      } else {
-        reject(new Error("Worker initialization failed"));
-        return;
-      }
+      worker.addEventListener("message", handleMessage);
+      worker.addEventListener("error", handleError);
 
       // Convert member loads to nodal loads if present
       const sendToWorker = async () => {
@@ -510,7 +504,7 @@ class AnalysisService {
         // them into equivalent nodal loads (merged into allLoads above).
         // Passing memberLoads would cause the worker to independently re-compute
         // fixed-end forces, resulting in DOUBLE-COUNTING of member load effects.
-        this.worker!.postMessage({
+        worker.postMessage({
           type: "analyze",
           requestId: `local-${Date.now()}`,
           model: {
@@ -535,23 +529,24 @@ class AnalysisService {
   }
 
   /**
-   * Run analysis on cloud server using Python sparse solver
-   */
-  /**
    * Run analysis on cloud server using Python sparse solver via Worker
-   * Offloads JSON serialization and network request to worker thread
+   * Offloads JSON serialization and network request to worker thread (pool-backed)
    */
   private async analyzeCloud(
     model: ModelData,
     onProgress?: ProgressCallback,
     token?: string | null,
   ): Promise<AnalysisResult> {
-    return new Promise((resolve) => {
-      if (!this.worker) {
-        this.initializeWorker();
-      }
+    const worker = await this.workerPool.acquire();
 
+    return new Promise<AnalysisResult>((resolve) => {
       const requestId = `cloud-${Date.now()}`;
+
+      const cleanup = () => {
+        worker.removeEventListener("message", progressHandler);
+        worker.removeEventListener("message", resultHandler);
+        this.workerPool.release(worker);
+      };
 
       // Progress listener
       const progressHandler = (e: MessageEvent) => {
@@ -569,9 +564,7 @@ class AnalysisService {
         if (response.requestId !== requestId) return;
 
         if (response.type === "result") {
-          // Cleanup
-          this.worker!.removeEventListener("message", progressHandler);
-          this.worker!.removeEventListener("message", resultHandler);
+          cleanup();
 
           if (!response.success) {
             resolve({
@@ -640,11 +633,11 @@ class AnalysisService {
         }
       };
 
-      this.worker!.addEventListener("message", progressHandler);
-      this.worker!.addEventListener("message", resultHandler);
+      worker.addEventListener("message", progressHandler);
+      worker.addEventListener("message", resultHandler);
 
       // Send to worker
-      this.worker!.postMessage({
+      worker.postMessage({
         type: "analyze_cloud",
         requestId,
         model: {
@@ -920,12 +913,11 @@ class AnalysisService {
   }
 
   /**
-   * Terminate worker
+   * Terminate all workers in the pool
    */
   dispose(): void {
     this.cancel();
-    this.worker?.terminate();
-    this.worker = null;
+    this.workerPool.dispose();
   }
 
   /**

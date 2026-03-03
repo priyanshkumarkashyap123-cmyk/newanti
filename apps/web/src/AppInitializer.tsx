@@ -86,6 +86,13 @@ const isPublicRoute = (pathname: string): boolean => {
   );
 };
 
+const normalizeError = (error: unknown): { message: string; stack?: string } => {
+  if (error instanceof Error) {
+    return { message: error.message, stack: error.stack };
+  }
+  return { message: String(error) };
+};
+
 export const AppProvider = ({ children }: AppProviderProps) => {
   const location = useLocation();
   const [state, setState] = useState<AppState>({
@@ -132,7 +139,31 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
       logger.log("[BeamLab] ✅ Application initialized successfully");
     } catch (error) {
-      logger.error("[BeamLab] ❌ Initialization failed:", error);
+      const normalized = normalizeError(error);
+      logger.error("[BeamLab] ❌ Initialization failed:", {
+        message: normalized.message,
+        stack: normalized.stack,
+      });
+
+      errorHandler.createError(
+        normalized.message,
+        "unknown",
+        ERROR_CODES.NETWORK_SERVER_ERROR,
+        {
+          source: "AppInitializer.initialize",
+          stack: normalized.stack,
+        },
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("app:initialization-failed", {
+          detail: {
+            message: normalized.message,
+            stack: normalized.stack,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      );
 
       setState((prev) => ({
         ...prev,

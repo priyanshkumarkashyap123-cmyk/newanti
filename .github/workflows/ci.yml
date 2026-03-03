@@ -66,11 +66,30 @@ jobs:
       run: pnpm lint
 
   # =========================================================================
+  # WEB BROWSER COMPATIBILITY CHECK
+  # Fast-fail guard for browser-incompatible Node/CommonJS patterns in web src
+  # =========================================================================
+  web-browser-compat:
+    name: Web Browser Compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    - run: pnpm install --frozen-lockfile
+    - name: Run Browser Compatibility Guard
+      run: pnpm --filter @beamlab/web run check:browser-compat
+
+  # =========================================================================
   # WEB BUILD AND TEST
   # =========================================================================
   web-build-and-test:
     runs-on: ubuntu-latest
-    needs: [lint]
+    needs: [lint, web-browser-compat]
     timeout-minutes: 20
     
     defaults:
@@ -222,13 +241,14 @@ jobs:
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
-    needs: [typecheck, lint, web-build-and-test, rust-check, backend-build, contract-validation]
+    needs: [typecheck, lint, web-browser-compat, web-build-and-test, rust-check, backend-build, contract-validation]
     if: always()
     steps:
     - name: Check Results
       run: |
         if [[ "${{ needs.typecheck.result }}" == "failure" || \
               "${{ needs.lint.result }}" == "failure" || \
+            "${{ needs.web-browser-compat.result }}" == "failure" || \
               "${{ needs.web-build-and-test.result }}" == "failure" || \
               "${{ needs.rust-check.result }}" == "failure" || \
               "${{ needs.backend-build.result }}" == "failure" || \

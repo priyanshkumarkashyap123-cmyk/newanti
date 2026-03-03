@@ -62,6 +62,7 @@ import {
   Project as CloudProject,
 } from "../services/ProjectService";
 import { useModelStore } from "../store/model";
+import { useConfirm } from "../components/ui/ConfirmDialog";
 
 // ============================================
 // TYPES
@@ -126,6 +127,7 @@ function cloudToDisplayProject(cp: CloudProject): Project {
 
 export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState("projects");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -248,7 +250,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   }, [projectMenuId]);
 
   const handleDeleteProject = useCallback(async (projectId: string) => {
-    if (!confirm("Delete this project permanently? This cannot be undone.")) return;
+    if (!(await confirm({ title: 'Delete Project', message: 'Delete this project permanently? This cannot be undone.', variant: 'danger' }))) return;
     try {
       const token = await getToken();
       if (token) {

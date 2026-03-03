@@ -6,6 +6,7 @@
 import { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AdvancedToggle, RangeSlider } from '../components/ui';
+import { useConfirm } from '../components/ui/ConfirmDialog';
 
 // ============================================
 // TYPES
@@ -25,6 +26,7 @@ interface NavItem {
 
 export const SettingsPageEnhanced: FC = () => {
     const navigate = useNavigate();
+    const confirm = useConfirm();
     const [activeTab, setActiveTab] = useState<TabId>('general');
 
     useEffect(() => { document.title = 'Settings | BeamLab'; }, []);
@@ -84,8 +86,8 @@ export const SettingsPageEnhanced: FC = () => {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handleResetSettings = () => {
-        if (confirm('Are you sure you want to reset all settings to defaults?')) {
+    const handleResetSettings = async () => {
+        if (await confirm({ title: 'Reset Settings', message: 'Are you sure you want to reset all settings to defaults?', variant: 'warning' })) {
             // Reset all settings
             setAutoSave(true);
             setCloudSync(false);

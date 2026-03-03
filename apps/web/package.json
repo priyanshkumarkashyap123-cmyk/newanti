@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:strict": "tsc && vite build",
+    "check:browser-compat": "node ../../scripts/check-web-browser-compat.mjs",
+    "build": "pnpm run check:browser-compat && vite build",
+    "build:strict": "pnpm run check:browser-compat && tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 5000 || true",
     "type-check": "tsc --noEmit",

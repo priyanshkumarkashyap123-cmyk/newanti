@@ -49,6 +49,7 @@ import {
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
 import { useUserRegistration } from "../hooks/useUserRegistration";
+import { useConfirm } from "../components/ui/ConfirmDialog";
 const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import {
   ProjectService,
@@ -371,6 +372,7 @@ export const UnifiedDashboard: FC<{
   onLaunchModule?: (m: string) => void;
 }> = () => {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
@@ -459,7 +461,7 @@ export const UnifiedDashboard: FC<{
 
   const handleDeleteProject = useCallback(
     async (projectId: string) => {
-      if (!confirm("Delete this project?")) return;
+      if (!(await confirm({ title: 'Delete Project', message: 'Delete this project? This cannot be undone.', variant: 'danger' }))) return;
       try {
         const token = await getToken();
         if (!token) return;
