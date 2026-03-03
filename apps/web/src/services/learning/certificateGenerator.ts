@@ -8,8 +8,6 @@
  * - Certificate download/sharing
  */
 
-import crypto from 'crypto';
-
 export interface Certificate {
   id: string;
   type: 'module' | 'path' | 'milestone';
@@ -98,16 +96,23 @@ export function getAllMilestones(): Milestone[] {
 }
 
 export function generateCertificateId(): string {
-  return `cert_${crypto.randomBytes(8).toString('hex')}`;
+  const array = new Uint8Array(8);
+  crypto.getRandomValues(array);
+  return `cert_${Array.from(array)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')}`;
 }
 
 export function generateVerificationCode(certificateId: string, timestamp: number): string {
-  return crypto
-    .createHash('sha256')
-    .update(`${certificateId}${timestamp}${process.env.CERTIFICATE_SECRET || 'beamlab-secret'}`)
-    .digest('hex')
-    .substring(0, 12)
-    .toUpperCase();
+  // Simple verification code using timestamp and cert ID
+  const combined = `${certificateId}${timestamp}beamlab-secret`;
+  let hash = 0;
+  for (let i = 0; i < combined.length; i++) {
+    const char = combined.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(16).substring(0, 12).toUpperCase();
 }
 
 export function createModuleCertificate(

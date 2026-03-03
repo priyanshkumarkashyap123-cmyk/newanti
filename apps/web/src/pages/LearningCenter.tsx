@@ -42,6 +42,7 @@ import {
   setModuleCompleted,
   type LearningProgressState,
 } from '../services/learning/progressTracker';
+import { AchievementDisplay } from '../components/learning/AchievementDisplay';
 
 // ============================================
 // TYPES
@@ -612,6 +613,11 @@ const PathDetail: React.FC<{
             </div>
           ))}
       </div>
+    </div>
+
+    {/* Achievements & Certificates */}
+    <div className="mb-8">
+      <AchievementDisplay progressState={progressState} />
     </div>
 
     {/* Learning Outcomes */}
