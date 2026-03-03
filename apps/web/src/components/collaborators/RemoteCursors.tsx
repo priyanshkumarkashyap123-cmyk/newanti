@@ -8,7 +8,7 @@ interface RemoteCursorsProps {
     users: RemoteUser[];
 }
 
-const Cursor: React.FC<{ user: RemoteUser }> = ({ user }) => {
+const Cursor: React.FC<{ user: RemoteUser }> = memo(({ user }) => {
     const meshRef = useRef<THREE.Group>(null);
     const targetPos = useRef(new THREE.Vector3(0, 0, 0));
 
@@ -51,7 +51,7 @@ const Cursor: React.FC<{ user: RemoteUser }> = ({ user }) => {
             </Html>
         </group>
     );
-};
+});
 
 export const RemoteCursors: React.FC<RemoteCursorsProps> = memo(({ users }) => {
     return (

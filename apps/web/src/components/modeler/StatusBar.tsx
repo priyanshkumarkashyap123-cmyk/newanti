@@ -5,6 +5,7 @@
 import { FC, useState, useEffect, useMemo, memo } from "react";
 import { useModelStore } from "../../store/model";
 import { useUIStore } from "../../store/uiStore";
+import { useShallow } from "zustand/react/shallow";
 import { useModelCounts, useDebouncedModelSelect } from "../../hooks/useDebouncedModelSelect";
 import { CoordinateInputBar } from "../ui/CoordinateInputBar";
 import { API_CONFIG } from "../../config/env";
@@ -17,7 +18,16 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
     // Debounced selectedIds for selection breakdown (200ms)
     const selectedIds = useDebouncedModelSelect((s) => s.selectedIds, 200);
     const analysisResults = useModelStore((state) => state.analysisResults);
-    const { activeCategory, activeTool, showGrid, snapToGrid, gridSize, toggleSnap } = useUIStore();
+    const { activeCategory, activeTool, showGrid, snapToGrid, gridSize, toggleSnap } = useUIStore(
+      useShallow((s) => ({
+        activeCategory: s.activeCategory,
+        activeTool: s.activeTool,
+        showGrid: s.showGrid,
+        snapToGrid: s.snapToGrid,
+        gridSize: s.gridSize,
+        toggleSnap: s.toggleSnap,
+      }))
+    );
 
     // Zoom level display — listens to camera zoom events (Figma §6.1 zone D)
     const [zoomLevel, setZoomLevel] = useState(100);

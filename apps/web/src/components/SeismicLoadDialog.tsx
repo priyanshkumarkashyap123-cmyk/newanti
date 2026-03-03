@@ -28,6 +28,7 @@ import { Badge } from './ui/badge';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Activity, MapPin, Building2, Calculator, Info, AlertTriangle, Layers, Loader2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useShallow } from 'zustand/react/shallow';
 
 // ===== CONSTANTS FROM IS 1893 =====
 
@@ -104,7 +105,9 @@ interface SeismicResults {
 }
 
 const SeismicLoadDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     const isOpen = modals.seismicLoadDialog || false;
     
     const [activeTab, setActiveTab] = useState('zone');

@@ -155,6 +155,10 @@ const AnimatedMemberLine: FC<AnimatedMemberLineProps> = ({
     const lineRef = useRef<THREE.Line>(null);
     const phaseRef = useRef(0);
 
+    // Pre-allocated scratch Vector3s — reused every frame to avoid GC pressure
+    const _scratchOriginal = useRef(new THREE.Vector3());
+    const _scratchDisp = useRef(new THREE.Vector3());
+
     // Pre-calculate spline control points
     const controlPoints = useMemo(() => {
         const points: THREE.Vector3[] = [];
@@ -197,18 +201,18 @@ const AnimatedMemberLine: FC<AnimatedMemberLineProps> = ({
         for (let i = 0; i <= segments; i++) {
             const t = i / segments;
 
-            // Original position
-            const original = new THREE.Vector3().lerpVectors(startOriginal, endOriginal, t);
+            // Original position — reuse scratch vector
+            _scratchOriginal.current.lerpVectors(startOriginal, endOriginal, t);
 
-            // Displacement
-            const disp = new THREE.Vector3().lerpVectors(startDisp, endDisp, t);
+            // Displacement — reuse scratch vector
+            _scratchDisp.current.lerpVectors(startDisp, endDisp, t);
 
             // Apply animated displacement
             positions.setXYZ(
                 i,
-                original.x + disp.x * animFactor,
-                original.y + disp.y * animFactor,
-                original.z + disp.z * animFactor
+                _scratchOriginal.current.x + _scratchDisp.current.x * animFactor,
+                _scratchOriginal.current.y + _scratchDisp.current.y * animFactor,
+                _scratchOriginal.current.z + _scratchDisp.current.z * animFactor
             );
         }
 

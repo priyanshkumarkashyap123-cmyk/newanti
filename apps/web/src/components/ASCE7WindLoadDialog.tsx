@@ -27,6 +27,7 @@ import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { Wind, MapPin, Mountain, AlertTriangle, Calculator, Info, Building2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useShallow } from 'zustand/react/shallow';
 import { API_CONFIG } from '../config/env';
 import { getErrorMessage } from '../lib/errorHandling';
 // import { useToast } from './ui/use-toast';
@@ -112,7 +113,9 @@ interface ASCE7WindResult {
 }
 
 const ASCE7WindLoadDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     // const { toast } = useToast();
     const isOpen = modals.asce7WindDialog || false;
 

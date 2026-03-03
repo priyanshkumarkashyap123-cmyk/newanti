@@ -4,7 +4,7 @@ import { Play, TrendingUp, Brain, Loader2, CheckCircle, BarChart } from 'lucide-
 import { useUIStore } from '../../store/uiStore';
 
 export const PINNPanel: FC = () => {
-    const { showNotification } = useUIStore();
+    const showNotification = useUIStore((s) => s.showNotification);
     const [training, setTraining] = useState(false);
     const [jobId, setJobId] = useState<string | null>(null);
     const [progress, setProgress] = useState(0);

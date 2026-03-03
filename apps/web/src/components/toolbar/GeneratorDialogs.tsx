@@ -12,6 +12,7 @@
 import { FC, useState } from 'react';
 import { Triangle, Spline, Building, Cable } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -40,7 +41,9 @@ export const TrussGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
     const [height, setHeight] = useState(4);
     const [panels, setPanels] = useState(8);
 
-    const { addNode, addMember, clearModel } = useModelStore();
+    const { addNode, addMember, clearModel } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, addMember: s.addMember, clearModel: s.clearModel }))
+    );
 
     const handleGenerate = () => {
         clearModel();
@@ -264,7 +267,9 @@ export const ArchGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
     const [segments, setSegments] = useState(12);
     const [includeHangers, setIncludeHangers] = useState(true);
 
-    const { addNode, addMember, clearModel } = useModelStore();
+    const { addNode, addMember, clearModel } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, addMember: s.addMember, clearModel: s.clearModel }))
+    );
 
     const handleGenerate = () => {
         clearModel();
@@ -430,7 +435,9 @@ export const FrameGeneratorDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
     const [bays, setBays] = useState(3);
     const [stories, setStories] = useState(4);
 
-    const { addNode, addMember, clearModel } = useModelStore();
+    const { addNode, addMember, clearModel } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, addMember: s.addMember, clearModel: s.clearModel }))
+    );
 
     const handleGenerate = () => {
         clearModel();
@@ -588,7 +595,9 @@ export const CablePatternDialog: FC<DialogProps> = ({ isOpen, onClose }) => {
     const [deckLength, setDeckLength] = useState(100);
     const [cableSpacing, setCableSpacing] = useState(10);
 
-    const { addNode, addMember, clearModel } = useModelStore();
+    const { addNode, addMember, clearModel } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, addMember: s.addMember, clearModel: s.clearModel }))
+    );
 
     const handleGenerate = () => {
         clearModel();

@@ -27,6 +27,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Search, Database, Check, Loader2, AlertCircle, ArrowUpDown } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useModelStore } from '@/store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { useSteelSections } from '@/hooks/useRustAnalysis';
 
 const STANDARDS = [
@@ -40,7 +41,9 @@ type SortField = 'designation' | 'depth' | 'width' | 'area' | 'weight' | 'ix' | 
 type SortDir = 'asc' | 'desc';
 
 const SectionBrowserDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     const isOpen = modals.sectionBrowserDialog || false;
 
     const [standard, setStandard] = useState('is');

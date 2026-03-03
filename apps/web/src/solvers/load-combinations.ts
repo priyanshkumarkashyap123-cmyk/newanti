@@ -41,6 +41,13 @@ export interface LoadCaseResult {
   reactions?: Float64Array;
 }
 
+/** Validation result for load case inputs */
+export interface LoadCaseValidation {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
 /** Member force values at one end (or max across member) */
 export interface MemberForceValues {
   axial: number;
@@ -146,6 +153,12 @@ export function getIS456Combinations(
         factors: { DL: 1.2, LL: 1.2, WL: 1.2 },
       },
       {
+        name: '1.2DL + 1.2LL - 1.2WL',
+        codeRef: 'IS 456 Cl. 36.4.1 (b) reverse',
+        limitState: 'ULS',
+        factors: { DL: 1.2, LL: 1.2, WL: -1.2 },
+      },
+      {
         name: '1.5DL + 1.5WL',
         codeRef: 'IS 456 Cl. 36.4.1 (c)',
         limitState: 'ULS',
@@ -156,6 +169,12 @@ export function getIS456Combinations(
         codeRef: 'IS 456 Cl. 36.4.1 (d)',
         limitState: 'ULS',
         factors: { DL: 0.9, WL: 1.5 },
+      },
+      {
+        name: '0.9DL - 1.5WL',
+        codeRef: 'IS 456 Cl. 36.4.1 (d) reverse',
+        limitState: 'ULS',
+        factors: { DL: 0.9, WL: -1.5 },
       },
     );
   }
@@ -169,6 +188,12 @@ export function getIS456Combinations(
         factors: { DL: 1.2, LL: 1.2, EQ: 1.2 },
       },
       {
+        name: '1.2DL + 1.2LL - 1.2EQ',
+        codeRef: 'IS 456 Cl. 36.4.1 (b) reverse',
+        limitState: 'ULS',
+        factors: { DL: 1.2, LL: 1.2, EQ: -1.2 },
+      },
+      {
         name: '1.5DL + 1.5EQ',
         codeRef: 'IS 456 Cl. 36.4.1 (c)',
         limitState: 'ULS',
@@ -179,6 +204,12 @@ export function getIS456Combinations(
         codeRef: 'IS 456 Cl. 36.4.1 (d)',
         limitState: 'ULS',
         factors: { DL: 0.9, EQ: 1.5 },
+      },
+      {
+        name: '0.9DL - 1.5EQ',
+        codeRef: 'IS 456 Cl. 36.4.1 (d) reverse',
+        limitState: 'ULS',
+        factors: { DL: 0.9, EQ: -1.5 },
       },
     );
   }
@@ -316,6 +347,100 @@ export function getIS800Combinations(
   }
 
   return combos;
+}
+
+// ============================================
+// INPUT VALIDATION
+// ============================================
+
+/**
+ * Validate load cases before applying combinations.
+ *
+ * Checks:
+ *   1. At least one DL case exists (required by all codes)
+ *   2. Load case types match valid LoadCaseType values
+ *   3. Member force arrays are consistent across cases
+ *   4. No NaN/Infinity values in forces
+ *   5. WL and EQ are not combined simultaneously (IS 875 Part 5)
+ */
+export function validateLoadCases(
+  loadCases: LoadCaseResult[],
+  combos: LoadCombination[],
+): LoadCaseValidation {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (loadCases.length === 0) {
+    errors.push('No load cases provided.');
+    return { valid: false, errors, warnings };
+  }
+
+  // Check for required DL case
+  const hasDL = loadCases.some((lc) => lc.type === 'DL');
+  if (!hasDL) {
+    errors.push('No Dead Load (DL) case found. At least one DL case is required.');
+  }
+
+  // Check for valid types
+  const validTypes: Set<string> = new Set(['DL', 'LL', 'WL', 'EQ', 'TL', 'SL']);
+  for (const lc of loadCases) {
+    if (!validTypes.has(lc.type)) {
+      errors.push(`Load case "${lc.name}" (${lc.id}) has unknown type "${lc.type}".`);
+    }
+  }
+
+  // Check member consistency
+  const baseMemberIds = loadCases[0]?.memberForces.map((mf) => mf.id) ?? [];
+  for (let i = 1; i < loadCases.length; i++) {
+    const lc = loadCases[i]!;
+    if (lc.memberForces.length !== baseMemberIds.length) {
+      errors.push(
+        `Load case "${lc.name}" has ${lc.memberForces.length} members ` +
+        `but DL case has ${baseMemberIds.length}.`
+      );
+    }
+  }
+
+  // Check for NaN/Infinity
+  for (const lc of loadCases) {
+    for (const mf of lc.memberForces) {
+      const vals = [
+        mf.start.axial, mf.start.shear, mf.start.moment,
+        mf.end.axial, mf.end.shear, mf.end.moment,
+      ];
+      for (const v of vals) {
+        if (!isFinite(v)) {
+          errors.push(`Load case "${lc.name}", member ${mf.id}: non-finite force value detected.`);
+          break;
+        }
+      }
+    }
+  }
+
+  // Check combo factor types match available load cases
+  const availableTypes = new Set(loadCases.map((lc) => lc.type));
+  for (const combo of combos) {
+    for (const factorType of Object.keys(combo.factors)) {
+      if (factorType !== 'DL' && !availableTypes.has(factorType as LoadCaseType)) {
+        warnings.push(
+          `Combination "${combo.name}" requires ${factorType} but no ${factorType} load case exists. ` +
+          `This combination will have zero contribution for ${factorType}.`
+        );
+      }
+    }
+  }
+
+  // WL + EQ simultaneous warning
+  const hasWL = availableTypes.has('WL');
+  const hasEQ = availableTypes.has('EQ');
+  if (hasWL && hasEQ) {
+    warnings.push(
+      'Both WL and EQ load cases present. Per IS 875 Part 5 Cl. 6.3.2.2, ' +
+      'wind and earthquake should not be combined simultaneously.'
+    );
+  }
+
+  return { valid: errors.length === 0, errors, warnings };
 }
 
 // ============================================

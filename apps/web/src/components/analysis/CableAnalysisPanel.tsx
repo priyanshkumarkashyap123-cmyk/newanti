@@ -5,10 +5,13 @@
 
 import { useState } from 'react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { AdvancedAnalysisService } from '../../services/AdvancedAnalysisService';
 
 export function CableAnalysisPanel() {
-    const store = useModelStore();
+    const store = useModelStore(
+      useShallow((s) => ({ nodes: s.nodes, members: s.members, loads: s.loads }))
+    );
     const [analyzing, setAnalyzing] = useState(false);
     const [results, setResults] = useState<any>(null);
     const [error, setError] = useState<string>('');

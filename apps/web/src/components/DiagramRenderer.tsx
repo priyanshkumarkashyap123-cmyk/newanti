@@ -25,7 +25,7 @@ const FILL_OPACITY = 0.2;  // Figma §11.2: fill area opacity
 const FILL_COLOR_MOMENT = '#3b82f6';  // Blue per Figma §11.2
 const FILL_COLOR_SHEAR = '#22c55e';  // Green per Figma §11.3
 
-export const DiagramRenderer: FC<DiagramRendererProps> = ({
+export const DiagramRenderer: FC<DiagramRendererProps> = memo(({
     memberId,
     type,
     scale = 0.1,
@@ -315,7 +315,7 @@ export const DiagramRenderer: FC<DiagramRendererProps> = ({
             )}
         </group>
     );
-};
+});
 
 /**
  * Renders all member diagrams for a specific type

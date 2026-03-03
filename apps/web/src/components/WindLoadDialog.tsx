@@ -27,6 +27,7 @@ import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { Wind, MapPin, Mountain, AlertTriangle, Calculator, Info } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useShallow } from 'zustand/react/shallow';
 
 // ===== CONSTANTS FROM IS 875 =====
 
@@ -113,7 +114,9 @@ interface WindResults {
 }
 
 const WindLoadDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     const isOpen = modals.windLoadDialog || false;
     
     const [activeTab, setActiveTab] = useState('location');

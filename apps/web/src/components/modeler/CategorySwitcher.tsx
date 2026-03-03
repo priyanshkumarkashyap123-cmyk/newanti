@@ -29,7 +29,8 @@ export const CATEGORY_TABS: TabConfig[] = [
 ];
 
 export const CategorySwitcher: FC = memo(() => {
-  const { activeCategory, setCategory } = useUIStore();
+  const activeCategory = useUIStore((s) => s.activeCategory);
+  const setCategory = useUIStore((s) => s.setCategory);
 
   return (
     <>

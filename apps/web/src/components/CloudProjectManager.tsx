@@ -15,7 +15,7 @@ interface CloudProjectManagerProps {
 
 export const CloudProjectManager: FC<CloudProjectManagerProps> = ({ isOpen, onClose, onLoad }) => {
     const { getToken, user } = useAuth();
-    const { showNotification } = useUIStore();
+    const showNotification = useUIStore((s) => s.showNotification);
     const [projects, setProjects] = useState<Project[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);

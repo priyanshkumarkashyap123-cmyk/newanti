@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Play, AlertTriangle } from 'lucide-react';
 import { useModelStore } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { 
     performSteelDesignCheck, 
     designSteelMembers, 
@@ -16,7 +17,9 @@ import {
 import { getSectionById, Material } from '../data/SectionDatabase';
 
 export function SteelDesignPage() {
-    const store = useModelStore();
+    const store = useModelStore(
+      useShallow((s) => ({ members: s.members, analysisResults: s.analysisResults }))
+    );
     const [selectedMember, setSelectedMember] = useState<string>('');
     const [designCode, setDesignCode] = useState<'AISC360' | 'IS800'>('AISC360');
     const [analyzing, setAnalyzing] = useState(false);

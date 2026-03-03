@@ -17,6 +17,7 @@
 
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { useModelStore } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { useAISessionStore, type AIMessage } from '../store/aiSessionStore';
 import { API_CONFIG, AI_CONFIG, FEATURES } from '../config/env';
 
@@ -169,7 +170,25 @@ export function useAIArchitect() {
   const messageIdRef = useRef(0);
 
   // Model store
-  const store = useModelStore();
+  const store = useModelStore(
+    useShallow((s) => ({
+      nodes: s.nodes,
+      members: s.members,
+      loads: s.loads,
+      loadCases: s.loadCases,
+      analysisResults: s.analysisResults,
+      clearModel: s.clearModel,
+      addNode: s.addNode,
+      addMember: s.addMember,
+      addLoadCase: s.addLoadCase,
+      addLoad: s.addLoad,
+      setNodeRestraints: s.setNodeRestraints,
+      removeNode: s.removeNode,
+      removeMember: s.removeMember,
+      updateMember: s.updateMember,
+      setIsAnalyzing: s.setIsAnalyzing,
+    }))
+  );
 
   // AI session store
   const sessionStore = useAISessionStore();

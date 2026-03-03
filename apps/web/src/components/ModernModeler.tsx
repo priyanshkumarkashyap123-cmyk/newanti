@@ -194,7 +194,7 @@ export const ModernModeler: FC = () => {
       setIsAnalyzing: state.setIsAnalyzing,
     }))
   );
-  // UI Store — only subscribe to actions, NOT the full modals object
+  // UI Store — batched selector to prevent whole-store subscription
   const {
     activeCategory,
     setCategory,
@@ -205,7 +205,19 @@ export const ModernModeler: FC = () => {
     notification,
     hideNotification,
     showNotification,
-  } = useUIStore();
+  } = useUIStore(
+    useShallow((s) => ({
+      activeCategory: s.activeCategory,
+      setCategory: s.setCategory,
+      activeTool: s.activeTool,
+      setActiveTool: s.setActiveTool,
+      openModal: s.openModal,
+      closeModal: s.closeModal,
+      notification: s.notification,
+      hideNotification: s.hideNotification,
+      showNotification: s.showNotification,
+    }))
+  );
 
   const toastSystem = useToast();
 

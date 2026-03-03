@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useModelStore } from '@/store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { API_CONFIG } from '@/config/env';
 
 // ===== PREDEFINED COMBINATIONS =====
@@ -71,7 +72,9 @@ const IS456_LSM: LoadCombination[] = [
 const LOAD_TYPES = ['D', 'L', 'Lr', 'S', 'R', 'W', 'E', 'T'];
 
 const LoadCombinationsDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     const isOpen = modals.loadCombinationsDialog || false;
 
     const [activeTab, setActiveTab] = useState('predefined');
@@ -217,7 +220,9 @@ const LoadCombinationsDialog: React.FC = () => {
     }, {} as Record<string, LoadCombination[]>);
 
     const activeCombinations = combinations.filter(c => c.isActive);
-    const { addLoadCombination, loadCombinations: storedCombos } = useModelStore();
+    const { addLoadCombination, loadCombinations: storedCombos } = useModelStore(
+      useShallow((s) => ({ addLoadCombination: s.addLoadCombination, loadCombinations: s.loadCombinations }))
+    );
 
     const handleApply = () => {
         // Store each active combination in the model store

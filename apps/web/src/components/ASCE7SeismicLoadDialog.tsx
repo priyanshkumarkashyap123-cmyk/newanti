@@ -27,6 +27,7 @@ import { Badge } from './ui/badge';
 import { Activity, MapPin, Building2, Calculator, Info, Settings2, Loader2 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useModelStore } from '@/store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { API_CONFIG } from '@/config/env';
 
 // ===== ASCE 7 CONSTANTS =====
@@ -107,7 +108,9 @@ interface ASCE7Results {
 }
 
 const ASCE7SeismicLoadDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     const isOpen = modals.asce7SeismicDialog || false;
 
     const [activeTab, setActiveTab] = useState('site');

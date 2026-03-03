@@ -41,13 +41,30 @@ import {
   CheckCircle2,
   Thermometer,
   PanelTopOpen,
+  ShieldCheck,
+  ShieldAlert,
+  ShieldX,
+  Trophy,
+  RefreshCw,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FloorPlanRenderer, OverlayMode } from '../components/space-planning/FloorPlanRenderer';
 import { ElevationSectionViewer } from '../components/space-planning/ElevationSectionViewer';
 import { VastuCompass } from '../components/space-planning/VastuCompass';
 import { RoomConfigWizard, WizardConfig } from '../components/space-planning/RoomConfigWizard';
+import { ConstraintScorecard } from '../components/space-planning/ConstraintScorecard';
+import { CandidateComparison } from '../components/space-planning/CandidateComparison';
 import { spacePlanningEngine } from '../services/space-planning/SpacePlanningEngine';
+import {
+  solveLayout,
+  solveMultipleCandidates,
+  placementsToPlacedRooms,
+  wizardConfigToRequest,
+  type ConstraintReport,
+  type PlacementResponse,
+  type SolverCandidate,
+  type MultiCandidateResult,
+} from '../services/space-planning/layoutApiService';
 import type { HousePlanProject, ColorScheme } from '../services/space-planning/types';
 import { getLearningProgress, saveLearningProgress, completeTemplate } from '../services/learning/progressTracker';
 import { checkMilestoneUnlocks, applyMilestoneUnlocks } from '../services/learning/milestoneUnlocker';
@@ -105,6 +122,16 @@ export function SpacePlanningPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const sessionStartRef = useRef<number>(Date.now());
 
+  // ── NEW: Constraint solver state ──
+  const [constraintReport, setConstraintReport] = useState<ConstraintReport | null>(null);
+  const [solverPlacements, setSolverPlacements] = useState<PlacementResponse[] | null>(null);
+  const [multiCandidateResult, setMultiCandidateResult] = useState<MultiCandidateResult | null>(null);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+  const [showCandidates, setShowCandidates] = useState(false);
+  const [generationMode, setGenerationMode] = useState<'single' | 'multi'>('single');
+  const [solverError, setSolverError] = useState<string | null>(null);
+  const [lastWizardConfig, setLastWizardConfig] = useState<WizardConfig | null>(null);
+
   useEffect(() => {
     document.title = 'Space Planning | BeamLab';
     // Record session start
@@ -138,10 +165,53 @@ export function SpacePlanningPage() {
   const handleGenerate = useCallback(
     async (config: WizardConfig) => {
       setIsGenerating(true);
+      setSolverError(null);
+      setLastWizardConfig(config);
       try {
-        // Small delay for UI feedback
-        await new Promise((r) => setTimeout(r, 300));
+        // ── Phase 1: Call backend v2 CSP solver for optimized placement ──
+        let report: ConstraintReport | null = null;
+        let placements: PlacementResponse[] | null = null;
 
+        if (generationMode === 'multi') {
+          // Multi-candidate mode: generate 3 alternatives
+          try {
+            const multiResult = await solveMultipleCandidates(config, 3, 300);
+            setMultiCandidateResult(multiResult);
+            setShowCandidates(true);
+
+            // Auto-select the best candidate
+            const best = multiResult.candidates[0];
+            setSelectedCandidateId(best.id);
+            report = best.report;
+            placements = best.placements;
+            setConstraintReport(report);
+            setSolverPlacements(placements);
+          } catch (apiErr) {
+            console.warn('Multi-candidate solver failed, falling back to single:', apiErr);
+            // Fall through to single mode
+          }
+        }
+
+        if (!report) {
+          // Single candidate mode (or fallback)
+          try {
+            const solverResult = await solveLayout(config, { maxIterations: 300 });
+            report = solverResult.report;
+            placements = solverResult.placements;
+            setConstraintReport(report);
+            setSolverPlacements(placements);
+          } catch (apiErr) {
+            console.warn('Backend solver unavailable, using client-side engine:', apiErr);
+            setSolverError(
+              'Backend solver unavailable — using client-side placement. ' +
+              'Constraint analysis will not be available.',
+            );
+          }
+        }
+
+        // ── Phase 2: Generate complete project using the engine ──
+        // If we got solver placements, merge them into the engine-generated plan.
+        // The engine still handles doors, windows, walls, MEP, Vastu, elevations etc.
         const result = spacePlanningEngine.generateCompletePlan(
           config.plot,
           config.orientation,
@@ -150,6 +220,33 @@ export function SpacePlanningPage() {
           config.preferences,
           config.location,
         );
+
+        // ── Phase 3: If solver succeeded, override room placements with optimized positions ──
+        if (placements && placements.length > 0) {
+          const optimizedRooms = placementsToPlacedRooms(placements, config.roomSpecs);
+
+          // Merge solver placements into the base floor plan, preserving
+          // doors/windows/finishes from the engine but using solver positions
+          if (result.floorPlans.length > 0) {
+            const basePlan = result.floorPlans[0];
+            const mergedRooms = basePlan.rooms.map((engineRoom) => {
+              const solverRoom = optimizedRooms.find(
+                (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
+              );
+              if (solverRoom) {
+                return {
+                  ...engineRoom,
+                  x: solverRoom.x,
+                  y: solverRoom.y,
+                  width: solverRoom.width,
+                  height: solverRoom.height,
+                };
+              }
+              return engineRoom;
+            });
+            result.floorPlans[0] = { ...basePlan, rooms: mergedRooms };
+          }
+        }
 
         setProject(result);
         setActiveTab('floor_plan');
@@ -161,12 +258,74 @@ export function SpacePlanningPage() {
         }
       } catch (err) {
         console.error('Plan generation failed:', err);
+        setSolverError('Plan generation failed. Please check your configuration and try again.');
       } finally {
         setIsGenerating(false);
       }
     },
-    [templateId, handleTemplateCompletion],
+    [templateId, handleTemplateCompletion, generationMode],
   );
+
+  // ── Handle candidate selection from comparison panel ──
+  const handleSelectCandidate = useCallback(
+    (candidateId: string) => {
+      if (!multiCandidateResult || !lastWizardConfig) return;
+      const candidate = multiCandidateResult.candidates.find((c) => c.id === candidateId);
+      if (!candidate) return;
+
+      setSelectedCandidateId(candidateId);
+      setConstraintReport(candidate.report);
+      setSolverPlacements(candidate.placements);
+
+      // Re-merge this candidate's placements into the project
+      if (project && project.floorPlans.length > 0) {
+        const optimizedRooms = placementsToPlacedRooms(
+          candidate.placements,
+          lastWizardConfig.roomSpecs,
+        );
+        const basePlan = project.floorPlans[0];
+        const mergedRooms = basePlan.rooms.map((engineRoom) => {
+          const solverRoom = optimizedRooms.find(
+            (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
+          );
+          if (solverRoom) {
+            return {
+              ...engineRoom,
+              x: solverRoom.x,
+              y: solverRoom.y,
+              width: solverRoom.width,
+              height: solverRoom.height,
+            };
+          }
+          return engineRoom;
+        });
+
+        setProject({
+          ...project,
+          floorPlans: [
+            { ...basePlan, rooms: mergedRooms },
+            ...project.floorPlans.slice(1),
+          ],
+        });
+      }
+    },
+    [multiCandidateResult, lastWizardConfig, project],
+  );
+
+  // ── Handle re-solve with different seed ──
+  const handleRegenerate = useCallback(() => {
+    if (lastWizardConfig) {
+      handleGenerate(lastWizardConfig);
+    }
+  }, [lastWizardConfig, handleGenerate]);
+
+  // ── Handle violation click → highlight room on canvas ──
+  const handleViolationClick = useCallback((roomIds: string[]) => {
+    if (roomIds.length > 0) {
+      setSelectedRoomId(roomIds[0]);
+      setActiveTab('floor_plan');
+    }
+  }, []);
 
   const currentFloorPlan =
     project?.floorPlans.find((fp) => fp.floor === selectedFloor) || project?.floorPlans[0];
@@ -213,6 +372,29 @@ export function SpacePlanningPage() {
         <div className="flex items-center gap-2">
           {project && (
             <>
+              {/* Constraint solver score badge */}
+              {constraintReport && (
+                <div
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold cursor-pointer ${
+                    constraintReport.score >= 85
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                      : constraintReport.score >= 70
+                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                  }`}
+                  onClick={() => setActiveTab('floor_plan')}
+                  title="Constraint compliance score — click to view details"
+                >
+                  {constraintReport.score >= 85 ? (
+                    <ShieldCheck className="w-3 h-3" />
+                  ) : constraintReport.score >= 70 ? (
+                    <ShieldAlert className="w-3 h-3" />
+                  ) : (
+                    <ShieldX className="w-3 h-3" />
+                  )}
+                  Solver: {constraintReport.score}%
+                </div>
+              )}
               <div
                 className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold ${
                   project.vastu.overallScore >= 80
@@ -225,6 +407,17 @@ export function SpacePlanningPage() {
                 <Compass className="w-3 h-3" />
                 Vastu: {project.vastu.overallScore}%
               </div>
+              {/* Regenerate button */}
+              {lastWizardConfig && (
+                <button
+                  onClick={handleRegenerate}
+                  disabled={isGenerating}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 disabled:opacity-50"
+                  title="Re-solve with different seed"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isGenerating ? 'animate-spin' : ''}`} />
+                </button>
+              )}
               <button
                 onClick={() => setActiveTab('wizard')}
                 className="px-2.5 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
@@ -331,33 +524,115 @@ export function SpacePlanningPage() {
               {/* ======================== FLOOR PLAN ======================== */}
               {activeTab === 'floor_plan' && project && currentFloorPlan && (
                 <div className="space-y-4">
+                  {/* Solver error banner */}
+                  {solverError && (
+                    <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg px-3 py-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[10px] text-amber-700 dark:text-amber-400">{solverError}</p>
+                        <button
+                          onClick={handleRegenerate}
+                          className="text-[10px] text-amber-600 underline mt-0.5 hover:text-amber-800"
+                        >
+                          Retry with backend solver
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between">
                     <FloorSelector
                       floors={project.floorPlans}
                       selected={selectedFloor}
                       onChange={setSelectedFloor}
                     />
-                    <OverlaySelector current={overlayMode} onChange={setOverlayMode} />
+                    <div className="flex items-center gap-2">
+                      {/* Generation mode toggle */}
+                      <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
+                        <button
+                          onClick={() => setGenerationMode('single')}
+                          className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors ${
+                            generationMode === 'single'
+                              ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
+                              : 'text-slate-400 hover:text-slate-600'
+                          }`}
+                        >
+                          Single
+                        </button>
+                        <button
+                          onClick={() => setGenerationMode('multi')}
+                          className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors flex items-center gap-1 ${
+                            generationMode === 'multi'
+                              ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
+                              : 'text-slate-400 hover:text-slate-600'
+                          }`}
+                        >
+                          <Trophy className="w-3 h-3" />
+                          Compare
+                        </button>
+                      </div>
+                      <OverlaySelector current={overlayMode} onChange={setOverlayMode} />
+                    </div>
                   </div>
-                  <FloorPlanRenderer
-                    floorPlan={currentFloorPlan}
-                    plot={project.plot}
-                    constraints={project.constraints}
-                    orientation={project.orientation}
-                    structural={overlayMode === 'structural' ? project.structural : undefined}
-                    electrical={overlayMode === 'electrical' ? project.electrical : undefined}
-                    plumbing={overlayMode === 'plumbing' ? project.plumbing : undefined}
-                    hvac={overlayMode === 'hvac' ? project.hvac : undefined}
-                    overlayMode={overlayMode}
-                    sectionLines={project.sectionLines}
-                    selectedRoomId={selectedRoomId}
-                    onRoomSelect={setSelectedRoomId}
-                    showGrid
-                    showDimensions
-                    showCompass
-                    showLabels
-                    className="h-[600px]"
-                  />
+
+                  {/* Main floor plan + scorecard layout */}
+                  <div className="flex gap-4">
+                    {/* Floor plan (left/main) */}
+                    <div className="flex-1 min-w-0">
+                      <FloorPlanRenderer
+                        floorPlan={currentFloorPlan}
+                        plot={project.plot}
+                        constraints={project.constraints}
+                        orientation={project.orientation}
+                        structural={overlayMode === 'structural' ? project.structural : undefined}
+                        electrical={overlayMode === 'electrical' ? project.electrical : undefined}
+                        plumbing={overlayMode === 'plumbing' ? project.plumbing : undefined}
+                        hvac={overlayMode === 'hvac' ? project.hvac : undefined}
+                        overlayMode={overlayMode}
+                        sectionLines={project.sectionLines}
+                        selectedRoomId={selectedRoomId}
+                        onRoomSelect={setSelectedRoomId}
+                        showGrid
+                        showDimensions
+                        showCompass
+                        showLabels
+                        className="h-[600px]"
+                        constraintReport={constraintReport ?? undefined}
+                        solverPlacements={solverPlacements ?? undefined}
+                        onViolationClick={(roomId, _domain) => handleViolationClick([roomId])}
+                      />
+                    </div>
+
+                    {/* Constraint scorecard (right rail) */}
+                    {constraintReport && (
+                      <div className="w-72 flex-shrink-0 hidden lg:block space-y-3 overflow-y-auto max-h-[600px]">
+                        <ConstraintScorecard
+                          report={constraintReport}
+                          onViolationClick={handleViolationClick}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile constraint scorecard (below floor plan) */}
+                  {constraintReport && (
+                    <div className="lg:hidden">
+                      <ConstraintScorecard
+                        report={constraintReport}
+                        onViolationClick={handleViolationClick}
+                        collapsed
+                      />
+                    </div>
+                  )}
+
+                  {/* Multi-candidate comparison panel */}
+                  {multiCandidateResult && showCandidates && (
+                    <CandidateComparison
+                      result={multiCandidateResult}
+                      onSelectCandidate={handleSelectCandidate}
+                      selectedCandidateId={selectedCandidateId || undefined}
+                    />
+                  )}
                   {/* Room details panel */}
                   {selectedRoom && <RoomDetailsPanel room={selectedRoom} project={project} />}
                 </div>

@@ -1,6 +1,7 @@
 import { FC, useState, useEffect, useCallback } from 'react';
 import { useUIStore } from '../../store/uiStore';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import {
     Mountain,
     Car,
@@ -40,8 +41,10 @@ type CivilTool = 'geotech' | 'transport' | 'hydraulics' | 'enviro' | 'const' | '
 
 const GeotechPanel: FC = () => {
     const [result, setResult] = useState<any>(null);
-    const { addNode, getNextNodeId, addPlate, getNextPlateId, addCivilResult } = useModelStore();
-    const { showNotification } = useUIStore();
+    const { addNode, getNextNodeId, addPlate, getNextPlateId, addCivilResult } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, getNextNodeId: s.getNextNodeId, addPlate: s.addPlate, getNextPlateId: s.getNextPlateId, addCivilResult: s.addCivilResult }))
+    );
+    const showNotification = useUIStore((s) => s.showNotification);
 
     const [width, setWidth] = useState(2.0);
     const [depth, setDepth] = useState(1.5);
@@ -130,8 +133,10 @@ const GeotechPanel: FC = () => {
 };
 
 const TransportPanel: FC = () => {
-    const { addNode, addMember, getNextNodeId, getNextMemberId } = useModelStore();
-    const { showNotification } = useUIStore();
+    const { addNode, addMember, getNextNodeId, getNextMemberId } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, addMember: s.addMember, getNextNodeId: s.getNextNodeId, getNextMemberId: s.getNextMemberId }))
+    );
+    const showNotification = useUIStore((s) => s.showNotification);
 
     const generateCurve = () => {
         const design = transportation.designHorizontalCurve(100, 45);
@@ -183,7 +188,9 @@ const TransportPanel: FC = () => {
 
 const HydraulicsPanel: FC = () => {
     const [result, setResult] = useState<any>(null);
-    const { addNode, addMember, getNextNodeId, getNextMemberId } = useModelStore();
+    const { addNode, addMember, getNextNodeId, getNextMemberId } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, addMember: s.addMember, getNextNodeId: s.getNextNodeId, getNextMemberId: s.getNextMemberId }))
+    );
 
     const calcChannel = () => {
         const res = hydraulics.calculateOpenChannelFlow(
@@ -301,8 +308,10 @@ const ConstructionPanel: FC = () => {
 };
 
 const SurveyPanel: FC = () => {
-    const { addNode, getNextNodeId, addMember, getNextMemberId } = useModelStore();
-    const { showNotification } = useUIStore();
+    const { addNode, getNextNodeId, addMember, getNextMemberId } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, getNextNodeId: s.getNextNodeId, addMember: s.addMember, getNextMemberId: s.getNextMemberId }))
+    );
+    const showNotification = useUIStore((s) => s.showNotification);
 
     const plotTraverse = () => {
         // Simple square traverse
@@ -355,8 +364,11 @@ const SurveyPanel: FC = () => {
 // ============================================
 
 export const CivilPanel: FC = () => {
-    const { activeTool, showNotification } = useUIStore();
-    const { addNode, addMember } = useModelStore();
+    const activeTool = useUIStore((s) => s.activeTool);
+    const showNotification = useUIStore((s) => s.showNotification);
+    const { addNode, addMember } = useModelStore(
+      useShallow((s) => ({ addNode: s.addNode, addMember: s.addMember }))
+    );
 
     // Mapping tool ID to panel type
     const getActivePanel = () => {

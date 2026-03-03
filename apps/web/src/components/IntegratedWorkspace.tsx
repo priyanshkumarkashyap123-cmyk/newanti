@@ -6,6 +6,7 @@
 
 import { FC, useState, useEffect, useCallback } from 'react';
 import { useModelStore } from '../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { beamlab, errorHandler, ERROR_CODES } from '../services/ServiceRegistry';
 
 // Components
@@ -41,7 +42,9 @@ export const IntegratedWorkspace: FC = () => {
     const [voiceActive, setVoiceActive] = useState(false);
     const [collaborators, setCollaborators] = useState(0);
 
-    const model = useModelStore();
+    const model = useModelStore(
+      useShallow((s) => ({ members: s.members, nodes: s.nodes, memberLoads: s.memberLoads, projectInfo: s.projectInfo }))
+    );
 
     // ============================================
     // ANALYSIS WORKFLOW

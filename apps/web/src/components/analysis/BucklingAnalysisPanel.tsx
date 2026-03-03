@@ -5,11 +5,14 @@
 
 import { useState } from 'react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { AdvancedAnalysisService } from '../../services/AdvancedAnalysisService';
 import type { BucklingAnalysisResult, BucklingMode } from '../../types/analysis';
 
 export function BucklingAnalysisPanel() {
-    const store = useModelStore();
+    const store = useModelStore(
+      useShallow((s) => ({ nodes: s.nodes, members: s.members, loads: s.loads }))
+    );
     const [modes, setModes] = useState<number>(5);
     const [analyzing, setAnalyzing] = useState(false);
     const [results, setResults] = useState<BucklingAnalysisResult | null>(null);

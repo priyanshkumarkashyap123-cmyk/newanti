@@ -11,6 +11,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { useModelStore } from '@/store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { 
   ChevronRight, 
   ChevronLeft, 
@@ -121,7 +122,9 @@ interface LoadWizardProps {
 }
 
 export function LoadWizard({ onClose, onComplete }: LoadWizardProps) {
-  const model = useModelStore();
+  const model = useModelStore(
+    useShallow((s) => ({ nodes: s.nodes, members: s.members }))
+  );
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<LoadCategory>('dead');
   const [selectedCode, setSelectedCode] = useState<DesignCode>('IS_875');

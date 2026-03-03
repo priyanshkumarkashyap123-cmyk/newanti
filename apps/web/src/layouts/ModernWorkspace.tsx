@@ -42,6 +42,7 @@ import {
     Car
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
+import { useShallow } from 'zustand/react/shallow';
 const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 
 // Lazy load heavy components
@@ -138,7 +139,9 @@ const SIDEBAR_CONTENT: Record<Category, SidebarItem[]> = {
 // ============================================
 
 const UmbrellaSwitcher: FC = memo(() => {
-    const { activeCategory, setCategory } = useUIStore();
+    const { activeCategory, setCategory } = useUIStore(
+      useShallow((s) => ({ activeCategory: s.activeCategory, setCategory: s.setCategory }))
+    );
 
     return (
         <div className="flex items-center gap-1 px-2" role="tablist" aria-label="Workspace categories">
@@ -174,7 +177,15 @@ UmbrellaSwitcher.displayName = 'UmbrellaSwitcher';
 // ============================================
 
 const ContextSidebar: FC = memo(() => {
-    const { activeCategory, activeTool, setActiveTool, sidebarMode, toggleSidebar } = useUIStore();
+    const { activeCategory, activeTool, setActiveTool, sidebarMode, toggleSidebar } = useUIStore(
+      useShallow((s) => ({
+        activeCategory: s.activeCategory,
+        activeTool: s.activeTool,
+        setActiveTool: s.setActiveTool,
+        sidebarMode: s.sidebarMode,
+        toggleSidebar: s.toggleSidebar,
+      }))
+    );
     const items = SIDEBAR_CONTENT[activeCategory];
     const isExpanded = sidebarMode === 'EXPANDED';
 
@@ -315,7 +326,9 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
 // ============================================
 
 const StatusBar: FC = memo(() => {
-    const { showGrid, snapToGrid, gridSize } = useUIStore();
+    const { showGrid, snapToGrid, gridSize } = useUIStore(
+      useShallow((s) => ({ showGrid: s.showGrid, snapToGrid: s.snapToGrid, gridSize: s.gridSize }))
+    );
 
     return (
         <div className="h-7 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 text-xs text-slate-500 dark:text-slate-400">
@@ -368,7 +381,13 @@ const ResizeHandle: FC<{ direction: 'horizontal' | 'vertical' }> = ({ direction 
 // ============================================
 
 export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
-    const { propertiesPanelOpen, togglePropertiesPanel, activeCategory } = useUIStore();
+    const { propertiesPanelOpen, togglePropertiesPanel, activeCategory } = useUIStore(
+      useShallow((s) => ({
+        propertiesPanelOpen: s.propertiesPanelOpen,
+        togglePropertiesPanel: s.togglePropertiesPanel,
+        activeCategory: s.activeCategory,
+      }))
+    );
 
     return (
         <div className="h-screen w-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-white overflow-hidden">

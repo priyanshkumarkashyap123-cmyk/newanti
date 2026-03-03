@@ -27,6 +27,8 @@ import type {
   PlumbingPlan,
   HVACPlan,
 } from '../../services/space-planning/types';
+import type { ConstraintReport, PlacementResponse } from '../../services/space-planning/layoutApiService';
+import { ViolationOverlay } from './ViolationOverlay';
 
 // ============================================
 // CONSTANTS
@@ -74,6 +76,12 @@ interface FloorPlanRendererProps {
   showCompass?: boolean;
   showLabels?: boolean;
   className?: string;
+  /** Constraint report from the v2 solver — enables ViolationOverlay */
+  constraintReport?: ConstraintReport;
+  /** Solver placements for positioning violation markers */
+  solverPlacements?: PlacementResponse[];
+  /** Callback when a violation marker is clicked */
+  onViolationClick?: (roomId: string, domain: string) => void;
 }
 
 // ============================================
@@ -98,6 +106,9 @@ export const FloorPlanRenderer: FC<FloorPlanRendererProps> = ({
   showCompass = true,
   showLabels = true,
   className = '',
+  constraintReport,
+  solverPlacements,
+  onViolationClick,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
@@ -384,6 +395,19 @@ export const FloorPlanRenderer: FC<FloorPlanRendererProps> = ({
 
         {/* HVAC overlay */}
         {overlayMode === 'hvac' && hvac && <HVACOverlay hvac={hvac} />}
+
+        {/* Constraint violation overlay from v2 solver */}
+        {constraintReport && solverPlacements && solverPlacements.length > 0 && (
+          <ViolationOverlay
+            report={constraintReport}
+            placements={solverPlacements}
+            scale={SCALE}
+            offsetX={constraints.setbacks.left}
+            offsetY={constraints.setbacks.front}
+            selectedRoomId={selectedRoomId}
+            onViolationClick={onViolationClick}
+          />
+        )}
 
         {/* Section lines */}
         {sectionLines.map((sl) => (

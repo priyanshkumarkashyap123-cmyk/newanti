@@ -28,6 +28,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Activity, MapPin, Building2, Calculator, Settings2, Loader2, AlertCircle } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useModelStore } from '@/store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { API_CONFIG } from '@/config/env';
 
 // ===== IS 1893 CONSTANTS =====
@@ -96,7 +97,9 @@ interface IS1893Results {
 }
 
 const IS1893SeismicLoadDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     const isOpen = modals.is1893SeismicDialog || false;
 
     const [activeTab, setActiveTab] = useState('site');

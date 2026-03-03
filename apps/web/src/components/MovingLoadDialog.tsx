@@ -41,6 +41,7 @@ import {
     Zap
 } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
+import { useShallow } from 'zustand/react/shallow';
 
 // ===== VEHICLE DEFINITIONS =====
 
@@ -200,7 +201,9 @@ interface EnvelopeResult {
 }
 
 const MovingLoadDialog: React.FC = () => {
-    const { modals, setModal } = useUIStore();
+    const { modals, setModal } = useUIStore(
+      useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
+    );
     const isOpen = modals.movingLoadDialog || false;
     
     const [activeTab, setActiveTab] = useState('vehicle');

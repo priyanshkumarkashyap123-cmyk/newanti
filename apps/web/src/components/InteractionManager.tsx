@@ -70,9 +70,14 @@ export const InteractionManager: FC<InteractionManagerProps> = memo(({
     const [startPoint, setStartPoint] = useState<THREE.Vector3 | null>(null);
     const [startNodeId, setStartNodeId] = useState<string | null>(null);
 
-    // State for render-time access (refs can't be accessed during render)
+    // State for render-time access — use refs to avoid setState in useFrame
+    const showNodeHighlightRef = useRef(false);
+    const highlightPositionRef = useRef(new THREE.Vector3());
     const [showNodeHighlight, setShowNodeHighlight] = useState(false);
     const [highlightPosition, setHighlightPosition] = useState<THREE.Vector3>(new THREE.Vector3());
+
+    // Pre-allocated scratch vector for node position in useFrame
+    const _nodePos = useRef(new THREE.Vector3());
 
     // Calculate plane rotation and position based on working plane
     const planeTransform = useMemo(() => {
@@ -149,13 +154,13 @@ export const InteractionManager: FC<InteractionManagerProps> = memo(({
             // Snap cursor to existing node
             const node = nodes.get(closestNode.id);
             if (node) {
-                const nodePos = new THREE.Vector3(node.x, node.y, node.z);
-                cursorRef.current.position.copy(nodePos);
+                _nodePos.current.set(node.x, node.y, node.z);
+                cursorRef.current.position.copy(_nodePos.current);
                 if (cursorRingRef.current) {
-                    cursorRingRef.current.position.copy(nodePos);
+                    cursorRingRef.current.position.copy(_nodePos.current);
                     cursorRingRef.current.rotation.copy(camera.rotation);
                 }
-                currentSnapPos.current.copy(nodePos);
+                currentSnapPos.current.copy(_nodePos.current);
                 hoveredNodeId.current = closestNode.id;
                 isHovering.current = true;
 
@@ -205,12 +210,14 @@ export const InteractionManager: FC<InteractionManagerProps> = memo(({
         cursorRef.current.visible = showCursor;
         if (cursorRingRef.current) cursorRingRef.current.visible = showCursor;
 
-        // Sync state for render (refs can't be accessed during render)
+        // Sync state for render — only trigger React re-render when value actually changes
         const shouldShowHighlight = hoveredNodeId.current !== null;
-        if (shouldShowHighlight !== showNodeHighlight) {
+        if (shouldShowHighlight !== showNodeHighlightRef.current) {
+            showNodeHighlightRef.current = shouldShowHighlight;
             setShowNodeHighlight(shouldShowHighlight);
         }
-        if (shouldShowHighlight && !highlightPosition.equals(currentSnapPos.current)) {
+        if (shouldShowHighlight && !highlightPositionRef.current.equals(currentSnapPos.current)) {
+            highlightPositionRef.current.copy(currentSnapPos.current);
             setHighlightPosition(currentSnapPos.current.clone());
         }
     });

@@ -10,7 +10,7 @@
  * - Visual feedback with snap indicators
  */
 
-import { FC, useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { FC, useState, useCallback, useEffect, useMemo, useRef, memo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import { Line, Sphere, Ring } from '@react-three/drei';
 import * as THREE from 'three';
@@ -198,7 +198,7 @@ interface InteractionLayerProps {
     gridPlaneY?: number; // Y position of the drawing plane (default 0)
 }
 
-export const InteractionLayer: FC<InteractionLayerProps> = ({
+export const InteractionLayer: FC<InteractionLayerProps> = memo(({
     enabled = true,
     gridPlaneY = 0
 }) => {
@@ -241,25 +241,27 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
         });
     }, [isPenToolActive]);
 
+    // ---- Pre-allocated scratch vector for raycasting (avoids GC at 60fps) ----
+    const _intersection = useRef(new THREE.Vector3());
+
     // ---- Calculate cursor position with snapping ----
     const calculateCursorPosition = useCallback((): TempPoint | null => {
         if (!isPenToolActive) return null;
 
         // Cast ray to ground plane
         raycaster.setFromCamera(pointer, camera);
-        const intersection = new THREE.Vector3();
-        const hit = raycaster.ray.intersectPlane(groundPlane, intersection);
+        const hit = raycaster.ray.intersectPlane(groundPlane, _intersection.current);
 
         if (!hit) return null;
 
         // Snap to grid first
-        let snappedX = snapToGrid(intersection.x, GRID_SNAP);
+        let snappedX = snapToGrid(_intersection.current.x, GRID_SNAP);
         let snappedY = gridPlaneY;
-        let snappedZ = snapToGrid(intersection.z, GRID_SNAP);
+        let snappedZ = snapToGrid(_intersection.current.z, GRID_SNAP);
         let snappedToNode: string | undefined = undefined;
 
         // Check for node snapping
-        const closestNode = findClosestNode(intersection, nodes, NODE_SNAP_RADIUS);
+        const closestNode = findClosestNode(_intersection.current, nodes, NODE_SNAP_RADIUS);
         if (closestNode) {
             snappedX = closestNode.x;
             snappedY = closestNode.y;
@@ -413,6 +415,6 @@ export const InteractionLayer: FC<InteractionLayerProps> = ({
             )}
         </group>
     );
-};
+});
 
 export default InteractionLayer;

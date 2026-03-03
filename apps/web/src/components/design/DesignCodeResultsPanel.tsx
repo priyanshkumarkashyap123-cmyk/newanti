@@ -6,6 +6,7 @@
 
 import { FC, useState, useEffect } from 'react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { wasmSolver } from '../../services/wasmSolverService';
 import { codeCompliance, CodeCheck } from '../../services/CodeComplianceEngine';
 import {
@@ -26,7 +27,9 @@ export const DesignCodeResultsPanel: FC = () => {
     const [expandedMember, setExpandedMember] = useState<string | null>(null);
     const [selectedCode, setSelectedCode] = useState<'IS800' | 'AISC360' | 'EC3'>('IS800');
 
-    const model = useModelStore();
+    const model = useModelStore(
+      useShallow((s) => ({ members: s.members, nodes: s.nodes, memberLoads: s.memberLoads }))
+    );
 
     const runDesignChecks = async () => {
         if (model.members.size === 0) return;

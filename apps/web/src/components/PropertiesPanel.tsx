@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { FC, useState, useEffect, useCallback, useRef, memo } from 'react';
+import { FC, useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { useModelStore, type Restraints, type MemberLoad as StoreMemberLoad } from '../store/model';
 import { useShallow } from 'zustand/react/shallow';
 import { STEEL_SECTIONS, MATERIALS_DATABASE, type SectionProperties, type Material } from '../data/SectionDatabase';
@@ -221,7 +221,7 @@ const Divider: FC = () => <hr className="border-slate-200/60 dark:border-slate-7
 // ============================================
 // PROPERTIES PANEL COMPONENT
 // ============================================
-export const PropertiesPanel: FC = () => {
+export const PropertiesPanel: FC = memo(() => {
     // Batched single subscription — instead of 14 individual useModelStore calls
     const {
         selectedIds, nodes, members, loads, memberLoads, analysisResults,
@@ -275,6 +275,21 @@ export const PropertiesPanel: FC = () => {
     }, [sectionCategory]);
 
     const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null;
+
+    // Memoize expensive derivations to avoid O(n) every render
+    const selectedMembers = useMemo(() =>
+        Array.from(selectedIds)
+            .map(id => members.get(id))
+            .filter((m): m is NonNullable<typeof m> => !!m),
+        [selectedIds, members]
+    );
+
+    const selectedNodes = useMemo(() =>
+        Array.from(selectedIds)
+            .map(id => nodes.get(id))
+            .filter((n): n is NonNullable<typeof n> => !!n),
+        [selectedIds, nodes]
+    );
 
     useEffect(() => {
         if (selectedId) {
@@ -348,13 +363,6 @@ export const PropertiesPanel: FC = () => {
     // MULTI-SELECTION: BULK EDIT
     // ================================
     if (selectedIds.size > 1) {
-        const selectedMembers = Array.from(selectedIds)
-            .map(id => members.get(id))
-            .filter((m): m is NonNullable<typeof m> => !!m);
-
-        const selectedNodes = Array.from(selectedIds)
-            .map(id => nodes.get(id))
-            .filter((n): n is NonNullable<typeof n> => !!n);
 
         if (selectedMembers.length > 0 && selectedNodes.length === 0) {
             const handleBulkSectionChange = (sectionId: string) => {
@@ -725,6 +733,7 @@ export const PropertiesPanel: FC = () => {
     if (member) {
         const startNode = nodes.get(member.startNodeId);
         const endNode = nodes.get(member.endNodeId);
+        const loadsForMember = memberLoads.filter(ml => ml.memberId === id);
         let length = 0;
         if (startNode && endNode) {
             const dx = endNode.x - startNode.x;
@@ -1037,9 +1046,9 @@ export const PropertiesPanel: FC = () => {
                 {/* Member Loads (UDL) */}
                 <PanelSection icon={<ArrowDown className="w-3.5 h-3.5 text-purple-400" />} label="Member Loads (UDL)">
                     {/* Existing member loads */}
-                    {memberLoads.filter(ml => ml.memberId === id).length > 0 ? (
+                    {loadsForMember.length > 0 ? (
                         <div className="space-y-1.5">
-                            {memberLoads.filter(ml => ml.memberId === id).map((ml, idx) => (
+                            {loadsForMember.map((ml, idx) => (
                                 <div key={ml.id} className="bg-purple-500/10 border border-purple-500/20 p-2 rounded-md">
                                     <div className="flex justify-between items-center">
                                         <span className="text-[11px] font-semibold text-purple-300">
@@ -1144,4 +1153,4 @@ export const PropertiesPanel: FC = () => {
     }
 
     return null;
-};
+});

@@ -14,6 +14,7 @@ import {
   Check,
 } from "lucide-react";
 import { Category, useUIStore } from "../../store/uiStore";
+import { useShallow } from 'zustand/react/shallow';
 import { useModelStore } from "../../store/model";
 
 interface WorkflowSidebarProps {
@@ -26,7 +27,9 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   activeCategory,
   onCategoryChange,
 }) => {
-  const { openModal, activeStep, setActiveStep } = useUIStore();
+  const { openModal, activeStep, setActiveStep } = useUIStore(
+    useShallow((s) => ({ openModal: s.openModal, activeStep: s.activeStep, setActiveStep: s.setActiveStep }))
+  );
   const [collapsed, setCollapsed] = useState(false);
 
   const workflowItems = [

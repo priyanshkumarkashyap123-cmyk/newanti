@@ -9,7 +9,7 @@
  * - Integration with LoadInputDialog for magnitude input
  */
 
-import { FC, useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { FC, useState, useCallback, useEffect, useMemo, useRef, memo } from 'react';
 import { useThree, useFrame, ThreeEvent } from '@react-three/fiber';
 import { Line, Cone, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -264,7 +264,7 @@ interface LoadPlacementLayerProps {
     loadType?: 'UDL' | 'point';
 }
 
-export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
+export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = memo(({
     enabled = true,
     onMemberSelected,
     previewMagnitude = 10,
@@ -325,25 +325,27 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
         return geoms;
     }, [members, nodes]);
 
+    // Pre-allocated scratch vector for raycasting (avoids GC at 60fps)
+    const _planeIntersection = useRef(new THREE.Vector3());
+
     // ---- Find member under cursor ----
     const findMemberUnderCursor = useCallback((): { memberId: string; ratio: number } | null => {
         raycaster.setFromCamera(pointer, camera);
         
         // Get ray intersection with ground plane (approximate)
-        const intersection = new THREE.Vector3();
-        raycaster.ray.intersectPlane(groundPlane, intersection);
+        raycaster.ray.intersectPlane(groundPlane, _planeIntersection.current);
         
         let closestMember: string | null = null;
         let closestDistance = MEMBER_DETECTION_RADIUS;
         let closestRatio = 0.5;
         
         for (const geom of memberGeometries) {
-            const result = getClosestPointOnSegment(intersection, geom.start, geom.end);
+            const result = getClosestPointOnSegment(_planeIntersection.current, geom.start, geom.end);
             
             // Check distance in XZ plane (ignore Y for easier selection)
             const xzDistance = Math.sqrt(
-                Math.pow(intersection.x - result.closestPoint.x, 2) +
-                Math.pow(intersection.z - result.closestPoint.z, 2)
+                Math.pow(_planeIntersection.current.x - result.closestPoint.x, 2) +
+                Math.pow(_planeIntersection.current.z - result.closestPoint.z, 2)
             );
             
             if (xzDistance < closestDistance) {
@@ -589,6 +591,6 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = ({
             )}
         </group>
     );
-};
+});
 
 export default LoadPlacementLayer;

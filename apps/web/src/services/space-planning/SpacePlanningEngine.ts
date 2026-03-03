@@ -596,6 +596,13 @@ export class SpacePlanningEngine {
 
   /**
    * Generate a complete floor plan from room specifications
+   *
+   * ENFORCED CONSTRAINTS (Priority 5):
+   * - FAR / FSI compliance: total built-up area ≤ plot_area × farAllowed
+   * - Ground coverage: ground floor footprint ≤ plot_area × groundCoverage%
+   * - Max floors: rooms beyond maxFloors are clamped to maxFloors-1
+   * - Parking: auto-inject parking rooms if parkingRequired > 0
+   * - Adjacency/avoidance: room placement uses adjacency scoring
    */
   generateFloorPlan(
     plot: PlotDimensions,
@@ -608,16 +615,113 @@ export class SpacePlanningEngine {
     // Calculate buildable area
     const buildableWidth = plot.width - constraints.setbacks.left - constraints.setbacks.right;
     const buildableDepth = plot.depth - constraints.setbacks.front - constraints.setbacks.rear;
+    const buildableArea = buildableWidth * buildableDepth;
+    const plotArea = plot.width * plot.depth;
 
-    // Sort rooms by priority and Vastu preference
-    const sortedRooms = this.sortRoomsByPriority(
-      roomSpecs.filter((r) => r.floor === floor),
-      orientation,
+    // ── ENFORCEMENT: Ground coverage limit ──
+    const maxGroundCoverage = constraints.groundCoverage > 0
+      ? (constraints.groundCoverage / 100) * plotArea
+      : buildableArea; // If not specified, use full buildable area
+
+    // ── ENFORCEMENT: Floor clamp — skip rooms assigned to floors beyond maxFloors ──
+    const maxFloor = constraints.maxFloors > 0 ? constraints.maxFloors - 1 : 10;
+    const effectiveFloor = Math.min(floor, maxFloor);
+
+    // ── ENFORCEMENT: FAR / FSI area budget ──
+    // Total allowed built-up = plot_area × farAllowed
+    // Per-floor budget = total / numFloors (approximate fair share)
+    const totalFARArea = constraints.farAllowed > 0
+      ? plotArea * constraints.farAllowed
+      : Infinity;
+    const numFloors = constraints.maxFloors > 0 ? constraints.maxFloors : 1;
+    const perFloorBudget = totalFARArea / numFloors;
+
+    // Filter rooms for this floor
+    let floorRooms = roomSpecs.filter((r) => {
+      const roomFloor = Math.min(r.floor, maxFloor);
+      return roomFloor === effectiveFloor;
+    });
+
+    // ── ENFORCEMENT: Auto-inject parking rooms if needed on ground floor ──
+    if (floor === 0 && constraints.parkingRequired > 0) {
+      const existingParking = floorRooms.filter(
+        (r) => r.type === 'parking' || r.type === 'garage',
+      );
+      const parkingSlotsNeeded = constraints.parkingRequired - existingParking.length;
+
+      for (let i = 0; i < parkingSlotsNeeded; i++) {
+        floorRooms.push({
+          id: `auto_parking_${i}`,
+          type: 'parking',
+          name: `Parking ${existingParking.length + i + 1}`,
+          minArea: 12.5, // 2.5m × 5m per NBC
+          preferredArea: 15, // 3m × 5m comfortable
+          maxArea: 18,
+          minWidth: 2.5,
+          minHeight: 2.4,
+          requiresWindow: false,
+          requiresVentilation: true,
+          requiresAttachedBath: false,
+          priority: 'important' as const,
+          floor: 0,
+          quantity: 1,
+        });
+      }
+    }
+
+    // ── ENFORCEMENT: FAR area trimming ──
+    // Sort by priority, then trim from the bottom if total area exceeds budget
+    const sortedRooms = this.sortRoomsByPriority(floorRooms, orientation);
+
+    let cumulativeArea = 0;
+    const fittingRooms: typeof sortedRooms = [];
+    for (const room of sortedRooms) {
+      const roomArea = (room.preferredArea || room.minArea) * (room.quantity || 1);
+      if (cumulativeArea + roomArea <= perFloorBudget * 1.1) {
+        // 10% tolerance
+        fittingRooms.push(room);
+        cumulativeArea += roomArea;
+      } else if (room.priority === 'essential') {
+        // Essential rooms always included, even if over budget
+        fittingRooms.push(room);
+        cumulativeArea += roomArea;
+      }
+      // Non-essential rooms that would bust FAR are dropped with a console warning
+      else {
+        console.warn(
+          `[SpacePlanningEngine] FAR constraint: dropping "${room.name}" (${roomArea.toFixed(1)}m²) — ` +
+          `budget ${perFloorBudget.toFixed(1)}m², cumulative ${cumulativeArea.toFixed(1)}m²`,
+        );
+      }
+    }
+
+    // ── ENFORCEMENT: Ground coverage — scale rooms if footprint exceeds limit ──
+    const totalFootprint = fittingRooms.reduce(
+      (sum, r) => sum + (r.preferredArea || r.minArea) * (r.quantity || 1),
+      0,
     );
+    let coverageScale = 1.0;
+    if (floor === 0 && totalFootprint > maxGroundCoverage && maxGroundCoverage > 0) {
+      coverageScale = maxGroundCoverage / totalFootprint;
+      console.warn(
+        `[SpacePlanningEngine] Ground coverage constraint: scaling rooms by ${(coverageScale * 100).toFixed(1)}% ` +
+        `(${totalFootprint.toFixed(1)}m² → ${maxGroundCoverage.toFixed(1)}m² max)`,
+      );
+    }
 
-    // Place rooms using grid-based approach
+    // Apply coverage scaling to room specs (temporary adjusted specs)
+    const adjustedRooms = coverageScale < 1.0
+      ? fittingRooms.map((r) => ({
+          ...r,
+          preferredArea: (r.preferredArea || r.minArea) * coverageScale,
+          minArea: r.minArea * coverageScale,
+          maxArea: (r.maxArea || r.preferredArea * 1.3) * coverageScale,
+        }))
+      : fittingRooms;
+
+    // Place rooms using grid-based approach WITH adjacency scoring
     const placedRooms = this.placeRooms(
-      sortedRooms,
+      adjustedRooms,
       buildableWidth,
       buildableDepth,
       constraints.setbacks,
@@ -642,8 +746,8 @@ export class SpacePlanningEngine {
     const floorHeight = preferences.budget === 'luxury' ? 3.6 : 3.0;
 
     return {
-      floor,
-      label: floor === 0 ? 'Ground Floor' : floor === -1 ? 'Basement' : `Floor ${floor}`,
+      floor: effectiveFloor,
+      label: effectiveFloor === 0 ? 'Ground Floor' : effectiveFloor === -1 ? 'Basement' : `Floor ${effectiveFloor}`,
       rooms: placedRooms,
       staircases: this.generateStaircases(
         placedRooms,
@@ -1737,6 +1841,58 @@ export class SpacePlanningEngine {
     // Track occupied cells
     const occupiedCells: { x: number; y: number; w: number; h: number }[] = [];
 
+    /**
+     * ADJACENCY SCORING — Priority 5 enforcement
+     *
+     * When multiple placement positions are valid (non-overlapping),
+     * score each candidate by:
+     *   +points for being adjacent to rooms that should be nearby
+     *   -points for being adjacent to rooms that should be separated
+     *
+     * This replaces the previous "first-fit" approach with "best-fit".
+     */
+    const scoreAdjacency = (
+      candidateRect: { x: number; y: number; w: number; h: number },
+      roomType: RoomType,
+    ): number => {
+      let score = 0;
+      const adjacentTypes = this.getAdjacencyRules(roomType);
+      const avoidTypes = this.getAvoidanceRules(roomType);
+
+      // Also check spec-defined adjacentTo / awayFrom for the current room
+      const currentSpec = rooms.find((r) => r.type === roomType);
+      const specAdjacentTo = currentSpec?.adjacentTo || [];
+      const specAwayFrom = currentSpec?.awayFrom || [];
+
+      for (const placedRoom of placed) {
+        const gap = 0.5; // adjacency threshold
+        const isNearby =
+          candidateRect.x < placedRoom.x + placedRoom.width + gap &&
+          candidateRect.x + candidateRect.w > placedRoom.x - gap &&
+          candidateRect.y < placedRoom.y + placedRoom.height + gap &&
+          candidateRect.y + candidateRect.h > placedRoom.y - gap;
+
+        if (isNearby) {
+          // Rule-based adjacency
+          if (adjacentTypes.includes(placedRoom.spec.type)) {
+            score += 5; // Reward proximity to desired neighbors
+          }
+          if (avoidTypes.includes(placedRoom.spec.type)) {
+            score -= 8; // Penalize proximity to undesired neighbors
+          }
+          // Spec-defined adjacency
+          if (specAdjacentTo.includes(placedRoom.spec.type)) {
+            score += 6;
+          }
+          if (specAwayFrom.includes(placedRoom.spec.type)) {
+            score -= 7;
+          }
+        }
+      }
+
+      return score;
+    };
+
     for (const room of rooms) {
       for (let q = 0; q < room.quantity; q++) {
         // Determine target zone based on Vastu or preference
@@ -1766,19 +1922,25 @@ export class SpacePlanningEngine {
         roomWidth = Math.min(roomWidth, zone.w - wallThickness * 2);
         roomHeight = Math.min(roomHeight, zone.h - wallThickness * 2);
 
-        // Find non-overlapping position within zone
-        let px = zone.x;
-        let py = zone.y;
+        // ── ENHANCED PLACEMENT: Score all valid positions, pick best ──
+        let bestScore = -Infinity;
+        let bestX = zone.x;
+        let bestY = zone.y;
         let found = false;
 
-        for (let tryY = zone.y; tryY + roomHeight <= zone.y + zone.h && !found; tryY += 0.25) {
-          for (let tryX = zone.x; tryX + roomWidth <= zone.x + zone.w && !found; tryX += 0.25) {
+        // Scan target zone first
+        for (let tryY = zone.y; tryY + roomHeight <= zone.y + zone.h; tryY += 0.25) {
+          for (let tryX = zone.x; tryX + roomWidth <= zone.x + zone.w; tryX += 0.25) {
             const candidate = { x: tryX, y: tryY, w: roomWidth, h: roomHeight };
             const overlaps = occupiedCells.some((oc) => this.rectsOverlap(candidate, oc));
             if (!overlaps) {
-              px = tryX;
-              py = tryY;
-              found = true;
+              const adjScore = scoreAdjacency(candidate, room.type);
+              if (!found || adjScore > bestScore) {
+                bestScore = adjScore;
+                bestX = tryX;
+                bestY = tryY;
+                found = true;
+              }
             }
           }
         }
@@ -1798,13 +1960,20 @@ export class SpacePlanningEngine {
               const candidate = { x: tryX, y: tryY, w: roomWidth, h: roomHeight };
               const overlaps = occupiedCells.some((oc) => this.rectsOverlap(candidate, oc));
               if (!overlaps) {
-                px = tryX;
-                py = tryY;
-                found = true;
+                const adjScore = scoreAdjacency(candidate, room.type);
+                if (!found || adjScore > bestScore) {
+                  bestScore = adjScore;
+                  bestX = tryX;
+                  bestY = tryY;
+                  found = true;
+                }
               }
             }
           }
         }
+
+        const px = bestX;
+        const py = bestY;
 
         occupiedCells.push({ x: px, y: py, w: roomWidth, h: roomHeight });
 

@@ -51,6 +51,7 @@ import {
   Link2,
 } from "lucide-react";
 import { useUIStore, Category } from "../../store/uiStore";
+import { useShallow } from 'zustand/react/shallow';
 import { useModelStore } from "../../store/model";
 import { TEMPLATE_BANK } from "../../data/templates";
 import { useSubscription } from "../../hooks/useSubscription";
@@ -354,7 +355,9 @@ const TemplateBankPanel: FC = () => {
 };
 
 const DrawToolsPanel: FC = () => {
-  const { activeTool, setActiveTool } = useUIStore();
+  const { activeTool, setActiveTool } = useUIStore(
+    useShallow((s) => ({ activeTool: s.activeTool, setActiveTool: s.setActiveTool }))
+  );
 
   const tools = [
     {
@@ -1650,7 +1653,9 @@ const AIOptimizationPanel: FC = () => {
 // ============================================
 
 export const SmartSidebar: FC = () => {
-  const { activeCategory, sidebarMode } = useUIStore();
+  const { activeCategory, sidebarMode } = useUIStore(
+    useShallow((s) => ({ activeCategory: s.activeCategory, sidebarMode: s.sidebarMode }))
+  );
 
   if (sidebarMode === "COLLAPSED") {
     return null;

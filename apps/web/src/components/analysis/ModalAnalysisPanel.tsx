@@ -19,6 +19,7 @@ import {
     Gauge
 } from 'lucide-react';
 import { useModelStore } from '../../store/model';
+import { useShallow } from 'zustand/react/shallow';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -44,7 +45,9 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
     const [numModes, setNumModes] = useState(6);
     const [expandedMode, setExpandedMode] = useState<number | null>(null);
     const [useApi, setUseApi] = useState<boolean>(true);
-    const { nodes, members } = useModelStore();
+    const { nodes, members } = useModelStore(
+      useShallow((s) => ({ nodes: s.nodes, members: s.members }))
+    );
 
     const runModalAnalysis = async () => {
         setIsAnalyzing(true);

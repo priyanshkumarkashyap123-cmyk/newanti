@@ -2,25 +2,15 @@ import { FC, memo, useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useModelStore } from '../store/model';
-import { useShallow } from 'zustand/react/shallow';
 
 export const BoxSelector: FC = memo(() => {
     const { gl, camera } = useThree();
-    const { nodes, members, selectMultiple } = useModelStore(
-        useShallow((state) => ({
-            nodes: state.nodes,
-            members: state.members,
-            selectMultiple: state.selectMultiple,
-        }))
-    );
+    // Only subscribe to selectMultiple action — nodes/members are read via getState()
+    // in event handlers to avoid re-renders on every model change
+    const selectMultiple = useModelStore((state) => state.selectMultiple);
 
-    // Keep stable refs to the latest store values so event handlers
-    // never capture stale closures (avoids the re-attach treadmill).
-    const nodesRef = useRef(nodes);
-    const membersRef = useRef(members);
+    // Keep stable refs so event handlers never capture stale closures
     const selectMultipleRef = useRef(selectMultiple);
-    nodesRef.current = nodes;
-    membersRef.current = members;
     selectMultipleRef.current = selectMultiple;
 
     // DOM overlay for the rubber-band rectangle
@@ -120,8 +110,11 @@ export const BoxSelector: FC = memo(() => {
             const vec = new THREE.Vector3();
             const selected: string[] = [];
 
+            // Read latest state at event time — no subscription needed
+            const { nodes: currentNodes, members: currentMembers } = useModelStore.getState();
+
             // Project nodes from world → NDC → screen pixels
-            nodesRef.current.forEach((node, nodeId) => {
+            currentNodes.forEach((node, nodeId) => {
                 vec.set(node.x, node.y, node.z).project(camera);
                 if (vec.z >= 1) return; // behind camera
                 const sx = (vec.x + 1) / 2 * w;
@@ -132,9 +125,9 @@ export const BoxSelector: FC = memo(() => {
             });
 
             // Include members whose midpoint falls inside the box (STAAD "window" select)
-            membersRef.current.forEach((member, memberId) => {
-                const s = nodesRef.current.get(member.startNodeId);
-                const en = nodesRef.current.get(member.endNodeId);
+            currentMembers.forEach((member, memberId) => {
+                const s = currentNodes.get(member.startNodeId);
+                const en = currentNodes.get(member.endNodeId);
                 if (!s || !en) return;
                 vec.set(
                     (s.x + en.x) / 2,
