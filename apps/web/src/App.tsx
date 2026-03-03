@@ -3,263 +3,220 @@
  * Routes between Landing, Dashboard, and Workspace
  */
 
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { Suspense, lazy } from "react";
-import { ScrollToTop } from "./components/ScrollToTop";
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { ScrollToTop } from './components/ScrollToTop';
 
 // Lazy-load components that use framer-motion to avoid loading ~45KB on every page
 const BackToTopButton = lazy(() =>
-  import("./components/BackToTopButton").then((m) => ({ default: m.BackToTopButton }))
+  import('./components/BackToTopButton').then((m) => ({ default: m.BackToTopButton })),
 );
 const CookieConsent = lazy(() =>
-  import("./components/CookieConsent").then((m) => ({ default: m.CookieConsent }))
+  import('./components/CookieConsent').then((m) => ({ default: m.CookieConsent })),
 );
 
 // Auth/layout (small, needed on every route)
-import { RequireAuth } from "./components/layout/RequireAuth";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import "./App.css";
+import { RequireAuth } from './components/layout/RequireAuth';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import './App.css';
 
 // Landing & Auth pages lazy-loaded (only needed on their specific routes)
 const LandingPage = lazy(() =>
-  import("./pages/LandingPage").then((m) => ({ default: m.LandingPage })),
+  import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })),
 );
 const SignInPage = lazy(() =>
-  import("./pages/SignInPage").then((m) => ({ default: m.SignInPage })),
+  import('./pages/SignInPage').then((m) => ({ default: m.SignInPage })),
 );
 const SignUpPage = lazy(() =>
-  import("./pages/SignUpPage").then((m) => ({ default: m.SignUpPage })),
+  import('./pages/SignUpPage').then((m) => ({ default: m.SignUpPage })),
 );
-import { SkipLink } from "./components/ui/SkipLink";
-import { OfflineBanner } from "./components/ui/OfflineBanner";
+import { SkipLink } from './components/ui/SkipLink';
+import { OfflineBanner } from './components/ui/OfflineBanner';
 
 // Lazy loaded components (Code Splitting)
 const Dashboard = lazy(() =>
-  import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })),
+  import('./pages/Dashboard').then((module) => ({ default: module.Dashboard })),
 );
 const UnifiedDashboard = lazy(() =>
-  import("./pages/UnifiedDashboard").then((module) => ({
+  import('./pages/UnifiedDashboard').then((module) => ({
     default: module.UnifiedDashboard,
   })),
 );
 const Capabilities = lazy(() =>
-  import("./pages/Capabilities").then((module) => ({
+  import('./pages/Capabilities').then((module) => ({
     default: module.Capabilities,
   })),
 );
 const SettingsPage = lazy(() =>
-  import("./pages/SettingsPage").then((module) => ({
+  import('./pages/SettingsPage').then((module) => ({
     default: module.SettingsPage,
   })),
 );
-const SettingsPageEnhanced = lazy(() => import("./pages/SettingsPageEnhanced"));
+const SettingsPageEnhanced = lazy(() => import('./pages/SettingsPageEnhanced'));
 const EnhancedPricingPage = lazy(() =>
-  import("./pages/EnhancedPricingPage").then((module) => ({
+  import('./pages/EnhancedPricingPage').then((module) => ({
     default: module.EnhancedPricingPage,
   })),
 );
 const PricingPage = lazy(() =>
-  import("./pages/PricingPage").then((module) => ({
+  import('./pages/PricingPage').then((module) => ({
     default: module.PricingPage,
   })),
 );
 
 // Civil Engineering Suite (Lazy Loaded)
-const CivilEngineeringBookLanding = lazy(
-  () => import("./app/civil-engineering/library/page"),
-);
+const CivilEngineeringBookLanding = lazy(() => import('./app/civil-engineering/library/page'));
 const BookApp = lazy(() =>
-  import("./modules/civil-engine/components/BookApp").then((module) => ({
+  import('./modules/civil-engine/components/BookApp').then((module) => ({
     default: module.BookApp,
   })),
 );
 const RealisticBook = lazy(() =>
-  import("./modules/civil-engine/components/RealisticBook").then((module) => ({
+  import('./modules/civil-engine/components/RealisticBook').then((module) => ({
     default: module.RealisticBook,
   })),
 );
 const TransportationDesigner = lazy(() =>
-  import("./modules/civil-engine/components/TransportationDesigner").then(
-    (module) => ({ default: module.TransportationDesigner }),
-  ),
+  import('./modules/civil-engine/components/TransportationDesigner').then((module) => ({
+    default: module.TransportationDesigner,
+  })),
 );
 const ConstructionManager = lazy(() =>
-  import("./modules/civil-engine/components/ConstructionManager").then(
-    (module) => ({ default: module.ConstructionManager }),
-  ),
+  import('./modules/civil-engine/components/ConstructionManager').then((module) => ({
+    default: module.ConstructionManager,
+  })),
 );
 const HydraulicsDesigner = lazy(() =>
-  import("./modules/civil-engine/components/HydraulicsDesigner").then(
-    (module) => ({ default: module.HydraulicsDesigner }),
-  ),
+  import('./modules/civil-engine/components/HydraulicsDesigner').then((module) => ({
+    default: module.HydraulicsDesigner,
+  })),
 );
 
 // Structural Design (Lazy Loaded)
 const SteelDesignPage = lazy(() =>
-  import("./pages/SteelDesignPage").then((module) => ({
+  import('./pages/SteelDesignPage').then((module) => ({
     default: module.SteelDesignPage,
   })),
 );
-const StructuralDesignCenter = lazy(
-  () => import("./pages/StructuralDesignCenter"),
-); // Default export
+const StructuralDesignCenter = lazy(() => import('./pages/StructuralDesignCenter')); // Default export
 const ModernModeler = lazy(() =>
-  import("./components/ModernModeler").then((module) => ({
+  import('./components/ModernModeler').then((module) => ({
     default: module.ModernModeler,
   })),
 );
 const MobileGuard = lazy(() =>
-  import('./components/ui/MobileGuard').then((m) => ({ default: m.MobileGuard }))
+  import('./components/ui/MobileGuard').then((m) => ({ default: m.MobileGuard })),
 );
 const RustWasmDemo = lazy(() =>
-  import("./pages/RustWasmDemo").then((module) => ({
+  import('./pages/RustWasmDemo').then((module) => ({
     default: module.RustWasmDemo,
   })),
 );
 const NafemsBenchmarkPage = lazy(() =>
-  import("./pages/NafemsBenchmarkPage").then((module) => ({
+  import('./pages/NafemsBenchmarkPage').then((module) => ({
     default: module.NafemsBenchmarkPage,
   })),
 );
 const UIShowcase = lazy(() =>
-  import("./pages/UIShowcase").then((module) => ({
+  import('./pages/UIShowcase').then((module) => ({
     default: module.UIShowcase,
   })),
 );
-const ErrorReportPage = lazy(() => import("./pages/ErrorReportPage"));
+const ErrorReportPage = lazy(() => import('./pages/ErrorReportPage'));
 
 // Auth & Info Pages (Lazy Loaded) - All have default exports
-const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
-const PrivacyPolicyPageNew = lazy(() => import("./pages/PrivacyPolicyPageNew"));
-const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
-const TermsAndConditionsPage = lazy(
-  () => import("./pages/TermsAndConditionsPage"),
-);
-const RefundCancellationPage = lazy(
-  () => import("./pages/RefundCancellationPage"),
-);
-const HelpPage = lazy(() => import("./pages/HelpPage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const ContactPage = lazy(() => import("./pages/ContactPage"));
-const ReportsPage = lazy(() => import("./pages/ReportsPage"));
-const WorkerValidation = lazy(() => import("./components/WorkerValidation"));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const PrivacyPolicyPageNew = lazy(() => import('./pages/PrivacyPolicyPageNew'));
+const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
+const TermsAndConditionsPage = lazy(() => import('./pages/TermsAndConditionsPage'));
+const RefundCancellationPage = lazy(() => import('./pages/RefundCancellationPage'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const WorkerValidation = lazy(() => import('./components/WorkerValidation'));
 
 // Phase 12 Design Modules
-const ConnectionDesignPage = lazy(() => import("./pages/ConnectionDesignPage"));
-const WeldedConnectionsPage = lazy(
-  () => import("./pages/ConnectionDesignPage"),
-); // Reusing Connection Page
-const DetailingDesignPage = lazy(() => import("./pages/DetailingDesignPage"));
-const ReinforcementDesignPage = lazy(
-  () => import("./pages/DetailingDesignPage"),
-); // Reusing Detailing Page
+const ConnectionDesignPage = lazy(() => import('./pages/ConnectionDesignPage'));
+const WeldedConnectionsPage = lazy(() => import('./pages/ConnectionDesignPage')); // Reusing Connection Page
+const DetailingDesignPage = lazy(() => import('./pages/DetailingDesignPage'));
+const ReinforcementDesignPage = lazy(() => import('./pages/DetailingDesignPage')); // Reusing Detailing Page
 
 // New Complete Design Pages (CEO Gap Closure - Phase 13)
-const ConcreteDesignPage = lazy(() => import("./pages/ConcreteDesignPage"));
-const FoundationDesignPage = lazy(() => import("./pages/FoundationDesignPage"));
-const LoadCombinationPage = lazy(() => import("./pages/LoadCombinationPage"));
-const SectionDatabasePage = lazy(() => import("./pages/SectionDatabasePage"));
-const PushoverAnalysisPage = lazy(() => import("./pages/PushoverAnalysisPage"));
+const ConcreteDesignPage = lazy(() => import('./pages/ConcreteDesignPage'));
+const FoundationDesignPage = lazy(() => import('./pages/FoundationDesignPage'));
+const LoadCombinationPage = lazy(() => import('./pages/LoadCombinationPage'));
+const SectionDatabasePage = lazy(() => import('./pages/SectionDatabasePage'));
+const PushoverAnalysisPage = lazy(() => import('./pages/PushoverAnalysisPage'));
 
 // New Feature Pages (Phase 17: BBS Engine + Plate/Shell FEM)
-const BarBendingSchedulePage = lazy(
-  () => import("./pages/BarBendingSchedulePage"),
-);
-const PlateShellAnalysisPage = lazy(
-  () => import("./pages/PlateShellAnalysisPage"),
-);
+const BarBendingSchedulePage = lazy(() => import('./pages/BarBendingSchedulePage'));
+const PlateShellAnalysisPage = lazy(() => import('./pages/PlateShellAnalysisPage'));
 
 // Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14)
-const TimeHistoryAnalysisPage = lazy(
-  () => import("./pages/TimeHistoryAnalysisPage"),
-);
-const ModalAnalysisPage = lazy(() => import("./pages/ModalAnalysisPage"));
-const NonlinearAnalysisPage = lazy(
-  () => import("./pages/NonlinearAnalysisPage"),
-);
-const DynamicAnalysisPage = lazy(() => import("./pages/DynamicAnalysisPage"));
-const AdvancedSettingsPage = lazy(() => import("./pages/AdvancedSettingsPage"));
+const TimeHistoryAnalysisPage = lazy(() => import('./pages/TimeHistoryAnalysisPage'));
+const ModalAnalysisPage = lazy(() => import('./pages/ModalAnalysisPage'));
+const NonlinearAnalysisPage = lazy(() => import('./pages/NonlinearAnalysisPage'));
+const DynamicAnalysisPage = lazy(() => import('./pages/DynamicAnalysisPage'));
+const AdvancedSettingsPage = lazy(() => import('./pages/AdvancedSettingsPage'));
 
 // Phase 15: Professional Tools (Industry Parity)
-const ProfessionalReportGenerator = lazy(
-  () => import("./pages/ProfessionalReportGenerator"),
-);
-const ConnectionDesignDatabase = lazy(
-  () => import("./pages/ConnectionDesignDatabase"),
-);
-const PerformanceMonitorDashboard = lazy(
-  () => import("./pages/PerformanceMonitorDashboard"),
-);
+const ProfessionalReportGenerator = lazy(() => import('./pages/ProfessionalReportGenerator'));
+const ConnectionDesignDatabase = lazy(() => import('./pages/ConnectionDesignDatabase'));
+const PerformanceMonitorDashboard = lazy(() => import('./pages/PerformanceMonitorDashboard'));
 
 // Phase 16: Enterprise Features (Industry Parity Complete)
-const BIMExportEnhanced = lazy(() => import("./pages/BIMExportEnhanced"));
-const CADIntegrationHub = lazy(() => import("./pages/CADIntegrationHub"));
-const CollaborationHub = lazy(() => import("./pages/CollaborationHub"));
-const APIIntegrationDashboard = lazy(
-  () => import("./pages/APIIntegrationDashboard"),
-);
-const MaterialsDatabasePage = lazy(
-  () => import("./pages/MaterialsDatabasePage"),
-);
-const CodeComplianceChecker = lazy(
-  () => import("./pages/CodeComplianceChecker"),
-);
+const BIMExportEnhanced = lazy(() => import('./pages/BIMExportEnhanced'));
+const CADIntegrationHub = lazy(() => import('./pages/CADIntegrationHub'));
+const CollaborationHub = lazy(() => import('./pages/CollaborationHub'));
+const APIIntegrationDashboard = lazy(() => import('./pages/APIIntegrationDashboard'));
+const MaterialsDatabasePage = lazy(() => import('./pages/MaterialsDatabasePage'));
+const CodeComplianceChecker = lazy(() => import('./pages/CodeComplianceChecker'));
 
 // Gap-closure UI shells (Phase 1)
-const BIMIntegrationPage = lazy(() => import("./pages/BIMIntegrationPage"));
-const QuantitySurveyPage = lazy(() => import("./pages/QuantitySurveyPage"));
-const ReportBuilderPage = lazy(() => import("./pages/ReportBuilderPage"));
-const VisualizationHubPage = lazy(() => import("./pages/VisualizationHubPage"));
+const BIMIntegrationPage = lazy(() => import('./pages/BIMIntegrationPage'));
+const QuantitySurveyPage = lazy(() => import('./pages/QuantitySurveyPage'));
+const ReportBuilderPage = lazy(() => import('./pages/ReportBuilderPage'));
+const VisualizationHubPage = lazy(() => import('./pages/VisualizationHubPage'));
 
 // AI Power Dashboard (Lazy Loaded)
 const AIPowerDashboard = lazy(() =>
-  import("./components/ai/AIPowerDashboard").then((module) => ({
+  import('./components/ai/AIPowerDashboard').then((module) => ({
     default: module.AIPowerDashboard,
   })),
 );
 const PowerAIPanel = lazy(() =>
-  import("./components/ai/PowerAIPanel").then((module) => ({
+  import('./components/ai/PowerAIPanel').then((module) => ({
     default: module.PowerAIPanel,
   })),
 );
 
 // 404 Page
-const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Post-Analysis Design Hub (STAAD.Pro-style workflow)
-const PostAnalysisDesignHub = lazy(
-  () => import("./pages/PostAnalysisDesignHub"),
-);
+const PostAnalysisDesignHub = lazy(() => import('./pages/PostAnalysisDesignHub'));
 
 // Phase 18: Missing pages (audit gap closure)
-const AdvancedMeshingDashboard = lazy(
-  () => import("./pages/AdvancedMeshingDashboard"),
-);
-const CloudStorageDashboard = lazy(
-  () => import("./pages/CloudStorageDashboard"),
-);
-const PrintExportCenter = lazy(() => import("./pages/PrintExportCenter"));
+const AdvancedMeshingDashboard = lazy(() => import('./pages/AdvancedMeshingDashboard'));
+const CloudStorageDashboard = lazy(() => import('./pages/CloudStorageDashboard'));
+const PrintExportCenter = lazy(() => import('./pages/PrintExportCenter'));
 const SensitivityOptimizationDashboard = lazy(
-  () => import("./pages/SensitivityOptimizationDashboard"),
+  () => import('./pages/SensitivityOptimizationDashboard'),
 );
-const OAuthCallbackPage = lazy(() => import("./pages/OAuthCallbackPage"));
-const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
-const AccountLockedPage = lazy(() => import("./pages/AccountLockedPage"));
-const LinkExpiredPage = lazy(() => import("./pages/LinkExpiredPage"));
-const Visualization3DEngine = lazy(
-  () => import("./pages/Visualization3DEngine"),
-);
-const ResultAnimationViewer = lazy(
-  () => import("./pages/ResultAnimationViewer"),
-);
-const DigitalTwinDashboard = lazy(
-  () => import("./pages/DigitalTwinDashboard"),
-);
+const OAuthCallbackPage = lazy(() => import('./pages/OAuthCallbackPage'));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
+const AccountLockedPage = lazy(() => import('./pages/AccountLockedPage'));
+const LinkExpiredPage = lazy(() => import('./pages/LinkExpiredPage'));
+const Visualization3DEngine = lazy(() => import('./pages/Visualization3DEngine'));
+const ResultAnimationViewer = lazy(() => import('./pages/ResultAnimationViewer'));
+const DigitalTwinDashboard = lazy(() => import('./pages/DigitalTwinDashboard'));
+const SpacePlanningPage = lazy(() => import('./pages/SpacePlanningPage'));
 
 // Analysis Panels (Lazy Loaded)
 const ModalAnalysisPanel = lazy(() =>
-  import("./components/analysis/ModalAnalysisPanel").then((module) => ({
+  import('./components/analysis/ModalAnalysisPanel').then((module) => ({
     default: module.ModalAnalysisPanel,
   })),
 );
@@ -271,40 +228,47 @@ function ModalAnalysisRouteWrapper() {
 }
 
 const TimeHistoryPanel = lazy(() =>
-  import("./components/analysis/TimeHistoryPanel").then((module) => ({
+  import('./components/analysis/TimeHistoryPanel').then((module) => ({
     default: module.TimeHistoryPanel,
   })),
 );
 const SeismicAnalysisPanel = lazy(() =>
-  import("./components/analysis/SeismicAnalysisPanel").then((module) => ({
+  import('./components/analysis/SeismicAnalysisPanel').then((module) => ({
     default: module.SeismicAnalysisPanel,
   })),
 );
 const BucklingAnalysisPanel = lazy(() =>
-  import("./components/analysis/BucklingAnalysisPanel").then((module) => ({
+  import('./components/analysis/BucklingAnalysisPanel').then((module) => ({
     default: module.BucklingAnalysisPanel,
   })),
 );
 const CableAnalysisPanel = lazy(() =>
-  import("./components/analysis/CableAnalysisPanel").then((module) => ({
+  import('./components/analysis/CableAnalysisPanel').then((module) => ({
     default: module.CableAnalysisPanel,
   })),
 );
 const PDeltaAnalysisPanel = lazy(() =>
-  import("./components/analysis/PDeltaAnalysisPanel").then((module) => ({
+  import('./components/analysis/PDeltaAnalysisPanel').then((module) => ({
     default: module.PDeltaAnalysisPanel,
   })),
 );
 
 // Analytics Provider — sends events to POST /api/analytics/batch
-import { AnalyticsProvider } from "./providers/AnalyticsProvider";
+import { AnalyticsProvider } from './providers/AnalyticsProvider';
 
 // Loading Component
-import { DashboardSkeleton } from "./components/ui/DashboardSkeleton";
+import { DashboardSkeleton } from './components/ui/DashboardSkeleton';
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900" role="status" aria-live="polite">
+  <div
+    className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900"
+    role="status"
+    aria-live="polite"
+  >
     <div className="flex flex-col items-center gap-4">
-      <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" aria-hidden="true"></div>
+      <div
+        className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"
+        aria-hidden="true"
+      ></div>
       <p className="text-slate-500 dark:text-slate-400 text-sm font-medium animate-pulse">
         Loading Module...
       </p>
@@ -319,10 +283,10 @@ const PageLoader = () => (
 // ============================================
 
 // Hooks
-import { useUserRegistration } from "./hooks/useUserRegistration";
-import { useDeviceSession } from "./hooks/useDeviceSession";
-import { useGlobalErrorHandler } from "./hooks/useGlobalErrorHandler";
-import { SectionErrorBoundary } from "./components/SectionErrorBoundary";
+import { useUserRegistration } from './hooks/useUserRegistration';
+import { useDeviceSession } from './hooks/useDeviceSession';
+import { useGlobalErrorHandler } from './hooks/useGlobalErrorHandler';
+import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 
 function App() {
   // Ensure user is registered in MongoDB upon login/load
@@ -339,9 +303,9 @@ function App() {
       <SkipLink />
       <OfflineBanner />
       <AnalyticsProvider>
-          <Suspense fallback={<PageLoader />}>
-            <ScrollToTop />
-            <main id="main-content">
+        <Suspense fallback={<PageLoader />}>
+          <ScrollToTop />
+          <main id="main-content">
             <Routes>
               {/* Landing Page */}
               <Route path="/" element={<LandingPage />} />
@@ -360,15 +324,9 @@ function App() {
                 }
               />
               {/* Legacy Dashboard - redirects to unified */}
-              <Route
-                path="/dashboard"
-                element={<Navigate to="/stream" replace />}
-              />
+              <Route path="/dashboard" element={<Navigate to="/stream" replace />} />
               {/* Enhanced Dashboard - redirects to unified */}
-              <Route
-                path="/dashboard-enhanced"
-                element={<Navigate to="/stream" replace />}
-              />
+              <Route path="/dashboard-enhanced" element={<Navigate to="/stream" replace />} />
               {/* Capabilities Page */}
               <Route path="/capabilities" element={<Capabilities />} />
               {/* Custom Auth Pages */}
@@ -413,48 +371,24 @@ function App() {
               {/* Reset Password */}
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               {/* Privacy Policy - New comprehensive page for Clerk */}
-              <Route
-                path="/privacy-policy"
-                element={<PrivacyPolicyPageNew />}
-              />
-              <Route
-                path="/privacy"
-                element={<Navigate to="/privacy-policy" replace />}
-              />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPageNew />} />
+              <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
               {/* Terms of Service - New comprehensive page for Clerk */}
-              <Route
-                path="/terms-of-service"
-                element={<TermsOfServicePage />}
-              />
+              <Route path="/terms-of-service" element={<TermsOfServicePage />} />
               {/* Terms and Conditions - Comprehensive legal T&C (IT Act 2000, Rewa jurisdiction) */}
-              <Route
-                path="/terms-and-conditions"
-                element={<TermsAndConditionsPage />}
-              />
-              <Route
-                path="/terms"
-                element={<Navigate to="/terms-and-conditions" replace />}
-              />
+              <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+              <Route path="/terms" element={<Navigate to="/terms-and-conditions" replace />} />
               {/* Refund and Cancellation Policy */}
-              <Route
-                path="/refund-cancellation"
-                element={<RefundCancellationPage />}
-              />
+              <Route path="/refund-cancellation" element={<RefundCancellationPage />} />
               {/* Help & Tutorials */}
               <Route path="/help" element={<HelpPage />} />
               {/* About & Contact */}
               <Route path="/about" element={<AboutPage />} />
               <Route path="/contact" element={<ContactPage />} />
               {/* Civil Engineering – Book-style Interface */}
-              <Route
-                path="/civil-engineering/library"
-                element={<CivilEngineeringBookLanding />}
-              />
+              <Route path="/civil-engineering/library" element={<CivilEngineeringBookLanding />} />
               <Route path="/civil-engineering/book" element={<BookApp />} />
-              <Route
-                path="/civil-engineering/book/realistic"
-                element={<RealisticBook />}
-              />
+              <Route path="/civil-engineering/book/realistic" element={<RealisticBook />} />
               {/* Civil Engineering Suite - NEW Modules */}
               <Route
                 path="/civil/hydraulics"
@@ -505,7 +439,14 @@ function App() {
                 }
               />
               {/* Demo Route - Modern Modeler */}
-              <Route path="/demo" element={<MobileGuard><ModernModeler /></MobileGuard>} />
+              <Route
+                path="/demo"
+                element={
+                  <MobileGuard>
+                    <ModernModeler />
+                  </MobileGuard>
+                }
+              />
               {/* UI Component Showcase - Phase 13+ Integration Demo */}
               <Route path="/ui-showcase" element={<UIShowcase />} />
               {/* Codebase Error & Health Report */}
@@ -545,25 +486,52 @@ function App() {
               />
               <Route
                 path="/analysis/time-history"
-                element={<RequireAuth><TimeHistoryPanel /></RequireAuth>}
+                element={
+                  <RequireAuth>
+                    <TimeHistoryPanel />
+                  </RequireAuth>
+                }
               />
               <Route
                 path="/analysis/seismic"
-                element={<RequireAuth><SeismicAnalysisPanel /></RequireAuth>}
+                element={
+                  <RequireAuth>
+                    <SeismicAnalysisPanel />
+                  </RequireAuth>
+                }
               />
               <Route
                 path="/analysis/buckling"
-                element={<RequireAuth><BucklingAnalysisPanel /></RequireAuth>}
+                element={
+                  <RequireAuth>
+                    <BucklingAnalysisPanel />
+                  </RequireAuth>
+                }
               />
-              <Route path="/analysis/cable" element={<RequireAuth><CableAnalysisPanel /></RequireAuth>} />
+              <Route
+                path="/analysis/cable"
+                element={
+                  <RequireAuth>
+                    <CableAnalysisPanel />
+                  </RequireAuth>
+                }
+              />
               <Route
                 path="/analysis/pdelta"
-                element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>}
+                element={
+                  <RequireAuth>
+                    <PDeltaAnalysisPanel />
+                  </RequireAuth>
+                }
               />
               <Route
                 path="/analysis/nonlinear"
-                element={<RequireAuth><PDeltaAnalysisPanel /></RequireAuth>}
-              />{" "}
+                element={
+                  <RequireAuth>
+                    <PDeltaAnalysisPanel />
+                  </RequireAuth>
+                }
+              />{' '}
               {/* Alias for P-Delta */}
               {/* Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14) */}
               <Route
@@ -842,10 +810,7 @@ function App() {
                 }
               />
               {/* Phase 18: Auth Flow Pages (public) */}
-              <Route
-                path="/auth/callback/:provider"
-                element={<OAuthCallbackPage />}
-              />
+              <Route path="/auth/callback/:provider" element={<OAuthCallbackPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
               {/* Phase 18: Advanced Tools & Visualization */}
               <Route
@@ -904,13 +869,21 @@ function App() {
                   </RequireAuth>
                 }
               />
+              <Route
+                path="/space-planning"
+                element={
+                  <RequireAuth>
+                    <SpacePlanningPage />
+                  </RequireAuth>
+                }
+              />
               {/* Fallback - Show proper 404 page */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-            </main>
-            <BackToTopButton />
-            <CookieConsent />
-          </Suspense>
+          </main>
+          <BackToTopButton />
+          <CookieConsent />
+        </Suspense>
       </AnalyticsProvider>
     </ErrorBoundary>
   );
@@ -919,7 +892,11 @@ function App() {
 // Helper to extract moduleType param - Now uses ModernModeler
 function WorkspacePageWrapper() {
   // All workspace routes now use ModernModeler with all new UI improvements
-  return <MobileGuard><ModernModeler /></MobileGuard>;
+  return (
+    <MobileGuard>
+      <ModernModeler />
+    </MobileGuard>
+  );
 }
 
 export default App;

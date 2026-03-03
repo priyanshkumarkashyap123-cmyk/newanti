@@ -51,6 +51,9 @@ class LargeFrameAnalysisRequest(BaseModel):
     members: List[FrameMemberInput]
     node_loads: Optional[List[NodeLoadInput]] = []
     method: Optional[str] = "auto"  # "auto", "superlu", "cg", "gmres"
+    backend: Optional[str] = "auto"  # "auto", "rust", "python"
+    debug_compare: Optional[bool] = False
+    debug_compare_tolerance: Optional[float] = 1e-2
 
 
 class NonlinearAnalysisRequest(BaseModel):
@@ -230,6 +233,7 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
         logger.info("Sparse solver DOF", extra={"n_dof": n_dof})
 
         from analysis.sparse_solver import analyze_large_frame as solve_large
+        from analysis.rust_interop import analyze_with_best_backend
 
         nodes = [
             {"id": n.id, "x": n.x, "y": n.y, "z": n.z, "support": n.support or "none"}
@@ -264,37 +268,232 @@ async def analyze_large_frame(request: LargeFrameAnalysisRequest):
                 elif support == "roller":
                     fixed_dofs.append(base_dof + 1)
 
-        result = await asyncio.to_thread(
-            solve_large,
-            nodes=nodes, members=members, loads=loads,
-            fixed_dofs=fixed_dofs, method=request.method or "auto"
-        )
+        supports_for_rust = []
+        for n in request.nodes:
+            if not n.support or n.support.lower() == "none":
+                continue
+
+            support = n.support.lower()
+            support_obj = {
+                "nodeId": n.id,
+                "fx": False,
+                "fy": False,
+                "fz": False,
+                "mx": False,
+                "my": False,
+                "mz": False,
+            }
+
+            if support == "fixed":
+                support_obj.update({"fx": True, "fy": True, "fz": True, "mx": True, "my": True, "mz": True})
+            elif support in ("pinned", "pin"):
+                support_obj.update({"fx": True, "fy": True, "fz": True})
+            elif support == "roller":
+                support_obj.update({"fy": True})
+
+            supports_for_rust.append(support_obj)
+
+        rust_model = {
+            "nodes": [
+                {"id": n.id, "x": n.x, "y": n.y, "z": n.z}
+                for n in request.nodes
+            ],
+            "members": [
+                {
+                    "id": m.id,
+                    "startNodeId": m.startNodeId,
+                    "endNodeId": m.endNodeId,
+                    "E": m.E or 200e9,
+                    "A": m.A or 0.01,
+                    # Rust solver currently consumes a single I value in AnalysisInput
+                    "I": m.Iy or m.Iz or 1e-4,
+                    "J": m.J or 1e-5,
+                }
+                for m in request.members
+            ],
+            "supports": supports_for_rust,
+            "loads": [
+                {
+                    "nodeId": l.nodeId,
+                    "fx": l.fx or 0,
+                    "fy": l.fy or 0,
+                    "fz": l.fz or 0,
+                    "mx": l.mx or 0,
+                    "my": l.my or 0,
+                    "mz": l.mz or 0,
+                }
+                for l in (request.node_loads or [])
+            ],
+        }
+
+        forced_backend = (request.backend or "auto").lower()
+        if forced_backend not in {"auto", "rust", "python"}:
+            raise HTTPException(status_code=400, detail="backend must be one of: auto, rust, python")
+
+        async def solve_via_python() -> Dict[str, Any]:
+            py_result = await asyncio.to_thread(
+                solve_large,
+                nodes=nodes, members=members, loads=loads,
+                fixed_dofs=fixed_dofs, method=request.method or "auto"
+            )
+
+            if not py_result.get('success'):
+                raise HTTPException(status_code=400, detail=py_result.get('error', 'Sparse solver failed'))
+
+            return {
+                "backend": "python",
+                "displacements": py_result.get('displacements', {}),
+                "reactions": py_result.get('reactions', {}),
+                "member_forces": py_result.get('member_forces', {}),
+                "solve_time_ms": py_result.get('solve_time_ms', 0),
+                "stats": {
+                    "method": py_result.get('method'),
+                    "iterations": py_result.get('iterations', 0),
+                    "residual_norm": py_result.get('residual_norm', 0),
+                    "max_displacement_mm": py_result.get('max_displacement_mm', 0),
+                },
+                "raw": py_result,
+            }
+
+        async def solve_via_rust() -> Dict[str, Any]:
+            rust_result = await analyze_with_best_backend(
+                rust_model,
+                analysis_type="static",
+                force_backend=forced_backend if forced_backend in {"rust", "python"} else None,
+            )
+
+            if not rust_result.success:
+                raise RuntimeError(rust_result.error or "Rust backend analysis failed")
+
+            rust_displacements = {
+                d.get("nodeId"): {
+                    "dx": d.get("dx", 0.0),
+                    "dy": d.get("dy", 0.0),
+                    "dz": d.get("dz", 0.0),
+                    "rx": d.get("rx", 0.0),
+                    "ry": d.get("ry", 0.0),
+                    "rz": d.get("rz", 0.0),
+                }
+                for d in (rust_result.displacements or [])
+                if isinstance(d, dict) and d.get("nodeId")
+            }
+
+            rust_reactions = {
+                r.get("nodeId"): {
+                    "fx": r.get("fx", 0.0),
+                    "fy": r.get("fy", 0.0),
+                    "fz": r.get("fz", 0.0),
+                    "mx": r.get("mx", 0.0),
+                    "my": r.get("my", 0.0),
+                    "mz": r.get("mz", 0.0),
+                }
+                for r in (rust_result.reactions or [])
+                if isinstance(r, dict) and r.get("nodeId")
+            }
+
+            return {
+                "backend": rust_result.backend_used,
+                "displacements": rust_displacements,
+                "reactions": rust_reactions,
+                "member_forces": rust_result.member_forces or [],
+                "solve_time_ms": rust_result.solve_time_ms,
+                "stats": {
+                    "rust_metadata": rust_result.metadata,
+                },
+                "raw": rust_result,
+            }
+
+        async def compare_solutions(py: Dict[str, Any], rs: Dict[str, Any]) -> Dict[str, Any]:
+            py_disp = py.get("displacements", {})
+            rs_disp = rs.get("displacements", {})
+            common_nodes = set(py_disp.keys()) & set(rs_disp.keys())
+            max_abs_delta_mm = 0.0
+
+            for node_id in common_nodes:
+                p = py_disp.get(node_id, {})
+                r = rs_disp.get(node_id, {})
+                for key in ("dx", "dy", "dz"):
+                    delta_mm = abs((p.get(key, 0.0) - r.get(key, 0.0)) * 1000.0)
+                    if delta_mm > max_abs_delta_mm:
+                        max_abs_delta_mm = delta_mm
+
+            tolerance_mm = max(request.debug_compare_tolerance or 1e-2, 0.0)
+            within_tolerance = max_abs_delta_mm <= tolerance_mm
+            return {
+                "enabled": True,
+                "common_nodes": len(common_nodes),
+                "max_abs_displacement_delta_mm": max_abs_delta_mm,
+                "tolerance_mm": tolerance_mm,
+                "within_tolerance": within_tolerance,
+            }
+
+        chosen_backend = "python"
+        selected_result: Dict[str, Any]
+        debug_comparison: Optional[Dict[str, Any]] = None
+
+        if request.debug_compare:
+            py_task = solve_via_python()
+            rust_task = solve_via_rust()
+            py_out, rust_out = await asyncio.gather(py_task, rust_task, return_exceptions=True)
+
+            if isinstance(py_out, Exception):
+                logger.error("Python compare run failed", extra={"error": str(py_out)})
+                raise HTTPException(status_code=500, detail=f"Python compare run failed: {str(py_out)}")
+
+            if isinstance(rust_out, Exception):
+                logger.warning("Rust compare run failed; using Python", extra={"error": str(rust_out)})
+                selected_result = py_out
+                chosen_backend = "python"
+                debug_comparison = {
+                    "enabled": True,
+                    "rust_error": str(rust_out),
+                    "fallback_backend": "python",
+                }
+            else:
+                selected_result = rust_out
+                chosen_backend = rust_out.get("backend", "rust")
+                debug_comparison = await compare_solutions(py_out, rust_out)
+        else:
+            try:
+                if forced_backend == "python":
+                    selected_result = await solve_via_python()
+                else:
+                    selected_result = await solve_via_rust()
+            except Exception as rust_error:
+                if forced_backend == "rust":
+                    logger.error("Forced rust backend failed", extra={"error": str(rust_error)})
+                    raise HTTPException(status_code=500, detail=f"Rust backend failed: {str(rust_error)}")
+                logger.warning("Rust path failed; falling back to Python", extra={"error": str(rust_error)})
+                selected_result = await solve_via_python()
+
+            chosen_backend = selected_result.get("backend", "python")
 
         total_time = (time.perf_counter() - start_time) * 1000
 
-        if not result['success']:
-            logger.warning("Sparse solver failed", extra={"error": result.get('error')})
-            raise HTTPException(status_code=400, detail=result.get('error', 'Sparse solver failed'))
-
-        logger.info("Sparse solver complete", extra={
-            "solve_ms": result.get('solve_time_ms', 0), "total_ms": total_time,
-            "method": result.get('method'), "max_disp_mm": result.get('max_displacement_mm', 0)
+        logger.info("Large-frame analysis complete", extra={
+            "solve_ms": selected_result.get('solve_time_ms', 0),
+            "total_ms": total_time,
+            "backend": chosen_backend,
+            "nodes": n_nodes,
+            "members": n_members,
         })
 
         return {
             "success": True,
-            "displacements": result['displacements'],
-            "reactions": result.get('reactions', {}),
-            "member_forces": result.get('member_forces', {}),
+            "displacements": selected_result.get('displacements', {}),
+            "reactions": selected_result.get('reactions', {}),
+            "member_forces": selected_result.get('member_forces', {}),
             "stats": {
-                "solve_time_ms": result.get('solve_time_ms', 0),
+                "solve_time_ms": selected_result.get('solve_time_ms', 0),
                 "total_time_ms": total_time,
-                "method": result.get('method'),
-                "iterations": result.get('iterations', 0),
-                "residual_norm": result.get('residual_norm', 0),
+                "method": (selected_result.get('stats') or {}).get('method'),
+                "iterations": (selected_result.get('stats') or {}).get('iterations', 0),
+                "residual_norm": (selected_result.get('stats') or {}).get('residual_norm', 0),
                 "n_nodes": n_nodes, "n_members": n_members, "n_dof": n_dof,
-                "max_displacement_mm": result.get('max_displacement_mm', 0)
-            }
+                "max_displacement_mm": (selected_result.get('stats') or {}).get('max_displacement_mm', 0),
+                "backend_used": chosen_backend,
+                "debug_comparison": debug_comparison,
+            },
         }
 
     except ImportError as e:
