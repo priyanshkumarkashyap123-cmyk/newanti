@@ -103,7 +103,7 @@ export class UsageMonitoringService {
         if (!isConnected()) return null;
 
         try {
-            const user = await User.findOne({ clerkId: params.clerkId });
+            const user = await User.findOne({ clerkId: params.clerkId }).lean();
             if (!user) return null;
 
             const result = await AnalysisResult.create({
@@ -220,7 +220,7 @@ export class UsageMonitoringService {
         if (!isConnected()) return null;
 
         try {
-            const user = await User.findOne({ clerkId: params.clerkId });
+            const user = await User.findOne({ clerkId: params.clerkId }).lean();
             if (!user) return null;
 
             const report = await ReportGeneration.create({
@@ -367,7 +367,7 @@ export class UsageMonitoringService {
         if (!isConnected()) return null;
 
         try {
-            const user = await User.findOne({ clerkId });
+            const user = await User.findOne({ clerkId }).lean();
             if (!user) return null;
 
             const effectiveTier = isMasterUser(user.email) ? 'enterprise' : user.tier;

@@ -60,8 +60,8 @@ export interface TrainingDataExport {
     exportDate: Date;
     entries: Array<{
         input: string;
-        originalOutput: any;
-        correctedOutput: any;
+        originalOutput: Record<string, unknown>;
+        correctedOutput: Record<string, unknown> | undefined;
         featureType: string;
     }>;
 }
@@ -100,7 +100,7 @@ class FeedbackServiceClass {
             if (data) {
                 this.entries = JSON.parse(data).map((e: Record<string, unknown>) => ({
                     ...e,
-                    timestamp: new Date(e.timestamp)
+                    timestamp: new Date(e.timestamp as string)
                 }));
             }
         } catch (e) {
@@ -204,7 +204,7 @@ class FeedbackServiceClass {
             feature,
             sessionId: this.sessionId,
             originalInput: '',
-            originalOutput: null,
+            originalOutput: {} as Record<string, unknown>,
             comment: suggestion,
             metadata: { context },
             processed: false,
@@ -233,7 +233,7 @@ class FeedbackServiceClass {
             feature,
             sessionId: this.sessionId,
             originalInput,
-            originalOutput: { error: error?.message || String(error) },
+            originalOutput: { error: error instanceof Error ? error.message : String(error) },
             comment: userDescription,
             processed: false,
             usedForTraining: false

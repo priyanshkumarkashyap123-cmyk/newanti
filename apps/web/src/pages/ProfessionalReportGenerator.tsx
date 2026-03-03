@@ -240,7 +240,7 @@ export default function ProfessionalReportGenerator() {
     date: new Date().toISOString().slice(0, 10),
     revision: 'R0',
     companyName: 'BeamLab',
-    companyLogo: '/branding/beamlab_icon_colored.svg'
+    companyLogo: '/branding/logo.png'
   });
 
   // Report Configuration
@@ -699,7 +699,7 @@ export default function ProfessionalReportGenerator() {
             </div>
             
             <div className="flex items-center gap-3">
-              <button type="button"
+              <button
                 onClick={() => setShowPreview(!showPreview)}
                 className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
               >
@@ -707,7 +707,7 @@ export default function ProfessionalReportGenerator() {
                 {showPreview ? 'Hide Preview' : 'Preview'}
               </button>
               
-              <button type="button"
+              <button
                 onClick={generateReport}
                 disabled={generatingReport}
                 className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -850,7 +850,7 @@ export default function ProfessionalReportGenerator() {
                   <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">Format</label>
                   <div className="grid grid-cols-3 gap-2">
                     {(['pdf', 'html', 'docx'] as const).map(fmt => (
-                      <button type="button"
+                      <button
                         key={fmt}
                         onClick={() => setOutputFormat(fmt)}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -869,7 +869,7 @@ export default function ProfessionalReportGenerator() {
                   <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">Paper Size</label>
                   <div className="grid grid-cols-3 gap-2">
                     {(['A4', 'Letter', 'A3'] as const).map(size => (
-                      <button type="button"
+                      <button
                         key={size}
                         onClick={() => setPaperSize(size)}
                         className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -888,7 +888,7 @@ export default function ProfessionalReportGenerator() {
                   <label className="block text-sm text-slate-600 dark:text-slate-400 mb-2">Orientation</label>
                   <div className="grid grid-cols-2 gap-2">
                     {(['portrait', 'landscape'] as const).map(orient => (
-                      <button type="button"
+                      <button
                         key={orient}
                         onClick={() => setOrientation(orient)}
                         className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${
@@ -925,7 +925,7 @@ export default function ProfessionalReportGenerator() {
                     <div className="flex items-center gap-3 p-3">
                       <GripVertical className="w-4 h-4 text-slate-600 dark:text-slate-400 cursor-move" />
                       
-                      <button type="button"
+                      <button
                         onClick={() => toggleSection(section.id)}
                         className={`w-5 h-5 rounded border flex items-center justify-center ${
                           section.enabled
@@ -943,7 +943,7 @@ export default function ProfessionalReportGenerator() {
                         </div>
                       </div>
                       
-                      <button type="button"
+                      <button
                         onClick={() => toggleExpand(section.id)}
                         className="p-1 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                       >
@@ -951,7 +951,7 @@ export default function ProfessionalReportGenerator() {
                       </button>
                       
                       {section.type === 'custom' && (
-                        <button type="button"
+                        <button
                           onClick={() => removeSection(section.id)}
                           className="p-1 text-red-400 hover:text-red-300"
                         >
@@ -1001,7 +1001,7 @@ export default function ProfessionalReportGenerator() {
               
               {/* Add Section */}
               <div className="mt-4 pt-4 border-t border-slate-300 dark:border-slate-700">
-                <button type="button"
+                <button
                   onClick={() => addSection('custom')}
                   className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                 >
@@ -1019,7 +1019,7 @@ export default function ProfessionalReportGenerator() {
                 <div className="bg-slate-100 px-4 py-2 border-b border-slate-300 flex items-center justify-between">
                   <span className="text-sm font-medium text-slate-700">Report Preview</span>
                   <div className="flex items-center gap-2">
-                    <button type="button" 
+                    <button 
                       onClick={() => window.print()}
                       className="p-1 text-slate-600 dark:text-slate-400 hover:text-slate-700"
                     >

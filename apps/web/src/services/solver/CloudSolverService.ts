@@ -38,11 +38,28 @@ export interface CloudSolverConfig {
     priority?: 'low' | 'normal' | 'high';
 }
 
+export interface MemberForceResult {
+    memberId: string;
+    axial?: number;
+    shearY?: number;
+    shearZ?: number;
+    momentY?: number;
+    momentZ?: number;
+    torsion?: number;
+}
+
+export interface StructuralModel {
+    nodes: Record<string, unknown>[];
+    members: Record<string, unknown>[];
+    loads: Record<string, unknown>[];
+    supports: Record<string, unknown>[];
+}
+
 export interface SolverResult {
     jobId: string;
     displacements: Float64Array;
     reactions: Float64Array;
-    memberForces?: any[];
+    memberForces?: MemberForceResult[];
     eigenvalues?: number[];
     eigenvectors?: Float64Array[];
     computeTime: number;
@@ -56,7 +73,7 @@ export interface SolverResult {
 class CloudSolverServiceClass {
     private config: CloudSolverConfig | null = null;
     private jobs: Map<string, SolverJob> = new Map();
-    private listeners: Array<(event: string, data: any) => void> = [];
+    private listeners: Array<(event: string, data: unknown) => void> = [];
 
     /**
      * Initialize cloud solver
@@ -70,12 +87,7 @@ class CloudSolverServiceClass {
      * Submit analysis job to cloud
      */
     async submitJob(
-        model: {
-            nodes: any[];
-            members: any[];
-            loads: any[];
-            supports: any[];
-        },
+        model: StructuralModel,
         analysisType: SolverJob['type']
     ): Promise<SolverJob> {
         if (!this.config) {
@@ -130,7 +142,7 @@ class CloudSolverServiceClass {
     /**
      * Process job (simulated cloud)
      */
-    private async processJob(job: SolverJob, model: any): Promise<void> {
+    private async processJob(job: SolverJob, model: StructuralModel): Promise<void> {
         job.status = 'processing';
         this.emit('job_started', job);
 
@@ -206,14 +218,14 @@ class CloudSolverServiceClass {
     /**
      * Subscribe to events
      */
-    on(handler: (event: string, data: any) => void): () => void {
+    on(handler: (event: string, data: unknown) => void): () => void {
         this.listeners.push(handler);
         return () => {
             this.listeners = this.listeners.filter(l => l !== handler);
         };
     }
 
-    private emit(event: string, data: any): void {
+    private emit(event: string, data: unknown): void {
         for (const listener of this.listeners) {
             listener(event, data);
         }

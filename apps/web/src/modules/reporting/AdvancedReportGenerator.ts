@@ -125,6 +125,273 @@ export interface CalculationStep {
 }
 
 // ============================================================================
+// SECTION CONTENT INTERFACES
+// ============================================================================
+
+interface ExecutiveSummaryContent {
+  keyFindings?: string[];
+  totalNodes?: string | number;
+  totalMembers?: string | number;
+  loadCases?: string | number;
+  loadCombinations?: string | number;
+  maxUtilization?: number;
+  maxDeflection?: string | number;
+  recommendations?: string[];
+}
+
+interface NodeData {
+  id: string | number;
+  x: number;
+  y: number;
+  z: number;
+  support?: string;
+}
+
+interface MemberData {
+  id: string | number;
+  startNode: string | number;
+  endNode: string | number;
+  length: number;
+  section?: string;
+  material?: string;
+}
+
+interface GeometryContent {
+  modelImage?: string;
+  nodes?: NodeData[];
+  members?: MemberData[];
+}
+
+interface ConcreteMaterial {
+  grade: string;
+  fck: number;
+  Ec: number;
+  density: number;
+  code: string;
+}
+
+interface SteelMaterial {
+  grade: string;
+  fy: number;
+  fu: number;
+  E: number;
+  code: string;
+}
+
+interface RebarMaterial {
+  grade: string;
+  fy: number;
+  fu: number;
+  type?: string;
+  code: string;
+}
+
+interface MaterialsContent {
+  concrete?: ConcreteMaterial[];
+  steel?: SteelMaterial[];
+  rebar?: RebarMaterial[];
+}
+
+interface LoadCaseData {
+  name: string;
+  type: string;
+  description?: string;
+  factor?: number;
+}
+
+interface PointLoadData {
+  node: string | number;
+  fx?: number;
+  fy?: number;
+  fz?: number;
+  mx?: number;
+  my?: number;
+  mz?: number;
+  loadCase: string;
+}
+
+interface DistributedLoadData {
+  member: string | number;
+  type?: string;
+  w1?: number;
+  w2?: number;
+  start?: number;
+  end?: number;
+  loadCase: string;
+}
+
+interface LoadsContent {
+  loadCases?: LoadCaseData[];
+  pointLoads?: PointLoadData[];
+  distributedLoads?: DistributedLoadData[];
+}
+
+interface CombinationData {
+  name: string;
+  type: string;
+  factors: string;
+  description?: string;
+}
+
+interface LoadCombinationsContent {
+  designCode?: string;
+  combinations?: CombinationData[];
+}
+
+interface AnalysisResultsContent {
+  analysisType?: string;
+  solver?: string;
+  dof?: string | number;
+  maxAxial?: number;
+  maxAxialLocation?: string;
+  maxAxialCombo?: string;
+  maxShearY?: number;
+  maxShearYLocation?: string;
+  maxShearYCombo?: string;
+  maxShearZ?: number;
+  maxShearZLocation?: string;
+  maxShearZCombo?: string;
+  maxMomentY?: number;
+  maxMomentYLocation?: string;
+  maxMomentYCombo?: string;
+  maxMomentZ?: number;
+  maxMomentZLocation?: string;
+  maxMomentZCombo?: string;
+  maxTorsion?: number;
+  maxTorsionLocation?: string;
+  maxTorsionCombo?: string;
+}
+
+interface MemberForceData {
+  member: string | number;
+  station: string | number;
+  axial?: number;
+  vy?: number;
+  vz?: number;
+  my?: number;
+  mz?: number;
+  torsion?: number;
+}
+
+interface MemberForcesContent {
+  bmdImage?: string;
+  sfdImage?: string;
+  axialImage?: string;
+  memberForces?: MemberForceData[];
+}
+
+interface ReactionData {
+  node: string | number;
+  combination: string;
+  fx?: number;
+  fy?: number;
+  fz?: number;
+  mx?: number;
+  my?: number;
+  mz?: number;
+}
+
+interface ReactionsContent {
+  reactions?: ReactionData[];
+  sumFx?: number;
+  sumFy?: number;
+  sumFz?: number;
+  sumMx?: number;
+  sumMy?: number;
+  sumMz?: number;
+  maxFxNode?: string;
+  minFxNode?: string;
+  maxFyNode?: string;
+  minFyNode?: string;
+  maxFzNode?: string;
+  minFzNode?: string;
+  maxMxNode?: string;
+  minMxNode?: string;
+  maxMyNode?: string;
+  minMyNode?: string;
+  maxMzNode?: string;
+  minMzNode?: string;
+}
+
+interface DeflectionData {
+  location: string;
+  direction: string;
+  value?: number;
+  ratio?: number;
+  limit?: string;
+  status?: string;
+}
+
+interface DeflectionsContent {
+  deflectionImage?: string;
+  deflections?: DeflectionData[];
+  serviceabilityPassed?: boolean;
+}
+
+interface MemberDesignData {
+  member: string | number;
+  section: string;
+  utilization?: number;
+  governing?: string;
+}
+
+interface DesignSummaryContent {
+  overallStatus?: string;
+  memberDesigns?: MemberDesignData[];
+  util0_50?: number;
+  util50_75?: number;
+  util75_90?: number;
+  util90_100?: number;
+  utilOver100?: number;
+}
+
+interface CodeCheckData {
+  description: string;
+  clause: string;
+  required: string | number;
+  provided: string | number;
+  ratio?: number;
+  status: string;
+}
+
+interface CodeChecksContent {
+  codeReference?: string;
+  checks?: CodeCheckData[];
+}
+
+interface CalculationData {
+  title: string;
+  description?: string;
+  steps?: CalculationStep[];
+}
+
+interface CalculationsContent {
+  calculations?: CalculationData[];
+}
+
+interface DrawingData {
+  title: string;
+  image?: string;
+  caption?: string;
+  notes?: string[];
+}
+
+interface DrawingsContent {
+  drawings?: DrawingData[];
+}
+
+interface ShopDrawingData {
+  number: string;
+  description: string;
+}
+
+interface AppendixContent {
+  materialCertificates?: unknown;
+  shopDrawings?: ShopDrawingData[];
+  references?: string[];
+}
+
+// ============================================================================
 // ADVANCED REPORT GENERATOR CLASS
 // ============================================================================
 
@@ -421,7 +688,7 @@ export class AdvancedReportGenerator {
   private renderExecutiveSummary(section: ReportSection): void {
     this.addSectionHeader('Executive Summary', 1);
     
-    const content = section.content;
+    const content = section.content as ExecutiveSummaryContent;
     
     // Key findings box
     this.doc.setFillColor('#e6fffa');
@@ -460,7 +727,7 @@ export class AdvancedReportGenerator {
         ['Total Members', content.totalMembers || '0', 'OK'],
         ['Load Cases', content.loadCases || '0', 'OK'],
         ['Load Combinations', content.loadCombinations || '0', 'OK'],
-        ['Max Utilization', (content.maxUtilization || '0') + '%', content.maxUtilization < 100 ? 'PASS' : 'FAIL'],
+        ['Max Utilization', (content.maxUtilization || '0') + '%', (content.maxUtilization ?? 0) < 100 ? 'PASS' : 'FAIL'],
         ['Max Deflection', (content.maxDeflection || '0') + ' mm', 'PASS'],
       ],
     };
@@ -484,7 +751,7 @@ export class AdvancedReportGenerator {
   private renderGeometrySection(section: ReportSection): void {
     this.addSectionHeader('Structural Geometry', 1);
     
-    const content = section.content;
+    const content = section.content as GeometryContent;
     
     // Model overview
     this.addSubsectionHeader('Model Overview', 2);
@@ -499,7 +766,7 @@ export class AdvancedReportGenerator {
     if (content.nodes && content.nodes.length > 0) {
       const nodeTable: TableData = {
         headers: ['Node ID', 'X (m)', 'Y (m)', 'Z (m)', 'Support'],
-        rows: content.nodes.slice(0, 50).map((node: Record<string, unknown>) => [
+        rows: content.nodes.slice(0, 50).map((node) => [
           node.id,
           node.x.toFixed(3),
           node.y.toFixed(3),
@@ -517,7 +784,7 @@ export class AdvancedReportGenerator {
     if (content.members && content.members.length > 0) {
       const memberTable: TableData = {
         headers: ['Member ID', 'Start Node', 'End Node', 'Length (m)', 'Section', 'Material'],
-        rows: content.members.slice(0, 50).map((member: Record<string, unknown>) => [
+        rows: content.members.slice(0, 50).map((member) => [
           member.id,
           member.startNode,
           member.endNode,
@@ -538,7 +805,7 @@ export class AdvancedReportGenerator {
   private renderMaterialsSection(section: ReportSection): void {
     this.addSectionHeader('Material Properties', 1);
     
-    const content = section.content;
+    const content = section.content as MaterialsContent;
     
     // Concrete materials
     if (content.concrete && content.concrete.length > 0) {
@@ -546,7 +813,7 @@ export class AdvancedReportGenerator {
       
       const concreteTable: TableData = {
         headers: ['Grade', 'fck (MPa)', 'Ec (GPa)', 'Density (kg/m³)', 'Code'],
-        rows: content.concrete.map((mat: Record<string, unknown>) => [
+        rows: content.concrete.map((mat) => [
           mat.grade,
           mat.fck.toFixed(1),
           (mat.Ec / 1000).toFixed(1),
@@ -563,7 +830,7 @@ export class AdvancedReportGenerator {
       
       const steelTable: TableData = {
         headers: ['Grade', 'fy (MPa)', 'fu (MPa)', 'E (GPa)', 'Code'],
-        rows: content.steel.map((mat: Record<string, unknown>) => [
+        rows: content.steel.map((mat) => [
           mat.grade,
           mat.fy.toFixed(0),
           mat.fu.toFixed(0),
@@ -580,7 +847,7 @@ export class AdvancedReportGenerator {
       
       const rebarTable: TableData = {
         headers: ['Grade', 'fy (MPa)', 'fu (MPa)', 'Type', 'Code'],
-        rows: content.rebar.map((mat: Record<string, unknown>) => [
+        rows: content.rebar.map((mat) => [
           mat.grade,
           mat.fy.toFixed(0),
           mat.fu.toFixed(0),
@@ -599,7 +866,7 @@ export class AdvancedReportGenerator {
   private renderLoadsSection(section: ReportSection): void {
     this.addSectionHeader('Loading', 1);
     
-    const content = section.content;
+    const content = section.content as LoadsContent;
     
     // Load cases
     this.addSubsectionHeader('Load Cases', 2);
@@ -607,7 +874,7 @@ export class AdvancedReportGenerator {
     if (content.loadCases) {
       const loadCaseTable: TableData = {
         headers: ['Case', 'Type', 'Description', 'Factor'],
-        rows: content.loadCases.map((lc: Record<string, unknown>) => [
+        rows: content.loadCases.map((lc) => [
           lc.name,
           lc.type,
           lc.description || '-',
@@ -623,7 +890,7 @@ export class AdvancedReportGenerator {
       
       const pointLoadTable: TableData = {
         headers: ['Node', 'Fx (kN)', 'Fy (kN)', 'Fz (kN)', 'Mx (kNm)', 'My (kNm)', 'Mz (kNm)', 'Case'],
-        rows: content.pointLoads.map((pl: Record<string, unknown>) => [
+        rows: content.pointLoads.map((pl) => [
           pl.node,
           pl.fx?.toFixed(2) || '0',
           pl.fy?.toFixed(2) || '0',
@@ -643,7 +910,7 @@ export class AdvancedReportGenerator {
       
       const distLoadTable: TableData = {
         headers: ['Member', 'Type', 'w1 (kN/m)', 'w2 (kN/m)', 'Start', 'End', 'Case'],
-        rows: content.distributedLoads.map((dl: Record<string, unknown>) => [
+        rows: content.distributedLoads.map((dl) => [
           dl.member,
           dl.type || 'UDL',
           dl.w1?.toFixed(2) || '0',
@@ -664,7 +931,7 @@ export class AdvancedReportGenerator {
   private renderLoadCombinations(section: ReportSection): void {
     this.addSectionHeader('Load Combinations', 1);
     
-    const content = section.content;
+    const content = section.content as LoadCombinationsContent;
     
     // Design code reference
     this.doc.setFontSize(10);
@@ -681,7 +948,7 @@ export class AdvancedReportGenerator {
     if (content.combinations) {
       const combTable: TableData = {
         headers: ['Combination', 'Type', 'Factors', 'Description'],
-        rows: content.combinations.map((comb: Record<string, unknown>) => [
+        rows: content.combinations.map((comb) => [
           comb.name,
           comb.type,
           comb.factors,
@@ -730,7 +997,7 @@ export class AdvancedReportGenerator {
   private renderAnalysisResults(section: ReportSection): void {
     this.addSectionHeader('Analysis Results', 1);
     
-    const content = section.content;
+    const content = section.content as AnalysisResultsContent;
     
     // Analysis type info
     this.doc.setFontSize(10);
@@ -767,7 +1034,7 @@ export class AdvancedReportGenerator {
   private renderMemberForces(section: ReportSection): void {
     this.addSectionHeader('Member Forces', 1);
     
-    const content = section.content;
+    const content = section.content as MemberForcesContent;
     
     // BMD image
     if (content.bmdImage) {
@@ -794,7 +1061,7 @@ export class AdvancedReportGenerator {
       
       const forceTable: TableData = {
         headers: ['Member', 'Station', 'Axial (kN)', 'Vy (kN)', 'Vz (kN)', 'My (kNm)', 'Mz (kNm)', 'T (kNm)'],
-        rows: content.memberForces.slice(0, 100).map((mf: Record<string, unknown>) => [
+        rows: content.memberForces.slice(0, 100).map((mf) => [
           mf.member,
           mf.station,
           mf.axial?.toFixed(2) || '0',
@@ -816,12 +1083,12 @@ export class AdvancedReportGenerator {
   private renderReactions(section: ReportSection): void {
     this.addSectionHeader('Support Reactions', 1);
     
-    const content = section.content;
+    const content = section.content as ReactionsContent;
     
     if (content.reactions && content.reactions.length > 0) {
       const reactionTable: TableData = {
         headers: ['Node', 'Combination', 'Fx (kN)', 'Fy (kN)', 'Fz (kN)', 'Mx (kNm)', 'My (kNm)', 'Mz (kNm)'],
-        rows: content.reactions.map((r: Record<string, unknown>) => [
+        rows: content.reactions.map((r) => [
           r.node,
           r.combination,
           r.fx?.toFixed(2) || '0',
@@ -859,7 +1126,7 @@ export class AdvancedReportGenerator {
   private renderDeflections(section: ReportSection): void {
     this.addSectionHeader('Deflections', 1);
     
-    const content = section.content;
+    const content = section.content as DeflectionsContent;
     
     // Deflection diagram
     if (content.deflectionImage) {
@@ -871,7 +1138,7 @@ export class AdvancedReportGenerator {
     
     const deflTable: TableData = {
       headers: ['Location', 'Direction', 'Deflection (mm)', 'Span/Deflection', 'Limit', 'Status'],
-      rows: (content.deflections || []).map((d: Record<string, unknown>) => [
+      rows: (content.deflections || []).map((d) => [
         d.location,
         d.direction,
         d.value?.toFixed(2) || '0',
@@ -908,7 +1175,7 @@ export class AdvancedReportGenerator {
   private renderDesignSummary(section: ReportSection): void {
     this.addSectionHeader('Design Summary', 1);
     
-    const content = section.content;
+    const content = section.content as DesignSummaryContent;
     
     // Overall status
     const passed = content.overallStatus === 'PASS';
@@ -933,12 +1200,12 @@ export class AdvancedReportGenerator {
     if (content.memberDesigns) {
       const designTable: TableData = {
         headers: ['Member', 'Section', 'Utilization (%)', 'Governing', 'Status'],
-        rows: content.memberDesigns.map((md: Record<string, unknown>) => [
+        rows: content.memberDesigns.map((md) => [
           md.member,
           md.section,
           md.utilization?.toFixed(1) || '0',
           md.governing || '-',
-          md.utilization < 100 ? 'OK' : 'NG',
+          (md.utilization ?? 0) < 100 ? 'OK' : 'NG',
         ]),
       };
       this.renderTable(designTable);
@@ -994,7 +1261,7 @@ export class AdvancedReportGenerator {
   private renderCodeChecks(section: ReportSection): void {
     this.addSectionHeader('Code Compliance Checks', 1);
     
-    const content = section.content;
+    const content = section.content as CodeChecksContent;
     
     // Code reference
     this.doc.setFontSize(10);
@@ -1007,7 +1274,7 @@ export class AdvancedReportGenerator {
     if (content.checks) {
       const checkTable: TableData = {
         headers: ['Check', 'Clause', 'Required', 'Provided', 'Ratio', 'Status'],
-        rows: content.checks.map((c: Record<string, unknown>) => [
+        rows: content.checks.map((c) => [
           c.description,
           c.clause,
           c.required,
@@ -1020,7 +1287,7 @@ export class AdvancedReportGenerator {
     }
     
     // Summary
-    const passCount = content.checks?.filter((c: Record<string, unknown>) => c.status === 'PASS').length || 0;
+    const passCount = content.checks?.filter((c) => c.status === 'PASS').length || 0;
     const totalCount = content.checks?.length || 0;
     
     this.doc.setFontSize(11);
@@ -1037,10 +1304,10 @@ export class AdvancedReportGenerator {
   private renderCalculations(section: ReportSection): void {
     this.addSectionHeader('Detailed Calculations', 1);
     
-    const content = section.content;
+    const content = section.content as CalculationsContent;
     
     if (content.calculations) {
-      content.calculations.forEach((calc: Record<string, unknown>) => {
+      content.calculations.forEach((calc) => {
         this.addSubsectionHeader(calc.title, 2);
         
         // Description
@@ -1053,7 +1320,7 @@ export class AdvancedReportGenerator {
         }
         
         // Calculation steps
-        calc.steps?.forEach((step: CalculationStep) => {
+        calc.steps?.forEach((step) => {
           this.renderCalculationStep(step);
         });
         
@@ -1116,9 +1383,9 @@ export class AdvancedReportGenerator {
   private renderDrawings(section: ReportSection): void {
     this.addSectionHeader('Drawings', 1);
     
-    const content = section.content;
+    const content = section.content as DrawingsContent;
     
-    content.drawings?.forEach((drawing: Record<string, unknown>, index: number) => {
+    content.drawings?.forEach((drawing, index) => {
       if (index > 0) {
         this.addPage();
       }
@@ -1126,14 +1393,14 @@ export class AdvancedReportGenerator {
       this.addSubsectionHeader(drawing.title, 2);
       
       if (drawing.image) {
-        this.addImage(drawing.image, drawing.caption, 170, 200);
+        this.addImage(drawing.image, drawing.caption || '', 170, 200);
       }
       
       if (drawing.notes) {
         this.doc.setFontSize(9);
         this.doc.setFont('helvetica', 'normal');
         this.doc.setTextColor('#666666');
-        drawing.notes.forEach((note: string) => {
+        drawing.notes.forEach((note) => {
           this.doc.text('• ' + note, this.margins.left, this.currentY);
           this.currentY += 5;
         });
@@ -1148,7 +1415,7 @@ export class AdvancedReportGenerator {
   private renderAppendix(section: ReportSection): void {
     this.addSectionHeader('Appendix', 1);
     
-    const content = section.content;
+    const content = section.content as AppendixContent;
     
     // Material certificates
     if (content.materialCertificates) {
@@ -1162,7 +1429,7 @@ export class AdvancedReportGenerator {
     // Shop drawings
     if (content.shopDrawings) {
       this.addSubsectionHeader('Shop Drawing References', 2);
-      content.shopDrawings.forEach((sd: Record<string, unknown>) => {
+      content.shopDrawings.forEach((sd) => {
         this.doc.text(`• ${sd.number}: ${sd.description}`, this.margins.left, this.currentY);
         this.currentY += 6;
       });
@@ -1421,18 +1688,18 @@ export class AdvancedReportGenerator {
       sections: [
         { id: 'cover', title: 'Cover', type: 'cover', content: {} },
         { id: 'toc', title: 'Contents', type: 'toc', content: {} },
-        { id: 'summary', title: 'Executive Summary', type: 'executive_summary', content: fullData.summary },
-        { id: 'geometry', title: 'Geometry', type: 'geometry', content: fullData.geometry, pageBreakBefore: true },
-        { id: 'materials', title: 'Materials', type: 'materials', content: fullData.materials },
-        { id: 'loads', title: 'Loading', type: 'loads', content: fullData.loads, pageBreakBefore: true },
-        { id: 'combos', title: 'Load Combinations', type: 'load_combinations', content: fullData.combinations },
-        { id: 'results', title: 'Analysis Results', type: 'analysis_results', content: fullData.results, pageBreakBefore: true },
-        { id: 'forces', title: 'Member Forces', type: 'member_forces', content: fullData.forces },
-        { id: 'reactions', title: 'Reactions', type: 'reactions', content: fullData.reactions },
-        { id: 'deflections', title: 'Deflections', type: 'deflections', content: fullData.deflections },
-        { id: 'design', title: 'Design Summary', type: 'design_summary', content: fullData.design, pageBreakBefore: true },
-        { id: 'checks', title: 'Code Checks', type: 'code_checks', content: fullData.codeChecks },
-        { id: 'appendix', title: 'Appendix', type: 'appendix', content: fullData.appendix, pageBreakBefore: true },
+        { id: 'summary', title: 'Executive Summary', type: 'executive_summary', content: fullData.summary as Record<string, unknown> },
+        { id: 'geometry', title: 'Geometry', type: 'geometry', content: fullData.geometry as Record<string, unknown>, pageBreakBefore: true },
+        { id: 'materials', title: 'Materials', type: 'materials', content: fullData.materials as Record<string, unknown> },
+        { id: 'loads', title: 'Loading', type: 'loads', content: fullData.loads as Record<string, unknown>, pageBreakBefore: true },
+        { id: 'combos', title: 'Load Combinations', type: 'load_combinations', content: fullData.combinations as Record<string, unknown> },
+        { id: 'results', title: 'Analysis Results', type: 'analysis_results', content: fullData.results as Record<string, unknown>, pageBreakBefore: true },
+        { id: 'forces', title: 'Member Forces', type: 'member_forces', content: fullData.forces as Record<string, unknown> },
+        { id: 'reactions', title: 'Reactions', type: 'reactions', content: fullData.reactions as Record<string, unknown> },
+        { id: 'deflections', title: 'Deflections', type: 'deflections', content: fullData.deflections as Record<string, unknown> },
+        { id: 'design', title: 'Design Summary', type: 'design_summary', content: fullData.design as Record<string, unknown>, pageBreakBefore: true },
+        { id: 'checks', title: 'Code Checks', type: 'code_checks', content: fullData.codeChecks as Record<string, unknown> },
+        { id: 'appendix', title: 'Appendix', type: 'appendix', content: fullData.appendix as Record<string, unknown>, pageBreakBefore: true },
       ],
     };
   }

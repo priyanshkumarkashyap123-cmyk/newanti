@@ -82,6 +82,46 @@ export interface GeneratedReport {
     pageCount?: number;
 }
 
+/** Data shape for analysis results in reports */
+interface ReportAnalysisResults {
+    members?: Array<{
+        id?: string;
+        axial?: number;
+        shear?: number;
+        moment?: number;
+        governingLC?: string;
+    }>;
+    [key: string]: unknown;
+}
+
+/** Data shape for design checks in reports */
+interface ReportDesignCheck {
+    memberId?: string;
+    section?: string;
+    ratio?: number;
+    area?: string;
+    I?: string;
+    [key: string]: unknown;
+}
+
+/** Data shape for connection entries in reports */
+interface ReportConnection {
+    type?: string;
+    beam?: string;
+    column?: string;
+    bolts?: string;
+    [key: string]: unknown;
+}
+
+/** Data shape for foundation entries in reports */
+interface ReportFoundation {
+    size?: string;
+    depth?: string;
+    rebar?: string;
+    column?: string;
+    [key: string]: unknown;
+}
+
 // ============================================
 // REPORT GENERATOR SERVICE
 // ============================================
@@ -93,11 +133,11 @@ class ReportGeneratorServiceClass {
     async generateReport(
         config: ReportConfig,
         data: {
-            model?: any;
-            analysisResults?: any;
-            designChecks?: any[];
-            connections?: any[];
-            foundations?: any[];
+            model?: Record<string, unknown>;
+            analysisResults?: ReportAnalysisResults;
+            designChecks?: ReportDesignCheck[];
+            connections?: ReportConnection[];
+            foundations?: ReportFoundation[];
         },
         format: 'html' | 'markdown' = 'markdown'
     ): Promise<GeneratedReport> {
@@ -248,7 +288,7 @@ License: ${config.company.license}
     /**
      * Generate analysis section
      */
-    private generateAnalysisSection(results: any): ReportSection {
+    private generateAnalysisSection(results: ReportAnalysisResults): ReportSection {
         const figures: ReportFigure[] = [];
         const tables: ReportTable[] = [];
 
@@ -257,7 +297,7 @@ License: ${config.company.license}
             tables.push({
                 title: 'Maximum Member Forces',
                 headers: ['Member', 'Axial (k)', 'Shear (k)', 'Moment (k-ft)', 'Governing LC'],
-                rows: results.members.slice(0, 20).map((m: any) => [
+                rows: results.members.slice(0, 20).map((m) => [
                     m.id || 'M1',
                     (m.axial || 0).toFixed(1),
                     (m.shear || 0).toFixed(1),
@@ -298,7 +338,7 @@ See tables below for maximum member forces.
     /**
      * Generate design section
      */
-    private generateDesignSection(checks: any[], code: string): ReportSection {
+    private generateDesignSection(checks: ReportDesignCheck[], code: string): ReportSection {
         const calculations: Calculation[] = [];
 
         for (const check of checks.slice(0, 10)) {
@@ -347,7 +387,7 @@ See below for detailed member calculations.
     /**
      * Generate connection section
      */
-    private generateConnectionSection(connections: any[]): ReportSection {
+    private generateConnectionSection(connections: ReportConnection[]): ReportSection {
         return {
             title: '4. Connection Design',
             content: `
@@ -371,7 +411,7 @@ ${connections.slice(0, 10).map((c, i) =>
     /**
      * Generate foundation section
      */
-    private generateFoundationSection(foundations: any[]): ReportSection {
+    private generateFoundationSection(foundations: ReportFoundation[]): ReportSection {
         return {
             title: '5. Foundation Design',
             content: `

@@ -100,7 +100,7 @@ export const CorrectionButton: React.FC<CorrectionButtonProps> = ({
 
     const handleSubmit = () => {
         if (correction.trim()) {
-            feedbackService.logCorrection(feature, input, output, correction);
+            feedbackService.logCorrection(feature, input, typeof output === 'string' ? { text: output } : output, { text: correction });
             setShowDialog(false);
             setCorrection('');
             onCorrect?.();

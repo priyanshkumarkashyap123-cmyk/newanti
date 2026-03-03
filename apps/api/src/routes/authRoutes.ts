@@ -264,7 +264,7 @@ const handleOAuthUser = async (
   lastName: string,
   avatarUrl: string,
 ) => {
-  let user = await UserModel.findOne({ email: email.toLowerCase() });
+  let user = await UserModel.findOne({ email: email.toLowerCase() }).lean();
 
   if (!user) {
     // Create new user
@@ -587,7 +587,7 @@ router.post(
       // Check if user already exists
       const existingUser = await UserModel.findOne({
         email: email.toLowerCase(),
-      });
+      }).lean();
       if (existingUser) {
         throw new HttpError(409, "An account with this email already exists");
       }
@@ -666,7 +666,7 @@ router.post(
       const { email, password, rememberMe } = req.body;
 
       // Find user
-      const user = await UserModel.findOne({ email: email.toLowerCase() });
+      const user = await UserModel.findOne({ email: email.toLowerCase() }).lean();
       if (!user) {
         recordAuthFailure(req);
         throw new HttpError(401, "Invalid email or password");
@@ -749,7 +749,7 @@ router.post("/refresh", asyncHandler(async (req: Request, res: Response) => {
     // Check if token exists in database
     const storedToken = await RefreshTokenModel.findOne({
       token: refreshToken,
-    });
+    }).lean();
     if (!storedToken) {
       throw new HttpError(401, "Refresh token has been revoked");
     }
@@ -761,7 +761,7 @@ router.post("/refresh", asyncHandler(async (req: Request, res: Response) => {
     }
 
     // Get user
-    const user = await UserModel.findById(decoded.userId);
+    const user = await UserModel.findById(decoded.userId).lean();
     if (!user) {
       throw new HttpError(401, "User not found");
     }
@@ -819,7 +819,7 @@ router.get("/me", asyncHandler(async (req: Request, res: Response) => {
       throw new HttpError(401, "Invalid or expired token");
     }
 
-    const user = await UserModel.findById(decoded.userId);
+    const user = await UserModel.findById(decoded.userId).lean();
     if (!user) {
       throw new HttpError(404, "User not found");
     }
@@ -850,7 +850,7 @@ router.post("/verify-email", asyncHandler(async (req: Request, res: Response) =>
       code,
       type: "email",
       expiresAt: { $gt: new Date() },
-    });
+    }).lean();
 
     if (!verification) {
       throw new HttpError(400, "Invalid or expired verification code");
@@ -881,7 +881,7 @@ router.post(
       // Body is already validated & transformed by Zod middleware
       const { email } = req.body;
 
-      const user = await UserModel.findOne({ email });
+      const user = await UserModel.findOne({ email }).lean();
 
       // Always return success to prevent email enumeration
       if (!user) {
@@ -944,7 +944,7 @@ router.post(
         code: tokenHash,
         type: "password_reset",
         expiresAt: { $gt: new Date() },
-      });
+      }).lean();
 
       if (!resetRecord) {
         throw new HttpError(400, "Invalid or expired reset token");
@@ -1029,7 +1029,7 @@ router.post(
       // Body is already validated by Zod middleware
       const { currentPassword, newPassword } = req.body;
 
-      const user = await UserModel.findById(decoded.userId);
+      const user = await UserModel.findById(decoded.userId).lean();
       if (!user) {
         throw new HttpError(404, "User not found");
       }
@@ -1077,7 +1077,7 @@ router.delete("/delete-account", asyncHandler(async (req: Request, res: Response
       throw new HttpError(400, "Password is required to delete account");
     }
 
-    const user = await UserModel.findById(decoded.userId);
+    const user = await UserModel.findById(decoded.userId).lean();
     if (!user) {
       throw new HttpError(404, "User not found");
     }
@@ -1115,7 +1115,7 @@ router.get("/check-email", asyncHandler(async (req: Request, res: Response) => {
 
     const existingUser = await UserModel.findOne({
       email: email.toLowerCase(),
-    });
+    }).lean();
 
     // SECURITY: Always return the same response shape and timing
     // to prevent email enumeration attacks.
@@ -1141,7 +1141,7 @@ router.post("/resend-verification", asyncHandler(async (req: Request, res: Respo
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, JWT_SECRET) as unknown as JWTPayload;
 
-    const user = await UserModel.findById(decoded.userId);
+    const user = await UserModel.findById(decoded.userId).lean();
     if (!user) {
       throw new HttpError(404, "User not found");
     }

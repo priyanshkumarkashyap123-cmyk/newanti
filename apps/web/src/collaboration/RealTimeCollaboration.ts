@@ -289,7 +289,7 @@ class OTEngine {
         this.updateAtPath(newState, path, operation.data);
         break;
       case 'move':
-        this.moveAtPath(newState, path, operation.data.targetPath);
+        this.moveAtPath(newState, path, (operation.data as { targetPath: string[] }).targetPath);
         break;
     }
     

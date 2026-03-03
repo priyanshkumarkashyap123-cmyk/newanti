@@ -4,7 +4,7 @@
  * Finds natural frequencies and mode shapes for structural dynamics
  */
 
-import * as math from 'mathjs';
+import { eigs, flatten, type Complex, type MathCollection } from 'mathjs';
 
 // ============================================
 // TYPES & INTERFACES
@@ -329,9 +329,9 @@ export class EigenSolver {
 
         try {
             // Use mathjs eigs function
-            const result = math.eigs(A);
-            const eigenvalues = result.values as math.MathCollection;
-            const eigenvectors = result.eigenvectors as Array<{ value: number | math.Complex; vector: math.MathCollection }>;
+            const result = eigs(A);
+            const eigenvalues = result.values as MathCollection;
+            const eigenvectors = result.eigenvectors as Array<{ value: number | Complex; vector: MathCollection }>;
 
             // Extract and sort eigenvalues
             const modes: ModeShape[] = [];
@@ -342,7 +342,7 @@ export class EigenSolver {
                 for (const ev of eigenvectors) {
                     const val = typeof ev.value === 'number' ? ev.value : (ev.value as any).re ?? 0;
                     if (val > 1e-6) {  // Only positive eigenvalues (frequencies)
-                        const flatVec = math.flatten(ev.vector);
+                        const flatVec = flatten(ev.vector);
                         // Handle both array and Matrix types
                         const vec = (flatVec as { valueOf: () => number[] }).valueOf() as number[];
                         eigenPairs.push({ value: val, vector: vec });

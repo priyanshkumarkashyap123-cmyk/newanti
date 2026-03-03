@@ -5,6 +5,10 @@
  * Provides unified access to all platform capabilities.
  */
 
+// Allow CommonJS require() for lazy service loading
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+declare const require: (id: string) => Record<string, unknown>;
+
 // ============================================
 // CORE SERVICES
 // ============================================
@@ -66,46 +70,44 @@ export { auditTrail } from './AuditTrailService';
 // UNIFIED SERVICE INTERFACE
 // ============================================
 
-import { wasmSolver } from './wasmSolverService';
-import { database } from './DatabaseService';
-import { geminiAI } from './GeminiAIService';
-import { aiValidation } from './AIValidationService';
-import { codeCompliance } from './CodeComplianceEngine';
-import { connectionDesign } from './ConnectionDesignService';
-import { loadCombinations } from './loads/LoadCombinationsService';
-import { voiceInput } from './voice/VoiceInputService';
-import { voiceExecutor } from './voice/VoiceCommandExecutor';
 import { errorHandler } from './ErrorHandlingService';
-import { peReport } from './reports/PEReadyReportGenerator';
-import { generateIFC } from './IFCExportService';
-import { enhancedDXF } from './EnhancedDXFExportService';
 
 /**
  * Unified service interface for CEO-level access
+ * Services are lazily loaded on first access to avoid loading everything at startup
  */
 export class BeamLabServices {
-    // Core
-    readonly solver = wasmSolver;
-    readonly db = database;
+    // Core — only error handler loaded eagerly
     readonly errors = errorHandler;
 
-    // AI
-    readonly ai = geminiAI;
-    readonly validation = aiValidation;
+    // Lazy service accessors — require() returns dynamic modules, any is unavoidable
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    private _solver: any = null;
+    private _db: any = null;
+    private _ai: any = null;
+    private _validation: any = null;
+    private _codes: any = null;
+    private _connections: any = null;
+    private _loadCombos: any = null;
+    private _voice: any = null;
+    private _voiceCommands: any = null;
+    private _reports: any = null;
+    private _ifc: any = null;
+    private _dxf: any = null;
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    // Design
-    readonly codes = codeCompliance;
-    readonly connections = connectionDesign;
-    readonly loadCombos = loadCombinations;
-
-    // Voice
-    readonly voice = voiceInput;
-    readonly voiceCommands = voiceExecutor;
-
-    // Export
-    readonly reports = peReport;
-    readonly ifc = { generate: generateIFC };
-    readonly dxf = enhancedDXF;
+    get solver() { if (!this._solver) { this._solver = require('./wasmSolverService').wasmSolver; } return this._solver; }
+    get db() { if (!this._db) { this._db = require('./DatabaseService').database; } return this._db; }
+    get ai() { if (!this._ai) { this._ai = require('./GeminiAIService').geminiAI; } return this._ai; }
+    get validation() { if (!this._validation) { this._validation = require('./AIValidationService').aiValidation; } return this._validation; }
+    get codes() { if (!this._codes) { this._codes = require('./CodeComplianceEngine').codeCompliance; } return this._codes; }
+    get connections() { if (!this._connections) { this._connections = require('./ConnectionDesignService').connectionDesign; } return this._connections; }
+    get loadCombos() { if (!this._loadCombos) { this._loadCombos = require('./loads/LoadCombinationsService').loadCombinations; } return this._loadCombos; }
+    get voice() { if (!this._voice) { this._voice = require('./voice/VoiceInputService').voiceInput; } return this._voice; }
+    get voiceCommands() { if (!this._voiceCommands) { this._voiceCommands = require('./voice/VoiceCommandExecutor').voiceExecutor; } return this._voiceCommands; }
+    get reports() { if (!this._reports) { this._reports = require('./reports/PEReadyReportGenerator').peReport; } return this._reports; }
+    get ifc() { if (!this._ifc) { this._ifc = { generate: require('./IFCExportService').generateIFC }; } return this._ifc; }
+    get dxf() { if (!this._dxf) { this._dxf = require('./EnhancedDXFExportService').enhancedDXF; } return this._dxf; }
 
     /**
      * Initialize all services
@@ -114,12 +116,12 @@ export class BeamLabServices {
         console.log('[BeamLab] Initializing services...');
 
         // Initialize database if available
-        if (typeof (database as any).initialize === 'function') {
-            await (database as any).initialize();
+        if (typeof this.db?.initialize === 'function') {
+            await this.db.initialize();
         }
 
         // Initialize WASM solver
-        await wasmSolver.initialize?.();
+        await this.solver.initialize?.();
 
         console.log('[BeamLab] All services initialized');
     }
@@ -127,23 +129,30 @@ export class BeamLabServices {
     /**
      * Run complete structural workflow
      */
-    async runStructuralWorkflow(model: any, options: {
+    async runStructuralWorkflow(model: {
+        nodes: unknown;
+        members: Array<{ id: string; section: string; material: string; length: number }>;
+        pointLoads?: unknown[];
+        loads?: unknown[];
+        memberLoads?: unknown[];
+        projectName?: string;
+    }, options: {
         designCode: 'IS800' | 'AISC360' | 'EC3';
         includeConnections?: boolean;
         generateReport?: boolean;
     }): Promise<{
-        analysis: any;
-        designChecks: any[];
+        analysis: Record<string, unknown>;
+        designChecks: Array<{ memberId: string; checks: Array<{ ratio: number; status: string }> }>;
         report?: string;
     }> {
         // 1. Run analysis
-        const nodes = Array.isArray(model.nodes) ? model.nodes : Array.from(model.nodes?.values?.() || []);
-        const members = Array.isArray(model.members) ? model.members : Array.from(model.members?.values?.() || []);
+        const nodes = Array.isArray(model.nodes) ? model.nodes : Array.from((model.nodes as Map<string, unknown>)?.values?.() || []);
+        const members = Array.isArray(model.members) ? model.members : Array.from((model.members as Map<string, unknown>)?.values?.() || []);
         const pointLoads = model.pointLoads || model.loads || [];
         const memberLoads = model.memberLoads || [];
         const analysis = await this.solver.analyze(nodes, members, pointLoads, memberLoads);
-        const analysisResult = analysis as any;
-        const memberForcesMap = analysisResult.memberForces || analysisResult.member_forces || {};
+        const analysisResult = analysis as Record<string, unknown>;
+        const memberForcesMap = (analysisResult.memberForces || analysisResult.member_forces || {}) as Record<string, Record<string, number>>;
 
         // 2. Run design checks
         const designChecks = [];
@@ -179,8 +188,8 @@ export class BeamLabServices {
                 axial: 0,
                 moment: memberForcesMap[dc.memberId]?.moment || 0,
                 shear: memberForcesMap[dc.memberId]?.shear || 0,
-                utilization: Math.max(...dc.checks.map((c: any) => c.ratio)),
-                status: dc.checks.every((c: any) => c.status === 'PASS') ? 'PASS' as const : 'FAIL' as const
+                utilization: Math.max(...dc.checks.map((c: { ratio: number; status: string }) => c.ratio)),
+                status: dc.checks.every((c: { ratio: number; status: string }) => c.status === 'PASS') ? 'PASS' as const : 'FAIL' as const
             }));
 
             report = this.reports.generateReport(memberSummaries, [], {

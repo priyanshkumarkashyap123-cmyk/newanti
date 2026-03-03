@@ -20,7 +20,7 @@ import { SafeCanvasWrapper } from "./viewer/SafeCanvasWrapper";
 import { CameraFitController } from "./viewer/CameraFitController";
 import { useUIStore } from "../store/uiStore";
 import { useMultiplayerContextSafe } from "./collaborators/MultiplayerContext";
-import { Cpu, Zap, Box, GitBranch } from "lucide-react";
+import { Cpu, Zap, Box, GitBranch, Square, Rotate3d } from "lucide-react";
 
 type ViewportLayout = "SINGLE" | "QUAD";
 
@@ -165,7 +165,8 @@ const ViewportContainer: FC<{
   className?: string;
   layout: ViewportLayout;
   useWebGpu: boolean;
-}> = ({ className, layout, useWebGpu }) => {
+  viewMode: '2D' | '3D';
+}> = ({ className, layout, useWebGpu, viewMode }) => {
   const mainRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
@@ -210,7 +211,7 @@ const ViewportContainer: FC<{
           <div
             className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
           >
-            Perspective
+            {viewMode === '2D' ? '2D View' : 'Perspective'}
           </div>
         </div>
 
@@ -284,20 +285,37 @@ const ViewportContainer: FC<{
           });
         }}
       >
-        {/* Perspective View */}
+        {/* Perspective / 2D View */}
         <View track={mainRef as MutableRefObject<HTMLElement>}>
           <color attach="background" args={["#1a1a1a"]} />
-          <PerspectiveCamera makeDefault position={[15, 15, 15]} fov={50} />
-          <OrbitControls
-            makeDefault
-            enableDamping
-            dampingFactor={0.1}
-            zoomToCursor={true}
-            enablePan={true}
-            panSpeed={1.5}
-            maxDistance={5000}
-            minDistance={0.1}
-          />
+          {viewMode === '3D' ? (
+            <>
+              <PerspectiveCamera makeDefault position={[15, 15, 15]} fov={50} />
+              <OrbitControls
+                makeDefault
+                enableDamping
+                dampingFactor={0.1}
+                zoomToCursor={true}
+                enablePan={true}
+                panSpeed={1.5}
+                maxDistance={5000}
+                minDistance={0.1}
+              />
+            </>
+          ) : (
+            <>
+              <OrthographicCamera makeDefault position={[0, 0, 50]} zoom={15} />
+              <OrbitControls
+                makeDefault
+                enableRotate={false}
+                enableZoom={true}
+                enablePan={true}
+                zoomToCursor={true}
+                panSpeed={1.5}
+                mouseButtons={{ LEFT: 2, MIDDLE: 2, RIGHT: 2 }}
+              />
+            </>
+          )}
           <CameraFitController />
           <Suspense fallback={null}>
             <SharedScene remoteUsers={remoteUsers} />
@@ -368,6 +386,8 @@ export const ViewportManager: FC = () => {
   const setUseWebGpu = useUIStore((state) => state.setUseWebGpu);
   const renderMode3D = useUIStore((state) => state.renderMode3D);
   const setRenderMode3D = useUIStore((state) => state.setRenderMode3D);
+  const viewMode = useUIStore((state) => state.viewMode);
+  const setViewMode = useUIStore((state) => state.setViewMode);
 
   useEffect(() => {
     // Check WebGL support with a small delay to avoid racing with other canvas initializations
@@ -511,6 +531,40 @@ export const ViewportManager: FC = () => {
             <div
               className="text-[10px] text-[#888] mb-1 uppercase tracking-[0.5px] font-semibold"
             >
+              View Mode
+            </div>
+            <div className="flex gap-1 mb-2">
+              <button type="button"
+                onClick={() => setViewMode('2D')}
+                className="flex-1 rounded-md p-1.5 cursor-pointer flex flex-col items-center gap-1"
+                style={{
+                  color: viewMode === '2D' ? '#3b82f6' : '#fff',
+                  background: viewMode === '2D' ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
+                  border: viewMode === '2D' ? '1px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                }}
+                title="2D orthographic view — no rotation"
+              >
+                <Square className="w-4 h-4" />
+                <span className="text-[10px]">2D</span>
+              </button>
+              <button type="button"
+                onClick={() => setViewMode('3D')}
+                className="flex-1 rounded-md p-1.5 cursor-pointer flex flex-col items-center gap-1"
+                style={{
+                  color: viewMode === '3D' ? '#f59e0b' : '#fff',
+                  background: viewMode === '3D' ? 'rgba(245, 158, 11, 0.2)' : 'transparent',
+                  border: viewMode === '3D' ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.1)',
+                }}
+                title="3D perspective view — full orbit rotation"
+              >
+                <Rotate3d className="w-4 h-4" />
+                <span className="text-[10px]">3D</span>
+              </button>
+            </div>
+
+            <div
+              className="text-[10px] text-[#888] mb-1 uppercase tracking-[0.5px] font-semibold"
+            >
               Layout
             </div>
             <div className="flex gap-1">
@@ -550,7 +604,7 @@ export const ViewportManager: FC = () => {
       </div>
 
       <SafeCanvasWrapper>
-        <ViewportContainer layout={layout} useWebGpu={useWebGpu} />
+        <ViewportContainer layout={layout} useWebGpu={useWebGpu} viewMode={viewMode} />
       </SafeCanvasWrapper>
     </div>
   );

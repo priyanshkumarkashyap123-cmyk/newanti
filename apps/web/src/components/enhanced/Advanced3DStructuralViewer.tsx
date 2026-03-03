@@ -675,7 +675,14 @@ const ViewerCanvas: React.FC<{
   return (
     <div 
       className="relative w-full h-full"
-      onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
+      onMouseMove={(e) => {
+        // Throttle mouse position updates using rAF to avoid 60+ re-renders/sec
+        if ((window as any).__viewer_mouse_raf) return;
+        (window as any).__viewer_mouse_raf = requestAnimationFrame(() => {
+          setMousePos({ x: e.clientX, y: e.clientY });
+          (window as any).__viewer_mouse_raf = null;
+        });
+      }}
       onMouseLeave={() => { setHoveredMember(null); setMousePos(null); }}
     >
       <svg className="w-full h-full" viewBox="0 0 600 400">
@@ -1010,15 +1017,22 @@ export const Advanced3DStructuralViewer: React.FC<{
   const [animationTime, setAnimationTime] = useState(0);
   const [animationSpeed, setAnimationSpeed] = useState(1);
   
-  // Animation loop
+  // Animation loop — use requestAnimationFrame for frame-synced updates
   useEffect(() => {
     if (!isAnimating) return;
     
-    const interval = setInterval(() => {
-      setAnimationTime(t => t + 0.05 * animationSpeed);
-    }, 50);
+    let rafId: number;
+    let lastTime = performance.now();
     
-    return () => clearInterval(interval);
+    const animate = (now: number) => {
+      const delta = (now - lastTime) / 1000; // seconds
+      lastTime = now;
+      setAnimationTime(t => t + delta * animationSpeed);
+      rafId = requestAnimationFrame(animate);
+    };
+    
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
   }, [isAnimating, animationSpeed]);
   
   const handleSettingsChange = useCallback((updates: Partial<ViewerSettings>) => {

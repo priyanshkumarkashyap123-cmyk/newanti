@@ -13,8 +13,13 @@ import {
   usePersistentHistory,
   useUndoRedoKeyboard,
 } from '@/lib/persistent-history';
-import { useModelStore } from '@/store/model';
+import { useModelStore, useModelStoreTemporal } from '@/store/model';
 import { HistoryBranch, HistorySnapshot } from '@/lib/indexeddb-history';
+
+// Type-cast store to include temporal (erased by withDevtools wrapper at build time)
+const useModelStoreWithTemporal = useModelStore as unknown as typeof useModelStore & {
+  temporal: typeof useModelStoreTemporal;
+};
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './dialog';
 import { Button } from './button';
 import { Input } from './input';
@@ -316,7 +321,7 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({
     deleteBranch,
     getStorageInfo,
     clearHistory,
-  } = usePersistentHistory(useModelStore, { projectId });
+  } = usePersistentHistory(useModelStoreWithTemporal, { projectId });
 
   // Enable keyboard shortcuts
   useUndoRedoKeyboard(undo, redo, isOpen);
@@ -467,7 +472,7 @@ interface HistoryButtonProps {
 export const HistoryButton: React.FC<HistoryButtonProps> = ({ projectId }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const { canUndo, canRedo, undo, redo } = usePersistentHistory(useModelStore, {
+  const { canUndo, canRedo, undo, redo } = usePersistentHistory(useModelStoreWithTemporal, {
     projectId,
   });
 

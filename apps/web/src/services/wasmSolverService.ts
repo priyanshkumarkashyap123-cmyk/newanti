@@ -34,9 +34,12 @@ import init, {
 // serde-wasm-bindgen v0.6 serializes Rust HashMap as JavaScript Map,
 // NOT a plain object.  Object.entries() / Object.keys() return []
 // for JS Maps.  Convert them so the rest of the codebase works.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- WASM boundary: Map→Object conversion requires any
 function jsMapToPlainObject(val: any): Record<string, any> {
   if (val instanceof Map) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const obj: Record<string, any> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     val.forEach((v: any, k: any) => {
       // Recursively convert nested Maps (e.g. MemberForces with sub-Maps)
       obj[String(k)] = v instanceof Map ? jsMapToPlainObject(v) : v;
@@ -170,7 +173,7 @@ export interface AnalysisResult {
   displacements: DisplacementMap; // HashMap from Rust
   reactions: ReactionMap; // HashMap from Rust
   member_forces: MemberForcesMap; // HashMap from Rust
-  plate_results?: any; // HashMap<String, PlateStressResult> from Rust
+  plate_results?: Record<string, unknown>; // HashMap<String, PlateStressResult> from Rust
   success: boolean;
   error?: string;
   stats?: {
@@ -222,7 +225,7 @@ export interface ResponseSpectrumResult {
   base_shear?: number;
   storey_forces?: number[];
   storey_displacements?: number[];
-  modal_contributions?: any[];
+  modal_contributions?: Record<string, unknown>[];
 }
 
 export interface UltraFastResult {
@@ -230,7 +233,7 @@ export interface UltraFastResult {
   error?: string;
   displacements?: Record<string, number[]>;
   reactions?: Record<string, number[]>;
-  member_forces?: Record<string, any>;
+  member_forces?: Record<string, unknown>;
   solve_time_us?: number;
 }
 
@@ -882,10 +885,10 @@ export async function analyzeModal(
       success: true,
       frequencies: result.frequencies || [],
       periods: result.periods || [],
-      mode_shapes: (result.mode_shapes || []).map((ms: any) =>
+      mode_shapes: (result.mode_shapes || []).map((ms: unknown) =>
         ms instanceof Map ? jsMapToPlainObject(ms) : ms,
       ),
-      mass_participation: (result.mass_participation || []).map((mp: any) =>
+      mass_participation: (result.mass_participation || []).map((mp: unknown) =>
         mp instanceof Map ? jsMapToPlainObject(mp) : mp,
       ),
     };
@@ -974,9 +977,9 @@ export async function analyzeResponseSpectrum(
  * Use this for real-time feedback while the user drags/edits a structure.
  */
 export function analyzeUltraFast(
-  nodes: any[],
-  elements: any[],
-  loads: any[],
+  nodes: Node[],
+  elements: Element[],
+  loads: PointLoad[],
 ): UltraFastResult {
   if (!wasmInitialized) {
     return { success: false, error: "Solver not initialized" };
@@ -1292,7 +1295,8 @@ export async function validateSolverConsistency(): Promise<ConsistencyReport> {
 
   // Check member forces (moment at midspan approximated from end moments)
   // The WASM solver returns the full 3D MemberForces struct with forces_i, forces_j, max_*
-  // TypeScript typing may differ slightly — use 'any' cast since raw WASM result is dynamic
+  // TypeScript typing may differ slightly — eslint-disable since raw WASM result is dynamic
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mfRaw = wasmResult.member_forces?.M1 as any;
   if (mfRaw) {
     // Try 3D struct fields first, fall back to 2D names
@@ -1433,9 +1437,9 @@ export interface EnvelopeResult {
   min_displacements: Record<string, number[]>;
   max_reactions: Record<string, number[]>;
   min_reactions: Record<string, number[]>;
-  max_member_forces: Record<string, any>;
+  max_member_forces: Record<string, unknown>;
   governing_combo: Record<string, string>;
-  combination_results: [string, any][];
+  combination_results: [string, unknown][];
 }
 
 /**
@@ -1447,7 +1451,7 @@ export interface EnvelopeResult {
  * @returns EnvelopeResult with max/min across all combinations
  */
 export function combineLoadCases(
-  cases: Record<string, any>,
+  cases: Record<string, unknown>,
   combinations: LoadCombination[],
 ): EnvelopeResult | null {
   if (!wasmInitialized) {
@@ -1461,8 +1465,8 @@ export function combineLoadCases(
       return null;
     }
     return result as EnvelopeResult;
-  } catch (err: any) {
-    wasmLogger.error(`Load combination failed: ${err.message || err}`);
+  } catch (err: unknown) {
+    wasmLogger.error(`Load combination failed: ${err instanceof Error ? err.message : String(err)}`);
     return null;
   }
 }

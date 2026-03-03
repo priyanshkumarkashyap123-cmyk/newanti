@@ -1,4 +1,4 @@
-import * as math from 'mathjs';
+import { matrix, type Matrix } from 'mathjs';
 import { MatrixUtils } from './MatrixUtils';
 
 // ============================================
@@ -52,8 +52,8 @@ export class MemberForcesCalculator {
      * @param u Member displacements in local coordinates (12x1)
      * @returns Member end forces
      */
-    static calculateEndForces(k: math.Matrix, u: number[]): MemberEndForces {
-        const uMatrix = math.matrix(u.map(v => [v]));
+    static calculateEndForces(k: Matrix, u: number[]): MemberEndForces {
+        const uMatrix = matrix(u.map(v => [v]));
         const fMatrix = MatrixUtils.multiply(k, uMatrix);
         const f = (fMatrix.toArray() as number[][]).map(row => row[0]);
 

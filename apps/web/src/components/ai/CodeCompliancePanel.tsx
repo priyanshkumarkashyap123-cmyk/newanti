@@ -210,7 +210,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
             // Log to audit trail
             auditTrail.log('design_check', 'code_compliance_panel',
                 `Code compliance check: ${result.overallStatus}, max util ${(result.maxUtilization * 100).toFixed(1)}%`,
-                { aiGenerated: false, metadata: result }
+                { aiGenerated: false, metadata: result as unknown as Record<string, unknown> }
             );
 
             onCheckComplete?.(result);

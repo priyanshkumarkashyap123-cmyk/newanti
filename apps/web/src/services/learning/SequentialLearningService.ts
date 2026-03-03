@@ -44,8 +44,8 @@ export interface UserInteraction {
     type: 'query' | 'calculation' | 'design' | 'analysis' | 'correction';
     domain: CivilDomain;
     topic: string;
-    input: any;
-    output?: any;
+    input: unknown;
+    output?: unknown;
     feedback?: number;        // 1-5 rating
     duration: number;         // seconds
     successful: boolean;
@@ -55,8 +55,8 @@ export interface UserCorrection {
     id: string;
     timestamp: Date;
     domain: CivilDomain;
-    originalOutput: any;
-    correctedOutput: any;
+    originalOutput: unknown;
+    correctedOutput: unknown;
     context: string;
     reason?: string;
     applied: boolean;
@@ -475,7 +475,7 @@ class SequentialLearningServiceClass {
     /**
      * Get personalized response based on user
      */
-    personalizeResponse(userId: string, baseResponse: any): any {
+    personalizeResponse(userId: string, baseResponse: unknown): unknown {
         const user = this.getOrCreateUser(userId);
 
         // Adjust verbosity based on learning style
@@ -488,21 +488,25 @@ class SequentialLearningServiceClass {
         return baseResponse;
     }
 
-    private condenseResponse(response: any): any {
+    private condenseResponse(response: unknown): unknown {
         // Return key points only
-        if (typeof response === 'object' && response.explanation) {
-            return {
-                ...response,
-                explanation: response.explanation.split('. ').slice(0, 2).join('. ') + '.'
-            };
+        if (typeof response === 'object' && response !== null && 'explanation' in response) {
+            const resp = response as Record<string, unknown>;
+            const explanation = resp.explanation;
+            if (typeof explanation === 'string') {
+                return {
+                    ...resp,
+                    explanation: explanation.split('. ').slice(0, 2).join('. ') + '.'
+                };
+            }
         }
         return response;
     }
 
-    private expandResponse(response: any, expertise: ExpertiseLevel): any {
+    private expandResponse(response: unknown, expertise: ExpertiseLevel): unknown {
         // Add more context based on expertise
-        if (typeof response === 'object') {
-            const additions: any = {};
+        if (typeof response === 'object' && response !== null) {
+            const additions: Record<string, string> = {};
 
             if (expertise === 'student') {
                 additions.tips = 'Remember to check units and verify assumptions.';
@@ -510,7 +514,7 @@ class SequentialLearningServiceClass {
                 additions.codeReference = 'Refer to relevant design code for verification.';
             }
 
-            return { ...response, ...additions };
+            return { ...(response as Record<string, unknown>), ...additions };
         }
         return response;
     }

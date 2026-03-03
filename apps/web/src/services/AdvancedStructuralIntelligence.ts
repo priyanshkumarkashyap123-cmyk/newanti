@@ -429,7 +429,7 @@ export class AdvancedStructuralIntelligence {
     if (!section || !material) return 0;
     
     const axialStress = Math.abs(forces.axial || 0) / section.A;
-    const bendingStress = Math.abs(forces.momentStart || forces.momentEnd || 0) / section.Zx;
+    const bendingStress = Math.abs(forces.momentStart || forces.momentEnd || 0) / (section.Zx ?? 1);
     const combinedStress = axialStress + bendingStress;
     
     return Math.min(1, combinedStress / material.fy);
@@ -522,7 +522,7 @@ export class AdvancedStructuralIntelligence {
   private checkYieldingProbability(forces: MemberForces, section: SectionProperties | null, material: MaterialProperties | null): number {
     if (!section || !material) return 0;
     const stress = Math.abs(forces.axial || 0) / section.A + 
-                   Math.abs(forces.momentStart || 0) / section.Zx;
+                   Math.abs(forces.momentStart || 0) / (section.Zx ?? 1);
     return Math.min(1, Math.max(0, (stress / material.fy - 0.7) / 0.3));
   }
   
@@ -632,11 +632,11 @@ export class AdvancedStructuralIntelligence {
     const checks: CodeCheck[] = [];
     
     if (code.startsWith('IS800')) {
-      checks.push(...this.performIS800Checks(member, forces, section));
+      if (section) checks.push(...this.performIS800Checks(member, forces, section));
     } else if (code.startsWith('AISC')) {
-      checks.push(...this.performAISCChecks(member, forces, section));
+      if (section) checks.push(...this.performAISCChecks(member, forces, section));
     } else if (code.startsWith('EN')) {
-      checks.push(...this.performEurocodeChecks(member, forces, section));
+      if (section) checks.push(...this.performEurocodeChecks(member, forces, section));
     }
     
     return checks;
@@ -683,7 +683,7 @@ export class AdvancedStructuralIntelligence {
     }
     
     // Bending capacity (Cl 8.2)
-    const Md = section.Zx * fy / gammaM0;
+    const Md = (section.Zx ?? 0) * fy / gammaM0;
     const momentDemand = Math.max(Math.abs(forces.momentStart || 0), Math.abs(forces.momentEnd || 0));
     checks.push({
       clause: 'IS 800:2007 Cl 8.2',
@@ -697,7 +697,7 @@ export class AdvancedStructuralIntelligence {
     
     // Shear capacity (Cl 8.4)
     if (forces.shear) {
-      const Av = section.d * section.tw;
+      const Av = (section.d ?? 0) * (section.tw ?? 0);
       const Vd = Av * fy / (Math.sqrt(3) * gammaM0);
       checks.push({
         clause: 'IS 800:2007 Cl 8.4',
@@ -754,7 +754,7 @@ export class AdvancedStructuralIntelligence {
     }
     
     // Bending (AISC 360 F2)
-    const Mp = section.Zx * Fy;
+    const Mp = (section.Zx ?? 0) * Fy;
     const momentDemand = Math.max(Math.abs(forces.momentStart || 0), Math.abs(forces.momentEnd || 0));
     checks.push({
       clause: 'AISC 360-22 F2',
@@ -791,7 +791,7 @@ export class AdvancedStructuralIntelligence {
     }
     
     // Bending resistance
-    const MRd = section.Zx * fy / gammaM0;
+    const MRd = (section.Zx ?? 0) * fy / gammaM0;
     const momentDemand = Math.max(Math.abs(forces.momentStart || 0), Math.abs(forces.momentEnd || 0));
     checks.push({
       clause: 'EN 1993-1-1 6.2.5',

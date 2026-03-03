@@ -1,4 +1,4 @@
-import * as math from 'mathjs';
+import { matrix, type Matrix } from 'mathjs';
 import { MatrixUtils } from './MatrixUtils';
 
 // ============================================
@@ -64,8 +64,8 @@ export class Solver {
     private totalDOFs: number;
 
     // Global matrices
-    private globalK: math.Matrix | null = null;
-    private forceVector: math.Matrix | null = null;
+    private globalK: Matrix | null = null;
+    private forceVector: Matrix | null = null;
 
     constructor(
         nodes: Map<string, SolverNode>,
@@ -113,7 +113,7 @@ export class Solver {
     /**
      * Assemble the global stiffness matrix
      */
-    assemble(): math.Matrix {
+    assemble(): Matrix {
         // 1. Initialize zero-filled GlobalK matrix (Nodes * 6 DOFs)
         this.globalK = MatrixUtils.zeros(this.totalDOFs, this.totalDOFs);
 
@@ -171,7 +171,7 @@ export class Solver {
     /**
      * Assemble the global force vector from applied loads
      */
-    assembleForces(): math.Matrix {
+    assembleForces(): Matrix {
         this.forceVector = MatrixUtils.zeros(this.totalDOFs, 1);
         const fArray = this.forceVector.toArray() as number[][];
 
@@ -187,7 +187,7 @@ export class Solver {
             if (load.mz !== undefined) fArray[dofs[5]][0] += load.mz;
         }
 
-        this.forceVector = math.matrix(fArray);
+        this.forceVector = matrix(fArray);
         return this.forceVector;
     }
 
@@ -225,7 +225,7 @@ export class Solver {
     /**
      * Extract submatrix from a matrix given row and column indices
      */
-    private extractSubmatrix(M: math.Matrix, rows: number[], cols: number[]): math.Matrix {
+    private extractSubmatrix(M: Matrix, rows: number[], cols: number[]): Matrix {
         const subData: number[][] = [];
         const mArray = M.toArray() as number[][];
 
@@ -237,13 +237,13 @@ export class Solver {
             subData.push(row);
         }
 
-        return math.matrix(subData);
+        return matrix(subData);
     }
 
     /**
      * Extract subvector from a vector given indices
      */
-    private extractSubvector(V: math.Matrix, indices: number[]): math.Matrix {
+    private extractSubvector(V: Matrix, indices: number[]): Matrix {
         const vArray = V.toArray() as number[][];
         const subData: number[][] = [];
 
@@ -251,7 +251,7 @@ export class Solver {
             subData.push([vArray[indices[i]][0]]);
         }
 
-        return math.matrix(subData);
+        return matrix(subData);
     }
 
     /**
@@ -315,7 +315,7 @@ export class Solver {
         // Constrained DOFs remain 0 (prescribed displacement = 0)
 
         // 7. Calculate reactions: R = K * u - F
-        const uFullMatrix = math.matrix(fullDisplacements.map(v => [v]));
+        const uFullMatrix = matrix(fullDisplacements.map(v => [v]));
         const internalForces = MatrixUtils.multiply(this.globalK!, uFullMatrix);
         const iFArray = internalForces.toArray() as number[][];
         const fArray = this.forceVector!.toArray() as number[][];
@@ -401,7 +401,7 @@ export class Solver {
             const T = MatrixUtils.getTransformationMatrix(R);
             const TT = MatrixUtils.transpose(T);
 
-            const dGlobalMatrix = math.matrix(dGlobal.map(v => [v]));
+            const dGlobalMatrix = matrix(dGlobal.map(v => [v]));
             const dLocalMatrix = MatrixUtils.multiply(TT, dGlobalMatrix);
 
             // Calculate local forces: f = k * d
@@ -537,7 +537,7 @@ export class Solver {
             const T = MatrixUtils.getTransformationMatrix(R);
             const TT = MatrixUtils.transpose(T);
 
-            const dGlobalMatrix = math.matrix(dGlobal.map(v => [v]));
+            const dGlobalMatrix = matrix(dGlobal.map(v => [v]));
             const dLocalMatrix = MatrixUtils.multiply(TT, dGlobalMatrix);
 
             // Calculate local forces: f = k * d
@@ -570,7 +570,7 @@ export class Solver {
         return this.totalDOFs;
     }
 
-    getGlobalK(): math.Matrix | null {
+    getGlobalK(): Matrix | null {
         return this.globalK;
     }
 }

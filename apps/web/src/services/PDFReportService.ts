@@ -36,7 +36,7 @@ export const generateProfessionalReport = async (
             id: m.id,
             startNodeId: m.startNodeId,
             endNodeId: m.endNodeId,
-            section: m.section || 'Default',
+            section: m.sectionId || 'Default',
             material: 'Steel'
         }));
 

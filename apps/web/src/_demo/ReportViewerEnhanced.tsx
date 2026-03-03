@@ -7,6 +7,11 @@ import { FC, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { StatusBadge, DataTable } from '../components/ui';
 
+// Row types for DataTable cell renderers
+type ReactionRow = typeof REACTIONS_DATA[number];
+type MemberForceRow = typeof MEMBER_FORCES[number];
+type CellInfo<T> = { row: { original: T } };
+
 // Sample report data
 const SAMPLE_REPORT = {
     id: 'RPT-2024-001',
@@ -178,32 +183,32 @@ export const ReportViewerEnhanced: FC = () => {
                                         {
                                             accessor: 'fx',
                                             header: 'FX (kN)',
-                                            cell: ({ row }: any) => <span className="font-mono">{row.original.fx.toFixed(2)}</span>
+                                            cell: ({ row }: CellInfo<ReactionRow>) => <span className="font-mono">{row.original.fx.toFixed(2)}</span>
                                         },
                                         {
                                             accessor: 'fy',
                                             header: 'FY (kN)',
-                                            cell: ({ row }: any) => <span className="font-mono font-semibold">{row.original.fy.toFixed(2)}</span>
+                                            cell: ({ row }: CellInfo<ReactionRow>) => <span className="font-mono font-semibold">{row.original.fy.toFixed(2)}</span>
                                         },
                                         {
                                             accessor: 'fz',
                                             header: 'FZ (kN)',
-                                            cell: ({ row }: any) => <span className="font-mono">{row.original.fz.toFixed(2)}</span>
+                                            cell: ({ row }: CellInfo<ReactionRow>) => <span className="font-mono">{row.original.fz.toFixed(2)}</span>
                                         },
                                         {
                                             accessor: 'mx',
                                             header: 'MX (kN·m)',
-                                            cell: ({ row }: any) => <span className="font-mono">{row.original.mx.toFixed(2)}</span>
+                                            cell: ({ row }: CellInfo<ReactionRow>) => <span className="font-mono">{row.original.mx.toFixed(2)}</span>
                                         },
                                         {
                                             accessor: 'my',
                                             header: 'MY (kN·m)',
-                                            cell: ({ row }: any) => <span className="font-mono">{row.original.my.toFixed(2)}</span>
+                                            cell: ({ row }: CellInfo<ReactionRow>) => <span className="font-mono">{row.original.my.toFixed(2)}</span>
                                         },
                                         {
                                             accessor: 'mz',
                                             header: 'MZ (kN·m)',
-                                            cell: ({ row }: any) => <span className="font-mono">{row.original.mz.toFixed(2)}</span>
+                                            cell: ({ row }: CellInfo<ReactionRow>) => <span className="font-mono">{row.original.mz.toFixed(2)}</span>
                                         },
                                     ]}
                                     data={REACTIONS_DATA}
@@ -225,7 +230,7 @@ export const ReportViewerEnhanced: FC = () => {
                                         {
                                             accessor: 'axial',
                                             header: 'Axial (kN)',
-                                            cell: ({ row }: any) => (
+                                            cell: ({ row }: CellInfo<MemberForceRow>) => (
                                                 <span className={`font-mono font-semibold ${row.original.axial < 0 ? 'text-blue-600' : 'text-red-600'}`}>
                                                     {row.original.axial.toFixed(1)}
                                                 </span>
@@ -234,17 +239,17 @@ export const ReportViewerEnhanced: FC = () => {
                                         {
                                             accessor: 'shear',
                                             header: 'Shear (kN)',
-                                            cell: ({ row }: any) => <span className="font-mono">{row.original.shear.toFixed(1)}</span>
+                                            cell: ({ row }: CellInfo<MemberForceRow>) => <span className="font-mono">{row.original.shear.toFixed(1)}</span>
                                         },
                                         {
                                             accessor: 'moment',
                                             header: 'Moment (kN·m)',
-                                            cell: ({ row }: any) => <span className="font-mono">{row.original.moment.toFixed(1)}</span>
+                                            cell: ({ row }: CellInfo<MemberForceRow>) => <span className="font-mono">{row.original.moment.toFixed(1)}</span>
                                         },
                                         {
                                             accessor: 'utilization',
                                             header: 'Utilization',
-                                            cell: ({ row }: any) => (
+                                            cell: ({ row }: CellInfo<MemberForceRow>) => (
                                                 <span className={`font-mono font-bold ${row.original.utilization > 0.9 ? 'text-orange-600' :
                                                     row.original.utilization > 0.7 ? 'text-yellow-600' :
                                                         'text-green-600'
@@ -256,7 +261,7 @@ export const ReportViewerEnhanced: FC = () => {
                                         {
                                             accessor: 'status',
                                             header: 'Status',
-                                            cell: ({ row }: any) => (
+                                            cell: ({ row }: CellInfo<MemberForceRow>) => (
                                                 <StatusBadge variant={row.original.status} size="sm">
                                                     {row.original.status === 'pass' ? '✓' : '!'}
                                                 </StatusBadge>
@@ -264,7 +269,7 @@ export const ReportViewerEnhanced: FC = () => {
                                         },
                                     ]}
                                     data={MEMBER_FORCES}
-                                    highlightRow={(row: any) => row.status === 'warning' ? 'bg-yellow-50' : false}
+                                    highlightRow={(row: MemberForceRow) => row.status === 'warning' ? 'bg-yellow-50' : false}
                                     compact
                                 />
                             </div>

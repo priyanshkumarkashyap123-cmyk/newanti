@@ -3,7 +3,7 @@
  * Centralized notification system with stacking toasts
  */
 
-import { FC, createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { FC, createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     CheckCircle, AlertCircle, AlertTriangle, Info,
@@ -115,8 +115,13 @@ export const NotificationProvider: FC<NotificationProviderProps> = ({
 
     const visibleNotifications = notifications.slice(-maxVisible);
 
+    const contextValue = useMemo(
+        () => ({ notifications, notify, dismiss, dismissAll, update }),
+        [notifications, notify, dismiss, dismissAll, update]
+    );
+
     return (
-        <NotificationContext.Provider value={{ notifications, notify, dismiss, dismissAll, update }}>
+        <NotificationContext.Provider value={contextValue}>
             {children}
 
             {/* Notification Stack */}

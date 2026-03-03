@@ -18,7 +18,7 @@ import {
     Redo2,
     SlidersHorizontal,
 } from 'lucide-react';
-import { useModelStore } from '../store/model';
+import { useModelStore, useModelStoreTemporal } from '../store/model';
 import useStructuralSolver from '../hooks/useStructuralSolver';
 import { ReportGenerator } from '../utils/ReportGenerator';
 import { useIsSignedIn } from '../providers/AuthProvider';
@@ -102,7 +102,7 @@ export const Toolbar: FC = () => {
     const setShowSFD = useModelStore((state) => state.setShowSFD);
     const setShowBMD = useModelStore((state) => state.setShowBMD);
     const setShowResults = useModelStore((state) => state.setShowResults);
-    const { undo, redo, pastStates, futureStates } = useModelStore.temporal.getState();
+    const { undo, redo, pastStates, futureStates } = useModelStoreTemporal.getState();
     const [message, setMessage] = useState<string | null>(null);
     const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
     const [showPlateDialog, setShowPlateDialog] = useState(false);

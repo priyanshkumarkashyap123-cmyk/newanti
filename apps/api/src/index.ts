@@ -4,6 +4,7 @@ import express, {
   type RequestHandler,
 } from "express";
 import cors from "cors";
+import compression from "compression";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { clerkMiddleware } from "@clerk/express";
@@ -70,7 +71,7 @@ if (process.env.SENTRY_DSN) {
     // Performance Monitoring (20% sample to control costs)
     tracesSampleRate: 0.2,
     // Set sampling rate for profiling - this is relative to tracesSampleRate
-    profilesSampleRate: 1.0,
+    profilesSampleRate: 0.1,
   });
 }
 
@@ -202,6 +203,9 @@ app.use(cors(corsOptions));
 
 // HTTP security headers (helmet)
 app.use(securityHeaders);
+
+// Compress responses (gzip/br) — after security headers, before routes
+app.use(compression({ level: 6, threshold: 1024 }));
 
 // Request ID + structured request logging
 app.use(requestIdMiddleware);

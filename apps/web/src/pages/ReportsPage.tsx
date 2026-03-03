@@ -204,7 +204,7 @@ export const ReportsPage = () => {
     const uniqueSections = useMemo(() => {
         const seen = new Map<string, { id: string; A?: number; I?: number; Iy?: number; Iz?: number; J?: number; E?: number; count: number; dbMatch?: SectionProperties }>();
         memberList.forEach((m) => {
-            const sid = m.sectionId || m.section || 'Default';
+            const sid = m.sectionId || 'Default';
             if (!seen.has(sid)) {
                 const db = STEEL_SECTIONS.find((s) => s.id === sid || s.name === sid);
                 seen.set(sid, { id: sid, A: m.A, I: m.I, Iy: m.Iy, Iz: m.Iz, J: m.J, E: m.E, count: 1, dbMatch: db });
@@ -884,10 +884,10 @@ export const ReportsPage = () => {
                                             {memberList.slice(0, ROWS_PER_PAGE).map((m, i) => (
                                                 <tr key={m.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{m.id}</td>
-                                                    <td className="px-3 py-1.5 text-center font-mono text-slate-600">{m.startNodeId ?? m.startNode ?? '—'}</td>
-                                                    <td className="px-3 py-1.5 text-center font-mono text-slate-600">{m.endNodeId ?? m.endNode ?? '—'}</td>
-                                                    <td className="px-3 py-1.5 text-slate-600">{m.section || m.sectionId || '—'}</td>
-                                                    <td className="px-3 py-1.5 text-slate-600">{m.material || m.materialId || 'Steel'}</td>
+                                                    <td className="px-3 py-1.5 text-center font-mono text-slate-600">{m.startNodeId ?? '—'}</td>
+                                                    <td className="px-3 py-1.5 text-center font-mono text-slate-600">{m.endNodeId ?? '—'}</td>
+                                                    <td className="px-3 py-1.5 text-slate-600">{m.sectionId || '—'}</td>
+                                                    <td className="px-3 py-1.5 text-slate-600">{'Steel'}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -975,7 +975,7 @@ export const ReportsPage = () => {
                                                     <tbody>
                                                         {loads.slice(0, ROWS_PER_PAGE).map((l, i) => (
                                                             <tr key={l.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
-                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{l.nodeId ?? l.node ?? '—'}</td>
+                                                                <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{l.nodeId ?? '—'}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fx)}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fy)}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fz)}</td>
@@ -1085,11 +1085,14 @@ export const ReportsPage = () => {
                                             {membersWithReleases.map((m, i) => {
                                                 const r = m.releases || {};
                                                 const fmtReleases = (end: 'Start' | 'End') => {
-                                                    const prefix = end.toLowerCase();
-                                                    const dofs = ['fx', 'fy', 'fz', 'mx', 'my', 'mz'];
+                                                    const dofs = ['fx', 'fy', 'fz', 'mx', 'my', 'mz'] as const;
                                                     const labels = ['Fx', 'Fy', 'Fz', 'Mx', 'My', 'Mz'];
+                                                    const releaseKeys = {
+                                                        Start: { fx: 'fxStart', fy: 'fyStart', fz: 'fzStart', mx: 'mxStart', my: 'myStart', mz: 'mzStart' } as const,
+                                                        End: { fx: 'fxEnd', fy: 'fyEnd', fz: 'fzEnd', mx: 'mxEnd', my: 'myEnd', mz: 'mzEnd' } as const,
+                                                    };
                                                     const released = dofs
-                                                        .map((d, idx) => r[`${d}${end}`] || (end === 'Start' && d === 'my' && r.startMoment) || (end === 'End' && d === 'my' && r.endMoment) ? labels[idx] : null)
+                                                        .map((d, idx) => r[releaseKeys[end][d]] || (end === 'Start' && d === 'my' && r.startMoment) || (end === 'End' && d === 'my' && r.endMoment) ? labels[idx] : null)
                                                         .filter(Boolean);
                                                     return released.length > 0 ? released.join(', ') : 'Fixed';
                                                 };
@@ -1203,12 +1206,12 @@ export const ReportsPage = () => {
                                                     {(() => {
                                                         const totals = { fx: 0, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 };
                                                         analysisResults.reactions!.forEach((r) => {
-                                                            totals.fx += (r.fx ?? r.Rx ?? 0);
-                                                            totals.fy += (r.fy ?? r.Ry ?? 0);
-                                                            totals.fz += (r.fz ?? r.Rz ?? 0);
-                                                            totals.mx += (r.mx ?? r.Mx ?? 0);
-                                                            totals.my += (r.my ?? r.My ?? 0);
-                                                            totals.mz += (r.mz ?? r.Mz ?? 0);
+                                                            totals.fx += (r.fx ?? 0);
+                                                            totals.fy += (r.fy ?? 0);
+                                                            totals.fz += (r.fz ?? 0);
+                                                            totals.mx += (r.mx ?? 0);
+                                                            totals.my += (r.my ?? 0);
+                                                            totals.mz += (r.mz ?? 0);
                                                         });
                                                         return [
                                                             ['ΣRx (kN)', totals.fx], ['ΣRy (kN)', totals.fy], ['ΣRz (kN)', totals.fz],
@@ -1410,12 +1413,12 @@ export const ReportsPage = () => {
                                             {Array.from(analysisResults.reactions.entries()).map(([id, r], i) => (
                                                 <tr key={id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{id}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fx ?? r.Rx)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fy ?? r.Ry)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fz ?? r.Rz)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.mx ?? r.Mx)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.my ?? r.My)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.mz ?? r.Mz)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fx)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fy)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fz)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.mx)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.my)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.mz)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -1451,9 +1454,9 @@ export const ReportsPage = () => {
                                                     <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.dx, 4)}</td>
                                                     <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.dy, 4)}</td>
                                                     <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.dz, 4)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.rx ?? d.rotX, 6)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.ry ?? d.rotY, 6)}</td>
-                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.rz ?? d.rotZ, 6)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.rx, 6)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.ry, 6)}</td>
+                                                    <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.rz, 6)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>

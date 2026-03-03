@@ -145,16 +145,21 @@ export const StructureGallery: FC<StructureGalleryProps> = ({ isOpen, onClose })
                                     >
                                         {/* Thumbnail Image */}
                                         <div className="h-48 bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center relative overflow-hidden">
-                                            <img
-                                                src={`/structures/${template.id}.png`}
-                                                alt={template.name}
-                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                onError={(e) => {
-                                                    // Fallback to icon if image fails to load
-                                                    e.currentTarget.style.display = 'none';
-                                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                                }}
-                                            />
+                                            <picture>
+                                                <source srcSet={`/structures/${template.id}.avif`} type="image/avif" />
+                                                <source srcSet={`/structures/${template.id}.webp`} type="image/webp" />
+                                                <img
+                                                    src={`/structures/${template.id}.png`}
+                                                    alt={template.name}
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    loading="lazy"
+                                                    onError={(e) => {
+                                                        // Fallback to icon if image fails to load
+                                                        e.currentTarget.style.display = 'none';
+                                                        e.currentTarget.parentElement?.nextElementSibling?.classList.remove('hidden');
+                                                    }}
+                                                />
+                                            </picture>
                                             <div className="hidden absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors flex items-center justify-center">
                                                 <Icon className="w-20 h-20 text-slate-500 dark:text-slate-500 group-hover:text-emerald-400 transition-colors" />
                                             </div>

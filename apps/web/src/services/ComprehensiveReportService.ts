@@ -17,7 +17,13 @@ import {
     DetailedReportEngine, 
     createDetailedReport,
     ReportData,
-    ReportSettings 
+    ReportSettings,
+    AnalysisResultsSummary,
+    MemberDesignResult,
+    ConnectionDesignResult,
+    FoundationDesignResult,
+    QualityCheckItem,
+    CheckStatus
 } from '../modules/reporting/DetailedReportEngine';
 
 import { 
@@ -53,11 +59,71 @@ export type ReportCategory =
     | 'wind_report'
     | 'full_package';
 
+/** Typed project data for report generation */
+export interface ReportProjectData {
+    name: string;
+    number: string;
+    client?: string;
+    location?: string;
+    structureType?: string;
+    occupancy?: string;
+    designLife?: number;
+    importanceFactor?: number;
+    seismicZone?: string;
+    windZone?: string;
+    description?: string;
+    [key: string]: unknown;
+}
+
+/** Typed analysis results for report generation */
+export interface ReportAnalysisData {
+    maxDisplacement?: Record<string, unknown>;
+    maxDrift?: Record<string, unknown>;
+    maxReaction?: Record<string, unknown>;
+    fundamentalPeriod?: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
+/** Typed design results for report generation */
+export interface ReportDesignData {
+    beams?: Array<{
+        id: string; section: string; span: number; fy?: number;
+        Mu: number; Vu: number; Zp: number; Av: number;
+        deflection: number; deflectionLimit: number;
+    }>;
+    columns?: Array<{
+        id: string; section: string; height: number; fy?: number;
+        axialLoad: number; momentX: number; momentY: number;
+        A: number; Zx: number; Zy: number; rx: number; ry: number;
+        Kx?: number; Ky?: number;
+    }>;
+    connections?: Array<{
+        id: string; boltDia?: number; boltGrade?: string;
+        numBolts: number; plateThickness: number;
+        fyPlate?: number; fuBolt?: number;
+        appliedShear: number; appliedTension: number;
+    }>;
+    foundations?: Array<Record<string, unknown>>;
+    seismic?: unknown;
+    members?: Array<Record<string, unknown>>;
+    [key: string]: unknown;
+}
+
+/** Quality check entry */
+interface QualityCheck {
+    category: string;
+    item: string;
+    requirement: string;
+    actual: string;
+    status: CheckStatus;
+    reference: string;
+}
+
 export interface GenerationRequest {
     category: ReportCategory;
-    projectData: any;
-    analysisResults: any;
-    designResults: any;
+    projectData: ReportProjectData;
+    analysisResults: ReportAnalysisData;
+    designResults: ReportDesignData;
     options: {
         format: 'pdf' | 'docx' | 'html' | 'xlsx';
         template?: string;
@@ -94,9 +160,9 @@ export interface GeneratedReportResult {
 
 export interface BatchGenerationRequest {
     categories: ReportCategory[];
-    projectData: any;
-    analysisResults: any;
-    designResults: any;
+    projectData: ReportProjectData;
+    analysisResults: ReportAnalysisData;
+    designResults: ReportDesignData;
     options: GenerationRequest['options'];
     bundleAsZip?: boolean;
 }
@@ -273,7 +339,7 @@ export class ComprehensiveReportService {
         
         // Add beam calculations
         if (request.designResults.beams) {
-            request.designResults.beams.forEach((beam: any) => {
+            request.designResults.beams.forEach((beam) => {
                 sections.push(CalculationTemplates.steelBeamDesign({
                     beamId: beam.id,
                     section: beam.section,
@@ -291,7 +357,7 @@ export class ComprehensiveReportService {
         
         // Add column calculations
         if (request.designResults.columns) {
-            request.designResults.columns.forEach((col: any) => {
+            request.designResults.columns.forEach((col) => {
                 sections.push(CalculationTemplates.steelColumnDesign({
                     columnId: col.id,
                     section: col.section,
@@ -387,7 +453,7 @@ export class ComprehensiveReportService {
         
         // Add connection calculations
         if (request.designResults.connections) {
-            request.designResults.connections.forEach((conn: any) => {
+            request.designResults.connections.forEach((conn) => {
                 sections.push(CalculationTemplates.boltedConnectionDesign({
                     connectionId: conn.id,
                     bolt_dia: conn.boltDia || 20,
@@ -524,15 +590,15 @@ export class ComprehensiveReportService {
                 ]
             },
             analysisSummary: {
-                maxDisplacement: analysisResults?.maxDisplacement || { value: 12.5, node: 'N45', direction: 'X', loadCase: 'Seismic X' },
-                maxDrift: analysisResults?.maxDrift || { value: 0.0035, story: 'Story 3', loadCase: 'Seismic X' },
-                maxReaction: analysisResults?.maxReaction || { value: 850, support: 'S1', direction: 'Z', loadCase: '1.5DL+1.5LL' },
-                fundamentalPeriod: analysisResults?.fundamentalPeriod || { T1: 0.85, T2: 0.72, T3: 0.65 }
+                maxDisplacement: (analysisResults?.maxDisplacement || { value: 12.5, node: 'N45', direction: 'X', loadCase: 'Seismic X' }) as AnalysisResultsSummary['maxDisplacement'],
+                maxDrift: (analysisResults?.maxDrift || { value: 0.0035, story: 'Story 3', loadCase: 'Seismic X' }) as AnalysisResultsSummary['maxDrift'],
+                maxReaction: (analysisResults?.maxReaction || { value: 850, support: 'S1', direction: 'Z', loadCase: '1.5DL+1.5LL' }) as AnalysisResultsSummary['maxReaction'],
+                fundamentalPeriod: (analysisResults?.fundamentalPeriod || { T1: 0.85, T2: 0.72, T3: 0.65 }) as AnalysisResultsSummary['fundamentalPeriod']
             },
-            memberDesigns: designResults?.members || [],
-            connectionDesigns: designResults?.connections || [],
-            foundationDesigns: designResults?.foundations || [],
-            qualityChecks: this.generateQualityChecks(analysisResults, designResults),
+            memberDesigns: (designResults?.members || []) as unknown as MemberDesignResult[],
+            connectionDesigns: (designResults?.connections || []) as unknown as ConnectionDesignResult[],
+            foundationDesigns: (designResults?.foundations || []) as unknown as FoundationDesignResult[],
+            qualityChecks: this.generateQualityChecks(analysisResults, designResults) as QualityCheckItem[],
             images: {}
         };
     }
@@ -559,7 +625,7 @@ export class ComprehensiveReportService {
         ];
     }
 
-    private generateQualityChecks(analysisResults: any, designResults: any): any[] {
+    private generateQualityChecks(_analysisResults: ReportAnalysisData, _designResults: ReportDesignData): QualityCheck[] {
         return [
             { category: 'Analysis', item: 'Model Verification', requirement: 'Static Equilibrium', actual: 'Verified', status: 'PASS', reference: '' },
             { category: 'Analysis', item: 'Reaction Sum', requirement: '= Applied Loads', actual: 'Match', status: 'PASS', reference: '' },

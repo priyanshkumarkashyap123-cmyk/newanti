@@ -22,6 +22,7 @@ interface LoadInputDialogProps {
     onClose: () => void;
     targetNodeId?: string;
     targetMemberId?: string;
+    initialPosition?: number; // 0-1 ratio along member, pre-fills position slider
 }
 
 type LoadType = 'point' | 'udl' | 'moment';
@@ -35,7 +36,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
     isOpen,
     onClose,
     targetNodeId,
-    targetMemberId
+    targetMemberId,
+    initialPosition
 }) => {
     const addLoad = useModelStore((s) => s.addLoad);
     const addMemberLoad = useModelStore((s) => s.addMemberLoad);
@@ -44,6 +46,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
     const [loadType, setLoadType] = useState<LoadType>('point');
     const [magnitude, setMagnitude] = useState('10');
     const [direction, setDirection] = useState<Direction>('down');
+    const [position, setPosition] = useState('0.5'); // 0-1 ratio along member
 
     // Reset on open
     useEffect(() => {
@@ -52,6 +55,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 setLoadType(targetMemberId ? 'udl' : 'point');
                 setMagnitude('10');
                 setDirection('down');
+                setPosition(initialPosition?.toString() ?? '0.5');
             });
         }
     }, [isOpen, targetMemberId]);
@@ -94,6 +98,17 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                 mx: 0,
                 my: 0,
                 mz: mag * ((dirConfig.factor as { mz?: number }).mz ?? 0)
+            });
+        } else if (loadType === 'point' && targetMemberId) {
+            // Point load at arbitrary position on member
+            const dir = dirConfig.factor.fy !== 0 ? 'global_y' : 'global_x';
+            addMemberLoad({
+                id: `ML${Date.now()}`,
+                memberId: targetMemberId,
+                type: 'point',
+                P: mag * (dirConfig.factor.fy || dirConfig.factor.fx || -1),
+                a: parseFloat(position),
+                direction: dir
             });
         } else if (loadType === 'udl' && targetMemberId) {
             addMemberLoad({
@@ -140,7 +155,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                         </h3>
                         <div className="grid grid-cols-3 gap-2">
                             {[
-                                { id: 'point', label: 'Point Load', icon: '↓', disabled: !targetNodeId },
+                                { id: 'point', label: 'Point Load', icon: '↓', disabled: !targetNodeId && !targetMemberId },
                                 { id: 'udl', label: 'UDL', icon: '▼▼▼', disabled: !targetMemberId },
                                 { id: 'moment', label: 'Moment', icon: '↺', disabled: !targetNodeId }
                             ].map((type) => (
@@ -219,6 +234,44 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                         <span className="text-xs">{dir === 'cw' ? 'Clockwise' : 'Counter-CW'}</span>
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Position along member (for point loads on members) */}
+                    {loadType === 'point' && targetMemberId && (
+                        <div className="mb-6">
+                            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                                Position along Member
+                            </h3>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.01"
+                                    value={position}
+                                    onChange={(e) => setPosition(e.target.value)}
+                                    className="flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                                    style={{ background: `linear-gradient(to right, #f97316 0%, #f97316 ${parseFloat(position) * 100}%, #334155 ${parseFloat(position) * 100}%, #334155 100%)` }}
+                                />
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="1"
+                                    step="0.01"
+                                    value={position}
+                                    onChange={(e) => {
+                                        const v = Math.min(1, Math.max(0, parseFloat(e.target.value) || 0));
+                                        setPosition(v.toString());
+                                    }}
+                                    className="w-16 px-2 py-1 text-center rounded border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-sm"
+                                />
+                            </div>
+                            <div className="flex justify-between mt-1 text-[10px] text-slate-400">
+                                <span>Start (0)</span>
+                                <span>{(parseFloat(position) * 100).toFixed(0)}% along member</span>
+                                <span>End (1)</span>
                             </div>
                         </div>
                     )}

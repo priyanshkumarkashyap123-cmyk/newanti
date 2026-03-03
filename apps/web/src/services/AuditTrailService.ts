@@ -26,9 +26,9 @@ export interface AuditEntry {
     user?: string;
     aiGenerated: boolean;
     confidence?: number; // AI confidence score (0-1)
-    metadata: Record<string, any>;
-    previousState?: any;
-    newState?: any;
+    metadata: Record<string, unknown>;
+    previousState?: unknown;
+    newState?: unknown;
     modelSnapshot?: ModelSnapshot;
     calculationDetails?: CalculationDetails;
 }
@@ -133,9 +133,9 @@ export class AuditTrailService {
         description: string,
         options: {
             aiGenerated?: boolean;
-            metadata?: Record<string, any>;
-            previousState?: any;
-            newState?: any;
+            metadata?: Record<string, unknown>;
+            previousState?: unknown;
+            newState?: unknown;
             calculationDetails?: CalculationDetails;
             confidence?: number;
         } = {}
@@ -191,7 +191,7 @@ export class AuditTrailService {
     logModelCreation(
         description: string,
         structureType: string,
-        parameters: Record<string, any>,
+        parameters: Record<string, unknown>,
         aiGenerated: boolean = false
     ): AuditEntry {
         const entry = this.log('model_creation', 'create_structure', description, {
@@ -209,8 +209,8 @@ export class AuditTrailService {
     logModelModification(
         action: string,
         description: string,
-        previousState: any,
-        newState: any,
+        previousState: unknown,
+        newState: unknown,
         aiGenerated: boolean = false
     ): AuditEntry {
         const entry = this.log('model_modification', action, description, {
@@ -228,8 +228,8 @@ export class AuditTrailService {
      */
     logAnalysis(
         analysisType: string,
-        parameters: Record<string, any>,
-        results: Record<string, any>,
+        parameters: Record<string, unknown>,
+        results: Record<string, unknown>,
         executionTimeMs: number
     ): AuditEntry {
         return this.log('analysis_result', analysisType, `Analysis completed in ${executionTimeMs}ms`, {
@@ -438,7 +438,7 @@ export class AuditTrailService {
             for (const rec of aiRecs) {
                 md += `### ${rec.action}\n`;
                 md += `- **Recommendation:** ${rec.description}\n`;
-                md += `- **Confidence:** ${(rec.metadata?.confidence * 100 || 0).toFixed(0)}%\n`;
+                md += `- **Confidence:** ${(Number(rec.metadata?.confidence) * 100 || 0).toFixed(0)}%\n`;
                 if (rec.metadata?.reasoning) {
                     md += `- **Reasoning:** ${rec.metadata.reasoning}\n`;
                 }
@@ -575,16 +575,16 @@ export class AuditTrailService {
             const data = localStorage.getItem(this.STORAGE_KEY);
             if (data) {
                 const parsed = JSON.parse(data);
-                this.entries = (parsed.entries || []).map((e: any) => ({
+                this.entries = (parsed.entries || []).map((e: Record<string, unknown>) => ({
                     ...e,
-                    timestamp: new Date(e.timestamp)
+                    timestamp: new Date(e.timestamp as string)
                 }));
-                this.modelVersions = (parsed.modelVersions || []).map((v: any) => ({
+                this.modelVersions = (parsed.modelVersions || []).map((v: Record<string, unknown>) => ({
                     ...v,
-                    timestamp: new Date(v.timestamp),
+                    timestamp: new Date(v.timestamp as string),
                     snapshot: {
-                        ...v.snapshot,
-                        timestamp: new Date(v.snapshot.timestamp)
+                        ...(v.snapshot as Record<string, unknown>),
+                        timestamp: new Date((v.snapshot as Record<string, unknown>).timestamp as string)
                     }
                 }));
                 this.currentVersion = parsed.currentVersion || 0;

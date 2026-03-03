@@ -58,7 +58,7 @@ import {
   Thermometer,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useModelStore } from "../../store/model";
+import { useModelStore, useModelStoreTemporal } from "../../store/model";
 import { useUIStore, Category } from "../../store/uiStore";
 import { Tooltip } from "../ui/Tooltip";
 
@@ -211,7 +211,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const analysisResults = useModelStore((s) => s.analysisResults);
   const openModal = useUIStore((s) => s.openModal);
   const setCategory = useUIStore((s) => s.setCategory);
-  const { undo, redo } = useModelStore.temporal.getState();
+  const { undo, redo } = useModelStoreTemporal.getState();
 
   const renderGeometryTab = () => (
     <>

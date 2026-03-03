@@ -14,24 +14,43 @@ import AnimatedDeflection from "./results/AnimatedDeflection";
 import { RemoteCursors } from "./collaborators/RemoteCursors";
 import { RemoteUser } from "../hooks/useMultiplayer";
 import { useModelStore } from "../store/model";
+import { useShallow } from "zustand/react/shallow";
 import { Html } from "@react-three/drei";
 
 export const SharedScene: FC<{ remoteUsers?: RemoteUser[] }> = ({
   remoteUsers = [],
 }) => {
-  const showSFD = useModelStore((state) => state.showSFD);
-  const showBMD = useModelStore((state) => state.showBMD);
-  const showAFD = useModelStore((state) => state.showAFD);
-  const showBMDMy = useModelStore((state) => state.showBMDMy);
-  const showShearZ = useModelStore((state) => state.showShearZ);
-  const showStressOverlay = useModelStore((state) => state.showStressOverlay);
-  const diagramScale = useModelStore((state) => state.diagramScale);
-  const displacementScale = useModelStore((state) => state.displacementScale);
-  const analysisResults = useModelStore((state) => state.analysisResults);
-  const showDeflectedShape = useModelStore((state) => state.showDeflectedShape);
-  const nodes = useModelStore((state) => state.nodes);
-  const members = useModelStore((state) => state.members);
-  const plates = useModelStore((state) => state.plates);
+  const {
+    showSFD,
+    showBMD,
+    showAFD,
+    showBMDMy,
+    showShearZ,
+    showStressOverlay,
+    diagramScale,
+    displacementScale,
+    analysisResults,
+    showDeflectedShape,
+    nodes,
+    members,
+    plates,
+  } = useModelStore(
+    useShallow((state) => ({
+      showSFD: state.showSFD,
+      showBMD: state.showBMD,
+      showAFD: state.showAFD,
+      showBMDMy: state.showBMDMy,
+      showShearZ: state.showShearZ,
+      showStressOverlay: state.showStressOverlay,
+      diagramScale: state.diagramScale,
+      displacementScale: state.displacementScale,
+      analysisResults: state.analysisResults,
+      showDeflectedShape: state.showDeflectedShape,
+      nodes: state.nodes,
+      members: state.members,
+      plates: state.plates,
+    }))
+  );
 
   // Check if model is empty
   const isModelEmpty =

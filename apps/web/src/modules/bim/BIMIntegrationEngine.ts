@@ -136,6 +136,25 @@ export interface IFCLoadCase {
 }
 
 // ============================================================================
+// IFC VALUE HELPERS
+// ============================================================================
+
+/** Type guard for IFC reference values */
+function isIFCRef(val: IFCValue): val is { ref: number } {
+  return val !== null && typeof val === 'object' && !Array.isArray(val) && 'ref' in val;
+}
+
+/** Extract string from IFC value with fallback */
+function ifcString(val: IFCValue, fallback: string): string {
+  return typeof val === 'string' ? val : fallback;
+}
+
+/** Extract number from IFC value with fallback */
+function ifcNumber(val: IFCValue, fallback: number): number {
+  return typeof val === 'number' ? val : fallback;
+}
+
+// ============================================================================
 // IFC ENTITY TYPES (Common structural types)
 // ============================================================================
 
@@ -337,24 +356,24 @@ export class IFCParser {
     for (const [id, entity] of this.entities) {
       if (entity.type === 'IFCPROJECT') {
         const params = entity.properties._raw as IFCValue[];
-        model.project.name = params[2] || 'Unnamed';
-        model.project.description = params[3] || undefined;
+        model.project.name = ifcString(params[2], 'Unnamed');
+        model.project.description = typeof params[3] === 'string' ? params[3] : undefined;
       }
 
       if (entity.type === 'IFCSITE') {
         const params = entity.properties._raw as IFCValue[];
         model.site = {
-          name: params[2] || 'Site',
-          latitude: params[5]?.[0],
-          longitude: params[6]?.[0],
-          elevation: params[7]
+          name: ifcString(params[2], 'Site'),
+          latitude: Array.isArray(params[5]) && typeof params[5][0] === 'number' ? params[5][0] : undefined,
+          longitude: Array.isArray(params[6]) && typeof params[6][0] === 'number' ? params[6][0] : undefined,
+          elevation: typeof params[7] === 'number' ? params[7] : undefined
         };
       }
 
       if (entity.type === 'IFCBUILDING') {
         const params = entity.properties._raw as IFCValue[];
         model.building = {
-          name: params[2] || 'Building',
+          name: ifcString(params[2], 'Building'),
           stories: []
         };
       }
@@ -363,8 +382,8 @@ export class IFCParser {
         const params = entity.properties._raw as IFCValue[];
         if (model.building) {
           model.building.stories.push({
-            name: params[2] || 'Story',
-            elevation: params[9] || 0,
+            name: ifcString(params[2], 'Story'),
+            elevation: ifcNumber(params[9], 0),
             height: 3.0 // Default height
           });
         }
@@ -429,7 +448,7 @@ export class IFCParser {
       id: `M${counter}`,
       ifcId: entity.expressId,
       type: type as StructuralMember['type'],
-      name: params[2] || `${type}-${counter}`,
+      name: ifcString(params[2], `${type}-${counter}`),
       material: 'Concrete', // Would need to traverse relationships
       section: 'Default', // Would need to traverse profile definition
       geometry: geometry || {
@@ -449,7 +468,7 @@ export class IFCParser {
 
     // Look for placement reference
     const placementRef = params[5];
-    if (placementRef?.ref) {
+    if (isIFCRef(placementRef)) {
       const placement = this.entities.get(placementRef.ref);
       if (placement) {
         const origin = this.extractPoint(placement);
@@ -473,12 +492,17 @@ export class IFCParser {
     const params = placement.properties._raw as IFCValue[];
 
     for (const param of params) {
-      if (param?.ref) {
+      if (isIFCRef(param)) {
         const entity = this.entities.get(param.ref);
         if (entity?.type === 'IFCCARTESIANPOINT') {
-          const coords = entity.properties._raw?.[0];
+          const rawArr = entity.properties._raw as IFCValue[] | undefined;
+          const coords = rawArr?.[0];
           if (Array.isArray(coords) && coords.length >= 3) {
-            return { x: coords[0], y: coords[1], z: coords[2] };
+            return {
+              x: typeof coords[0] === 'number' ? coords[0] : 0,
+              y: typeof coords[1] === 'number' ? coords[1] : 0,
+              z: typeof coords[2] === 'number' ? coords[2] : 0
+            };
           }
         }
       }
@@ -496,7 +520,7 @@ export class IFCParser {
     // Extract position from placement
     let position = { x: 0, y: 0, z: 0 };
     const placementRef = params[5];
-    if (placementRef?.ref) {
+    if (isIFCRef(placementRef)) {
       const placement = this.entities.get(placementRef.ref);
       if (placement) {
         const point = this.extractPoint(placement);
@@ -507,7 +531,7 @@ export class IFCParser {
     // Extract boundary conditions
     const restraints = { fx: false, fy: false, fz: false, mx: false, my: false, mz: false };
     const conditionRef = params[7];
-    if (conditionRef?.ref) {
+    if (isIFCRef(conditionRef)) {
       const condition = this.entities.get(conditionRef.ref);
       if (condition?.type === 'IFCBOUNDARYNODECONDITION') {
         const condParams = condition.properties._raw as IFCValue[];
@@ -539,7 +563,7 @@ export class IFCParser {
     return {
       ifcId: entity.expressId,
       type: entity.type,
-      name: params[2] || 'Load',
+      name: ifcString(params[2], 'Load'),
       properties: params
     };
   }
@@ -552,10 +576,10 @@ export class IFCParser {
 
     return {
       ifcId: entity.expressId,
-      name: params[2] || 'Load Case',
-      type: params[4] || 'LOAD_CASE',
-      actionType: params[5] || 'PERMANENT_G',
-      actionSource: params[6] || 'DEAD_LOAD_G'
+      name: ifcString(params[2], 'Load Case'),
+      type: ifcString(params[4], 'LOAD_CASE'),
+      actionType: ifcString(params[5], 'PERMANENT_G'),
+      actionSource: ifcString(params[6], 'DEAD_LOAD_G')
     };
   }
 }

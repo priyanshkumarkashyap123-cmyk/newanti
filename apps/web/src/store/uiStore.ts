@@ -278,6 +278,8 @@ interface UIState {
   setUseWebGpu: (val: boolean) => void;
   renderMode3D: boolean; // Toggle for solid 3D beam cross-sections
   setRenderMode3D: (val: boolean) => void;
+  viewMode: '2D' | '3D'; // Default view mode
+  setViewMode: (mode: '2D' | '3D') => void;
 
   // Onboarding coordination — only one overlay at a time
   activeOverlay: 'none' | 'onboarding' | 'tour' | 'quickstart';
@@ -424,6 +426,8 @@ export const useUIStore = create<UIState>()(
       setUseWebGpu: (val) => set({ useWebGpu: val }),
       renderMode3D: false, // Default to wireframe for performance
       setRenderMode3D: (val) => set({ renderMode3D: val }),
+      viewMode: '2D' as '2D' | '3D', // Default to 2D for performance
+      setViewMode: (mode) => set({ viewMode: mode }),
 
       // ========================================
       // SET CATEGORY - THE "ONE-BY-ONE" LOGIC

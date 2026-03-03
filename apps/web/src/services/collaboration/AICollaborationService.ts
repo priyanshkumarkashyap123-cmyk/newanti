@@ -39,8 +39,8 @@ export interface DesignConflict {
     elementId: string;
     userA: string;
     userB: string;
-    changeA: any;
-    changeB: any;
+    changeA: unknown;
+    changeB: unknown;
     detectedAt: Date;
     resolved: boolean;
     resolution?: ConflictResolution;
@@ -48,7 +48,7 @@ export interface DesignConflict {
 
 export interface ConflictResolution {
     method: 'accept_a' | 'accept_b' | 'merge' | 'custom';
-    result: any;
+    result: unknown;
     resolvedBy: string;
     timestamp: Date;
     aiSuggested: boolean;
@@ -87,7 +87,7 @@ class AICollaborationServiceClass {
     private conflicts: Map<string, DesignConflict> = new Map();
     private suggestions: AISuggestion[] = [];
     private notifications: ChangeNotification[] = [];
-    private listeners: Array<(event: string, data: any) => void> = [];
+    private listeners: Array<(event: string, data: unknown) => void> = [];
 
     /**
      * Start collaboration session
@@ -129,9 +129,9 @@ class AICollaborationServiceClass {
     detectConflict(
         elementId: string,
         userAId: string,
-        changeA: any,
+        changeA: unknown,
         userBId: string,
-        changeB: any,
+        changeB: unknown,
         type: DesignConflict['type'] = 'property'
     ): DesignConflict {
         const conflict: DesignConflict = {
@@ -205,12 +205,12 @@ class AICollaborationServiceClass {
         conflictId: string,
         method: ConflictResolution['method'],
         aiSuggested: boolean = false,
-        customResult?: any
+        customResult?: unknown
     ): boolean {
         const conflict = this.conflicts.get(conflictId);
         if (!conflict || conflict.resolved) return false;
 
-        let result: any;
+        let result: unknown;
         switch (method) {
             case 'accept_a':
                 result = conflict.changeA;
@@ -219,7 +219,10 @@ class AICollaborationServiceClass {
                 result = conflict.changeB;
                 break;
             case 'merge':
-                result = this.mergeChanges(conflict.changeA, conflict.changeB);
+                result = this.mergeChanges(
+                    conflict.changeA as Record<string, unknown>,
+                    conflict.changeB as Record<string, unknown>
+                );
                 break;
             case 'custom':
                 result = customResult;
@@ -242,13 +245,16 @@ class AICollaborationServiceClass {
     /**
      * Smart merge of two changes
      */
-    private mergeChanges(changeA: any, changeB: any): any {
+    private mergeChanges(changeA: Record<string, unknown>, changeB: Record<string, unknown>): Record<string, unknown> {
         // Deep merge, with B overriding A for conflicting keys
-        const merged = { ...changeA };
+        const merged: Record<string, unknown> = { ...changeA };
 
         for (const key of Object.keys(changeB)) {
-            if (typeof changeB[key] === 'object' && changeA[key]) {
-                merged[key] = this.mergeChanges(changeA[key], changeB[key]);
+            if (typeof changeB[key] === 'object' && changeB[key] !== null && changeA[key] && typeof changeA[key] === 'object') {
+                merged[key] = this.mergeChanges(
+                    changeA[key] as Record<string, unknown>,
+                    changeB[key] as Record<string, unknown>
+                );
             } else {
                 merged[key] = changeB[key];
             }
@@ -356,14 +362,14 @@ class AICollaborationServiceClass {
     /**
      * Subscribe to events
      */
-    on(handler: (event: string, data: any) => void): () => void {
+    on(handler: (event: string, data: unknown) => void): () => void {
         this.listeners.push(handler);
         return () => {
             this.listeners = this.listeners.filter(l => l !== handler);
         };
     }
 
-    private emit(event: string, data: any): void {
+    private emit(event: string, data: unknown): void {
         for (const listener of this.listeners) {
             listener(event, data);
         }

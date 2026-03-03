@@ -25,11 +25,11 @@ router.delete("*", crudRateLimit);
  */
 async function resolveUser(userId: string): Promise<IUser | null> {
   if (USE_CLERK) {
-    return User.findOne({ clerkId: userId });
+    return User.findOne({ clerkId: userId }).lean();
   }
   // In-house auth: userId is the DB _id
   if (mongoose.Types.ObjectId.isValid(userId)) {
-    const user = await UserModel.findById(userId);
+    const user = await UserModel.findById(userId).lean();
     return user as unknown as IUser | null;
   }
   return null;
@@ -62,7 +62,8 @@ router.get("/", authRequired, asyncHandler(async (req: Request, res: Response) =
       .select("name description thumbnail updatedAt createdAt isPublic")
       .sort({ updatedAt: -1 })
       .skip((page - 1) * pageSize)
-      .limit(pageSize),
+      .limit(pageSize)
+      .lean(),
     Project.countDocuments({ $or: [{ owner: user._id }, { collaborators: user._id }] }),
   ]);
 
@@ -86,7 +87,7 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
   const project = await Project.findOne({
     _id: projectId,
     $or: [{ owner: user._id }, { collaborators: user._id }],
-  });
+  }).lean();
 
   if (!project) {
     throw new HttpError(404, 'Project not found');

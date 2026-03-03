@@ -372,8 +372,8 @@ export class PhonePeBillingService {
 
     // Resolve user
     const user = USE_CLERK
-      ? await User.findOne({ clerkId: userId })
-      : await UserModel.findById(userId);
+      ? await User.findOne({ clerkId: userId }).lean()
+      : await UserModel.findById(userId).lean();
 
     if (!user) {
       throw new BillingError("User not found", "USER_NOT_FOUND", 404);
@@ -381,7 +381,7 @@ export class PhonePeBillingService {
 
     // Guard against duplicate activation
     if (user.tier === "pro" || user.tier === "enterprise") {
-      const existingSub = await Subscription.findOne({ user: user._id, status: "active" });
+      const existingSub = await Subscription.findOne({ user: user._id, status: "active" }).lean();
       if (existingSub?.phonepeTransactionId === transactionId) {
         log.info("Duplicate activation skipped", { userId, transactionId });
         return;
@@ -473,7 +473,7 @@ export class PhonePeBillingService {
     // Look up by merchantTransactionId in subscriptions
     const existingSub = await Subscription.findOne({
       phonepeMerchantTransactionId: merchantTransactionId,
-    });
+    }).lean();
 
     if (existingSub) {
       // Already processed via verify-payment endpoint
@@ -783,8 +783,8 @@ billingRouter.get(
 
       const USE_CLERK = process.env["USE_CLERK"] === "true";
       const user = USE_CLERK
-        ? await User.findOne({ clerkId: userId })
-        : await UserModel.findById(userId);
+        ? await User.findOne({ clerkId: userId }).lean()
+        : await UserModel.findById(userId).lean();
 
       if (!user) {
         res.json({
@@ -798,7 +798,7 @@ billingRouter.get(
       const subscription = await Subscription.findOne({
         user: user._id,
         status: "active",
-      });
+      }).lean();
 
       if (!subscription) {
         res.json({

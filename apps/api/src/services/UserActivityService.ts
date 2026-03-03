@@ -89,7 +89,7 @@ export class UserActivityService {
     static async canRunAnalysis(clerkId: string): Promise<{ allowed: boolean; reason?: string; remaining?: number }> {
         if (!isConnected()) return { allowed: true }; // Fail open if DB down
         try {
-            const user = await User.findOne({ clerkId });
+            const user = await User.findOne({ clerkId }).lean();
             if (!user) {
                 return { allowed: false, reason: 'User not found' };
             }
@@ -139,7 +139,7 @@ export class UserActivityService {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            const user = await User.findOne({ clerkId });
+            const user = await User.findOne({ clerkId }).lean();
             if (!user) return null;
 
             // Reset daily count if new day
@@ -211,7 +211,7 @@ export class UserActivityService {
     } | null> {
         if (!isConnected()) return null;
         try {
-            const user = await User.findOne({ clerkId }).populate('projects');
+            const user = await User.findOne({ clerkId }).populate('projects').lean();
             if (!user) return null;
 
             // Use enterprise limits for master users
@@ -255,7 +255,7 @@ export class UserActivityService {
     }> {
         if (!isConnected()) return { allowed: true }; // Fail open
         try {
-            const user = await User.findOne({ clerkId });
+            const user = await User.findOne({ clerkId }).lean();
             if (!user) {
                 return { allowed: true }; // Allow if no user (demo mode)
             }

@@ -29,6 +29,8 @@ export type PropertyType =
   | 'text' | 'number' | 'boolean' | 'select' | 'color' 
   | 'vector3' | 'matrix' | 'section' | 'material' | 'expression';
 
+export type PropertyValue = string | number | boolean | { x: number; y: number; z: number };
+
 export interface PropertyOption {
   value: string | number;
   label: string;
@@ -39,7 +41,7 @@ export interface Property {
   id: string;
   label: string;
   type: PropertyType;
-  value: any;
+  value: PropertyValue;
   unit?: string;
   min?: number;
   max?: number;
@@ -50,8 +52,8 @@ export interface Property {
   readOnly?: boolean;
   linked?: boolean; // For linked properties (e.g., XYZ constraints)
   expression?: string; // For expression-based values
-  validation?: (value: any) => string | null;
-  onChange?: (value: any) => void;
+  validation?: (value: PropertyValue) => string | null;
+  onChange?: (value: PropertyValue) => void;
 }
 
 export interface PropertyGroup {
@@ -75,7 +77,7 @@ export type SelectionType = SelectionInfo['type'];
 interface PropertyInspectorProps {
   selection: SelectionInfo;
   propertyGroups?: PropertyGroup[];
-  onPropertyChange?: (propertyId: string, value: any, elementIds: string[]) => void;
+  onPropertyChange?: (propertyId: string, value: PropertyValue, elementIds: string[]) => void;
   onCopyProperties?: () => void;
   onPasteProperties?: () => void;
   onResetProperties?: () => void;
@@ -425,12 +427,12 @@ ColorInput.displayName = 'ColorInput';
 
 const PropertyRow: FC<{
   property: Property;
-  onChange: (value: any) => void;
+  onChange: (value: PropertyValue) => void;
   compact?: boolean;
 }> = memo(({ property, onChange, compact }) => {
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = useCallback((value: any) => {
+  const handleChange = useCallback((value: PropertyValue) => {
     if (property.validation) {
       const validationError = property.validation(value);
       setError(validationError);
@@ -445,7 +447,7 @@ const PropertyRow: FC<{
       case 'text':
         return (
           <TextInput
-            value={property.value}
+            value={property.value as string}
             placeholder={property.placeholder}
             readOnly={property.readOnly}
             onChange={handleChange}
@@ -454,7 +456,7 @@ const PropertyRow: FC<{
       case 'number':
         return (
           <NumberInput
-            value={property.value}
+            value={property.value as number}
             min={property.min}
             max={property.max}
             step={property.step}
@@ -467,7 +469,7 @@ const PropertyRow: FC<{
       case 'boolean':
         return (
           <BooleanInput
-            value={property.value}
+            value={property.value as boolean}
             readOnly={property.readOnly}
             onChange={handleChange}
           />
@@ -475,7 +477,7 @@ const PropertyRow: FC<{
       case 'select':
         return (
           <SelectInput
-            value={property.value}
+            value={property.value as string | number}
             options={property.options || []}
             readOnly={property.readOnly}
             onChange={handleChange}
@@ -484,7 +486,7 @@ const PropertyRow: FC<{
       case 'color':
         return (
           <ColorInput
-            value={property.value}
+            value={property.value as string}
             readOnly={property.readOnly}
             onChange={handleChange}
           />
@@ -492,7 +494,7 @@ const PropertyRow: FC<{
       case 'vector3':
         return (
           <Vector3Input
-            value={property.value}
+            value={property.value as { x: number; y: number; z: number }}
             unit={property.unit}
             precision={property.precision}
             linked={property.linked}
@@ -538,7 +540,7 @@ PropertyRow.displayName = 'PropertyRow';
 
 const PropertyGroupComponent: FC<{
   group: PropertyGroup;
-  onPropertyChange: (propertyId: string, value: any) => void;
+  onPropertyChange: (propertyId: string, value: PropertyValue) => void;
   compact?: boolean;
 }> = memo(({ group, onPropertyChange, compact }) => {
   const [isExpanded, setIsExpanded] = useState(!group.collapsed);
@@ -623,7 +625,7 @@ export const PropertyInspector: FC<PropertyInspectorProps> = ({
       .filter(group => group.properties.length > 0);
   }, [propertyGroups, searchQuery]);
 
-  const handlePropertyChange = useCallback((propertyId: string, value: any) => {
+  const handlePropertyChange = useCallback((propertyId: string, value: PropertyValue) => {
     onPropertyChange?.(propertyId, value, selection.ids);
   }, [onPropertyChange, selection.ids]);
 

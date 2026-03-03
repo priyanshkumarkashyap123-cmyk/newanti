@@ -24,10 +24,11 @@ import { logger } from '../../lib/logging/logger';
 export interface TrainingExample {
     id: string;
     type: 'text' | 'image' | 'numerical' | 'multimodal';
-    input: any;
-    expectedOutput: any;
-    actualOutput?: any;
-    correction?: any;
+    input: unknown;
+    expectedOutput: unknown;
+    actualOutput?: unknown;
+    correction?: unknown;
+    annotations?: Record<string, unknown>;
     metadata: {
         feature: string;
         source: 'user_correction' | 'expert_annotation' | 'synthetic' | 'benchmark';
@@ -126,9 +127,9 @@ class EnhancedLearningPipelineClass {
      */
     addCorrectionExample(
         feature: string,
-        originalInput: any,
-        aiOutput: any,
-        userCorrection: any,
+        originalInput: unknown,
+        aiOutput: unknown,
+        userCorrection: unknown,
         confidence: number = 1.0
     ): TrainingExample {
         const example: TrainingExample = {
@@ -168,9 +169,9 @@ class EnhancedLearningPipelineClass {
      */
     addExpertExample(
         feature: string,
-        input: any,
-        expertOutput: any,
-        annotations?: Record<string, any>
+        input: unknown,
+        expertOutput: unknown,
+        annotations?: Record<string, unknown>
     ): TrainingExample {
         const example: TrainingExample = {
             id: `expert_${Date.now()}`,
@@ -186,7 +187,7 @@ class EnhancedLearningPipelineClass {
         };
 
         if (annotations) {
-            (example as any).annotations = annotations;
+            example.annotations = annotations;
         }
 
         this.trainingQueue.push(example);
@@ -233,8 +234,8 @@ class EnhancedLearningPipelineClass {
         // Simple perturbation for numerical data
         const perturb = (val: number) => val * (1 + (Math.random() - 0.5) * 0.2);
 
-        if (typeof base.input === 'object') {
-            const variedInput: any = {};
+        if (typeof base.input === 'object' && base.input !== null) {
+            const variedInput: Record<string, unknown> = {};
             for (const [key, val] of Object.entries(base.input)) {
                 if (typeof val === 'number') {
                     variedInput[key] = perturb(val);
@@ -488,11 +489,11 @@ class EnhancedLearningPipelineClass {
     /**
      * Infer type from input
      */
-    private inferType(input: any): TrainingExample['type'] {
+    private inferType(input: unknown): TrainingExample['type'] {
         if (typeof input === 'string' && (input.startsWith('data:image') || input.endsWith('.png'))) {
             return 'image';
         }
-        if (typeof input === 'number' || (typeof input === 'object' && Object.values(input).every(v => typeof v === 'number'))) {
+        if (typeof input === 'number' || (typeof input === 'object' && input !== null && Object.values(input).every(v => typeof v === 'number'))) {
             return 'numerical';
         }
         if (typeof input === 'string') {

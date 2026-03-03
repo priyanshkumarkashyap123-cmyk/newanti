@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useRef, useEffect, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
@@ -63,15 +63,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         }
     }, [removeToast]);
 
-    const helpers = {
+    const helpers = useMemo(() => ({
         success: (message: string, title?: string) => addToast({ type: 'success', message, title }),
         error: (message: string, title?: string) => addToast({ type: 'error', message, title }),
         info: (message: string, title?: string) => addToast({ type: 'info', message, title }),
         warning: (message: string, title?: string) => addToast({ type: 'warning', message, title }),
-    };
+    }), [addToast]);
+
+    const contextValue = useMemo(
+        () => ({ toast: addToast, ...helpers }),
+        [addToast, helpers]
+    );
 
     return (
-        <ToastContext.Provider value={{ toast: addToast, ...helpers }}>
+        <ToastContext.Provider value={contextValue}>
             {children}
             {createPortal(
                 <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">

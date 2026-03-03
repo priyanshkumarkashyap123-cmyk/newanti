@@ -6,8 +6,14 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ScrollToTop } from "./components/ScrollToTop";
-import { BackToTopButton } from "./components/BackToTopButton";
-import { CookieConsent } from "./components/CookieConsent";
+
+// Lazy-load components that use framer-motion to avoid loading ~45KB on every page
+const BackToTopButton = lazy(() =>
+  import("./components/BackToTopButton").then((m) => ({ default: m.BackToTopButton }))
+);
+const CookieConsent = lazy(() =>
+  import("./components/CookieConsent").then((m) => ({ default: m.CookieConsent }))
+);
 
 // Auth/layout (small, needed on every route)
 import { RequireAuth } from "./components/layout/RequireAuth";

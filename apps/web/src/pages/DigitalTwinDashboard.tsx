@@ -295,30 +295,29 @@ const DigitalTwinDashboard: React.FC = () => {
     setSimulating(true);
     intervalRef.current = setInterval(() => {
       tickRef.current += 1;
-      setTick(tickRef.current);
 
-      // Ingest a reading from each sensor
+      // Collect all sensor readings in a single pass (avoid N Map copies)
+      const newReadings = new Map<string, any>();
       for (const sensor of sensors) {
         const reading = generateReading(sensor, tickRef.current);
         digitalTwin.ingestData(reading);
-        setLatestReadings((prev) => {
-          const next = new Map(prev);
-          next.set(sensor.id, reading);
-          return next;
-        });
+        newReadings.set(sensor.id, reading);
       }
 
-      // Refresh health & alerts from service
-      setHealthData(digitalTwin.getAllHealth());
-      setAlerts(digitalTwin.getAlerts().slice(-30));
-
-      // Predictive maintenance for each element with health data
+      // Compute derived data before any setState
       const allHealth = digitalTwin.getAllHealth();
+      const alertsList = digitalTwin.getAlerts().slice(-30);
       const maint: PredictiveMaintenanceResult[] = [];
       for (const h of allHealth) {
         const pm = digitalTwin.predictMaintenance(h.elementId);
         if (pm) maint.push(pm);
       }
+
+      // React 18 with createRoot batches these automatically
+      setTick(tickRef.current);
+      setLatestReadings(newReadings);
+      setHealthData(allHealth);
+      setAlerts(alertsList);
       setMaintenance(maint);
     }, 1200);
   }, [simulating, sensors]);

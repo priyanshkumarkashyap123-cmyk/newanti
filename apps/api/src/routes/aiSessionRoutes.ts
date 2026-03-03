@@ -23,7 +23,7 @@ router.get("/", authRequired, asyncHandler(async (req: Request, res: Response) =
     throw new HttpError(401, 'Unauthorized');
   }
 
-  const user = await User.findOne({ clerkId: userId });
+  const user = await User.findOne({ clerkId: userId }).lean();
   if (!user) {
     return res.ok({ sessions: [], total: 0 });
   }
@@ -53,7 +53,8 @@ router.get("/", authRequired, asyncHandler(async (req: Request, res: Response) =
       .select("name type messages updatedAt createdAt isArchived")
       .sort({ updatedAt: -1 })
       .skip((page - 1) * pageSize)
-      .limit(pageSize),
+      .limit(pageSize)
+      .lean(),
     AISession.countDocuments(query),
   ]);
 
@@ -74,7 +75,7 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
     throw new HttpError(400, 'Invalid session ID');
   }
 
-  const user = await User.findOne({ clerkId: userId });
+  const user = await User.findOne({ clerkId: userId }).lean();
   if (!user) {
     throw new HttpError(404, 'User not found');
   }
@@ -82,7 +83,7 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
   const session = await AISession.findOne({
     _id: sessionId,
     owner: user._id,
-  });
+  }).lean();
 
   if (!session) {
     throw new HttpError(404, 'Session not found');
@@ -100,7 +101,7 @@ router.post("/", authRequired, validateBody(createAiSessionSchema), asyncHandler
     throw new HttpError(401, 'Unauthorized');
   }
 
-  const user = await User.findOne({ clerkId: userId });
+  const user = await User.findOne({ clerkId: userId }).lean();
   if (!user) {
     throw new HttpError(404, 'User profile not found. Please log in again.');
   }
@@ -136,7 +137,7 @@ router.post("/sync", authRequired, asyncHandler(async (req: Request, res: Respon
     throw new HttpError(401, 'Unauthorized');
   }
 
-  const user = await User.findOne({ clerkId: userId });
+  const user = await User.findOne({ clerkId: userId }).lean();
   if (!user) {
     throw new HttpError(404, 'User not found');
   }
@@ -187,7 +188,7 @@ router.put("/:id", authRequired, validateBody(updateAiSessionSchema), asyncHandl
     throw new HttpError(400, 'Invalid session ID');
   }
 
-  const user = await User.findOne({ clerkId: userId });
+  const user = await User.findOne({ clerkId: userId }).lean();
   if (!user) {
     throw new HttpError(404, 'User not found');
   }
@@ -228,7 +229,7 @@ router.delete("/:id", authRequired, asyncHandler(async (req: Request, res: Respo
     throw new HttpError(400, 'Invalid session ID');
   }
 
-  const user = await User.findOne({ clerkId: userId });
+  const user = await User.findOne({ clerkId: userId }).lean();
   if (!user) {
     throw new HttpError(404, 'User not found');
   }

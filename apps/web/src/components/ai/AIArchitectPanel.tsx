@@ -769,7 +769,7 @@ export const AIArchitectPanel: FC = () => {
               x: node.x,
               y: node.y,
               z: node.z || 0,
-              restraints: node.restraints || undefined,
+              restraints: undefined,
             });
           }
 
@@ -851,7 +851,7 @@ export const AIArchitectPanel: FC = () => {
             content: successMsg,
             type: "generate",
             metadata: {
-              structureType: name,
+              structureType: name as string,
               nodesGenerated: sd.nodes.length,
               membersGenerated: sd.members.length,
             },

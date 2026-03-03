@@ -55,7 +55,7 @@ export interface CurvedStructure {
   loads: CurvedLoad[];
   metadata: {
     type: string;
-    params: Record<string, number | string>;
+    params: Record<string, number | string | boolean>;
     nodeCount: number;
     memberCount: number;
   };
@@ -267,7 +267,7 @@ export function generateGeodesicDome(
     loads,
     metadata: {
       type: "geodesic_dome",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -389,7 +389,7 @@ export function generateRibbedDome(
     loads,
     metadata: {
       type: "ribbed_dome",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -493,7 +493,7 @@ export function generateBarrelVault(
     loads,
     metadata: {
       type: "barrel_vault",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -634,7 +634,7 @@ export function generateArch(params?: Partial<ArchParams>): CurvedStructure {
     loads,
     metadata: {
       type: "arch",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -819,7 +819,7 @@ export function generateTunnel(
     loads,
     metadata: {
       type: "tunnel",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -926,7 +926,7 @@ export function generateSphere(
     loads,
     metadata: {
       type: "sphere",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -1056,7 +1056,7 @@ export function generateCylinder(
     loads,
     metadata: {
       type: "cylinder",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -1187,7 +1187,7 @@ export function generateCoolingTower(
     loads,
     metadata: {
       type: "cooling_tower",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -1321,7 +1321,7 @@ export function generateHelicalStaircase(
     loads,
     metadata: {
       type: "helical_staircase",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -1410,7 +1410,7 @@ export function generateHypar(params?: Partial<HyparParams>): CurvedStructure {
     loads,
     metadata: {
       type: "hypar",
-      params: p as Record<string, number | string>,
+      params: p as unknown as Record<string, number | string | boolean>,
       nodeCount: nodes.length,
       memberCount: members.length,
     },
@@ -1427,7 +1427,8 @@ export interface CurvedTemplate {
   category: "dome" | "vault" | "arch" | "tunnel" | "surface" | "tower" | "misc";
   description: string;
   generator: (params?: Record<string, unknown>) => CurvedStructure;
-  defaultParams: Record<string, number | string | boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  defaultParams: Record<string, any>;
   icon: string; // lucide icon name
 }
 
@@ -1467,7 +1468,7 @@ export const CURVED_TEMPLATES: CurvedTemplate[] = [
     category: "arch",
     description:
       "Parabolic arch with configurable supports (fixed/pinned/3-hinged)",
-    generator: (p: Record<string, unknown>) => generateArch({ ...p, profile: "parabolic" } as Partial<ArchParams>),
+    generator: (p?: Record<string, unknown>) => generateArch({ ...p, profile: "parabolic" } as Partial<ArchParams>),
     defaultParams: { ...DEFAULT_ARCH, profile: "parabolic" },
     icon: "MountainSnow",
   },
@@ -1476,7 +1477,7 @@ export const CURVED_TEMPLATES: CurvedTemplate[] = [
     name: "Circular Arch",
     category: "arch",
     description: "Circular arc arch with constant radius of curvature",
-    generator: (p: Record<string, unknown>) => generateArch({ ...p, profile: "circular" } as Partial<ArchParams>),
+    generator: (p?: Record<string, unknown>) => generateArch({ ...p, profile: "circular" } as Partial<ArchParams>),
     defaultParams: { ...DEFAULT_ARCH, profile: "circular" },
     icon: "Rainbow",
   },
@@ -1486,7 +1487,7 @@ export const CURVED_TEMPLATES: CurvedTemplate[] = [
     category: "arch",
     description:
       "Catenary (ideal arch) — carries uniform load in pure compression",
-    generator: (p: Record<string, unknown>) => generateArch({ ...p, profile: "catenary" } as Partial<ArchParams>),
+    generator: (p?: Record<string, unknown>) => generateArch({ ...p, profile: "catenary" } as Partial<ArchParams>),
     defaultParams: { ...DEFAULT_ARCH, profile: "catenary" },
     icon: "Spline",
   },
@@ -1495,7 +1496,7 @@ export const CURVED_TEMPLATES: CurvedTemplate[] = [
     name: "Circular Tunnel",
     category: "tunnel",
     description: "Full-circle tunnel lining with longitudinal members",
-    generator: (p: Record<string, unknown>) => generateTunnel({ ...p, profile: "circular" } as Partial<TunnelParams>),
+    generator: (p?: Record<string, unknown>) => generateTunnel({ ...p, profile: "circular" } as Partial<TunnelParams>),
     defaultParams: { ...DEFAULT_TUNNEL, profile: "circular" },
     icon: "Circle",
   },
@@ -1504,7 +1505,7 @@ export const CURVED_TEMPLATES: CurvedTemplate[] = [
     name: "Horseshoe Tunnel",
     category: "tunnel",
     description: "Horseshoe profile tunnel (semicircle + vertical walls)",
-    generator: (p: Record<string, unknown>) => generateTunnel({ ...p, profile: "horseshoe" } as Partial<TunnelParams>),
+    generator: (p?: Record<string, unknown>) => generateTunnel({ ...p, profile: "horseshoe" } as Partial<TunnelParams>),
     defaultParams: { ...DEFAULT_TUNNEL, profile: "horseshoe" },
     icon: "Disc3",
   },
@@ -1513,7 +1514,7 @@ export const CURVED_TEMPLATES: CurvedTemplate[] = [
     name: "Hemisphere",
     category: "dome",
     description: "Hemisphere mesh with meridional and ring members",
-    generator: (p: Record<string, unknown>) => generateSphere({ ...p, hemisphere: true } as Partial<SphereParams>),
+    generator: (p?: Record<string, unknown>) => generateSphere({ ...p, hemisphere: true } as Partial<SphereParams>),
     defaultParams: { ...DEFAULT_SPHERE, hemisphere: true },
     icon: "Cloudy",
   },
@@ -1522,7 +1523,7 @@ export const CURVED_TEMPLATES: CurvedTemplate[] = [
     name: "Full Sphere",
     category: "surface",
     description: "Complete spherical frame mesh (tank, pressure vessel)",
-    generator: (p: Record<string, unknown>) => generateSphere({ ...p, hemisphere: false } as Partial<SphereParams>),
+    generator: (p?: Record<string, unknown>) => generateSphere({ ...p, hemisphere: false } as Partial<SphereParams>),
     defaultParams: { ...DEFAULT_SPHERE, hemisphere: false },
     icon: "Globe2",
   },

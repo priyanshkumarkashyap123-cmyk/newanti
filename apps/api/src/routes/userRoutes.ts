@@ -72,11 +72,11 @@ router.get('/limits', requireAuth(), asyncHandler(async (req: Request, res: Resp
     let dbTier: 'free' | 'pro' | 'enterprise' = 'free';
 
     if (USE_CLERK) {
-        const user = await User.findOne({ clerkId: userId });
+        const user = await User.findOne({ clerkId: userId }).lean();
         userEmail = user?.email || '';
         dbTier = user?.tier || 'free';
     } else {
-        const user = await UserModel.findById(userId);
+        const user = await UserModel.findById(userId).lean();
         userEmail = user?.email || authEmail || '';
         dbTier = user?.subscriptionTier || 'free';
     }
@@ -120,14 +120,14 @@ router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res
     try {
         if (USE_CLERK) {
             // Clerk auth: lookup by clerkId
-            const user = await User.findOne({ clerkId: userId });
+            const user = await User.findOne({ clerkId: userId }).lean();
             if (user) {
                 userEmail = user.email || userEmail;
                 dbTier = user.tier || 'free';
 
                 // Get subscription details if exists
                 if (user.subscription) {
-                    const subscription = await Subscription.findById(user.subscription);
+                    const subscription = await Subscription.findById(user.subscription).lean();
                     if (subscription) {
                         subscriptionData = {
                             status: subscription.status,
@@ -139,7 +139,7 @@ router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res
             }
         } else {
             // In-house auth: lookup by _id
-            const user = await UserModel.findById(userId);
+            const user = await UserModel.findById(userId).lean();
             if (user) {
                 userEmail = user.email || authEmail || '';
                 dbTier = user.subscriptionTier || 'free';
@@ -255,7 +255,7 @@ router.get('/activity', requireAuth(), asyncHandler(async (req: Request, res: Re
     }
 
     if (USE_CLERK) {
-        const user = await User.findOne({ clerkId: userId });
+        const user = await User.findOne({ clerkId: userId }).lean();
         if (!user) {
             throw new HttpError(404, 'User not found');
         }
@@ -267,7 +267,7 @@ router.get('/activity', requireAuth(), asyncHandler(async (req: Request, res: Re
             lastLogin: user.lastLogin
         });
     } else {
-        const user = await UserModel.findById(userId);
+        const user = await UserModel.findById(userId).lean();
         if (!user) {
             throw new HttpError(404, 'User not found');
         }
@@ -295,8 +295,8 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
     const { isMasterUser } = await import('../models.js');
 
     // Check Clerk user first, then in-house user
-    const clerkAdminUser = await User.findOne({ clerkId: adminUserId });
-    const inHouseAdminUser = await UserModel.findById(adminUserId);
+    const clerkAdminUser = await User.findOne({ clerkId: adminUserId }).lean();
+    const inHouseAdminUser = await UserModel.findById(adminUserId).lean();
     const adminEmail = clerkAdminUser?.email || inHouseAdminUser?.email || null;
 
     if (!isMasterUser(adminEmail)) {
@@ -314,7 +314,7 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
 
     // Try Clerk user first
     let updated = false;
-    const clerkUser = await User.findOne({ email: email.toLowerCase() });
+    const clerkUser = await User.findOne({ email: email.toLowerCase() }).lean();
     if (clerkUser) {
         await User.updateOne({ _id: clerkUser._id }, { $set: { tier } });
         updated = true;
@@ -322,7 +322,7 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
     }
 
     // Try in-house user
-    const inHouseUser = await UserModel.findOne({ email: email.toLowerCase() });
+    const inHouseUser = await UserModel.findOne({ email: email.toLowerCase() }).lean();
     if (inHouseUser) {
         await UserModel.updateOne({ _id: inHouseUser._id }, { $set: { subscriptionTier: tier } });
         updated = true;

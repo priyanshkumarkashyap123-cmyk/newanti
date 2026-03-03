@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { temporal } from "zundo";
+import type { TemporalState } from "zundo";
 import { logger } from '../lib/logging/logger';
 
 export interface ProjectInfo {
@@ -575,9 +576,9 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     let node: Record<string, unknown>;
     if (Array.isArray(entry) && entry.length >= 2) {
       [id, node] = entry;
-    } else if (entry && typeof entry === "object" && entry.nodeId) {
-      const { nodeId, ...rest } = entry;
-      id = nodeId;
+    } else if (entry && typeof entry === "object" && 'nodeId' in entry) {
+      const { nodeId, ...rest } = entry as Record<string, unknown>;
+      id = nodeId as string;
       node = rest;
     } else {
       return; // skip malformed entry
@@ -589,7 +590,7 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
       typeof node.y === "number" &&
       typeof node.z === "number"
     ) {
-      nodesMap.set(id, node);
+      nodesMap.set(id, node as unknown as Node);
     }
   });
 
@@ -600,15 +601,15 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     let member: Record<string, unknown>;
     if (Array.isArray(entry) && entry.length >= 2) {
       [id, member] = entry;
-    } else if (entry && typeof entry === "object" && entry.memberId) {
-      const { memberId, ...rest } = entry;
-      id = memberId;
+    } else if (entry && typeof entry === "object" && 'memberId' in entry) {
+      const { memberId, ...rest } = entry as Record<string, unknown>;
+      id = memberId as string;
       member = rest;
     } else {
       return; // skip malformed entry
     }
     if (id && member && member.startNodeId && member.endNodeId) {
-      membersMap.set(id, member);
+      membersMap.set(id, member as unknown as Member);
     }
   });
 
@@ -641,8 +642,8 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     data.plates.forEach((entry: unknown) => {
       if (Array.isArray(entry) && entry.length >= 2) {
         platesMap.set(entry[0], entry[1]);
-      } else if (entry && typeof entry === 'object' && entry.id) {
-        platesMap.set(entry.id, entry);
+      } else if (entry && typeof entry === 'object' && 'id' in entry) {
+        platesMap.set((entry as Record<string, unknown>).id as string, entry as unknown as Plate);
       }
     });
   }
@@ -688,8 +689,17 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
   };
 }
 
+// Only enable devtools in development to avoid expensive serialization in production
+const withDevtools = <T,>(fn: T): T => {
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return devtools(fn as any, { name: 'ModelStore', serialize: { options: { map: true } } }) as unknown as T;
+  }
+  return fn;
+};
+
 export const useModelStore = create<ModelState>()(
-  devtools(
+  withDevtools(
     temporal(
       (set, get) => ({
         projectInfo: {
@@ -2027,17 +2037,13 @@ export const useModelStore = create<ModelState>()(
         }),
       },
     ),
-    {
-      name: "StructuralModel",
-      // Optional: Serializer for better Map visibility in Redux DevTools
-      serialize: {
-        options: {
-          map: true, // Modern DevTools might handle Maps, otherwise custom logic needed
-        },
-      },
-    },
   ),
 );
+
+// Re-export with temporal type that is erased by the withDevtools any wrapper
+export const useModelStoreTemporal = (useModelStore as unknown as {
+  temporal: { getState: () => TemporalState<ModelState> };
+}).temporal;
 
 // ============================================
 // LOCAL STORAGE PERSISTENCE

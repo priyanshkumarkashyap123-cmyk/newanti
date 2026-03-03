@@ -177,7 +177,7 @@ router.get('/admin/stats', requireAuth(), asyncHandler(async (req: Request, res:
     if (!userId) throw new HttpError(401, 'Unauthorized');
 
     // Check if user is a master/admin
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ clerkId: userId }).lean();
     if (!user || !isMasterUser(user.email)) {
         throw new HttpError(403, 'Admin access required');
     }
@@ -196,7 +196,7 @@ router.get('/admin/logs', requireAuth(), asyncHandler(async (req: Request, res: 
     if (!userId) throw new HttpError(401, 'Unauthorized');
 
     // Check if user is a master/admin
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ clerkId: userId }).lean();
     if (!user || !isMasterUser(user.email)) {
         throw new HttpError(403, 'Admin access required');
     }
@@ -224,7 +224,7 @@ router.get('/admin/user/:clerkId', requireAuth(), asyncHandler(async (req: Reque
     if (!userId) throw new HttpError(401, 'Unauthorized');
 
     // Check if user is a master/admin
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ clerkId: userId }).lean();
     if (!user || !isMasterUser(user.email)) {
         throw new HttpError(403, 'Admin access required');
     }

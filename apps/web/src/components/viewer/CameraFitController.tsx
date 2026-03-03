@@ -102,7 +102,7 @@ export const CameraFitController: React.FC = () => {
       // Keep the current viewing direction, but reposition at the correct distance
       const direction = camera.position
         .clone()
-        .sub((controls as OrbitControlsLike)?.target ?? center)
+        .sub((controls as unknown as OrbitControlsLike)?.target ?? center)
         .normalize();
       // If direction is zero (camera at target), default to isometric-ish
       if (direction.lengthSq() < 1e-6) {
@@ -139,18 +139,18 @@ export const CameraFitController: React.FC = () => {
 
     // Update OrbitControls target to the model centre
     if (controls && "target" in controls) {
-      (controls as OrbitControlsLike).target.copy(center);
+      (controls as unknown as OrbitControlsLike).target.copy(center);
 
       // Dynamically adjust maxDistance so the user can still zoom out
       const maxDist = radius * 20;
-      if ((controls as OrbitControlsLike).maxDistance !== undefined) {
-        (controls as OrbitControlsLike).maxDistance = Math.max(maxDist, 200);
+      if ((controls as unknown as OrbitControlsLike).maxDistance !== undefined) {
+        (controls as unknown as OrbitControlsLike).maxDistance = Math.max(maxDist, 200);
       }
       // Also relax minDistance so user can zoom in close on small models
-      if ((controls as OrbitControlsLike).minDistance !== undefined) {
-        (controls as OrbitControlsLike).minDistance = Math.min(0.5, radius * 0.05);
+      if ((controls as unknown as OrbitControlsLike).minDistance !== undefined) {
+        (controls as unknown as OrbitControlsLike).minDistance = Math.min(0.5, radius * 0.05);
       }
-      (controls as OrbitControlsLike).update();
+      (controls as unknown as OrbitControlsLike).update();
     }
   }, [camera, controls, nodes]);
 
@@ -226,8 +226,8 @@ export const CameraFitController: React.FC = () => {
       if (pos) {
         camera.position.copy(pos);
         if ('target' in controls) {
-          (controls as OrbitControlsLike).target.copy(center);
-          (controls as OrbitControlsLike).update();
+          (controls as unknown as OrbitControlsLike).target.copy(center);
+          (controls as unknown as OrbitControlsLike).update();
         }
         camera.lookAt(center);
         if (camera instanceof THREE.PerspectiveCamera) {
@@ -245,7 +245,7 @@ export const CameraFitController: React.FC = () => {
     const handleZoomIn = () => {
       if (!camera || !controls) return;
       if (camera instanceof THREE.PerspectiveCamera) {
-        const target = (controls as OrbitControlsLike).target || new THREE.Vector3();
+        const target = (controls as unknown as OrbitControlsLike).target || new THREE.Vector3();
         const dir = camera.position.clone().sub(target);
         dir.multiplyScalar(0.75); // zoom in by 25%
         camera.position.copy(target).add(dir);
@@ -253,13 +253,13 @@ export const CameraFitController: React.FC = () => {
         camera.zoom *= 1.25;
         camera.updateProjectionMatrix();
       }
-      if ('update' in controls) (controls as OrbitControlsLike).update();
+      if ('update' in controls) (controls as unknown as OrbitControlsLike).update();
     };
 
     const handleZoomOut = () => {
       if (!camera || !controls) return;
       if (camera instanceof THREE.PerspectiveCamera) {
-        const target = (controls as OrbitControlsLike).target || new THREE.Vector3();
+        const target = (controls as unknown as OrbitControlsLike).target || new THREE.Vector3();
         const dir = camera.position.clone().sub(target);
         dir.multiplyScalar(1.33); // zoom out by ~25%
         camera.position.copy(target).add(dir);
@@ -267,7 +267,7 @@ export const CameraFitController: React.FC = () => {
         camera.zoom *= 0.75;
         camera.updateProjectionMatrix();
       }
-      if ('update' in controls) (controls as OrbitControlsLike).update();
+      if ('update' in controls) (controls as unknown as OrbitControlsLike).update();
     };
 
     document.addEventListener("zoom-in", handleZoomIn);
@@ -303,8 +303,8 @@ export const CameraFitController: React.FC = () => {
         center.z + dist * 0.6,
       );
       if ('target' in controls) {
-        (controls as OrbitControlsLike).target.copy(center);
-        (controls as OrbitControlsLike).update();
+        (controls as unknown as OrbitControlsLike).target.copy(center);
+        (controls as unknown as OrbitControlsLike).update();
       }
       camera.lookAt(center);
       if (camera instanceof THREE.PerspectiveCamera) {

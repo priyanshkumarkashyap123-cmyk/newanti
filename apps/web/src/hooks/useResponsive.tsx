@@ -150,9 +150,6 @@ export interface TouchState {
 }
 
 export function useTouchDevice(): TouchState {
-  // Use a ref to track if this is the initial mount
-  const hasMounted = useRef(false);
-  
   const [state, setState] = useState<TouchState>(() => {
     if (typeof window === 'undefined') {
       return {
@@ -167,15 +164,25 @@ export function useTouchDevice(): TouchState {
   });
 
   useEffect(() => {
-    // Only run on subsequent renders to avoid SSR hydration mismatch
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      return;
-    }
-    queueMicrotask(() => {
+    // Listen to media query changes instead of re-detecting every render
+    const hoverQuery = window.matchMedia('(hover: hover)');
+    const coarseQuery = window.matchMedia('(pointer: coarse)');
+    const fineQuery = window.matchMedia('(pointer: fine)');
+
+    const update = () => {
       setState(detectTouchCapabilities());
-    });
-  });
+    };
+
+    hoverQuery.addEventListener('change', update);
+    coarseQuery.addEventListener('change', update);
+    fineQuery.addEventListener('change', update);
+
+    return () => {
+      hoverQuery.removeEventListener('change', update);
+      coarseQuery.removeEventListener('change', update);
+      fineQuery.removeEventListener('change', update);
+    };
+  }, []);
 
   return state;
 }
@@ -212,14 +219,21 @@ export function useOrientation(): Orientation {
   });
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const handleChange = () => {
-      setOrientation(window.innerWidth > window.innerHeight ? 'landscape' : 'portrait');
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setOrientation(window.innerWidth > window.innerHeight ? 'landscape' : 'portrait');
+        rafId = null;
+      });
     };
 
     window.addEventListener('resize', handleChange);
     window.addEventListener('orientationchange', handleChange);
 
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener('resize', handleChange);
       window.removeEventListener('orientationchange', handleChange);
     };
@@ -272,8 +286,20 @@ export function useSafeAreaInsets(): SafeAreaInsets {
 
     updateInsets();
 
-    window.addEventListener('resize', updateInsets);
-    return () => window.removeEventListener('resize', updateInsets);
+    let rafId: number | null = null;
+    const debouncedUpdateInsets = () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        updateInsets();
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('resize', debouncedUpdateInsets);
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', debouncedUpdateInsets);
+    };
   }, []);
 
   return insets;
@@ -561,13 +587,21 @@ export function ResponsiveProvider({ children }: { children: ReactNode }) {
   const touch = useTouchDevice();
   const safeAreaInsets = useSafeAreaInsets();
 
+  // Memoize on primitive values to avoid new-object-reference re-renders
   const value = useMemo(
     () => ({
       ...viewport,
       ...touch,
       safeAreaInsets,
     }),
-    [viewport, touch, safeAreaInsets]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      viewport.width, viewport.height, viewport.breakpoint,
+      viewport.isMobile, viewport.isTablet, viewport.isDesktop,
+      viewport.isLandscape, viewport.isPortrait,
+      touch.isTouchDevice, touch.hasMouse, touch.hasCoarsePointer, touch.hasFinePointer,
+      safeAreaInsets.top, safeAreaInsets.right, safeAreaInsets.bottom, safeAreaInsets.left,
+    ]
   );
 
   return (

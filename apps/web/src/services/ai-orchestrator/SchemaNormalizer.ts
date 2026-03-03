@@ -22,6 +22,7 @@ import type {
   NormalizedSection,
   NormalizedStructureData,
   AIProviderType,
+  MemberRelease,
 } from './types';
 
 // ============================================================================
@@ -37,8 +38,8 @@ interface RawNode {
   label?: string;
   hasSupport?: boolean;
   has_support?: boolean;
-  restraint?: any;
-  support?: any;
+  restraint?: boolean[] | Record<string, boolean>;
+  support?: Partial<RawSupport>;
 }
 
 interface RawMember {
@@ -71,7 +72,7 @@ interface RawMember {
   material?: string;
   materialId?: string;
   material_id?: string;
-  releases?: any;
+  releases?: MemberRelease | boolean[] | Record<string, boolean>;
 }
 
 interface RawLoad {
@@ -170,6 +171,19 @@ interface RawSection {
   tf?: number;
 }
 
+interface RawStructureInput {
+  nodes?: RawNode[];
+  members?: RawMember[];
+  elements?: RawMember[];
+  loads?: RawLoad[];
+  supports?: RawSupport[];
+  materials?: RawMaterial[];
+  sections?: RawSection[];
+  type?: string;
+  structure_type?: string;
+  description?: string;
+}
+
 // ============================================================================
 // NORMALIZER CLASS
 // ============================================================================
@@ -183,7 +197,7 @@ export class SchemaNormalizer {
    * Normalize a complete structure from any backend format
    */
   normalizeStructure(
-    raw: any,
+    raw: RawStructureInput,
     source: AIProviderType = 'mock'
   ): NormalizedStructureData {
     this.resetCounters();
@@ -259,9 +273,28 @@ export class SchemaNormalizer {
         type: this.normalizeMemberType(raw.type),
         sectionId: raw.section || raw.sectionId || raw.section_id || undefined,
         materialId: raw.material || raw.materialId || raw.material_id || undefined,
-        releases: raw.releases || undefined,
+        releases: raw.releases ? this.normalizeReleases(raw.releases) : undefined,
       };
     });
+  }
+
+  private normalizeReleases(releases: MemberRelease | boolean[] | Record<string, boolean>): MemberRelease | undefined {
+    if ('startRelease' in releases || 'endRelease' in releases) {
+      return releases as MemberRelease;
+    }
+    if (Array.isArray(releases)) {
+      return {
+        startRelease: {
+          dx: !!releases[0], dy: !!releases[1], dz: !!releases[2],
+          rx: !!releases[3], ry: !!releases[4], rz: !!releases[5],
+        },
+        endRelease: {
+          dx: !!releases[6], dy: !!releases[7], dz: !!releases[8],
+          rx: !!releases[9], ry: !!releases[10], rz: !!releases[11],
+        },
+      };
+    }
+    return undefined;
   }
 
   private extractStartNode(raw: RawMember): string {
@@ -326,7 +359,7 @@ export class SchemaNormalizer {
         targetType,
         targetId: String(targetId),
         values,
-        direction: raw.direction as any || undefined,
+        direction: (raw.direction as NormalizedLoad['direction']) || undefined,
         loadCase: raw.loadCase || raw.load_case || 'Default',
         loadCombination: raw.loadCombination || raw.load_combination || undefined,
       };
@@ -685,7 +718,7 @@ export class SchemaNormalizer {
   // HELPERS
   // ============================================================================
 
-  private normalizeRestraintObject(restraint: any): NormalizedNode['restraint'] {
+  private normalizeRestraintObject(restraint: boolean[] | Record<string, boolean>): NormalizedNode['restraint'] {
     if (Array.isArray(restraint)) {
       return {
         dx: !!restraint[0],
@@ -718,7 +751,7 @@ export class SchemaNormalizer {
   /**
    * Convert normalized structure back to a specific backend format
    */
-  denormalize(structure: NormalizedStructureData, targetFormat: 'nodejs' | 'python' | 'frontend'): any {
+  denormalize(structure: NormalizedStructureData, targetFormat: 'nodejs' | 'python' | 'frontend'): Record<string, unknown> {
     switch (targetFormat) {
       case 'nodejs':
         return this.denormalizeForNodeJS(structure);
@@ -730,7 +763,7 @@ export class SchemaNormalizer {
     }
   }
 
-  private denormalizeForNodeJS(s: NormalizedStructureData): any {
+  private denormalizeForNodeJS(s: NormalizedStructureData): Record<string, unknown> {
     return {
       type: s.type,
       nodes: s.nodes.map(n => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
@@ -744,7 +777,7 @@ export class SchemaNormalizer {
     };
   }
 
-  private denormalizeForPython(s: NormalizedStructureData): any {
+  private denormalizeForPython(s: NormalizedStructureData): Record<string, unknown> {
     return {
       type: s.type,
       nodes: s.nodes.map(n => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
@@ -758,7 +791,7 @@ export class SchemaNormalizer {
     };
   }
 
-  private denormalizeForFrontend(s: NormalizedStructureData): any {
+  private denormalizeForFrontend(s: NormalizedStructureData): Record<string, unknown> {
     return {
       type: s.type,
       nodes: s.nodes.map(n => ({ id: n.id, x: n.x, y: n.y, z: n.z, label: n.label })),

@@ -71,7 +71,7 @@ export class DeviceSessionService {
         if (!isConnected()) return { allowed: true };
 
         try {
-            const user = await User.findOne({ clerkId });
+            const user = await User.findOne({ clerkId }).lean();
             if (!user) {
                 return { allowed: false, reason: 'User not found' };
             }
@@ -199,7 +199,7 @@ export class DeviceSessionService {
                     }
                 );
 
-                const user = await User.findOne({ clerkId });
+                const user = await User.findOne({ clerkId }).lean();
                 if (user) {
                     await this.logUsage(user, clerkId, 'session_end', 'auth', {
                         deviceId, deviceName: session.deviceName
@@ -238,7 +238,7 @@ export class DeviceSessionService {
             if (exceptDeviceId) {
                 const currentSession = await DeviceSession.findOne({
                     clerkId, deviceId: exceptDeviceId, isActive: true
-                });
+                }).lean();
                 await User.findOneAndUpdate(
                     { clerkId },
                     {
@@ -278,7 +278,7 @@ export class DeviceSessionService {
         if (!isConnected()) return { granted: true };
 
         try {
-            const user = await User.findOne({ clerkId });
+            const user = await User.findOne({ clerkId }).lean();
             if (!user) return { granted: false, reason: 'User not found' };
 
             // Master users bypass device limits
@@ -401,7 +401,7 @@ export class DeviceSessionService {
         if (!isConnected()) return { granted: true };
 
         try {
-            const user = await User.findOne({ clerkId });
+            const user = await User.findOne({ clerkId }).lean();
             if (!user) return { granted: false, reason: 'User not found' };
 
             if (isMasterUser(user.email)) {
@@ -412,7 +412,7 @@ export class DeviceSessionService {
                 clerkId,
                 isActive: true,
                 isAnalysisLocked: true
-            });
+            }).lean();
 
             if (!currentLock || currentLock.deviceId === deviceId) {
                 return { granted: true };
@@ -454,7 +454,7 @@ export class DeviceSessionService {
             const sessions = await DeviceSession.find({
                 clerkId,
                 isActive: true
-            }).sort({ lastHeartbeat: -1 });
+            }).sort({ lastHeartbeat: -1 }).lean();
 
             return sessions.map(s => ({
                 deviceId: s.deviceId,
@@ -529,7 +529,7 @@ export class DeviceSessionService {
                 // Check if analysis lock was on a stale session
                 const hasActiveLock = await DeviceSession.findOne({
                     clerkId, isActive: true, isAnalysisLocked: true
-                });
+                }).lean();
                 if (!hasActiveLock) {
                     await User.findOneAndUpdate(
                         { clerkId },

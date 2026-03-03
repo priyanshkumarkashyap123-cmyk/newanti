@@ -8,6 +8,8 @@
 import {
   useEffect,
   useState,
+  useCallback,
+  useMemo,
   createContext,
   useContext,
   ReactNode,
@@ -140,10 +142,10 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     }
   };
 
-  const reinitialize = async () => {
+  const reinitialize = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     await initialize();
-  };
+  }, []);
 
   const isPublicPath = isPublicRoute(location.pathname);
 
@@ -160,8 +162,13 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     });
   }, [isPublicPath]);
 
+  const contextValue = useMemo<AppContextValue>(
+    () => ({ ...state, reinitialize }),
+    [state, reinitialize]
+  );
+
   return (
-    <AppContext.Provider value={{ ...state, reinitialize }}>
+    <AppContext.Provider value={contextValue}>
       {isPublicPath ? (
         children
       ) : state.loading ? (

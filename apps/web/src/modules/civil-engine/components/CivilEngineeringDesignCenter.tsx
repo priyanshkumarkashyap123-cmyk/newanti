@@ -301,9 +301,9 @@ export function CivilEngineeringDesignCenter() {
   }, []);
 
   const handleCalculationComplete = useCallback(
-    (result: Omit<CalculationResult, "id" | "timestamp">) => {
+    (result: Record<string, unknown>) => {
       const newResult: CalculationResult = {
-        ...result,
+        ...(result as Omit<CalculationResult, "id" | "timestamp">),
         id: `calc-${Date.now()}`,
         timestamp: new Date(),
       };

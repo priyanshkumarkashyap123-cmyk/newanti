@@ -1,4 +1,4 @@
-import * as math from 'mathjs';
+import { matrix, zeros, identity, lusolve, multiply, transpose, type Matrix } from 'mathjs';
 
 // ============================================
 // MATRIX UTILITIES FOR STRUCTURAL ANALYSIS
@@ -35,7 +35,7 @@ export class MatrixUtils {
      * @param betaAngle Roll angle about the member axis (radians), default 0
      * @returns 3x3 rotation matrix [λ]
      */
-    static getRotationMatrix(nodeA: Point3D, nodeB: Point3D, betaAngle: number = 0): math.Matrix {
+    static getRotationMatrix(nodeA: Point3D, nodeB: Point3D, betaAngle: number = 0): Matrix {
         const L = this.getMemberLength(nodeA, nodeB);
 
         if (L < 1e-10) {
@@ -115,7 +115,7 @@ export class MatrixUtils {
             ];
         }
 
-        return math.matrix(r);
+        return matrix(r);
     }
 
     /**
@@ -128,9 +128,9 @@ export class MatrixUtils {
      * @param rotationMatrix 3x3 rotation matrix
      * @returns 12x12 transformation matrix
      */
-    static getTransformationMatrix(rotationMatrix: math.Matrix): math.Matrix {
+    static getTransformationMatrix(rotationMatrix: Matrix): Matrix {
         // Create 12x12 zero matrix
-        const T = math.zeros(12, 12) as math.Matrix;
+        const T = zeros(12, 12) as Matrix;
         const R = rotationMatrix.toArray() as number[][];
 
         // Place rotation matrix in 4 diagonal blocks (3x3 each)
@@ -175,7 +175,7 @@ export class MatrixUtils {
         L: number,
         G?: number,
         J?: number
-    ): math.Matrix {
+    ): Matrix {
         // Default shear modulus for steel (G ≈ E/2.6, ν=0.3)
         const shearModulus = G ?? E / 2.6;
         // Default torsional constant — conservative for open sections (I-beams/channels)
@@ -204,7 +204,7 @@ export class MatrixUtils {
         const GJ_L = (shearModulus * torsionalJ) / L;
 
         // Initialize 12x12 zero matrix
-        const k = math.zeros(12, 12) as math.Matrix;
+        const k = zeros(12, 12) as Matrix;
 
         // ---- Axial terms (DOFs 0, 6) ----
         k.set([0, 0], EA_L);
@@ -274,10 +274,10 @@ export class MatrixUtils {
      * @param T 12x12 transformation matrix
      * @returns 12x12 global stiffness matrix
      */
-    static transformToGlobal(localK: math.Matrix, T: math.Matrix): math.Matrix {
-        const TT = math.transpose(T);
-        const temp = math.multiply(TT, localK);
-        return math.multiply(temp, T) as math.Matrix;
+    static transformToGlobal(localK: Matrix, T: Matrix): Matrix {
+        const TT = transpose(T);
+        const temp = multiply(TT, localK);
+        return multiply(temp, T) as Matrix;
     }
 
     /**
@@ -289,8 +289,8 @@ export class MatrixUtils {
      * @param endNodeDOFs Array of 6 global DOF indices for end node
      */
     static assembleToGlobal(
-        globalK: math.Matrix,
-        memberK: math.Matrix,
+        globalK: Matrix,
+        memberK: Matrix,
         startNodeDOFs: number[],
         endNodeDOFs: number[]
     ): void {
@@ -310,36 +310,36 @@ export class MatrixUtils {
     /**
      * Create a zero matrix of given size
      */
-    static zeros(rows: number, cols: number): math.Matrix {
-        return math.zeros(rows, cols) as math.Matrix;
+    static zeros(rows: number, cols: number): Matrix {
+        return zeros(rows, cols) as Matrix;
     }
 
     /**
      * Create an identity matrix
      */
-    static identity(size: number): math.Matrix {
-        return math.identity(size) as math.Matrix;
+    static identity(size: number): Matrix {
+        return identity(size) as Matrix;
     }
 
     /**
      * Solve linear system Ax = b
      */
-    static solve(A: math.Matrix, b: math.Matrix): math.Matrix {
-        return math.lusolve(A, b) as math.Matrix;
+    static solve(A: Matrix, b: Matrix): Matrix {
+        return lusolve(A, b) as Matrix;
     }
 
     /**
      * Matrix multiplication
      */
-    static multiply(A: math.Matrix, B: math.Matrix): math.Matrix {
-        return math.multiply(A, B) as math.Matrix;
+    static multiply(A: Matrix, B: Matrix): Matrix {
+        return multiply(A, B) as Matrix;
     }
 
     /**
      * Matrix transpose
      */
-    static transpose(A: math.Matrix): math.Matrix {
-        return math.transpose(A);
+    static transpose(A: Matrix): Matrix {
+        return transpose(A);
     }
 }
 
