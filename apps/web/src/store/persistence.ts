@@ -208,5 +208,11 @@ export function initAutoSave(): void {
   );
 }
 
-// Initialize auto-save immediately when this module is imported
-initAutoSave();
+// Defer auto-save initialization to avoid circular-import race condition.
+// persistence.ts imports useModelStore from model.ts, but model.ts re-exports
+// from persistence.ts — so when persistence.ts executes at import time,
+// useModelStore has not yet been assigned.  A queueMicrotask ensures both
+// modules have finished initialising before we call .subscribe().
+queueMicrotask(() => {
+  initAutoSave();
+});
