@@ -1,4 +1,11 @@
 import { build } from 'esbuild';
+import { cpSync, mkdirSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+const __dirname_build = dirname(fileURLToPath(import.meta.url));
+const require_build = createRequire(import.meta.url);
 
 async function main() {
     console.log('🔨 Building API with esbuild (bundled)...');
@@ -23,6 +30,14 @@ async function main() {
                 'swagger-ui-dist',
                 // CommonJS module loaded via createRequire at runtime
                 'razorpay',
+                // Pino uses worker_threads via thread-stream. The worker file
+                // cannot be bundled — it's loaded at runtime by the Worker constructor.
+                // We mark pino and its transport layer as external and copy the
+                // worker file into dist/lib/ as a post-build step.
+                'pino',
+                'pino-pretty',
+                'thread-stream',
+                'pino/file',
             ],
             // Banner to handle __dirname / __filename for ESM compatibility
             banner: {

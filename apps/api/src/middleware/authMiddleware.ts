@@ -8,20 +8,20 @@
  * - CLERK_SECRET_KEY: Required for Clerk backend verification
  */
 
-import { Request, Response, NextFunction, RequestHandler } from "express";
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import {
   clerkMiddleware,
   requireAuth as clerkRequireAuth,
   getAuth as clerkGetAuth,
-} from "@clerk/express";
-import { logger } from "../utils/logger.js";
+} from '@clerk/express';
+import { logger } from '../utils/logger.js';
 
 // ============================================
 // CONFIGURATION
 // ============================================
 
 export const isUsingClerk = (): boolean => {
-  return process.env["USE_CLERK"] === "true";
+  return process.env['USE_CLERK'] === 'true' || !!process.env['CLERK_SECRET_KEY'];
 };
 
 logger.info('API Auth Mode: Clerk');
@@ -59,8 +59,7 @@ const safeGetAuth = (req: Request): ClerkAuthResult => {
   const auth = clerkGetAuth(req as any);
   return {
     userId: ((auth as Record<string, unknown>).userId as string | null) ?? null,
-    sessionId:
-      ((auth as Record<string, unknown>).sessionId as string | null) ?? null,
+    sessionId: ((auth as Record<string, unknown>).sessionId as string | null) ?? null,
   };
 };
 
@@ -72,8 +71,7 @@ const safeGetAuth = (req: Request): ClerkAuthResult => {
  * Clerk authentication middleware
  * Validates JWT tokens and attaches auth info to request
  */
-export const authMiddleware: RequestHandler =
-  clerkMiddleware() as unknown as RequestHandler;
+export const authMiddleware: RequestHandler = clerkMiddleware() as unknown as RequestHandler;
 
 /**
  * Require authentication middleware
@@ -117,35 +115,28 @@ export const isAuthenticated = (req: Request): boolean => {
  * Require specific roles (can be extended based on Clerk metadata)
  */
 export const requireRole = (roles: string[]): RequestHandler => {
-  return async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { userId } = safeGetAuth(req);
 
     if (!userId) {
       res.status(401).json({
         success: false,
-        message: "Authentication required",
+        message: 'Authentication required',
       });
       return;
     }
 
     try {
       // Check user role from Clerk public metadata
-      const clerkClient = (await import("@clerk/express")).clerkClient;
+      const clerkClient = (await import('@clerk/express')).clerkClient;
       const client = await clerkClient;
       const user = await client.users.getUser(userId);
-      const userRole =
-        ((user.publicMetadata as Record<string, unknown>)?.role as string) ||
-        "user";
+      const userRole = ((user.publicMetadata as Record<string, unknown>)?.role as string) || 'user';
 
       if (!roles.includes(userRole)) {
         res.status(403).json({
           success: false,
-          message:
-            "Insufficient permissions — required role: " + roles.join(" or "),
+          message: 'Insufficient permissions — required role: ' + roles.join(' or '),
         });
         return;
       }
@@ -154,7 +145,7 @@ export const requireRole = (roles: string[]): RequestHandler => {
       // Fail closed — deny access if role check fails
       res.status(403).json({
         success: false,
-        message: "Unable to verify permissions",
+        message: 'Unable to verify permissions',
       });
       return;
     }
@@ -176,10 +167,10 @@ export const handleAuthError = (
   res: Response,
   next: NextFunction,
 ): void => {
-  if (err.name === "ClerkError" || err.message.includes("Unauthenticated")) {
+  if (err.name === 'ClerkError' || err.message.includes('Unauthenticated')) {
     res.status(401).json({
       success: false,
-      message: "Authentication failed",
+      message: 'Authentication failed',
       error: err.message,
     });
     return;
@@ -206,9 +197,9 @@ export async function verifySocketToken(
   try {
     // Attempt Clerk token verification via Clerk Backend SDK
     // Clerk's verifyToken uses the JWKS endpoint and RS256
-    const { verifyToken } = await import("@clerk/express");
+    const { verifyToken } = await import('@clerk/express');
     const payload = await verifyToken(token, {
-      secretKey: process.env["CLERK_SECRET_KEY"] || "",
+      secretKey: process.env['CLERK_SECRET_KEY'] || '',
     });
     if (payload?.sub) {
       return { userId: payload.sub, sub: payload.sub };
@@ -217,16 +208,11 @@ export async function verifySocketToken(
   } catch (clerkErr) {
     // Clerk verification failed — try in-house JWT as fallback
     try {
-      const jwt = await import("jsonwebtoken");
-      const secret = process.env["JWT_SECRET"];
+      const jwt = await import('jsonwebtoken');
+      const secret = process.env['JWT_SECRET'];
       if (!secret) return null;
-      const decoded = jwt.default.verify(token, secret) as Record<
-        string,
-        unknown
-      >;
-      const userId = (decoded.userId ?? decoded.sub ?? decoded.id) as
-        | string
-        | undefined;
+      const decoded = jwt.default.verify(token, secret) as Record<string, unknown>;
+      const userId = (decoded.userId ?? decoded.sub ?? decoded.id) as string | undefined;
       if (userId) return { userId, sub: userId };
       return null;
     } catch {
