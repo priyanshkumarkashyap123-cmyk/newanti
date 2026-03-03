@@ -133,33 +133,33 @@ export class BeamLabServices {
         includeConnections?: boolean;
         generateReport?: boolean;
     }): Promise<{
-        analysis: Record<string, unknown>;
+        analysis: unknown;
         designChecks: Array<{ memberId: string; checks: Array<{ ratio: number; status: string }> }>;
         report?: string;
     }> {
         // 1. Run analysis
-        const nodes = Array.isArray(model.nodes) ? model.nodes : Array.from((model.nodes as Map<string, unknown>)?.values?.() || []);
-        const members = Array.isArray(model.members) ? model.members : Array.from((model.members as Map<string, unknown>)?.values?.() || []);
-        const pointLoads = model.pointLoads || model.loads || [];
-        const memberLoads = model.memberLoads || [];
-        const analysis = await this.solver.analyze(nodes, members, pointLoads, memberLoads);
+        const nodes = (Array.isArray(model.nodes) ? model.nodes : Array.from((model.nodes as Map<string, unknown>)?.values?.() || [])) as unknown[];
+        const members = (Array.isArray(model.members) ? model.members : Array.from((model.members as Map<string, unknown>)?.values?.() || [])) as unknown[];
+        const pointLoads = (model.pointLoads || model.loads || []) as unknown[];
+        const memberLoads = (model.memberLoads || []) as unknown[];
+        const analysis = await (this.solver.analyze as (n: unknown, m: unknown, p: unknown, ml: unknown) => Promise<unknown>)(nodes, members, pointLoads, memberLoads);
         const analysisResult = analysis as Record<string, unknown>;
         const memberForcesMap = (analysisResult.memberForces || analysisResult.member_forces || {}) as Record<string, Record<string, number>>;
 
         // 2. Run design checks
         const designChecks = [];
         for (const member of model.members) {
-            const forces = memberForcesMap[member.id] || {
+            const forces = (memberForcesMap[member.id] || {
                 axial: 0,
                 momentZ: 0,
                 momentY: 0,
                 shearY: 0,
                 shearZ: 0
-            };
+            }) as any;
             const result = this.codes.checkSteelMember(
                 {
-                    section: member.section,
-                    material: member.material,
+                    section: member.section as unknown as any,
+                    material: member.material as unknown as any,
                     length: member.length,
                     unbracedLength: member.length,
                     effectiveLengthY: 1.0,
