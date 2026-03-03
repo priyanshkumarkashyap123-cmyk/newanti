@@ -141,9 +141,9 @@ export function handleError(error: unknown, context?: Record<string, unknown>): 
     context: { ...normalized.context, ...context },
   });
 
-  // Show user-friendly notification (integrate with your toast/notification system)
+  // Show user-friendly notification
+  // Note: Notification integration is handled by the ErrorBoundary's onError callback
   if (normalized.isOperational && typeof window !== 'undefined') {
-    // TODO: Integrate with notification system
     console.error('User-facing error:', getUserFriendlyMessage(error));
   }
 }

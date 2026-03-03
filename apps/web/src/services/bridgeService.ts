@@ -9,6 +9,7 @@
 // ============================================
 
 import { API_CONFIG } from "../config/env";
+import { logger } from '../lib/logging/logger';
 
 // Use Rust API directly for templates (100x faster)
 const RUST_API = API_CONFIG.rustUrl;
@@ -105,7 +106,7 @@ export const Bridge = {
       });
       return response.ok;
     } catch (e) {
-      console.warn("[Bridge] Python server offline");
+      logger.warn('Bridge: Python server offline');
       return false;
     }
   },
@@ -153,7 +154,7 @@ export const Bridge = {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("[Bridge] Template fetch failed:", errorData);
+        logger.error('Bridge: Template fetch failed', { error: errorData });
         return {
           success: false,
           error: errorData.detail || `HTTP ${response.status}`,
@@ -183,14 +184,15 @@ export const Bridge = {
         },
       };
 
-      console.log(
-        `[Bridge] Template '${type}' loaded from Rust API:`,
-        `${bridgeResponse.model?.nodes.length} nodes, ${bridgeResponse.model?.members.length} members`,
-      );
+      logger.info('Bridge: Template loaded from Rust API', {
+        type,
+        nodeCount: bridgeResponse.model?.nodes.length,
+        memberCount: bridgeResponse.model?.members.length,
+      });
 
       return bridgeResponse;
     } catch (e) {
-      console.error("[Bridge] Rust Template Server Offline", e);
+      logger.error('Bridge: Rust Template Server offline', { error: e });
       return null;
     }
   },
@@ -224,14 +226,14 @@ export const Bridge = {
 
       const data: BridgeResponse = await response.json();
 
-      console.log(
-        `[Bridge] AI generated:`,
-        `${data.model?.nodes.length} nodes, ${data.model?.members.length} members`,
-      );
+      logger.info('Bridge: AI generated model', {
+        nodeCount: data.model?.nodes.length,
+        memberCount: data.model?.members.length,
+      });
 
       return data;
     } catch (e) {
-      console.error("[Bridge] AI generation failed", e);
+      logger.error('Bridge: AI generation failed', { error: e });
       return null;
     }
   },
@@ -264,7 +266,7 @@ export const Bridge = {
 
       return await response.json();
     } catch (e) {
-      console.error("[Bridge] Validation failed", e);
+      logger.error('Bridge: Validation failed', { error: e });
       return null;
     }
   },
@@ -350,7 +352,7 @@ export const Bridge = {
       const payload = raw?.data ?? raw;
       return payload.projects || (Array.isArray(payload) ? payload : []);
     } catch (e) {
-      console.error("[Bridge] Failed to list projects", e);
+      logger.error('Bridge: Failed to list projects', { error: e });
       return [];
     }
   },
@@ -371,7 +373,7 @@ export const Bridge = {
       const payload = raw?.data ?? raw;
       return payload.project || payload;
     } catch (e) {
-      console.error("[Bridge] Failed to save project", e);
+      logger.error('Bridge: Failed to save project', { error: e });
       return null;
     }
   },
@@ -390,7 +392,7 @@ export const Bridge = {
       const payload = raw?.data ?? raw;
       return payload.project || payload;
     } catch (e) {
-      console.error("[Bridge] Failed to load project", e);
+      logger.error('Bridge: Failed to load project', { error: e });
       return null;
     }
   },
@@ -425,7 +427,7 @@ export const Bridge = {
       });
       return await response.json();
     } catch (e) {
-      console.error("[Bridge] PINN Training failed", e);
+      logger.error('Bridge: PINN training failed', { error: e });
       return null;
     }
   },

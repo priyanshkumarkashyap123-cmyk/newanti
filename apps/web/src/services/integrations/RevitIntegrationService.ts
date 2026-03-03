@@ -28,7 +28,7 @@ export interface RevitElement {
     category: string;        // "Structural Framing", "Structural Columns", etc.
     family: string;          // "W-Wide Flange"
     type: string;            // "W14x22"
-    parameters: Record<string, any>;
+    parameters: Record<string, unknown>;
     geometry?: {
         startPoint: { x: number; y: number; z: number };
         endPoint: { x: number; y: number; z: number };
@@ -63,8 +63,8 @@ export interface SyncResult {
 
 export interface SyncConflict {
     elementId: string;
-    revitValue: any;
-    beamlabValue: any;
+    revitValue: unknown;
+    beamlabValue: unknown;
     resolution?: 'use_revit' | 'use_beamlab' | 'merge';
 }
 
@@ -85,7 +85,7 @@ class RevitIntegrationServiceClass {
     private accessToken: string | null = null;
     private tokenExpiry: Date | null = null;
     private currentModel: RevitModel | null = null;
-    private listeners: Array<(event: string, data: any) => void> = [];
+    private listeners: Array<(event: string, data: unknown) => void> = [];
 
     private readonly FORGE_BASE_URL = 'https://developer.api.autodesk.com';
 
@@ -208,7 +208,7 @@ class RevitIntegrationServiceClass {
     /**
      * Parse Revit elements from properties
      */
-    private parseRevitElements(collection: any[]): RevitElement[] {
+    private parseRevitElements(collection: Record<string, unknown>[]): RevitElement[] {
         const structuralCategories = [
             'Structural Framing',
             'Structural Columns',
@@ -217,22 +217,25 @@ class RevitIntegrationServiceClass {
         ];
 
         return collection
-            .filter(item => structuralCategories.includes(item.properties?.Category))
-            .map(item => ({
-                elementId: item.objectid.toString(),
-                category: item.properties?.Category || 'Unknown',
-                family: item.properties?.['Family'] || 'Unknown',
-                type: item.properties?.['Type'] || 'Unknown',
-                parameters: item.properties || {},
-                geometry: this.extractGeometry(item)
-            }));
+            .filter(item => structuralCategories.includes((item.properties as Record<string, string>)?.Category))
+            .map(item => {
+                const props = (item.properties ?? {}) as Record<string, string>;
+                return {
+                    elementId: String(item.objectid),
+                    category: props.Category || 'Unknown',
+                    family: props['Family'] || 'Unknown',
+                    type: props['Type'] || 'Unknown',
+                    parameters: (item.properties ?? {}) as Record<string, unknown>,
+                    geometry: this.extractGeometry(item)
+                };
+            });
     }
 
     /**
      * Extract geometry from element
      */
-    private extractGeometry(item: any): RevitElement['geometry'] | undefined {
-        const props = item.properties || {};
+    private extractGeometry(item: Record<string, unknown>): RevitElement['geometry'] | undefined {
+        const props = (item.properties ?? {}) as Record<string, string>;
 
         if (props['Start Point'] && props['End Point']) {
             return {
@@ -327,7 +330,7 @@ class RevitIntegrationServiceClass {
     /**
      * Convert BeamLab model to Revit format
      */
-    convertToRevitFormat(beamlabModel: any): RevitPushPayload {
+    convertToRevitFormat(beamlabModel: { members?: Array<{ id: string; section?: string; startLevel?: string; endLevel?: string; material?: string; startNodeId?: string; endNodeId?: string; type?: string }>; nodes?: Array<{ id: string; position: { x: number; y: number; z: number } }> }): RevitPushPayload {
         const elements: RevitPushPayload['elements'] = [];
 
         // Convert nodes to Revit reference points (if needed)
@@ -346,8 +349,8 @@ class RevitIntegrationServiceClass {
                         'Material': member.material || 'A992'
                     },
                     geometry: {
-                        startPoint: beamlabModel.nodes?.find((n: any) => n.id === member.startNodeId)?.position || { x: 0, y: 0, z: 0 },
-                        endPoint: beamlabModel.nodes?.find((n: any) => n.id === member.endNodeId)?.position || { x: 0, y: 0, z: 0 },
+                        startPoint: beamlabModel.nodes?.find((n) => n.id === member.startNodeId)?.position || { x: 0, y: 0, z: 0 },
+                        endPoint: beamlabModel.nodes?.find((n) => n.id === member.endNodeId)?.position || { x: 0, y: 0, z: 0 },
                         rotation: 0
                     }
                 }
@@ -360,9 +363,9 @@ class RevitIntegrationServiceClass {
     /**
      * Convert Revit model to BeamLab format
      */
-    convertToBeamLabFormat(revitModel: RevitModel): any {
-        const nodes: any[] = [];
-        const members: any[] = [];
+    convertToBeamLabFormat(revitModel: RevitModel): { nodes: Array<{ id: string; x: number; y: number; z: number }>; members: Array<{ id: string; startNodeId: string | undefined; endNodeId: string | undefined; section: string; type: string }> } {
+        const nodes: Array<{ id: string; x: number; y: number; z: number }> = [];
+        const members: Array<{ id: string; startNodeId: string | undefined; endNodeId: string | undefined; section: string; type: string }> = [];
         const nodeMap = new Map<string, string>();
 
         for (const element of revitModel.elements) {
@@ -410,14 +413,14 @@ class RevitIntegrationServiceClass {
     /**
      * Subscribe to events
      */
-    on(handler: (event: string, data: any) => void): () => void {
+    on(handler: (event: string, data: unknown) => void): () => void {
         this.listeners.push(handler);
         return () => {
             this.listeners = this.listeners.filter(l => l !== handler);
         };
     }
 
-    private emit(event: string, data: any): void {
+    private emit(event: string, data: unknown): void {
         for (const listener of this.listeners) {
             listener(event, data);
         }

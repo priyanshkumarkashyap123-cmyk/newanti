@@ -24,6 +24,8 @@ import {
     ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useModelStore } from '../store/model';
+import type { Member, NodeLoad, MemberLoad, LoadCase, LoadCombination, ModeShape } from '../store/model';
+import type { SectionProperties } from '../data/SectionDatabase';
 import { useAuth } from '../providers/AuthProvider';
 const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import { generateDesignReport } from '../services/PDFReportService';
@@ -191,7 +193,7 @@ export const ReportsPage = () => {
     const maxDisp = useMemo(() => {
         if (!analysisResults?.displacements) return undefined;
         let mx = 0;
-        analysisResults.displacements.forEach((d: any) => {
+        analysisResults.displacements.forEach((d) => {
             const v = Math.max(Math.abs(d.dx ?? 0), Math.abs(d.dy ?? 0), Math.abs(d.dz ?? 0));
             if (v > mx) mx = v;
         });
@@ -200,8 +202,8 @@ export const ReportsPage = () => {
 
     /* ── Section properties lookup ── */
     const uniqueSections = useMemo(() => {
-        const seen = new Map<string, { id: string; A?: number; I?: number; Iy?: number; Iz?: number; J?: number; E?: number; count: number; dbMatch?: any }>();
-        memberList.forEach((m: any) => {
+        const seen = new Map<string, { id: string; A?: number; I?: number; Iy?: number; Iz?: number; J?: number; E?: number; count: number; dbMatch?: SectionProperties }>();
+        memberList.forEach((m) => {
             const sid = m.sectionId || m.section || 'Default';
             if (!seen.has(sid)) {
                 const db = STEEL_SECTIONS.find((s) => s.id === sid || s.name === sid);
@@ -215,7 +217,7 @@ export const ReportsPage = () => {
 
     /* ── Members with releases ── */
     const membersWithReleases = useMemo(() =>
-        memberList.filter((m: any) => m.releases && Object.values(m.releases).some(Boolean)),
+        memberList.filter((m) => m.releases && Object.values(m.releases).some(Boolean)),
     [memberList]);
 
     /* ── Critical members (max for each action) ── */
@@ -719,14 +721,14 @@ export const ReportsPage = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-200">
-                                            {loadCombinations.map((combo: any, i: number) => (
+                                            {loadCombinations.map((combo: LoadCombination, i: number) => (
                                                 <tr key={combo.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-2 font-mono font-bold text-slate-800">{combo.id}</td>
                                                     <td className="px-3 py-2 text-slate-700 font-medium">{combo.name}</td>
                                                     <td className="px-3 py-2 font-mono text-slate-500 text-[10px]">{combo.code || '—'}</td>
                                                     <td className="px-3 py-2 text-slate-600">
-                                                        {combo.factors?.map((f: any, fi: number) => {
-                                                            const lc = loadCases?.find((c: any) => c.id === f.loadCaseId);
+                                                        {combo.factors?.map((f, fi: number) => {
+                                                            const lc = loadCases?.find((c) => c.id === f.loadCaseId);
                                                             return (
                                                                 <span key={fi}>
                                                                     {fi > 0 && ' + '}
@@ -879,7 +881,7 @@ export const ReportsPage = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {memberList.slice(0, ROWS_PER_PAGE).map((m: any, i) => (
+                                            {memberList.slice(0, ROWS_PER_PAGE).map((m, i) => (
                                                 <tr key={m.id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{m.id}</td>
                                                     <td className="px-3 py-1.5 text-center font-mono text-slate-600">{m.startNodeId ?? m.startNode ?? '—'}</td>
@@ -971,7 +973,7 @@ export const ReportsPage = () => {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {loads.slice(0, ROWS_PER_PAGE).map((l: any, i) => (
+                                                        {loads.slice(0, ROWS_PER_PAGE).map((l, i) => (
                                                             <tr key={l.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                                 <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{l.nodeId ?? l.node ?? '—'}</td>
                                                                 <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(l.fx)}</td>
@@ -1009,7 +1011,7 @@ export const ReportsPage = () => {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {memberLoads.slice(0, ROWS_PER_PAGE).map((ml: any, i) => (
+                                                        {memberLoads.slice(0, ROWS_PER_PAGE).map((ml, i) => (
                                                             <tr key={ml.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                                 <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{ml.memberId}</td>
                                                                 <td className="px-3 py-1.5 text-slate-600 font-medium">{ml.type}</td>
@@ -1044,7 +1046,7 @@ export const ReportsPage = () => {
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-slate-200">
-                                                        {loadCases.map((lc: any) => (
+                                                        {loadCases.map((lc) => (
                                                             <tr key={lc.id}>
                                                                 <td className="px-3 py-2 font-mono font-bold text-slate-800">{lc.id}</td>
                                                                 <td className="px-3 py-2 text-slate-700">{lc.name}</td>
@@ -1080,7 +1082,7 @@ export const ReportsPage = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-200">
-                                            {membersWithReleases.map((m: any, i) => {
+                                            {membersWithReleases.map((m, i) => {
                                                 const r = m.releases || {};
                                                 const fmtReleases = (end: 'Start' | 'End') => {
                                                     const prefix = end.toLowerCase();
@@ -1200,7 +1202,7 @@ export const ReportsPage = () => {
                                                 <tbody className="divide-y divide-slate-200">
                                                     {(() => {
                                                         const totals = { fx: 0, fy: 0, fz: 0, mx: 0, my: 0, mz: 0 };
-                                                        analysisResults.reactions!.forEach((r: any) => {
+                                                        analysisResults.reactions!.forEach((r) => {
                                                             totals.fx += (r.fx ?? r.Rx ?? 0);
                                                             totals.fy += (r.fy ?? r.Ry ?? 0);
                                                             totals.fz += (r.fz ?? r.Rz ?? 0);
@@ -1405,7 +1407,7 @@ export const ReportsPage = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {Array.from(analysisResults.reactions.entries()).map(([id, r]: [string, any], i) => (
+                                            {Array.from(analysisResults.reactions.entries()).map(([id, r], i) => (
                                                 <tr key={id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{id}</td>
                                                     <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(r.fx ?? r.Rx)}</td>
@@ -1443,7 +1445,7 @@ export const ReportsPage = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {Array.from(analysisResults.displacements.entries()).slice(0, ROWS_PER_PAGE).map(([id, d]: [string, any], i) => (
+                                            {Array.from(analysisResults.displacements.entries()).slice(0, ROWS_PER_PAGE).map(([id, d], i) => (
                                                 <tr key={id} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                     <td className="px-3 py-1.5 font-mono font-bold text-slate-800">{id}</td>
                                                     <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(d.dx, 4)}</td>
@@ -1488,7 +1490,7 @@ export const ReportsPage = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-200">
-                                                {modalResults.modes.slice(0, 12).map((mode: any, i: number) => (
+                                                {modalResults.modes.slice(0, 12).map((mode, i: number) => (
                                                     <tr key={mode.modeNumber} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
                                                         <td className="px-3 py-1.5 text-center font-mono font-bold text-slate-800">{mode.modeNumber}</td>
                                                         <td className="px-3 py-1.5 text-right font-mono text-slate-600">{eng(mode.frequency, 4)}</td>

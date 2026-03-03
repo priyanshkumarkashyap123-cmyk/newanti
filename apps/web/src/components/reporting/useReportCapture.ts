@@ -7,6 +7,7 @@ import { useCallback, useRef } from 'react';
 // html2canvas is dynamically imported on first use to keep it out of the main bundle (~204 KB)
 import { ReportGenerator, type ProjectData, type NodeDisplacementRow, type MemberForceRow, type ReactionRow } from '../../services/ReportGenerator';
 import { useModelStore } from '../../store/model';
+import { logger } from '../../lib/logging/logger';
 
 // ============================================
 // TYPES
@@ -40,7 +41,7 @@ export function useReportCapture() {
             const canvas = document.querySelector('canvas') as HTMLCanvasElement;
 
             if (!canvas) {
-                console.error('No canvas element found');
+                logger.error('No canvas element found');
                 return null;
             }
 
@@ -48,7 +49,7 @@ export function useReportCapture() {
             const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
 
             if (!gl) {
-                console.error('Could not get WebGL context');
+                logger.error('Could not get WebGL context');
                 return null;
             }
 
@@ -65,7 +66,7 @@ export function useReportCapture() {
 
             return dataUrl;
         } catch (error) {
-            console.error('Error capturing 3D view:', error);
+            logger.error('Error capturing 3D view', { error });
             return null;
         }
     }, []);
@@ -81,7 +82,7 @@ export function useReportCapture() {
                 const element = document.getElementById(id);
 
                 if (!element) {
-                    console.warn(`Element with id "${id}" not found`);
+                    logger.warn('Chart element not found', { id });
                     continue;
                 }
 
@@ -101,7 +102,7 @@ export function useReportCapture() {
                     caption: element.getAttribute('data-caption') || `Chart: ${id}`,
                 });
             } catch (error) {
-                console.error(`Error capturing chart "${id}":`, error);
+                logger.error('Error capturing chart', { id, error });
             }
         }
 
@@ -116,7 +117,7 @@ export function useReportCapture() {
             const element = document.querySelector(selector) as HTMLElement;
 
             if (!element) {
-                console.warn(`Element "${selector}" not found`);
+                logger.warn('Element not found', { selector });
                 return null;
             }
 
@@ -130,7 +131,7 @@ export function useReportCapture() {
 
             return canvas.toDataURL('image/png', 1.0);
         } catch (error) {
-            console.error(`Error capturing element "${selector}":`, error);
+            logger.error('Error capturing element', { selector, error });
             return null;
         }
     }, []);
@@ -210,7 +211,7 @@ export function useReportCapture() {
      */
     const generateFullReport = useCallback(async (projectData?: Partial<ProjectData>): Promise<ReportCaptureResult> => {
         try {
-// console.log('📄 Starting report generation...');
+            logger.info('Starting report generation');
 
             // 1. Create report generator
             const report = new ReportGenerator();
@@ -226,14 +227,14 @@ export function useReportCapture() {
             });
 
             // 3. Capture 3D view
-// console.log('📸 Capturing 3D view...');
+            logger.info('Capturing 3D view');
             const view3D = await capture3DView();
             if (view3D) {
                 report.add3DSnapshot(view3D, 'Figure 1: 3D Structural Model');
             }
 
             // 4. Collect model data
-// console.log('📊 Collecting model data...');
+            logger.info('Collecting model data');
             const modelData = collectModelData();
 
             // 5. Add model summary
@@ -268,7 +269,7 @@ export function useReportCapture() {
                 }
 
                 // 7. Try to capture diagram charts if they exist
-// console.log('📈 Capturing diagrams...');
+                logger.info('Capturing diagrams');
                 const diagramIds = ['sfd-chart', 'bmd-chart', 'deflection-chart'];
                 const charts = await captureCharts(diagramIds);
 
@@ -286,15 +287,15 @@ export function useReportCapture() {
             }
 
             // 8. Save the report
-// console.log('💾 Saving report...');
+            logger.info('Saving report');
             const filename = projectData?.projectName?.replace(/\s+/g, '_') || 'BeamLab_Analysis';
             report.save(filename);
 
-// console.log('✅ Report generated successfully!');
+            logger.info('Report generated successfully');
             return { success: true };
 
         } catch (error) {
-            console.error('Error generating report:', error);
+            logger.error('Error generating report', { error });
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error occurred',

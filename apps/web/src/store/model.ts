@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { temporal } from "zundo";
+import { logger } from '../lib/logging/logger';
 
 export interface ProjectInfo {
   name: string;
@@ -563,7 +564,7 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     !Array.isArray(data.nodes) ||
     !Array.isArray(data.members)
   ) {
-    console.error("Invalid project data structure");
+    logger.error('Invalid project data structure');
     return null;
   }
 
@@ -624,7 +625,7 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
   });
 
   if (nodesMap.size === 0 && data.nodes.length > 0) {
-    console.warn("No valid nodes loaded from project data");
+    logger.warn('No valid nodes loaded from project data');
   }
 
   // Restore loads
@@ -1700,7 +1701,7 @@ export const useModelStore = create<ModelState>()(
             set(hydrated);
             return true;
           } catch (error) {
-            console.error("Error loading project:", error);
+            logger.error('Error loading project', { error });
             return false;
           }
         },
@@ -2078,14 +2079,14 @@ export const saveProjectToStorage = (): boolean => {
 
     // Validate data before saving
     if (projectData.nodes.length === 0) {
-      console.warn("Attempting to save empty project");
+      logger.warn('Attempting to save empty project');
     }
 
     const jsonString = JSON.stringify(projectData);
 
     // Check approximate size (localStorage typically 5-10MB limit)
     if (jsonString.length > 5 * 1024 * 1024) {
-      console.error("Project too large to save locally");
+      logger.error('Project too large to save locally');
       return false;
     }
 
@@ -2096,7 +2097,7 @@ export const saveProjectToStorage = (): boolean => {
         quotaError instanceof DOMException &&
         (quotaError as DOMException).code === 22
       ) {
-        console.error("localStorage quota exceeded - clear some projects");
+        logger.error('localStorage quota exceeded - clear some projects');
         return false;
       }
       throw quotaError;
@@ -2104,7 +2105,7 @@ export const saveProjectToStorage = (): boolean => {
 
     return true;
   } catch (e) {
-    console.error("Failed to save project:", e);
+    logger.error('Failed to save project', { error: e });
     return false;
   }
 };
@@ -2122,7 +2123,7 @@ export const loadProjectFromStorage = (): boolean => {
     try {
       data = JSON.parse(stored);
     } catch {
-      console.error("Corrupted localStorage data, clearing...");
+      logger.error('Corrupted localStorage data, clearing');
       localStorage.removeItem(STORAGE_KEY);
       return false;
     }
@@ -2133,7 +2134,7 @@ export const loadProjectFromStorage = (): boolean => {
     useModelStore.setState(hydrated);
     return true;
   } catch (e) {
-    console.error("Failed to load project:", e);
+    logger.error('Failed to load project', { error: e });
     return false;
   }
 };
@@ -2170,12 +2171,12 @@ function persistAnalysisResults(results: AnalysisResults | null): void {
     const json = JSON.stringify(serializable);
     // sessionStorage limit is ~5 MB; skip if too big
     if (json.length > 4.5 * 1024 * 1024) {
-      console.warn("[BeamLab] Analysis results too large for sessionStorage, skipping persist");
+      logger.warn('Analysis results too large for sessionStorage, skipping persist');
       return;
     }
     sessionStorage.setItem(ANALYSIS_SESSION_KEY, json);
   } catch (e) {
-    console.warn("[BeamLab] Could not persist analysis results:", e);
+    logger.warn('Could not persist analysis results', { error: e });
   }
 }
 
@@ -2206,7 +2207,7 @@ export function hydrateAnalysisResults(): AnalysisResults | null {
     }
     return results;
   } catch (e) {
-    console.warn("[BeamLab] Could not restore analysis results:", e);
+    logger.warn('Could not restore analysis results', { error: e });
     return null;
   }
 }

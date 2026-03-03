@@ -14,6 +14,7 @@
 
 import { create } from 'zustand';
 import { API_CONFIG } from '../config/env';
+import { logger } from './logging/logger';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -678,10 +679,10 @@ export class PluginManager {
 
     if (dangerousPermissions.length > 0) {
       // In production, show permission dialog to user
-      console.warn(
-        `Plugin ${manifest.name} requests dangerous permissions:`,
-        dangerousPermissions
-      );
+      logger.warn('Plugin requests dangerous permissions', {
+        plugin: manifest.name,
+        permissions: dangerousPermissions,
+      });
     }
   }
 
@@ -721,10 +722,10 @@ export class PluginManager {
       },
 
       log: {
-        info: (msg, ...args) => console.log(`[${pluginId}]`, msg, ...args),
-        warn: (msg, ...args) => console.warn(`[${pluginId}]`, msg, ...args),
-        error: (msg, ...args) => console.error(`[${pluginId}]`, msg, ...args),
-        debug: (msg, ...args) => console.debug(`[${pluginId}]`, msg, ...args),
+        info: (msg, ...args) => logger.info(msg, { pluginId, args }),
+        warn: (msg, ...args) => logger.warn(msg, { pluginId, args }),
+        error: (msg, ...args) => logger.error(msg, { pluginId, args }),
+        debug: (msg, ...args) => logger.debug(msg, { pluginId, args }),
       },
 
       fetch: {
@@ -840,13 +841,13 @@ export class PluginManager {
     return {
       showMessage: (message, type = 'info') => {
         if (permissions.includes('notifications')) {
-          console.log(`[${type.toUpperCase()}] ${message}`);
+          logger.info(message, { type });
         }
       },
       showProgress: async (title, task) => {
         const progress: ProgressReporter = {
           report: ({ message, increment }) => {
-            console.log(`[Progress] ${title}: ${message} (${increment}%)`);
+            logger.info('Progress update', { title, message, increment });
           },
         };
         await task(progress);
@@ -1124,7 +1125,7 @@ export class PluginDevServer {
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {
-      console.log('[PluginDev] Connected to development server');
+      logger.info('PluginDev connected to development server');
     };
 
     this.ws.onmessage = async (event) => {
@@ -1142,23 +1143,23 @@ export class PluginDevServer {
             break;
         }
       } catch (error) {
-        console.error('[PluginDev] Error handling message:', error);
+        logger.error('PluginDev error handling message', { error });
       }
     };
 
     this.ws.onclose = () => {
-      console.log('[PluginDev] Disconnected, reconnecting...');
+      logger.info('PluginDev disconnected, reconnecting');
       setTimeout(() => this.connect(url), 3000);
     };
   }
 
   private async reloadPlugin(pluginId: string): Promise<void> {
-    console.log(`[PluginDev] Reloading plugin: ${pluginId}`);
+    logger.info('PluginDev reloading plugin', { pluginId });
 
     await this.manager.deactivate(pluginId);
     await this.manager.activate(pluginId);
 
-    console.log(`[PluginDev] Plugin reloaded: ${pluginId}`);
+    logger.info('PluginDev plugin reloaded', { pluginId });
   }
 
   disconnect(): void {

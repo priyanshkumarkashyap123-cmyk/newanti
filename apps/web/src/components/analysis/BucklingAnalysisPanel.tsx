@@ -55,14 +55,14 @@ export function BucklingAnalysisPanel() {
     };
 
     return (
-        <div className="buckling-analysis-panel" style={{ padding: '20px', background: '#1e1e1e', color: '#fff', minHeight: '100vh' }}>
-            <h2 style={{ marginBottom: '20px' }}>🏗️ Linear Buckling Analysis</h2>
+        <div className="buckling-analysis-panel p-5 bg-[#1e1e1e] text-white min-h-screen">
+            <h2 className="mb-5">🏗️ Linear Buckling Analysis</h2>
             
-            <div style={{ marginBottom: '30px', background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
+            <div className="mb-[30px] bg-[#2d2d2d] p-5 rounded-lg">
                 <h3>Analysis Parameters</h3>
                 
-                <div style={{ marginTop: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px' }}>
+                <div className="mt-[15px]">
+                    <label className="block mb-2">
                         Number of Modes:
                         <input
                             type="number"
@@ -70,15 +70,7 @@ export function BucklingAnalysisPanel() {
                             onChange={(e) => setModes(parseInt(e.target.value) || 5)}
                             min={1}
                             max={20}
-                            style={{
-                                marginLeft: '10px',
-                                padding: '8px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px',
-                                width: '100px'
-                            }}
+                            className="ml-[10px] p-2 bg-[#1e1e1e] text-white border border-[#444] rounded w-[100px]"
                         />
                     </label>
                 </div>
@@ -86,17 +78,12 @@ export function BucklingAnalysisPanel() {
                 <button type="button"
                     onClick={handleRunAnalysis}
                     disabled={analyzing || store.nodes.size === 0}
+                    className="mt-5 py-3 px-6 border-none rounded text-base transition-all duration-200 ease-in-out"
                     style={{
-                        marginTop: '20px',
-                        padding: '12px 24px',
                         background: analyzing ? '#555' : store.nodes.size === 0 ? '#333' : '#4CAF50',
                         color: analyzing || store.nodes.size === 0 ? '#888' : '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
                         cursor: analyzing || store.nodes.size === 0 ? 'not-allowed' : 'pointer',
-                        fontSize: '16px',
-                        opacity: store.nodes.size === 0 ? 0.5 : 1,
-                        transition: 'all 0.2s ease'
+                        opacity: store.nodes.size === 0 ? 0.5 : 1
                     }}
                 >
                     {analyzing ? '🔄 Analyzing...' : '▶️ Run Buckling Analysis'}
@@ -104,33 +91,33 @@ export function BucklingAnalysisPanel() {
             </div>
 
             {error && (
-                <div style={{ padding: '15px', background: '#d32f2f', borderRadius: '8px', marginBottom: '20px' }}>
+                <div className="p-[15px] bg-[#d32f2f] rounded-lg mb-5">
                     <strong>Error:</strong> {error}
                 </div>
             )}
 
             {results && (
-                <div style={{ background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
+                <div className="bg-[#2d2d2d] p-5 rounded-lg">
                     <h3>Buckling Modes</h3>
                     
                     {results.modeShapes && results.modeShapes.length > 0 ? (
-                        <div style={{ marginTop: '20px' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <div className="mt-5">
+                            <table className="w-full border-collapse">
                                 <thead>
-                                    <tr style={{ borderBottom: '2px solid #444' }}>
-                                        <th style={{ padding: '10px', textAlign: 'left' }}>Mode</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>Load Factor</th>
-                                        <th style={{ padding: '10px', textAlign: 'right' }}>Critical Load</th>
+                                    <tr className="border-b-2 border-[#444]">
+                                        <th className="p-[10px] text-left">Mode</th>
+                                        <th className="p-[10px] text-right">Load Factor</th>
+                                        <th className="p-[10px] text-right">Critical Load</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {results.modeShapes.map((mode: BucklingMode, idx: number) => (
-                                        <tr key={idx} style={{ borderBottom: '1px solid #333' }}>
-                                            <td style={{ padding: '10px' }}>Mode {mode.modeNumber || idx + 1}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right', color: '#4fc3f7' }}>
+                                        <tr key={idx} className="border-b border-[#333]">
+                                            <td className="p-[10px]">Mode {mode.modeNumber || idx + 1}</td>
+                                            <td className="p-[10px] text-right text-[#4fc3f7]">
                                                 {mode.eigenvalue?.toFixed(3) || 'N/A'}
                                             </td>
-                                            <td style={{ padding: '10px', textAlign: 'right' }}>
+                                            <td className="p-[10px] text-right">
                                                 {mode.criticalLoad ? `${mode.criticalLoad.toFixed(2)} kN` : 'N/A'}
                                             </td>
                                         </tr>
@@ -139,12 +126,12 @@ export function BucklingAnalysisPanel() {
                             </table>
                         </div>
                     ) : (
-                        <p style={{ color: '#999', marginTop: '15px' }}>No buckling modes found</p>
+                        <p className="text-[#999] mt-[15px]">No buckling modes found</p>
                     )}
 
-                    <div style={{ marginTop: '30px', padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>
+                    <div className="mt-[30px] p-[15px] bg-[#1e1e1e] rounded">
                         <h4>Interpretation</h4>
-                        <ul style={{ marginTop: '10px', lineHeight: '1.8' }}>
+                        <ul className="mt-[10px] leading-[1.8]">
                             <li>Load Factor: Multiplier for applied loads to cause buckling</li>
                             <li>Critical Load: Total load at which structure becomes unstable</li>
                             <li>Mode 1 is the most critical (lowest load factor)</li>
@@ -155,9 +142,9 @@ export function BucklingAnalysisPanel() {
                 </div>
             )}
 
-            <div style={{ marginTop: '30px', padding: '15px', background: '#424242', borderRadius: '8px', fontSize: '14px' }}>
+            <div className="mt-[30px] p-[15px] bg-[#424242] rounded-lg text-sm">
                 <strong>ℹ️ About Buckling Analysis</strong>
-                <p style={{ marginTop: '10px', lineHeight: '1.6', color: '#bbb' }}>
+                <p className="mt-[10px] leading-relaxed text-[#bbb]">
                     Linear buckling analysis determines the critical load at which a structure becomes unstable.
                     It solves the eigenvalue problem: (K - λK<sub>G</sub>)φ = 0, where λ is the load factor.
                     This analysis assumes linear elastic behavior and small deformations.

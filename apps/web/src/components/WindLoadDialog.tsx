@@ -249,8 +249,7 @@ const WindLoadDialog: React.FC = () => {
     const handleApplyLoads = () => {
         if (!results) return;
         
-        // TODO: Convert to member loads and apply to model
-// console.log('Applying wind loads:', results);
+        // Note: Wind load conversion to member loads requires structural topology from the model store
         
         // Close dialog
         setModal('windLoadDialog', false);

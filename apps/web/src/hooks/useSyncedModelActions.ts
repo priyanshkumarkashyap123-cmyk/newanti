@@ -18,6 +18,7 @@
 import { useCallback } from 'react';
 import { useModelStore, type Node, type Member, type MemberLoad } from '../store/model';
 import { useSync } from '../lib/offlineSync';
+import { logger } from '../lib/logging/logger';
 
 export function useSyncedModelActions() {
   const store = useModelStore;
@@ -28,7 +29,7 @@ export function useSyncedModelActions() {
   const addNode = useCallback(
     (node: Node) => {
       store.getState().addNode(node);
-      queue('create', 'node', node).catch(console.error);
+      queue('create', 'node', node).catch((err: unknown) => logger.error('Sync queue error', { operation: 'create', entity: 'node', error: err }));
     },
     [queue],
   );
@@ -36,7 +37,7 @@ export function useSyncedModelActions() {
   const removeNode = useCallback(
     (id: string) => {
       store.getState().removeNode(id);
-      queue('delete', 'node', { id }).catch(console.error);
+      queue('delete', 'node', { id }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'delete', entity: 'node', error: err }));
     },
     [queue],
   );
@@ -44,7 +45,7 @@ export function useSyncedModelActions() {
   const updateNode = useCallback(
     (id: string, updates: Partial<Node>) => {
       store.getState().updateNode(id, updates);
-      queue('update', 'node', { id, ...updates }).catch(console.error);
+      queue('update', 'node', { id, ...updates }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'update', entity: 'node', error: err }));
     },
     [queue],
   );
@@ -52,7 +53,7 @@ export function useSyncedModelActions() {
   const updateNodePosition = useCallback(
     (id: string, position: { x?: number; y?: number; z?: number }) => {
       store.getState().updateNodePosition(id, position);
-      queue('update', 'node', { id, position }).catch(console.error);
+      queue('update', 'node', { id, position }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'update', entity: 'nodePosition', error: err }));
     },
     [queue],
   );
@@ -62,7 +63,7 @@ export function useSyncedModelActions() {
   const addMember = useCallback(
     (member: Member) => {
       store.getState().addMember(member);
-      queue('create', 'member', member).catch(console.error);
+      queue('create', 'member', member).catch((err: unknown) => logger.error('Sync queue error', { operation: 'create', entity: 'member', error: err }));
     },
     [queue],
   );
@@ -70,7 +71,7 @@ export function useSyncedModelActions() {
   const updateMember = useCallback(
     (id: string, updates: Partial<Member>) => {
       store.getState().updateMember(id, updates);
-      queue('update', 'member', { id, ...updates }).catch(console.error);
+      queue('update', 'member', { id, ...updates }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'update', entity: 'member', error: err }));
     },
     [queue],
   );
@@ -78,7 +79,7 @@ export function useSyncedModelActions() {
   const removeMember = useCallback(
     (id: string) => {
       store.getState().removeMember(id);
-      queue('delete', 'member', { id }).catch(console.error);
+      queue('delete', 'member', { id }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'delete', entity: 'member', error: err }));
     },
     [queue],
   );
@@ -88,7 +89,7 @@ export function useSyncedModelActions() {
   const addMemberLoad = useCallback(
     (load: MemberLoad) => {
       store.getState().addMemberLoad(load);
-      queue('create', 'memberLoad', load).catch(console.error);
+      queue('create', 'memberLoad', load).catch((err: unknown) => logger.error('Sync queue error', { operation: 'create', entity: 'memberLoad', error: err }));
     },
     [queue],
   );
@@ -96,7 +97,7 @@ export function useSyncedModelActions() {
   const removeMemberLoad = useCallback(
     (id: string) => {
       store.getState().removeMemberLoad(id);
-      queue('delete', 'memberLoad', { id }).catch(console.error);
+      queue('delete', 'memberLoad', { id }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'delete', entity: 'memberLoad', error: err }));
     },
     [queue],
   );
@@ -104,7 +105,7 @@ export function useSyncedModelActions() {
   const updateMemberLoadById = useCallback(
     (id: string, updates: Partial<MemberLoad>) => {
       store.getState().updateMemberLoadById(id, updates);
-      queue('update', 'memberLoad', { id, ...updates }).catch(console.error);
+      queue('update', 'memberLoad', { id, ...updates }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'update', entity: 'memberLoad', error: err }));
     },
     [queue],
   );
@@ -115,7 +116,7 @@ export function useSyncedModelActions() {
     (nodes: Node[]) => {
       store.getState().addNodes(nodes);
       // Single queue entry for bulk operation
-      queue('create', 'nodes_bulk', { nodes }).catch(console.error);
+      queue('create', 'nodes_bulk', { nodes }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'create', entity: 'nodes_bulk', error: err }));
     },
     [queue],
   );
@@ -123,7 +124,7 @@ export function useSyncedModelActions() {
   const addMembers = useCallback(
     (members: Member[]) => {
       store.getState().addMembers(members);
-      queue('create', 'members_bulk', { members }).catch(console.error);
+      queue('create', 'members_bulk', { members }).catch((err: unknown) => logger.error('Sync queue error', { operation: 'create', entity: 'members_bulk', error: err }));
     },
     [queue],
   );

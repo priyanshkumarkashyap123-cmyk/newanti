@@ -1094,7 +1094,7 @@ export interface GeotechBearingResult {
 
 /**
  * Calculate Bearing Capacity using Rust WASM Engine (Ultra Fast)
- * TODO: Not yet implemented in Rust - waiting for WASM binding
+ * WASM binding for this solver mode is pending Rust backend development
  */
 /* 
 export async function calculateGeotechBearing(input: GeotechBearingInput): Promise<GeotechBearingResult | null> {

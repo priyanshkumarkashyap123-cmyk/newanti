@@ -58,7 +58,7 @@ export interface ReportSection {
   id: string;
   title: string;
   type: SectionType;
-  content: any;
+  content: Record<string, unknown>;
   pageBreakBefore?: boolean;
   pageBreakAfter?: boolean;
 }
@@ -499,7 +499,7 @@ export class AdvancedReportGenerator {
     if (content.nodes && content.nodes.length > 0) {
       const nodeTable: TableData = {
         headers: ['Node ID', 'X (m)', 'Y (m)', 'Z (m)', 'Support'],
-        rows: content.nodes.slice(0, 50).map((node: any) => [
+        rows: content.nodes.slice(0, 50).map((node: Record<string, unknown>) => [
           node.id,
           node.x.toFixed(3),
           node.y.toFixed(3),
@@ -517,7 +517,7 @@ export class AdvancedReportGenerator {
     if (content.members && content.members.length > 0) {
       const memberTable: TableData = {
         headers: ['Member ID', 'Start Node', 'End Node', 'Length (m)', 'Section', 'Material'],
-        rows: content.members.slice(0, 50).map((member: any) => [
+        rows: content.members.slice(0, 50).map((member: Record<string, unknown>) => [
           member.id,
           member.startNode,
           member.endNode,
@@ -546,7 +546,7 @@ export class AdvancedReportGenerator {
       
       const concreteTable: TableData = {
         headers: ['Grade', 'fck (MPa)', 'Ec (GPa)', 'Density (kg/m³)', 'Code'],
-        rows: content.concrete.map((mat: any) => [
+        rows: content.concrete.map((mat: Record<string, unknown>) => [
           mat.grade,
           mat.fck.toFixed(1),
           (mat.Ec / 1000).toFixed(1),
@@ -563,7 +563,7 @@ export class AdvancedReportGenerator {
       
       const steelTable: TableData = {
         headers: ['Grade', 'fy (MPa)', 'fu (MPa)', 'E (GPa)', 'Code'],
-        rows: content.steel.map((mat: any) => [
+        rows: content.steel.map((mat: Record<string, unknown>) => [
           mat.grade,
           mat.fy.toFixed(0),
           mat.fu.toFixed(0),
@@ -580,7 +580,7 @@ export class AdvancedReportGenerator {
       
       const rebarTable: TableData = {
         headers: ['Grade', 'fy (MPa)', 'fu (MPa)', 'Type', 'Code'],
-        rows: content.rebar.map((mat: any) => [
+        rows: content.rebar.map((mat: Record<string, unknown>) => [
           mat.grade,
           mat.fy.toFixed(0),
           mat.fu.toFixed(0),
@@ -607,7 +607,7 @@ export class AdvancedReportGenerator {
     if (content.loadCases) {
       const loadCaseTable: TableData = {
         headers: ['Case', 'Type', 'Description', 'Factor'],
-        rows: content.loadCases.map((lc: any) => [
+        rows: content.loadCases.map((lc: Record<string, unknown>) => [
           lc.name,
           lc.type,
           lc.description || '-',
@@ -623,7 +623,7 @@ export class AdvancedReportGenerator {
       
       const pointLoadTable: TableData = {
         headers: ['Node', 'Fx (kN)', 'Fy (kN)', 'Fz (kN)', 'Mx (kNm)', 'My (kNm)', 'Mz (kNm)', 'Case'],
-        rows: content.pointLoads.map((pl: any) => [
+        rows: content.pointLoads.map((pl: Record<string, unknown>) => [
           pl.node,
           pl.fx?.toFixed(2) || '0',
           pl.fy?.toFixed(2) || '0',
@@ -643,7 +643,7 @@ export class AdvancedReportGenerator {
       
       const distLoadTable: TableData = {
         headers: ['Member', 'Type', 'w1 (kN/m)', 'w2 (kN/m)', 'Start', 'End', 'Case'],
-        rows: content.distributedLoads.map((dl: any) => [
+        rows: content.distributedLoads.map((dl: Record<string, unknown>) => [
           dl.member,
           dl.type || 'UDL',
           dl.w1?.toFixed(2) || '0',
@@ -681,7 +681,7 @@ export class AdvancedReportGenerator {
     if (content.combinations) {
       const combTable: TableData = {
         headers: ['Combination', 'Type', 'Factors', 'Description'],
-        rows: content.combinations.map((comb: any) => [
+        rows: content.combinations.map((comb: Record<string, unknown>) => [
           comb.name,
           comb.type,
           comb.factors,
@@ -794,7 +794,7 @@ export class AdvancedReportGenerator {
       
       const forceTable: TableData = {
         headers: ['Member', 'Station', 'Axial (kN)', 'Vy (kN)', 'Vz (kN)', 'My (kNm)', 'Mz (kNm)', 'T (kNm)'],
-        rows: content.memberForces.slice(0, 100).map((mf: any) => [
+        rows: content.memberForces.slice(0, 100).map((mf: Record<string, unknown>) => [
           mf.member,
           mf.station,
           mf.axial?.toFixed(2) || '0',
@@ -821,7 +821,7 @@ export class AdvancedReportGenerator {
     if (content.reactions && content.reactions.length > 0) {
       const reactionTable: TableData = {
         headers: ['Node', 'Combination', 'Fx (kN)', 'Fy (kN)', 'Fz (kN)', 'Mx (kNm)', 'My (kNm)', 'Mz (kNm)'],
-        rows: content.reactions.map((r: any) => [
+        rows: content.reactions.map((r: Record<string, unknown>) => [
           r.node,
           r.combination,
           r.fx?.toFixed(2) || '0',
@@ -871,7 +871,7 @@ export class AdvancedReportGenerator {
     
     const deflTable: TableData = {
       headers: ['Location', 'Direction', 'Deflection (mm)', 'Span/Deflection', 'Limit', 'Status'],
-      rows: (content.deflections || []).map((d: any) => [
+      rows: (content.deflections || []).map((d: Record<string, unknown>) => [
         d.location,
         d.direction,
         d.value?.toFixed(2) || '0',
@@ -933,7 +933,7 @@ export class AdvancedReportGenerator {
     if (content.memberDesigns) {
       const designTable: TableData = {
         headers: ['Member', 'Section', 'Utilization (%)', 'Governing', 'Status'],
-        rows: content.memberDesigns.map((md: any) => [
+        rows: content.memberDesigns.map((md: Record<string, unknown>) => [
           md.member,
           md.section,
           md.utilization?.toFixed(1) || '0',
@@ -1007,7 +1007,7 @@ export class AdvancedReportGenerator {
     if (content.checks) {
       const checkTable: TableData = {
         headers: ['Check', 'Clause', 'Required', 'Provided', 'Ratio', 'Status'],
-        rows: content.checks.map((c: any) => [
+        rows: content.checks.map((c: Record<string, unknown>) => [
           c.description,
           c.clause,
           c.required,
@@ -1020,7 +1020,7 @@ export class AdvancedReportGenerator {
     }
     
     // Summary
-    const passCount = content.checks?.filter((c: any) => c.status === 'PASS').length || 0;
+    const passCount = content.checks?.filter((c: Record<string, unknown>) => c.status === 'PASS').length || 0;
     const totalCount = content.checks?.length || 0;
     
     this.doc.setFontSize(11);
@@ -1040,7 +1040,7 @@ export class AdvancedReportGenerator {
     const content = section.content;
     
     if (content.calculations) {
-      content.calculations.forEach((calc: any) => {
+      content.calculations.forEach((calc: Record<string, unknown>) => {
         this.addSubsectionHeader(calc.title, 2);
         
         // Description
@@ -1118,7 +1118,7 @@ export class AdvancedReportGenerator {
     
     const content = section.content;
     
-    content.drawings?.forEach((drawing: any, index: number) => {
+    content.drawings?.forEach((drawing: Record<string, unknown>, index: number) => {
       if (index > 0) {
         this.addPage();
       }
@@ -1162,7 +1162,7 @@ export class AdvancedReportGenerator {
     // Shop drawings
     if (content.shopDrawings) {
       this.addSubsectionHeader('Shop Drawing References', 2);
-      content.shopDrawings.forEach((sd: any) => {
+      content.shopDrawings.forEach((sd: Record<string, unknown>) => {
         this.doc.text(`• ${sd.number}: ${sd.description}`, this.margins.left, this.currentY);
         this.currentY += 6;
       });
@@ -1320,7 +1320,7 @@ export class AdvancedReportGenerator {
       },
     });
     
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+    this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
     
     // Caption
     if (data.caption) {
@@ -1398,7 +1398,7 @@ export class AdvancedReportGenerator {
   // STATIC FACTORY METHODS
   // --------------------------------------------------------------------------
   
-  static createSummaryReport(projectInfo: ProjectInfo, analysisData: any): ReportConfig {
+  static createSummaryReport(projectInfo: ProjectInfo, analysisData: Record<string, unknown>): ReportConfig {
     return {
       type: 'summary',
       format: 'pdf',
@@ -1413,7 +1413,7 @@ export class AdvancedReportGenerator {
     };
   }
 
-  static createDetailedReport(projectInfo: ProjectInfo, fullData: any): ReportConfig {
+  static createDetailedReport(projectInfo: ProjectInfo, fullData: Record<string, unknown>): ReportConfig {
     return {
       type: 'detailed',
       format: 'pdf',
@@ -1437,7 +1437,7 @@ export class AdvancedReportGenerator {
     };
   }
 
-  static createCalculationReport(projectInfo: ProjectInfo, calculations: any): ReportConfig {
+  static createCalculationReport(projectInfo: ProjectInfo, calculations: Record<string, unknown>): ReportConfig {
     return {
       type: 'calculation',
       format: 'pdf',

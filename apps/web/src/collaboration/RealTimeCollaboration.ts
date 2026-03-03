@@ -12,7 +12,7 @@
  */
 
 // Browser-compatible EventEmitter implementation
-type EventListener = (...args: any[]) => void;
+type EventListener = (...args: unknown[]) => void;
 
 class BrowserEventEmitter {
   private events: Map<string, EventListener[]> = new Map();
@@ -36,7 +36,7 @@ class BrowserEventEmitter {
     return this;
   }
 
-  emit(event: string, ...args: any[]): boolean {
+  emit(event: string, ...args: unknown[]): boolean {
     const listeners = this.events.get(event);
     if (listeners && listeners.length > 0) {
       listeners.forEach(listener => listener(...args));
@@ -87,7 +87,7 @@ export interface Operation {
   timestamp: number;
   type: 'insert' | 'delete' | 'update' | 'move';
   path: string[];
-  data: any;
+  data: unknown;
   version: number;
 }
 
@@ -117,7 +117,7 @@ export interface Version {
   timestamp: number;
   parentId?: string;
   operations: Operation[];
-  snapshot?: any;
+  snapshot?: Record<string, unknown>;
 }
 
 export interface Branch {
@@ -387,7 +387,7 @@ class VersionControlSystem {
     name: string,
     userId: string,
     operations: Operation[],
-    snapshot?: any,
+    snapshot?: Record<string, unknown>,
     description?: string
   ): Version {
     const branch = this.branches.get(this.currentBranchId)!;
@@ -598,7 +598,7 @@ export class CollaborationHub extends BrowserEventEmitter {
   private comments: Map<string, Comment> = new Map();
   private otEngine: OTEngine;
   private vcs: VersionControlSystem;
-  private projectState: any;
+  private projectState: Record<string, unknown>;
   private localUserId: string = '';
   private wsConnection: WebSocket | null = null;
   
@@ -606,7 +606,7 @@ export class CollaborationHub extends BrowserEventEmitter {
     super();
     this.otEngine = new OTEngine();
     this.vcs = new VersionControlSystem();
-    this.projectState = {};
+    this.projectState = {} as Record<string, unknown>;
   }
   
   /**
@@ -648,45 +648,45 @@ export class CollaborationHub extends BrowserEventEmitter {
     return 'demo-token';
   }
   
-  private send(message: any): void {
+  private send(message: Record<string, unknown>): void {
     if (this.wsConnection?.readyState === WebSocket.OPEN) {
       this.wsConnection.send(JSON.stringify(message));
     }
   }
   
-  private handleServerMessage(message: any): void {
+  private handleServerMessage(message: Record<string, unknown>): void {
     switch (message.type) {
       case 'state':
-        this.projectState = message.state;
+        this.projectState = message.state as Record<string, unknown>;
         this.emit('stateSync', this.projectState);
         break;
         
       case 'operation':
-        this.applyRemoteOperation(message.operation);
+        this.applyRemoteOperation(message.operation as Operation);
         break;
         
       case 'presence':
-        this.updatePresence(message.userId, message.presence);
+        this.updatePresence(message.userId as string, message.presence as Partial<UserPresence>);
         break;
         
       case 'cursor':
-        this.updateCursor(message.userId, message.cursor);
+        this.updateCursor(message.userId as string, message.cursor as Cursor);
         break;
         
       case 'selection':
-        this.updateSelection(message.userId, message.selection);
+        this.updateSelection(message.userId as string, message.selection as Selection);
         break;
         
       case 'comment':
-        this.handleComment(message.action, message.comment);
+        this.handleComment(message.action as string, message.comment as Record<string, unknown>);
         break;
         
       case 'user_joined':
-        this.handleUserJoined(message.user);
+        this.handleUserJoined(message.user as User);
         break;
         
       case 'user_left':
-        this.handleUserLeft(message.userId);
+        this.handleUserLeft(message.userId as string);
         break;
     }
   }
@@ -845,21 +845,21 @@ export class CollaborationHub extends BrowserEventEmitter {
     }
   }
   
-  private handleComment(action: string, data: any): void {
+  private handleComment(action: string, data: Record<string, unknown>): void {
     switch (action) {
       case 'add':
-        this.comments.set(data.id, data);
+        this.comments.set(data.id as string, data as unknown as Comment);
         this.emit('commentAdded', data);
         break;
       case 'reply':
-        const comment = this.comments.get(data.commentId);
+        const comment = this.comments.get(data.commentId as string);
         if (comment) {
-          comment.replies.push(data.reply);
+          comment.replies.push(data.reply as CommentReply);
           this.emit('commentReplied', data.commentId, data.reply);
         }
         break;
       case 'resolve':
-        const c = this.comments.get(data.commentId);
+        const c = this.comments.get(data.commentId as string);
         if (c) {
           c.resolved = true;
           this.emit('commentResolved', data.commentId);
@@ -975,7 +975,7 @@ export class CollaborationHub extends BrowserEventEmitter {
   /**
    * Get current project state
    */
-  getState(): any {
+  getState(): Record<string, unknown> {
     return this.projectState;
   }
 }

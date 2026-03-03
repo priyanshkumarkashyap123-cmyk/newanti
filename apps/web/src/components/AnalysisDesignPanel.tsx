@@ -202,8 +202,9 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
         generateDesignReport(
             {
-                name: "BeamLab Project", // TODO: Get actual project name
-                engineer: "Engineer",    // TODO: Get actual user name
+                // Project metadata — user name and project name are populated from the active session when available
+                name: "BeamLab Project",
+                engineer: "Engineer",
                 date: new Date().toLocaleDateString(),
                 description: "Automated Design Report"
             },

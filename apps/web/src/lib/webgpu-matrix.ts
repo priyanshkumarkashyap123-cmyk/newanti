@@ -13,6 +13,8 @@
  * - Automatic workgroup sizing
  */
 
+import { logger } from './logging/logger';
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -57,7 +59,7 @@ export async function initWebGPU(): Promise<GPUMatrixContext | null> {
   initPromise = (async () => {
     try {
       if (!navigator.gpu) {
-        console.warn('[WebGPU] Not supported in this browser');
+        logger.warn('WebGPU not supported in this browser');
         return null;
       }
 
@@ -66,7 +68,7 @@ export async function initWebGPU(): Promise<GPUMatrixContext | null> {
       });
 
       if (!adapter) {
-        console.warn('[WebGPU] No adapter found');
+        logger.warn('WebGPU adapter not found');
         return null;
       }
 
@@ -81,7 +83,7 @@ export async function initWebGPU(): Promise<GPUMatrixContext | null> {
       });
 
       device.lost.then((info) => {
-        console.error('[WebGPU] Device lost:', info.message);
+        logger.error('WebGPU device lost', { message: info.message });
         gpuContext = null;
       });
 
@@ -92,13 +94,14 @@ export async function initWebGPU(): Promise<GPUMatrixContext | null> {
         isAvailable: true,
       };
 
-      console.log('[WebGPU] Initialized successfully');
-      console.log(`  Max buffer size: ${formatBytes(Number(device.limits.maxBufferSize))}`);
-      console.log(`  Max workgroup size: ${device.limits.maxComputeWorkgroupSizeX}`);
+      logger.info('WebGPU initialized successfully', {
+        maxBufferSize: formatBytes(Number(device.limits.maxBufferSize)),
+        maxWorkgroupSize: device.limits.maxComputeWorkgroupSizeX,
+      });
 
       return gpuContext;
     } catch (error) {
-      console.error('[WebGPU] Initialization failed:', error);
+      logger.error('WebGPU initialization failed', { error });
       return null;
     }
   })();
@@ -465,7 +468,7 @@ export async function gpuSpMV(
       usedGPU: true,
     };
   } catch (error) {
-    console.error('[WebGPU SpMV] Error:', error);
+    logger.error('WebGPU SpMV error', { error });
     // Fall back to CPU
     const y = cpuSpMV(matrix, x);
     return {
@@ -583,7 +586,7 @@ export async function gpuMatMul(
       usedGPU: true,
     };
   } catch (error) {
-    console.error('[WebGPU MatMul] Error:', error);
+    logger.error('WebGPU MatMul error', { error });
     const C = cpuMatMul(A, B, M, K, N);
     return {
       data: C,
@@ -705,7 +708,7 @@ export async function gpuDot(
       usedGPU: true,
     };
   } catch (error) {
-    console.error('[WebGPU Dot] Error:', error);
+    logger.error('WebGPU Dot error', { error });
     let sum = 0;
     for (let i = 0; i < a.length; i++) {
       sum += a[i] * b[i];
@@ -943,7 +946,7 @@ export async function benchmark(size: number = 10000): Promise<{
   cpuSpMV: number;
   speedup: number;
 }> {
-  console.log(`[Benchmark] Running with size=${size}...`);
+  logger.info('Benchmark running', { size });
 
   // Create random sparse matrix
   const nnz = size * 10;
@@ -988,8 +991,12 @@ export async function benchmark(size: number = 10000): Promise<{
 
   const speedup = cpuTime / gpuTime;
 
-  console.log(`[Benchmark] GPU: ${gpuTime.toFixed(2)}ms, CPU: ${cpuTime.toFixed(2)}ms, Speedup: ${speedup.toFixed(1)}x`);
-  console.log(`[Benchmark] Used GPU: ${gpuResult.usedGPU}`);
+  logger.info('Benchmark results', {
+    gpuTimeMs: gpuTime.toFixed(2),
+    cpuTimeMs: cpuTime.toFixed(2),
+    speedup: speedup.toFixed(1),
+    usedGPU: gpuResult.usedGPU,
+  });
 
   return { gpuSpMV: gpuTime, cpuSpMV: cpuTime, speedup };
 }

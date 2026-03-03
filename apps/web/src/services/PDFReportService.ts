@@ -1,7 +1,7 @@
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { AnalysisResults } from '../store/model';
+import { AnalysisResults, Node, Member } from '../store/model';
 import { SteelDesignResults } from './SteelDesignService';
 import { API_CONFIG } from '../config/env';
 
@@ -16,8 +16,8 @@ const PYTHON_API_URL = API_CONFIG.pythonUrl;
 
 export const generateProfessionalReport = async (
     project: ProjectInfo,
-    members: any[],
-    nodes: any[],
+    members: Member[],
+    nodes: Node[],
     analysisResults: AnalysisResults | null,
     designResults: Map<string, SteelDesignResults>
 ): Promise<void> => {
@@ -41,22 +41,22 @@ export const generateProfessionalReport = async (
         }));
 
         // Format results
-        let resultsData: any = { success: false };
+        let resultsData: Record<string, unknown> = { success: false };
         if (analysisResults) {
             let maxDisp = 0;
             let maxMoment = 0;
             let maxShear = 0;
             let maxAxial = 0;
 
-            const dispDict: Record<string, any> = {};
-            analysisResults.displacements.forEach((disp: any, nodeId: string) => {
+            const dispDict: Record<string, { dx: number; dy: number; dz: number }> = {};
+            analysisResults.displacements.forEach((disp: { dx: number; dy: number; dz: number }, nodeId: string) => {
                 const total = Math.sqrt(disp.dx ** 2 + disp.dy ** 2 + disp.dz ** 2);
                 maxDisp = Math.max(maxDisp, total * 1000); // Convert to mm
                 dispDict[nodeId] = { dx: disp.dx, dy: disp.dy, dz: disp.dz };
             });
 
-            const forcesDict: Record<string, any> = {};
-            analysisResults.memberForces.forEach((forces: any, memberId: string) => {
+            const forcesDict: Record<string, { moment: number[]; shear: number[]; axial: number }> = {};
+            analysisResults.memberForces.forEach((forces: { momentY?: number; momentZ?: number; shearY?: number; shearZ?: number; axial: number }, memberId: string) => {
                 maxMoment = Math.max(maxMoment, Math.abs(forces.momentY || 0), Math.abs(forces.momentZ || 0));
                 maxShear = Math.max(maxShear, Math.abs(forces.shearY || 0), Math.abs(forces.shearZ || 0));
                 maxAxial = Math.max(maxAxial, Math.abs(forces.axial || 0));
@@ -152,8 +152,8 @@ export const generateProfessionalReport = async (
  */
 export const generateBasicPDFReport = (
     project: ProjectInfo,
-    members: any[],
-    nodes: any[],
+    members: Member[],
+    nodes: Node[],
     analysisResults: AnalysisResults | null,
     designResults: Map<string, SteelDesignResults>
 ) => {
@@ -296,7 +296,7 @@ export const generateBasicPDFReport = (
 
     addSectionHeading('1.0', 'Model Summary', 20);
 
-    const supportCount = nodes.filter((n: any) => n.restraints && Object.values(n.restraints).some(Boolean)).length;
+    const supportCount = nodes.filter((n: Node) => n.restraints && Object.values(n.restraints).some(Boolean)).length;
 
     const summaryData = [
         ['Total Nodes', String(nodes.length)],
@@ -332,7 +332,7 @@ export const generateBasicPDFReport = (
     // ANALYSIS RESULTS (FORCES)
     // ============================================
     if (analysisResults) {
-        let finalY = (doc as any).lastAutoTable.finalY + 12;
+        let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
 
         // Key results summary
         let maxAxial = 0, maxMoment = 0, maxShear = 0, maxDisp = 0;
@@ -341,7 +341,7 @@ export const generateBasicPDFReport = (
             maxMoment = Math.max(maxMoment, Math.abs(f.momentY ?? 0), Math.abs(f.momentZ ?? 0));
             maxShear = Math.max(maxShear, Math.abs(f.shearY ?? 0), Math.abs(f.shearZ ?? 0));
         });
-        analysisResults.displacements?.forEach((d: any) => {
+        analysisResults.displacements?.forEach((d: { dx: number; dy: number; dz: number }) => {
             maxDisp = Math.max(maxDisp, Math.abs(d.dx ?? 0), Math.abs(d.dy ?? 0), Math.abs(d.dz ?? 0));
         });
 
@@ -364,7 +364,7 @@ export const generateBasicPDFReport = (
             styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
         });
 
-        finalY = (doc as any).lastAutoTable.finalY + 12;
+        finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
         if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
 
         addSectionHeading('3.0', 'Internal Member Forces', finalY);
@@ -396,7 +396,7 @@ export const generateBasicPDFReport = (
     // DESIGN CHECKS
     // ============================================
     if (designResults.size > 0) {
-        let finalY = (doc as any).lastAutoTable.finalY + 12;
+        let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
         if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
 
         addSectionHeading('4.0', 'Steel Design Verification', finalY);
@@ -441,7 +441,7 @@ export const generateBasicPDFReport = (
     // ============================================
     // PROFESSIONAL FOOTER ON ALL PAGES
     // ============================================
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         // Bottom accent line
@@ -584,7 +584,7 @@ export const generateCivilReport = (
         styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
     });
 
-    finalY = (doc as any).lastAutoTable.finalY + 12;
+    finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
     if (finalY > 240) { doc.addPage(); addHeader(); finalY = 20; }
 
     // Results Section
@@ -603,7 +603,7 @@ export const generateCivilReport = (
         styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
     });
 
-    finalY = (doc as any).lastAutoTable.finalY + 12;
+    finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
 
     // Additional Sections
     sections.forEach((section, idx) => {
@@ -623,11 +623,11 @@ export const generateCivilReport = (
             styles: { cellPadding: 4, lineColor: SLATE_200, lineWidth: 0.3 },
         });
 
-        finalY = (doc as any).lastAutoTable.finalY + 12;
+        finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
     });
 
     // Professional footer on all pages
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = (doc as unknown as { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setDrawColor(...NAVY);

@@ -230,7 +230,7 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isPro = false 
             modeNumber: m.modeNumber,
             frequency: m.frequency,
             period: m.period,
-            participationX: 0, // TODO: Extract from modal result if available (currently not in interface?)
+            participationX: 0, // Mass participation factors require eigenvector normalization — not yet exposed by solver
             participationY: 0,
             participationZ: 0,
             effectiveMassX: 0,

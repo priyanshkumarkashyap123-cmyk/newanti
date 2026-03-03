@@ -629,8 +629,7 @@ const MemberDiagramMini: FC<MemberDiagramMiniProps> = ({
 
       <canvas
         ref={canvasRef}
-        className="w-full rounded bg-white/80 dark:bg-slate-900/80"
-        style={{ height: "90px" }}
+        className="w-full rounded bg-white/80 dark:bg-slate-900/80 h-[90px]"
       />
 
       <div className="flex justify-between mt-1.5 text-[10px]">
@@ -1148,16 +1147,14 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
               {dt === "DEFLECTION" ? "Deflection" : dt} —{" "}
               {DIAGRAM_COLORS[dt].label}
             </div>
-            <div className="relative" style={{ height: "160px" }}>
+            <div className="relative h-[160px]">
               <canvas
                 ref={canvasRefs[dt]}
-                className="w-full rounded absolute inset-0"
-                style={{ height: "160px" }}
+                className="w-full rounded absolute inset-0 h-[160px]"
               />
               <canvas
                 ref={overlayRefs[dt]}
-                className="w-full rounded absolute inset-0 cursor-crosshair"
-                style={{ height: "160px" }}
+                className="w-full rounded absolute inset-0 cursor-crosshair h-[160px]"
                 onMouseMove={(e) => handleCanvasMouseMove(dt, e)}
                 onMouseLeave={() => handleCanvasMouseLeave(dt)}
               />
@@ -1185,16 +1182,14 @@ const ExpandedDiagram: FC<ExpandedDiagramProps> = ({ member, onClose }) => {
                   >
                     {DIAGRAM_COLORS[dt].label}
                   </div>
-                  <div className="relative" style={{ height: "160px" }}>
+                  <div className="relative h-[160px]">
                     <canvas
                       ref={canvasRefs[dt]}
-                      className="w-full rounded absolute inset-0"
-                      style={{ height: "160px" }}
+                      className="w-full rounded absolute inset-0 h-[160px]"
                     />
                     <canvas
                       ref={overlayRefs[dt]}
-                      className="w-full rounded absolute inset-0 cursor-crosshair"
-                      style={{ height: "160px" }}
+                      className="w-full rounded absolute inset-0 cursor-crosshair h-[160px]"
                       onMouseMove={(e) => handleCanvasMouseMove(dt, e)}
                       onMouseLeave={() => handleCanvasMouseLeave(dt)}
                     />
@@ -1528,10 +1523,9 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
       >
         <table className="w-full text-sm">
           <tbody
+            className="relative block"
             style={{
               height: `${rowVirtualizer.getTotalSize()}px`,
-              position: "relative",
-              display: "block",
             }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -1543,15 +1537,10 @@ const DetailedMemberTable: FC<DetailedMemberTableProps> = ({
                 <tr
                   key={member.id}
                   onClick={() => onSelect(member.id)}
-                  className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                  className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors absolute top-0 left-0 w-full table-row"
                   style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
-                    display: "table-row",
                   }}
                 >
                   <td className="px-3 py-2 font-medium text-slate-900 dark:text-white">
@@ -2633,8 +2622,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                       {/* SVG P-M diagram */}
                       <svg
                         viewBox="0 0 320 240"
-                        className="w-full max-w-lg mx-auto"
-                        style={{ maxHeight: 240 }}
+                        className="w-full max-w-lg mx-auto max-h-[240px]"
                       >
                         {/* Background grid */}
                         <defs>
@@ -3002,8 +2990,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                 {/* IS 1893:2016 & ASCE 7-22 Spectrum Curves */}
                 <svg
                   viewBox="0 0 400 200"
-                  className="w-full"
-                  style={{ maxHeight: 200 }}
+                  className="w-full max-h-[200px]"
                 >
                   <defs>
                     <pattern
@@ -3804,8 +3791,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
                   </div>
                   <svg
                     viewBox={`0 0 ${svgW} ${svgH}`}
-                    className="w-full rounded bg-white/60 dark:bg-slate-900/60"
-                    style={{ maxHeight: "400px" }}
+                    className="w-full rounded bg-white/60 dark:bg-slate-900/60 max-h-[400px]"
                   >
                     {/* Members as colored lines */}
                     {members.map((m) => {
@@ -3975,11 +3961,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
             <div className="flex items-center gap-3 text-xs">
               <span className="text-slate-500 dark:text-slate-400">Low</span>
               <div
-                className="flex-1 h-3 rounded-full"
-                style={{
-                  background:
-                    "linear-gradient(to right, #22d3ee, #22c55e, #eab308, #f97316, #ef4444)",
-                }}
+                className="flex-1 h-3 rounded-full bg-[linear-gradient(to_right,#22d3ee,#22c55e,#eab308,#f97316,#ef4444)]"
               />
               <span className="text-slate-500 dark:text-slate-400">High</span>
             </div>

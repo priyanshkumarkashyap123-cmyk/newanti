@@ -61,14 +61,14 @@ export function PDeltaAnalysisPanel() {
     };
 
     return (
-        <div className="pdelta-analysis-panel" style={{ padding: '20px', background: '#1e1e1e', color: '#fff', minHeight: '100vh' }}>
-            <h2 style={{ marginBottom: '20px' }}>📐 P-Delta Analysis (Second-Order)</h2>
+        <div className="pdelta-analysis-panel p-5 bg-[#1e1e1e] text-white min-h-screen">
+            <h2 className="mb-5">📐 P-Delta Analysis (Second-Order)</h2>
             
-            <div style={{ marginBottom: '30px', background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
+            <div className="mb-[30px] bg-[#2d2d2d] p-5 rounded-lg">
                 <h3>Analysis Parameters</h3>
                 
-                <div style={{ marginTop: '15px', display: 'grid', gap: '15px' }}>
-                    <label style={{ display: 'block' }}>
+                <div className="mt-[15px] grid gap-[15px]">
+                    <label className="block">
                         Maximum Iterations:
                         <input
                             type="number"
@@ -76,38 +76,22 @@ export function PDeltaAnalysisPanel() {
                             onChange={(e) => setParams({ ...params, maxIterations: parseInt(e.target.value) || 10 })}
                             min={3}
                             max={50}
-                            style={{
-                                marginLeft: '10px',
-                                padding: '8px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px',
-                                width: '100px'
-                            }}
+                            className="ml-[10px] p-2 bg-[#1e1e1e] text-white border border-[#444] rounded w-[100px]"
                         />
                     </label>
 
-                    <label style={{ display: 'block' }}>
+                    <label className="block">
                         Convergence Tolerance:
                         <input
                             type="number"
                             value={params.tolerance}
                             step="1e-7"
                             onChange={(e) => setParams({ ...params, tolerance: parseFloat(e.target.value) || 1e-6 })}
-                            style={{
-                                marginLeft: '10px',
-                                padding: '8px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px',
-                                width: '150px'
-                            }}
+                            className="ml-[10px] p-2 bg-[#1e1e1e] text-white border border-[#444] rounded w-[150px]"
                         />
                     </label>
 
-                    <label style={{ display: 'block' }}>
+                    <label className="block">
                         Damping Factor (0-1):
                         <input
                             type="number"
@@ -116,15 +100,7 @@ export function PDeltaAnalysisPanel() {
                             onChange={(e) => setParams({ ...params, damping: parseFloat(e.target.value) || 0.5 })}
                             min={0}
                             max={1}
-                            style={{
-                                marginLeft: '10px',
-                                padding: '8px',
-                                background: '#1e1e1e',
-                                color: '#fff',
-                                border: '1px solid #444',
-                                borderRadius: '4px',
-                                width: '100px'
-                            }}
+                            className="ml-[10px] p-2 bg-[#1e1e1e] text-white border border-[#444] rounded w-[100px]"
                         />
                     </label>
                 </div>
@@ -132,56 +108,47 @@ export function PDeltaAnalysisPanel() {
                 <button type="button"
                     onClick={handleRunAnalysis}
                     disabled={analyzing || store.nodes.size === 0}
+                    className="mt-5 py-3 px-6 border-none rounded text-base transition-all duration-200 ease-in-out"
                     style={{
-                        marginTop: '20px',
-                        padding: '12px 24px',
                         background: analyzing ? '#555' : store.nodes.size === 0 ? '#333' : '#FF5722',
                         color: analyzing || store.nodes.size === 0 ? '#888' : '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
                         cursor: analyzing || store.nodes.size === 0 ? 'not-allowed' : 'pointer',
-                        fontSize: '16px',
-                        opacity: store.nodes.size === 0 ? 0.5 : 1,
-                        transition: 'all 0.2s ease'
+                        opacity: store.nodes.size === 0 ? 0.5 : 1
                     }}
                 >
                     {analyzing ? '🔄 Analyzing (Rust)...' : '▶️ Run P-Delta Analysis'}
                 </button>
                 
-                <div style={{ marginTop: '10px', fontSize: '12px', color: '#888' }}>
+                <div className="mt-[10px] text-xs text-[#888]">
                     ⚡ Powered by Rust (20x faster than Python)
                 </div>
             </div>
 
             {error && (
-                <div style={{ padding: '15px', background: '#d32f2f', borderRadius: '8px', marginBottom: '20px' }}>
+                <div className="p-[15px] bg-[#d32f2f] rounded-lg mb-5">
                     <strong>Error:</strong> {error}
                 </div>
             )}
 
             {results && (
-                <div style={{ background: '#2d2d2d', padding: '20px', borderRadius: '8px' }}>
+                <div className="bg-[#2d2d2d] p-5 rounded-lg">
                     <h3>Analysis Results</h3>
                     
                     {results.converged !== undefined && (
-                        <div style={{ 
-                            marginTop: '15px', 
-                            padding: '15px', 
-                            background: results.converged ? '#1b5e20' : '#e65100', 
-                            borderRadius: '4px',
-                            marginBottom: '20px'
+                        <div className="mt-[15px] p-[15px] rounded mb-5" style={{ 
+                            background: results.converged ? '#1b5e20' : '#e65100'
                         }}>
                             <strong>Status: </strong>
-                            <span style={{ fontSize: '18px' }}>
+                            <span className="text-lg">
                                 {results.converged ? '✓ Converged' : '⚠️ Did Not Converge'}
                             </span>
                             {results.iterations && (
-                                <span style={{ marginLeft: '20px', color: '#ddd' }}>
+                                <span className="ml-5 text-[#ddd]">
                                     (Iterations: {results.iterations})
                                 </span>
                             )}
                             {results.error && (
-                                <div style={{ marginTop: '10px', color: '#ffcdd2' }}>
+                                <div className="mt-[10px] text-[#ffcdd2]">
                                     Final Error: {results.error.toExponential(3)}
                                 </div>
                             )}
@@ -189,18 +156,18 @@ export function PDeltaAnalysisPanel() {
                     )}
 
                     {results.displacements && (
-                        <div style={{ marginTop: '20px' }}>
+                        <div className="mt-5">
                             <h4>Maximum Displacements</h4>
-                            <div style={{ marginTop: '10px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+                            <div className="mt-[10px] grid grid-cols-3 gap-[15px]">
                                 {['DX', 'DY', 'DZ'].map((dir) => {
                                     const disps = Object.values(results.displacements!);
                                     const maxDisp = disps.reduce((max: number, d) => 
                                         Math.max(max, Math.abs(d[dir as keyof typeof d] || 0)), 0
                                     );
                                     return (
-                                        <div key={dir} style={{ padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>
-                                            <div style={{ color: '#888', fontSize: '12px' }}>{dir}</div>
-                                            <div style={{ fontSize: '20px', color: '#4fc3f7', marginTop: '5px' }}>
+                                        <div key={dir} className="p-[15px] bg-[#1e1e1e] rounded">
+                                            <div className="text-[#888] text-xs">{dir}</div>
+                                            <div className="text-xl text-[#4fc3f7] mt-[5px]">
                                                 {maxDisp.toFixed(3)} mm
                                             </div>
                                         </div>
@@ -211,12 +178,12 @@ export function PDeltaAnalysisPanel() {
                     )}
 
                     {results.amplificationFactors && (
-                        <div style={{ marginTop: '20px', padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>
+                        <div className="mt-5 p-[15px] bg-[#1e1e1e] rounded">
                             <strong>P-Delta Amplification Factor: </strong>
-                            <span style={{ fontSize: '20px', color: '#ff9800', marginLeft: '10px' }}>
+                            <span className="text-xl text-[#ff9800] ml-[10px]">
                                 {results.amplificationFactors.combined.toFixed(3)}
                             </span>
-                            <div style={{ marginTop: '10px', fontSize: '14px', color: '#bbb' }}>
+                            <div className="mt-[10px] text-sm text-[#bbb]">
                                 {results.amplificationFactors.combined > 1.4 
                                     ? '⚠️ High amplification - Structure sensitive to P-Delta effects' 
                                     : '✓ Moderate amplification - P-Delta effects within acceptable range'}
@@ -224,9 +191,9 @@ export function PDeltaAnalysisPanel() {
                         </div>
                     )}
 
-                    <div style={{ marginTop: '30px', padding: '15px', background: '#1e1e1e', borderRadius: '4px' }}>
+                    <div className="mt-[30px] p-[15px] bg-[#1e1e1e] rounded">
                         <h4>Comparison: First-Order vs Second-Order</h4>
-                        <ul style={{ marginTop: '10px', lineHeight: '1.8', color: '#bbb' }}>
+                        <ul className="mt-[10px] leading-[1.8] text-[#bbb]">
                             <li>First-order: Ignores deformed geometry (fast, conservative for stiff structures)</li>
                             <li>Second-order: Accounts for P-Delta effects (accurate, essential for slender structures)</li>
                             <li>Amplification &gt; 1.1: Second-order analysis recommended</li>
@@ -236,9 +203,9 @@ export function PDeltaAnalysisPanel() {
                 </div>
             )}
 
-            <div style={{ marginTop: '30px', padding: '15px', background: '#424242', borderRadius: '8px', fontSize: '14px' }}>
+            <div className="mt-[30px] p-[15px] bg-[#424242] rounded-lg text-sm">
                 <strong>ℹ️ About P-Delta Analysis</strong>
-                <p style={{ marginTop: '10px', lineHeight: '1.6', color: '#bbb' }}>
+                <p className="mt-[10px] leading-relaxed text-[#bbb]">
                     P-Delta (second-order) analysis accounts for geometric nonlinearity by considering equilibrium
                     in the deformed configuration. Axial loads (P) acting on displaced members (Δ) create additional
                     moments that increase displacements. This effect is critical for tall buildings, slender columns,

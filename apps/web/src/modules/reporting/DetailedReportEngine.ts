@@ -748,7 +748,7 @@ export class DetailedReportEngine {
             styles: { fontSize: 9 },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         
         // Load Factors
         this.renderSubsectionHeader('Load Factors');
@@ -766,7 +766,7 @@ export class DetailedReportEngine {
             columnStyles: { 0: { cellWidth: 80 } },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         
         // Serviceability Limits
         this.renderSubsectionHeader('Serviceability Limits');
@@ -835,7 +835,7 @@ export class DetailedReportEngine {
                 styles: { fontSize: 9 },
             });
             
-            this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+            this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         }
         
         // Concrete
@@ -859,7 +859,7 @@ export class DetailedReportEngine {
                 styles: { fontSize: 9 },
             });
             
-            this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+            this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         }
         
         // Reinforcement
@@ -879,7 +879,7 @@ export class DetailedReportEngine {
                 columnStyles: { 0: { cellWidth: 80 } },
             });
             
-            this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+            this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         }
     }
 
@@ -912,7 +912,7 @@ export class DetailedReportEngine {
             styles: { fontSize: 9 },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         
         // Live Loads
         this.renderSubsectionHeader('Live Loads');
@@ -933,7 +933,7 @@ export class DetailedReportEngine {
             styles: { fontSize: 9 },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         
         // Wind Loads
         if (this.data.loads.windLoads) {
@@ -955,7 +955,7 @@ export class DetailedReportEngine {
                 styles: { fontSize: 9 },
             });
             
-            this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+            this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         }
         
         // Seismic Loads
@@ -993,7 +993,7 @@ export class DetailedReportEngine {
                 styles: { fontSize: 9 },
             });
             
-            this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+            this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         }
     }
 
@@ -1027,7 +1027,7 @@ export class DetailedReportEngine {
             styles: { fontSize: 9 },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         
         // Modal Analysis Results
         if (summary.fundamentalPeriod) {
@@ -1049,7 +1049,7 @@ export class DetailedReportEngine {
                 styles: { fontSize: 9 },
             });
             
-            this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+            this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         }
         
         // Add 3D model image if available
@@ -1122,7 +1122,7 @@ export class DetailedReportEngine {
             },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
         
         // Detailed checks for critical members
         const criticalMembers = this.data.memberDesigns
@@ -1172,7 +1172,7 @@ export class DetailedReportEngine {
                     },
                 });
                 
-                this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+                this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
             });
         }
     }
@@ -1219,7 +1219,7 @@ export class DetailedReportEngine {
             },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
     }
 
     // ========================================================================
@@ -1265,7 +1265,7 @@ export class DetailedReportEngine {
             },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
     }
 
     // ========================================================================
@@ -1310,7 +1310,7 @@ export class DetailedReportEngine {
             },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 15;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
         
         // Signature block
         this.checkPageBreak(60);
@@ -1457,7 +1457,7 @@ export class DetailedReportEngine {
             margin: { left: this.margins.left, right: this.margins.right },
         });
         
-        this.currentY = (this.doc as any).lastAutoTable.finalY + 5;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5;
     }
 
     private addWatermarkToAllPages(): void {

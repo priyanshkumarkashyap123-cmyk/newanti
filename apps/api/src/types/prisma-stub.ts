@@ -1,10 +1,10 @@
 /**
  * Prisma Type Stubs
  * 
- * Local type definitions until Prisma is fully configured.
+ * Stub: Provides type compatibility until Prisma schema migration is completed.
  * These mirror what @prisma/client would provide once schema is generated.
  * 
- * TODO: Remove this file once Prisma is properly configured with:
+ * To migrate to Prisma:
  *   pnpm add @prisma/client prisma
  *   npx prisma generate
  */

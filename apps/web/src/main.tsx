@@ -7,7 +7,7 @@ import { AppProvider } from './AppInitializer';
 import { AppProviders } from './components/providers/AppProviders';
 import { safeguards } from './utils/productionSafeguards';
 import { RenderQualityManager } from './utils/gpuQuality';
-import { logger } from './utils/logger';
+import { logger } from './lib/logging/logger';
 import env from './config/env';
 import './index.css';
 
@@ -41,18 +41,18 @@ function showRootError(message: string, details?: string) {
 const initializeApp = async () => {
     try {
         // Validate environment configuration INSIDE try-catch
-        console.log('🔧 Validating environment...');
+        logger.info('Validating environment');
         env.validate();
-        console.log('✅ Environment validation passed');
+        logger.info('Environment validation passed');
 
         // Add explicit debug logging
-        console.log('🚀 App initialization starting...');
+        logger.info('App initialization starting');
         showRootError('Loading BeamLab...', 'Initializing application...');
 
         // Initialize Sentry for error tracking (lazy-loaded, wrapped in try-catch)
         try {
             if (env.monitoring.isSentryEnabled) {
-                console.log('📊 Loading Sentry...');
+                logger.info('Loading Sentry');
                 const Sentry = await import("@sentry/react");
                 Sentry.init({
                     dsn: env.monitoring.sentryDsn,
@@ -67,41 +67,38 @@ const initializeApp = async () => {
                     replaysSessionSampleRate: 0.1,
                     replaysOnErrorSampleRate: 1.0,
                 });
-                console.log('✅ Sentry initialized');
+                logger.info('Sentry initialized');
             }
         } catch (sentryError) {
-            console.warn('⚠️ Sentry initialization failed:', sentryError);
+            logger.warn('Sentry initialization failed', { error: sentryError });
             // Continue anyway, Sentry is optional
         }
 
         // Initialize production safeguards (wrapped in try-catch)
         try {
-            console.log('🛡️ Initializing safeguards...');
+            logger.info('Initializing safeguards');
             safeguards.initialize();
-            console.log('✅ Safeguards initialized');
+            logger.info('Safeguards initialized');
         } catch (safeguardsError) {
-            console.warn('⚠️ Safeguards initialization failed:', safeguardsError);
+            logger.warn('Safeguards initialization failed', { error: safeguardsError });
             // Continue anyway, safeguards are optional
         }
 
         // Start GPU quality detection early (non-blocking)
         RenderQualityManager.init().catch(() => {
-            console.warn('⚠️ GPU quality detection failed, using defaults');
+            logger.warn('GPU quality detection failed, using defaults');
         });
 
-        logger.info('📦 Importing App...');
-        console.log('📦 About to import App component');
+        logger.info('Importing App component');
         const { default: App } = await import('./App');
-        logger.info('✅ App imported successfully');
-        console.log('✅ App imported');
+        logger.info('App imported successfully');
 
         const rootElement = document.getElementById('root');
         if (!rootElement) {
             throw new Error('Root element not found');
         }
 
-        logger.info('🎨 Rendering App...');
-        console.log('🎨 About to render with providers');
+        logger.info('Rendering App with providers');
 
         // Use unified AuthProvider which handles both Clerk and in-house auth
         // SubscriptionProvider provides subscription/tier context for feature gating
@@ -115,8 +112,8 @@ const initializeApp = async () => {
         // Strict-mode linting is enforced via ESLint (react-hooks plugin) instead.
         createRoot(rootElement).render(
             <ErrorBoundary onError={(error, errorInfo) => {
-                logger.error('🔴 App Error Caught:', error);
-                logger.error('📍 Component Stack:', errorInfo?.componentStack);
+                logger.error('App error caught by ErrorBoundary', { error });
+                logger.error('Component stack trace', { componentStack: errorInfo?.componentStack });
             }}>
                 <BrowserRouter>
                     <AuthProvider>
@@ -133,9 +130,9 @@ const initializeApp = async () => {
         );
 
 
-        logger.info('✅ App rendered with AuthProvider and SubscriptionProvider');
+        logger.info('App rendered with AuthProvider and SubscriptionProvider');
     } catch (error) {
-        logger.error('❌ Failed to initialize app:', error);
+        logger.error('Failed to initialize app', { error });
         console.error('❌ Initialization error:', error);
 
         // Show error in DOM

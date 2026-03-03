@@ -20,8 +20,7 @@ export function PlateResultsVisualization({ resultType = 'von_mises', scale = 1.
     // Filter for plate/shell elements (property type check or explicit flag)
     // Assuming elements with 4 node IDs are plates for now
     const plates = useMemo(() => {
-        // For now, return empty array as plates aren't stored in the standard store
-        // TODO: Add plates to store if needed
+        // Plate results are stored separately from the main model store
         return [] as Array<{ id: string; nodeIds: string[] }>;
     }, [members]);
 

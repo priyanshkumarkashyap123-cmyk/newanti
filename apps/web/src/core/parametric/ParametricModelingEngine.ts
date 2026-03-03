@@ -20,7 +20,7 @@ export interface Parameter {
   id: string;
   name: string;
   type: ParameterType;
-  value: any;
+  value: ParameterValue;
   min?: number;
   max?: number;
   step?: number;
@@ -51,6 +51,38 @@ export interface Vector3D {
   z: number;
 }
 
+/** Union of all parameter value types used in parametric nodes */
+export type ParameterValue = number | string | boolean | Point3D | Vector3D | string[];
+
+/** A line segment between two 3D points */
+export interface StructuralLine {
+  start: Point3D;
+  end: Point3D;
+}
+
+/** A structural member with endpoints, section, and type */
+export interface StructuralMember {
+  start: Point3D;
+  end: Point3D;
+  section: string;
+  type: string;
+}
+
+/** A structural support with node, type, and restraints */
+export interface StructuralSupport {
+  node: Point3D;
+  type: string;
+  restraints: boolean[];
+}
+
+/** Complete structural model generated from parametric graph */
+export interface StructuralModel {
+  nodes: Point3D[];
+  members: StructuralMember[];
+  supports: StructuralSupport[];
+  loads: Record<string, unknown>[];
+}
+
 export interface ParametricNode {
   id: string;
   type: string;
@@ -70,14 +102,14 @@ export interface NodeInput {
   required: boolean;
   multi?: boolean;
   connected?: string; // Output ID
-  defaultValue?: any;
+  defaultValue?: unknown;
 }
 
 export interface NodeOutput {
   id: string;
   name: string;
   type: string;
-  value?: any;
+  value?: unknown;
   connections: string[]; // Input IDs
 }
 
@@ -216,8 +248,8 @@ class GridNode extends BaseNode {
     const spacingY = inputs.spacingY ?? 5;
     
     const points: Point3D[] = [];
-    const linesX: any[] = [];
-    const linesY: any[] = [];
+    const linesX: StructuralLine[] = [];
+    const linesY: StructuralLine[] = [];
     
     // Generate grid points
     for (let i = 0; i < countX; i++) {
@@ -296,7 +328,7 @@ class ColumnGridNode extends BaseNode {
     const stories = inputs.stories ?? 1;
     const section = inputs.section ?? 'W14x30';
     
-    const columns: any[] = [];
+    const columns: StructuralMember[] = [];
     const nodes: Point3D[] = [];
     
     for (const base of basePoints) {
@@ -347,7 +379,7 @@ class BeamGridNode extends BaseNode {
     const levelNodes = nodes.filter(n => Math.abs(n.z - level) < tolerance);
     
     // Generate beams between adjacent nodes
-    const beams: any[] = [];
+    const beams: StructuralMember[] = [];
     
     // Sort by X then Y
     levelNodes.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
@@ -423,8 +455,8 @@ class TrussGeneratorNode extends BaseNode {
     
     const panelWidth = span / panels;
     const nodes: Point3D[] = [];
-    const members: any[] = [];
-    const supports: any[] = [];
+    const members: StructuralMember[] = [];
+    const supports: StructuralSupport[] = [];
     
     // Bottom chord nodes
     for (let i = 0; i <= panels; i++) {
@@ -589,8 +621,8 @@ class FrameGeneratorNode extends BaseNode {
     const includeBracing = inputs.includeBracing ?? false;
     
     const nodes: Point3D[] = [];
-    const members: any[] = [];
-    const supports: any[] = [];
+    const members: StructuralMember[] = [];
+    const supports: StructuralSupport[] = [];
     const levels: number[] = [];
     
     // Create node grid
@@ -854,7 +886,7 @@ export class ParametricModelingEngine {
   private graph: ParametricGraph;
   private nodeTypes: Map<string, BaseNode>;
   private computeOrder: string[];
-  private cache: Map<string, any>;
+  private cache: Map<string, Record<string, unknown>>;
   
   constructor() {
     this.graph = {
@@ -1013,7 +1045,7 @@ export class ParametricModelingEngine {
   /**
    * Update a node's parameter
    */
-  updateParameter(nodeId: string, parameterId: string, value: any): void {
+  updateParameter(nodeId: string, parameterId: string, value: ParameterValue): void {
     const node = this.graph.nodes.get(nodeId);
     if (node) {
       const param = node.parameters.find(p => p.id === parameterId);
@@ -1156,14 +1188,14 @@ export class ParametricModelingEngine {
   /**
    * Generate a structural model from the graph
    */
-  generateStructuralModel(): any {
+  generateStructuralModel(): StructuralModel {
     const results = this.compute();
     
-    const model = {
+    const model: StructuralModel = {
       nodes: [] as Point3D[],
-      members: [] as any[],
-      supports: [] as any[],
-      loads: [] as any[],
+      members: [] as StructuralMember[],
+      supports: [] as StructuralSupport[],
+      loads: [] as Record<string, unknown>[],
     };
     
     // Collect all structural outputs

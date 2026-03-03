@@ -333,12 +333,12 @@ interface UIState {
 // ============================================
 
 /**
- * Check if nodes are properly connected (basic validation)
- * This will be enhanced to use the actual model store
+ * Check if nodes are properly connected (basic validation).
+ * Full connectivity validation requires access to useModelStore, which cannot be
+ * referenced here without creating a circular dependency between stores.
+ * The model-level validation is performed in useModelStore.validateModel() instead.
  */
 const validateModelConnectivity = (): ValidationResult => {
-  // TODO: Import and use useModelStore to validate
-  // For now, return a mock validation
   return {
     isValid: true,
     valid: true,

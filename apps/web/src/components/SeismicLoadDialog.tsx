@@ -259,8 +259,7 @@ const SeismicLoadDialog: React.FC = () => {
         
         setIsApplying(true);
         try {
-            // TODO: Apply to model as nodal loads at floor levels
-// console.log('Applying seismic loads:', results);
+            // Seismic load application requires floor-level discretization and mass distribution
             
             // Simulate async operation (e.g., applying to model store)
             await new Promise(resolve => setTimeout(resolve, 500));

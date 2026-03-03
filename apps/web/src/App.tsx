@@ -313,6 +313,8 @@ const PageLoader = () => (
 // Hooks
 import { useUserRegistration } from "./hooks/useUserRegistration";
 import { useDeviceSession } from "./hooks/useDeviceSession";
+import { useGlobalErrorHandler } from "./hooks/useGlobalErrorHandler";
+import { SectionErrorBoundary } from "./components/SectionErrorBoundary";
 
 function App() {
   // Ensure user is registered in MongoDB upon login/load
@@ -320,6 +322,9 @@ function App() {
 
   // Manage device session lifecycle (register, heartbeat, cleanup)
   useDeviceSession();
+
+  // Capture unhandled errors & promise rejections globally
+  useGlobalErrorHandler();
 
   return (
     <ErrorBoundary>
@@ -339,7 +344,9 @@ function App() {
                 element={
                   <RequireAuth>
                     <Suspense fallback={<DashboardSkeleton />}>
-                      <UnifiedDashboard />
+                      <SectionErrorBoundary section="Dashboard">
+                        <UnifiedDashboard />
+                      </SectionErrorBoundary>
                     </Suspense>
                   </RequireAuth>
                 }
@@ -481,7 +488,11 @@ function App() {
                 path="/app"
                 element={
                   <RequireAuth>
-                    <MobileGuard><ModernModeler /></MobileGuard>
+                    <MobileGuard>
+                      <SectionErrorBoundary section="3D Editor">
+                        <ModernModeler />
+                      </SectionErrorBoundary>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />

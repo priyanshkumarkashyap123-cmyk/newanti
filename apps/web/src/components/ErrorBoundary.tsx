@@ -1,4 +1,5 @@
 import React, { ReactNode, ReactElement } from 'react';
+import { uiLogger } from '../lib/logging/logger';
 
 // ============================================
 // TYPES
@@ -53,8 +54,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     this.setState({ error, errorInfo });
 
     const scope = this.props.scope ?? 'App';
-    console.error(`[ErrorBoundary:${scope}] Caught:`, error);
-    console.error(`[ErrorBoundary:${scope}] Stack:`, errorInfo.componentStack);
+    uiLogger.error('ErrorBoundary caught error', { scope, error: error.message, stack: error.stack });
+    uiLogger.error('ErrorBoundary component stack', { scope, componentStack: errorInfo.componentStack });
 
     // External logging (Sentry, etc.)
     this.props.onError?.(error, errorInfo);
@@ -65,7 +66,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   handleRetry = () => {
     const next = this.state.retryCount + 1;
     if (next >= MAX_RETRIES) {
-      console.warn('[ErrorBoundary] Max retries — reloading page');
+      uiLogger.warn('ErrorBoundary max retries reached, reloading page');
       window.location.reload();
       return;
     }
@@ -267,7 +268,7 @@ export function useErrorHandler() {
   const [error, setError] = React.useState<Error | null>(null);
 
   const handleError = React.useCallback((err: Error) => {
-    console.error('[useErrorHandler]', err);
+    uiLogger.error('useErrorHandler caught', { error: err.message });
     setError(err);
   }, []);
 

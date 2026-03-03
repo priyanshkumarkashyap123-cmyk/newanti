@@ -27,15 +27,15 @@ interface DesignModule {
     | "surveying";
   icon: string;
   description: string;
-  component: React.ComponentType<any>;
+  component: React.ComponentType<{ onCalculationComplete: (result: Record<string, unknown>) => void }>;
 }
 
 interface CalculationResult {
   id: string;
   moduleId: string;
   timestamp: Date;
-  inputs: Record<string, any>;
-  outputs: Record<string, any>;
+  inputs: Record<string, unknown>;
+  outputs: Record<string, unknown>;
   visualization?: string;
 }
 
@@ -587,7 +587,7 @@ export function CivilEngineeringDesignCenter() {
 function FrameAnalysisPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [nodes, setNodes] = useState<string>("");
   const [members, setMembers] = useState<string>("");
@@ -636,7 +636,7 @@ function FrameAnalysisPanel({
 function TrussAnalysisPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [numNodes, setNumNodes] = useState(4);
   const [span, setSpan] = useState(12);
@@ -741,7 +741,7 @@ function TrussAnalysisPanel({
 function BeamDesignPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [span, setSpan] = useState(6);
   const [load, setLoad] = useState(20);
@@ -806,7 +806,7 @@ function BeamDesignPanel({
 function ColumnDesignPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [axialLoad, setAxialLoad] = useState(1500);
   const [moment, setMoment] = useState(120);
@@ -965,7 +965,7 @@ function ColumnDesignPanel({
 function BearingCapacityPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [foundationWidth, setFoundationWidth] = useState(2);
   const [foundationDepth, setFoundationDepth] = useState(1.5);
@@ -1046,7 +1046,7 @@ function BearingCapacityPanel({
 function SettlementPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [appliedPressure, setAppliedPressure] = useState(150);
   const [foundationWidth, setFoundationWidth] = useState(2);
@@ -1207,7 +1207,7 @@ function SettlementPanel({
 function SlopeStabilityPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [slopeHeight, setSlopeHeight] = useState(10);
   const [slopeAngle, setSlopeAngle] = useState(45);
@@ -1376,7 +1376,7 @@ function SlopeStabilityPanel({
 function PileDesignPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [pileDiameter, setPileDiameter] = useState(600);
   const [pileLength, setPileLength] = useState(15);
@@ -1551,7 +1551,7 @@ function PileDesignPanel({
 function ChannelFlowPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [channelType, setChannelType] = useState("rectangular");
   const [bottomWidth, setBottomWidth] = useState(4);
@@ -1620,7 +1620,7 @@ function ChannelFlowPanel({
 function PipeFlowPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [diameter, setDiameter] = useState(300);
   const [length, setLength] = useState(500);
@@ -1753,7 +1753,7 @@ function PipeFlowPanel({
 function HydrologyPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [catchmentArea, setCatchmentArea] = useState(2.5);
   const [runoffCoeff, setRunoffCoeff] = useState(0.6);
@@ -1925,7 +1925,7 @@ function HydrologyPanel({
 function HydraulicStructuresPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [structureType, setStructureType] = useState("sharp-crested");
   const [crestLength, setCrestLength] = useState(10);
@@ -2062,7 +2062,7 @@ function HydraulicStructuresPanel({
 function GeometricDesignPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [designSpeed, setDesignSpeed] = useState(80);
   const [terrain, setTerrain] = useState("rolling");
@@ -2113,7 +2113,7 @@ function GeometricDesignPanel({
 function PavementDesignPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [pavementType, setPavementType] = useState("flexible");
   const [cbr, setCbr] = useState(5);
@@ -2270,7 +2270,7 @@ function PavementDesignPanel({
 function TrafficAnalysisPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [peakHourVolume, setPeakHourVolume] = useState(1800);
   const [numLanes, setNumLanes] = useState(2);
@@ -2439,7 +2439,7 @@ function TrafficAnalysisPanel({
 function TraversePanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [numLegs, setNumLegs] = useState(4);
   const [legs, setLegs] = useState([
@@ -2546,7 +2546,7 @@ function TraversePanel({
 function LevelingPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [benchmarkRL, setBenchmarkRL] = useState(100.0);
   const [numStations, setNumStations] = useState(5);
@@ -2682,7 +2682,7 @@ function LevelingPanel({
 function CurveSettingPanel({
   onCalculationComplete,
 }: {
-  onCalculationComplete: (result: any) => void;
+  onCalculationComplete: (result: Record<string, unknown>) => void;
 }) {
   const [curveType, setCurveType] = useState("simple");
   const [radius, setRadius] = useState(300);

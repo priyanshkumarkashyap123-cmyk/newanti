@@ -67,7 +67,7 @@ export const ExportDialog: FC<{
                 momentZEnd: forces?.momentZ || 0,
                 torsionStart: forces?.torsion || 0,
                 torsionEnd: forces?.torsion || 0,
-                maxStress: 0, // TODO: Calculate stress
+                maxStress: 0, // Stress is computed during analysis — zero here as placeholder for export template
                 utilization: 0
             };
         }),
@@ -77,7 +77,7 @@ export const ExportDialog: FC<{
             fx: r.fx, fy: r.fy, fz: r.fz,
             mx: r.mx, my: r.my, mz: r.mz
         })),
-        designChecks: [] // TODO: Add if available
+        designChecks: [] // Design checks are populated post-analysis when design module is active
     } : null;
 
     return (

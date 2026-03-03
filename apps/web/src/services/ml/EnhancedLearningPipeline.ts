@@ -15,6 +15,7 @@
 import { feedbackService, FeedbackEntry } from '../FeedbackService';
 import { knowledgeGraph } from '../ml/KnowledgeGraphService';
 import { vertexAI } from '../ml/VertexAIService';
+import { logger } from '../../lib/logging/logger';
 
 // ============================================
 // TYPES
@@ -117,7 +118,7 @@ class EnhancedLearningPipelineClass {
      */
     private setupFeedbackListener(): void {
         // In production, would subscribe to feedback stream
-        console.log('[EnhancedLearning] Feedback listener initialized');
+        logger.info('Enhanced learning feedback listener initialized');
     }
 
     /**
@@ -154,7 +155,7 @@ class EnhancedLearningPipelineClass {
             feature
         );
 
-        console.log(`[EnhancedLearning] Added correction example for ${feature}`);
+        logger.info('Added correction example', { feature });
 
         // Check if training should be triggered
         this.checkTriggers();
@@ -220,7 +221,7 @@ class EnhancedLearningPipelineClass {
         }
 
         this.trainingQueue.push(...synthetic);
-        console.log(`[EnhancedLearning] Generated ${synthetic.length} synthetic examples`);
+        logger.info('Generated synthetic examples', { count: synthetic.length });
 
         return synthetic;
     }
@@ -288,7 +289,7 @@ class EnhancedLearningPipelineClass {
             }
 
             if (shouldTrigger) {
-                console.log(`[EnhancedLearning] Trigger activated: ${trigger.condition}`);
+                logger.info('Learning trigger activated', { condition: trigger.condition });
                 trigger.lastTriggered = new Date();
                 await this.startTraining();
                 break;
@@ -319,7 +320,7 @@ class EnhancedLearningPipelineClass {
         }
 
         this.isTraining = true;
-        console.log(`[EnhancedLearning] Starting training with ${this.trainingQueue.length} examples`);
+        logger.info('Starting training', { exampleCount: this.trainingQueue.length });
 
         try {
             // Group by feature
@@ -363,11 +364,11 @@ class EnhancedLearningPipelineClass {
             // Clear processed examples
             this.trainingQueue = [];
 
-            console.log(`[EnhancedLearning] Training complete. New version: ${this.currentVersion}`);
+            logger.info('Training complete', { version: this.currentVersion });
             return true;
 
         } catch (error) {
-            console.error('[EnhancedLearning] Training failed:', error);
+            logger.error('Training failed', { error });
             return false;
         } finally {
             this.isTraining = false;
@@ -386,7 +387,7 @@ class EnhancedLearningPipelineClass {
         }));
 
         // Would call Vertex AI for actual training
-        console.log(`[EnhancedLearning] Training ${feature} with ${examples.length} examples`);
+        logger.info('Training feature', { feature, exampleCount: examples.length });
 
         // Simulate training delay
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -398,7 +399,7 @@ class EnhancedLearningPipelineClass {
     rollbackToCheckpoint(version: string): boolean {
         const checkpoint = this.checkpoints.find(c => c.version === version);
         if (!checkpoint) {
-            console.error(`[EnhancedLearning] Checkpoint ${version} not found`);
+            logger.error('Checkpoint not found', { version });
             return false;
         }
 
@@ -410,7 +411,7 @@ class EnhancedLearningPipelineClass {
         checkpoint.status = 'rollback_point';
         this.currentVersion = version;
 
-        console.log(`[EnhancedLearning] Rolled back to version ${version}`);
+        logger.info('Rolled back to version', { version });
         return true;
     }
 
@@ -434,7 +435,7 @@ class EnhancedLearningPipelineClass {
         const totalSamples = this.federatedUpdates.reduce((sum, u) => sum + u.sampleCount, 0);
 
         // Would aggregate gradients with weighted average
-        console.log(`[EnhancedLearning] Aggregated ${this.federatedUpdates.length} federated updates`);
+        logger.info('Aggregated federated updates', { count: this.federatedUpdates.length });
 
         this.federatedUpdates = [];
     }

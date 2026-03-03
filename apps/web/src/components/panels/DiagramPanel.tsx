@@ -356,10 +356,8 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
             {(['diagrams', 'design', 'forces'] as const).map(tab => (
                 <button type="button"
                     key={tab}
-                    style={{
-                        ...styles.tab,
-                        ...(activeTab === tab ? styles.tabActive : {}),
-                    }}
+                    className="py-[10px] px-4 border-none bg-transparent text-[#94a3b8] text-[13px] cursor-pointer transition-all duration-200 border-b-2 border-b-transparent"
+                    style={activeTab === tab ? { color: '#3b82f6', borderBottomColor: '#3b82f6' } : undefined}
                     onClick={() => setActiveTab(tab)}
                 >
                     {tab === 'diagrams' && '📊 Diagrams'}
@@ -433,7 +431,7 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
             </div>
             <div style={styles.controlGroup}>
                 <select
-                    style={{ ...styles.select, width: 'auto' }}
+                    className="w-auto py-2 px-3 bg-[#334155] border border-[#475569] rounded-md text-[#f1f5f9] text-sm"
                     value={colorScheme}
                     onChange={e => {
                         const scheme = e.target.value as 'engineering' | 'modern' | 'contrast';
@@ -529,24 +527,24 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
         const utilPercent = Math.min(check.utilization * 100, 100);
 
         return (
-            <div key={check.name} style={{ ...styles.checkRow, ...statusStyle }}>
+            <div key={check.name} className="flex justify-between items-center py-[10px] px-3 mb-2 bg-[#0f172a] rounded-md border-l-[3px] border-solid" style={statusStyle}>
                 <div>
                     <div style={styles.checkName}>{check.name}</div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                    <div className="text-[11px] text-[#94a3b8] mt-0.5">
                         {check.description}
                     </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="flex items-center">
                     <div style={styles.utilizationBar}>
                         <div
+                            className="h-full rounded-[3px] transition-[width] duration-300"
                             style={{
-                                ...styles.utilizationFill,
                                 width: `${utilPercent}%`,
                                 backgroundColor: fillColor,
                             }}
                         />
                     </div>
-                    <div style={{ ...styles.utilizationText, color: fillColor }}>
+                    <div className="text-xs font-semibold min-w-[45px] text-right" style={{ color: fillColor }}>
                         {(check.utilization * 100).toFixed(1)}%
                     </div>
                 </div>
@@ -573,14 +571,14 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
                 {/* Overall Status */}
                 <div style={styles.overallStatus}>
                     <div>
-                        <div style={{ fontSize: '14px', fontWeight: 600 }}>Overall Status</div>
-                        <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                        <div className="text-sm font-semibold">Overall Status</div>
+                        <div className="text-xs text-[#94a3b8] mt-1">
                             Max Utilization: {(designResult.overallUtilization * 100).toFixed(1)}%
                         </div>
                     </div>
                     <div
+                        className="py-1.5 px-3 rounded-[20px] text-xs font-semibold uppercase"
                         style={{
-                            ...styles.statusBadge,
                             backgroundColor: statusColor + '20',
                             color: statusColor,
                         }}
@@ -590,8 +588,8 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
                 </div>
 
                 {/* Individual Checks */}
-                <div style={{ marginTop: '16px' }}>
-                    <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '12px' }}>
+                <div className="mt-4">
+                    <div className="text-[13px] text-[#94a3b8] mb-3">
                         Design Checks (IS 800:2007)
                     </div>
                     {designResult.checks.map(renderDesignCheck)}
@@ -599,12 +597,12 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
 
                 {/* Recommendations */}
                 {designResult.recommendations && designResult.recommendations.length > 0 && (
-                    <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#0f172a', borderRadius: '6px' }}>
-                        <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>
+                    <div className="mt-4 p-3 bg-[#0f172a] rounded-md">
+                        <div className="text-[13px] text-[#94a3b8] mb-2">
                             💡 Recommendations
                         </div>
                         {designResult.recommendations.map((rec, i) => (
-                            <div key={i} style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '4px' }}>
+                            <div key={i} className="text-xs text-[#cbd5e1] mt-1">
                                 • {rec}
                             </div>
                         ))}
@@ -613,11 +611,11 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
 
                 {/* Reinforcement Design */}
                 {designResult.reinforcement && (
-                    <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#0f172a', borderRadius: '6px' }}>
-                        <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>
+                    <div className="mt-4 p-3 bg-[#0f172a] rounded-md">
+                        <div className="text-[13px] text-[#94a3b8] mb-2">
                             🔩 Reinforcement Design
                         </div>
-                        <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                        <div className="text-xs text-[#cbd5e1]">
                             <div>Main Bars: {designResult.reinforcement.mainBars.count} × Ø{designResult.reinforcement.mainBars.diameter}mm</div>
                             <div>Area: {designResult.reinforcement.mainBars.area.toFixed(0)} mm² ({designResult.reinforcement.mainBars.ratio.toFixed(2)}%)</div>
                             <div>Stirrups: Ø{designResult.reinforcement.stirrups.diameter}mm @ {designResult.reinforcement.stirrups.spacing}mm c/c</div>
@@ -650,7 +648,7 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
                     <tbody>
                         <tr>
                             <td style={styles.tableCell}>Axial Force (N)</td>
-                            <td style={{ ...styles.tableCell, color: forces.axial > 0 ? '#22c55e' : '#ef4444' }}>
+                            <td className="py-[10px] px-3 border-b border-[rgba(71,85,105,0.5)] text-[13px]" style={{ color: forces.axial > 0 ? '#22c55e' : '#ef4444' }}>
                                 {forces.axial.toFixed(3)}
                             </td>
                             <td style={styles.tableCell}>kN</td>
@@ -685,9 +683,9 @@ export const DiagramPanel: React.FC<DiagramPanelProps> = ({
 
                 {/* Diagram data points */}
                 {forces.diagramData && (
-                    <div style={{ marginTop: '20px' }}>
+                    <div className="mt-5">
                         <div style={styles.diagramTitle}>Force Distribution ({forces.diagramData.x_values.length} points)</div>
-                        <div style={{ maxHeight: '200px', overflow: 'auto' }}>
+                        <div className="max-h-[200px] overflow-auto">
                             <table style={styles.forceTable}>
                                 <thead>
                                     <tr>
