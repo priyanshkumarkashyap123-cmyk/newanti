@@ -34,6 +34,7 @@ scripts/setup-prod-env.sh
 # Turbo
 **/build/
 **/dist/
+!apps/api/dist/
 **/target/
 *.PublishSettings
 *.credentials

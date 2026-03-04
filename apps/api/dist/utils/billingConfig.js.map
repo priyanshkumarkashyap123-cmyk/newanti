@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/utils/billingConfig.ts"],
+  "sourcesContent": ["export type BillingPlanCycle = 'monthly' | 'yearly';\n\n/**\n * Resolve Razorpay plan ID from explicit input or configured environment IDs.\n */\nexport function resolveRazorpayPlanId(\n  explicitPlanId: string | undefined,\n  planType: BillingPlanCycle | undefined,\n  env: {\n    proMonthly?: string;\n    proYearly?: string;\n  }\n): string | null {\n  if (explicitPlanId) return explicitPlanId;\n  const selected = planType === 'yearly' ? env.proYearly : env.proMonthly;\n  return selected && selected.trim().length > 0 ? selected : null;\n}\n"],
+  "mappings": "AAKO,SAAS,sBACd,gBACA,UACA,KAIe;AACf,MAAI,eAAgB,QAAO;AAC3B,QAAM,WAAW,aAAa,WAAW,IAAI,YAAY,IAAI;AAC7D,SAAO,YAAY,SAAS,KAAK,EAAE,SAAS,IAAI,WAAW;AAC7D;",
+  "names": []
+}
