@@ -6,6 +6,8 @@ Modules:
 - dynamics: Modal Extraction and Response Spectrum Analysis
 - buckling: Linear Buckling Analysis
 - cable: Tension/Compression Only and Cable Elements
+- rc_limit_state_design: Reinforced Concrete LSD Design per IS 456:2000
+- lsd_integration: Integration with structural analysis results
 """
 
 from .nonlinear import (
@@ -36,6 +38,27 @@ from .cable import (
     CableSagResult,
 )
 
+from .rc_limit_state_design import (
+    LimitStateDesignBeam,
+    LimitingMomentCalculator,
+    SinglelyReinforcedDesign,
+    DoublyReinforcedDesign,
+    ShearDesign,
+    BeamSection,
+    ConcreteProperties,
+    RebarProperties,
+    ConcreteGrade,
+    RebarGrade,
+    LSDDesignResult,
+)
+
+from .lsd_integration import (
+    design_rc_beam,
+    RCBeamDesigner,
+    DesignInput,
+    LoadFactoring,
+)
+
 __all__ = [
     # Nonlinear
     'GeometricStiffnessMatrix',
@@ -57,4 +80,21 @@ __all__ = [
     'NonLinearMemberAnalyzer',
     'CableAnalyzer',
     'CableSagResult',
+    # Limit State Design (RC Beam Design per IS 456:2000)
+    'LimitStateDesignBeam',
+    'LimitingMomentCalculator',
+    'SinglelyReinforcedDesign',
+    'DoublyReinforcedDesign',
+    'ShearDesign',
+    'BeamSection',
+    'ConcreteProperties',
+    'RebarProperties',
+    'ConcreteGrade',
+    'RebarGrade',
+    'LSDDesignResult',
+    # LSD Integration
+    'design_rc_beam',
+    'RCBeamDesigner',
+    'DesignInput',
+    'LoadFactoring',
 ]

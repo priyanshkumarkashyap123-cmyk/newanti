@@ -9,6 +9,7 @@
 mod cache;
 mod config;
 mod db;
+mod design_codes;
 mod error;
 mod handlers;
 mod middleware;
@@ -177,6 +178,25 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/structures/:id", get(handlers::structures::get_structure))
         .route("/api/structures/:id", axum::routing::put(handlers::structures::update_structure))
         .route("/api/structures/:id", axum::routing::delete(handlers::structures::delete_structure))
+        // Design code checks (IS 456 / IS 800 / IS 1893 / IS 875 / Serviceability)
+        .route("/api/design/is456/flexural-capacity", post(handlers::design::flexural_capacity))
+        .route("/api/design/is456/shear", post(handlers::design::shear_design))
+        .route("/api/design/is456/biaxial-column", post(handlers::design::biaxial_column))
+        .route("/api/design/is456/deflection", post(handlers::design::deflection_check_is456))
+        .route("/api/design/is800/bolt-bearing", post(handlers::design::bolt_bearing))
+        .route("/api/design/is800/bolt-hsfg", post(handlers::design::bolt_hsfg))
+        .route("/api/design/is800/fillet-weld", post(handlers::design::fillet_weld))
+        .route("/api/design/is800/auto-select", post(handlers::design::auto_select))
+        .route("/api/design/is1893/base-shear", post(handlers::design::base_shear))
+        .route("/api/design/is1893/eq-forces", post(handlers::design::eq_forces))
+        .route("/api/design/is1893/drift", post(handlers::design::drift_check))
+        .route("/api/design/is875/wind-per-storey", post(handlers::design::wind_per_storey))
+        .route("/api/design/is875/pressure-coefficients", post(handlers::design::pressure_coefficients))
+        .route("/api/design/is875/live-load", post(handlers::design::live_load))
+        .route("/api/design/is875/live-load-reduction", post(handlers::design::live_load_reduction))
+        .route("/api/design/serviceability/deflection", post(handlers::design::deflection_check))
+        .route("/api/design/serviceability/vibration", post(handlers::design::vibration_check))
+        .route("/api/design/serviceability/crack-width", post(handlers::design::crack_width))
         // Auth middleware applied to all protected routes
         .layer(axum::middleware::from_fn(middleware::auth_middleware));
 

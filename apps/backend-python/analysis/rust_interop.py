@@ -379,6 +379,151 @@ class RustInteropClient:
         except Exception:
             pass
         return None
+
+    # ============================================
+    # Design Code Delegation (math in Rust)
+    # ============================================
+
+    async def design_rc_beam_lsd(
+        self,
+        b: float,
+        d: float,
+        d_prime: float,
+        fck: float,
+        fy: float,
+        mu_knm: float,
+        vu_kn: float,
+    ) -> Optional[Dict]:
+        """
+        Delegate IS 456 LSD beam design to Rust backend.
+
+        Rust implements: limiting moment, singly/doubly reinforced bending,
+        shear design, rebar selection, stirrup spacing — all per IS 456:2000.
+
+        Falls back to Python LSD solver if Rust is unavailable.
+        """
+        # Try Rust first
+        if self.enable_rust and await self.check_health():
+            try:
+                client = await self._get_client()
+                payload = {
+                    "b": b, "d": d, "d_prime": d_prime,
+                    "fck": fck, "fy": fy,
+                    "mu_knm": mu_knm, "vu_kn": vu_kn,
+                }
+                resp = await client.post("/api/design/rc-beam-lsd", json=payload)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception as e:
+                print(f"[RUST_INTEROP] RC beam LSD via Rust failed: {e}")
+
+        # Python fallback
+        try:
+            from analysis.solvers.lsd_integration import design_rc_beam
+            result = design_rc_beam(
+                b_mm=b, d_mm=d, d_prime_mm=d_prime,
+                fck_mpa=fck, fy_mpa=fy,
+                Mu_knm=mu_knm, Vu_kn=vu_kn,
+            )
+            return result
+        except Exception as e:
+            return {"error": str(e), "backend": "python_fallback"}
+
+    async def calculate_section_properties(
+        self,
+        points: List[Dict],
+        name: str = "Custom Section",
+        material_density: float = 7850.0,
+    ) -> Optional[Dict]:
+        """
+        Delegate custom section property calculation to Rust backend.
+
+        Rust implements: shoelace area, Green's theorem centroid,
+        polygon vertex integration for Ixx/Iyy/Ixy, elastic & plastic moduli,
+        principal axes, radii of gyration — all for arbitrary polygons.
+
+        Falls back to Python section_designer if Rust is unavailable.
+        """
+        if self.enable_rust and await self.check_health():
+            try:
+                client = await self._get_client()
+                payload = {
+                    "points": points,
+                    "name": name,
+                    "material_density": material_density,
+                }
+                resp = await client.post("/api/design/section-properties", json=payload)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception as e:
+                print(f"[RUST_INTEROP] Section properties via Rust failed: {e}")
+
+        # Python fallback
+        try:
+            from analysis.section_designer import CustomSection, Point
+            pts = [Point(p["x"], p["y"]) for p in points]
+            section = CustomSection(pts, name)
+            return section.get_all_properties(material_density)
+        except Exception as e:
+            return {"error": str(e), "backend": "python_fallback"}
+
+    async def calculate_fixed_end_actions(
+        self,
+        load_type: str,
+        length: float,
+        **load_params,
+    ) -> Optional[Dict]:
+        """
+        Delegate fixed-end action calculation to Rust backend.
+
+        Supports: uniform, trapezoidal, point_load, moment load types.
+        Falls back to Python load_engine if Rust is unavailable.
+        """
+        if self.enable_rust and await self.check_health():
+            try:
+                client = await self._get_client()
+                payload = {"load_type": load_type, "length": length, **load_params}
+                resp = await client.post("/api/loads/fixed-end-actions", json=payload)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception as e:
+                print(f"[RUST_INTEROP] FEA calc via Rust failed: {e}")
+
+        # Python fallback
+        try:
+            from analysis.load_engine import (
+                UniformLoad, TrapezoidalLoad, PointLoadOnMember, MomentOnMember
+            )
+            if load_type == "uniform":
+                load = UniformLoad(
+                    id="interop", member_id="M0", w=load_params.get("w", 0),
+                    start_pos=load_params.get("start_pos", 0),
+                    end_pos=load_params.get("end_pos", 1),
+                )
+                return load.get_fixed_end_actions(length)
+            elif load_type == "trapezoidal":
+                load = TrapezoidalLoad(
+                    id="interop", member_id="M0",
+                    w1=load_params.get("w1", 0), w2=load_params.get("w2", 0),
+                    start_pos=load_params.get("start_pos", 0),
+                    end_pos=load_params.get("end_pos", 1),
+                )
+                return load.get_fixed_end_actions(length)
+            elif load_type == "point_load":
+                load = PointLoadOnMember(
+                    id="interop", member_id="M0",
+                    P=load_params.get("P", 0), a=load_params.get("a", 0.5),
+                )
+                return load.get_fixed_end_actions(length)
+            elif load_type == "moment":
+                load = MomentOnMember(
+                    id="interop", member_id="M0",
+                    M=load_params.get("M", 0), a=load_params.get("a", 0.5),
+                )
+                return load.get_fixed_end_actions(length)
+        except Exception as e:
+            return {"error": str(e), "backend": "python_fallback"}
+        return None
     
     async def close(self):
         """Cleanup HTTP client"""

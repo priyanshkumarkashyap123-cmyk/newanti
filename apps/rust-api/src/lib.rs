@@ -6,6 +6,7 @@ pub mod cache;
 pub mod solver;
 pub mod config;
 pub mod db;
+pub mod design_codes;
 pub mod error;
 pub mod handlers;
 pub mod middleware;
