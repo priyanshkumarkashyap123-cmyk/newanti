@@ -194,21 +194,6 @@ export const GRAPHICS_MODULE_FEATURES = [
 ];
 
 // ============================================
-// DEFAULT EXPORT
+// STRUCTURAL MODELING CANVAS (NEW)
 // ============================================
-export default {
-  AdvancedRenderingEngine,
-  SectionProfileLibrary,
-  DiagramGenerator,
-  DeflectedShapeVisualizer,
-  LoadVisualizer,
-  ReactionVisualizer,
-  StressContourRenderer,
-  UtilizationRenderer,
-  ModeShapeAnimator,
-  ResultTableGenerator,
-  createVisualizationContext,
-  getStandardSection,
-  getSectionsByType,
-  getAllSectionNames,
-};
+export { CanvasManager } from './CanvasManager';\nexport type { StructuralTopology } from './CanvasManager';\n\nexport { CanvasCursorStateMachine } from './CanvasCursorStateMachine';\nexport { CursorMode } from './CanvasCursorStateMachine';\nexport type { ModeState, StateTransitions } from './CanvasCursorStateMachine';\n\n// ============================================\n// DEFAULT EXPORT\n// ============================================\nexport default {\n  AdvancedRenderingEngine,\n  SectionProfileLibrary,\n  DiagramGenerator,\n  DeflectedShapeVisualizer,\n  LoadVisualizer,\n  ReactionVisualizer,\n  StressContourRenderer,\n  UtilizationRenderer,\n  ModeShapeAnimator,\n  ResultTableGenerator,\n  createVisualizationContext,\n  getStandardSection,\n  getSectionsByType,\n  getAllSectionNames,\n  // Canvas system exports\n  CanvasManager,\n  CanvasCursorStateMachine,\n  CursorMode,\n};

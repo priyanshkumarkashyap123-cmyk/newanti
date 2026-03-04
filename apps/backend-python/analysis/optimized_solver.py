@@ -24,6 +24,12 @@ from typing import List, Dict, Tuple, Optional
 import time
 from dataclasses import dataclass
 
+try:
+    from analysis.plate_element import PlateElement, SimpleMaterial
+except ImportError:
+    PlateElement = None
+    SimpleMaterial = None
+
 
 @dataclass
 class PerformanceMetrics:
@@ -61,8 +67,6 @@ class OptimizedFrameSolver:
         self.use_iterative = use_iterative
         self.tolerance = tolerance
         self.metrics = None
-    
-from analysis.plate_element import PlateElement, SimpleMaterial
 
     def assemble_stiffness_sparse(
         self,
