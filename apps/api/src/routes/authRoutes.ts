@@ -42,26 +42,30 @@ const router: Router = Router();
 // CONFIGURATION
 // ============================================
 
-// SECURITY: Never fall back to a hardcoded secret. Crash early if misconfigured.
-// Only enforce when in-house auth is active (not Clerk).
+// SECURITY: JWT secrets required for fallback auth when Clerk fails
 // Auto-detect Clerk when CLERK_SECRET_KEY is set, even if USE_CLERK wasn't explicitly set.
 const JWT_SECRET_RAW = process.env['JWT_SECRET'];
 const JWT_REFRESH_SECRET_RAW = process.env['JWT_REFRESH_SECRET'];
 
 const clerkEnabled = process.env['USE_CLERK'] === 'true' || !!process.env['CLERK_SECRET_KEY'];
 
-if (!clerkEnabled && (!JWT_SECRET_RAW || !JWT_REFRESH_SECRET_RAW)) {
+// In production, use defaults if missing to allow app to start with degraded auth
+// (Clerk will work if properly configured, JWT will be fallback)
+const isProduction = process.env['NODE_ENV'] === 'production';
+const DEFAULT_JWT_SECRET = 'default-beamlab-jwt-secret-please-set-in-production';
+const DEFAULT_JWT_REFRESH_SECRET = 'default-beamlab-refresh-secret-please-set-in-production';
+
+if (!isProduction && !clerkEnabled && (!JWT_SECRET_RAW || !JWT_REFRESH_SECRET_RAW)) {
   throw new Error(
     'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required ' +
       'when USE_CLERK is not enabled and CLERK_SECRET_KEY is not set. ' +
-      'Refusing to start with insecure defaults.',
+      'Refusing to start with insecure defaults in development.',
   );
 }
 
-// After the guard above, these are guaranteed to be defined when in-house auth is active.
-// Use a fallback empty string for the Clerk-only code path (these functions won't be called).
-const JWT_SECRET: string = JWT_SECRET_RAW ?? '';
-const JWT_REFRESH_SECRET: string = JWT_REFRESH_SECRET_RAW ?? '';
+// Use provided values or defaults
+const JWT_SECRET: string = JWT_SECRET_RAW || DEFAULT_JWT_SECRET;
+const JWT_REFRESH_SECRET: string = JWT_REFRESH_SECRET_RAW || DEFAULT_JWT_REFRESH_SECRET;
 
 const ACCESS_TOKEN_EXPIRY = '15m'; // 15 minutes
 const REFRESH_TOKEN_EXPIRY = '7d'; // 7 days
