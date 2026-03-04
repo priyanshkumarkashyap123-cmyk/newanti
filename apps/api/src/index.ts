@@ -187,6 +187,7 @@ const corsOptions: cors.CorsOptions = {
     "Cache-Control",
     "sentry-trace",
     "baggage",
+    "x-device-id",
   ],
   exposedHeaders: ["X-Request-ID"],
   optionsSuccessStatus: 204,
