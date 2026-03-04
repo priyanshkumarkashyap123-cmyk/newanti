@@ -14,8 +14,6 @@ echo "NPM version: $(npm --version)"
 
 # Print working directory
 echo "Working directory: $(pwd)"
-echo "Directory contents:"
-ls -la
 
 # Ensure environment variables are set (Azure App Service settings take precedence)
 export NODE_ENV=${NODE_ENV:-production}
@@ -27,6 +25,18 @@ echo "  NODE_ENV: $NODE_ENV"
 echo "  PORT: $PORT"
 echo "  FRONTEND_URL: ${FRONTEND_URL:-not set}"
 echo "  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-not set}"
+
+# Handle node_modules - either extract from tarball or install from lock file
+echo "Setting up dependencies..."
+if [ -f "node_modules.tar.gz" ]; then
+    echo "Found node_modules.tar.gz, extracting..."
+    tar -xzf node_modules.tar.gz
+elif [ ! -d "node_modules" ]; then
+    echo "node_modules not found and no tarball available, installing from package-lock.json..."
+    npm ci --legacy-peer-deps --verbose
+else
+    echo "Using existing node_modules directory"
+fi
 
 # Check if dist folder exists
 if [ ! -d "dist" ]; then
