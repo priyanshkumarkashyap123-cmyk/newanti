@@ -75,8 +75,13 @@ if (process.env.SENTRY_DSN) {
   });
 }
 
+console.log("[STARTUP] Starting BeamLab API...");
+console.log("[STARTUP] NODE_ENV:", process.env.NODE_ENV || "not set");
+console.log("[STARTUP] PORT env:", process.env.PORT || "not set");
+
 const app = express();
 const PORT = process.env["PORT"] ?? 3001;
+console.log("[STARTUP] Effective PORT:", PORT);
 
 const openApiSpec = {
   openapi: "3.0.3",
@@ -485,7 +490,10 @@ app.get(
 app.use(secureErrorHandler);
 
 // Start server immediately to satisfy startup probes
+console.log("[STARTUP] About to call httpServer.listen()...");
+console.log("[STARTUP] Port to listen on:", PORT);
 httpServer.listen(PORT, () => {
+  console.log("[STARTUP] ✅ Server listening successfully!");
   logger.info(`BeamLab Ultimate API running on http://localhost:${PORT}`);
   logger.info(`WebSocket server ready for real-time collaboration`);
   logger.info(`Security middleware active: helmet, rate limiting, logging`);
