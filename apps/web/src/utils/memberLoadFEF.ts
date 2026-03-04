@@ -130,15 +130,16 @@ function fefPointAxial(P: number, a: number, L: number): [number, number] {
 /**
  * Hermite-derivative FEF for a concentrated moment M₀ at distance a from start.
  *
- *   r1 = −6·M₀·a·b/L³,  m1 = M₀·b·(b−2a)/L²
- *   r2  =  6·M₀·a·b/L³,  m2 = M₀·a·(a−2b)/L²
+ * Matches Rust solver_3d.rs `compute_point_load_fef` (moment case):
+ *   r1 =  6·M₀·a·b/L³,  m1 = M₀·b·(2a−b)/L²
+ *   r2 = −6·M₀·a·b/L³,  m2 = M₀·a·(2b−a)/L²
  */
 function fefMomentTransverse(M0: number, a: number, L: number): [number, number, number, number] {
   const b = L - a;
   const L2 = L * L;
   const L3 = L2 * L;
-  const r1 = -6 * M0 * a * b / L3;
-  const r2 = 6 * M0 * a * b / L3;
+  const r1 = 6 * M0 * a * b / L3;
+  const r2 = -6 * M0 * a * b / L3;
   const m1 = M0 * b * (2 * a - b) / L2;
   const m2 = M0 * a * (2 * b - a) / L2;
   return [r1, r2, m1, m2];

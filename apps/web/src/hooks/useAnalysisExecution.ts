@@ -49,6 +49,7 @@ import {
   integrateDeflection,
   type DiagramLoad,
 } from "../utils/diagramUtils";
+import { buildRotation3x3 } from "../utils/memberLoadFEF";
 import { modelerLogger, stressLogger } from "../utils/logger";
 
 // Analysis service — lazy-loaded on first analysis run
@@ -431,12 +432,43 @@ export function useAnalysisExecution(
             const M1 = (P * a * b * b) / (L * L);
             const M2 = (-P * a * a * b) / (L * L);
             const dir = mpl.direction || "global_y";
-            if (dir === "local_y" || dir === "global_y") {
+
+            if (dir === "local_y" || dir === "local_z") {
+              // Local direction loads: FEF is in local coords, transform to global
+              // via T^T (rows of T are local axes in global)
+              const T = buildRotation3x3(
+                { x: nd1.x, y: nd1.y, z: nd1.z ?? 0 },
+                { x: nd2.x, y: nd2.y, z: nd2.z ?? 0 },
+              );
+              // Determine which local axis the force acts along:
+              //   local_y → transverse Y → bending about Z: force=[0,R,0], moment=[0,0,M]
+              //   local_z → transverse Z → bending about Y: force=[0,0,R], moment=[0,-M,0]
+              let locF1: number[], locF2: number[], locM1: number[], locM2: number[];
+              if (dir === "local_y") {
+                locF1 = [0, R1, 0]; locF2 = [0, R2, 0];
+                locM1 = [0, 0, M1]; locM2 = [0, 0, M2];
+              } else {
+                locF1 = [0, 0, R1]; locF2 = [0, 0, R2];
+                locM1 = [0, -M1, 0]; locM2 = [0, -M2, 0];
+              }
+              // Transform local → global: v_global = T^T * v_local
+              const toGlobal = (v: number[]) => [
+                T[0][0] * v[0] + T[1][0] * v[1] + T[2][0] * v[2],
+                T[0][1] * v[0] + T[1][1] * v[1] + T[2][1] * v[2],
+                T[0][2] * v[0] + T[1][2] * v[1] + T[2][2] * v[2],
+              ];
+              const gF1 = toGlobal(locF1), gF2 = toGlobal(locF2);
+              const gM1 = toGlobal(locM1), gM2 = toGlobal(locM2);
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: gF1[0], fy: gF1[1], fz: gF1[2], mx: gM1[0], my: gM1[1], mz: gM1[2] },
+                { node_id: mInfo.endNodeId,   fx: gF2[0], fy: gF2[1], fz: gF2[2], mx: gM2[0], my: gM2[1], mz: gM2[2] },
+              );
+            } else if (dir === "global_y") {
               equivalentNodalFromMemberPt.push(
                 { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
                 { node_id: mInfo.endNodeId, fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
               );
-            } else if (dir === "local_z" || dir === "global_z") {
+            } else if (dir === "global_z") {
               equivalentNodalFromMemberPt.push(
                 { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: R1, mx: 0, my: -M1, mz: 0 },
                 { node_id: mInfo.endNodeId, fx: 0, fy: 0, fz: R2, mx: 0, my: -M2, mz: 0 },
@@ -455,10 +487,59 @@ export function useAnalysisExecution(
             const R2 = -R1;
             const M1 = (Mo * b * (2 * a - b)) / (L * L);
             const M2 = (Mo * a * (2 * b - a)) / (L * L);
-            equivalentNodalFromMemberPt.push(
-              { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
-              { node_id: mInfo.endNodeId, fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
-            );
+            const dir = mpl.direction || "global_z";
+
+            if (dir === "local_y" || dir === "local_z" || dir.includes("local")) {
+              // Local moment: compute FEF in local, then transform to global
+              const T = buildRotation3x3(
+                { x: nd1.x, y: nd1.y, z: nd1.z ?? 0 },
+                { x: nd2.x, y: nd2.y, z: nd2.z ?? 0 },
+              );
+              // Moment about local Z (primary bending) — shear in local Y
+              // Moment about local Y (weak bending) — shear in local Z, signs negated
+              let locF1: number[], locF2: number[], locM1: number[], locM2: number[];
+              if (dir === "local_y") {
+                // Moment about local Y → shear in local Z
+                locF1 = [0, 0, R1]; locF2 = [0, 0, R2];
+                locM1 = [0, M1, 0]; locM2 = [0, M2, 0];
+              } else {
+                // Moment about local Z → shear in local Y (default)
+                locF1 = [0, R1, 0]; locF2 = [0, R2, 0];
+                locM1 = [0, 0, M1]; locM2 = [0, 0, M2];
+              }
+              const toGlobal = (v: number[]) => [
+                T[0][0] * v[0] + T[1][0] * v[1] + T[2][0] * v[2],
+                T[0][1] * v[0] + T[1][1] * v[1] + T[2][1] * v[2],
+                T[0][2] * v[0] + T[1][2] * v[1] + T[2][2] * v[2],
+              ];
+              const gF1 = toGlobal(locF1), gF2 = toGlobal(locF2);
+              const gM1 = toGlobal(locM1), gM2 = toGlobal(locM2);
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: gF1[0], fy: gF1[1], fz: gF1[2], mx: gM1[0], my: gM1[1], mz: gM1[2] },
+                { node_id: mInfo.endNodeId,   fx: gF2[0], fy: gF2[1], fz: gF2[2], mx: gM2[0], my: gM2[1], mz: gM2[2] },
+              );
+            } else if (dir === "global_y") {
+              // Moment about global Y → shear in fz, moment in my
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: R1, mx: 0, my: M1, mz: 0 },
+                { node_id: mInfo.endNodeId,   fx: 0, fy: 0, fz: R2, mx: 0, my: M2, mz: 0 },
+              );
+            } else if (dir === "global_x") {
+              // Moment about global X → torsion, shear in both Y and Z planes
+              // For simplicity, apply as torsional moment (no transverse shear from torsion)
+              const Mx1 = (Mo * b) / L;
+              const Mx2 = (Mo * a) / L;
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: 0, fy: 0, fz: 0, mx: Mx1, my: 0, mz: 0 },
+                { node_id: mInfo.endNodeId,   fx: 0, fy: 0, fz: 0, mx: Mx2, my: 0, mz: 0 },
+              );
+            } else {
+              // Default: moment about global Z → shear in fy, moment in mz
+              equivalentNodalFromMemberPt.push(
+                { node_id: mInfo.startNodeId, fx: 0, fy: R1, fz: 0, mx: 0, my: 0, mz: M1 },
+                { node_id: mInfo.endNodeId,   fx: 0, fy: R2, fz: 0, mx: 0, my: 0, mz: M2 },
+              );
+            }
           }
         }
 

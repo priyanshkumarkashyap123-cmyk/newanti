@@ -43,8 +43,11 @@ export function buildLocalAxesForDiagram(
 
   let ly: number[];
   if (isVertical) {
-    // Member along global Y — use global Z as reference
-    ly = [0, 0, 1];
+    // Member along global Y — match Rust solver_3d.rs transformation_matrix_3d:
+    //   Row 1 (local Y): [-sign*cos(beta), 0, sin(beta)]
+    // With beta=0 (applied below): local Y = [-sign, 0, 0]
+    const sign = cy > 0 ? 1 : -1;
+    ly = [-sign, 0, 0];
   } else {
     // lz_temp = lx × globalY = (-cz, 0, cx)
     const lzLen = Math.sqrt(cz * cz + cx * cx);

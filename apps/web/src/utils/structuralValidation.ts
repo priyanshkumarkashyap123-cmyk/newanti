@@ -225,17 +225,30 @@ export function validateStructure(
 
   // 6. Check for material/section properties
   let missingProperties = 0;
+  const defaultMembers: string[] = [];
   members.forEach((member) => {
+    const hasDefaultE = !member.E || member.E === 200e6; // Default steel E
+    const hasDefaultI = !member.I || member.I === 1e-4;  // Default 10000 cm⁴
+    const hasDefaultA = !member.A || member.A === 0.01;  // Default 100 cm²
+    if (hasDefaultE || hasDefaultI || hasDefaultA) {
+      missingProperties++;
+      if (defaultMembers.length < 5) {
+        defaultMembers.push(member.id?.slice(0, 8) || 'unknown');
+      }
+    }
     if (!member.E || member.E <= 0) missingProperties++;
     if (!member.I || member.I <= 0) missingProperties++;
     if (!member.A || member.A <= 0) missingProperties++;
   });
 
   if (missingProperties > 0) {
+    const memberList = defaultMembers.length > 0
+      ? ` (${defaultMembers.join(', ')}${defaultMembers.length < missingProperties ? '...' : ''})`
+      : '';
     warnings.push({
       type: "warning",
-      message: "Missing material properties",
-      details: "Some members have default values for E, I, or A",
+      message: "Missing material/section assignment",
+      details: `${missingProperties} member(s) use default properties${memberList}. Defaults: E=200 GPa (Steel), A=100 cm², I=10000 cm⁴. Assign materials and sections for accurate results.`,
     });
   }
 

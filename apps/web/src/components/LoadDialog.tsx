@@ -488,6 +488,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                                 members={members}
                                 selectedMemberIds={selectedMemberIds}
                                 onAdd={addTemperatureLoads}
+                                onUpdate={updateTemperatureLoad}
                             />
                         )}
                         {activeTab === 'prestress' && (
@@ -496,6 +497,7 @@ export const LoadDialog: React.FC<LoadDialogProps> = ({ isOpen, onClose }) => {
                                 members={members}
                                 selectedMemberIds={selectedMemberIds}
                                 onAdd={addPrestressLoads}
+                                onUpdate={updatePrestressLoad}
                             />
                         )}
                         {activeTab === 'combinations' && (
@@ -1043,10 +1045,11 @@ interface TemperatureLoadPanelProps {
     members: Map<string, unknown>;
     selectedMemberIds: string[];
     onAdd: (memberIds: string[]) => void;
+    onUpdate: (id: string, updates: Partial<TemperatureLoad>) => void;
 }
 
 const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
-    loads, members, selectedMemberIds, onAdd
+    loads, members, selectedMemberIds, onAdd, onUpdate
 }) => {
     return (
         <div className="space-y-4">
@@ -1086,7 +1089,8 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                                 <Label className="text-xs text-slate-500 dark:text-slate-400">ΔT (°C)</Label>
                                 <Input
                                     type="number"
-                                    defaultValue={load.deltaT}
+                                    value={load.deltaT}
+                                    onChange={(e) => onUpdate(load.id, { deltaT: parseFloat(e.target.value) || 0 })}
                                     className="h-8"
                                 />
                             </div>
@@ -1094,7 +1098,8 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                                 <Label className="text-xs text-slate-500 dark:text-slate-400">α (×10⁻⁶/°C)</Label>
                                 <Input
                                     type="number"
-                                    defaultValue={load.alpha * 1e6}
+                                    value={load.alpha * 1e6}
+                                    onChange={(e) => onUpdate(load.id, { alpha: (parseFloat(e.target.value) || 0) * 1e-6 })}
                                     className="h-8"
                                 />
                             </div>
@@ -1102,7 +1107,8 @@ const TemperatureLoadPanel: React.FC<TemperatureLoadPanelProps> = ({
                                 <Label className="text-xs text-slate-500 dark:text-slate-400">Gradient ΔT (°C)</Label>
                                 <Input
                                     type="number"
-                                    defaultValue={load.gradientT || 0}
+                                    value={load.gradientT || 0}
+                                    onChange={(e) => onUpdate(load.id, { gradientT: parseFloat(e.target.value) || 0 })}
                                     placeholder="Optional"
                                     className="h-8"
                                 />
@@ -1131,10 +1137,11 @@ interface PrestressLoadPanelProps {
     members: Map<string, unknown>;
     selectedMemberIds: string[];
     onAdd: (memberIds: string[]) => void;
+    onUpdate: (id: string, updates: Partial<PrestressLoad>) => void;
 }
 
 const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
-    loads, members, selectedMemberIds, onAdd
+    loads, members, selectedMemberIds, onAdd, onUpdate
 }) => {
     return (
         <div className="space-y-4">
@@ -1174,7 +1181,8 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 <Label className="text-xs text-slate-500 dark:text-slate-400">Force P (kN)</Label>
                                 <Input
                                     type="number"
-                                    defaultValue={load.P}
+                                    value={load.P}
+                                    onChange={(e) => onUpdate(load.id, { P: parseFloat(e.target.value) || 0 })}
                                     className="h-8"
                                 />
                             </div>
@@ -1183,7 +1191,8 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 <Input
                                     type="number"
                                     step="0.01"
-                                    defaultValue={load.eStart}
+                                    value={load.eStart}
+                                    onChange={(e) => onUpdate(load.id, { eStart: parseFloat(e.target.value) || 0 })}
                                     className="h-8"
                                 />
                             </div>
@@ -1192,7 +1201,8 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 <Input
                                     type="number"
                                     step="0.01"
-                                    defaultValue={load.eMid}
+                                    value={load.eMid}
+                                    onChange={(e) => onUpdate(load.id, { eMid: parseFloat(e.target.value) || 0 })}
                                     className="h-8"
                                 />
                             </div>
@@ -1201,7 +1211,8 @@ const PrestressLoadPanel: React.FC<PrestressLoadPanelProps> = ({
                                 <Input
                                     type="number"
                                     step="0.01"
-                                    defaultValue={load.eEnd}
+                                    value={load.eEnd}
+                                    onChange={(e) => onUpdate(load.id, { eEnd: parseFloat(e.target.value) || 0 })}
                                     className="h-8"
                                 />
                             </div>
