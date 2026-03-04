@@ -121,13 +121,23 @@ export {
 } from './AnalysisResultRenderer';
 
 // ============================================
-// CONVENIENCE FUNCTIONS
+// STRUCTURAL MODELING CANVAS
+// ============================================
+export { CanvasManager } from './CanvasManager';
+export type { StructuralTopology } from './CanvasManager';
+
+export { CanvasCursorStateMachine, CursorMode } from './CanvasCursorStateMachine';
+export type { ModeState, StateTransitions } from './CanvasCursorStateMachine';
+
+// ============================================
+// CONVENIENCE FUNCTIONS & IMPORTS
 // ============================================
 
 import { AdvancedRenderingEngine } from './AdvancedRenderingEngine';
 import { SectionProfileLibrary, sectionLibrary as _sectionLibrary } from './ProfessionalModelingTools';
 import { DiagramGenerator, DeflectedShapeVisualizer, LoadVisualizer, ReactionVisualizer } from './StructuralVisualization';
 import { StressContourRenderer, UtilizationRenderer, ModeShapeAnimator, ResultTableGenerator } from './AnalysisResultRenderer';
+import { CanvasManager, CursorMode } from './CanvasCursorStateMachine';
 import * as THREE from 'three';
 
 // Use the singleton imported from ProfessionalModelingTools
@@ -194,6 +204,25 @@ export const GRAPHICS_MODULE_FEATURES = [
 ];
 
 // ============================================
-// STRUCTURAL MODELING CANVAS (NEW)
+// DEFAULT EXPORT
 // ============================================
-export { CanvasManager } from './CanvasManager';\nexport type { StructuralTopology } from './CanvasManager';\n\nexport { CanvasCursorStateMachine } from './CanvasCursorStateMachine';\nexport { CursorMode } from './CanvasCursorStateMachine';\nexport type { ModeState, StateTransitions } from './CanvasCursorStateMachine';\n\n// ============================================\n// DEFAULT EXPORT\n// ============================================\nexport default {\n  AdvancedRenderingEngine,\n  SectionProfileLibrary,\n  DiagramGenerator,\n  DeflectedShapeVisualizer,\n  LoadVisualizer,\n  ReactionVisualizer,\n  StressContourRenderer,\n  UtilizationRenderer,\n  ModeShapeAnimator,\n  ResultTableGenerator,\n  createVisualizationContext,\n  getStandardSection,\n  getSectionsByType,\n  getAllSectionNames,\n  // Canvas system exports\n  CanvasManager,\n  CanvasCursorStateMachine,\n  CursorMode,\n};
+export default {
+  AdvancedRenderingEngine,
+  SectionProfileLibrary,
+  DiagramGenerator,
+  DeflectedShapeVisualizer,
+  LoadVisualizer,
+  ReactionVisualizer,
+  StressContourRenderer,
+  UtilizationRenderer,
+  ModeShapeAnimator,
+  ResultTableGenerator,
+  createVisualizationContext,
+  getStandardSection,
+  getSectionsByType,
+  getAllSectionNames,
+  // Canvas system exports
+  CanvasManager,
+  CanvasCursorStateMachine,
+  CursorMode,
+};
