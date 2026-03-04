@@ -20,24 +20,10 @@ async function main() {
             bundle: true,
             sourcemap: true,
             minify: false,
-            // Keep dynamic imports for mongoose (used in health check & shutdown)
-            // and @clerk/express verifyToken (dynamic import in swagger guard)
+            // Keep ONLY native addons as external - bundle everything else
             external: [
-                // Native addons — cannot be bundled
+                // Native addon that absolutely cannot be bundled
                 '@sentry/profiling-node',
-                // Serves static HTML/CSS/JS assets from its package directory at runtime
-                'swagger-ui-express',
-                'swagger-ui-dist',
-                // CommonJS module loaded via createRequire at runtime
-                'razorpay',
-                // Pino uses worker_threads via thread-stream. The worker file
-                // cannot be bundled — it's loaded at runtime by the Worker constructor.
-                // We mark pino and its transport layer as external and copy the
-                // worker file into dist/lib/ as a post-build step.
-                'pino',
-                'pino-pretty',
-                'thread-stream',
-                'pino/file',
             ],
             // Banner to handle __dirname / __filename for ESM compatibility
             banner: {
