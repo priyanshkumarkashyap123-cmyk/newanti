@@ -10,15 +10,8 @@
  * @version 1.0.0
  */
 
-import React, {
-  useRef,
-  useMemo,
-  useState,
-  useCallback,
-  useEffect,
-  Suspense,
-} from "react";
-import { Canvas, useFrame, useThree, ThreeEvent } from "@react-three/fiber";
+import React, { useRef, useMemo, useState, useCallback, useEffect, Suspense } from 'react';
+import { Canvas, useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import {
   OrbitControls,
   PerspectiveCamera,
@@ -29,14 +22,14 @@ import {
   Text3D,
   Float,
   Edges,
-} from "@react-three/drei";
-import * as THREE from "three";
+} from '@react-three/drei';
+import * as THREE from 'three';
 import {
   BoltPattern,
   BoltPosition,
   ConnectionPlate,
   BoltForces,
-} from "../types/BoltedConnectionTypes";
+} from '../types/BoltedConnectionTypes';
 
 // ============================================================================
 // MODULE-LEVEL BOLT GEOMETRY CACHE  (avoids N×5 allocations for identical bolts)
@@ -53,22 +46,13 @@ function cachedCylinder(
   if (!_boltGeoCache.has(key)) {
     _boltGeoCache.set(
       key,
-      new THREE.CylinderGeometry(
-        radiusTop,
-        radiusBottom,
-        height,
-        BOLT_SEGMENTS,
-      ),
+      new THREE.CylinderGeometry(radiusTop, radiusBottom, height, BOLT_SEGMENTS),
     );
   }
   return _boltGeoCache.get(key) as THREE.CylinderGeometry;
 }
 
-function cachedHexHead(
-  key: string,
-  diameter: number,
-  height: number,
-): THREE.ExtrudeGeometry {
+function cachedHexHead(key: string, diameter: number, height: number): THREE.ExtrudeGeometry {
   if (!_boltGeoCache.has(key)) {
     _boltGeoCache.set(key, createHexBoltHeadGeometry(diameter, height));
   }
@@ -87,7 +71,7 @@ interface Connection3DVisualizationProps {
   showForceVectors?: boolean;
   showDimensions?: boolean;
   showLabels?: boolean;
-  viewMode?: "3D" | "PLAN" | "ELEVATION" | "SECTION";
+  viewMode?: '3D' | 'PLAN' | 'ELEVATION' | 'SECTION';
   highlightedBolt?: string;
   onBoltSelect?: (boltId: string) => void;
   maxUtilization?: number;
@@ -127,20 +111,17 @@ interface PlateMeshProps {
  * Get color based on utilization ratio
  */
 function getUtilizationColor(utilization: number): string {
-  if (utilization <= 0.5) return "#22C55E"; // Green
-  if (utilization <= 0.75) return "#EAB308"; // Yellow
-  if (utilization <= 0.9) return "#F97316"; // Orange
-  if (utilization <= 1.0) return "#EF4444"; // Red
-  return "#DC2626"; // Dark red (overstressed)
+  if (utilization <= 0.5) return '#22C55E'; // Green
+  if (utilization <= 0.75) return '#EAB308'; // Yellow
+  if (utilization <= 0.9) return '#F97316'; // Orange
+  if (utilization <= 1.0) return '#EF4444'; // Red
+  return '#DC2626'; // Dark red (overstressed)
 }
 
 /**
  * Create hex bolt head geometry
  */
-function createHexBoltHeadGeometry(
-  diameter: number,
-  height: number,
-): THREE.ExtrudeGeometry {
+function createHexBoltHeadGeometry(diameter: number, height: number): THREE.ExtrudeGeometry {
   const shape = new THREE.Shape();
   const radius = diameter * 0.75; // Head is larger than shank
   const sides = 6;
@@ -182,7 +163,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
   onClick,
   onHover,
   showLabel = false,
-  label = "",
+  label = '',
   forces,
   showForceVector = false,
 }) => {
@@ -191,13 +172,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
 
   // Memoize geometries — shared via module-level cache
   const shankGeometry = useMemo(
-    () =>
-      cachedCylinder(
-        `shank_${diameter}_${length}`,
-        diameter / 2,
-        diameter / 2,
-        length * 0.7,
-      ),
+    () => cachedCylinder(`shank_${diameter}_${length}`, diameter / 2, diameter / 2, length * 0.7),
     [diameter, length],
   );
 
@@ -218,13 +193,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
   );
 
   const washerGeometry = useMemo(
-    () =>
-      cachedCylinder(
-        `washer_${diameter}`,
-        diameter,
-        diameter * 0.6,
-        diameter * 0.15,
-      ),
+    () => cachedCylinder(`washer_${diameter}`, diameter, diameter * 0.6, diameter * 0.15),
     [diameter],
   );
 
@@ -237,10 +206,10 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
 
   // Colors
   const baseColor = useMemo(() => {
-    if (isSelected) return "#3B82F6";
-    if (isHighlighted) return "#F59E0B";
+    if (isSelected) return '#3B82F6';
+    if (isHighlighted) return '#F59E0B';
     if (utilization > 0) return getUtilizationColor(utilization);
-    return "#71717A";
+    return '#71717A';
   }, [utilization, isHighlighted, isSelected]);
 
   const handlePointerOver = useCallback(
@@ -248,7 +217,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
       e.stopPropagation();
       setHovered(true);
       onHover?.(true);
-      document.body.style.cursor = "pointer";
+      document.body.style.cursor = 'pointer';
     },
     [onHover],
   );
@@ -258,7 +227,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
       e.stopPropagation();
       setHovered(false);
       onHover?.(false);
-      document.body.style.cursor = "default";
+      document.body.style.cursor = 'default';
     },
     [onHover],
   );
@@ -274,9 +243,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
   // Animation
   useFrame((state) => {
     if (boltRef.current && (hovered || isSelected)) {
-      boltRef.current.scale.setScalar(
-        1 + Math.sin(state.clock.elapsedTime * 4) * 0.02,
-      );
+      boltRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 4) * 0.02);
     } else if (boltRef.current) {
       boltRef.current.scale.setScalar(1);
     }
@@ -300,7 +267,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
           color={baseColor}
           metalness={0.8}
           roughness={0.2}
-          emissive={hovered ? baseColor : "#000000"}
+          emissive={hovered ? baseColor : '#000000'}
           emissiveIntensity={hovered ? 0.3 : 0}
         />
       </mesh>
@@ -312,20 +279,12 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
 
       {/* Bolt Shank */}
       <mesh geometry={shankGeometry} position={[0, length * 0.15, 0]}>
-        <meshStandardMaterial
-          color={baseColor}
-          metalness={0.7}
-          roughness={0.3}
-        />
+        <meshStandardMaterial color={baseColor} metalness={0.7} roughness={0.3} />
       </mesh>
 
       {/* Threaded Portion */}
       <mesh geometry={threadGeometry} position={[0, -length * 0.35, 0]}>
-        <meshStandardMaterial
-          color={baseColor}
-          metalness={0.6}
-          roughness={0.4}
-        />
+        <meshStandardMaterial color={baseColor} metalness={0.6} roughness={0.4} />
       </mesh>
 
       {/* Bottom Washer */}
@@ -386,26 +345,26 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
           center
           distanceFactor={100}
           style={{
-            pointerEvents: "none",
-            userSelect: "none",
+            pointerEvents: 'none',
+            userSelect: 'none',
           }}
         >
           <div
             style={{
-              background: isSelected ? "#3B82F6" : "rgba(0,0,0,0.8)",
-              color: "white",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              fontSize: "10px",
-              fontWeight: "bold",
-              whiteSpace: "nowrap",
+              background: isSelected ? '#3B82F6' : 'rgba(0,0,0,0.8)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap',
             }}
           >
             {label}
             {utilization > 0 && (
               <span
                 style={{
-                  marginLeft: "4px",
+                  marginLeft: '4px',
                   color: getUtilizationColor(utilization),
                 }}
               >
@@ -421,7 +380,7 @@ const BoltMesh: React.FC<BoltMeshProps> = ({
         <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <ringGeometry args={[diameter * 1.5, diameter * 1.7, 32]} />
           <meshBasicMaterial
-            color={isSelected ? "#3B82F6" : "#F59E0B"}
+            color={isSelected ? '#3B82F6' : '#F59E0B'}
             transparent
             opacity={0.5}
             side={THREE.DoubleSide}
@@ -443,7 +402,7 @@ const PlateMesh: React.FC<PlateMeshProps> = ({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
   holes = [],
-  color = "#52525B",
+  color = '#52525B',
   opacity = 0.9,
 }) => {
   const plateShape = useMemo(() => {
@@ -490,11 +449,7 @@ const PlateMesh: React.FC<PlateMeshProps> = ({
   }, [geometry]);
 
   return (
-    <mesh
-      geometry={geometry}
-      position={position}
-      rotation={rotation as unknown as THREE.Euler}
-    >
+    <mesh geometry={geometry} position={position} rotation={rotation as unknown as THREE.Euler}>
       <meshStandardMaterial
         color={color}
         metalness={0.6}
@@ -525,7 +480,7 @@ const DimensionLine: React.FC<DimensionLineProps> = ({
   end,
   offset = 5,
   label,
-  color = "#3B82F6",
+  color = '#3B82F6',
 }) => {
   const startVec = new THREE.Vector3(...start);
   const endVec = new THREE.Vector3(...end);
@@ -534,15 +489,9 @@ const DimensionLine: React.FC<DimensionLineProps> = ({
   const direction = endVec.clone().sub(startVec).normalize();
   const perpendicular = new THREE.Vector3(-direction.z, 0, direction.x);
 
-  const offsetStart = startVec
-    .clone()
-    .add(perpendicular.clone().multiplyScalar(offset));
-  const offsetEnd = endVec
-    .clone()
-    .add(perpendicular.clone().multiplyScalar(offset));
-  const labelPos = midpoint
-    .clone()
-    .add(perpendicular.clone().multiplyScalar(offset + 3));
+  const offsetStart = startVec.clone().add(perpendicular.clone().multiplyScalar(offset));
+  const offsetEnd = endVec.clone().add(perpendicular.clone().multiplyScalar(offset));
+  const labelPos = midpoint.clone().add(perpendicular.clone().multiplyScalar(offset + 3));
 
   return (
     <group>
@@ -552,12 +501,7 @@ const DimensionLine: React.FC<DimensionLineProps> = ({
           <bufferAttribute
             attach="attributes-position"
             count={2}
-            array={
-              new Float32Array([
-                ...offsetStart.toArray(),
-                ...offsetEnd.toArray(),
-              ])
-            }
+            array={new Float32Array([...offsetStart.toArray(), ...offsetEnd.toArray()])}
             itemSize={3}
           />
         </bufferGeometry>
@@ -592,14 +536,14 @@ const DimensionLine: React.FC<DimensionLineProps> = ({
       <Html position={labelPos.toArray() as [number, number, number]} center>
         <div
           style={{
-            background: "#1e293b",
-            padding: "2px 6px",
-            borderRadius: "3px",
-            fontSize: "9px",
-            fontWeight: "bold",
+            background: '#1e293b',
+            padding: '2px 6px',
+            borderRadius: '3px',
+            fontSize: '9px',
+            fontWeight: 'bold',
             color: color,
             border: `1px solid ${color}`,
-            whiteSpace: "nowrap",
+            whiteSpace: 'nowrap',
           }}
         >
           {label}
@@ -659,7 +603,7 @@ const Scene: React.FC<SceneProps> = ({
       <pointLight position={[-10, 10, -10]} intensity={0.5} />
 
       {/* Engineering-grade local lighting (no remote HDR fetch) */}
-      <hemisphereLight args={["#b1e1ff", "#b97a20", 0.6]} />
+      <hemisphereLight args={['#b1e1ff', '#b97a20', 0.6]} />
 
       {/* Main Connection Group */}
       <group scale={[scale, scale, scale]}>
@@ -742,39 +686,47 @@ const Scene: React.FC<SceneProps> = ({
           })}
 
         {/* Dimension Lines */}
-        {showDimensions && boltPattern.numRows > 1 && (
-          <DimensionLine
-            start={[
-              boltPattern.positions[0].x - patternCenter.x,
-              15,
-              boltPattern.positions[0].y - patternCenter.y,
-            ]}
-            end={[
-              boltPattern.positions[boltPattern.numColumns].x - patternCenter.x,
-              15,
-              boltPattern.positions[boltPattern.numColumns].y - patternCenter.y,
-            ]}
-            offset={20}
-            label={`${boltPattern.pitchVertical}mm`}
-          />
-        )}
+        {showDimensions &&
+          boltPattern.numRows > 1 &&
+          boltPattern.positions.length > 0 &&
+          boltPattern.positions[0] &&
+          boltPattern.positions[boltPattern.numColumns] && (
+            <DimensionLine
+              start={[
+                boltPattern.positions[0].x - patternCenter.x,
+                15,
+                boltPattern.positions[0].y - patternCenter.y,
+              ]}
+              end={[
+                boltPattern.positions[boltPattern.numColumns].x - patternCenter.x,
+                15,
+                boltPattern.positions[boltPattern.numColumns].y - patternCenter.y,
+              ]}
+              offset={20}
+              label={`${boltPattern.pitchVertical}mm`}
+            />
+          )}
 
-        {showDimensions && boltPattern.numColumns > 1 && (
-          <DimensionLine
-            start={[
-              boltPattern.positions[0].x - patternCenter.x,
-              15,
-              boltPattern.positions[0].y - patternCenter.y,
-            ]}
-            end={[
-              boltPattern.positions[1].x - patternCenter.x,
-              15,
-              boltPattern.positions[1].y - patternCenter.y,
-            ]}
-            offset={20}
-            label={`${boltPattern.pitchHorizontal}mm`}
-          />
-        )}
+        {showDimensions &&
+          boltPattern.numColumns > 1 &&
+          boltPattern.positions.length > 1 &&
+          boltPattern.positions[0] &&
+          boltPattern.positions[1] && (
+            <DimensionLine
+              start={[
+                boltPattern.positions[0].x - patternCenter.x,
+                15,
+                boltPattern.positions[0].y - patternCenter.y,
+              ]}
+              end={[
+                boltPattern.positions[1].x - patternCenter.x,
+                15,
+                boltPattern.positions[1].y - patternCenter.y,
+              ]}
+              offset={20}
+              label={`${boltPattern.pitchHorizontal}mm`}
+            />
+          )}
       </group>
 
       {/* Ground shadow plane */}
@@ -805,21 +757,19 @@ const Scene: React.FC<SceneProps> = ({
 // MAIN COMPONENT
 // ============================================================================
 
-export const Connection3DVisualization: React.FC<
-  Connection3DVisualizationProps
-> = (props) => {
+export const Connection3DVisualization: React.FC<Connection3DVisualizationProps> = (props) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
     <div
       ref={containerRef}
       style={{
-        width: "100%",
-        height: "100%",
-        minHeight: "400px",
-        background: "linear-gradient(180deg, #1F2937 0%, #374151 100%)",
-        borderRadius: "8px",
-        overflow: "hidden",
+        width: '100%',
+        height: '100%',
+        minHeight: '400px',
+        background: 'linear-gradient(180deg, #1F2937 0%, #374151 100%)',
+        borderRadius: '8px',
+        overflow: 'hidden',
       }}
     >
       <Canvas
@@ -847,80 +797,78 @@ export const Connection3DVisualization: React.FC<
       {props.showStressColors && (
         <div
           style={{
-            position: "absolute",
-            bottom: "16px",
-            left: "16px",
-            background: "rgba(0,0,0,0.8)",
-            padding: "12px",
-            borderRadius: "8px",
-            color: "white",
-            fontSize: "11px",
+            position: 'absolute',
+            bottom: '16px',
+            left: '16px',
+            background: 'rgba(0,0,0,0.8)',
+            padding: '12px',
+            borderRadius: '8px',
+            color: 'white',
+            fontSize: '11px',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-            Utilization
-          </div>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>Utilization</div>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "4px",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '4px',
             }}
           >
             <div
               style={{
-                width: "12px",
-                height: "12px",
-                background: "#22C55E",
-                borderRadius: "2px",
+                width: '12px',
+                height: '12px',
+                background: '#22C55E',
+                borderRadius: '2px',
               }}
             />
             <span>≤ 50%</span>
           </div>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "4px",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '4px',
             }}
           >
             <div
               style={{
-                width: "12px",
-                height: "12px",
-                background: "#EAB308",
-                borderRadius: "2px",
+                width: '12px',
+                height: '12px',
+                background: '#EAB308',
+                borderRadius: '2px',
               }}
             />
             <span>50-75%</span>
           </div>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "4px",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '4px',
             }}
           >
             <div
               style={{
-                width: "12px",
-                height: "12px",
-                background: "#F97316",
-                borderRadius: "2px",
+                width: '12px',
+                height: '12px',
+                background: '#F97316',
+                borderRadius: '2px',
               }}
             />
             <span>75-90%</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div
               style={{
-                width: "12px",
-                height: "12px",
-                background: "#EF4444",
-                borderRadius: "2px",
+                width: '12px',
+                height: '12px',
+                background: '#EF4444',
+                borderRadius: '2px',
               }}
             />
             <span>&gt; 90%</span>
@@ -931,25 +879,26 @@ export const Connection3DVisualization: React.FC<
       {/* View Controls */}
       <div
         style={{
-          position: "absolute",
-          top: "16px",
-          right: "16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
         }}
       >
-        {["3D", "Plan", "Front", "Side"].map((view) => (
-          <button type="button"
+        {['3D', 'Plan', 'Front', 'Side'].map((view) => (
+          <button
+            type="button"
             key={view}
             style={{
-              padding: "8px 12px",
-              background: "rgba(255,255,255,0.9)",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "11px",
-              fontWeight: "bold",
+              padding: '8px 12px',
+              background: 'rgba(255,255,255,0.9)',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '11px',
+              fontWeight: 'bold',
             }}
           >
             {view}
