@@ -243,6 +243,11 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
     
     useEffect(() => {
         if (!meshRef.current) return;
+        if (!members || !nodes || members.size === 0 || nodes.size === 0) {
+            // No members to render
+            setIsInitialized(true);
+            return;
+        }
         
         const mesh = meshRef.current;
         const memberArray = Array.from(members.entries());
@@ -267,31 +272,47 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
             
             while (currentIndex < toRender && (performance.now() - startTime) < maxTime) {
                 const [id, member] = memberArray[currentIndex];
+                
+                // Defensive check for member validity
+                if (!member || !member.startNodeId || !member.endNodeId) {
+                    currentIndex++;
+                    continue;
+                }
+                
                 const startNode = nodeMap.get(member.startNodeId);
                 const endNode = nodeMap.get(member.endNodeId);
                 
-                if (startNode && endNode) {
-                    // Calculate and set matrix using pooled objects
-                    const matrix = calculateMemberMatrixPooled(
-                        startNode.x, startNode.y, startNode.z,
-                        endNode.x, endNode.y, endNode.z,
-                        config.memberRadius
-                    );
-                    mesh.setMatrixAt(currentIndex, matrix);
-                    
-                    // Set color if enabled
-                    if (colorArray && config.enablePerInstanceColor) {
-                        const isSelected = selectedIds.has(id);
-                        const isError = errorElementIds.has(id);
-                        const color = isSelected ? COLORS.memberSelected : isError ? COLORS.memberError : COLORS.memberDefault;
-                        colorArray[currentIndex * 3 + 0] = color.r;
-                        colorArray[currentIndex * 3 + 1] = color.g;
-                        colorArray[currentIndex * 3 + 2] = color.b;
-                    }
-                    
-                    indexMap.set(currentIndex, id);
+                // Additional validation for node values
+                if (!startNode || !endNode ||
+                    typeof startNode.x !== 'number' || 
+                    typeof startNode.y !== 'number' || 
+                    typeof startNode.z !== 'number' ||
+                    typeof endNode.x !== 'number' || 
+                    typeof endNode.y !== 'number' || 
+                    typeof endNode.z !== 'number') {
+                    currentIndex++;
+                    continue;
                 }
                 
+                // Calculate and set matrix using pooled objects
+                const matrix = calculateMemberMatrixPooled(
+                    startNode.x, startNode.y, startNode.z,
+                    endNode.x, endNode.y, endNode.z,
+                    config.memberRadius
+                );
+                mesh.setMatrixAt(currentIndex, matrix);
+                
+                // Set color if enabled
+                if (colorArray && config.enablePerInstanceColor) {
+                    const isSelected = selectedIds.has(id);
+                    const isError = errorElementIds.has(id);
+                    const color = isSelected ? COLORS.memberSelected : isError ? COLORS.memberError : COLORS.memberDefault;
+                    colorArray[currentIndex * 3 + 0] = color.r;
+                    colorArray[currentIndex * 3 + 1] = color.g;
+                    colorArray[currentIndex * 3 + 2] = color.b;
+                }
+                
+                indexMap.set(currentIndex, id);
                 currentIndex++;
             }
             

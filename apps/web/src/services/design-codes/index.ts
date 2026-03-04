@@ -97,9 +97,8 @@ export function getDesignChecker(code: DesignCode): DesignChecker {
                     const My = forces?.momentMinor ?? 0;
                     const V = forces?.shear ?? 0;
                     const L = length ?? section?.L ?? 3000;
-                    const sec = { ...section, L };
                     const result = checkSteelMember(
-                        'member', P, V, Mx, My, 0, sec,
+                        P, Mx, My, V, section, L,
                     );
                     return result.checks;
                 },
@@ -115,11 +114,10 @@ export function getDesignChecker(code: DesignCode): DesignChecker {
                     const V = forces?.shear ?? 0;
                     const P = forces?.axial ?? 0;
                     if (section?.memberType === 'column' || Math.abs(P) > 0.1 * (section?.fck ?? 25) * (section?.b ?? 300) * (section?.d ?? 500) / 1000) {
-                        const lex = section?.span ?? 3000;
-                        const result = checkConcreteColumn('member', P, M, 0, section, lex, lex);
+                        const result = checkConcreteColumn(P, M, 0, section);
                         return result.checks;
                     }
-                    const result = checkConcreteBeam('member', V, M, 0, section);
+                    const result = checkConcreteBeam(M, V, M / 1.5, section);
                     return result.checks;
                 },
                 code: 'IS 456',
@@ -300,8 +298,8 @@ export class MultiCodeChecker {
                     Iy: 453e4,
                     Zx: 5734e3 / 150,
                     Zy: 453e3 / 70,
-                    Zpx: 5734e3 / 150 * 1.14,
-                    Zpy: 453e3 / 70 * 1.5,
+                    Sx: 5734e3 / 150 * 1.14,
+                    Sy: 453e3 / 70 * 1.5,
                     rx: Math.sqrt(8603e4 / 4750),
                     ry: Math.sqrt(453e4 / 4750),
                     d: 300,
@@ -309,20 +307,17 @@ export class MultiCodeChecker {
                     tf: 12.4,
                     tw: 7.5,
                     fy: member.fy || 250,
-                    fu: (member.fy || 250) < 300 ? 410 : 540,
                     E: 200000,
-                    L: member.length,
                     J: 15.4e4,
                     Iw: 0,
                 };
                 const result = checkSteelMember(
-                    'member',
                     forces.axial,
-                    forces.shear,
                     forces.momentMajor,
                     0,
-                    0,
+                    forces.shear,
                     section,
+                    member.length,
                 );
                 const allPassed = result.checks.every((c: any) => c.pass);
                 return { code: 'IS 800:2007', passed: allPassed, checks: result.checks };
@@ -336,14 +331,13 @@ export class MultiCodeChecker {
                     fy: member.fy || 500,
                     Ast: member.Ast ?? 1200,
                     Asc: 0,
-                    cover: 40,
+                    cc: 40,
                     memberType: 'beam',
                 };
                 const result = checkConcreteBeam(
-                    'member',
-                    forces.shear,
                     forces.momentMajor,
-                    0,
+                    forces.shear,
+                    forces.momentMajor / 1.5,
                     section,
                 );
                 const allPassed = result.checks.every((c: any) => c.pass);

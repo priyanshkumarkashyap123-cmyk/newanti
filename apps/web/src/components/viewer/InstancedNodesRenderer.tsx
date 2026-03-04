@@ -60,11 +60,24 @@ export const InstancedNodesRenderer: React.FC = () => {
   // ============================================
 
   const instanceGeometry = useMemo(() => {
+    // Safety check: ensure nodes exist and are not empty
+    if (!nodes || nodes.size === 0) {
+      return [];
+    }
+    
     const data: { id: string; position: THREE.Vector3; hasSupport: boolean }[] =
       [];
     const nodeArray = Array.from(nodes.entries());
 
     for (const [id, node] of nodeArray) {
+      // Defensive check: ensure node exists and has valid coordinates
+      if (!node || 
+          typeof node.x !== 'number' || 
+          typeof node.y !== 'number' || 
+          typeof node.z !== 'number') {
+        continue;
+      }
+      
       const position = new THREE.Vector3(node.x, node.y, node.z);
       const hasSupport = !!(
         node.restraints &&

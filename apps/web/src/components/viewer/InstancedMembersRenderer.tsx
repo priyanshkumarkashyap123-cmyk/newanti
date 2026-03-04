@@ -104,14 +104,33 @@ export const InstancedMembersRenderer: React.FC = () => {
     // ============================================
     
     const instanceGeometry = useMemo(() => {
+        // Safety check: ensure members and nodes exist and are not empty
+        if (!members || !nodes || members.size === 0 || nodes.size === 0) {
+            return [];
+        }
+        
         const data: { id: string; matrix: THREE.Matrix4 }[] = [];
         const memberArray = Array.from(members.entries());
         
         for (const [id, member] of memberArray) {
+            // Defensive check: ensure member exists and has required properties
+            if (!member || !member.startNodeId || !member.endNodeId) {
+                continue;
+            }
+            
             const startNode = nodes.get(member.startNodeId);
             const endNode = nodes.get(member.endNodeId);
             
-            if (!startNode || !endNode) continue;
+            // Skip if either node is missing or invalid
+            if (!startNode || !endNode || 
+                typeof startNode.x !== 'number' || 
+                typeof startNode.y !== 'number' || 
+                typeof startNode.z !== 'number' ||
+                typeof endNode.x !== 'number' || 
+                typeof endNode.y !== 'number' || 
+                typeof endNode.z !== 'number') {
+                continue;
+            }
             
             const startPos = new THREE.Vector3(startNode.x, startNode.y, startNode.z);
             const endPos = new THREE.Vector3(endNode.x, endNode.y, endNode.z);
