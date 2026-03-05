@@ -54,12 +54,17 @@ const securityHeaders = {
 };
 
 // https://vitejs.dev/config/
+// IMPORTANT: keep PWA disabled by default for production reliability.
+// This prevents stale SW caches from serving outdated app shells/chunks.
+// Re-enable explicitly with: VITE_ENABLE_PWA=true
+const enablePWA = process.env.VITE_ENABLE_PWA === "true";
+
 export default defineConfig({
   plugins: [
     react(),
     wasm(),
     topLevelAwait(),
-    VitePWA({
+    enablePWA && VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt", "apple-touch-icon.png"],
       manifest: {
@@ -124,7 +129,7 @@ export default defineConfig({
       threshold: 1024,     // Only compress files > 1KB
       exclude: [/\.(br|gz)$/],
     }),
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

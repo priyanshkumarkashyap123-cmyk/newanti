@@ -381,7 +381,7 @@ export const ViewportManager: FC = () => {
   const [webGpuNoticeDismissed, setWebGpuNoticeDismissed] = useState(false);
   const [webglStatus, setWebglStatus] = useState<
     "pending" | "ok" | "unsupported"
-  >("pending");
+  >("ok");
   const [webglError, setWebglError] = useState<string | null>(null);
   const {
     useWebGpu, setUseWebGpu,
@@ -402,16 +402,12 @@ export const ViewportManager: FC = () => {
     // Check WebGL support with a small delay to avoid racing with other canvas initializations
     const timer = setTimeout(() => {
       const result = checkWebglSupport();
-      if (result.supported) {
-        setWebglStatus("ok");
-      } else {
+      if (!result.supported) {
         // Retry once after a short delay — some browsers need a moment
         // after a context was lost/restored from another tab
         setTimeout(() => {
           const retry = checkWebglSupport();
-          if (retry.supported) {
-            setWebglStatus("ok");
-          } else {
+          if (!retry.supported) {
             setWebglStatus("unsupported");
             setWebglError(
               retry.reason || "WebGL is unavailable on this device.",
@@ -433,10 +429,6 @@ export const ViewportManager: FC = () => {
       setUseWebGpu(false);
     }
   }, [useWebGpu, setUseWebGpu]);
-
-  if (webglStatus === "pending") {
-    return <WebglChecking />;
-  }
 
   // Show warning banner but still render canvas (non-blocking fallback)
   const showWebglWarning = webglStatus === "unsupported";
