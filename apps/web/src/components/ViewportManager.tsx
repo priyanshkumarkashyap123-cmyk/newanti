@@ -191,6 +191,92 @@ const ViewportContainer: FC<{
     return <WgpuCanvas className={className} />;
   }
 
+  // Robust single-view path: avoid View/track composition for the default mode.
+  // This prevents blank viewport regressions when track-based views fail to mount.
+  if (layout === "SINGLE") {
+    return (
+      <div
+        ref={containerRef}
+        className="w-full h-full relative touch-none"
+      >
+        <div
+          className="absolute top-2 left-2 text-white z-10 text-[11px] opacity-80 font-medium"
+        >
+          {viewMode === '2D' ? '2D View' : 'Perspective'}
+        </div>
+
+        <Canvas
+          className="absolute top-0 left-0 w-full h-full"
+          eventSource={containerRef as MutableRefObject<HTMLElement>}
+          shadows
+          dpr={[1, 1.5]}
+          gl={{
+            preserveDrawingBuffer: true,
+            antialias: true,
+            alpha: false,
+            powerPreference: "high-performance",
+            failIfMajorPerformanceCaveat: false,
+          }}
+          camera={{ position: [20, 20, 20], fov: 50 }}
+          onCreated={(state) => {
+            const canvas = state.gl.domElement;
+            canvas.addEventListener("webglcontextlost", (e) => {
+              e.preventDefault();
+              console.warn(
+                "[ViewportManager] WebGL context lost — will attempt restore",
+              );
+            });
+            canvas.addEventListener("webglcontextrestored", () => {
+// console.log("[ViewportManager] WebGL context restored");
+            });
+          }}
+        >
+          <color attach="background" args={["#1a1a1a"]} />
+
+          {viewMode === '3D' ? (
+            <>
+              <PerspectiveCamera makeDefault position={[15, 15, 15]} fov={50} />
+              <OrbitControls
+                makeDefault
+                enableDamping
+                dampingFactor={0.1}
+                zoomToCursor={true}
+                enablePan={true}
+                panSpeed={1.5}
+                maxDistance={5000}
+                minDistance={0.1}
+              />
+            </>
+          ) : (
+            <>
+              <OrthographicCamera
+                makeDefault
+                position={[0, 50, 0.001]}
+                zoom={15}
+                up={[0, 0, -1]}
+              />
+              <OrbitControls
+                makeDefault
+                enableRotate={false}
+                enableZoom={true}
+                enablePan={true}
+                zoomToCursor={true}
+                panSpeed={1.5}
+                mouseButtons={{ LEFT: 2, MIDDLE: 2, RIGHT: 2 }}
+              />
+            </>
+          )}
+
+          <CameraFitController />
+          <Suspense fallback={null}>
+            <SharedScene remoteUsers={remoteUsers} />
+          </Suspense>
+          <BoxSelector />
+        </Canvas>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -200,8 +286,8 @@ const ViewportContainer: FC<{
       <div
         className="grid w-full h-full gap-[2px] bg-[#222]"
         style={{
-          gridTemplateColumns: layout === "SINGLE" ? "1fr" : "1fr 1fr",
-          gridTemplateRows: layout === "SINGLE" ? "1fr" : "1fr 1fr",
+          gridTemplateColumns: "1fr 1fr",
+          gridTemplateRows: "1fr 1fr",
         }}
       >
         {/* Main 3D Perspective View */}
