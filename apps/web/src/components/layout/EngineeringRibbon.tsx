@@ -56,6 +56,7 @@ import {
   GitMerge,
   SplitSquareVertical,
   Thermometer,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useModelStore, useModelStoreTemporal } from "../../store/model";
@@ -369,7 +370,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           icon={Layers}
           label="Define"
           onClick={() => openModal("is875Load")}
-          tooltip="Create/Manage Load Cases"
+          tooltip="Create/Manage Load Cases (DL, LL, WL, EQ)"
           size="large"
         />
         <ToolButton
@@ -377,6 +378,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           label="Combos"
           onClick={() => openModal("loadDialog")}
           tooltip="Load Combinations — IS 875 / ASCE 7 / EN 1990"
+        />
+        <ToolButton
+          icon={Layers}
+          label="Auto Combos"
+          onClick={() => openModal("loadCombinationsDialog")}
+          tooltip="Auto-generate Load Combinations per Code"
         />
       </ToolGroup>
       <ToolGroup label="Nodal Loads">
@@ -393,6 +400,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           label="Moment"
           onClick={() => setTool("load")}
           tooltip="Apply Nodal Moment (Mx, My, Mz)"
+        />
+        <ToolButton
+          icon={Anchor}
+          label="Settlement"
+          onClick={() => openModal("supportDisplacement")}
+          tooltip="Support Settlement / Prescribed Displacement"
         />
       </ToolGroup>
       <ToolGroup label="Member Loads">
@@ -414,7 +427,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           icon={Target}
           label="Point"
           onClick={() => setTool("memberLoad")}
-          tooltip="Concentrated Point Load on Member"
+          tooltip="Concentrated Point Load at any point on Member"
+        />
+        <ToolButton
+          icon={Activity}
+          label="Pre-stress"
+          onClick={() => openModal("prestressLoad")}
+          tooltip="Pre-stress / Post-tension Load"
         />
       </ToolGroup>
       <ToolGroup label="Area Loads">
@@ -424,8 +443,14 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           onClick={() => openModal("loadDialog")}
           tooltip="Floor / Roof Area Load"
         />
+        <ToolButton
+          icon={SquareStack}
+          label="Pressure"
+          onClick={() => openModal("pressureLoad")}
+          tooltip="Hydrostatic / Earth Pressure Load"
+        />
       </ToolGroup>
-      <ToolGroup label="Generate">
+      <ToolGroup label="Codal Generators">
         <ToolButton
           icon={Weight}
           label="Self Weight"
@@ -436,23 +461,21 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           icon={Wind}
           label="Wind"
           onClick={() => openModal("windLoadDialog")}
-          tooltip="Wind Load Generator — IS 875-III / ASCE 7-22"
+          tooltip="Wind Load Generator — IS 875-III / ASCE 7-22 / EN 1991-1-4"
         />
         <StackedButtons>
-          <MiniButton icon={Zap} label="ASCE 7 Seismic" onClick={() => openModal("asce7SeismicDialog")} />
           <MiniButton icon={Zap} label="IS 1893 Seismic" onClick={() => openModal("is1893SeismicDialog")} />
+          <MiniButton icon={Zap} label="ASCE 7 Seismic" onClick={() => openModal("asce7SeismicDialog")} />
+        </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={Zap} label="EN 1998 Seismic" onClick={() => openModal("en1998SeismicDialog")} />
+          <MiniButton icon={Weight} label="IS 875-II Live" onClick={() => openModal("is875LiveLoad")} />
         </StackedButtons>
         <ToolButton
           icon={Thermometer}
           label="Thermal"
           onClick={() => openModal("temperatureLoad")}
           tooltip="Temperature Load — Uniform ΔT / Gradient"
-        />
-        <ToolButton
-          icon={Layers}
-          label="Combinations"
-          onClick={() => openModal("loadCombinationsDialog")}
-          tooltip="Load Combination Generator — ASCE 7, IS 456"
         />
       </ToolGroup>
     </>
@@ -495,19 +518,25 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           icon={BarChart3}
           label="Response"
           onClick={() => openModal("advancedAnalysis")}
-          tooltip="Response Spectrum Analysis"
+          tooltip="Response Spectrum Analysis — IS 1893 / ASCE 7 / EC8"
         />
         <ToolButton
           icon={Workflow}
           label="Pushover"
           onClick={() => openModal("advancedAnalysis")}
-          tooltip="Pushover Analysis"
+          tooltip="Nonlinear Static Pushover Analysis"
         />
         <ToolButton
           icon={Activity}
           label="Time History"
           onClick={() => openModal("timeHistoryAnalysis")}
           tooltip="Nonlinear Dynamic Time History Analysis"
+        />
+        <ToolButton
+          icon={TrendingUp}
+          label="Non-linear"
+          onClick={() => openModal("nonlinearAnalysis")}
+          tooltip="Nonlinear Static Analysis (Material & Geometric)"
         />
       </ToolGroup>
       <ToolGroup label="Results">
@@ -516,26 +545,41 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           label="Deformed"
           onClick={() => document.dispatchEvent(new CustomEvent("toggle-deformed"))}
           tooltip="View Deformed Shape"
+          isActive={!!analysisResults}
         />
+        <StackedButtons>
+          <MiniButton icon={BarChart3} label="SFD" onClick={() => document.dispatchEvent(new CustomEvent("toggle-sfd"))} />
+          <MiniButton icon={BarChart3} label="BMD" onClick={() => document.dispatchEvent(new CustomEvent("toggle-bmd"))} />
+        </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={BarChart3} label="AFD" onClick={() => document.dispatchEvent(new CustomEvent("toggle-afd"))} />
+          <MiniButton icon={Activity} label="Deflection" onClick={() => document.dispatchEvent(new CustomEvent("toggle-deflection"))} />
+        </StackedButtons>
         <ToolButton
-          icon={BarChart3}
-          label="Diagrams"
-          onClick={() => document.dispatchEvent(new CustomEvent("toggle-diagrams"))}
-          tooltip="SFD / BMD / AFD Diagrams"
+          icon={Anchor}
+          label="Reactions"
+          onClick={() => document.dispatchEvent(new CustomEvent("toggle-reactions"))}
+          tooltip="View Support Reactions Table"
         />
         <ToolButton icon={FileText} label="Output" onClick={() => {
           const s = useModelStore.getState();
           s.setShowResults(!s.showResults);
         }} tooltip="Tabular Results Output" />
+      </ToolGroup>
+      <ToolGroup label="Export">
+        <StackedButtons>
+          <MiniButton icon={FileText} label="PDF Report" onClick={() => document.dispatchEvent(new CustomEvent("trigger-pdf-report"))} />
+          <MiniButton icon={FileSpreadsheet} label="CSV Export" onClick={() => document.dispatchEvent(new CustomEvent("trigger-csv-export"))} />
+        </StackedButtons>
         <ToolButton
           icon={Download}
-          label="Export"
+          label="Full Export"
           onClick={() => document.dispatchEvent(new CustomEvent("trigger-export"))}
-          tooltip="Export Results to PDF / CSV / Excel"
+          tooltip="Export Results to PDF / CSV / Excel / DXF"
         />
       </ToolGroup>
     </>
-  ), [isAnalyzing, openModal]);
+  ), [isAnalyzing, openModal, analysisResults]);
 
   const activeTab = RIBBON_TABS.find(t => t.id === activeCategory);
   const activeColor = activeTab?.color || "blue";
@@ -633,7 +677,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 icon={FileCheck}
                 label="Design Codes"
                 onClick={() => openModal("designCodes")}
-                tooltip="Select Design Code — IS / AISC / Eurocode"
+                tooltip="Select Design Code — IS / AISC / Eurocode / BS / AS"
                 size="large"
               />
               <ToolButton
@@ -641,6 +685,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 label="D/C Ratios"
                 onClick={() => document.dispatchEvent(new CustomEvent("trigger-analysis"))}
                 tooltip="Run Analysis & View Demand/Capacity Ratios"
+              />
+              <ToolButton
+                icon={Eye}
+                label="Results"
+                onClick={() => document.dispatchEvent(new CustomEvent("toggle-design-results"))}
+                tooltip="View Design Results Dashboard"
               />
             </ToolGroup>
             <ToolGroup label="Steel Design">
@@ -651,6 +701,10 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 tooltip="Steel Design — IS 800 / AISC 360 / EN 1993"
                 size="large"
               />
+              <StackedButtons>
+                <MiniButton icon={Settings} label="IS 800" onClick={() => openModal("steelDesignIS800")} />
+                <MiniButton icon={Settings} label="AISC 360" onClick={() => openModal("steelDesignAISC360")} />
+              </StackedButtons>
             </ToolGroup>
             <ToolGroup label="RC Design">
               <ToolButton
@@ -660,6 +714,14 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 tooltip="Reinforced Concrete Design — IS 456 / ACI 318 / EN 1992"
                 size="large"
               />
+              <StackedButtons>
+                <MiniButton icon={Ruler} label="Beam Design" onClick={() => openModal("rcBeamDesign")} />
+                <MiniButton icon={Columns} label="Column Design" onClick={() => openModal("rcColumnDesign")} />
+              </StackedButtons>
+              <StackedButtons>
+                <MiniButton icon={SquareStack} label="Slab Design" onClick={() => openModal("rcSlabDesign")} />
+                <MiniButton icon={Landmark} label="Footing Design" onClick={() => openModal("rcFootingDesign")} />
+              </StackedButtons>
             </ToolGroup>
             <ToolGroup label="Connection">
               <ToolButton
@@ -677,18 +739,38 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 tooltip="Foundation Design — Isolated / Combined / Pile Cap"
               />
             </ToolGroup>
-            <ToolGroup label="Advanced">
+            <ToolGroup label="Detailing">
+              <ToolButton
+                icon={FileText}
+                label="RC Detailing"
+                onClick={() => openModal("rcDetailing")}
+                tooltip="RCC Reinforcement Detailing Drawings"
+              />
+              <ToolButton
+                icon={FileText}
+                label="Steel Detail"
+                onClick={() => openModal("steelDetailing")}
+                tooltip="Steel Connection Detail Drawings"
+              />
               <ToolButton
                 icon={Ruler}
-                label="Detailed"
-                onClick={() => openModal("detailedDesign")}
-                tooltip="Detailed Section Design & Optimization"
+                label="Optimize"
+                onClick={() => openModal("sectionOptimization")}
+                tooltip="Auto-Optimize Sections for Weight/Cost"
+              />
+            </ToolGroup>
+            <ToolGroup label="Reports">
+              <ToolButton
+                icon={FileText}
+                label="Report"
+                onClick={() => document.dispatchEvent(new CustomEvent("trigger-pdf-report"))}
+                tooltip="Generate Branded PDF Report with Logo, Engineer, Client, Revision"
               />
               <ToolButton
                 icon={Globe}
-                label="Curved"
-                onClick={() => openModal("curvedStructure")}
-                tooltip="Curved Structure Generator — Domes, Arches, Shells"
+                label="Design Hub"
+                onClick={() => openModal("designHub")}
+                tooltip="Full Design Hub — All Design Workflows"
               />
             </ToolGroup>
           </>

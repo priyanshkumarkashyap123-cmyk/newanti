@@ -12,6 +12,15 @@ export interface ProjectInfo {
   date: Date;
   description: string;
   cloudId?: string; // ID from database if saved
+  // Design configuration
+  designCode?: string;       // e.g., 'IS', 'AISC', 'Eurocode', 'ACI'
+  steelCode?: string;        // e.g., 'IS 800:2007', 'AISC 360-16', 'EN 1993-1-1'
+  concreteCode?: string;     // e.g., 'IS 456:2000', 'ACI 318-19', 'EN 1992-1-1'
+  seismicCode?: string;      // e.g., 'IS 1893:2016', 'ASCE 7-22'
+  unitSystem?: string;       // e.g., 'SI_kN_m', 'SI_N_mm', 'Imperial_kip_ft'
+  primaryMaterial?: string;  // e.g., 'Steel', 'Concrete', 'Composite', 'Timber'
+  steelGrade?: string;       // e.g., 'Fe250', 'Fe415', 'A992', 'S355'
+  concreteGrade?: string;    // e.g., 'M20', 'M25', 'M30', 'C30/37'
 }
 
 export interface Restraints {

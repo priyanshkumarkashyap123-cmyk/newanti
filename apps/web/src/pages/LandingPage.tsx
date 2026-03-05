@@ -31,6 +31,17 @@ import {
   Smartphone,
   Linkedin,
   Youtube,
+  Star,
+  Ruler,
+  PenTool,
+  Download,
+  BarChart3,
+  Compass,
+  Wrench,
+  Calculator,
+  Maximize2,
+  Activity,
+  TrendingUp,
 } from "lucide-react";
 import { Logo } from "../components/branding";
 import { Button } from "../components/ui/button";
@@ -154,31 +165,14 @@ export const LandingPage: FC = () => {
 
             {/* Desktop Links - Properly centered with consistent spacing */}
             <div className="hidden md:flex items-center justify-center flex-1 px-8">
-              <div className="flex items-center gap-8">
-                <a
-                  href="#features"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
-                >
-                  Features
-                </a>
-                <a
-                  href="#pricing"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
-                >
-                  Pricing
-                </a>
-                <Link
-                  to="/help"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
-                >
-                  Docs
-                </Link>
-                <Link
-                  to="/demo"
-                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1"
-                >
-                  Demo
-                </Link>
+              <div className="flex items-center gap-6">
+                <a href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Features</a>
+                <a href="#tools" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Tools</a>
+                <a href="#screenshots" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Screenshots</a>
+                <a href="#pricing" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Pricing</a>
+                <a href="#reviews" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Reviews</a>
+                <a href="#compare" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Compare</a>
+                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Demo</Link>
               </div>
             </div>
 
@@ -218,32 +212,21 @@ export const LandingPage: FC = () => {
             role="navigation"
             aria-label="Mobile navigation"
           >
-            <a
-              href="#features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
-              Features
-            </a>
-            <a
-              href="#pricing"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
-              Pricing
-            </a>
-            <Link
-              to="/help"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
-              Docs
-            </Link>
-            <Link
-              to="/demo"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
+            {[
+              { href: '#features', label: 'Features' },
+              { href: '#tools', label: 'Tools' },
+              { href: '#screenshots', label: 'Screenshots' },
+              { href: '#pricing', label: 'Pricing' },
+              { href: '#reviews', label: 'Reviews' },
+              { href: '#compare', label: 'Compare' },
+            ].map((item) => (
+              <a key={item.href} href={item.href} onClick={() => setMobileMenuOpen(false)}
+                className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                {item.label}
+              </a>
+            ))}
+            <Link to="/demo" onClick={() => setMobileMenuOpen(false)}
+              className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
               Demo
             </Link>
             <hr className="border-white/10 my-4" aria-hidden="true" />
@@ -710,8 +693,142 @@ export const LandingPage: FC = () => {
           </div>
         </section>
 
+        {/* ===== Tools Showcase Section ===== */}
+        <section id="tools" className="py-24 sm:py-32 bg-gradient-to-b from-slate-950 to-slate-900 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+                className="inline-block text-cyan-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
+                Complete Engineering Suite
+              </motion.span>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 tracking-[-0.02em]">
+                Every Tool a Structural Engineer Needs
+              </motion.h2>
+              <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="text-lg text-slate-400 max-w-3xl mx-auto">
+                From geometry creation to final design reports — BeamLab covers the entire structural engineering workflow, matching and exceeding STAAD.Pro capabilities.
+              </motion.p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {TOOLS_SHOWCASE.map((tool, idx) => (
+                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: idx * 0.05 }}
+                  className="group relative rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-cyan-500/30 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/5">
+                  <div className={`w-12 h-12 rounded-xl ${tool.gradient} flex items-center justify-center mb-4`}>
+                    {tool.icon}
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-2">{tool.title}</h3>
+                  <p className="text-sm text-slate-400 mb-4">{tool.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {tool.capabilities.map((cap, i) => (
+                      <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-white/[0.05] text-slate-300 border border-white/[0.08]">{cap}</span>
+                    ))}
+                  </div>
+                  <Button variant="ghost" size="sm" className="mt-4 text-cyan-400 hover:text-cyan-300 p-0 h-auto"
+                    onClick={() => navigate(tool.link)}>
+                    {tool.cta} <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ===== Screenshots & Visual Showcase ===== */}
+        <section id="screenshots" className="py-24 sm:py-32 bg-white dark:bg-slate-950 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+                className="inline-block text-violet-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
+                See It In Action
+              </motion.span>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6 tracking-[-0.02em]">
+                Professional-Grade Analysis & Design
+              </motion.h2>
+              <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+                Real screenshots from BeamLab showing 3D models, analysis results, force diagrams, and design reports.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {SCREENSHOT_CARDS.map((card, idx) => (
+                <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
+                  className="group rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/[0.06] bg-slate-50 dark:bg-slate-900/50 hover:shadow-xl transition-all duration-300">
+                  {/* Mock screenshot area */}
+                  <div className={`aspect-[16/10] ${card.bgGradient} relative overflow-hidden`}>
+                    {/* Window chrome */}
+                    <div className="flex items-center gap-2 px-3 py-2 bg-black/20">
+                      <div className="flex gap-1"><div className="w-2.5 h-2.5 rounded-full bg-red-500/70" /><div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" /><div className="w-2.5 h-2.5 rounded-full bg-green-500/70" /></div>
+                      <span className="text-[10px] text-white/50 font-mono ml-2">{card.windowTitle}</span>
+                    </div>
+                    {/* Screenshot content placeholder */}
+                    <div className="absolute inset-0 mt-8 p-4">
+                      {card.mockContent}
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-2 block">{card.category}</span>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{card.title}</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">{card.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Button onClick={() => navigate('/demo')} variant="premium" size="lg" className="group">
+                Try Live Demo <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* ===== Reviews & Testimonials ===== */}
+        <section id="reviews" className="py-24 sm:py-32 bg-gradient-to-b from-slate-900 to-slate-950 relative overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+                className="inline-block text-amber-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
+                Trusted by Engineers
+              </motion.span>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
+                What Engineers Are Saying
+              </motion.h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {REVIEWS.map((review, idx) => (
+                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
+                  className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-6 hover:border-amber-500/20 transition-all">
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(review.stars)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-slate-300 text-sm leading-relaxed mb-4 italic">"{review.text}"</p>
+                  <div className="flex items-center gap-3 pt-3 border-t border-white/[0.06]">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                      {review.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white text-sm">{review.name}</div>
+                      <div className="text-xs text-slate-500">{review.role} — {review.company}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Comparison Table */}
-        <section className="py-24 sm:py-32 bg-slate-50/50 dark:bg-slate-900/20">
+        <section id="compare" className="py-24 sm:py-32 bg-slate-50/50 dark:bg-slate-900/20">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-14">
               <span className="inline-block text-blue-400 text-xs font-semibold uppercase tracking-[0.2em] mb-5">
@@ -997,6 +1114,292 @@ const COMPARISON_DATA = [
   { feature: "Nonlinear (P-Delta)", staad: "✅", etabs: "✅", skyciv: "⚠️", beamlab: "✅" },
   { feature: "Steel & RC Design", staad: "✅", etabs: "✅", skyciv: "✅", beamlab: "✅" },
   { feature: "Starting Price", staad: "₹2L+/yr", etabs: "₹3L+/yr", skyciv: "$59/mo", beamlab: "₹0 Free" },
+];
+
+// Tools Showcase Data
+const TOOLS_SHOWCASE = [
+  {
+    title: "Geometry Modelling",
+    description: "Create nodes, beams, plates, and complex 3D geometry with STAAD-style tools — select, copy, mirror, rotate, split, extrude, and more.",
+    icon: <PenTool className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-blue-500 to-cyan-500",
+    capabilities: ["Add Node", "Add Beam", "Add Plate", "Copy", "Mirror", "Rotate", "Split", "Extrude", "DXF Import"],
+    link: "/app",
+    cta: "Start Modelling",
+  },
+  {
+    title: "Section & Material Properties",
+    description: "800+ steel sections database (IS, AISC, EU). Assign materials, sections, beta angles, and member end releases to all members.",
+    icon: <Database className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-violet-500 to-purple-600",
+    capabilities: ["Section Library", "Material Assign", "IS Sections", "AISC Sections", "Custom Sections", "Releases"],
+    link: "/app?tool=sections",
+    cta: "Browse Sections",
+  },
+  {
+    title: "Loading & Load Combinations",
+    description: "Apply dead, live, wind, earthquake loads. Point loads at any point on beam, UDL on members. Create IS 875/IS 1893/ASCE 7 load combinations.",
+    icon: <Download className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-orange-500 to-red-500",
+    capabilities: ["Dead Load", "Live Load", "Wind Load", "Seismic Load", "Point Load", "UDL", "Load Combos", "IS 875"],
+    link: "/app?category=LOADING",
+    cta: "Define Loads",
+  },
+  {
+    title: "Analysis Engine",
+    description: "Run linear/nonlinear analysis with sub-second performance. P-Delta, buckling, modal, response spectrum, pushover, and time history analysis.",
+    icon: <BarChart3 className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-emerald-500 to-teal-600",
+    capabilities: ["Linear Analysis", "P-Delta", "Buckling", "Modal Analysis", "Response Spectrum", "Pushover", "Time History"],
+    link: "/app?category=ANALYSIS",
+    cta: "Run Analysis",
+  },
+  {
+    title: "Design & Code Check",
+    description: "Automatic design checks per IS 800, IS 456, AISC 360, Eurocode 3/2, ACI 318. Utilization ratios, pass/fail, and auto-optimization.",
+    icon: <Shield className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-pink-500 to-rose-600",
+    capabilities: ["IS 800 Steel", "IS 456 RC", "AISC 360", "Eurocode", "Utilization", "Auto-Optimize"],
+    link: "/design-hub",
+    cta: "Design Check",
+  },
+  {
+    title: "Results & Diagrams",
+    description: "View SFD, BMD, AFD, deflection diagrams plotted over all members. Support reactions, equilibrium checks, and detailed force tables.",
+    icon: <Activity className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
+    capabilities: ["SFD Diagram", "BMD Diagram", "AFD Diagram", "Deflection", "Reactions", "Stress Heatmap"],
+    link: "/app?category=ANALYSIS",
+    cta: "View Results",
+  },
+  {
+    title: "Professional Reports",
+    description: "Export branded PDF reports with your logo, project details, engineer name, client name, date, revision. Include calculations, diagrams, and design results.",
+    icon: <FileText className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-amber-500 to-orange-600",
+    capabilities: ["PDF Export", "Branded Header", "Calculation Sheets", "Diagrams", "Design Report", "CSV Export"],
+    link: "/tools/print-export",
+    cta: "Generate Reports",
+  },
+  {
+    title: "Detail Drawings",
+    description: "Auto-generated detailing drawings for RCC sections with reinforcement, bar diameters, spacing, clear cover. Steel connection details with bolts and welds.",
+    icon: <Ruler className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-indigo-500 to-blue-700",
+    capabilities: ["RCC Detailing", "Reinforcement", "Bar Bending Schedule", "Steel Connections", "Bolt Details", "Weld Details"],
+    link: "/design/detailing",
+    cta: "View Drawings",
+  },
+  {
+    title: "Civil Engineering Suite",
+    description: "Complete civil engineering tools — geotechnical, transportation, hydraulics, construction management. Design calculations for foundations, retaining walls, and more.",
+    icon: <Compass className="w-6 h-6 text-white" />,
+    gradient: "bg-gradient-to-br from-teal-500 to-green-600",
+    capabilities: ["Geotechnical", "Transportation", "Hydraulics", "Foundation Design", "Retaining Walls", "Construction"],
+    link: "/civil-engineering/library",
+    cta: "Explore Civil",
+  },
+];
+
+// Screenshot Cards Data
+const SCREENSHOT_CARDS = [
+  {
+    title: "3D Frame Model with Loads Applied",
+    description: "Multi-story steel frame with UDL, point loads, and supports clearly visualized on the 3D canvas with category-based workflow sidebar.",
+    category: "Modelling",
+    windowTitle: "beamlab.app/workspace — Project: G+3 Office Block",
+    bgGradient: "bg-gradient-to-br from-slate-800 via-slate-900 to-blue-950",
+    mockContent: (
+      <svg viewBox="0 0 600 300" className="w-full h-full">
+        <defs><pattern id="sg" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(148,163,184,0.08)" strokeWidth="0.5" /></pattern></defs>
+        <rect width="600" height="300" fill="url(#sg)" />
+        {/* Frame structure */}
+        <line x1="80" y1="250" x2="80" y2="60" stroke="#3b82f6" strokeWidth="2.5" />
+        <line x1="250" y1="250" x2="250" y2="60" stroke="#3b82f6" strokeWidth="2.5" />
+        <line x1="420" y1="250" x2="420" y2="60" stroke="#3b82f6" strokeWidth="2.5" />
+        <line x1="80" y1="60" x2="420" y2="60" stroke="#3b82f6" strokeWidth="2.5" />
+        <line x1="80" y1="130" x2="420" y2="130" stroke="#3b82f6" strokeWidth="2" />
+        <line x1="80" y1="190" x2="420" y2="190" stroke="#3b82f6" strokeWidth="2" />
+        {/* Loads */}
+        {[120, 160, 200, 280, 320, 360].map((x, i) => <line key={i} x1={x} y1="30" x2={x} y2="55" stroke="#f59e0b" strokeWidth="1" />)}
+        <text x="240" y="24" textAnchor="middle" fill="#f59e0b" fontSize="9" fontWeight="bold">25 kN/m</text>
+        {/* Supports */}
+        <polygon points="75,255 85,255 80,265" fill="#22c55e" opacity="0.8" />
+        <polygon points="245,255 255,255 250,265" fill="#22c55e" opacity="0.8" />
+        <polygon points="415,255 425,255 420,265" fill="#22c55e" opacity="0.8" />
+        {/* Labels */}
+        <text x="460" y="70" fill="#94a3b8" fontSize="8">ISMB 300</text>
+        <text x="460" y="140" fill="#94a3b8" fontSize="8">ISMB 250</text>
+        {/* Results panel */}
+        <rect x="460" y="160" width="120" height="100" rx="6" fill="rgba(15,23,42,0.9)" stroke="rgba(255,255,255,0.1)" />
+        <text x="475" y="178" fill="#3b82f6" fontSize="8" fontWeight="bold">Results</text>
+        <text x="475" y="195" fill="#94a3b8" fontSize="7">Max M: 156.2 kN·m</text>
+        <text x="475" y="210" fill="#94a3b8" fontSize="7">Max V: 87.5 kN</text>
+        <text x="475" y="225" fill="#22c55e" fontSize="7">δmax: 3.2 mm ✓</text>
+        <text x="475" y="240" fill="#22c55e" fontSize="7">Unity: 0.68 ✓</text>
+      </svg>
+    ),
+  },
+  {
+    title: "Bending Moment & Shear Force Diagrams",
+    description: "Color-coded SFD and BMD plotted directly over the structural members with maximum values annotated. Deflection shape visualization included.",
+    category: "Analysis Results",
+    windowTitle: "beamlab.app/workspace — BMD/SFD View",
+    bgGradient: "bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-950",
+    mockContent: (
+      <svg viewBox="0 0 600 300" className="w-full h-full">
+        <defs><pattern id="sg2" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(148,163,184,0.06)" strokeWidth="0.5" /></pattern></defs>
+        <rect width="600" height="300" fill="url(#sg2)" />
+        {/* Beam line */}
+        <line x1="60" y1="100" x2="540" y2="100" stroke="#64748b" strokeWidth="2" />
+        {/* BMD curve */}
+        <path d="M 60 100 Q 200 20 300 40 Q 400 60 540 100" stroke="#a78bfa" strokeWidth="2" fill="rgba(167,139,250,0.1)" />
+        <text x="280" y="35" fill="#a78bfa" fontSize="9" fontWeight="bold">BMD</text>
+        <text x="200" y="16" fill="#a78bfa" fontSize="8">Mmax = 112.5 kN·m</text>
+        {/* SFD */}
+        <line x1="60" y1="200" x2="540" y2="200" stroke="#64748b" strokeWidth="1" strokeDasharray="4 4" />
+        <path d="M 60 160 L 200 160 L 200 240 L 400 240 L 400 160 L 540 160" stroke="#f472b6" strokeWidth="2" fill="rgba(244,114,182,0.1)" />
+        <text x="280" y="270" fill="#f472b6" fontSize="9" fontWeight="bold">SFD</text>
+        <text x="130" y="155" fill="#f472b6" fontSize="8">+75 kN</text>
+        <text x="300" y="255" fill="#f472b6" fontSize="8">-75 kN</text>
+        {/* Supports */}
+        <polygon points="55,105 65,105 60,115" fill="#22c55e" />
+        <polygon points="535,105 545,105 540,115" fill="#22c55e" />
+        <circle cx="60" cy="100" r="3" fill="#22c55e" />
+        <circle cx="540" cy="100" r="3" fill="#22c55e" />
+      </svg>
+    ),
+  },
+  {
+    title: "Steel Section Design Check Results",
+    description: "IS 800:2007 / AISC 360 design results with clause-by-clause utilization ratios, color-coded pass/fail indicators, and optimization suggestions.",
+    category: "Design",
+    windowTitle: "beamlab.app/design-hub — Steel Design Checks",
+    bgGradient: "bg-gradient-to-br from-emerald-900 via-slate-900 to-teal-950",
+    mockContent: (
+      <svg viewBox="0 0 600 300" className="w-full h-full">
+        {/* Design result cards mock */}
+        <rect x="20" y="10" width="170" height="130" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(34,197,94,0.3)" />
+        <text x="35" y="32" fill="#22c55e" fontSize="10" fontWeight="bold">M1 — ISMB 300</text>
+        <text x="35" y="50" fill="#94a3b8" fontSize="8">IS 800:2007 Check</text>
+        <rect x="35" y="60" width="120" height="6" rx="3" fill="rgba(255,255,255,0.1)" />
+        <rect x="35" y="60" width="82" height="6" rx="3" fill="#22c55e" />
+        <text x="35" y="80" fill="#94a3b8" fontSize="7">Util: 0.68 — PASS</text>
+        <text x="35" y="95" fill="#94a3b8" fontSize="7">Gov: Flexure Cl.8.2.1</text>
+        <text x="35" y="110" fill="#94a3b8" fontSize="7">Comp: 0.42 | Shear: 0.31</text>
+        <text x="35" y="125" fill="#22c55e" fontSize="7">✓ All checks passed</text>
+
+        <rect x="210" y="10" width="170" height="130" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(239,68,68,0.3)" />
+        <text x="225" y="32" fill="#ef4444" fontSize="10" fontWeight="bold">M4 — ISMC 200</text>
+        <text x="225" y="50" fill="#94a3b8" fontSize="8">IS 800:2007 Check</text>
+        <rect x="225" y="60" width="120" height="6" rx="3" fill="rgba(255,255,255,0.1)" />
+        <rect x="225" y="60" width="130" height="6" rx="3" fill="#ef4444" />
+        <text x="225" y="80" fill="#ef4444" fontSize="7">Util: 1.12 — FAIL</text>
+        <text x="225" y="95" fill="#94a3b8" fontSize="7">Gov: Combined Cl.9.3.1</text>
+        <text x="225" y="110" fill="#94a3b8" fontSize="7">Comp: 0.89 | Flex: 1.12</text>
+        <text x="225" y="125" fill="#f59e0b" fontSize="7">⚠ Upgrade to ISMC 250</text>
+
+        <rect x="400" y="10" width="170" height="130" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(34,197,94,0.3)" />
+        <text x="415" y="32" fill="#22c55e" fontSize="10" fontWeight="bold">M7 — ISHB 350</text>
+        <text x="415" y="50" fill="#94a3b8" fontSize="8">IS 800:2007 Check</text>
+        <rect x="415" y="60" width="120" height="6" rx="3" fill="rgba(255,255,255,0.1)" />
+        <rect x="415" y="60" width="96" height="6" rx="3" fill="#22c55e" />
+        <text x="415" y="80" fill="#94a3b8" fontSize="7">Util: 0.80 — PASS</text>
+        <text x="415" y="95" fill="#94a3b8" fontSize="7">Gov: Buckling Cl.7.1.2</text>
+        <text x="415" y="110" fill="#94a3b8" fontSize="7">Comp: 0.80 | Flex: 0.55</text>
+        <text x="415" y="125" fill="#22c55e" fontSize="7">✓ Economical (80%)</text>
+
+        {/* Summary bar */}
+        <rect x="20" y="160" width="560" height="40" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.06)" />
+        <text x="40" y="185" fill="white" fontSize="10" fontWeight="bold">Summary: 6/8 PASS</text>
+        <text x="260" y="185" fill="#f59e0b" fontSize="9">2 members need optimization</text>
+        <rect x="460" y="170" width="100" height="22" rx="4" fill="rgba(34,197,94,0.2)" />
+        <text x="480" y="185" fill="#22c55e" fontSize="9" fontWeight="bold">Auto-Optimize</text>
+      </svg>
+    ),
+  },
+  {
+    title: "RCC Detailing Drawing — Beam Section",
+    description: "Automated reinforcement detailing with bar diameter, spacing, clear cover, stirrup arrangement, and cross-section views as per IS 456:2000.",
+    category: "Detailing",
+    windowTitle: "beamlab.app/design/detailing — RCC Beam B1",
+    bgGradient: "bg-gradient-to-br from-amber-900 via-slate-900 to-orange-950",
+    mockContent: (
+      <svg viewBox="0 0 600 300" className="w-full h-full">
+        {/* Beam elevation */}
+        <rect x="40" y="60" width="400" height="120" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
+        <text x="240" y="50" textAnchor="middle" fill="#f59e0b" fontSize="10" fontWeight="bold">BEAM B1 — ELEVATION</text>
+        {/* Main bars */}
+        <line x1="50" y1="75" x2="430" y2="75" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="8 4" />
+        <line x1="50" y1="165" x2="430" y2="165" stroke="#ef4444" strokeWidth="2" />
+        <text x="440" y="78" fill="#ef4444" fontSize="7">2-16φ (top)</text>
+        <text x="440" y="168" fill="#ef4444" fontSize="7">3-20φ (bottom)</text>
+        {/* Stirrups */}
+        {[80, 110, 140, 170, 200, 230, 260, 290, 320, 350, 380, 410].map((x, i) => (
+          <rect key={i} x={x-3} y="68" width="6" height="100" fill="none" stroke="#3b82f6" strokeWidth="0.8" />
+        ))}
+        <text x="240" y="195" textAnchor="middle" fill="#3b82f6" fontSize="7">8φ @ 150 c/c (stirrups)</text>
+        {/* Dimensions */}
+        <line x1="40" y1="210" x2="440" y2="210" stroke="#94a3b8" strokeWidth="0.5" />
+        <text x="240" y="225" textAnchor="middle" fill="#94a3b8" fontSize="8">L = 5000 mm</text>
+        <line x1="460" y1="60" x2="460" y2="180" stroke="#94a3b8" strokeWidth="0.5" />
+        <text x="480" y="125" fill="#94a3b8" fontSize="8">400mm</text>
+        {/* Cross section */}
+        <rect x="500" y="60" width="60" height="100" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
+        <text x="530" y="50" textAnchor="middle" fill="#f59e0b" fontSize="8">SECTION</text>
+        <circle cx="512" cy="72" r="3" fill="#ef4444" /><circle cx="548" cy="72" r="3" fill="#ef4444" />
+        <circle cx="510" cy="148" r="3.5" fill="#ef4444" /><circle cx="530" cy="148" r="3.5" fill="#ef4444" /><circle cx="550" cy="148" r="3.5" fill="#ef4444" />
+        <text x="530" y="175" textAnchor="middle" fill="#94a3b8" fontSize="7">230 × 400</text>
+        <text x="530" y="188" textAnchor="middle" fill="#94a3b8" fontSize="7">Cover: 25mm</text>
+      </svg>
+    ),
+  },
+];
+
+// Reviews Data
+const REVIEWS = [
+  {
+    name: "Rajesh Sharma",
+    role: "Senior Structural Engineer",
+    company: "L&T Infrastructure",
+    stars: 5,
+    text: "BeamLab has completely transformed how we approach structural analysis. The speed of the analysis engine is incredible — what used to take 15 minutes in STAAD now runs in under 2 seconds. The IS code integration is spot-on.",
+  },
+  {
+    name: "Priya Nair",
+    role: "Design Consultant",
+    company: "Arup India",
+    stars: 5,
+    text: "The AI-powered design suggestions saved us hours on a recent high-rise project. Being browser-based means our team can collaborate from anywhere. The section database with all IS sections is very comprehensive.",
+  },
+  {
+    name: "Amit Patel",
+    role: "Associate Professor",
+    company: "IIT Bombay",
+    stars: 5,
+    text: "I use BeamLab for teaching my structural analysis courses. Students love the transparent calculation steps — they can see every stiffness matrix, every FEM. The free academic tier is a game-changer for education.",
+  },
+  {
+    name: "Sarah Chen",
+    role: "Project Manager",
+    company: "AECOM Asia Pacific",
+    stars: 4,
+    text: "Switching from ETABS for frame analysis was seamless. The cloud-native approach means no more license servers, and the PDF reports are professional quality. Would love to see more plate element types.",
+  },
+  {
+    name: "Vikram Singh",
+    role: "Independent Consultant",
+    company: "VS Structural Consultants",
+    stars: 5,
+    text: "As a solo consultant, BeamLab's pricing is unbeatable. The ₹999/mo plan gives me everything I need — nonlinear analysis, IS 800/456 design checks, and branded reports with my firm's logo.",
+  },
+  {
+    name: "Dr. Ananya Desai",
+    role: "Structural R&D Lead",
+    company: "Tata Projects",
+    stars: 5,
+    text: "The P-Delta and buckling analysis are production-quality. We validated results against our NAFEMS benchmarks and the accuracy is within 0.1%. The response spectrum analysis for IS 1893 seismic is particularly well-implemented.",
+  },
 ];
 
 const FeatureCard = ({

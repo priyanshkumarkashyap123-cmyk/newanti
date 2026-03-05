@@ -17,6 +17,9 @@ import {
   Axis3D,
   Camera,
   Eye,
+  Layers,
+  Type,
+  Hash,
 } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 
@@ -26,12 +29,14 @@ import { useUIStore } from '../../store/uiStore';
 
 const VIEWS = [
   { id: 'front', label: 'Front (XY)', short: 'F' },
-  { id: 'back', label: 'Back', short: 'B' },
+  { id: 'back', label: 'Back', short: 'Bk' },
   { id: 'left', label: 'Left (YZ)', short: 'L' },
   { id: 'right', label: 'Right', short: 'R' },
-  { id: 'top', label: 'Top (XZ)', short: 'T' },
+  { id: 'top', label: 'Top Plan (XZ)', short: 'T' },
   { id: 'bottom', label: 'Bottom', short: 'Bo' },
   { id: 'iso', label: '3D Perspective', short: '3D' },
+  { id: 'iso-sw', label: 'SW Isometric', short: 'SW' },
+  { id: 'iso-se', label: 'SE Isometric', short: 'SE' },
 ] as const;
 
 const ViewCube: FC<{ activeView: string; onViewChange: (view: string) => void }> = memo(({ activeView, onViewChange }) => (
@@ -108,6 +113,9 @@ export const ViewControlsOverlay: FC = memo(() => {
   const [showAxes, setShowAxes] = useState(true);
   const [activeView, setActiveView] = useState('iso');
   const [isPerspective, setIsPerspective] = useState(true);
+  const [showNodeLabels, setShowNodeLabels] = useState(false);
+  const [showMemberLabels, setShowMemberLabels] = useState(false);
+  const [show2DMode, setShow2DMode] = useState(false);
 
   // --- Camera operations via CustomEvents (handled by CameraFitController) ---
 
@@ -144,6 +152,31 @@ export const ViewControlsOverlay: FC = memo(() => {
   const handleToggle3D = useCallback(() => {
     setRenderMode3D(!renderMode3D);
   }, [renderMode3D, setRenderMode3D]);
+
+  const handleToggle2DMode = useCallback(() => {
+    const next = !show2DMode;
+    setShow2DMode(next);
+    if (next) {
+      setActiveView('front');
+      document.dispatchEvent(new CustomEvent('change-view', { detail: { view: 'front' } }));
+    } else {
+      setActiveView('iso');
+      document.dispatchEvent(new CustomEvent('change-view', { detail: { view: 'iso' } }));
+    }
+    document.dispatchEvent(new CustomEvent('toggle-2d-mode', { detail: { is2D: next } }));
+  }, [show2DMode]);
+
+  const handleToggleNodeLabels = useCallback(() => {
+    const next = !showNodeLabels;
+    setShowNodeLabels(next);
+    document.dispatchEvent(new CustomEvent('toggle-node-labels', { detail: { show: next } }));
+  }, [showNodeLabels]);
+
+  const handleToggleMemberLabels = useCallback(() => {
+    const next = !showMemberLabels;
+    setShowMemberLabels(next);
+    document.dispatchEvent(new CustomEvent('toggle-member-labels', { detail: { show: next } }));
+  }, [showMemberLabels]);
 
   const handleTogglePerspective = useCallback(() => {
     const next = !isPerspective;
@@ -182,10 +215,13 @@ export const ViewControlsOverlay: FC = memo(() => {
 
       {/* Display Toggles */}
       <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
+        <CompactBtn icon={Layers} label={show2DMode ? 'Switch to 3D' : 'Switch to 2D'} onClick={handleToggle2DMode} isActive={show2DMode} />
         <CompactBtn icon={Grid3X3} label="Toggle Grid (G)" onClick={toggleGrid} isActive={showGrid} />
         <CompactBtn icon={Axis3D} label="Toggle Axes" onClick={handleToggleAxes} isActive={showAxes} />
         <CompactBtn icon={Eye} label={isPerspective ? 'Orthographic' : 'Perspective'} onClick={handleTogglePerspective} isActive={!isPerspective} />
         <CompactBtn icon={Box} label="3D Render Mode" onClick={handleToggle3D} isActive={renderMode3D} />
+        <CompactBtn icon={Hash} label="Node Labels" onClick={handleToggleNodeLabels} isActive={showNodeLabels} />
+        <CompactBtn icon={Type} label="Member Labels" onClick={handleToggleMemberLabels} isActive={showMemberLabels} />
         <CompactBtn icon={Camera} label="Screenshot (PNG)" onClick={handleScreenshot} />
       </div>
     </div>

@@ -48,7 +48,7 @@ const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 // TYPES
 // ================================================================
 
-type DesignTab = 'overview' | 'steel' | 'concrete' | 'connections' | 'foundations' | 'optimization' | 'report';
+type DesignTab = 'overview' | 'steel' | 'concrete' | 'connections' | 'foundations' | 'optimization' | 'detailing' | 'report';
 
 interface DesignCodeOption {
   id: string;
@@ -1319,6 +1319,7 @@ const PostAnalysisDesignHub: FC = () => {
   const nodes = useModelStore(s => s.nodes);
   const members = useModelStore(s => s.members);
   const analysisResults = useModelStore(s => s.analysisResults);
+  const projectInfo = useModelStore(s => s.projectInfo);
 
   // Hydrate from sessionStorage if in-memory results are missing (page was
   // refreshed or hard-navigated).  This runs once on mount.
@@ -1651,6 +1652,7 @@ const PostAnalysisDesignHub: FC = () => {
     { id: 'connections', label: 'Connections', icon: <Wrench className="w-4 h-4" /> },
     { id: 'foundations', label: 'Foundations', icon: <Layers className="w-4 h-4" /> },
     { id: 'optimization', label: 'Optimization', icon: <Zap className="w-4 h-4" /> },
+    { id: 'detailing', label: 'Detailing', icon: <Eye className="w-4 h-4" /> },
     { id: 'report', label: 'Report', icon: <FileText className="w-4 h-4" /> },
   ];
 
@@ -2115,6 +2117,88 @@ const PostAnalysisDesignHub: FC = () => {
           </div>
         )}
 
+        {/* ========== DETAILING TAB ========== */}
+        {activeTab === 'detailing' && (
+          <div className="space-y-6">
+            {/* RCC Reinforcement Detailing */}
+            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <Columns className="w-5 h-5 text-orange-400" />
+                RCC Reinforcement Detailing
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                Generate reinforcement detail drawings for RC beams, columns, slabs, and footings per IS 456 / ACI 318 / EC2 provisions.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'Beam Detailing', desc: 'Longitudinal & shear reinforcement, development lengths, bar bending schedule', icon: '🏗️' },
+                  { label: 'Column Detailing', desc: 'Ties/spirals, lap splice, interaction diagram overlay', icon: '🏢' },
+                  { label: 'Slab Detailing', desc: 'Top/bottom mesh, strip reinforcement, opening reinforcement', icon: '🪵' },
+                  { label: 'Footing Detailing', desc: 'Pedestal, punching shear reinforcement, development length', icon: '🧱' },
+                ].map((item) => (
+                  <button key={item.label} type="button"
+                    className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-400 hover:shadow-md transition-all text-left group"
+                    onClick={() => document.dispatchEvent(new CustomEvent('open-detailing', { detail: { type: item.label } }))}>
+                    <div className="text-2xl mb-2">{item.icon}</div>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-orange-500 transition-colors">{item.label}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Steel Connection Detailing */}
+            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-blue-400" />
+                Steel Connection Detailing
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                Generate steel connection detail drawings with bolts, welds, stiffeners per IS 800 / AISC 360 provisions.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'Bolted Connections', desc: 'HSFG/bearing bolts, bolt patterns, edge/pitch distances', icon: '🔩' },
+                  { label: 'Welded Connections', desc: 'Fillet/butt welds, weld sizes, throat thickness calculations', icon: '⚡' },
+                  { label: 'Base Plate', desc: 'Column base plate, anchor bolts, grout detail', icon: '🏗️' },
+                  { label: 'Splice Joints', desc: 'Beam/column splices, cover plates, flange/web connections', icon: '🔗' },
+                ].map((item) => (
+                  <button key={item.label} type="button"
+                    className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-blue-400 hover:shadow-md transition-all text-left group"
+                    onClick={() => document.dispatchEvent(new CustomEvent('open-detailing', { detail: { type: item.label } }))}>
+                    <div className="text-2xl mb-2">{item.icon}</div>
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors">{item.label}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Bar Bending Schedule */}
+            <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <SlidersHorizontal className="w-5 h-5 text-emerald-400" />
+                Bar Bending Schedule (BBS)
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                Auto-generate bar bending schedule from designed members with cutting lengths, shapes, and quantities.
+              </p>
+              <div className="flex gap-3">
+                <button type="button"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  onClick={() => document.dispatchEvent(new CustomEvent('generate-bbs'))}>
+                  <FileText className="w-4 h-4" /> Generate BBS
+                </button>
+                <button type="button"
+                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  onClick={() => document.dispatchEvent(new CustomEvent('export-bbs'))}>
+                  <Download className="w-4 h-4" /> Export BBS to Excel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ========== REPORT TAB ========== */}
         {activeTab === 'report' && (
           <div className="space-y-6">
@@ -2128,79 +2212,138 @@ const PostAnalysisDesignHub: FC = () => {
                 <p className="text-slate-600 dark:text-slate-400 py-8 text-center">Run design checks first to generate a report.</p>
               ) : (
                 <div className="space-y-6">
-                  {/* Report Header */}
-                  <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-6 font-mono text-sm">
-                    <div className="text-center mb-6">
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">STRUCTURAL DESIGN REPORT</h3>
-                      <p className="text-slate-600 dark:text-slate-400">Generated by BeamLab</p>
-                      <p className="text-slate-500 text-xs">{new Date().toLocaleString()}</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div>
-                        <div className="text-slate-500">Design Code</div>
-                        <div className="text-slate-700 dark:text-slate-200">{STEEL_CODES.find(c => c.id === params.steelCode)?.name}</div>
+                  {/* Professional Report Header with Branding */}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl p-8 font-mono text-sm border border-slate-200 dark:border-slate-700 shadow-sm">
+                    {/* Report Branding Header */}
+                    <div className="flex items-start justify-between mb-6 pb-4 border-b-2 border-blue-500">
+                      <div className="flex items-center gap-3">
+                        <img src={beamLabLogo} alt="BeamLab" className="w-10 h-10" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <div>
+                          <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">STRUCTURAL DESIGN REPORT</h3>
+                          <p className="text-xs text-blue-500 font-semibold">BeamLab Ultimate — Professional Engineering Software</p>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-slate-500">Steel Grade</div>
-                        <div className="text-slate-700 dark:text-slate-200">{params.steelGrade}</div>
-                      </div>
-                      <div>
-                        <div className="text-slate-500">Members Checked</div>
-                        <div className="text-slate-700 dark:text-slate-200">{designResults.size}</div>
-                      </div>
-                      <div>
-                        <div className="text-slate-500">Pass / Fail</div>
-                        <div><span className="text-emerald-400">{passCount} PASS</span> / <span className="text-red-400">{failCount} FAIL</span></div>
+                      <div className="text-right text-xs text-slate-500">
+                        <div>Report No: DR-{Date.now().toString(36).toUpperCase()}</div>
+                        <div>{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
                       </div>
                     </div>
 
-                    <table className="w-full text-xs">
+                    {/* Project Information Block */}
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-6 text-xs">
+                      <div className="flex gap-2">
+                        <span className="text-slate-500 w-24 flex-shrink-0">Project:</span>
+                        <span className="text-slate-800 dark:text-slate-200 font-semibold">{projectInfo?.name || 'Untitled Project'}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-slate-500 w-24 flex-shrink-0">Client:</span>
+                        <span className="text-slate-800 dark:text-slate-200">{projectInfo?.client || '—'}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-slate-500 w-24 flex-shrink-0">Engineer:</span>
+                        <span className="text-slate-800 dark:text-slate-200">{projectInfo?.engineer || '—'}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-slate-500 w-24 flex-shrink-0">Job No:</span>
+                        <span className="text-slate-800 dark:text-slate-200">{projectInfo?.jobNo || '—'}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-slate-500 w-24 flex-shrink-0">Revision:</span>
+                        <span className="text-slate-800 dark:text-slate-200">{projectInfo?.rev || '0'}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-slate-500 w-24 flex-shrink-0">Date:</span>
+                        <span className="text-slate-800 dark:text-slate-200">{projectInfo?.date ? new Date(projectInfo.date).toLocaleDateString() : new Date().toISOString().split('T')[0]}</span>
+                      </div>
+                    </div>
+
+                    {/* Design Summary */}
+                    <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 mb-6">
+                      <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">DESIGN SUMMARY</h4>
+                      <div className="grid grid-cols-4 gap-4 text-xs">
+                        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg text-center border border-slate-200 dark:border-slate-700">
+                          <div className="text-slate-500">Design Code</div>
+                          <div className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1">{STEEL_CODES.find(c => c.id === params.steelCode)?.name || params.steelCode}</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg text-center border border-slate-200 dark:border-slate-700">
+                          <div className="text-slate-500">Steel Grade</div>
+                          <div className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1">{params.steelGrade}</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg text-center border border-slate-200 dark:border-slate-700">
+                          <div className="text-slate-500">Members Checked</div>
+                          <div className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1">{designResults.size}</div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg text-center border border-slate-200 dark:border-slate-700">
+                          <div className="text-slate-500">Pass / Fail</div>
+                          <div className="text-sm mt-1"><span className="text-emerald-500 font-bold">{passCount}</span> / <span className="text-red-500 font-bold">{failCount}</span></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Results Table */}
+                    <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">MEMBER DESIGN CHECK RESULTS</h4>
+                    <table className="w-full text-xs border-collapse">
                       <thead>
-                        <tr className="border-b border-slate-600 text-slate-600 dark:text-slate-400">
-                          <th className="py-2 text-left">Member</th>
-                          <th className="py-2 text-left">Section</th>
-                          <th className="py-2 text-right">N (kN)</th>
-                          <th className="py-2 text-right">V (kN)</th>
-                          <th className="py-2 text-right">M (kN·m)</th>
-                          <th className="py-2 text-right">Ratio</th>
-                          <th className="py-2 text-center">Status</th>
+                        <tr className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                          <th className="py-2 px-2 text-left border border-slate-300 dark:border-slate-600">Member</th>
+                          <th className="py-2 px-2 text-left border border-slate-300 dark:border-slate-600">Section</th>
+                          <th className="py-2 px-2 text-right border border-slate-300 dark:border-slate-600">N (kN)</th>
+                          <th className="py-2 px-2 text-right border border-slate-300 dark:border-slate-600">V (kN)</th>
+                          <th className="py-2 px-2 text-right border border-slate-300 dark:border-slate-600">M (kN·m)</th>
+                          <th className="py-2 px-2 text-right border border-slate-300 dark:border-slate-600">Util. Ratio</th>
+                          <th className="py-2 px-2 text-center border border-slate-300 dark:border-slate-600">Governing</th>
+                          <th className="py-2 px-2 text-center border border-slate-300 dark:border-slate-600">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {Array.from(designResults.entries()).map(([id, r]) => (
-                          <tr key={id} className="border-b border-slate-300 dark:border-slate-700/50">
-                            <td className="py-1 text-slate-700 dark:text-slate-200">{r.memberName}</td>
-                            <td className="py-1 text-slate-700 dark:text-slate-300">{r.section}</td>
-                            <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.N)}</td>
-                            <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.Vy)}</td>
-                            <td className="py-1 text-right text-slate-700 dark:text-slate-300">{formatForce(r.forces.Mz)}</td>
-                            <td className={`py-1 text-right font-bold ${utilizationColor(r.utilizationRatio)}`}>
+                          <tr key={id} className="hover:bg-blue-50/30 dark:hover:bg-blue-500/5">
+                            <td className="py-1.5 px-2 text-slate-700 dark:text-slate-200 font-medium border border-slate-200 dark:border-slate-700">{r.memberName}</td>
+                            <td className="py-1.5 px-2 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">{r.section}</td>
+                            <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">{formatForce(r.forces.N)}</td>
+                            <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">{formatForce(r.forces.Vy)}</td>
+                            <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">{formatForce(r.forces.Mz)}</td>
+                            <td className={`py-1.5 px-2 text-right font-bold border border-slate-200 dark:border-slate-700 ${utilizationColor(r.utilizationRatio)}`}>
                               {(r.utilizationRatio * 100).toFixed(1)}%
                             </td>
-                            <td className={`py-1 text-center font-bold ${r.status === 'PASS' ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <td className="py-1.5 px-2 text-center text-slate-500 dark:text-slate-400 text-[10px] border border-slate-200 dark:border-slate-700">{r.governingCheck || '—'}</td>
+                            <td className={`py-1.5 px-2 text-center font-bold border border-slate-200 dark:border-slate-700 ${r.status === 'PASS' ? 'text-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10' : 'text-red-500 bg-red-50/50 dark:bg-red-500/10'}`}>
                               {r.status}
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
+
+                    {/* Report Footer */}
+                    <div className="mt-6 pt-4 border-t border-slate-300 dark:border-slate-600 flex items-center justify-between text-[10px] text-slate-400">
+                      <span>Generated by BeamLab Ultimate v2.0 — Not for construction without independent verification</span>
+                      <span>Page 1 of 1</span>
+                    </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 flex-wrap">
                     <button type="button"
                       onClick={() => {
                         // Copy report to clipboard
                         const lines = ['STRUCTURAL DESIGN REPORT — BeamLab', ''];
+                        lines.push(`Project: ${projectInfo?.name || 'Untitled'}`);
+                        lines.push(`Client: ${projectInfo?.client || '—'}`);
+                        lines.push(`Engineer: ${projectInfo?.engineer || '—'}`);
+                        lines.push(`Job No: ${projectInfo?.jobNo || '—'}`);
+                        lines.push(`Revision: ${projectInfo?.rev || '0'}`);
+                        lines.push(`Date: ${new Date().toLocaleDateString()}`);
+                        lines.push('');
                         lines.push(`Design Code: ${params.steelCode}`);
                         lines.push(`Steel Grade: ${params.steelGrade}`);
                         lines.push(`Members: ${designResults.size} | Pass: ${passCount} | Fail: ${failCount}`);
                         lines.push('');
-                        lines.push('Member | Section | Axial(kN) | Shear(kN) | Moment(kN·m) | Ratio | Status');
-                        lines.push('-'.repeat(80));
+                        lines.push('Member | Section | Axial(kN) | Shear(kN) | Moment(kN·m) | Ratio | Governing | Status');
+                        lines.push('-'.repeat(100));
                         designResults.forEach(r => {
                           lines.push(
-                            `${r.memberName.padEnd(8)} | ${r.section.padEnd(12)} | ${formatForce(r.forces.N).padStart(9)} | ${formatForce(r.forces.Vy).padStart(9)} | ${formatForce(r.forces.Mz).padStart(12)} | ${(r.utilizationRatio * 100).toFixed(1).padStart(5)}% | ${r.status}`
+                            `${r.memberName.padEnd(8)} | ${r.section.padEnd(12)} | ${formatForce(r.forces.N).padStart(9)} | ${formatForce(r.forces.Vy).padStart(9)} | ${formatForce(r.forces.Mz).padStart(12)} | ${(r.utilizationRatio * 100).toFixed(1).padStart(5)}% | ${(r.governingCheck || '—').padEnd(12)} | ${r.status}`
                           );
                         });
                         navigator.clipboard.writeText(lines.join('\n'));
@@ -2209,12 +2352,28 @@ const PostAnalysisDesignHub: FC = () => {
                     >
                       <Copy className="w-4 h-4" /> Copy to Clipboard
                     </button>
+                    <button type="button"
+                      onClick={() => {
+                        document.dispatchEvent(new CustomEvent("trigger-pdf-report"));
+                      }}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" /> Export PDF Report
+                    </button>
                     <Link
                       to="/reports"
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >
                       <FileText className="w-4 h-4" /> Full Report Generator
                     </Link>
+                    <button type="button"
+                      onClick={() => {
+                        document.dispatchEvent(new CustomEvent("trigger-csv-export"));
+                      }}
+                      className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" /> Export CSV
+                    </button>
                   </div>
                 </div>
               )}

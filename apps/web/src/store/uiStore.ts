@@ -276,6 +276,24 @@ interface UIState {
     archGenerator: boolean;
     frameGenerator: boolean;
     cablePatternGenerator: boolean;
+    // Enhanced Loading modals
+    supportDisplacement: boolean;
+    prestressLoad: boolean;
+    pressureLoad: boolean;
+    en1998SeismicDialog: boolean;
+    is875LiveLoad: boolean;
+    nonlinearAnalysis: boolean;
+    // Enhanced Design modals
+    steelDesignIS800: boolean;
+    steelDesignAISC360: boolean;
+    rcBeamDesign: boolean;
+    rcColumnDesign: boolean;
+    rcSlabDesign: boolean;
+    rcFootingDesign: boolean;
+    rcDetailing: boolean;
+    steelDetailing: boolean;
+    sectionOptimization: boolean;
+    designHub: boolean;
   };
 
   // Graphics State
@@ -429,6 +447,24 @@ export const useUIStore = create<UIState>()(
         archGenerator: false,
         frameGenerator: false,
         cablePatternGenerator: false,
+        // Enhanced Loading modals
+        supportDisplacement: false,
+        prestressLoad: false,
+        pressureLoad: false,
+        en1998SeismicDialog: false,
+        is875LiveLoad: false,
+        nonlinearAnalysis: false,
+        // Enhanced Design modals
+        steelDesignIS800: false,
+        steelDesignAISC360: false,
+        rcBeamDesign: false,
+        rcColumnDesign: false,
+        rcSlabDesign: false,
+        rcFootingDesign: false,
+        rcDetailing: false,
+        steelDetailing: false,
+        sectionOptimization: false,
+        designHub: false,
       },
 
       // Graphics State
@@ -687,6 +723,24 @@ export const useUIStore = create<UIState>()(
             archGenerator: false,
             frameGenerator: false,
             cablePatternGenerator: false,
+            // Enhanced Loading modals
+            supportDisplacement: false,
+            prestressLoad: false,
+            pressureLoad: false,
+            en1998SeismicDialog: false,
+            is875LiveLoad: false,
+            nonlinearAnalysis: false,
+            // Enhanced Design modals
+            steelDesignIS800: false,
+            steelDesignAISC360: false,
+            rcBeamDesign: false,
+            rcColumnDesign: false,
+            rcSlabDesign: false,
+            rcFootingDesign: false,
+            rcDetailing: false,
+            steelDetailing: false,
+            sectionOptimization: false,
+            designHub: false,
           },
         }),
       // Grid Settings
