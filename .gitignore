@@ -22,6 +22,8 @@ scripts/deploy.sh
 scripts/setup-prod-env.sh
 # Dependencies
 # Deployment temp files
+apps/web/deploy.tar.gz
+onnect-timeout
 # Documentation (session notes, not part of codebase)
 # Environment variables - NEVER COMMIT!
 # IDE
