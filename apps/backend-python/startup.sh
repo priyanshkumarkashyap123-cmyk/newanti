@@ -1,9 +1,9 @@
 #!/bin/bash
 # Azure Linux App Service Startup Script
 
-echo "🚀 Starting FastAPI with Uvicorn..."
+echo "🚀 Starting FastAPI Production Server..."
 
-# Use direct uvicorn for better compatibility with Azure App Service
-# Azure expects app to bind to 0.0.0.0:$PORT or 0.0.0.0:8000
+# Use Gunicorn with Uvicorn workers for production
+# Azure expects app to bind to 0.0.0.0:$PORT (defaults to 8000)
 PORT=${PORT:-8000}
-python -m uvicorn main:app --host 0.0.0.0 --port "$PORT" --workers 1
+gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app --bind=0.0.0.0:$PORT --timeout 180 --access-logfile - --error-logfile -
