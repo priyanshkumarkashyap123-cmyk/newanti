@@ -23,11 +23,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, CheckCircle2, XCircle, AlertTriangle, ChevronRight,
-  ChevronDown, Search, Filter, Download, Settings, Columns, Building2,
+  ChevronDown, Search, Download, Settings, Columns, Building2,
   Box, Triangle, BarChart3, Zap, RefreshCw, FileText, Layers,
-  ChevronUp, Eye, EyeOff, Maximize2, SlidersHorizontal,
-  Shield, Award, Cpu, Wrench, LayoutGrid, LayoutList,
-  Target, TrendingUp, ArrowUpRight, Copy, ArrowRight
+  ChevronUp, Eye, EyeOff, SlidersHorizontal,
+  Shield, Award, Cpu, Wrench,
+  Target, TrendingUp, Copy, ArrowRight
 } from 'lucide-react';
 import { useModelStore, hydrateAnalysisResults, type Member, type Node as ModelNode, type AnalysisResults, type MemberForceData } from '../store/model';
 import {
@@ -1958,22 +1958,12 @@ const PostAnalysisDesignHub: FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Design</h3>
                   <div className="space-y-2">
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-700 dark:text-slate-200">RC Beam Designer</span>
-                      <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
-                    </Link>
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-700 dark:text-slate-200">RC Column Designer</span>
-                      <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
-                    </Link>
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-700 dark:text-slate-200">Slab Designer</span>
-                      <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
-                    </Link>
-                    <Link to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
-                      <span className="text-sm text-slate-700 dark:text-slate-200">Footing Designer</span>
-                      <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
-                    </Link>
+                    {['RC Beam Designer', 'RC Column Designer', 'Slab Designer', 'Footing Designer'].map((name) => (
+                      <Link key={name} to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
+                        <span className="text-sm text-slate-700 dark:text-slate-200">{name}</span>
+                        <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </div>

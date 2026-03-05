@@ -7,7 +7,7 @@
  */
 
 import { FC, useState, useEffect } from 'react';
-import { Save, User, Briefcase, FileText, Hash, Calendar, Globe, Ruler, Shield, ChevronRight, ChevronLeft, Layers, Settings } from 'lucide-react';
+import { Save, User, Briefcase, FileText, Hash, Calendar, Ruler, Shield, ChevronRight, ChevronLeft, Layers, Settings } from 'lucide-react';
 import { useModelStore, type ProjectInfo } from '../store/model';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
@@ -56,6 +56,25 @@ const CONCRETE_GRADES: Record<string, string[]> = {
   AS: ['N20', 'N25', 'N32', 'N40', 'N50'],
 };
 
+// --- Default project info ---
+const DEFAULT_PROJECT_INFO: ProjectInfo = {
+    name: 'New Project',
+    client: '',
+    engineer: '',
+    jobNo: '',
+    rev: '0',
+    date: new Date(),
+    description: '',
+    designCode: 'IS',
+    steelCode: 'IS 800:2007',
+    concreteCode: 'IS 456:2000',
+    seismicCode: 'IS 1893:2016',
+    unitSystem: 'SI_kN_m',
+    primaryMaterial: 'Steel',
+    steelGrade: 'Fe250',
+    concreteGrade: 'M25',
+};
+
 interface ProjectDetailsDialogProps {
     isOpen: boolean;
     onClose: () => void;
@@ -79,23 +98,7 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
     const totalSteps = isNewProject ? 3 : 1; // Only show all steps for new projects
 
     // Local form state
-    const [formData, setFormData] = useState<ProjectInfo>({
-        name: '',
-        client: '',
-        engineer: '',
-        jobNo: '',
-        rev: '0',
-        date: new Date(),
-        description: '',
-        designCode: 'IS',
-        steelCode: 'IS 800:2007',
-        concreteCode: 'IS 456:2000',
-        seismicCode: 'IS 1893:2016',
-        unitSystem: 'SI_kN_m',
-        primaryMaterial: 'Steel',
-        steelGrade: 'Fe250',
-        concreteGrade: 'M25',
-    });
+    const [formData, setFormData] = useState<ProjectInfo>({ ...DEFAULT_PROJECT_INFO });
 
     // Validation
     const [errors, setErrors] = useState<{ name?: string; engineer?: string }>({});
@@ -106,23 +109,7 @@ export const ProjectDetailsDialog: FC<ProjectDetailsDialogProps> = ({
             queueMicrotask(() => {
                 setStep(0);
                 if (isNewProject) {
-                    setFormData({
-                        name: 'New Project',
-                        client: '',
-                        engineer: '',
-                        jobNo: '',
-                        rev: '0',
-                        date: new Date(),
-                        description: '',
-                        designCode: 'IS',
-                        steelCode: 'IS 800:2007',
-                        concreteCode: 'IS 456:2000',
-                        seismicCode: 'IS 1893:2016',
-                        unitSystem: 'SI_kN_m',
-                        primaryMaterial: 'Steel',
-                        steelGrade: 'Fe250',
-                        concreteGrade: 'M25',
-                    });
+                    setFormData({ ...DEFAULT_PROJECT_INFO, date: new Date() });
                 } else {
                     setFormData({
                         ...projectInfo,

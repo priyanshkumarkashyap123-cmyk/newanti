@@ -5,9 +5,9 @@
  * Updated to match Figma spec 03_LANDING_MARKETING
  */
 
-import { FC, useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { FC, useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion, Variants, useInView } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
 import {
@@ -24,7 +24,6 @@ import {
   Terminal,
   Users,
   Cloud,
-  Box,
   FileText,
   Building,
   Database,
@@ -37,18 +36,12 @@ import {
   Download,
   BarChart3,
   Compass,
-  Wrench,
-  Calculator,
-  Maximize2,
   Activity,
-  TrendingUp,
 } from "lucide-react";
 import { Logo } from "../components/branding";
 import { Button } from "../components/ui/button";
 import {
-  CompetitiveAdvantage,
   InteractiveDemo,
-  Testimonials,
   CTABanner,
   PerformanceMetrics,
 } from "../components/marketing/FeatureShowcase";
@@ -867,9 +860,6 @@ export const LandingPage: FC = () => {
 
         {/* Interactive Demo */}
         <InteractiveDemo />
-
-        {/* Testimonials */}
-        <Testimonials />
 
         {/* Performance Metrics */}
         <PerformanceMetrics />

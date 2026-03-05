@@ -42,7 +42,6 @@ import {
   Scissors,
   Trash2,
   Move,
-  Maximize2,
   Wind,
   Zap,
   Target,
@@ -810,26 +809,6 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 label="Construction"
                 onClick={() => openModal("civilEngineering")}
                 tooltip="Construction Mgmt — CPM/PERT, Gantt, Cost Estimation"
-              />
-            </ToolGroup>
-            <ToolGroup label="Design">
-              <ToolButton
-                icon={Building2}
-                label="Steel"
-                onClick={() => openModal("steelDesign")}
-                tooltip="Steel Design Studio"
-              />
-              <ToolButton
-                icon={Columns}
-                label="Concrete"
-                onClick={() => openModal("concreteDesign")}
-                tooltip="Concrete Design Studio"
-              />
-              <ToolButton
-                icon={Link2}
-                label="Connect"
-                onClick={() => openModal("connectionDesign")}
-                tooltip="Connection Design"
               />
             </ToolGroup>
             <ToolGroup label="Advanced AI">

@@ -29,9 +29,9 @@ export type Category =
 export type SidebarMode = "EXPANDED" | "COLLAPSED" | "HIDDEN";
 
 /**
- * Analysis results interface
+ * Analysis status interface (UI state, not full results — see modelTypes.AnalysisResults)
  */
-export interface AnalysisResults {
+export interface AnalysisStatus {
   completed: boolean;
   timestamp?: number;
   type?: string;
@@ -43,7 +43,6 @@ export interface AnalysisResults {
  */
 export interface ValidationResult {
   isValid: boolean;
-  valid?: boolean; // backwards compat
   errors?: string[];
   warnings?: string[];
   message?: string;
@@ -200,7 +199,7 @@ interface UIState {
   activeTool: string | null;
 
   // Analysis state (to track if analysis has been run)
-  analysisResults: AnalysisResults | null;
+  analysisResults: AnalysisStatus | null;
 
   // Validation state
   lastValidation: ValidationResult | null;
@@ -318,7 +317,7 @@ interface UIState {
   toggleSidebar: () => void;
 
   // Analysis actions
-  setAnalysisResults: (results: AnalysisResults | null) => void;
+  setAnalysisResults: (results: AnalysisStatus | null) => void;
   clearAnalysisResults: () => void;
 
   // Notification actions
@@ -366,7 +365,6 @@ interface UIState {
 const validateModelConnectivity = (): ValidationResult => {
   return {
     isValid: true,
-    valid: true,
     message: "Model validation passed",
     warnings: [],
   };
@@ -501,7 +499,7 @@ export const useUIStore = create<UIState>()(
           const validation = validateModelConnectivity();
           set({ lastValidation: validation });
 
-          if (!validation.valid) {
+          if (!validation.isValid) {
             set({
               notification: {
                 show: true,
@@ -593,7 +591,7 @@ export const useUIStore = create<UIState>()(
       // ========================================
       // ANALYSIS ACTIONS
       // ========================================
-      setAnalysisResults: (results: AnalysisResults | null) =>
+      setAnalysisResults: (results: AnalysisStatus | null) =>
         set({
           analysisResults: results,
         }),
