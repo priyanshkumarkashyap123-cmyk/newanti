@@ -197,6 +197,12 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/design/serviceability/deflection", post(handlers::design::deflection_check))
         .route("/api/design/serviceability/vibration", post(handlers::design::vibration_check))
         .route("/api/design/serviceability/crack-width", post(handlers::design::crack_width))
+        // Structural Optimization (FSD Engine)
+        .route("/api/optimization/fsd", post(handlers::optimization::fsd_optimize))
+        .route("/api/optimization/check-member", post(handlers::optimization::check_member_endpoint))
+        .route("/api/optimization/auto-select", post(handlers::optimization::auto_select_section))
+        .route("/api/optimization/quick", post(handlers::optimization::quick_optimize))
+        .route("/api/optimization/info", get(handlers::optimization::optimization_info))
         // Auth middleware applied to all protected routes
         .layer(axum::middleware::from_fn(middleware::auth_middleware));
 

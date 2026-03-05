@@ -744,7 +744,10 @@ impl SectionOptimizer {
         if !doubly_reinforced {
             // Singly reinforced
             let r = mu * 1e6 / (b * d * d);
-            let pt = (fck / (2.0 * fy)) * (1.0 - (1.0 - 4.6 * r / fck).sqrt());
+            
+            // Calculate pt using quadratic formula with discriminant guard
+            let discriminant = (1.0 - 4.6 * r / fck).max(0.0);
+            let pt = (fck / (2.0 * fy)) * (1.0 - discriminant.sqrt());
             let ast = pt * b * d / 100.0;
             
             // Select rebar
@@ -768,7 +771,10 @@ impl SectionOptimizer {
             let ast_lim = 0.36 * fck * b * xu_max / (0.87 * fy);
             let ast2 = mu2 * 1e6 / (0.87 * fy * (d - d_prime));
             let ast_total = ast_lim + ast2;
-            let asc = ast2 * 0.87 * fy / (0.87 * fy - 0.446 * fck);
+            
+            // Compression steel calculation with denominator guard
+            let denom = (0.87 * fy - 0.446 * fck).max(1.0);  // Guard against zero/negative
+            let asc = ast2 * 0.87 * fy / denom;
             
             let (n_tens, dia_tens) = self.select_rebar(ast_total);
             let (n_comp, dia_comp) = self.select_rebar(asc);

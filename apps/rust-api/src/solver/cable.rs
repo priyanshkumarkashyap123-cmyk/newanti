@@ -133,47 +133,71 @@ impl CableElement {
     /// Calculate catenary sag under self-weight
     /// Returns (sag, horizontal_tension, cable_length)
     pub fn calculate_catenary_sag(&self, horizontal_span: f64) -> (f64, f64, f64) {
-        let w = self.material.unit_weight; // N/m
-        let L = horizontal_span; // m
-        
-        // For small sag (parabolic approximation):
-        // sag = w*L²/(8*H) where H is horizontal tension
-        // For more accurate catenary:
-        // Use iterative solution
-        
-        // Initial guess: assume sag = L/50 (2% of span)
-        let mut sag = L / 50.0;
-        let max_iterations = 20;
-        
-        for _ in 0..max_iterations {
-            // Cable length approximation: s = L + 8*sag²/(3*L)
-            let cable_length = L + 8.0 * sag * sag / (3.0 * L);
-            
-            // Horizontal tension from equilibrium
-            let h_tension = w * L * L / (8.0 * sag);
-            
-            // Check if cable can support this tension
-            if h_tension * cable_length / self.unstressed_length > self.material.tensile_strength {
-                // Tension too high, reduce sag
-                sag *= 0.9;
-                continue;
-            }
-            
-            // Refined sag from catenary equation
-            let lambda = w * L / (2.0 * h_tension);
-            let sag_new = h_tension / w * ((lambda).cosh() - 1.0);
-            
-            // Convergence check
-            if (sag_new - sag).abs() / sag < 1e-6 {
-                return (sag_new, h_tension, cable_length);
-            }
-            
-            sag = sag_new;
+        let w = self.material.unit_weight.max(0.0); // N/m
+        let l = horizontal_span.max(0.0); // m
+
+        if l <= 1e-9 || w <= 1e-12 {
+            return (0.0, 0.0, l);
         }
-        
-        // Return last iteration
-        let cable_length = L + 8.0 * sag * sag / (3.0 * L);
-        let h_tension = w * L * L / (8.0 * sag);
+
+        // Target suspended cable length.
+        // Prefer current geometric length, then unstressed, ensuring S > L.
+        let mut s_target = self.current_length.max(self.unstressed_length);
+        if s_target <= l * (1.0 + 1e-8) {
+            s_target = l * (1.0 + 1e-4);
+        }
+
+        // Exact catenary relation:
+        // S = 2 a sinh(L / 2a),  H = w a,  f = a(cosh(L/2a)-1)
+        // Solve for 'a' using Newton-Raphson.
+        let delta = (s_target - l).max(1e-10 * l);
+        let f0 = ((3.0 * l * delta) / 8.0).sqrt().max(1e-8 * l); // parabolic initial sag
+        let mut a = (l * l / (8.0 * f0)).max(1e-9 * l);
+
+        for _ in 0..60 {
+            let x = l / (2.0 * a);
+            let sinhx = x.sinh();
+            let coshx = x.cosh();
+            let f_val = 2.0 * a * sinhx - s_target;
+
+            if f_val.abs() <= 1e-11 * s_target {
+                break;
+            }
+
+            // d/da [2a sinh(L/2a)] = 2[sinh(x) - x cosh(x)]
+            let df_da = 2.0 * (sinhx - x * coshx);
+            if df_da.abs() < 1e-16 {
+                break;
+            }
+
+            let a_new = (a - f_val / df_da).max(1e-9 * l);
+            if ((a_new - a) / a).abs() < 1e-11 {
+                a = a_new;
+                break;
+            }
+            a = a_new;
+        }
+
+        let x = l / (2.0 * a);
+        let mut cable_length = (2.0 * a * x.sinh()).max(l);
+        let mut sag = (a * (x.cosh() - 1.0)).max(0.0);
+        let mut h_tension = (w * a).max(0.0);
+
+        // Strength guard using maximum cable tension at support:
+        // T_max = sqrt(H^2 + (wL/2)^2),  sigma = T_max / A
+        let v_half = w * l / 2.0;
+        let t_max = (h_tension * h_tension + v_half * v_half).sqrt();
+        let sigma = t_max / self.material.area.max(1e-12);
+        if sigma > self.material.tensile_strength {
+            // Cap by allowable support tension; use conservative parabolic back-calc for sag.
+            let t_allow = 0.95 * self.material.tensile_strength * self.material.area;
+            if t_allow > v_half {
+                h_tension = (t_allow * t_allow - v_half * v_half).sqrt();
+                sag = (w * l * l / (8.0 * h_tension.max(1e-12))).max(sag);
+                cable_length = (l + 8.0 * sag * sag / (3.0 * l)).max(l);
+            }
+        }
+
         (sag, h_tension, cable_length)
     }
     

@@ -52,10 +52,10 @@ export default function VisualizationHubPage() {
         const xVals = dd.x_values;
         let yVals: number[];
         switch (diagramType) {
-          case 'bmd': yVals = dd.moment_z || dd.moment_y; break;
-          case 'sfd': yVals = dd.shear_y; break;
-          case 'deflection': yVals = dd.deflection_y; break;
-          case 'axial': yVals = dd.axial; break;
+          case 'bmd': yVals = dd.moment_z || dd.moment_y || []; break;
+          case 'sfd': yVals = dd.shear_y || []; break;
+          case 'deflection': yVals = dd.deflection_y || []; break;
+          case 'axial': yVals = dd.axial || []; break;
         }
         return xVals.map((x, i) => ({ x, y: 0, value: yVals[i] || 0 }));
       }
@@ -164,7 +164,8 @@ export default function VisualizationHubPage() {
     ctx.fill();
     
     // Draw diagram
-    const maxAbsValue = Math.max(...diagramData.map(p => Math.abs(p.value)));
+    const maxAbsValue = Math.max(1e-9, ...diagramData.map(p => Math.abs(p.value)));
+    const safeSpan = Math.max(1e-9, actualSpan);
     const scaleFactor = ((height / 2 - padding) * 0.8) / maxAbsValue * scale;
     
     const colors: Record<DiagramType, string> = {
@@ -185,13 +186,13 @@ export default function VisualizationHubPage() {
     ctx.moveTo(padding, height / 2);
     for (let i = 0; i < visiblePoints; i++) {
       const point = diagramData[i];
-      const x = padding + (point.x / actualSpan) * (width - 2 * padding);
+      const x = padding + (point.x / safeSpan) * (width - 2 * padding);
       const y = height / 2 - point.value * scaleFactor;
       ctx.lineTo(x, y);
     }
     if (visiblePoints > 0) {
       const lastPoint = diagramData[visiblePoints - 1];
-      const lastX = padding + (lastPoint.x / actualSpan) * (width - 2 * padding);
+      const lastX = padding + (lastPoint.x / safeSpan) * (width - 2 * padding);
       ctx.lineTo(lastX, height / 2);
     }
     ctx.closePath();
@@ -201,7 +202,7 @@ export default function VisualizationHubPage() {
     ctx.beginPath();
     for (let i = 0; i < visiblePoints; i++) {
       const point = diagramData[i];
-      const x = padding + (point.x / actualSpan) * (width - 2 * padding);
+      const x = padding + (point.x / safeSpan) * (width - 2 * padding);
       const y = height / 2 - point.value * scaleFactor;
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);

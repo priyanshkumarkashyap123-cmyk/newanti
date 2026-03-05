@@ -11,7 +11,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-const GAMMA_M0: f64 = 1.10;  // Yielding / instability
+pub const GAMMA_M0: f64 = 1.10;  // Yielding / instability (public export)
 const GAMMA_M1: f64 = 1.25;  // Ultimate stress / fracture
 const GAMMA_MB: f64 = 1.25;  // Bolts (bearing type)
 const GAMMA_MW: f64 = 1.25;  // Welds — shop
@@ -344,13 +344,25 @@ pub fn auto_select_section(
 
         // Compression check (if axial load present)
         let comp_util = if pu_kn > 0.0 {
-            let lambda_xx = lx_mm / section.rxx;
-            let lambda_yy = ly_mm / section.ryy;
+            let lambda_xx = lx_mm / section.rxx.max(1.0);
+            let lambda_yy = ly_mm / section.ryy.max(1.0);
             let lambda = lambda_xx.max(lambda_yy);
             let lambda_e = (lambda / std::f64::consts::PI) * (fy / 200_000.0).sqrt();
-            let alpha = 0.34; // Buckling curve b
+            let alpha = 0.34; // Buckling curve b (for I-sections per Table 7)
             let phi = 0.5 * (1.0 + alpha * (lambda_e - 0.2) + lambda_e.powi(2));
-            let chi = (phi + (phi * phi - lambda_e * lambda_e).max(0.0).sqrt()).recip().min(1.0);
+            // χ = 1/[φ + √(φ² - λ̄²)] but ensure φ² ≥ λ̄² and result ≤ 1.0
+            let discriminant = (phi * phi - lambda_e * lambda_e).max(0.0);
+            let chi = if discriminant > 1e-12 {
+                let denominator = phi + discriminant.sqrt();
+                if denominator > 1e-12 {
+                    (1.0 / denominator).min(1.0)
+                } else {
+                    1.0
+                }
+            } else {
+                // When φ² ≈ λ̄², χ = 1/(2φ)
+                (1.0 / (2.0 * phi.max(0.5))).min(1.0)
+            };
             let fcd = chi * fy / GAMMA_M0;
             let pd = section.area * fcd / 1000.0;
             pu_kn / pd

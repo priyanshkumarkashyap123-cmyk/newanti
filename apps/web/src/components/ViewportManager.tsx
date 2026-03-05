@@ -438,20 +438,14 @@ export const ViewportManager: FC = () => {
     return <WebglChecking />;
   }
 
+  if (webglStatus === "unsupported") {
+    return <WebglFallback error={webglError || undefined} />;
+  }
+
   return (
     <div
       className="w-full h-full relative touch-none"
     >
-      {webglStatus === "unsupported" && (
-        <div className="absolute top-2 left-2 z-50 max-w-[420px] bg-[rgba(239,68,68,0.18)] border border-[rgba(239,68,68,0.45)] rounded-lg px-3 py-2 text-[11px] text-[#fee2e2] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
-          <div className="font-semibold mb-0.5">WebGL pre-check reported a problem</div>
-          <div className="text-[#fecaca]">
-            Attempting to render the viewport anyway. If rendering fails, use browser hardware acceleration and refresh.
-          </div>
-          {webglError && <div className="mt-1 text-[#fca5a5]">{webglError}</div>}
-        </div>
-      )}
-
       {/* Compact Controls Cluster - Top Right */}
       <div
         className="absolute top-2.5 right-2.5 z-50 flex flex-col gap-1.5 items-end"

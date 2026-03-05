@@ -245,11 +245,56 @@ impl PDeltaSolver {
         
         // Compute final metrics
         let max_displacement = u.abs().max();
-        let amplification_factor = max_displacement / max_displacement_first_order;
+        let amplification_factor = if max_displacement_first_order > 1e-12 {
+            max_displacement / max_displacement_first_order
+        } else {
+            1.0
+        };
         
-        // Stability index: θ = P*Δ / (V*h)
-        // Simplified: ratio of second-order to first-order displacement
-        let stability_index = (amplification_factor - 1.0).max(0.0);
+        // Stability index: θ = ΣP*Δ / ΣV*h
+        // where P = axial force, Δ = story drift, V = story shear, h = story height
+        let axial_forces_vec = self.compute_axial_forces(&u, member_geometry);
+        
+        let mut sum_p_delta = 0.0;
+        let mut sum_v_h = 0.0;
+        
+        for (member, &p) in member_geometry.iter().zip(axial_forces_vec.iter()) {
+            let h = member.length();
+            if h > 1e-12 {
+                // Member drift contribution
+                let i_dof = member.node_i_dof;
+                let j_dof = member.node_j_dof;
+                
+                // Drift in direction perpendicular to member
+                let delta_perp = if j_dof + 2 < n && i_dof + 2 < n {
+                    let du_x = u[j_dof] - u[i_dof];
+                    let du_y = u[j_dof + 1] - u[i_dof + 1];
+                    (du_x * du_x + du_y * du_y).sqrt()
+                } else {
+                    0.0
+                };
+                
+                sum_p_delta += p.abs() * delta_perp;
+                
+                // Approximate story shear from horizontal reactions
+                // V ≈ (forces in horizontal DOFs) / h
+                let v_approx = if i_dof + 1 < forces.len() {
+                    (forces[i_dof].powi(2) + forces[i_dof + 1].powi(2)).sqrt()
+                } else {
+                    1.0e-12 // Prevent division by zero
+                };
+                
+                sum_v_h += v_approx.max(1.0e-12) * h;
+            }
+        }
+        
+        // Stability index with guard for denominator
+        let stability_index = if sum_v_h > 1e-12 {
+            (sum_p_delta / sum_v_h).clamp(0.0, 1.0)
+        } else {
+            // Fallback: simplified ratio
+            (amplification_factor - 1.0).max(0.0).min(1.0)
+        };
         
         let analysis_time_ms = start_time.elapsed().as_secs_f64() * 1000.0;
         

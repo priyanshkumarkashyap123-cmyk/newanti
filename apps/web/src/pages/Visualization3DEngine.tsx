@@ -581,8 +581,9 @@ const Visualization3DEngine: React.FC = () => {
             style={{ position: "absolute", inset: 0 }}
             onCreated={({ gl }) => {
               // Store the renderer so we can use it for screenshots
-              (canvasRef.current as any)?.__gl &&
-                ((canvasRef.current as any).__gl = gl);
+              if (canvasRef.current) {
+                (canvasRef.current as any).__gl = gl;
+              }
             }}
           >
             {/* Camera based on selected view mode */}

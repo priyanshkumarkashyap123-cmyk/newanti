@@ -225,13 +225,20 @@ pub fn combine_srss(modal_responses: &[f64]) -> f64 {
 /// ρij = 8ξ²(1+β)β^1.5 / ((1−β²)² + 4ξ²β(1+β)²)
 pub fn combine_cqc(modal_responses: &[f64], frequencies: &[f64], damping: f64) -> f64 {
     let n = modal_responses.len().min(frequencies.len());
-    let xi = damping;
+    let xi = damping.abs().clamp(0.0, 0.30);
     let mut result = 0.0;
 
     for i in 0..n {
+        if frequencies[i] <= 0.0 {
+            continue;
+        }
         for j in 0..n {
+            if frequencies[j] <= 0.0 {
+                continue;
+            }
+
             let beta = if frequencies[i].abs() > 1e-10 {
-                frequencies[j] / frequencies[i]
+                (frequencies[j] / frequencies[i]).abs()
             } else {
                 1.0
             };
@@ -241,7 +248,11 @@ pub fn combine_cqc(modal_responses: &[f64], frequencies: &[f64], damping: f64) -
             } else {
                 let num = 8.0 * xi * xi * (1.0 + beta) * beta.powf(1.5);
                 let den = (1.0 - beta * beta).powi(2) + 4.0 * xi * xi * beta * (1.0 + beta).powi(2);
-                if den.abs() > 1e-20 { num / den } else { 0.0 }
+                if den.abs() > 1e-20 {
+                    (num / den).clamp(0.0, 1.0)
+                } else {
+                    0.0
+                }
             };
 
             result += rho * modal_responses[i] * modal_responses[j];

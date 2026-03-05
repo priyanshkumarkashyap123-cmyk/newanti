@@ -9,3 +9,4 @@ pub mod sections;
 pub mod metrics;
 pub mod openapi;
 pub mod templates;
+pub mod optimization;
