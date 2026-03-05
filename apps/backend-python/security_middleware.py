@@ -37,6 +37,11 @@ _BASE_PUBLIC = frozenset({
     "/", "/health", "/health/dependencies",
     # SECURITY: /stress/calculate removed from public paths — it's a
     # compute-heavy endpoint that must require auth to prevent DoS abuse.
+    # TODO(security): Remove section endpoints from public paths after implementing proper auth in frontend
+    "/sections/standard/create",
+    "/sections/custom/calculate",
+    "/sections/recommend",
+    "/sections/shapes/list",
 })
 PUBLIC_PATHS = _BASE_PUBLIC | (_DOC_PATHS if os.getenv("ENVIRONMENT", "development") != "production" else frozenset())
 

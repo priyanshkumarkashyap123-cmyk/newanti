@@ -61,10 +61,14 @@ export function csrfValidationMiddleware(
   }
 
   // Skip health endpoints and webhook callbacks (they carry their own HMAC signatures)
+  // Also skip initial authentication endpoints that run before CSRF token is established
   if (
     req.path === "/health" ||
     req.path.includes("/webhook") ||
-    req.path.includes("/phonepe")
+    req.path.includes("/phonepe") ||
+    req.path === "/api/user/login" ||
+    req.path === "/api/session/register" ||
+    req.path === "/api/analytics/batch"
   ) {
     return next();
   }

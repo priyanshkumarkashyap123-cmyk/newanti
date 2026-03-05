@@ -144,7 +144,7 @@ export function useTierAccess(): TierAccess {
                         }
 
                         const API_URL = import.meta.env.VITE_API_URL || 'https://api.beamlab.app';
-                        const response = await fetch(`${API_URL}/api/user/tier`, {
+                        const response = await fetch(`${API_URL}/api/user/limits`, {
                             headers,
                             credentials: 'include',
                             signal: controller.signal,

@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '../providers/AuthProvider';
 import { API_CONFIG } from '../config/env';
 import { getDeviceId, getDeviceName } from './useDeviceId';
+import { addCsrfHeader } from '../lib/security';
 
 const API_URL = API_CONFIG.baseUrl;
 
@@ -46,6 +47,9 @@ export function useUserRegistration() {
                     'X-Device-Id': deviceId
                 };
 
+                // Add CSRF token for backend validation
+                addCsrfHeader(headers);
+
                 // 1. Register user in MongoDB
                 const response = await fetch(`${API_URL}/api/user/login`, {
                     method: 'POST',
@@ -63,16 +67,18 @@ export function useUserRegistration() {
                     setIsRegistered(true);
 
                     // 2. Register device session (fire-and-forget)
+                    const sessionHeaders = { ...headers };
+                    addCsrfHeader(sessionHeaders);
                     fetch(`${API_URL}/api/session/register`, {
                         method: 'POST',
-                        headers,
+                        headers: sessionHeaders,
                         body: JSON.stringify({ deviceId, deviceName }),
                         signal: controller.signal
                     }).catch(() => {
                         // Non-critical — don't block user
                     });
                 } else {
-                    console.error('[useUserRegistration] Registration failed:', response.status);
+                    console.error('❌ ❌ [useUserRegistration] Registration failed:', response.status);
                 }
             } catch (error) {
                 if ((error as Error).name !== 'AbortError') {
