@@ -24,6 +24,7 @@ import {
     Layout
 } from 'lucide-react';
 import { useAuth } from '../providers/AuthProvider';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -119,7 +120,7 @@ export const UserDashboard: FC = () => {
 
             try {
                 const token = await getToken();
-                const response = await fetch('/api/user/profile', {
+                const response = await fetch(`${API_CONFIG.baseUrl}/api/user/profile`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

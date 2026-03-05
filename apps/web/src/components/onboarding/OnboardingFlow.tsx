@@ -66,7 +66,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
   const steps: OnboardingStep[] = useMemo(() => [
     {
       id: 'welcome',
-      title: 'Welcome to BeamLab',
+      title: 'Welcome to BeamLab Ultimate',
       subtitle: 'The most advanced structural analysis platform on the web',
       content: <WelcomeStep />
     },
@@ -128,16 +128,6 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
     onSkip?.();
   };
 
-  // Step validation — require selection before continuing
-  const isStepValid = (): boolean => {
-    const stepId = steps[currentStep]?.id;
-    if (stepId === 'role') return preferences.role !== null;
-    if (stepId === 'experience') return preferences.experience !== null;
-    if (stepId === 'use-cases') return preferences.primaryUse.length > 0;
-    // welcome, codes, ready are always valid
-    return true;
-  };
-
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   // Escape key to skip onboarding
@@ -158,9 +148,9 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
       </div>
 
       {/* Skip Button */}
-      <button type="button"
+      <button
         onClick={handleSkip}
-        className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm"
+        className="absolute top-6 right-6 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm"
       >
         Skip for now <X className="w-4 h-4" />
       </button>
@@ -203,7 +193,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white mb-3">
               {steps[currentStep].title}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-lg mb-10">
@@ -218,26 +208,21 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
 
         {/* Navigation */}
         <div className="flex justify-between items-center mt-12">
-          <button type="button"
+          <button
             onClick={handleBack}
             disabled={currentStep === 0}
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all ${
               currentStep === 0
                 ? 'text-slate-500 cursor-not-allowed'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-300 hover:text-zinc-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
 
-          <button type="button"
+          <button
             onClick={handleNext}
-            disabled={!isStepValid()}
-            className={`flex items-center gap-2 px-8 py-3 rounded-full font-bold transition-all shadow-lg shadow-blue-500/25 ${
-              isStepValid()
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90'
-                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
-            }`}
+            className="flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:opacity-90 transition-all shadow-lg shadow-blue-500/25"
           >
             {currentStep === steps.length - 1 ? (
               <>Launch App <Sparkles className="w-4 h-4" /></>
@@ -255,14 +240,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
 // STEP COMPONENTS
 // ============================================
 
-const WelcomeStep: FC = () => {
-  const colorClasses: Record<string, string> = {
-    blue: 'bg-blue-500/20 text-blue-400',
-    purple: 'bg-purple-500/20 text-purple-400',
-    cyan: 'bg-cyan-500/20 text-cyan-400',
-  };
-
-  return (
+const WelcomeStep: FC = () => (
   <div className="space-y-8">
     <div className="flex justify-center gap-6">
       {[
@@ -277,7 +255,7 @@ const WelcomeStep: FC = () => {
           transition={{ delay: i * 0.1 }}
           className={`flex flex-col items-center gap-3 p-6 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800`}
         >
-          <div className={`p-4 rounded-xl ${colorClasses[item.color] || 'bg-blue-500/20 text-blue-400'}`}>
+          <div className={`p-4 rounded-xl bg-${item.color}-500/20 text-${item.color}-400`}>
             {item.icon}
           </div>
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">{item.label}</span>
@@ -290,15 +268,13 @@ const WelcomeStep: FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        onClick={() => window.open('https://www.youtube.com/results?search_query=structural+analysis+tutorial', '_blank')}
         className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
       >
         <Play className="w-4 h-4" /> Watch 2-min intro
       </motion.button>
     </div>
   </div>
-  );
-};
+);
 
 const RoleStep: FC<{
   preferences: UserPreferences;
@@ -330,7 +306,7 @@ const RoleStep: FC<{
             {role.icon}
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-slate-900 dark:text-white">{role.label}</p>
+            <p className="font-semibold text-zinc-900 dark:text-white">{role.label}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">{role.desc}</p>
           </div>
           {preferences.role === role.id && (
@@ -367,7 +343,7 @@ const ExperienceStep: FC<{
           }`}
         >
           <div className="flex justify-between items-start mb-2">
-            <p className="font-semibold text-slate-900 dark:text-white">{level.label}</p>
+            <p className="font-semibold text-zinc-900 dark:text-white">{level.label}</p>
             {preferences.experience === level.id && (
               <CheckCircle2 className="w-5 h-5 text-blue-500" />
             )}
@@ -456,7 +432,7 @@ const DesignCodesStep: FC<{
           }`}
         >
           <div className="flex justify-between items-start">
-            <p className="font-semibold text-slate-900 dark:text-white text-sm">{code.label}</p>
+            <p className="font-semibold text-zinc-900 dark:text-white text-sm">{code.label}</p>
             {preferences.designCodes.includes(code.id) && (
               <CheckCircle2 className="w-4 h-4 text-blue-500" />
             )}

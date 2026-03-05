@@ -44,7 +44,7 @@ export const LinkExpiredPage = () => {
 
                     {/* Actions */}
                     <div className="flex flex-col gap-3">
-                        <Link to="/sign-up">
+                        <Link to="/verify-email">
                             <Button variant="premium" className="w-full">
                                 Resend Verification Email
                             </Button>

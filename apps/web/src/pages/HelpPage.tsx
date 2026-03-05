@@ -174,6 +174,14 @@ export const HelpPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [openFAQ, setOpenFAQ] = useState<string | null>('1');
 
+    const query = searchQuery.toLowerCase();
+    const filteredTutorials = tutorials.filter(t =>
+        !query || t.title.toLowerCase().includes(query) || t.description.toLowerCase().includes(query) || t.level.toLowerCase().includes(query)
+    );
+    const filteredFaqs = faqs.filter(f =>
+        !query || f.question.toLowerCase().includes(query) || f.answer.toLowerCase().includes(query)
+    );
+
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
             {/* Header - Dark Theme */}
@@ -253,9 +261,11 @@ export const HelpPage = () => {
                             </Button>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {tutorials.map((tutorial, index) => (
+                            {filteredTutorials.length > 0 ? filteredTutorials.map((tutorial, index) => (
                                 <VideoCard key={tutorial.id} tutorial={tutorial} index={index} />
-                            ))}
+                            )) : (
+                                <p className="col-span-full text-center text-slate-500 dark:text-slate-400 py-8">No tutorials match your search.</p>
+                            )}
                         </div>
                     </section>
 
@@ -269,7 +279,7 @@ export const HelpPage = () => {
                                 Can't find the answer you're looking for? Browse our full documentation or reach out to support.
                             </p>
                             <a
-                                href="#"
+                                href="/docs"
                                 className="inline-flex items-center text-blue-400 font-bold text-sm hover:text-blue-300 transition-colors"
                             >
                                 Go to Documentation Center
@@ -277,14 +287,16 @@ export const HelpPage = () => {
                             </a>
                         </div>
                         <div className="md:col-span-2 flex flex-col gap-4">
-                            {faqs.map((faq) => (
+                            {filteredFaqs.length > 0 ? filteredFaqs.map((faq) => (
                                 <FAQItem
                                     key={faq.id}
                                     faq={faq}
                                     isOpen={openFAQ === faq.id}
                                     onToggle={() => setOpenFAQ(openFAQ === faq.id ? null : faq.id)}
                                 />
-                            ))}
+                            )) : (
+                                <p className="text-center text-slate-500 dark:text-slate-400 py-8">No FAQs match your search.</p>
+                            )}
                         </div>
                     </section>
 
@@ -307,7 +319,7 @@ export const HelpPage = () => {
                                         <MessageCircle className="w-5 h-5" />
                                         Chat with Support
                                     </Button>
-                                    <Button variant="outline" className="py-3 px-6 w-full sm:w-auto hover:bg-slate-300 dark:hover:bg-slate-600">
+                                    <Button variant="outline" className="py-3 px-6 w-full sm:w-auto hover:bg-slate-300 dark:hover:bg-slate-600" onClick={() => window.location.href = 'mailto:support@beamlab.app'}>
                                         <Mail className="w-5 h-5" />
                                         Email Us
                                     </Button>
@@ -325,7 +337,7 @@ export const HelpPage = () => {
                     <div className="flex gap-6">
                         <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>
-                        <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Status</a>
+                        <Link to="/help" className="hover:text-slate-900 dark:hover:text-white transition-colors">Status</Link>
                     </div>
                 </div>
             </footer>

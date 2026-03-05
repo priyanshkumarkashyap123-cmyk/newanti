@@ -4,15 +4,24 @@
  * Uses Clerk for authentication with Premium Navy Theme
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ClerkLoaded, ClerkLoading, SignIn } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { CheckCircle, Star, Building2 } from 'lucide-react';
-import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
 
 export const SignInPage = () => {
     useEffect(() => { document.title = 'Sign In | BeamLab'; }, []);
+
+    // Reactive dark mode detection for Clerk variables
+    const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 flex font-sans selection:bg-blue-500/30">
@@ -143,8 +152,8 @@ export const SignInPage = () => {
                                     },
                                     variables: {
                                         colorPrimary: '#3b82f6',
-                                        colorText: '#f8fafc',
-                                        colorBackground: '#0f172a',
+                                        colorText: isDark ? '#f8fafc' : '#0f172a',
+                                        colorBackground: isDark ? '#0f172a' : '#f8fafc',
                                         fontFamily: 'Inter, sans-serif',
                                         borderRadius: '0.5rem'
                                     }

@@ -4,15 +4,24 @@
  * Uses Clerk for authentication with Premium Navy Theme
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ClerkLoaded, ClerkLoading, SignUp } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { Rocket, Shield, Zap } from 'lucide-react';
-import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
 
 export const SignUpPage = () => {
     useEffect(() => { document.title = 'Sign Up | BeamLab'; }, []);
+
+    // Reactive dark mode detection for Clerk variables
+    const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 flex font-sans selection:bg-blue-500/30">
@@ -84,7 +93,7 @@ export const SignUpPage = () => {
             </div>
 
             {/* Right Side - Sign Up Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950 overflow-y-auto">
+            <main className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950 overflow-y-auto">
                 <div className="w-full max-w-[400px] space-y-8 my-auto">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center justify-center mb-8">
@@ -143,8 +152,8 @@ export const SignUpPage = () => {
                                     },
                                     variables: {
                                         colorPrimary: '#3b82f6',
-                                        colorText: '#f8fafc',
-                                        colorBackground: '#0f172a',
+                                        colorText: isDark ? '#f8fafc' : '#0f172a',
+                                        colorBackground: isDark ? '#0f172a' : '#f8fafc',
                                         fontFamily: 'Inter, sans-serif',
                                         borderRadius: '0.5rem'
                                     }
@@ -164,7 +173,7 @@ export const SignUpPage = () => {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

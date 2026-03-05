@@ -16,10 +16,6 @@ import {
   Box,
   Axis3D,
   Camera,
-  Eye,
-  Layers,
-  Type,
-  Hash,
 } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 
@@ -29,29 +25,26 @@ import { useUIStore } from '../../store/uiStore';
 
 const VIEWS = [
   { id: 'front', label: 'Front (XY)', short: 'F' },
-  { id: 'back', label: 'Back', short: 'Bk' },
+  { id: 'back', label: 'Back', short: 'B' },
   { id: 'left', label: 'Left (YZ)', short: 'L' },
   { id: 'right', label: 'Right', short: 'R' },
-  { id: 'top', label: 'Top Plan (XZ)', short: 'T' },
-  { id: 'bottom', label: 'Bottom', short: 'Bo' },
+  { id: 'top', label: 'Top (XZ)', short: 'T' },
   { id: 'iso', label: '3D Perspective', short: '3D' },
-  { id: 'iso-sw', label: 'SW Isometric', short: 'SW' },
-  { id: 'iso-se', label: 'SE Isometric', short: 'SE' },
 ] as const;
 
 const ViewCube: FC<{ activeView: string; onViewChange: (view: string) => void }> = memo(({ activeView, onViewChange }) => (
-  <div className="flex flex-col gap-0.5 w-20">
+  <div className="flex flex-col gap-0.5">
     <div className="text-[7px] text-slate-500 uppercase tracking-widest font-bold text-center mb-0.5">
       View
     </div>
-    <div className="grid grid-cols-3 gap-px">
+    <div className="grid grid-cols-3 gap-0.5">
       {VIEWS.map((v) => (
-        <button type="button"
+        <button
           key={v.id}
           onClick={() => onViewChange(v.id)}
           title={v.label}
           className={`
-            w-[26px] h-[26px] rounded text-[9px] font-bold
+            w-7 h-7 rounded text-[9px] font-bold
             border transition-all duration-100 active:scale-95
             flex items-center justify-center
             ${activeView === v.id
@@ -80,11 +73,11 @@ interface CompactBtnProps {
 }
 
 const CompactBtn: FC<CompactBtnProps> = memo(({ icon: Icon, label, onClick, isActive = false }) => (
-  <button type="button"
+  <button
     onClick={onClick}
     title={label}
     className={`
-      w-8 h-8 rounded-md flex items-center justify-center
+      w-7 h-7 rounded flex items-center justify-center
       border border-transparent transition-all duration-100
       active:scale-95
       ${isActive
@@ -112,10 +105,6 @@ export const ViewControlsOverlay: FC = memo(() => {
   // Local state for features not in global store
   const [showAxes, setShowAxes] = useState(true);
   const [activeView, setActiveView] = useState('iso');
-  const [isPerspective, setIsPerspective] = useState(true);
-  const [showNodeLabels, setShowNodeLabels] = useState(false);
-  const [showMemberLabels, setShowMemberLabels] = useState(false);
-  const [show2DMode, setShow2DMode] = useState(false);
 
   // --- Camera operations via CustomEvents (handled by CameraFitController) ---
 
@@ -153,37 +142,6 @@ export const ViewControlsOverlay: FC = memo(() => {
     setRenderMode3D(!renderMode3D);
   }, [renderMode3D, setRenderMode3D]);
 
-  const handleToggle2DMode = useCallback(() => {
-    const next = !show2DMode;
-    setShow2DMode(next);
-    if (next) {
-      setActiveView('front');
-      document.dispatchEvent(new CustomEvent('change-view', { detail: { view: 'front' } }));
-    } else {
-      setActiveView('iso');
-      document.dispatchEvent(new CustomEvent('change-view', { detail: { view: 'iso' } }));
-    }
-    document.dispatchEvent(new CustomEvent('toggle-2d-mode', { detail: { is2D: next } }));
-  }, [show2DMode]);
-
-  const handleToggleNodeLabels = useCallback(() => {
-    const next = !showNodeLabels;
-    setShowNodeLabels(next);
-    document.dispatchEvent(new CustomEvent('toggle-node-labels', { detail: { show: next } }));
-  }, [showNodeLabels]);
-
-  const handleToggleMemberLabels = useCallback(() => {
-    const next = !showMemberLabels;
-    setShowMemberLabels(next);
-    document.dispatchEvent(new CustomEvent('toggle-member-labels', { detail: { show: next } }));
-  }, [showMemberLabels]);
-
-  const handleTogglePerspective = useCallback(() => {
-    const next = !isPerspective;
-    setIsPerspective(next);
-    document.dispatchEvent(new CustomEvent('toggle-perspective', { detail: { perspective: next } }));
-  }, [isPerspective]);
-
   const handleScreenshot = useCallback(() => {
     const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
     if (!canvas) return;
@@ -215,13 +173,9 @@ export const ViewControlsOverlay: FC = memo(() => {
 
       {/* Display Toggles */}
       <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
-        <CompactBtn icon={Layers} label={show2DMode ? 'Switch to 3D' : 'Switch to 2D'} onClick={handleToggle2DMode} isActive={show2DMode} />
         <CompactBtn icon={Grid3X3} label="Toggle Grid (G)" onClick={toggleGrid} isActive={showGrid} />
         <CompactBtn icon={Axis3D} label="Toggle Axes" onClick={handleToggleAxes} isActive={showAxes} />
-        <CompactBtn icon={Eye} label={isPerspective ? 'Orthographic' : 'Perspective'} onClick={handleTogglePerspective} isActive={!isPerspective} />
         <CompactBtn icon={Box} label="3D Render Mode" onClick={handleToggle3D} isActive={renderMode3D} />
-        <CompactBtn icon={Hash} label="Node Labels" onClick={handleToggleNodeLabels} isActive={showNodeLabels} />
-        <CompactBtn icon={Type} label="Member Labels" onClick={handleToggleMemberLabels} isActive={showMemberLabels} />
         <CompactBtn icon={Camera} label="Screenshot (PNG)" onClick={handleScreenshot} />
       </div>
     </div>

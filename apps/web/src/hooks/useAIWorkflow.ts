@@ -12,6 +12,7 @@
 
 import { useState, useCallback } from 'react';
 import { useModelStore } from '../store/model';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -113,9 +114,13 @@ export function useAIWorkflow() {
         const startTime = Date.now();
 
         try {
-            const response = await fetch('/api/ai/generate', {
+            const token = typeof window !== 'undefined' ? window.localStorage?.getItem('auth_token') : null;
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/ai/generate`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ prompt })
             });
 
@@ -349,7 +354,7 @@ export function useAIWorkflow() {
 
         try {
             // Trigger solver worker (simplified - would use useStructuralSolver hook in real implementation)
-            const response = await fetch('/api/analysis/solve', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/analysis/solve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

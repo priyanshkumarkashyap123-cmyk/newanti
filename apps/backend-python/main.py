@@ -206,11 +206,11 @@ logger.info(
 # Request logging middleware (added BEFORE CORS so it wraps everything)
 app.add_middleware(RequestLoggingMiddleware)
 
-# CORS Middleware - use wildcard for maximum compatibility
+# CORS Middleware - use configured origins for security
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for now
-    allow_credentials=False,  # Credentials require specific origins
+    allow_origins=allow_origins,  # Use the curated allow list
+    allow_credentials=True,  # Allow credentials with specific origins
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
     expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],

@@ -173,6 +173,7 @@ const ViewportContainer: FC<{
   const frontRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Get multiplayer users safely (null if outside provider)
   const mp = useMultiplayerContextSafe();
@@ -220,15 +221,18 @@ const ViewportContainer: FC<{
           camera={{ position: [20, 20, 20], fov: 50 }}
           onCreated={(state) => {
             const canvas = state.gl.domElement;
-            canvas.addEventListener("webglcontextlost", (e) => {
+            canvasRef.current = canvas;
+            const handleContextLost = (e: Event) => {
               e.preventDefault();
               console.warn(
                 "[ViewportManager] WebGL context lost — will attempt restore",
               );
-            });
-            canvas.addEventListener("webglcontextrestored", () => {
-// console.log("[ViewportManager] WebGL context restored");
-            });
+            };
+            const handleContextRestored = () => {
+              // Context restored successfully
+            };
+            canvas.addEventListener("webglcontextlost", handleContextLost);
+            canvas.addEventListener("webglcontextrestored", handleContextRestored);
           }}
         >
           <color attach="background" args={["#1a1a1a"]} />
@@ -464,7 +468,9 @@ const ViewportContainer: FC<{
 export const ViewportManager: FC = () => {
   const [layout, setLayout] = useState<ViewportLayout>("SINGLE");
   const [isGEMinimized, setIsGEMinimized] = useState(true);
-  const [webGpuNoticeDismissed, setWebGpuNoticeDismissed] = useState(false);
+  const [webGpuNoticeDismissed, setWebGpuNoticeDismissed] = useState(() => {
+    try { return localStorage.getItem('beamlab-webgpu-notice-dismissed') === 'true'; } catch { return false; }
+  });
   const [webglStatus, setWebglStatus] = useState<
     "pending" | "ok" | "unsupported"
   >("ok");
@@ -544,7 +550,10 @@ export const ViewportManager: FC = () => {
               </span>
               <button
                 type="button"
-                onClick={() => setWebGpuNoticeDismissed(true)}
+                onClick={() => {
+                  setWebGpuNoticeDismissed(true);
+                  try { localStorage.setItem('beamlab-webgpu-notice-dismissed', 'true'); } catch {}
+                }}
                 className="text-[#9ca3af] hover:text-white"
                 aria-label="Dismiss WebGPU notice"
               >

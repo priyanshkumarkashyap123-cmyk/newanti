@@ -347,7 +347,13 @@ export async function getAdvancedCapabilities(): Promise<Array<{
     description: string;
     endpoint: string;
 }>> {
-    const response = await fetch(`${RUST_API}/api/advanced/capabilities`);
+    const response = await fetch(`${RUST_API}/api/advanced/capabilities`, {
+        headers: getHeaders(),
+    });
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Request failed' }));
+        throw new Error(error.error || 'Failed to fetch capabilities');
+    }
     const result = await response.json();
     return result.capabilities;
 }

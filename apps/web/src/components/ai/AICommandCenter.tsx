@@ -15,6 +15,7 @@ import { logger } from '../../lib/logging/logger';
 import { useModelStore } from '../../store/model';
 import { useSubscription } from '../../hooks/useSubscription';
 import { useConfirm } from '../ui/ConfirmDialog';
+import { API_CONFIG } from '../../config/env';
 
 // ============================================
 // TYPES
@@ -228,7 +229,7 @@ export const AICommandCenter: FC = () => {
 
         // Simulate analysis or call actual solver
         try {
-            await fetch('/api/analysis/solve', {
+            await fetch(`${API_CONFIG.baseUrl}/api/analysis/solve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ options: { type: 'static' } })

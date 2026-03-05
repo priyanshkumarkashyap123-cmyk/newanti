@@ -10,6 +10,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Mail, CheckCircle, AlertCircle, Loader, RefreshCw } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { API_CONFIG } from '../config/env';
 
 export const VerifyEmailPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -69,7 +70,7 @@ export const VerifyEmailPage: React.FC = () => {
         setVerifyError(null);
 
         try {
-            const response = await fetch('/api/auth/resend-verification', {
+            const response = await fetch(`${API_CONFIG.baseUrl}/api/auth/resend-verification`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })

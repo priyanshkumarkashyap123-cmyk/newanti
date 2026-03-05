@@ -247,7 +247,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
     return (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Object.entries(REPORT_TEMPLATES).map(([key, template]) => (
-                <button type="button"
+                <button
                     key={key}
                     onClick={() => onSelect(key as ReportTemplate)}
                     className={`
@@ -261,7 +261,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ selected, onSelect 
                     <div className={`mb-2 ${selected === key ? 'text-cyan-400' : 'text-slate-500 dark:text-slate-400'}`}>
                         {template.icon}
                     </div>
-                    <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-1">{template.name}</h4>
+                    <h4 className="font-medium text-zinc-900 dark:text-white text-sm mb-1">{template.name}</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{template.description}</p>
                     <div className="mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300/70 dark:border-slate-700/70">
                         ~{template.estimatedPages} pages
@@ -323,14 +323,14 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                     {includedCount} of {sections.length} sections included
                 </span>
                 <div className="flex items-center gap-2">
-                    <button type="button"
+                    <button
                         onClick={selectAll}
                         className="text-xs text-cyan-400 hover:text-cyan-300 font-medium"
                     >
                         Select All
                     </button>
                     <span className="text-slate-500">|</span>
-                    <button type="button"
+                    <button
                         onClick={selectNone}
                         className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
                     >
@@ -352,7 +352,7 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                         `}
                     >
                         <div className="flex items-center p-3">
-                            <button type="button"
+                            <button
                                 onClick={() => toggleSection(section.id)}
                                 className={`
                                     w-5 h-5 rounded flex items-center justify-center mr-3 transition-colors
@@ -366,14 +366,14 @@ const SectionConfigurator: React.FC<SectionConfiguratorProps> = ({
                             </button>
                             
                             <div className="flex-1">
-                                <h4 className="text-sm font-medium text-slate-900 dark:text-white">{section.title}</h4>
+                                <h4 className="text-sm font-medium text-zinc-900 dark:text-white">{section.title}</h4>
                                 <p className="text-xs text-slate-500 dark:text-slate-400">{section.description}</p>
                             </div>
                             
                             {section.subsections && section.subsections.length > 0 && (
-                                <button type="button"
+                                <button
                                     onClick={() => toggleExpanded(section.id)}
-                                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white"
                                 >
                                     {expandedSections.has(section.id) 
                                         ? <ChevronDown className="w-4 h-4" />
@@ -431,7 +431,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.projectName}
                     onChange={(e) => updateField('projectName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Enter project name"
                 />
             </div>
@@ -442,7 +442,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.projectNumber || ''}
                     onChange={(e) => updateField('projectNumber', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="e.g., PRJ-2026-001"
                 />
             </div>
@@ -453,7 +453,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.clientName || ''}
                     onChange={(e) => updateField('clientName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Client organization"
                 />
             </div>
@@ -463,7 +463,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                 <select
                     value={projectInfo.designCode}
                     onChange={(e) => updateField('designCode', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                 >
                     <option value="IS 456:2000">IS 456:2000 (Concrete)</option>
                     <option value="IS 800:2007">IS 800:2007 (Steel)</option>
@@ -481,7 +481,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.engineerName || ''}
                     onChange={(e) => updateField('engineerName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Engineer name"
                 />
             </div>
@@ -492,7 +492,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     type="text"
                     value={projectInfo.checkerName || ''}
                     onChange={(e) => updateField('checkerName', e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                     placeholder="Checker name"
                 />
             </div>
@@ -503,7 +503,7 @@ const ProjectInfoForm: React.FC<ProjectInfoFormProps> = ({ projectInfo, onChange
                     value={projectInfo.description || ''}
                     onChange={(e) => updateField('description', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+                    className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
                     placeholder="Brief project description..."
                 />
             </div>
@@ -526,81 +526,62 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
     return (
         <div className="relative bg-white rounded-lg shadow-xl overflow-hidden" style={{ maxHeight: '500px' }}>
             {/* Cover Page Preview */}
-            <div className="p-8 border-b border-slate-200 relative">
-                {/* Branded accent bars */}
-                <div className="absolute top-0 left-0 right-0 h-[5px] bg-[#12376A]" />
-                <div className="absolute top-[5px] left-0 right-0 h-[2px] bg-[#BF9B30]" />
-
-                <div className="flex items-center justify-between mb-6 mt-1">
+            <div className="p-8 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-6">
                     {config.includeCompanyLogo ? (
-                        <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-slate-100 rounded-lg border border-slate-200" />
-                            <div>
-                                <div className="text-sm font-black text-[#12376A] tracking-tight">BeamLab</div>
-                                <div className="text-[8px] font-bold text-slate-500 uppercase tracking-[0.2em]">Structural Engineering</div>
-                            </div>
-                        </div>
+                        <div className="w-32 h-10 bg-gray-200 rounded" />
                     ) : (
-                        <div className="text-[8px] text-slate-400 uppercase tracking-wider">Company Logo</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Company Logo</div>
                     )}
-                    <div className="text-[8px] text-slate-500 text-right leading-relaxed">
-                        <div>beamlab.app</div>
-                        <div>Doc Ref: RPT-{config.projectInfo.projectNumber || '0001'}</div>
+                    <div className="text-[10px] text-gray-500">
+                        Doc Ref: RPT-{config.projectInfo.projectNumber || '0001'}
                     </div>
                 </div>
 
-                <div className="text-center my-6">
-                    <div className="w-12 h-[2px] bg-slate-200 mx-auto mb-4" />
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] mb-2">
-                        {template.name}
-                    </p>
-                    <h1 className="text-xl font-black text-[#12376A] leading-tight mb-3">
-                        {config.projectInfo.projectName || 'Untitled Project'}
-                    </h1>
-                    <p className="text-[10px] text-slate-500 font-medium">
-                        Revision 00 &mdash; {config.projectInfo.dateCreated.toLocaleDateString()}
-                    </p>
-                    <div className="w-12 h-[2px] bg-slate-200 mx-auto mt-4" />
-                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                    {config.projectInfo.projectName || 'Untitled Project'}
+                </h1>
 
-                <div className="grid grid-cols-2 gap-3 text-[10px] text-slate-600 mt-4">
+                <h2 className="text-base text-gray-600 mb-4">{template.name}</h2>
+
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
                     {config.projectInfo.projectNumber && (
                         <div>
-                            <span className="text-slate-400 font-bold text-[9px] uppercase">Project No:</span>
-                            <span className="ml-2 font-mono">{config.projectInfo.projectNumber}</span>
+                            <span className="text-gray-500 dark:text-gray-400">Project No:</span>
+                            <span className="ml-2">{config.projectInfo.projectNumber}</span>
                         </div>
                     )}
                     {config.projectInfo.clientName && (
                         <div>
-                            <span className="text-slate-400 font-bold text-[9px] uppercase">Client:</span>
+                            <span className="text-gray-500 dark:text-gray-400">Client:</span>
                             <span className="ml-2">{config.projectInfo.clientName}</span>
                         </div>
                     )}
                     <div>
-                        <span className="text-slate-400 font-bold text-[9px] uppercase">Design Code:</span>
-                        <span className="ml-2 font-mono">{config.projectInfo.designCode}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Design Code:</span>
+                        <span className="ml-2">{config.projectInfo.designCode}</span>
                     </div>
                     <div>
-                        <span className="text-slate-400 font-bold text-[9px] uppercase">Date:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Date:</span>
                         <span className="ml-2">{config.projectInfo.dateCreated.toLocaleDateString()}</span>
                     </div>
                 </div>
 
-                <div className="mt-5 border border-slate-200 rounded-sm text-[10px] overflow-hidden">
-                    <div className="grid grid-cols-3 bg-slate-50 px-3 py-1.5 text-slate-500 font-bold uppercase text-[9px] tracking-wider border-b border-slate-200">
+                <div className="mt-5 border border-gray-200 rounded text-[11px]">
+                    <div className="grid grid-cols-3 bg-gray-50 px-3 py-2 text-gray-500 font-medium">
                         <span>Prepared</span>
                         <span>Checked</span>
                         <span>Approved</span>
                     </div>
-                    <div className="grid grid-cols-3 px-3 py-2 text-slate-700 font-medium">
-                        <span>{config.projectInfo.engineerName || '\u2014'}</span>
-                        <span>{config.projectInfo.checkerName || '\u2014'}</span>
-                        <span>{config.projectInfo.approverName || '\u2014'}</span>
+                    <div className="grid grid-cols-3 px-3 py-2 text-gray-700">
+                        <span>{config.projectInfo.engineerName || '—'}</span>
+                        <span>{config.projectInfo.checkerName || '—'}</span>
+                        <span>{config.projectInfo.approverName || '—'}</span>
                     </div>
                 </div>
 
                 {config.confidential && (
-                    <div className="mt-4 inline-block px-3 py-1 bg-red-50 text-red-600 text-[9px] font-bold tracking-wider rounded border border-red-200">
+                    <div className="mt-4 inline-block px-3 py-1 bg-red-100 text-red-600 text-[10px] font-semibold tracking-wider rounded">
                         CONFIDENTIAL
                     </div>
                 )}
@@ -608,18 +589,17 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
             
             {/* Table of Contents Preview */}
             <div className="p-6 overflow-y-auto" style={{ maxHeight: '300px' }}>
-                <h3 className="text-[10px] font-extrabold text-slate-900 uppercase tracking-[0.1em] border-b-2 border-slate-200 pb-1.5 mb-3">
+                <h3 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wider border-b border-gray-200 pb-2">
                     Table of Contents
                 </h3>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                     {includedSections.map((section, index) => (
-                        <div key={section.id} className="flex items-center justify-between text-[11px]">
-                            <span className="text-slate-700 font-medium">
-                                <span className="font-mono font-bold text-slate-500 mr-2">{index + 1}.0</span>
-                                {section.title}
+                        <div key={section.id} className="flex items-center justify-between text-sm">
+                            <span className="text-gray-700">
+                                {index + 1}. {section.title}
                             </span>
-                            <span className="text-slate-300 border-b border-dotted border-slate-200 flex-1 mx-2" />
-                            <span className="text-slate-400 tabular-nums font-mono text-[10px]">{index + 2}</span>
+                            <span className="text-gray-600 dark:text-gray-300 border-b border-dotted border-gray-300 flex-1 mx-2" />
+                            <span className="text-gray-500 dark:text-gray-400 tabular-nums">{index + 2}</span>
                         </div>
                     ))}
                 </div>
@@ -627,8 +607,8 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ config }) => {
             
             {/* Watermark */}
             {config.watermark && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
-                    <span className="text-8xl font-black text-slate-900 rotate-[-30deg]">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
+                    <span className="text-8xl font-bold text-gray-900 rotate-[-30deg]">
                         {config.watermark}
                     </span>
                 </div>
@@ -707,7 +687,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
         <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             {/* Header */}
             <div className="px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                     <FileText className="w-6 h-6 text-cyan-400" />
                     Professional Report Generator
                 </h2>
@@ -721,7 +701,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 <div className="flex items-center justify-between">
                     {steps.map((step, index) => (
                         <React.Fragment key={step.number}>
-                            <button type="button"
+                            <button
                                 onClick={() => setActiveStep(step.number)}
                                 className={`
                                     flex items-center gap-2 px-4 py-2 rounded-lg transition-all
@@ -756,7 +736,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 1: Template Selection */}
                 {activeStep === 1 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Select Report Template</h3>
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Select Report Template</h3>
                         <TemplateSelector
                             selected={config.template}
                             onSelect={handleTemplateChange}
@@ -767,7 +747,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 2: Project Info */}
                 {activeStep === 2 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Project Information</h3>
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Project Information</h3>
                         <ProjectInfoForm
                             projectInfo={config.projectInfo}
                             onChange={(info) => setConfig(prev => ({ ...prev, projectInfo: info }))}
@@ -778,7 +758,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {/* Step 3: Section Configuration */}
                 {activeStep === 3 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Configure Sections</h3>
+                        <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Configure Sections</h3>
                         <SectionConfigurator
                             sections={config.sections}
                             onSectionsChange={(sections) => setConfig(prev => ({ ...prev, sections }))}
@@ -790,14 +770,14 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 {activeStep === 4 && (
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Output Options</h3>
+                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Output Options</h3>
                             
                             {/* Format Selection */}
                             <div>
                                 <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Output Format</label>
                                 <div className="grid grid-cols-4 gap-2">
                                     {(['pdf', 'docx', 'html', 'print'] as const).map(type => (
-                                        <button type="button"
+                                        <button
                                             key={type}
                                             onClick={() => setOutput(prev => ({ ...prev, type }))}
                                             className={`
@@ -819,7 +799,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                                 <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Quality</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {(['draft', 'standard', 'high'] as const).map(quality => (
-                                        <button type="button"
+                                        <button
                                             key={quality}
                                             onClick={() => setOutput(prev => ({ ...prev, quality }))}
                                             className={`
@@ -861,7 +841,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                             </div>
                             
                             {/* Generate Button */}
-                            <button type="button"
+                            <button
                                 onClick={handleGenerate}
                                 disabled={isGenerating}
                                 className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -882,7 +862,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                         
                         {/* Preview */}
                         <div>
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Preview</h3>
+                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">Preview</h3>
                             <ReportPreview config={config} />
                         </div>
                     </div>
@@ -891,7 +871,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
             
             {/* Navigation */}
             <div className="px-6 py-4 bg-slate-100/30 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex justify-between">
-                <button type="button"
+                <button
                     onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
                     disabled={activeStep === 1}
                     className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -900,7 +880,7 @@ export const ProfessionalReportGenerator: React.FC<ProfessionalReportGeneratorPr
                 </button>
                 
                 {activeStep < 4 && (
-                    <button type="button"
+                    <button
                         onClick={() => setActiveStep(Math.min(4, activeStep + 1))}
                         className="px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400 transition-colors"
                     >

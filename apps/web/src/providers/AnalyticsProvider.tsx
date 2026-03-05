@@ -177,7 +177,7 @@ export const AnalyticsProvider: FC<AnalyticsProviderProps> = ({
   // Send event to analytics backend
   const sendEvent = useCallback(
     async (event: AnalyticsEvent) => {
-      if (debug) {
+      if (debug && import.meta.env.DEV) {
         console.log("[Analytics]", event.name, event.properties);
       }
 

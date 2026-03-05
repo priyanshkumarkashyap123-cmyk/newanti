@@ -53,7 +53,7 @@ import {
   Zap,
   ExternalLink,
 } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
 // Types
@@ -97,6 +97,7 @@ const CloudStorageDashboard: React.FC = () => {
   useEffect(() => { document.title = 'Cloud Storage | BeamLab'; }, []);
 
   const { isSignedIn, getToken } = useAuth();
+  const navigate = useNavigate();
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedProject, setSelectedProject] = useState<CloudProject | null>(
@@ -351,6 +352,35 @@ const CloudStorageDashboard: React.FC = () => {
     }, 200);
   }, []);
 
+  // Toggle star status
+  const handleToggleStar = (projectId: string) => {
+    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, isStarred: !p.isStarred } : p));
+    if (selectedProject?.id === projectId) {
+      setSelectedProject(prev => prev ? { ...prev, isStarred: !prev.isStarred } : null);
+    }
+  };
+
+  // Delete project
+  const handleDeleteProject = (projectId: string) => {
+    setProjects(prev => prev.filter(p => p.id !== projectId));
+    if (selectedProject?.id === projectId) setSelectedProject(null);
+  };
+
+  // Duplicate project
+  const handleDuplicateProject = (project: CloudProject) => {
+    const dup: CloudProject = {
+      ...project,
+      id: `p${Date.now()}`,
+      name: `${project.name} (Copy)`,
+      created: new Date(),
+      lastModified: new Date(),
+      version: 1,
+      isStarred: false,
+      syncStatus: 'synced',
+    };
+    setProjects(prev => [dup, ...prev]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
       {/* Header */}
@@ -383,7 +413,7 @@ const CloudStorageDashboard: React.FC = () => {
                 <Upload className="w-4 h-4" />
                 Upload Project
               </button>
-              <button type="button" className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
+              <button type="button" onClick={() => navigate('/settings')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
                 <Settings className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </button>
             </div>
@@ -578,6 +608,7 @@ const CloudStorageDashboard: React.FC = () => {
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={(e) => {
                           e.stopPropagation();
+                          handleToggleStar(project.id);
                         }}
                       >
                         <Star
@@ -627,7 +658,7 @@ const CloudStorageDashboard: React.FC = () => {
                     <span className="text-xs text-slate-600 dark:text-slate-400">
                       v{project.version}
                     </span>
-                    <button type="button" className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+                    <button type="button" onClick={(e) => { e.stopPropagation(); navigate('/app'); }} className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
                       Open <ExternalLink className="w-3 h-3" />
                     </button>
                   </div>
@@ -883,7 +914,7 @@ const CloudStorageDashboard: React.FC = () => {
 
                 {/* Actions */}
                 <div className="space-y-2 pt-4 border-t border-slate-300 dark:border-slate-700">
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors">
+                  <button type="button" onClick={() => navigate('/app')} className="w-full flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors">
                     <ExternalLink className="w-4 h-4" />
                     Open in Editor
                   </button>
@@ -895,11 +926,11 @@ const CloudStorageDashboard: React.FC = () => {
                     <Share2 className="w-4 h-4" />
                     Share
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+                  <button type="button" onClick={() => handleDuplicateProject(selectedProject)} className="w-full flex items-center gap-2 px-4 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
                     <Copy className="w-4 h-4" />
                     Duplicate
                   </button>
-                  <button type="button" className="w-full flex items-center gap-2 px-4 py-2.5 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors">
+                  <button type="button" onClick={() => handleDeleteProject(selectedProject.id)} className="w-full flex items-center gap-2 px-4 py-2.5 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded-lg transition-colors">
                     <Trash2 className="w-4 h-4" />
                     Delete
                   </button>
@@ -944,6 +975,7 @@ const CloudStorageDashboard: React.FC = () => {
             ].map((template) => (
               <button type="button"
                 key={template.name}
+                onClick={() => navigate('/app')}
                 className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600 transition-all group text-left"
               >
                 <div

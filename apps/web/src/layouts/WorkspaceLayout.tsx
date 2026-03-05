@@ -134,7 +134,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
                     <Logo size="xs" showLabel href="/" />
                     <button type="button"
                         onClick={handleGoHome}
-                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-slate-900 dark:text-white transition-colors"
+                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:text-white dark:hover:text-slate-200 transition-colors"
                     >
                         <Home className="w-4 h-4" />
                         <span className="text-sm font-medium">Home</span>

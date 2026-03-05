@@ -47,6 +47,7 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
     const [magnitude, setMagnitude] = useState('10');
     const [direction, setDirection] = useState<Direction>('down');
     const [position, setPosition] = useState('0.5'); // 0-1 ratio along member
+    const [magError, setMagError] = useState('');
 
     // Reset on open
     useEffect(() => {
@@ -74,7 +75,13 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
 
     // Submit handler
     const handleSubmit = () => {
-        const mag = parseFloat(magnitude) * 1000; // Convert kN to N
+        const parsedMag = parseFloat(magnitude);
+        if (isNaN(parsedMag) || parsedMag <= 0) {
+            setMagError('Magnitude must be a positive number');
+            return;
+        }
+        setMagError('');
+        const mag = parsedMag * 1000; // Convert kN to N
         const dirConfig = getDirectionConfig();
 
         if (loadType === 'point' && targetNodeId) {
@@ -293,6 +300,9 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
                                 {loadType === 'moment' ? 'kN·m' : loadType === 'udl' ? 'kN/m' : 'kN'}
                             </span>
                         </div>
+                        {magError && (
+                            <p className="mt-2 text-xs text-red-500">{magError}</p>
+                        )}
                         {/* Quick magnitude buttons */}
                         <div className="flex gap-2 mt-3">
                             {[5, 10, 20, 50, 100].map((val) => (

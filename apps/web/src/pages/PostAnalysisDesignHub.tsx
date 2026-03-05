@@ -21,6 +21,7 @@
 import React, { FC, useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_CONFIG } from '../config/env';
 import {
   ArrowLeft, CheckCircle2, XCircle, AlertTriangle, ChevronRight,
   ChevronDown, Search, Download, Settings, Columns, Building2,
@@ -324,7 +325,7 @@ async function isBackendAvailable(): Promise<boolean> {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 2000); // 2s max
-    const resp = await fetch('/api/health', { signal: ctrl.signal });
+    const resp = await fetch(`${API_CONFIG.baseUrl}/api/health`, { signal: ctrl.signal });
     clearTimeout(timer);
     _backendAvailable = resp.ok;
   } catch {

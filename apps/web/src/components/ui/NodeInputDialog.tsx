@@ -48,6 +48,7 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
         mx: false, my: false, mz: false
     });
     const [supportType, setSupportType] = useState<'none' | 'pinned' | 'fixed' | 'roller-x' | 'roller-y'>('none');
+    const [coordError, setCoordError] = useState('');
 
     const xInputRef = useRef<HTMLInputElement>(null);
 
@@ -118,9 +119,16 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
 
     // Submit handler
     const handleSubmit = () => {
-        const numX = parseFloat(x) || 0;
-        const numY = parseFloat(y) || 0;
-        const numZ = parseFloat(z) || 0;
+        // Validate coordinate inputs
+        const numX = parseFloat(x);
+        const numY = parseFloat(y);
+        const numZ = parseFloat(z);
+
+        if (isNaN(numX) || isNaN(numY) || isNaN(numZ)) {
+            setCoordError('All coordinates must be valid numbers');
+            return;
+        }
+        setCoordError('');
 
         if (editNodeId) {
             // Update existing node
@@ -197,6 +205,9 @@ export const NodeInputDialog: FC<NodeInputDialogProps> = ({
                                 />
                             </div>
                         </div>
+                        {coordError && (
+                            <p className="mt-2 text-xs text-red-500">{coordError}</p>
+                        )}
                         {/* Quick position buttons */}
                         <div className="flex gap-2 mt-3">
                             <button type="button"

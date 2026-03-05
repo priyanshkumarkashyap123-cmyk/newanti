@@ -100,21 +100,35 @@ export class AdvancedAnalysisService {
     this.baseUrl = `${base}/api/analysis`;
   }
 
+  private getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {};
+    const token = typeof window !== 'undefined'
+      ? window.localStorage?.getItem('auth_token')
+      : null;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
+
   async modalAnalysis(req: ModalAnalysisRequest): Promise<ModalAnalysisResponse> {
     return postJson<ModalAnalysisResponse>(`${this.baseUrl}/modal`, req, {
-      timeout: 30000 // 30 seconds for modal analysis
+      timeout: 30000,
+      headers: this.getAuthHeaders(),
     });
   }
 
   async timeHistoryAnalysis(req: TimeHistoryRequest): Promise<TimeHistoryResponse> {
     return postJson<TimeHistoryResponse>(`${this.baseUrl}/time-history`, req, {
-      timeout: 60000 // 60 seconds for time-history
+      timeout: 60000,
+      headers: this.getAuthHeaders(),
     });
   }
 
   async seismicAnalysis(req: SeismicAnalysisRequest): Promise<SeismicAnalysisResponse> {
     return postJson<SeismicAnalysisResponse>(`${this.baseUrl}/seismic`, req, {
-      timeout: 30000 // 30 seconds for seismic
+      timeout: 30000,
+      headers: this.getAuthHeaders(),
     });
   }
 }

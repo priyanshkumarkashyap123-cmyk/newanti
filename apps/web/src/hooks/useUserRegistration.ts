@@ -62,7 +62,6 @@ export function useUserRegistration() {
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('[useUserRegistration] User registered:', data);
                     hasRegisteredGlobal = true;
                     setIsRegistered(true);
 
@@ -78,7 +77,7 @@ export function useUserRegistration() {
                         // Non-critical — don't block user
                     });
                 } else {
-                    console.error('❌ ❌ [useUserRegistration] Registration failed:', response.status);
+                    if (import.meta.env.DEV) console.error('[useUserRegistration] Registration failed:', response.status);
                 }
             } catch (error) {
                 if ((error as Error).name !== 'AbortError') {

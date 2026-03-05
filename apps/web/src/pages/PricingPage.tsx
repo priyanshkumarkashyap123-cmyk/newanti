@@ -6,11 +6,11 @@
 
 import { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePhonePePayment } from '../components/PhonePePayment';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
-import { CheckCircle, X, HelpCircle, ChevronRight } from 'lucide-react';
+import { CheckCircle, X, HelpCircle, ChevronRight, Menu } from 'lucide-react';
 const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import { Button } from '../components/ui/button';
 
@@ -125,6 +125,7 @@ export const PricingPage: FC = () => {
     const navigate = useNavigate();
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
     const [upgradeError, setUpgradeError] = useState<string | null>(null);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // PhonePe payment integration
     const { openPayment, loading: paymentLoading } = usePhonePePayment();
@@ -216,19 +217,50 @@ export const PricingPage: FC = () => {
 
                         {/* Auth - Right aligned */}
                         <div className="flex items-center gap-4">
-                            <Link to="/sign-in" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors relative group">
+                            {/* Mobile hamburger */}
+                            <button
+                                type="button"
+                                className="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                aria-label="Toggle menu"
+                            >
+                                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                            </button>
+                            <Link to="/sign-in" className="hidden md:inline text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors relative group">
                                 Log in
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all group-hover:w-full" />
                             </Link>
                             <Link
                                 to="/sign-up"
-                                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-slate-950 text-sm font-bold hover:bg-blue-50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
+                                className="hidden md:flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-slate-950 text-sm font-bold hover:bg-blue-50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95"
                             >
                                 Get Started
                             </Link>
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile Menu */}
+                <AnimatePresence>
+                    {mobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950"
+                        >
+                            <div className="px-4 py-4 space-y-2">
+                                <Link to="/#features" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Features</Link>
+                                <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800">Pricing</Link>
+                                <Link to="/help" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Docs</Link>
+                                <Link to="/demo" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Demo</Link>
+                                <hr className="border-slate-200 dark:border-slate-800 my-2" />
+                                <Link to="/sign-in" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Log in</Link>
+                                <Link to="/sign-up" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-sm font-bold text-center bg-blue-600 text-white hover:bg-blue-500">Get Started</Link>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </nav>
 
             {/* Hero Section - Dark Theme */}
@@ -367,7 +399,7 @@ export const PricingPage: FC = () => {
                                     ))}
                                     {tier.notIncluded?.map((feature) => (
                                         <li key={feature} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400 line-through">
-                                            <X className="w-5 h-5 flex-shrink-0 mt-0.5 text-slate-700" />
+                                            <X className="w-5 h-5 flex-shrink-0 mt-0.5 text-slate-400 dark:text-slate-600" />
                                             <span>{feature}</span>
                                         </li>
                                     ))}

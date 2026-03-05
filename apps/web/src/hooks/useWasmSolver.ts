@@ -66,7 +66,6 @@ export function useWasmSolver() {
             // WASM ready notification
             if (data.type === 'wasm_ready') {
                 setIsWasmReady(true);
-                console.log('[useWasmSolver] WASM module ready');
                 return;
             }
 

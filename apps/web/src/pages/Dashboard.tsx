@@ -57,6 +57,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "../components/ui/PageTransition";
+import { useSubscription } from "../hooks/useSubscription";
 import {
   ProjectService,
   Project as CloudProject,
@@ -132,6 +133,9 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const { subscription } = useSubscription();
 
   useEffect(() => {
     document.title = 'Dashboard - BeamLab';
@@ -236,6 +240,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
   const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const projectMenuRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   // Close project menu on outside click
   useEffect(() => {
@@ -248,6 +253,18 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
     const timer = setTimeout(() => document.addEventListener("click", handler), 50);
     return () => { clearTimeout(timer); document.removeEventListener("click", handler); };
   }, [projectMenuId]);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    if (!showNotifications) return;
+    const handler = (e: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    const timer = setTimeout(() => document.addEventListener("click", handler), 50);
+    return () => { clearTimeout(timer); document.removeEventListener("click", handler); };
+  }, [showNotifications]);
 
   const handleDeleteProject = useCallback(async (projectId: string) => {
     if (!(await confirm({ title: 'Delete Project', message: 'Delete this project permanently? This cannot be undone.', variant: 'danger' }))) return;
@@ -389,10 +406,22 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 flex font-sans">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       {/* ================================================
                 SIDEBAR (Updated with Avatar)
                 ================================================ */}
-      <aside className="w-[220px] bg-slate-50 dark:bg-slate-900/80 border-r border-white/[0.06] flex flex-col backdrop-blur-xl">
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-40
+        w-[220px] bg-slate-50 dark:bg-slate-900/80 border-r border-slate-200 dark:border-white/[0.06] flex flex-col backdrop-blur-xl
+        transform transition-transform duration-200 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         <div className="h-16 flex items-center px-6 border-b border-white/[0.06]">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20">
@@ -403,7 +432,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 architecture
               </span>
             </div>
-            <span className="text-lg font-bold text-white tracking-tight">
+            <span className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
               BeamLab
             </span>
           </Link>
@@ -493,7 +522,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
               className="bg-blue-600"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                 {userName}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
@@ -521,8 +550,19 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                 ================================================ */}
       <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-slate-950">
         {/* Header */}
-        <header className="h-16 bg-slate-50 dark:bg-slate-900/60 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between px-6 sticky top-0 z-10">
-          <div className="flex items-center gap-4 flex-1">
+        <header className="h-16 bg-slate-50 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200 dark:border-white/[0.06] flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+          <div className="flex items-center gap-3 md:gap-4 flex-1">
+            {/* Mobile sidebar toggle */}
+            <button
+              type="button"
+              className="md:hidden p-2 -ml-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
             <div className="relative max-w-md flex-1">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
               <input
@@ -554,7 +594,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             </div>
 
             {/* Notification Bell - per Figma §5.6 */}
-            <div className="relative">
+            <div className="relative" ref={notificationRef}>
               <Button
                 variant="ghost"
                 size="icon"
@@ -603,12 +643,12 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
             <p className="text-slate-600 dark:text-slate-400">
               Here's what's happening with your projects today.
             </p>
-            <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-100 text-sm flex items-start gap-3">
+            <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-amber-800 dark:text-amber-100 text-sm flex items-start gap-3">
               <span className="material-symbols-outlined text-base leading-5">
                 info
               </span>
               <div className="space-y-1">
-                <p className="font-semibold text-amber-50">
+                <p className="font-semibold text-amber-900 dark:text-amber-50">
                   Engineering decision support
                 </p>
                 <p>
@@ -975,8 +1015,8 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
         </PageTransition>
 
         {/* Bottom Bar - per Figma §5.1 */}
-        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-white/[0.06] flex items-center justify-between px-6 text-xs text-slate-500">
-          <span>Plan: Professional</span>
+        <footer className="h-8 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-white/[0.06] flex items-center justify-between px-6 text-xs text-slate-500">
+          <span>Plan: {subscription.tier.charAt(0).toUpperCase() + subscription.tier.slice(1)}</span>
           <span>Storage: {cloudProjects.length > 0 ? `${(cloudProjects.length * 0.5).toFixed(1)}` : "0"}/5 GB</span>
           <Link to="/settings" className="text-blue-400 hover:text-blue-300">Upgrade Plan →</Link>
         </footer>

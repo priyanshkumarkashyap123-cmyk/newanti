@@ -153,7 +153,12 @@ async function callAIApi(endpoint: string, body: Record<string, any>): Promise<A
 }
 
 async function fetchAIApi(endpoint: string): Promise<unknown> {
-  const response = await fetch(`${AI_API_BASE}/${endpoint}`);
+  const headers: Record<string, string> = {};
+  const token = typeof window !== 'undefined' ? window.localStorage?.getItem('auth_token') : null;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const response = await fetch(`${AI_API_BASE}/${endpoint}`, { headers });
   if (!response.ok) throw new Error(`AI service returned ${response.status}`);
   return response.json();
 }

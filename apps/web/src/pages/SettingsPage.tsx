@@ -218,6 +218,7 @@ export const SettingsPage: FC = () => {
     const savedSettings = loadSettings();
 
     // Settings State — initialized from localStorage or defaults
+    // Analysis tab
     const [solverEngine, setSolverEngine] = useState(savedSettings?.solverEngine ?? 'linear_static');
     const [precision, setPrecision] = useState(savedSettings?.precision ?? 'double');
     const [maxIterations, setMaxIterations] = useState(savedSettings?.maxIterations ?? '1000');
@@ -230,6 +231,35 @@ export const SettingsPage: FC = () => {
     const [generateReport, setGenerateReport] = useState(savedSettings?.generateReport ?? true);
     const [settingsSaved, setSettingsSaved] = useState(false);
 
+    // General tab
+    const [language, setLanguage] = useState(savedSettings?.language ?? 'en');
+    const [unitSystem, setUnitSystem] = useState(savedSettings?.unitSystem ?? 'si');
+
+    // Display tab
+    const [theme, setTheme] = useState(savedSettings?.theme ?? 'dark');
+    const [showGrid, setShowGrid] = useState(savedSettings?.showGrid ?? true);
+
+    // Profile tab
+    const [displayName, setDisplayName] = useState(savedSettings?.displayName ?? (user?.fullName || 'Engineer'));
+    const [role, setRole] = useState(savedSettings?.role ?? 'Structural Engineer');
+    const [organization, setOrganization] = useState(savedSettings?.organization ?? '');
+    const [licenseNo, setLicenseNo] = useState(savedSettings?.licenseNo ?? '');
+
+    // Units tab
+    const [lengthUnit, setLengthUnit] = useState(savedSettings?.lengthUnit ?? 'm');
+    const [sectionDimUnit, setSectionDimUnit] = useState(savedSettings?.sectionDimUnit ?? 'mm');
+    const [forceUnit, setForceUnit] = useState(savedSettings?.forceUnit ?? 'kN');
+    const [momentUnit, setMomentUnit] = useState(savedSettings?.momentUnit ?? 'kNm');
+    const [stressUnit, setStressUnit] = useState(savedSettings?.stressUnit ?? 'MPa');
+    const [tempUnit, setTempUnit] = useState(savedSettings?.tempUnit ?? 'C');
+
+    // Notifications tab
+    const [notifAnalysis, setNotifAnalysis] = useState(savedSettings?.notifAnalysis ?? true);
+    const [notifWarnings, setNotifWarnings] = useState(savedSettings?.notifWarnings ?? true);
+    const [notifShared, setNotifShared] = useState(savedSettings?.notifShared ?? true);
+    const [notifUpdates, setNotifUpdates] = useState(savedSettings?.notifUpdates ?? false);
+    const [notifMarketing, setNotifMarketing] = useState(savedSettings?.notifMarketing ?? false);
+
     useEffect(() => { document.title = 'Settings | BeamLab'; }, []);
 
     // Auto-save settings to localStorage whenever they change
@@ -238,15 +268,23 @@ export const SettingsPage: FC = () => {
             solverEngine, precision, maxIterations, tolerance,
             meshDensity, adaptiveMesh, parallelProcessing, gpuAcceleration,
             autoSaveResults, generateReport,
+            language, unitSystem, theme, showGrid,
+            displayName, role, organization, licenseNo,
+            lengthUnit, sectionDimUnit, forceUnit, momentUnit, stressUnit, tempUnit,
+            notifAnalysis, notifWarnings, notifShared, notifUpdates, notifMarketing,
         };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    }, [solverEngine, precision, maxIterations, tolerance, meshDensity, adaptiveMesh, parallelProcessing, gpuAcceleration, autoSaveResults, generateReport]);
+    }, [solverEngine, precision, maxIterations, tolerance, meshDensity, adaptiveMesh, parallelProcessing, gpuAcceleration, autoSaveResults, generateReport, language, unitSystem, theme, showGrid, displayName, role, organization, licenseNo, lengthUnit, sectionDimUnit, forceUnit, momentUnit, stressUnit, tempUnit, notifAnalysis, notifWarnings, notifShared, notifUpdates, notifMarketing]);
 
     const handleSaveSettings = () => {
         const settings = {
             solverEngine, precision, maxIterations, tolerance,
             meshDensity, adaptiveMesh, parallelProcessing, gpuAcceleration,
             autoSaveResults, generateReport,
+            language, unitSystem, theme, showGrid,
+            displayName, role, organization, licenseNo,
+            lengthUnit, sectionDimUnit, forceUnit, momentUnit, stressUnit, tempUnit,
+            notifAnalysis, notifWarnings, notifShared, notifUpdates, notifMarketing,
         };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         setSettingsSaved(true);
@@ -264,6 +302,25 @@ export const SettingsPage: FC = () => {
         setGpuAcceleration(true);
         setAutoSaveResults(false);
         setGenerateReport(true);
+        setLanguage('en');
+        setUnitSystem('si');
+        setTheme('dark');
+        setShowGrid(true);
+        setDisplayName(user?.fullName || 'Engineer');
+        setRole('Structural Engineer');
+        setOrganization('');
+        setLicenseNo('');
+        setLengthUnit('m');
+        setSectionDimUnit('mm');
+        setForceUnit('kN');
+        setMomentUnit('kNm');
+        setStressUnit('MPa');
+        setTempUnit('C');
+        setNotifAnalysis(true);
+        setNotifWarnings(true);
+        setNotifShared(true);
+        setNotifUpdates(false);
+        setNotifMarketing(false);
         localStorage.removeItem(SETTINGS_KEY);
     };
 
@@ -346,13 +403,13 @@ export const SettingsPage: FC = () => {
                         {NAV_ITEMS.find(n => n.id === activeTab)?.label}
                     </h2>
                     <div className="flex gap-3">
-                        <Button variant="outline" size="sm" className="flex items-center gap-2 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
+                        <Button variant="outline" size="sm" onClick={handleResetDefaults} className="flex items-center gap-2 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white">
                             <RotateCcw className="w-4 h-4" />
                             Reset Defaults
                         </Button>
-                        <Button variant="default" size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
-                            <Save className="w-4 h-4" />
-                            Save Changes
+                        <Button variant="default" size="sm" onClick={handleSaveSettings} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+                            {settingsSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                            {settingsSaved ? 'Saved!' : 'Save Changes'}
                         </Button>
                     </div>
                 </header>
@@ -496,8 +553,8 @@ export const SettingsPage: FC = () => {
                                 </div>
                                 <Select
                                     label="Language"
-                                    value="en"
-                                    onChange={() => { }}
+                                    value={language}
+                                    onChange={setLanguage}
                                     options={[
                                         { value: 'en', label: 'English' },
                                         { value: 'es', label: 'Español' },
@@ -506,8 +563,8 @@ export const SettingsPage: FC = () => {
                                 />
                                 <Select
                                     label="Unit System"
-                                    value="si"
-                                    onChange={() => { }}
+                                    value={unitSystem}
+                                    onChange={setUnitSystem}
                                     options={[
                                         { value: 'si', label: 'SI (Metric)' },
                                         { value: 'imperial', label: 'Imperial (US)' },
@@ -524,8 +581,8 @@ export const SettingsPage: FC = () => {
                                 </div>
                                 <Select
                                     label="Theme"
-                                    value="dark"
-                                    onChange={() => { }}
+                                    value={theme}
+                                    onChange={setTheme}
                                     options={[
                                         { value: 'dark', label: 'Dark (Default)' },
                                         { value: 'light', label: 'Light' },
@@ -533,8 +590,8 @@ export const SettingsPage: FC = () => {
                                     ]}
                                 />
                                 <Toggle
-                                    enabled={true}
-                                    onChange={() => { }}
+                                    enabled={showGrid}
+                                    onChange={setShowGrid}
                                     label="Show Grid Lines"
                                     description="Display grid lines in the 3D viewport."
                                 />
@@ -550,32 +607,32 @@ export const SettingsPage: FC = () => {
                                 <div className="flex items-center gap-4 p-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
                                     <div>
-                                        <p className="text-slate-900 dark:text-white font-bold">User</p>
-                                        <p className="text-slate-500 dark:text-slate-400 text-sm">user@beamlab.app</p>
+                                        <p className="text-slate-900 dark:text-white font-bold">{user?.fullName || displayName}</p>
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm">{user?.primaryEmailAddress?.emailAddress || 'user@beamlab.app'}</p>
                                     </div>
                                 </div>
                                 <Input
                                     label="Display Name"
-                                    value="Engineer"
-                                    onChange={() => { }}
+                                    value={displayName}
+                                    onChange={setDisplayName}
                                     placeholder="Your name"
                                 />
                                 <Input
                                     label="Role"
-                                    value="Structural Engineer"
-                                    onChange={() => { }}
+                                    value={role}
+                                    onChange={setRole}
                                     placeholder="Your role"
                                 />
                                 <Input
                                     label="Organization"
-                                    value=""
-                                    onChange={() => { }}
+                                    value={organization}
+                                    onChange={setOrganization}
                                     placeholder="Company name"
                                 />
                                 <Input
                                     label="License No."
-                                    value=""
-                                    onChange={() => { }}
+                                    value={licenseNo}
+                                    onChange={setLicenseNo}
                                     placeholder="SE-2024-XXXX"
                                 />
                             </section>
@@ -599,35 +656,35 @@ export const SettingsPage: FC = () => {
                                     ))}
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Select label="Length" value="m" onChange={() => { }} options={[
+                                    <Select label="Length" value={lengthUnit} onChange={setLengthUnit} options={[
                                         { value: 'm', label: 'meters (m)' },
                                         { value: 'mm', label: 'millimeters (mm)' },
                                         { value: 'ft', label: 'feet (ft)' },
                                         { value: 'in', label: 'inches (in)' },
                                     ]} />
-                                    <Select label="Section Dimensions" value="mm" onChange={() => { }} options={[
+                                    <Select label="Section Dimensions" value={sectionDimUnit} onChange={setSectionDimUnit} options={[
                                         { value: 'mm', label: 'millimeters (mm)' },
                                         { value: 'cm', label: 'centimeters (cm)' },
                                         { value: 'in', label: 'inches (in)' },
                                     ]} />
-                                    <Select label="Force" value="kN" onChange={() => { }} options={[
+                                    <Select label="Force" value={forceUnit} onChange={setForceUnit} options={[
                                         { value: 'kN', label: 'kilonewtons (kN)' },
                                         { value: 'N', label: 'newtons (N)' },
                                         { value: 'kip', label: 'kips' },
                                         { value: 'kgf', label: 'kgf' },
                                     ]} />
-                                    <Select label="Moment" value="kNm" onChange={() => { }} options={[
+                                    <Select label="Moment" value={momentUnit} onChange={setMomentUnit} options={[
                                         { value: 'kNm', label: 'kN·m' },
                                         { value: 'kNmm', label: 'kN·mm' },
                                         { value: 'kipft', label: 'kip·ft' },
                                     ]} />
-                                    <Select label="Stress" value="MPa" onChange={() => { }} options={[
+                                    <Select label="Stress" value={stressUnit} onChange={setStressUnit} options={[
                                         { value: 'MPa', label: 'MPa (N/mm²)' },
                                         { value: 'kPa', label: 'kPa' },
                                         { value: 'psi', label: 'psi' },
                                         { value: 'ksi', label: 'ksi' },
                                     ]} />
-                                    <Select label="Temperature" value="C" onChange={() => { }} options={[
+                                    <Select label="Temperature" value={tempUnit} onChange={setTempUnit} options={[
                                         { value: 'C', label: '°C' },
                                         { value: 'F', label: '°F' },
                                     ]} />
@@ -722,11 +779,11 @@ export const SettingsPage: FC = () => {
                                     <h3 className="text-slate-900 dark:text-white text-lg font-medium">Notifications</h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Control how you receive notifications.</p>
                                 </div>
-                                <Toggle enabled={true} onChange={() => { }} label="Analysis Completed" description="Get notified when an analysis run finishes." />
-                                <Toggle enabled={true} onChange={() => { }} label="Design Warnings" description="Receive alerts for elements exceeding utilization limits." />
-                                <Toggle enabled={true} onChange={() => { }} label="Shared Projects" description="Get notified when someone shares a project with you." />
-                                <Toggle enabled={false} onChange={() => { }} label="Product Updates" description="Receive emails about new features and updates." />
-                                <Toggle enabled={false} onChange={() => { }} label="Marketing Emails" description="Occasional tips, case studies, and offers." />
+                                <Toggle enabled={notifAnalysis} onChange={setNotifAnalysis} label="Analysis Completed" description="Get notified when an analysis run finishes." />
+                                <Toggle enabled={notifWarnings} onChange={setNotifWarnings} label="Design Warnings" description="Receive alerts for elements exceeding utilization limits." />
+                                <Toggle enabled={notifShared} onChange={setNotifShared} label="Shared Projects" description="Get notified when someone shares a project with you." />
+                                <Toggle enabled={notifUpdates} onChange={setNotifUpdates} label="Product Updates" description="Receive emails about new features and updates." />
+                                <Toggle enabled={notifMarketing} onChange={setNotifMarketing} label="Marketing Emails" description="Occasional tips, case studies, and offers." />
                             </section>
                         )}
 

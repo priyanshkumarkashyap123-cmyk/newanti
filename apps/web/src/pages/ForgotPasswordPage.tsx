@@ -23,10 +23,9 @@ export const ForgotPasswordPage = () => {
 
     useEffect(() => { document.title = 'Forgot Password | BeamLab'; }, []);
 
-    // If using Clerk, redirect to Clerk's forgot password
+    // If using Clerk, redirect to Clerk's forgot password via React Router
     if (isClerkEnabled) {
-        // Clerk handles this through its own UI
-        window.location.href = '/sign-in#/forgot-password';
+        window.location.href = '/sign-in#/factor-one/forgot-password';
         return null;
     }
 

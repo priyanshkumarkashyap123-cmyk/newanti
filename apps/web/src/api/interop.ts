@@ -13,6 +13,22 @@ import { API_CONFIG } from '../config/env';
 
 const API_BASE = API_CONFIG.baseUrl;
 
+/**
+ * Build request headers including auth token when available.
+ */
+function getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+    const token = typeof window !== 'undefined'
+        ? window.localStorage?.getItem('auth_token')
+        : null;
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+}
+
 // ============================================
 // COMMON TYPES
 // ============================================
@@ -83,7 +99,7 @@ export interface STAADImportResult {
 export async function importSTAAD(fileContent: string): Promise<STAADImportResult> {
     const response = await fetch(`${API_BASE}/api/interop/staad/import`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ content: fileContent }),
     });
 
@@ -101,7 +117,7 @@ export async function importSTAAD(fileContent: string): Promise<STAADImportResul
 export async function exportSTAAD(model: StructuralModel): Promise<string> {
     const response = await fetch(`${API_BASE}/api/interop/staad/export`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ model }),
     });
 
@@ -164,7 +180,7 @@ export interface DXFImportResult {
 export async function importDXF(fileContent: string): Promise<DXFImportResult> {
     const response = await fetch(`${API_BASE}/api/interop/dxf/import`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ content: fileContent }),
     });
 
@@ -369,7 +385,7 @@ export async function generateReport(
 ): Promise<ReportResult> {
     const response = await fetch(`${API_BASE}/api/report/generate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ model, results, options }),
     });
 

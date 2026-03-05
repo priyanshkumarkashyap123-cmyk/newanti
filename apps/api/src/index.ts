@@ -467,9 +467,9 @@ app.use("/api/ai", authRequired, analysisRateLimit, aiRoutes);
 app.use("/api/v1/feedback", authRequired, crudRateLimit, feedbackRoutes);
 app.use("/api/feedback", authRequired, crudRateLimit, feedbackRoutes);
 
-// Analytics API (product event tracking — no auth required for track/batch)
-app.use("/api/v1/analytics", analyticsRouter);
-app.use("/api/analytics", analyticsRouter);
+// Analytics API (product event tracking — rate limited to prevent abuse)
+app.use("/api/v1/analytics", crudRateLimit, analyticsRouter);
+app.use("/api/analytics", crudRateLimit, analyticsRouter);
 
 // Get users in a project (for multiplayer) - requires auth + rate limited
 app.get(
@@ -498,15 +498,25 @@ httpServer.listen(PORT, () => {
   logger.info(`WebSocket server ready for real-time collaboration`);
   logger.info(`Security middleware active: helmet, rate limiting, logging`);
 
-  // Connect to MongoDB in background
-  connectDB()
-    .then(() => {
-      dbReady = true;
-      logger.info("MongoDB connected successfully — API routes are now live");
-    })
-    .catch((err) => {
-      logger.error({ err }, "Failed to connect to MongoDB");
-    });
+  // Connect to MongoDB with retry logic
+  const connectWithRetry = (attempt = 1, maxAttempts = 5) => {
+    connectDB()
+      .then(() => {
+        dbReady = true;
+        logger.info("MongoDB connected successfully — API routes are now live");
+      })
+      .catch((err) => {
+        logger.error({ err, attempt }, `Failed to connect to MongoDB (attempt ${attempt}/${maxAttempts})`);
+        if (attempt < maxAttempts) {
+          const delay = Math.min(attempt * 2000, 10000); // Exponential backoff, max 10s
+          logger.info(`Retrying MongoDB connection in ${delay}ms...`);
+          setTimeout(() => connectWithRetry(attempt + 1, maxAttempts), delay);
+        } else {
+          logger.error("All MongoDB connection attempts exhausted. Database routes will return 503.");
+        }
+      });
+  };
+  connectWithRetry();
 });
 
 // ===========================================================================

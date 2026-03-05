@@ -105,14 +105,17 @@ const MEGA_MENU_ITEMS = {
 // SEARCH SUGGESTIONS
 // ============================================
 
-const SEARCH_SUGGESTIONS = [
-  { type: 'action', label: 'Create new beam', shortcut: '⌘N' },
-  { type: 'action', label: 'Run analysis', shortcut: '⌘R' },
-  { type: 'action', label: 'Add point load', shortcut: 'L' },
-  { type: 'page', label: 'Go to Dashboard' },
-  { type: 'page', label: 'View Reports' },
-  { type: 'help', label: 'How to add supports?' },
-  { type: 'help', label: 'Modal analysis tutorial' },
+const SEARCH_SUGGESTIONS: Array<{ type: string; label: string; shortcut?: string; path?: string }> = [
+  { type: 'action', label: 'Create new beam', shortcut: '⌘N', path: '/app' },
+  { type: 'action', label: 'Run analysis', shortcut: '⌘R', path: '/app' },
+  { type: 'action', label: 'Add point load', shortcut: 'L', path: '/app' },
+  { type: 'page', label: 'Go to Dashboard', path: '/stream' },
+  { type: 'page', label: 'View Reports', path: '/reports' },
+  { type: 'page', label: 'Steel Design', path: '/design/steel' },
+  { type: 'page', label: 'Concrete Design', path: '/design/concrete' },
+  { type: 'page', label: 'Settings', path: '/settings' },
+  { type: 'help', label: 'How to add supports?', path: '/help' },
+  { type: 'help', label: 'Modal analysis tutorial', path: '/learning' },
 ];
 
 // ============================================
@@ -127,6 +130,7 @@ export const EnhancedNavbar: FC = () => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Analysis Complete', desc: 'Project "Bridge Design" analysis finished', time: '2m ago', unread: true },
     { id: 2, title: 'Welcome to Pro!', desc: 'Your trial has been activated', time: '1h ago', unread: true },
@@ -350,12 +354,33 @@ export const EnhancedNavbar: FC = () => {
             {/* Notifications */}
             {isSignedIn && (
               <div className="relative">
-                <button type="button" aria-label="Notifications" className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all">
+                <button type="button" aria-label="Notifications" aria-expanded={notifOpen} aria-haspopup="true"
+                  onClick={() => setNotifOpen(!notifOpen)}
+                  className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-all">
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
                   )}
                 </button>
+                {notifOpen && (
+                  <div role="menu" className="absolute right-0 top-12 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                    <div className="p-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white">Notifications</span>
+                      {unreadCount > 0 && (
+                        <button type="button" className="text-xs text-blue-500 hover:text-blue-400" onClick={() => { setNotifications(prev => prev.map(n => ({ ...n, unread: false }))); }}>Mark all read</button>
+                      )}
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {notifications.map(n => (
+                        <div key={n.id} className={`p-3 border-b border-slate-100 dark:border-slate-800 ${n.unread ? 'bg-blue-50/50 dark:bg-blue-500/5' : ''}`}>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">{n.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{n.desc}</p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{n.time}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -417,14 +442,14 @@ export const EnhancedNavbar: FC = () => {
                       <button type="button"
                         key={i}
                         className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-                        onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                        onClick={() => { setSearchOpen(false); setSearchQuery(''); if (item.path) navigate(item.path); }}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-2 h-2 rounded-full ${
                             item.type === 'action' ? 'bg-blue-500' :
                             item.type === 'page' ? 'bg-green-500' : 'bg-purple-500'
                           }`} />
-                          <span className="text-sm text-white">{item.label}</span>
+                          <span className="text-sm text-slate-900 dark:text-white">{item.label}</span>
                         </div>
                         {item.shortcut && (
                           <kbd className="px-2 py-1 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded">

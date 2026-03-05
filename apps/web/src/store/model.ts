@@ -1771,5 +1771,8 @@ export const useModelStore = create<ModelState>()(
 
 // Re-export with temporal type that is erased by the withDevtools any wrapper
 export const useModelStoreTemporal = (useModelStore as unknown as {
-  temporal: { getState: () => TemporalState<ModelState> };
+  temporal: {
+    getState: () => TemporalState<ModelState>;
+    subscribe: (listener: (state: TemporalState<ModelState>) => void) => () => void;
+  };
 }).temporal;

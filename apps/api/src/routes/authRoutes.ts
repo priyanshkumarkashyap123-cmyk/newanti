@@ -55,11 +55,24 @@ const isProduction = process.env['NODE_ENV'] === 'production';
 const DEFAULT_JWT_SECRET = 'default-beamlab-jwt-secret-please-set-in-production';
 const DEFAULT_JWT_REFRESH_SECRET = 'default-beamlab-refresh-secret-please-set-in-production';
 
-if (!isProduction && !clerkEnabled && (!JWT_SECRET_RAW || !JWT_REFRESH_SECRET_RAW)) {
+if (!clerkEnabled && (!JWT_SECRET_RAW || !JWT_REFRESH_SECRET_RAW)) {
+  if (isProduction) {
+    throw new Error(
+      'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required ' +
+        'in production when Clerk is not enabled. Refusing to start with insecure defaults.',
+    );
+  }
   throw new Error(
     'FATAL: JWT_SECRET and JWT_REFRESH_SECRET environment variables are required ' +
       'when USE_CLERK is not enabled and CLERK_SECRET_KEY is not set. ' +
-      'Refusing to start with insecure defaults in development.',
+      'Refusing to start with insecure defaults.',
+  );
+}
+
+// Warn in production if Clerk is enabled but default secrets are being used
+if (isProduction && !clerkEnabled && JWT_SECRET_RAW === DEFAULT_JWT_SECRET) {
+  throw new Error(
+    'FATAL: Default JWT_SECRET detected in production. Set a strong random secret.',
   );
 }
 
@@ -401,8 +414,7 @@ router.post(
         profile.picture,
       );
 
-      res.json({
-        success: true,
+      res.ok({
         user: sanitizeUser(result.user),
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
@@ -474,8 +486,7 @@ router.post(
 
       const result = await handleOAuthUser(email, firstName, lastName || '', profile.avatar_url);
 
-      res.json({
-        success: true,
+      res.ok({
         user: sanitizeUser(result.user),
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
@@ -535,8 +546,7 @@ router.post(
         profile.picture,
       );
 
-      res.json({
-        success: true,
+      res.ok({
         user: sanitizeUser(result.user),
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
@@ -619,8 +629,7 @@ router.post(
       // Continue signup even if email fails - user can request resend
     }
 
-    res.status(201).json({
-      success: true,
+    res.status(201).ok({
       user: sanitizeUser(user),
       accessToken,
       refreshToken,
@@ -674,8 +683,7 @@ router.post(
     // Update last login
     await UserModel.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
 
-    res.json({
-      success: true,
+    res.ok({
       user: sanitizeUser(user),
       accessToken,
       refreshToken,
@@ -696,7 +704,7 @@ router.post(
       await RefreshTokenModel.deleteOne({ token: refreshToken });
     }
 
-    res.json({ success: true, message: 'Signed out successfully' });
+    res.ok({ message: 'Signed out successfully' });
   }),
 );
 

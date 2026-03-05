@@ -73,6 +73,8 @@ const CollaborationHub: React.FC = () => {
     "all" | "open" | "pending" | "resolved"
   >("all");
   const [newCommentText, setNewCommentText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<
     "viewer" | "engineer" | "reviewer"
@@ -483,6 +485,31 @@ const CollaborationHub: React.FC = () => {
   const handleToggleAccess = useCallback((key: string) => {
     setAccessSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
+
+  const handleReply = useCallback((commentId: string) => {
+    if (!replyText.trim()) return;
+    const reply: Comment = {
+      id: String(Date.now()),
+      userId: myId || 'self',
+      userName: myName || 'You',
+      avatar: '👤',
+      content: replyText.trim(),
+      timestamp: new Date().toLocaleTimeString(),
+      status: 'open',
+      replies: [],
+    };
+    setComments(prev => prev.map(c =>
+      c.id === commentId ? { ...c, replies: [...c.replies, reply] } : c
+    ));
+    setReplyText('');
+    setReplyingTo(null);
+  }, [replyText, myId, myName]);
+
+  const handleCreateMilestone = useCallback(() => {
+    const name = prompt('Milestone name:');
+    if (!name?.trim()) return;
+    addActivity(myName || 'You', 'created milestone', name.trim());
+  }, [myName, addActivity]);
 
   const filteredComments =
     commentFilter === "all"
@@ -928,7 +955,7 @@ const CollaborationHub: React.FC = () => {
                   )}
 
                   <div className="flex gap-3 mt-4">
-                    <button type="button" className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button type="button" onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)} className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                       ↩️ Reply
                     </button>
                     <button type="button"
@@ -941,6 +968,21 @@ const CollaborationHub: React.FC = () => {
                       📍 Show in Model
                     </button>
                   </div>
+                  {replyingTo === comment.id && (
+                    <div className="mt-3 flex gap-2">
+                      <input
+                        type="text"
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder="Write a reply..."
+                        className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 text-sm"
+                        onKeyDown={(e) => e.key === 'Enter' && handleReply(comment.id)}
+                      />
+                      <button type="button" onClick={() => handleReply(comment.id)} disabled={!replyText.trim()} className="px-3 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-500 disabled:opacity-50">
+                        Send
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -986,7 +1028,7 @@ const CollaborationHub: React.FC = () => {
             <span className="text-2xl">📚</span>
             Version History
           </h3>
-          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" onClick={handleCreateMilestone} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>📌</span>
             Create Milestone
           </button>

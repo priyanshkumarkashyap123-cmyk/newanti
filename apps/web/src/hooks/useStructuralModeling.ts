@@ -52,17 +52,13 @@ export function useStructuralModeling(
   }, []);
 
   // Handle node addition
-  const handleNodeAdd = useCallback((node: Node) => {
-    console.log('Node added:', node.id);
-    // State should be updated via zustand store
-    // This is just a callback wrapper
+  const handleNodeAdd = useCallback((_node: Node) => {
+    // State updated via zustand store — callback wrapper
   }, []);
 
   // Handle member addition
-  const handleMemberAdd = useCallback((member: Member) => {
-    console.log('Member added:', member.id);
-    // State should be updated via zustand store
-    // This is just a callback wrapper
+  const handleMemberAdd = useCallback((_member: Member) => {
+    // State updated via zustand store — callback wrapper
   }, []);
 
   // Handle selection

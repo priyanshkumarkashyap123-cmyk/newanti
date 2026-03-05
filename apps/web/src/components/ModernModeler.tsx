@@ -647,7 +647,9 @@ export const ModernModeler: FC = () => {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable) return;
+      // Don't fire shortcuts when inside a contenteditable parent or custom text editor
+      if (target.closest('[contenteditable="true"]') || target.getAttribute('role') === 'textbox') return;
       // Don't fire shortcuts when a dialog/modal is open
       if (document.querySelector('[role="dialog"], [role="alertdialog"], .modal-overlay')) return;
 
@@ -665,9 +667,13 @@ export const ModernModeler: FC = () => {
         e.preventDefault();
         useModelStore.getState().deleteSelection();
       }
-      // F key → Fit View
+      // F key → Fit View (only when focused on body/canvas, not form elements)
       if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
-        document.dispatchEvent(new CustomEvent('fit-view'));
+        const activeEl = document.activeElement;
+        const isCanvas = activeEl === document.body || activeEl?.tagName === 'CANVAS';
+        if (isCanvas) {
+          document.dispatchEvent(new CustomEvent('fit-view'));
+        }
       }
     };
     window.addEventListener('keydown', handler);

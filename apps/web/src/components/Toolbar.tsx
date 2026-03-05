@@ -1,5 +1,5 @@
 
-import { FC, useState, useCallback, memo } from 'react';
+import { FC, useState, useCallback, memo, useSyncExternalStore } from 'react';
 import {
     MousePointer2,
     Circle,
@@ -46,7 +46,7 @@ const ToolBtn = memo<ToolBtnProps>(({
     const variantClasses: Record<string, string> = {
         default: isActive
             ? 'bg-blue-600/20 text-blue-300 border-blue-500/40 shadow-sm shadow-blue-500/10'
-            : 'bg-slate-100/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white hover:border-slate-600/60',
+            : 'bg-slate-100/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 hover:text-slate-900 dark:hover:text-white hover:border-slate-300/60 dark:hover:border-slate-600/60',
         primary: isActive
             ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/30'
             : 'bg-blue-600/80 text-white border-blue-500/60 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/30',
@@ -103,9 +103,14 @@ export const Toolbar: FC = () => {
     const setShowSFD = useModelStore((state) => state.setShowSFD);
     const setShowBMD = useModelStore((state) => state.setShowBMD);
     const setShowResults = useModelStore((state) => state.setShowResults);
-    const { undo, redo, pastStates, futureStates } = useModelStoreTemporal.getState();
+    // Subscribe reactively to temporal state so undo/redo buttons enable/disable correctly
+    const temporalState = useSyncExternalStore(
+        useModelStoreTemporal.subscribe,
+        () => useModelStoreTemporal.getState(),
+        () => useModelStoreTemporal.getState(),
+    );
+    const { undo, redo, pastStates, futureStates } = temporalState;
     const [message, setMessage] = useState<string | null>(null);
-    const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
     const [showPlateDialog, setShowPlateDialog] = useState(false);
 
     // Subscription for feature gating
@@ -267,7 +272,7 @@ export const Toolbar: FC = () => {
                         ? 'bg-emerald-900/90 text-emerald-200 border-emerald-700/50'
                         : isError
                             ? 'bg-red-900/90 text-red-200 border-red-700/50'
-                            : 'bg-slate-100/90 dark:bg-slate-800/90 text-slate-200 border-slate-200/50 dark:border-slate-700/50'
+                            : 'bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 border-slate-200/50 dark:border-slate-700/50'
                     }
                 `}>
                     {message}

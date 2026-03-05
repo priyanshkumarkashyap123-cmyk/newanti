@@ -107,7 +107,7 @@ const ErrorFallback = ({ error, errorInfo, onRetry }: ErrorFallbackProps) => {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white text-center">
                         Something went wrong
                     </h1>
-                    <p className="text-red-300/70 text-center mt-2 text-sm">
+                    <p className="text-red-600 dark:text-red-300/70 text-center mt-2 text-sm">
                         An unexpected error occurred. Don't worry, your data is safe.
                     </p>
                 </div>

@@ -538,7 +538,12 @@ class RustApiService {
         .replace("http://", "ws://")
         .replace("https://", "wss://");
 
-    const ws = new WebSocket(`${wsUrl}/analysis/${jobId}`);
+    // Include auth token as query param (WebSocket doesn't support custom headers)
+    const token = typeof window !== 'undefined'
+      ? window.localStorage?.getItem('auth_token')
+      : null;
+    const authQuery = token ? `?token=${encodeURIComponent(token)}` : '';
+    const ws = new WebSocket(`${wsUrl}/analysis/${jobId}${authQuery}`);
 
     ws.onmessage = (event) => {
       try {

@@ -372,11 +372,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <div className="absolute right-0 top-0 bottom-0 w-80 bg-slate-50 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col z-50">
             {/* Header */}
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                     <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     Print Settings
                 </h3>
-                <button type="button" onClick={onClose} className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <button onClick={onClose} className="p-1 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white">
                     <X className="w-4 h-4" />
                 </button>
             </div>
@@ -388,14 +388,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     { id: 'header', label: 'Header/Footer', icon: <Type className="w-4 h-4" /> },
                     { id: 'watermark', label: 'Watermark', icon: <Image className="w-4 h-4" /> }
                 ].map(tab => (
-                    <button type="button"
+                    <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`
                             flex-1 py-2 text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1 transition-colors
                             ${activeTab === tab.id 
                                 ? 'text-cyan-400 border-b-2 border-cyan-400' 
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'
                             }
                         `}
                     >
@@ -415,7 +415,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             <select
                                 value={settings.pageSize}
                                 onChange={(e) => updateSettings('pageSize', e.target.value as PageSize)}
-                                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+                                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                             >
                                 {Object.keys(PAGE_SIZES).map(size => (
                                     <option key={size} value={size}>{size}</option>
@@ -428,7 +428,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Orientation</label>
                             <div className="flex gap-2">
                                 {(['portrait', 'landscape'] as const).map(orient => (
-                                    <button type="button"
+                                    <button
                                         key={orient}
                                         onClick={() => updateSettings('orientation', orient)}
                                         className={`
@@ -460,7 +460,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                                 ...settings.margins,
                                                 [side]: parseInt(e.target.value) || 0
                                             })}
-                                            className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white text-sm"
+                                            className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                         />
                                     </div>
                                 ))}
@@ -473,7 +473,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                             <select
                                 value={settings.quality}
                                 onChange={(e) => updateSettings('quality', e.target.value as PrintQuality)}
-                                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+                                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                             >
                                 <option value="draft">Draft (Fast)</option>
                                 <option value="normal">Normal</option>
@@ -499,8 +499,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {/* Header Settings */}
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-slate-900 dark:text-white">Header</span>
-                                <button type="button"
+                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Header</span>
+                                <button
                                     onClick={() => updateSettings('header', {
                                         ...settings.header,
                                         enabled: !settings.header.enabled
@@ -518,21 +518,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                         value={settings.header.left}
                                         onChange={(e) => updateSettings('header', { ...settings.header, left: e.target.value })}
                                         placeholder="Left text"
-                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.header.center}
                                         onChange={(e) => updateSettings('header', { ...settings.header, center: e.target.value })}
                                         placeholder="Center text"
-                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.header.right}
                                         onChange={(e) => updateSettings('header', { ...settings.header, right: e.target.value })}
                                         placeholder="Right text"
-                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                 </div>
                             )}
@@ -541,8 +541,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         {/* Footer Settings */}
                         <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-slate-900 dark:text-white">Footer</span>
-                                <button type="button"
+                                <span className="text-sm font-medium text-zinc-900 dark:text-white">Footer</span>
+                                <button
                                     onClick={() => updateSettings('footer', {
                                         ...settings.footer,
                                         enabled: !settings.footer.enabled
@@ -560,21 +560,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                         value={settings.footer.left}
                                         onChange={(e) => updateSettings('footer', { ...settings.footer, left: e.target.value })}
                                         placeholder="Left text"
-                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.footer.center}
                                         onChange={(e) => updateSettings('footer', { ...settings.footer, center: e.target.value })}
                                         placeholder="Center text"
-                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                     <input
                                         type="text"
                                         value={settings.footer.right}
                                         onChange={(e) => updateSettings('footer', { ...settings.footer, right: e.target.value })}
                                         placeholder="Right text"
-                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-zinc-900 dark:text-white text-sm"
                                     />
                                 </div>
                             )}
@@ -597,7 +597,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                     <select
                                         value={settings.pageNumberFormat}
                                         onChange={(e) => updateSettings('pageNumberFormat', e.target.value as any)}
-                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                                     >
                                         <option value="number">1, 2, 3...</option>
                                         <option value="x-of-y">Page 1 of N</option>
@@ -645,7 +645,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                             ...settings.watermark,
                                             text: e.target.value
                                         })}
-                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                                     />
                                 </div>
                                 
@@ -693,7 +693,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                                             ...settings.watermark,
                                             fontSize: parseInt(e.target.value)
                                         })}
-                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-zinc-900 dark:text-white text-sm"
                                     >
                                         <option value={36}>Small (36pt)</option>
                                         <option value={48}>Medium (48pt)</option>
@@ -780,16 +780,16 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
             {/* Header */}
             <div className="h-14 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4">
                 <div className="flex items-center gap-4">
-                    <button type="button"
+                    <button
                         onClick={onClose}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"
+                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"
                     >
                         <X className="w-5 h-5" />
                     </button>
                     
                     <div className="flex items-center gap-2">
                         <FileText className="w-5 h-5 text-cyan-400" />
-                        <span className="font-semibold text-slate-900 dark:text-white">{projectName}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-white">{projectName}</span>
                         <span className="text-slate-500">• Print Preview</span>
                     </div>
                     <div className="hidden md:flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400">
@@ -805,16 +805,16 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                 <div className="flex items-center gap-2">
                     {/* Zoom Controls */}
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                        <button type="button" onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
+                        <button onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded">
                             <ZoomOut className="w-4 h-4" />
                         </button>
-                        <span className="text-sm text-slate-900 dark:text-white px-2 min-w-[50px] text-center">
+                        <span className="text-sm text-zinc-900 dark:text-white px-2 min-w-[50px] text-center">
                             {Math.round(zoom * 100)}%
                         </span>
-                        <button type="button" onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
+                        <button onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded">
                             <ZoomIn className="w-4 h-4" />
                         </button>
-                        <button type="button" onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded">
+                        <button onClick={handleZoomReset} aria-label="Reset zoom" title="Reset zoom" className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white rounded">
                             <RotateCw className="w-4 h-4" />
                         </button>
                     </div>
@@ -822,10 +822,10 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     {/* View Mode */}
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                         {(['single', 'double', 'overview'] as const).map(mode => (
-                            <button type="button"
+                            <button
                                 key={mode}
                                 onClick={() => setViewMode(mode)}
-                                className={`p-1.5 rounded ${viewMode === mode ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                                className={`p-1.5 rounded ${viewMode === mode ? 'bg-slate-200 dark:bg-slate-700 text-zinc-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white'}`}
                                 title={mode === 'single' ? 'Single Page' : mode === 'double' ? 'Two Pages' : 'Overview'}
                             >
                                 {mode === 'overview' ? (
@@ -838,7 +838,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     </div>
                     
                     {/* Settings */}
-                    <button type="button"
+                    <button
                         onClick={() => setShowSettings(!showSettings)}
                         className={`p-2 rounded-lg transition-colors ${
                             showSettings ? 'bg-cyan-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-white'
@@ -848,15 +848,15 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                     </button>
                     
                     {/* Actions */}
-                    <button type="button"
+                    <button
                         onClick={onExportPDF}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2"
+                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-zinc-900 dark:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2"
                     >
                         <Download className="w-4 h-4" />
                         Export PDF
                     </button>
                     
-                    <button type="button"
+                    <button
                         onClick={handlePrint}
                         className="px-4 py-2 bg-cyan-500 text-white font-medium rounded-lg hover:bg-cyan-400 flex items-center gap-2"
                     >
@@ -953,24 +953,24 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
             
             {/* Footer - Page Navigation */}
             <div className="h-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-4">
-                <button type="button"
+                <button
                     onClick={handlePrevPage}
                     disabled={currentPage === 1}
-                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                     <ChevronLeft className="w-5 h-5" />
                 </button>
                 
                 <div className="flex items-center gap-2">
-                    <span className="text-slate-900 dark:text-white font-medium">{currentPage}</span>
+                    <span className="text-zinc-900 dark:text-white font-medium">{currentPage}</span>
                     <span className="text-slate-500 dark:text-slate-400">of</span>
                     <span className="text-slate-500 dark:text-slate-400">{totalPages}</span>
                 </div>
                 
-                <button type="button"
+                <button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
-                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-zinc-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                     <ChevronRight className="w-5 h-5" />
                 </button>
@@ -978,7 +978,7 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                 {/* Page Thumbnails */}
                 <div className="flex items-center gap-1 ml-4">
                     {displayPages.slice(0, 10).map((_, index) => (
-                        <button type="button"
+                        <button
                             key={index}
                             onClick={() => setCurrentPage(index + 1)}
                             className={`w-6 h-8 rounded border transition-colors ${

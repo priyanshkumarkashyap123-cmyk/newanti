@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../providers/AuthProvider';
+import { API_CONFIG } from '../config/env';
 
 // ============================================
 // TYPES
@@ -143,8 +144,7 @@ export function useTierAccess(): TierAccess {
                             headers['Authorization'] = `Bearer ${token}`;
                         }
 
-                        const API_URL = import.meta.env.VITE_API_URL || 'https://api.beamlab.app';
-                        const response = await fetch(`${API_URL}/api/user/limits`, {
+                        const response = await fetch(`${API_CONFIG.baseUrl}/api/user/limits`, {
                             headers,
                             credentials: 'include',
                             signal: controller.signal,
