@@ -206,14 +206,13 @@ logger.info(
 # Request logging middleware (added BEFORE CORS so it wraps everything)
 app.add_middleware(RequestLoggingMiddleware)
 
-# CORS Middleware - use specific origins to allow credentials
+# CORS Middleware - use wildcard for maximum compatibility
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allow_origins,  # Specific origins, not wildcard
-    allow_origin_regex=r"https://([a-z0-9-]+\.)*beamlabultimate\.tech",
-    allow_credentials=True,  # Allow cookies/auth headers
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Request-ID", "X-CSRF-Token", "Cache-Control", "sentry-trace", "baggage"],
+    allow_origins=["*"],  # Allow all origins for now
+    allow_credentials=False,  # Credentials require specific origins
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
     expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
 
