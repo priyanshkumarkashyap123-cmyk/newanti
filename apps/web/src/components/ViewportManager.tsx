@@ -438,9 +438,8 @@ export const ViewportManager: FC = () => {
     return <WebglChecking />;
   }
 
-  if (webglStatus === "unsupported") {
-    return <WebglFallback error={webglError || undefined} />;
-  }
+  // Show warning banner but still render canvas (non-blocking fallback)
+  const showWebglWarning = webglStatus === "unsupported";
 
   return (
     <div
@@ -450,6 +449,15 @@ export const ViewportManager: FC = () => {
       <div
         className="absolute top-2.5 right-2.5 z-50 flex flex-col gap-1.5 items-end"
       >
+        {showWebglWarning && (
+          <div className="max-w-[320px] bg-red-900/90 border border-red-500/50 rounded-lg px-3 py-2 text-[11px] text-white shadow-lg">
+            <div className="font-semibold mb-1">⚠️ WebGL Detection Issue</div>
+            <div className="text-red-100">{webglError || "WebGL may not be available"}</div>
+            <div className="text-red-200 mt-1 text-[10px]">
+              Attempting to render anyway. If you see a blank canvas, try updating your browser.
+            </div>
+          </div>
+        )}
         {!webGpuNoticeDismissed && (
           <div className="max-w-[280px] bg-[rgba(0,0,0,0.85)] border border-[rgba(255,255,255,0.12)] rounded-lg px-3 py-2 text-[11px] text-[#d1d5db] shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
             <div className="flex items-start justify-between gap-2">
