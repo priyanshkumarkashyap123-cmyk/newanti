@@ -146,7 +146,7 @@ export const ModalPortal: React.FC = memo(function ModalPortal() {
       <IsOpenModal modalKey="loadDialog" component={LoadDialog} />
       <IsOpenModal modalKey="structureGallery" component={StructureGallery} />
       <IsOpenModal modalKey="curvedStructure" component={CurvedStructureDialog} />
-      <IsOpenModal modalKey="detailedDesign" component={DetailedDesignPanel} />
+      <OpenPropModal modalKey="detailedDesign" component={DetailedDesignPanel} />
       <IsOpenModal modalKey="steelDesign" component={SteelDesignDialog} />
       <IsOpenModal modalKey="concreteDesign" component={ConcreteDesignDialog} />
       <IsOpenModal modalKey="connectionDesign" component={ConnectionDesignDialog} />

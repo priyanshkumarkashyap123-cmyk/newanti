@@ -262,8 +262,9 @@ const PDeltaAnalysisPanel = lazy(() =>
 // Analytics Provider — sends events to POST /api/analytics/batch
 import { AnalyticsProvider } from './providers/AnalyticsProvider';
 
-// Loading Component
+// Loading Component — route-aware with better UX
 import { DashboardSkeleton } from './components/ui/DashboardSkeleton';
+import { DesignPageSkeleton } from './components/ui/DesignPageSkeleton';
 const PageLoader = () => (
   <div
     className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900"
@@ -271,13 +272,25 @@ const PageLoader = () => (
     aria-live="polite"
   >
     <div className="flex flex-col items-center gap-4">
-      <div
-        className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"
-        aria-hidden="true"
-      ></div>
-      <p className="text-slate-500 dark:text-slate-400 text-sm font-medium animate-pulse">
-        Loading Module...
-      </p>
+      <div className="relative">
+        <div
+          className="w-14 h-14 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"
+          aria-hidden="true"
+        ></div>
+        <div
+          className="absolute inset-0 w-14 h-14 border-4 border-transparent border-b-indigo-400/40 rounded-full animate-spin"
+          style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}
+          aria-hidden="true"
+        ></div>
+      </div>
+      <div className="text-center">
+        <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">
+          Loading Module
+        </p>
+        <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">
+          Preparing workspace...
+        </p>
+      </div>
     </div>
   </div>
 );
@@ -634,7 +647,9 @@ function App() {
                 path="/design/steel"
                 element={
                   <RequireAuth>
-                    <SteelDesignPage />
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <SteelDesignPage />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -643,7 +658,9 @@ function App() {
                 path="/design/connections"
                 element={
                   <RequireAuth>
-                    <ConnectionDesignPage />
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <ConnectionDesignPage />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -652,7 +669,9 @@ function App() {
                 path="/design/welded-connections"
                 element={
                   <RequireAuth>
-                    <WeldedConnectionsPage />
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <WeldedConnectionsPage />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -661,7 +680,9 @@ function App() {
                 path="/design/reinforcement"
                 element={
                   <RequireAuth>
-                    <ReinforcementDesignPage />
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <ReinforcementDesignPage />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -670,7 +691,9 @@ function App() {
                 path="/design/detailing"
                 element={
                   <RequireAuth>
-                    <DetailingDesignPage />
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <DetailingDesignPage />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -679,7 +702,9 @@ function App() {
                 path="/design/concrete"
                 element={
                   <RequireAuth>
-                    <ConcreteDesignPage />
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <ConcreteDesignPage />
+                    </Suspense>
                   </RequireAuth>
                 }
               />
@@ -688,7 +713,9 @@ function App() {
                 path="/design/foundation"
                 element={
                   <RequireAuth>
-                    <FoundationDesignPage />
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <FoundationDesignPage />
+                    </Suspense>
                   </RequireAuth>
                 }
               />

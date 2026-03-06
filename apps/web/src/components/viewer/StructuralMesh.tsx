@@ -9,7 +9,7 @@
  * - Proper member orientation using lookAt()
  */
 
-import { FC, useMemo, useRef } from 'react';
+import { FC, useMemo, useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Edges, Outlines } from '@react-three/drei';
 import * as THREE from 'three';
@@ -466,6 +466,13 @@ export const StructuralMember: FC<StructuralMemberProps> = ({
         if (!isValid || length <= 0) return null;
         return getSectionGeometry(member.sectionType, member.dimensions, length);
     }, [member.sectionType, member.dimensions, length, isValid]);
+
+    // Dispose ExtrudeGeometry on change/unmount to prevent GPU memory leaks
+    useEffect(() => {
+        return () => {
+            if (geometry) geometry.dispose();
+        };
+    }, [geometry]);
 
     // Determine material color based on section type (concrete vs steel vs cable)
     const materialColor = useMemo(() => {

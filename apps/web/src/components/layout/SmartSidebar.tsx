@@ -56,6 +56,7 @@ import { useModelStore } from "../../store/model";
 import { TEMPLATE_BANK } from "../../data/templates";
 import { useSubscription } from "../../hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
+import { prefetchRoute } from "../../utils/routePrefetch";
 import { Tooltip } from "../ui/Tooltip";
 
 // Static color map for Tailwind JIT — dynamic class interpolation doesn't work
@@ -1570,6 +1571,7 @@ const CivilToolsPanel: FC = () => {
         </p>
         <button type="button"
           onClick={() => navigate("/tools/bar-bending")}
+          onMouseEnter={() => prefetchRoute("/tools/bar-bending")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Bar Bending Schedule</span>
@@ -1584,6 +1586,7 @@ const CivilToolsPanel: FC = () => {
         </button>
         <button type="button"
           onClick={() => navigate("/design/detailing")}
+          onMouseEnter={() => prefetchRoute("/design/detailing")}
           className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/50 dark:bg-slate-800/50 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors text-sm"
         >
           <span>Detailing & Drawings</span>

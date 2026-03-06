@@ -257,6 +257,13 @@ const StressMember: FC<StressMemberProps> = ({
         
         return { geometry: tubeGeo, colors: colorValues, maxStressLocation: maxLoc };
     }, [startPos, endPos, stressProfile, stressType, maxStress, capacity]);
+
+    // Dispose tube geometry on change/unmount
+    useEffect(() => {
+        return () => {
+            if (geometry) geometry.dispose();
+        };
+    }, [geometry]);
     
     // Pulse animation for critical members
     useFrame((_, delta) => {

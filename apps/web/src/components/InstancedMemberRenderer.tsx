@@ -14,6 +14,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useDisposables, disposeGroup } from '../utils/useDisposable';
 import type { Member, Node } from '../store/modelTypes';
 
 interface InstancedMemberRendererProps {
@@ -75,6 +76,12 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
     }),
   }), []);
 
+  // Dispose geometries & materials on unmount
+  useDisposables([
+    geometries.column, geometries.beam, geometries.brace,
+    materials.column, materials.beam, materials.brace,
+  ]);
+
   // Initialize instance batches
   useEffect(() => {
     // Count members by type
@@ -122,6 +129,13 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
     });
 
     batchesRef.current = batches;
+
+    // Cleanup instanced meshes on unmount
+    return () => {
+      if (groupRef.current) {
+        disposeGroup(groupRef.current);
+      }
+    };
   }, [members.size, geometries, materials]);
 
   // Update instance matrices when members change

@@ -8,7 +8,7 @@
  * - Scale factor slider for deflection
  */
 
-import { FC, useMemo, useState, useCallback } from 'react';
+import { FC, useMemo, useState, useCallback, useEffect } from 'react';
 import { Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -200,6 +200,13 @@ const ForcesDiagram: FC<MomentDiagramProps> = ({
 
         return geometry;
     }, [points, colors, startPos, endPos, xValues]);
+
+    // Dispose geometry on change/unmount to prevent GPU memory leaks
+    useEffect(() => {
+        return () => {
+            if (filledGeometry) filledGeometry.dispose();
+        };
+    }, [filledGeometry]);
 
     if (!filledGeometry) return null;
 

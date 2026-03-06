@@ -3,8 +3,9 @@
  * Provides easy access to all pages and features organized by category
  */
 
-import React, { FC, useState, useMemo } from 'react';
+import React, { FC, useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { prefetchRoute, prefetchRoutes } from '../../utils/routePrefetch';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronRight,
@@ -532,10 +533,15 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
     setExpandedCategories(newExpanded);
   };
 
-  const handleNavigate = (path: string) => {
+  const handleNavigate = useCallback((path: string) => {
     navigate(path);
     onNavigate?.();
-  };
+  }, [navigate, onNavigate]);
+
+  // Prefetch all routes in a category when hovering the category header
+  const handleCategoryHover = useCallback((category: typeof FEATURE_CATEGORIES[0]) => {
+    prefetchRoutes(category.features.map(f => f.path));
+  }, []);
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
@@ -564,6 +570,7 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
                 {/* Category Header */}
                 <motion.button
                   onClick={() => toggleCategory(category.id)}
+                  onMouseEnter={() => handleCategoryHover(category)}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
                 >
                   <ChevronRight
@@ -592,6 +599,8 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
                         <motion.button
                           key={feature.id}
                           onClick={() => handleNavigate(feature.path)}
+                          onMouseEnter={() => prefetchRoute(feature.path)}
+                          onFocus={() => prefetchRoute(feature.path)}
                           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
                         >
                           <div className="flex-shrink-0 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400">

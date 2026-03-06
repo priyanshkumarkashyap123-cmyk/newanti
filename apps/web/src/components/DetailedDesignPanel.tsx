@@ -7,11 +7,12 @@
  * - RC Column: interaction diagram, biaxial check, tie spacing, lap splices
  * - Steel: section classification, LTB, web buckling, stiffener needs
  *
- * This is what STAAD Pro & ETABS provide that was previously missing.
+ * AUTO-POPULATES from analysis results when a model has been analyzed.
+ * Users can select individual members or batch-design all members at once.
  */
 
 import React from 'react';
-import { FC, useState, useMemo, useCallback, Fragment } from "react";
+import { FC, useState, useMemo, useCallback, useEffect, Fragment } from "react";
 import {
   Ruler,
   BarChart3,
@@ -23,6 +24,10 @@ import {
   ChevronDown,
   ChevronRight,
   Square,
+  Zap,
+  Download,
+  RefreshCw,
+  ListChecks,
 } from "lucide-react";
 import {
   designRCBeamDetailed,
@@ -39,15 +44,83 @@ import {
   type SteelDetailedResult,
   REBAR_SIZES,
 } from "../engines/DetailedSectionDesign";
+import { useModelStore } from "../store/model";
+import type { Member, MemberForceData, Node as ModelNode } from "../store/modelTypes";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 
 interface DetailedDesignPanelProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
 }
 
 type DesignMode = "rc_beam" | "rc_slab" | "rc_column" | "steel";
+type MaterialType = "concrete" | "steel";
+
+/** Determine if a member is primarily vertical (column) or horizontal (beam) */
+function classifyMember(
+  member: Member,
+  startNode: ModelNode | undefined,
+  endNode: ModelNode | undefined
+): { orientation: "column" | "beam" | "brace"; length: number } {
+  if (!startNode || !endNode) return { orientation: "beam", length: 3000 };
+  const dx = endNode.x - startNode.x;
+  const dy = endNode.y - startNode.y;
+  const dz = endNode.z - startNode.z;
+  const L = Math.sqrt(dx * dx + dy * dy + dz * dz); // meters
+  const lengthMm = L * 1000;
+  // If vertical component dominates (>60% of length), it's a column
+  const verticalRatio = Math.abs(dy) / (L || 1);
+  if (verticalRatio > 0.6) return { orientation: "column", length: lengthMm };
+  // If roughly 45° — a brace
+  if (verticalRatio > 0.3 && verticalRatio < 0.7) return { orientation: "brace", length: lengthMm };
+  return { orientation: "beam", length: lengthMm };
+}
+
+/** Extract max forces from MemberForceData (takes absolute max of start/end) */
+function extractMaxForces(forces: MemberForceData) {
+  let Pu = Math.abs(forces.axial);
+  let Vu = Math.abs(forces.shearY);
+  let Mu = Math.abs(forces.momentZ);
+  let Tu = Math.abs(forces.torsion);
+  let Mux = Math.abs(forces.momentZ);
+  let Muy = Math.abs(forces.momentY);
+
+  // If diagram data exists, find envelope (max values along the length)
+  if (forces.diagramData) {
+    const dd = forces.diagramData;
+    if (dd.axial?.length) Pu = Math.max(Pu, ...dd.axial.map(Math.abs));
+    if (dd.shear_y?.length) Vu = Math.max(Vu, ...dd.shear_y.map(Math.abs));
+    if (dd.moment_z?.length) {
+      Mu = Math.max(Mu, ...dd.moment_z.map(Math.abs));
+      Mux = Mu;
+    }
+    if (dd.moment_y?.length) Muy = Math.max(Muy, ...dd.moment_y.map(Math.abs));
+    if (dd.torsion?.length) Tu = Math.max(Tu, ...dd.torsion.map(Math.abs));
+  }
+
+  // Use start/end forces for more accuracy if available
+  if (forces.startForces && forces.endForces) {
+    Pu = Math.max(Pu, Math.abs(forces.startForces.axial), Math.abs(forces.endForces.axial));
+    Vu = Math.max(Vu, Math.abs(forces.startForces.shearY), Math.abs(forces.endForces.shearY));
+    Mu = Math.max(Mu, Math.abs(forces.startForces.momentZ), Math.abs(forces.endForces.momentZ));
+  }
+
+  return { Pu, Vu, Mu, Tu, Mux, Muy };
+}
+
+/** Batch design result for a single member */
+interface BatchDesignResult {
+  memberId: string;
+  memberLabel: string;
+  orientation: "column" | "beam" | "brace";
+  materialType: MaterialType;
+  designMode: DesignMode;
+  forces: { Pu: number; Vu: number; Mu: number; Tu: number; Mux: number; Muy: number };
+  result: RCBeamDetailedResult | RCColumnDetailedResult | SteelDetailedResult | null;
+  status: "pass" | "fail" | "error";
+  errorMsg?: string;
+}
 
 const TABS: Array<{ id: DesignMode; label: string; icon: any }> = [
   { id: "rc_beam", label: "RC Beam", icon: Ruler },
@@ -57,11 +130,40 @@ const TABS: Array<{ id: DesignMode; label: string; icon: any }> = [
 ];
 
 export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
-  isOpen,
+  open,
   onClose,
 }) => {
+  // ── Store connection ─────────────────────────────────
+  const analysisResults = useModelStore((s) => s.analysisResults);
+  const members = useModelStore((s) => s.members);
+  const nodes = useModelStore((s) => s.nodes);
+
   const [mode, setMode] = useState<DesignMode>("rc_beam");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [materialType, setMaterialType] = useState<MaterialType>("concrete");
+  const [batchResults, setBatchResults] = useState<BatchDesignResult[] | null>(null);
+  const [showBatchResults, setShowBatchResults] = useState(false);
+
+  // Check if analysis has been completed
+  const hasAnalysis = !!(analysisResults && analysisResults.memberForces && analysisResults.memberForces.size > 0);
+
+  // Build member list with classification
+  const memberList = useMemo(() => {
+    const list: Array<{
+      id: string;
+      label: string;
+      orientation: "column" | "beam" | "brace";
+      length: number;
+    }> = [];
+    members.forEach((member, id) => {
+      const startNode = nodes.get(member.startNodeId);
+      const endNode = nodes.get(member.endNodeId);
+      const { orientation, length } = classifyMember(member, startNode, endNode);
+      list.push({ id, label: `M${id}`, orientation, length });
+    });
+    return list;
+  }, [members, nodes]);
 
   // ── RC Beam inputs ───────────────────────────────────
   const [beamInput, setBeamInput] = useState<RCBeamInput>({
@@ -127,6 +229,198 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
     code: "IS800",
   });
 
+  // ── Auto-populate from analysis when member selected ─
+  const populateFromMember = useCallback((memberId: string) => {
+    if (!analysisResults || !analysisResults.memberForces) return;
+    const forces = analysisResults.memberForces.get(memberId);
+    if (!forces) return;
+
+    const member = members.get(memberId);
+    if (!member) return;
+
+    const startNode = nodes.get(member.startNodeId);
+    const endNode = nodes.get(member.endNodeId);
+    const { orientation, length } = classifyMember(member, startNode, endNode);
+    const maxF = extractMaxForces(forces);
+
+    // Get section dimensions from member properties
+    const dim = member.dimensions || {};
+    const sType = member.sectionType || "I-BEAM";
+    const isSteel = sType === "I-BEAM" || sType === "TUBE" || sType === "C-CHANNEL" ||
+                    sType === "L-ANGLE" || sType === "PIPE" || sType === "T-SECTION" ||
+                    sType === "DOUBLE-ANGLE" || sType === "TAPERED" || sType === "BUILT-UP";
+
+    if (isSteel) {
+      // Populate steel input
+      setMaterialType("steel");
+      setMode("steel");
+      setSteelInput(prev => ({
+        ...prev,
+        sectionType: sType as any,
+        depth: (dim.height || prev.depth),
+        width: (dim.width || prev.width),
+        tw: (dim.webThickness || prev.tw),
+        tf: (dim.flangeThickness || prev.tf),
+        fy: member.E ? (member.rho && member.rho > 7500 ? 250 : 415) : prev.fy,
+        E: (member.E ? member.E / 1000 : prev.E), // Convert kN/m² to MPa
+        length: length,
+        Lb: length, // Conservative: full length unbraced
+        Pu: maxF.Pu,
+        Mu: maxF.Mu,
+        Vu: maxF.Vu,
+      }));
+    } else if (orientation === "column") {
+      // Populate RC column input
+      setMaterialType("concrete");
+      setMode("rc_column");
+      const w = dim.rectWidth || dim.width || 400;
+      const d = dim.rectHeight || dim.height || 400;
+      setColumnInput(prev => ({
+        ...prev,
+        width: w,
+        depth: d,
+        height: length,
+        Pu: maxF.Pu,
+        Mux: maxF.Mux,
+        Muy: maxF.Muy,
+      }));
+    } else {
+      // Populate RC beam input
+      setMaterialType("concrete");
+      setMode("rc_beam");
+      const w = dim.rectWidth || dim.width || 300;
+      const d = dim.rectHeight || dim.height || 600;
+      setBeamInput(prev => ({
+        ...prev,
+        width: w,
+        depth: d,
+        span: length,
+        Mu: maxF.Mu,
+        Vu: maxF.Vu,
+        Tu: maxF.Tu,
+      }));
+    }
+
+    setSelectedMemberId(memberId);
+  }, [analysisResults, members, nodes]);
+
+  // When selected member changes, auto-populate
+  const handleMemberSelect = useCallback((memberId: string) => {
+    if (memberId === "") {
+      setSelectedMemberId(null);
+      return;
+    }
+    populateFromMember(memberId);
+  }, [populateFromMember]);
+
+  // ── Design All Members (batch) ──────────────────────
+  const designAllMembers = useCallback(() => {
+    if (!hasAnalysis) return;
+    const results: BatchDesignResult[] = [];
+
+    members.forEach((member, id) => {
+      const forces = analysisResults!.memberForces.get(id);
+      if (!forces) return;
+
+      const startNode = nodes.get(member.startNodeId);
+      const endNode = nodes.get(member.endNodeId);
+      const { orientation, length } = classifyMember(member, startNode, endNode);
+      const maxF = extractMaxForces(forces);
+
+      const dim = member.dimensions || {};
+      const sType = member.sectionType || "I-BEAM";
+      const isSteel = sType === "I-BEAM" || sType === "TUBE" || sType === "C-CHANNEL" ||
+                      sType === "L-ANGLE" || sType === "PIPE" || sType === "T-SECTION";
+
+      let result: any = null;
+      let status: "pass" | "fail" | "error" = "pass";
+      let errorMsg: string | undefined;
+      let designMode: DesignMode = "rc_beam";
+
+      try {
+        if (isSteel) {
+          designMode = "steel";
+          const input: SteelSectionInput = {
+            sectionType: sType as any,
+            depth: dim.height || 500,
+            width: dim.width || 200,
+            tw: dim.webThickness || 10.2,
+            tf: dim.flangeThickness || 16,
+            fy: 250,
+            fu: 410,
+            E: member.E ? member.E / 1000 : 200000,
+            length,
+            Lb: length,
+            Cb: 1.0,
+            K: 1.0,
+            Pu: maxF.Pu,
+            Mu: maxF.Mu,
+            Vu: maxF.Vu,
+            code: "IS800",
+          };
+          result = designSteelSectionDetailed(input);
+          if (result && result.utilization > 1.0) status = "fail";
+        } else if (orientation === "column") {
+          designMode = "rc_column";
+          const w = dim.rectWidth || dim.width || 400;
+          const d = dim.rectHeight || dim.height || 400;
+          const input: RCColumnInput = {
+            width: w,
+            depth: d,
+            height: length,
+            clear_cover: 40,
+            fck: 30,
+            fy: 500,
+            Pu: maxF.Pu,
+            Mux: maxF.Mux,
+            Muy: maxF.Muy,
+            endCondition: "fixed_fixed",
+          };
+          result = designRCColumnDetailed(input);
+          if (result && !result.biaxialCheck.passes) status = "fail";
+        } else {
+          designMode = "rc_beam";
+          const w = dim.rectWidth || dim.width || 300;
+          const d = dim.rectHeight || dim.height || 600;
+          const input: RCBeamInput = {
+            width: w,
+            depth: d,
+            span: length,
+            clear_cover: 25,
+            fck: 25,
+            fy: 500,
+            Mu: maxF.Mu,
+            Vu: maxF.Vu,
+            Tu: maxF.Tu,
+            exposureClass: "moderate",
+            beamType: "simply_supported",
+            code: "IS456",
+          };
+          result = designRCBeamDetailed(input);
+          if (result && !result.shearPasses) status = "fail";
+        }
+      } catch (e: any) {
+        status = "error";
+        errorMsg = e?.message || "Design computation failed";
+      }
+
+      results.push({
+        memberId: id,
+        memberLabel: `M${id}`,
+        orientation,
+        materialType: isSteel ? "steel" : "concrete",
+        designMode,
+        forces: maxF,
+        result,
+        status,
+        errorMsg,
+      });
+    });
+
+    setBatchResults(results);
+    setShowBatchResults(true);
+  }, [hasAnalysis, analysisResults, members, nodes]);
+
   // ── Computed results ─────────────────────────────────
   const beamResult = useMemo(() => {
     try {
@@ -165,55 +459,118 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
   }, []);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[1050px] max-h-[88vh] flex flex-col p-0 gap-0">
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-[1100px] max-h-[90vh] flex flex-col p-0 gap-0">
         {/* Header */}
         <DialogHeader className="px-6 py-3 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-              <Ruler className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                <Ruler className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold">
+                  Detailed Section Design
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  {hasAnalysis
+                    ? `${memberList.length} members available · Select member or design all`
+                    : "Manual input mode — run analysis to auto-populate forces"}
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-base font-bold">
-                Detailed Section Design
-              </DialogTitle>
-              <DialogDescription className="text-xs">
-                Full detailing output — bar layout, curtailment, crack width,
-                LTB, interaction diagrams
-              </DialogDescription>
-            </div>
+            {/* Batch Design Button */}
+            {hasAnalysis && !showBatchResults && (
+              <button
+                type="button"
+                onClick={designAllMembers}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+              >
+                <ListChecks className="w-3.5 h-3.5" />
+                Design All Members
+              </button>
+            )}
+            {showBatchResults && (
+              <button
+                type="button"
+                onClick={() => setShowBatchResults(false)}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-all"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Back to Single Design
+              </button>
+            )}
           </div>
         </DialogHeader>
 
-        {/* Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-slate-700 px-4">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = mode === tab.id;
-            return (
-              <button type="button"
-                key={tab.id}
-                onClick={() => setMode(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                  isActive
-                    ? "border-blue-500 text-blue-400"
-                    : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200 hover:border-slate-500"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Content */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left: Inputs */}
-          <div className="w-[360px] border-r border-slate-200 dark:border-slate-700 p-4 overflow-y-auto space-y-3">
-            {mode === "rc_beam" && (
-              <BeamInputForm input={beamInput} onChange={setBeamInput} />
+        {/* Batch Results View */}
+        {showBatchResults && batchResults ? (
+          <BatchResultsView
+            results={batchResults}
+            expanded={expanded}
+            toggle={toggle}
+            onSelectMember={(id) => {
+              setShowBatchResults(false);
+              handleMemberSelect(id);
+            }}
+          />
+        ) : (
+          <>
+            {/* Member Selector Bar (when analysis available) */}
+            {hasAnalysis && (
+              <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Auto-populate:</span>
+                <select
+                  value={selectedMemberId || ""}
+                  onChange={(e) => handleMemberSelect(e.target.value)}
+                  className="flex-1 max-w-[220px] px-2 py-1 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white"
+                >
+                  <option value="">— Select a member —</option>
+                  {memberList.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label} ({m.orientation}) — L={(m.length / 1000).toFixed(2)}m
+                    </option>
+                  ))}
+                </select>
+                {selectedMemberId && (
+                  <span className="text-xs text-green-500 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Forces loaded from analysis
+                  </span>
+                )}
+              </div>
             )}
+
+            {/* Tabs */}
+            <div className="flex border-b border-slate-200 dark:border-slate-700 px-4">
+              {TABS.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = mode === tab.id;
+                return (
+                  <button type="button"
+                    key={tab.id}
+                    onClick={() => setMode(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                      isActive
+                        ? "border-blue-500 text-blue-400"
+                        : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-700 dark:text-slate-200 hover:border-slate-500"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Content */}
+            <div className="flex flex-1 overflow-hidden">
+              {/* Left: Inputs */}
+              <div className="w-[360px] border-r border-slate-200 dark:border-slate-700 p-4 overflow-y-auto space-y-3">
+                {mode === "rc_beam" && (
+                  <BeamInputForm input={beamInput} onChange={setBeamInput} />
+                )}
             {mode === "rc_slab" && (
               <SlabInputForm input={slabInput} onChange={setSlabInput} />
             )}
@@ -227,12 +584,18 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
 
           {/* Right: Results */}
           <div className="flex-1 p-4 overflow-y-auto space-y-3">
+            {mode === "rc_beam" && !beamResult && (
+              <EmptyResultState message="Adjust beam inputs to generate design results" />
+            )}
             {mode === "rc_beam" && beamResult && (
               <BeamResults
                 result={beamResult}
                 expanded={expanded}
                 toggle={toggle}
               />
+            )}
+            {mode === "rc_slab" && !slabResult && (
+              <EmptyResultState message="Adjust slab inputs to generate design results" />
             )}
             {mode === "rc_slab" && slabResult && (
               <SlabResults
@@ -241,12 +604,18 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
                 toggle={toggle}
               />
             )}
+            {mode === "rc_column" && !columnResult && (
+              <EmptyResultState message="Adjust column inputs to generate design results" />
+            )}
             {mode === "rc_column" && columnResult && (
               <ColumnResults
                 result={columnResult}
                 expanded={expanded}
                 toggle={toggle}
               />
+            )}
+            {mode === "steel" && !steelResult && (
+              <EmptyResultState message="Adjust steel inputs to generate design results" />
             )}
             {mode === "steel" && steelResult && (
               <SteelResults
@@ -257,10 +626,28 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
             )}
           </div>
         </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
 };
+
+// ────────────────────────────────────────────────────────────────
+// EMPTY / ERROR STATES
+// ────────────────────────────────────────────────────────────────
+
+const EmptyResultState: FC<{ message: string }> = ({ message }) => (
+  <div className="flex flex-col items-center justify-center h-64 text-center">
+    <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+      <AlertTriangle className="w-6 h-6 text-slate-400" />
+    </div>
+    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[280px]">{message}</p>
+    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+      Results will appear here automatically as you adjust parameters
+    </p>
+  </div>
+);
 
 // ────────────────────────────────────────────────────────────────
 // COMMON UI COMPONENTS
@@ -1423,6 +1810,226 @@ const SteelResults: FC<{
       ))}
     </ResultCard>
   </>
+);
+
+// ────────────────────────────────────────────────────────────────
+// BATCH RESULTS VIEW — Design All Members summary
+// ────────────────────────────────────────────────────────────────
+
+const BatchResultsView: FC<{
+  results: BatchDesignResult[];
+  expanded: Record<string, boolean>;
+  toggle: (k: string) => void;
+  onSelectMember: (id: string) => void;
+}> = ({ results, expanded, toggle, onSelectMember }) => {
+  const passed = results.filter((r) => r.status === "pass").length;
+  const failed = results.filter((r) => r.status === "fail").length;
+  const errors = results.filter((r) => r.status === "error").length;
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Summary Header */}
+      <div className="bg-slate-50 dark:bg-slate-800/60 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+          <ListChecks className="w-4 h-4 text-blue-500" />
+          Batch Design Summary — {results.length} Members
+        </h3>
+        <div className="flex gap-4 text-xs">
+          <span className="flex items-center gap-1 text-green-500">
+            <CheckCircle className="w-3.5 h-3.5" /> {passed} Passed
+          </span>
+          <span className="flex items-center gap-1 text-red-500">
+            <XCircle className="w-3.5 h-3.5" /> {failed} Failed
+          </span>
+          {errors > 0 && (
+            <span className="flex items-center gap-1 text-amber-500">
+              <AlertTriangle className="w-3.5 h-3.5" /> {errors} Errors
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Member-by-member results */}
+      {results.map((r) => (
+        <div
+          key={r.memberId}
+          className={`border rounded-lg overflow-hidden ${
+            r.status === "pass"
+              ? "border-green-500/30"
+              : r.status === "fail"
+              ? "border-red-500/30"
+              : "border-amber-500/30"
+          }`}
+        >
+          <button
+            type="button"
+            onClick={() => toggle(`batch_${r.memberId}`)}
+            className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-left"
+          >
+            <div className="flex items-center gap-3">
+              {expanded[`batch_${r.memberId}`] ? (
+                <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+              )}
+              <span className="text-sm font-medium text-slate-900 dark:text-white">
+                {r.memberLabel}
+              </span>
+              <span className="text-xs text-slate-500 capitalize">
+                {r.orientation} · {r.materialType} · {r.designMode.replace("_", " ")}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-mono">
+                Mu={r.forces.Mu.toFixed(1)} Vu={r.forces.Vu.toFixed(1)} Pu={r.forces.Pu.toFixed(1)}
+              </span>
+              {r.status === "pass" ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : r.status === "fail" ? (
+                <XCircle className="w-4 h-4 text-red-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+              )}
+            </div>
+          </button>
+
+          {expanded[`batch_${r.memberId}`] && (
+            <div className="px-4 py-3 space-y-2 border-t border-slate-200 dark:border-slate-700">
+              {r.status === "error" ? (
+                <div className="text-sm text-red-400">{r.errorMsg}</div>
+              ) : r.designMode === "steel" && r.result ? (
+                <BatchSteelSummary result={r.result as SteelDetailedResult} />
+              ) : r.designMode === "rc_beam" && r.result ? (
+                <BatchBeamSummary result={r.result as RCBeamDetailedResult} />
+              ) : r.designMode === "rc_column" && r.result ? (
+                <BatchColumnSummary result={r.result as RCColumnDetailedResult} />
+              ) : null}
+              <button
+                type="button"
+                onClick={() => onSelectMember(r.memberId)}
+                className="text-xs text-blue-400 hover:text-blue-300 underline"
+              >
+                View full detailing →
+              </button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/** Compact summary for batch steel results */
+const BatchSteelSummary: FC<{ result: SteelDetailedResult }> = ({ result }) => (
+  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+    <div className="flex justify-between">
+      <span className="text-slate-500">Section Class</span>
+      <span className="text-slate-900 dark:text-white font-mono">{result.sectionClass}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Utilization</span>
+      <span className={`font-mono font-medium ${result.utilization <= 1.0 ? "text-green-400" : "text-red-400"}`}>
+        {(result.utilization * 100).toFixed(1)}%
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Moment Capacity</span>
+      <span className="text-slate-900 dark:text-white font-mono">{result.momentCapacity.toFixed(1)} kN·m</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Shear Capacity</span>
+      <span className="text-slate-900 dark:text-white font-mono">{result.shearCapacity.toFixed(1)} kN</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Interaction</span>
+      <span className={`font-mono ${result.interaction.passes ? "text-green-400" : "text-red-400"}`}>
+        {result.interaction.combined.toFixed(3)} {result.interaction.passes ? "✓" : "✗"}
+      </span>
+    </div>
+    {result.stiffenerRequired && (
+      <div className="col-span-2 text-amber-400 text-xs mt-1">
+        ⚠ Stiffener required: {result.stiffenerReason}
+      </div>
+    )}
+  </div>
+);
+
+/** Compact summary for batch RC beam results */
+const BatchBeamSummary: FC<{ result: RCBeamDetailedResult }> = ({ result }) => (
+  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+    <div className="flex justify-between">
+      <span className="text-slate-500">Tension Steel</span>
+      <span className="text-slate-900 dark:text-white font-mono">
+        {result.tensionBars.count}–{result.tensionBars.size.label}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Ast provided</span>
+      <span className="text-slate-900 dark:text-white font-mono">{result.Ast_provided.toFixed(0)} mm²</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Stirrups</span>
+      <span className="text-slate-900 dark:text-white font-mono">
+        {result.stirrups.legs}L {result.stirrups.size.label} @ {result.stirrups.spacing}mm
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Shear</span>
+      <span className={`font-mono ${result.shearPasses ? "text-green-400" : "text-red-400"}`}>
+        {result.shearPasses ? "OK ✓" : "FAIL ✗"}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Crack Width</span>
+      <span className={`font-mono ${result.crackWidth.passes ? "text-green-400" : "text-red-400"}`}>
+        {result.crackWidth.wk.toFixed(3)}mm {result.crackWidth.passes ? "✓" : "✗"}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Deflection</span>
+      <span className={`font-mono ${result.deflection.passes ? "text-green-400" : "text-red-400"}`}>
+        L/d={result.deflection.spanOverDepthActual.toFixed(1)} {result.deflection.passes ? "✓" : "✗"}
+      </span>
+    </div>
+  </div>
+);
+
+/** Compact summary for batch RC column results */
+const BatchColumnSummary: FC<{ result: RCColumnDetailedResult }> = ({ result }) => (
+  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+    <div className="flex justify-between">
+      <span className="text-slate-500">Type</span>
+      <span className="text-slate-900 dark:text-white font-mono">
+        {result.isShort ? "Short" : "Slender"}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Pu capacity</span>
+      <span className="text-slate-900 dark:text-white font-mono">{result.Pu_capacity.toFixed(0)} kN</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Main Steel</span>
+      <span className="text-slate-900 dark:text-white font-mono">
+        {result.mainBars.count}–{result.mainBars.size.label}
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">pt</span>
+      <span className="text-slate-900 dark:text-white font-mono">{result.pt.toFixed(2)}%</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Ties</span>
+      <span className="text-slate-900 dark:text-white font-mono">
+        {result.ties.size.label} @ {result.ties.spacing}mm
+      </span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-slate-500">Biaxial Check</span>
+      <span className={`font-mono ${result.biaxialCheck.passes ? "text-green-400" : "text-red-400"}`}>
+        {result.biaxialCheck.interactionValue.toFixed(3)} {result.biaxialCheck.passes ? "✓" : "✗"}
+      </span>
+    </div>
+  </div>
 );
 
 export default DetailedDesignPanel;

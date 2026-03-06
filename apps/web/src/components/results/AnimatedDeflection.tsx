@@ -245,6 +245,13 @@ const AnimatedMemberLine: FC<AnimatedMemberLineProps> = ({
         return geo;
     }, [controlPoints, segments]);
 
+    // Dispose geometry on change/unmount to prevent GPU memory leaks
+    useEffect(() => {
+        return () => {
+            if (geometry) geometry.dispose();
+        };
+    }, [geometry]);
+
     return (
         <group>
             {/* Original shape (ghost) */}

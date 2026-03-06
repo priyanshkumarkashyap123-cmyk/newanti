@@ -220,6 +220,9 @@ export default defineConfig({
           // lucide-react, mathjs, jspdf, xlsx, monaco removed from manual chunks
           // to enable tree-shaking and let them code-split into lazy routes
         },
+        // Smaller hash for shorter filenames → less memory in browser cache index
+        chunkFileNames: 'assets/[name]-[hash:8].js',
+        assetFileNames: 'assets/[name]-[hash:8][extname]',
       },
     },
   },

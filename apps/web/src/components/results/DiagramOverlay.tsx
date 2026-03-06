@@ -9,7 +9,7 @@
  * - Vertical cursor line following mouse
  */
 
-import { FC, useMemo, useState, useCallback, useRef } from 'react';
+import { FC, useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { ThreeEvent } from '@react-three/fiber';
 import { Html, Line, Text } from '@react-three/drei';
 import * as THREE from 'three';
@@ -413,6 +413,13 @@ export const DiagramOverlay: FC<DiagramOverlayProps> = ({
         };
 
     }, [startPos, endPos, values, data.x_values, scale, offset, type, betaAngle]);
+
+    // Dispose geometry on change/unmount to prevent GPU memory leaks
+    useEffect(() => {
+        return () => {
+            if (geometry) geometry.dispose();
+        };
+    }, [geometry]);
 
     // Calculate max height for scanner line
     const maxHeight = useMemo(() => {

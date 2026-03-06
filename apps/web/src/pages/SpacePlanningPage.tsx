@@ -18,7 +18,7 @@
  * Built with 35+ years multi-disciplinary engineering wisdom.
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2,
@@ -329,6 +329,63 @@ export function SpacePlanningPage() {
 
   const currentFloorPlan =
     project?.floorPlans.find((fp) => fp.floor === selectedFloor) || project?.floorPlans[0];
+
+  // Floor-aware MEP filtering so overlays and summaries reflect selected floor only
+  const floorRoomIdSet = useMemo(() => {
+    return new Set((currentFloorPlan?.rooms || []).map((r) => r.id));
+  }, [currentFloorPlan]);
+
+  const floorElectrical = useMemo(() => {
+    if (!project || !currentFloorPlan) return null;
+    const fixtures = project.electrical.fixtures.filter((f) => floorRoomIdSet.has(f.roomId));
+    const fixtureSet = new Set(fixtures.map((f) => f.id));
+    const circuits = project.electrical.circuits
+      .map((c) => ({ ...c, fixtures: c.fixtures.filter((id) => fixtureSet.has(id)) }))
+      .filter((c) => c.fixtures.length > 0);
+    const panels = project.electrical.panels.filter((p) => floorRoomIdSet.has(p.roomId));
+    const connectedLoad = fixtures.reduce((sum, f) => sum + f.wattage, 0) / 1000;
+
+    return {
+      ...project.electrical,
+      fixtures,
+      circuits,
+      panels,
+      connectedLoad,
+      mainLoad: connectedLoad,
+      demandLoad: connectedLoad * 0.72,
+    };
+  }, [project, currentFloorPlan, floorRoomIdSet]);
+
+  const floorPlumbing = useMemo(() => {
+    if (!project || !currentFloorPlan) return null;
+    const fixtures = project.plumbing.fixtures.filter((f) => floorRoomIdSet.has(f.roomId));
+    const pipes = project.plumbing.pipes.filter((p) => p.floor === currentFloorPlan.floor);
+    return {
+      ...project.plumbing,
+      fixtures,
+      pipes,
+    };
+  }, [project, currentFloorPlan, floorRoomIdSet]);
+
+  const floorHVAC = useMemo(() => {
+    if (!project || !currentFloorPlan) return null;
+    const equipment = project.hvac.equipment.filter((e) => floorRoomIdSet.has(e.roomId));
+    const roomSet = new Set(equipment.map((e) => e.roomId));
+    const ventilationPaths = project.hvac.ventilationPaths.filter(
+      (v) => roomSet.has(v.startRoomId) || (!!v.endRoomId && roomSet.has(v.endRoomId)),
+    );
+    const ductRoutes = project.hvac.ductRoutes.filter((d) => d.floor === currentFloorPlan.floor);
+    return {
+      ...project.hvac,
+      equipment,
+      ventilationPaths,
+      ductRoutes,
+      coolingLoad:
+        equipment
+          .filter((e) => ['split_ac', 'window_ac', 'vrf_unit', 'cassette_ac'].includes(e.type))
+          .reduce((sum, e) => sum + (typeof e.capacity === 'number' ? e.capacity : 0), 0),
+    };
+  }, [project, currentFloorPlan, floorRoomIdSet]);
 
   // Map tab to overlay mode
   const getOverlayForTab = (tab: PlanTab): OverlayMode => {
@@ -673,7 +730,7 @@ export function SpacePlanningPage() {
                     plot={project.plot}
                     constraints={project.constraints}
                     orientation={project.orientation}
-                    electrical={project.electrical}
+                    electrical={floorElectrical || project.electrical}
                     overlayMode="electrical"
                     showGrid
                     showDimensions
@@ -681,7 +738,8 @@ export function SpacePlanningPage() {
                     showLabels
                     className="h-[500px]"
                   />
-                  <ElectricalSummary electrical={project.electrical} />
+                  <ElectricalSummary electrical={floorElectrical || project.electrical} />
+                  <ElectricalDetailingPanel electrical={floorElectrical || project.electrical} />
                 </div>
               )}
 
@@ -696,7 +754,7 @@ export function SpacePlanningPage() {
                     plot={project.plot}
                     constraints={project.constraints}
                     orientation={project.orientation}
-                    plumbing={project.plumbing}
+                    plumbing={floorPlumbing || project.plumbing}
                     overlayMode="plumbing"
                     showGrid
                     showDimensions
@@ -704,7 +762,8 @@ export function SpacePlanningPage() {
                     showLabels
                     className="h-[500px]"
                   />
-                  <PlumbingSummary plumbing={project.plumbing} />
+                  <PlumbingSummary plumbing={floorPlumbing || project.plumbing} />
+                  <PlumbingDetailingPanel plumbing={floorPlumbing || project.plumbing} />
                 </div>
               )}
 
@@ -719,7 +778,7 @@ export function SpacePlanningPage() {
                     plot={project.plot}
                     constraints={project.constraints}
                     orientation={project.orientation}
-                    hvac={project.hvac}
+                    hvac={floorHVAC || project.hvac}
                     overlayMode="hvac"
                     showGrid
                     showDimensions
@@ -727,7 +786,8 @@ export function SpacePlanningPage() {
                     showLabels
                     className="h-[500px]"
                   />
-                  <HVACSummary hvac={project.hvac} />
+                  <HVACSummary hvac={floorHVAC || project.hvac} />
+                  <HVACDetailingPanel hvac={floorHVAC || project.hvac} />
                 </div>
               )}
 
@@ -749,6 +809,11 @@ export function SpacePlanningPage() {
                   </h2>
                   <SunlightAnalysisPanel
                     sunlight={project.sunlight}
+                    rooms={project.floorPlans.flatMap((fp) => fp.rooms)}
+                  />
+                  <SimulationCompliancePanel
+                    sunlight={project.sunlight}
+                    airflow={project.airflow}
                     rooms={project.floorPlans.flatMap((fp) => fp.rooms)}
                   />
                 </div>
@@ -1044,6 +1109,169 @@ const HVACSummary: React.FC<{ hvac: HousePlanProject['hvac'] }> = ({ hvac }) => 
   </div>
 );
 
+const ElectricalDetailingPanel: React.FC<{ electrical: HousePlanProject['electrical'] }> = ({
+  electrical,
+}) => {
+  const fixtureByType = electrical.fixtures.reduce<Record<string, number>>((acc, f) => {
+    acc[f.type] = (acc[f.type] || 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Electrical Detailing</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 text-[11px] font-semibold">Circuit Schedule</div>
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-800/60">
+                <th className="px-2 py-1 text-left">Circuit</th>
+                <th className="px-2 py-1 text-center">MCB</th>
+                <th className="px-2 py-1 text-center">Wire</th>
+                <th className="px-2 py-1 text-center">Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {electrical.circuits.map((c) => (
+                <tr key={c.id} className="border-t border-slate-100 dark:border-slate-800">
+                  <td className="px-2 py-1">{c.name}</td>
+                  <td className="px-2 py-1 text-center">{c.mcbRating}A</td>
+                  <td className="px-2 py-1 text-center">{c.wireSize}mm²</td>
+                  <td className="px-2 py-1 text-center">{c.fixtures.length}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div className="text-[11px] font-semibold mb-2">Fixture Mix & Safety</div>
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <InfoMini label="Smoke Detectors" value={`${fixtureByType.smoke_detector || 0}`} />
+            <InfoMini label="Emergency Lights" value={`${fixtureByType.emergency_light || 0}`} />
+            <InfoMini label="CCTV Points" value={`${fixtureByType.cctv || 0}`} />
+            <InfoMini label="EV Chargers" value={`${fixtureByType.ev_charging || 0}`} />
+            <InfoMini label="Solar Ready" value={electrical.solarCapacity ? `${electrical.solarCapacity} kWp` : 'No'} />
+            <InfoMini label="Backup" value={electrical.backupType || 'Not set'} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PlumbingDetailingPanel: React.FC<{ plumbing: HousePlanProject['plumbing'] }> = ({ plumbing }) => {
+  const pipeTypeCount = plumbing.pipes.reduce<Record<string, number>>((acc, p) => {
+    acc[p.type] = (acc[p.type] || 0) + 1;
+    return acc;
+  }, {});
+  const fixtureTypeCount = plumbing.fixtures.reduce<Record<string, number>>((acc, f) => {
+    acc[f.type] = (acc[f.type] || 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">Plumbing Detailing</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div className="text-[11px] font-semibold mb-2">Pipe Network</div>
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <InfoMini label="Water Supply" value={`${pipeTypeCount.water_supply || 0}`} />
+            <InfoMini label="Drainage" value={`${pipeTypeCount.drainage || 0}`} />
+            <InfoMini label="Vent" value={`${pipeTypeCount.vent || 0}`} />
+            <InfoMini label="Hot Water" value={`${pipeTypeCount.hot_water || 0}`} />
+            <InfoMini label="Rain Water" value={`${pipeTypeCount.rain_water || 0}`} />
+            <InfoMini label="RWH" value={plumbing.rainwaterHarvesting ? 'Enabled' : 'Disabled'} />
+          </div>
+        </div>
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div className="text-[11px] font-semibold mb-2">Fixtures & Systems</div>
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <InfoMini label="WC" value={`${fixtureTypeCount.wc || 0}`} />
+            <InfoMini label="Basins" value={`${fixtureTypeCount.wash_basin || 0}`} />
+            <InfoMini label="Showers" value={`${fixtureTypeCount.shower || 0}`} />
+            <InfoMini label="Kitchen Sinks" value={`${fixtureTypeCount.kitchen_sink || 0}`} />
+            <InfoMini label="Inspection Chambers" value={`${fixtureTypeCount.inspection_chamber || 0}`} />
+            <InfoMini label="Pumps" value={`${fixtureTypeCount.pressure_pump || 0}`} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const HVACDetailingPanel: React.FC<{ hvac: HousePlanProject['hvac'] }> = ({ hvac }) => {
+  const eqByType = hvac.equipment.reduce<Record<string, number>>((acc, e) => {
+    acc[e.type] = (acc[e.type] || 0) + 1;
+    return acc;
+  }, {});
+  const mechPaths = hvac.ventilationPaths.filter((p) => p.type === 'mechanical').length;
+  const natPaths = hvac.ventilationPaths.filter((p) => p.type === 'natural').length;
+  const mixedPaths = hvac.ventilationPaths.filter((p) => p.type === 'mixed').length;
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">HVAC / Mechanical Detailing</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div className="text-[11px] font-semibold mb-2">Equipment Schedule</div>
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <InfoMini label="AC Units" value={`${(eqByType.split_ac || 0) + (eqByType.vrf_unit || 0) + (eqByType.window_ac || 0)}`} />
+            <InfoMini label="Fresh Air Units" value={`${eqByType.fresh_air_unit || 0}`} />
+            <InfoMini label="Exhaust Fans" value={`${eqByType.exhaust_fan || 0}`} />
+            <InfoMini label="Ventilators" value={`${eqByType.ventilator || 0}`} />
+            <InfoMini label="Diffusers" value={`${eqByType.diffuser || 0}`} />
+            <InfoMini label="Grilles" value={`${eqByType.grille || 0}`} />
+          </div>
+        </div>
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div className="text-[11px] font-semibold mb-2">Air Movement Simulation</div>
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <InfoMini label="Natural Paths" value={`${natPaths}`} />
+            <InfoMini label="Mechanical Paths" value={`${mechPaths}`} />
+            <InfoMini label="Mixed Paths" value={`${mixedPaths}`} />
+            <InfoMini label="Duct Routes" value={`${hvac.ductRoutes.length}`} />
+            <InfoMini label="Ventilation Rate" value={`${hvac.ventilationRate} ACH`} />
+            <InfoMini label="Fresh Air" value={`${hvac.freshAirPercentage}%`} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SimulationCompliancePanel: React.FC<{
+  sunlight: HousePlanProject['sunlight'];
+  airflow: HousePlanProject['airflow'];
+  rooms: import('../services/space-planning/types').PlacedRoom[];
+}> = ({ sunlight, airflow, rooms }) => {
+  const daylightPass = sunlight.roomSunlight.filter((r) => r.naturalLightFactor >= 0.5).length;
+  const ventilationPass = airflow.roomVentilation.filter((r) => r.airChangesPerHour >= 4).length;
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+      <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Simulation Compliance</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px]">
+        <InfoMini label="Rooms Daylight ≥ 50%" value={`${daylightPass}/${sunlight.roomSunlight.length}`} />
+        <InfoMini label="Rooms ACH ≥ 4" value={`${ventilationPass}/${airflow.roomVentilation.length}`} />
+        <InfoMini label="Cross Vent Paths" value={`${airflow.crossVentilationPaths.length}`} />
+        <InfoMini label="Stack Potential" value={`${(airflow.stackVentilationPotential * 100).toFixed(0)}%`} />
+      </div>
+      <div className="mt-3 text-[10px] text-slate-500 dark:text-slate-400">
+        Targets used: daylight factor ≥ 0.5 (good), ventilation ≥ 4 ACH (good), cross ventilation preferred for habitable rooms.
+      </div>
+    </div>
+  );
+};
+
+const InfoMini: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div className="rounded-md bg-slate-50 dark:bg-slate-800 px-2 py-1.5 border border-slate-200 dark:border-slate-700">
+    <div className="text-[10px] text-slate-500 dark:text-slate-400">{label}</div>
+    <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">{value}</div>
+  </div>
+);
+
 const SummaryCard: React.FC<{
   label: string;
   value: string;
@@ -1297,8 +1525,194 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
     r.windows.map((w) => ({ ...w, roomName: r.spec.name })),
   );
 
+  const toCSV = (headers: string[], rows: Array<Array<string | number | boolean>>) => {
+    const escape = (v: string | number | boolean) => {
+      const s = String(v ?? '');
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    };
+    return [headers.map(escape).join(','), ...rows.map((r) => r.map(escape).join(','))].join('\n');
+  };
+
+  const downloadCSV = (filename: string, csv: string) => {
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportRooms = () => {
+    const csv = toCSV(
+      ['Room ID', 'Room Name', 'Floor', 'Width (m)', 'Height (m)', 'Area (m²)', 'Ceiling Height (m)', 'Floor Finish', 'Wall Finish'],
+      allRooms.map((r) => [
+        r.id,
+        r.spec.name,
+        r.floor,
+        r.width.toFixed(2),
+        r.height.toFixed(2),
+        (r.width * r.height).toFixed(2),
+        r.ceilingHeight,
+        r.finishFloor,
+        r.finishWall,
+      ]),
+    );
+    downloadCSV('room_schedule.csv', csv);
+  };
+
+  const handleExportMEP = () => {
+    const electricalRows = project.electrical.fixtures.map((f) => [
+      'Electrical Fixture',
+      f.id,
+      f.type,
+      f.roomId,
+      f.circuit,
+      f.wattage,
+      f.height,
+      f.x.toFixed(2),
+      f.y.toFixed(2),
+    ]);
+
+    const circuitRows = project.electrical.circuits.map((c) => [
+      'Electrical Circuit',
+      c.id,
+      c.name,
+      c.type,
+      c.mcbRating,
+      c.wireSize,
+      c.phase,
+      c.fixtures.length,
+      '',
+    ]);
+
+    const plumbingFixtureRows = project.plumbing.fixtures.map((f) => [
+      'Plumbing Fixture',
+      f.id,
+      f.type,
+      f.roomId,
+      f.pipeSize,
+      f.waterSupply,
+      f.drainage,
+      f.x.toFixed(2),
+      f.y.toFixed(2),
+    ]);
+
+    const pipeRows = project.plumbing.pipes.map((p) => [
+      'Plumbing Pipe',
+      p.id,
+      p.type,
+      p.material,
+      p.diameter,
+      p.floor,
+      p.startX.toFixed(2),
+      p.startY.toFixed(2),
+      `${p.endX.toFixed(2)},${p.endY.toFixed(2)}`,
+    ]);
+
+    const hvacRows = project.hvac.equipment.map((e) => [
+      'HVAC Equipment',
+      e.id,
+      e.type,
+      e.roomId,
+      typeof e.capacity === 'number' ? e.capacity : '',
+      e.powerConsumption,
+      '',
+      e.x.toFixed(2),
+      e.y.toFixed(2),
+    ]);
+
+    const ventilationRows = project.hvac.ventilationPaths.map((v) => [
+      'Ventilation Path',
+      v.id,
+      v.type,
+      v.startRoomId,
+      v.endRoomId || 'OUTSIDE',
+      v.airflow,
+      v.direction,
+      '',
+      '',
+    ]);
+
+    const csv = toCSV(
+      ['Category', 'ID', 'Type/Name', 'Room/From', 'Circuit/To', 'Load/Size', 'Meta 1', 'X/StartX', 'Y/EndXY'],
+      [
+        ...electricalRows,
+        ...circuitRows,
+        ...plumbingFixtureRows,
+        ...pipeRows,
+        ...hvacRows,
+        ...ventilationRows,
+      ],
+    );
+    downloadCSV('mep_schedule.csv', csv);
+  };
+
+  const handleExportSimulation = () => {
+    const sunlightRows = project.sunlight.roomSunlight.map((s) => [
+      'Sunlight',
+      s.roomId,
+      s.hoursOfDirectSun.summer,
+      s.hoursOfDirectSun.winter,
+      (s.naturalLightFactor * 100).toFixed(1),
+      s.glareRisk,
+      s.uvExposure,
+      '',
+      '',
+    ]);
+
+    const airflowRows = project.airflow.roomVentilation.map((a) => [
+      'Airflow',
+      a.roomId,
+      a.airChangesPerHour,
+      a.adequacy,
+      a.recommendation,
+      '',
+      '',
+      '',
+      '',
+    ]);
+
+    const csv = toCSV(
+      ['Category', 'Room ID', 'Metric 1', 'Metric 2', 'Metric 3', 'Metric 4', 'Metric 5', 'Metric 6', 'Metric 7'],
+      [...sunlightRows, ...airflowRows],
+    );
+    downloadCSV('simulation_schedule.csv', csv);
+  };
+
+  const acCount = project.hvac.equipment.filter((e) =>
+    ['split_ac', 'window_ac', 'vrf_unit', 'cassette_ac'].includes(e.type),
+  ).length;
+
   return (
     <div className="space-y-6">
+      {/* Export bar */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={handleExportRooms}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
+        >
+          <FileDown className="w-3.5 h-3.5" /> Export Room CSV
+        </button>
+        <button
+          onClick={handleExportMEP}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+        >
+          <FileDown className="w-3.5 h-3.5" /> Export MEP CSV
+        </button>
+        <button
+          onClick={handleExportSimulation}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+        >
+          <FileDown className="w-3.5 h-3.5" /> Export Simulation CSV
+        </button>
+      </div>
+
       {/* Room Schedule */}
       <div>
         <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Room Schedule</h3>
@@ -1407,6 +1821,128 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Electrical Schedule */}
+      <div>
+        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+          Electrical Schedule ({project.electrical.fixtures.length} fixtures, {project.electrical.circuits.length} circuits)
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-slate-800">
+                <th className="px-2 py-1.5 text-left font-semibold">Fixture</th>
+                <th className="px-2 py-1.5 text-left font-semibold">Type</th>
+                <th className="px-2 py-1.5 text-left font-semibold">Room</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Circuit</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Watt</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Height</th>
+              </tr>
+            </thead>
+            <tbody>
+              {project.electrical.fixtures.slice(0, 200).map((f) => (
+                <tr key={f.id} className="border-b border-slate-100 dark:border-slate-800">
+                  <td className="px-2 py-1 font-mono text-slate-500">{f.id}</td>
+                  <td className="px-2 py-1">{f.type}</td>
+                  <td className="px-2 py-1">{f.roomId}</td>
+                  <td className="px-2 py-1 text-center">{f.circuit}</td>
+                  <td className="px-2 py-1 text-center">{f.wattage}</td>
+                  <td className="px-2 py-1 text-center">{f.height}m</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Plumbing Schedule */}
+      <div>
+        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+          Plumbing Schedule ({project.plumbing.fixtures.length} fixtures, {project.plumbing.pipes.length} pipes)
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-slate-800">
+                <th className="px-2 py-1.5 text-left font-semibold">Pipe</th>
+                <th className="px-2 py-1.5 text-left font-semibold">Type</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Dia (mm)</th>
+                <th className="px-2 py-1.5 text-left font-semibold">Material</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Floor</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Slope</th>
+              </tr>
+            </thead>
+            <tbody>
+              {project.plumbing.pipes.slice(0, 200).map((p) => (
+                <tr key={p.id} className="border-b border-slate-100 dark:border-slate-800">
+                  <td className="px-2 py-1 font-mono text-slate-500">{p.id}</td>
+                  <td className="px-2 py-1">{p.type}</td>
+                  <td className="px-2 py-1 text-center">{p.diameter}</td>
+                  <td className="px-2 py-1">{p.material}</td>
+                  <td className="px-2 py-1 text-center">{p.floor}</td>
+                  <td className="px-2 py-1 text-center">{typeof p.slope === 'number' ? p.slope.toFixed(3) : '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* HVAC Schedule */}
+      <div>
+        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+          HVAC Schedule ({project.hvac.equipment.length} equipment, {project.hvac.ductRoutes.length} ducts)
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+          <div className="text-[11px] px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30">Cooling: {project.hvac.coolingLoad.toFixed(1)} TR</div>
+          <div className="text-[11px] px-2 py-1 rounded bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800/30">AC Units: {acCount}</div>
+          <div className="text-[11px] px-2 py-1 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30">Vent Rate: {project.hvac.ventilationRate} ACH</div>
+          <div className="text-[11px] px-2 py-1 rounded bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/30">Fresh Air: {project.hvac.freshAirPercentage}%</div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-slate-800">
+                <th className="px-2 py-1.5 text-left font-semibold">Equipment</th>
+                <th className="px-2 py-1.5 text-left font-semibold">Type</th>
+                <th className="px-2 py-1.5 text-left font-semibold">Room</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Capacity</th>
+                <th className="px-2 py-1.5 text-center font-semibold">Power (W)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {project.hvac.equipment.slice(0, 200).map((e) => (
+                <tr key={e.id} className="border-b border-slate-100 dark:border-slate-800">
+                  <td className="px-2 py-1 font-mono text-slate-500">{e.id}</td>
+                  <td className="px-2 py-1">{e.type}</td>
+                  <td className="px-2 py-1">{e.roomId}</td>
+                  <td className="px-2 py-1 text-center">{typeof e.capacity === 'number' ? e.capacity : '-'}</td>
+                  <td className="px-2 py-1 text-center">{e.powerConsumption}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Simulation Summary */}
+      <div>
+        <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Simulation Summary</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="text-[11px] px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30">
+            Avg Daylight Factor: {(project.sunlight.roomSunlight.reduce((s, r) => s + r.naturalLightFactor, 0) / Math.max(1, project.sunlight.roomSunlight.length) * 100).toFixed(0)}%
+          </div>
+          <div className="text-[11px] px-2 py-1 rounded bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800/30">
+            Avg ACH: {(project.airflow.roomVentilation.reduce((s, r) => s + r.airChangesPerHour, 0) / Math.max(1, project.airflow.roomVentilation.length)).toFixed(1)}
+          </div>
+          <div className="text-[11px] px-2 py-1 rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30">
+            Cross Vent Paths: {project.airflow.crossVentilationPaths.length}
+          </div>
+          <div className="text-[11px] px-2 py-1 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30">
+            Stack Potential: {(project.airflow.stackVentilationPotential * 100).toFixed(0)}%
+          </div>
         </div>
       </div>
     </div>

@@ -802,6 +802,14 @@ const ElectricalOverlay: FC<{ electrical: ElectricalPlan }> = ({ electrical }) =
     bell_point: '🔔',
     chimney: '🏭',
     ev_charging: '⚡',
+    cctv: '📹',
+    motion_sensor: '🛰️',
+    distribution_board: '🧰',
+    meter_board: '📟',
+    earth_point: '⏚',
+    inverter_point: '🔋',
+    ups_point: '🔋',
+    solar_panel_connection: '☀️',
   };
 
   return (
@@ -897,6 +905,11 @@ const PlumbingOverlay: FC<{ plumbing: PlumbingPlan }> = ({ plumbing }) => {
     floor_trap: '⊙',
     water_heater: '🔥',
     garden_tap: '🚿',
+    inspection_chamber: '🕳️',
+    rain_water_harvest: '🌧️',
+    sump: '🛢️',
+    overhead_tank: '🏗️',
+    pressure_pump: '⚙️',
   };
 
   return (
@@ -932,6 +945,25 @@ const PlumbingOverlay: FC<{ plumbing: PlumbingPlan }> = ({ plumbing }) => {
             strokeLinecap="round"
           />
         ))}
+      {/* Vent / rainwater / recycled */}
+      {plumbing.pipes
+        .filter((p) => p.type === 'vent' || p.type === 'rain_water' || p.type === 'recycled')
+        .map((pipe) => (
+          <line
+            key={pipe.id}
+            x1={pipe.startX * SCALE}
+            y1={pipe.startY * SCALE}
+            x2={pipe.endX * SCALE}
+            y2={pipe.endY * SCALE}
+            stroke={
+              pipe.type === 'vent' ? '#A78BFA' : pipe.type === 'rain_water' ? '#06B6D4' : '#14B8A6'
+            }
+            strokeWidth={Math.max(1, pipe.diameter / 20)}
+            strokeDasharray={pipe.type === 'vent' ? '2 2' : '6 3'}
+            strokeLinecap="round"
+            opacity={0.85}
+          />
+        ))}
       {/* Fixtures */}
       {plumbing.fixtures.map((f) => (
         <g key={f.id}>
@@ -961,14 +993,69 @@ const HVACOverlay: FC<{ hvac: HVACPlan }> = ({ hvac }) => {
     window_ac: '❄️',
     vrf_unit: '❄️',
     thermostat: '🌡️',
+    fresh_air_unit: '🌬️',
+    diffuser: '◍',
+    grille: '▤',
+    ventilator: '🪟',
+  };
+
+  const roomCenters = hvac.equipment.reduce<Record<string, { x: number; y: number; n: number }>>(
+    (acc, eq) => {
+      if (!acc[eq.roomId]) acc[eq.roomId] = { x: 0, y: 0, n: 0 };
+      acc[eq.roomId].x += eq.x;
+      acc[eq.roomId].y += eq.y;
+      acc[eq.roomId].n += 1;
+      return acc;
+    },
+    {},
+  );
+
+  const centerOf = (roomId: string) => {
+    const c = roomCenters[roomId];
+    if (!c || c.n === 0) return null;
+    return { x: c.x / c.n, y: c.y / c.n };
   };
 
   return (
     <g opacity={0.85}>
-      {/* Ventilation paths */}
-      {hvac.ventilationPaths.map((vp) => (
-        <g key={vp.id}>{/* Airflow arrow (simplified) */}</g>
+      {/* Duct routes */}
+      {hvac.ductRoutes.map((d) => (
+        <line
+          key={d.id}
+          x1={d.startX * SCALE}
+          y1={d.startY * SCALE}
+          x2={d.endX * SCALE}
+          y2={d.endY * SCALE}
+          stroke="#64748B"
+          strokeWidth={Math.max(1, d.diameter / 80)}
+          strokeDasharray="4 2"
+          opacity={0.7}
+        />
       ))}
+
+      {/* Ventilation paths */}
+      {hvac.ventilationPaths.map((vp) => {
+        const s = centerOf(vp.startRoomId);
+        if (!s) return null;
+        const e = vp.endRoomId ? centerOf(vp.endRoomId) : { x: s.x, y: s.y - 1 };
+        if (!e) return null;
+        const color = vp.type === 'natural' ? '#22C55E' : vp.type === 'mechanical' ? '#3B82F6' : '#A855F7';
+        return (
+          <g key={vp.id}>
+            <line
+              x1={s.x * SCALE}
+              y1={s.y * SCALE}
+              x2={e.x * SCALE}
+              y2={e.y * SCALE}
+              stroke={color}
+              strokeWidth={1.2}
+              strokeDasharray="3 2"
+              opacity={0.7}
+              markerEnd="url(#dim-arrow)"
+            />
+          </g>
+        );
+      })}
       {/* Equipment */}
       {hvac.equipment.map((eq) => (
         <g key={eq.id}>
