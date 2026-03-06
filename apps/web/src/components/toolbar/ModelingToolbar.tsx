@@ -1,18 +1,26 @@
 /**
- * ModelingToolbar.tsx - Comprehensive Modeling Toolbar
+ * ModelingToolbar.tsx - STAAD.Pro-class Modeling Toolbar
  *
  * Organized toolbar with dropdown groups for all modeling tools:
  * - Selection, Draw, Edit, Array, Transform, Generate, Measure
+ * - Snap controls (grid, node, midpoint, intersection)
+ * - View controls (standard views, render modes, display toggles)
+ * - Coordinate display & input
+ * - Utilities (renumber, geometry check, member query)
  *
  * Features:
  * - Dropdown menus for each tool group
  * - Visual icons with tooltips
  * - Keyboard shortcut display
  * - Active tool highlighting
+ * - Snap mode indicator
+ * - Coordinate system toggle (Global/Local)
+ * - Rendering mode selector
+ * - Status bar with model info
  */
 
-import { FC, useState, useEffect, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import { FC, useState, useEffect, useCallback, useMemo } from "react";
+import { ChevronDown, Magnet, Crosshair, Eye, EyeOff, Grid, Hash, Tag, Box, Minus, Hexagon, Ruler, ArrowDown, Triangle } from "lucide-react";
 import { useUIStore, CATEGORY_TOOLS } from "../../store/uiStore";
 import { useModelStore } from "../../store/model";
 import { useShallow } from "zustand/react/shallow";
@@ -20,6 +28,7 @@ import {
   MODELING_TOOL_GROUPS,
   TOOL_DEFINITIONS,
   KEYBOARD_SHORTCUTS,
+  VIEW_TOOL_GROUPS,
   ToolGroup,
   ToolDefinition,
 } from "../../data/ToolGroups";
@@ -173,8 +182,212 @@ const QUICK_TOOLS = [
   "DRAW_NODE",
   "DRAW_BEAM",
   "DRAW_COLUMN",
+  "DRAW_PLATE",
   "DELETE",
 ];
+
+// ============================================
+// SNAP MODE COMPONENT
+// ============================================
+
+type SnapMode = 'grid' | 'node' | 'midpoint' | 'intersection' | 'perpendicular' | 'nearest';
+
+const SNAP_MODES: { id: SnapMode; label: string; icon: typeof Magnet }[] = [
+  { id: 'grid', label: 'Grid', icon: Grid },
+  { id: 'node', label: 'Node', icon: Crosshair },
+  { id: 'midpoint', label: 'Mid', icon: Minus },
+  { id: 'intersection', label: 'Int', icon: Crosshair },
+];
+
+const SnapBar: FC<{
+  activeSnaps: Set<SnapMode>;
+  onToggle: (mode: SnapMode) => void;
+  gridSize: number;
+  onGridSizeChange: (size: number) => void;
+}> = ({ activeSnaps, onToggle, gridSize, onGridSizeChange }) => (
+  <div className="flex items-center gap-1 px-2 py-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-md">
+    <Magnet className={`w-3.5 h-3.5 ${activeSnaps.size > 0 ? 'text-amber-500' : 'text-slate-400'}`} />
+    {SNAP_MODES.map((snap) => (
+      <button
+        type="button"
+        key={snap.id}
+        onClick={() => onToggle(snap.id)}
+        className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-all ${
+          activeSnaps.has(snap.id)
+            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+            : 'text-slate-500 hover:text-slate-300 border border-transparent'
+        }`}
+        title={`Snap to ${snap.label}`}
+      >
+        {snap.label}
+      </button>
+    ))}
+    <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
+    <span className="text-[10px] text-slate-500">Grid:</span>
+    <input
+      type="number"
+      value={gridSize}
+      onChange={(e) => onGridSizeChange(parseFloat(e.target.value) || 1)}
+      className="w-12 px-1 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-[10px] text-slate-700 dark:text-slate-300 border-none outline-none text-center"
+      step="0.5"
+      min="0.1"
+      max="100"
+    />
+    <span className="text-[10px] text-slate-500">m</span>
+  </div>
+);
+
+// ============================================
+// VIEW CONTROLS BAR
+// ============================================
+
+type RenderMode = 'wireframe' | 'solid' | 'analytical';
+
+const ViewControlsBar: FC<{
+  renderMode: RenderMode;
+  onRenderModeChange: (mode: RenderMode) => void;
+  displayToggles: Record<string, boolean>;
+  onDisplayToggle: (key: string) => void;
+  onStandardView: (view: string) => void;
+}> = ({ renderMode, onRenderModeChange, displayToggles, onDisplayToggle, onStandardView }) => (
+  <div className="flex items-center gap-1">
+    {/* Standard Views */}
+    <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-md">
+      {[
+        { id: 'front', label: 'XY', shortcut: '1' },
+        { id: 'top', label: 'XZ', shortcut: '2' },
+        { id: 'right', label: 'YZ', shortcut: '3' },
+        { id: 'iso', label: '3D', shortcut: '0' },
+      ].map((v) => (
+        <button
+          type="button"
+          key={v.id}
+          onClick={() => onStandardView(v.id)}
+          className="px-2 py-0.5 rounded text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-white transition-colors"
+          title={`${v.label} View (${v.shortcut})`}
+        >
+          {v.label}
+        </button>
+      ))}
+    </div>
+
+    <div className="w-px h-4 bg-slate-300 dark:bg-slate-700" />
+
+    {/* Render Modes */}
+    <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-md">
+      {[
+        { id: 'analytical' as RenderMode, icon: Minus, label: 'Line' },
+        { id: 'wireframe' as RenderMode, icon: Box, label: 'Wire' },
+        { id: 'solid' as RenderMode, icon: Hexagon, label: 'Solid' },
+      ].map((rm) => {
+        const Icon = rm.icon;
+        return (
+          <button
+            type="button"
+            key={rm.id}
+            onClick={() => onRenderModeChange(rm.id)}
+            className={`p-1 rounded transition-all ${
+              renderMode === rm.id
+                ? 'bg-blue-600/20 text-blue-400'
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+            title={`${rm.label} mode`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+          </button>
+        );
+      })}
+    </div>
+
+    <div className="w-px h-4 bg-slate-300 dark:bg-slate-700" />
+
+    {/* Display Toggles */}
+    <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100/50 dark:bg-slate-800/50 rounded-md">
+      {[
+        { key: 'nodeNumbers', icon: Hash, label: 'Node #' },
+        { key: 'memberNumbers', icon: Tag, label: 'Mem #' },
+        { key: 'loads', icon: ArrowDown, label: 'Loads' },
+        { key: 'supports', icon: Triangle, label: 'Supports' },
+        { key: 'dimensions', icon: Ruler, label: 'Dim' },
+      ].map((dt) => {
+        const Icon = dt.icon;
+        const isOn = displayToggles[dt.key] ?? true;
+        return (
+          <button
+            type="button"
+            key={dt.key}
+            onClick={() => onDisplayToggle(dt.key)}
+            className={`p-1 rounded transition-all ${
+              isOn
+                ? 'text-emerald-400'
+                : 'text-slate-500 hover:text-slate-400'
+            }`}
+            title={`${isOn ? 'Hide' : 'Show'} ${dt.label}`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
+// ============================================
+// COORDINATE DISPLAY
+// ============================================
+
+const CoordinateDisplay: FC<{
+  coordSystem: 'global' | 'local';
+  onToggleCoordSystem: () => void;
+  cursorPos: { x: number; y: number; z: number };
+}> = ({ coordSystem, onToggleCoordSystem, cursorPos }) => (
+  <div className="flex items-center gap-2 px-2 py-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-md">
+    <button
+      type="button"
+      onClick={onToggleCoordSystem}
+      className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${
+        coordSystem === 'global'
+          ? 'bg-blue-500/20 text-blue-400'
+          : 'bg-purple-500/20 text-purple-400'
+      }`}
+      title={`${coordSystem === 'global' ? 'Global' : 'Local'} coordinate system`}
+    >
+      {coordSystem === 'global' ? 'GCS' : 'LCS'}
+    </button>
+    <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+      <span>X: <span className="text-red-400 font-medium">{cursorPos.x.toFixed(3)}</span></span>
+      <span>Y: <span className="text-emerald-400 font-medium">{cursorPos.y.toFixed(3)}</span></span>
+      <span>Z: <span className="text-blue-400 font-medium">{cursorPos.z.toFixed(3)}</span></span>
+    </div>
+  </div>
+);
+
+// ============================================
+// STATUS BAR (model statistics)
+// ============================================
+
+const ModelStatusBar: FC = () => {
+  const nodes = useModelStore((s) => s.nodes);
+  const members = useModelStore((s) => s.members);
+  const selectedIds = useModelStore((s) => s.selectedIds);
+
+  const nodeCount = nodes instanceof Map ? nodes.size : Object.keys(nodes || {}).length;
+  const memberCount = members instanceof Map ? members.size : Object.keys(members || {}).length;
+  const selCount = selectedIds?.size ?? 0;
+
+  return (
+    <div className="flex items-center gap-3 px-2 py-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+      <span>N: <span className="text-slate-300 font-medium">{nodeCount}</span></span>
+      <span>M: <span className="text-slate-300 font-medium">{memberCount}</span></span>
+      {selCount > 0 && (
+        <>
+          <div className="w-px h-3 bg-slate-600" />
+          <span className="text-blue-400">Sel: {selCount}</span>
+        </>
+      )}
+    </div>
+  );
+};
 
 // ============================================
 // MAIN TOOLBAR COMPONENT
@@ -185,6 +398,42 @@ export const ModelingToolbar: FC = () => {
   const activeCategory = useUIStore((state) => state.activeCategory);
   const setActiveTool = useUIStore((state) => state.setActiveTool);
   const setModelTool = useModelStore((state) => state.setTool);
+
+  // Snap state
+  const [activeSnaps, setActiveSnaps] = useState<Set<SnapMode>>(new Set(['grid', 'node']));
+  const [gridSize, setGridSize] = useState(1.0);
+
+  // View state
+  const [renderMode, setRenderMode] = useState<RenderMode>('analytical');
+  const [displayToggles, setDisplayToggles] = useState<Record<string, boolean>>({
+    nodeNumbers: true,
+    memberNumbers: true,
+    loads: true,
+    supports: true,
+    dimensions: false,
+  });
+  const [coordSystem, setCoordSystem] = useState<'global' | 'local'>('global');
+  const [cursorPos] = useState({ x: 0, y: 0, z: 0 });
+
+  // Toggle snap mode
+  const toggleSnap = useCallback((mode: SnapMode) => {
+    setActiveSnaps((prev) => {
+      const next = new Set(prev);
+      if (next.has(mode)) next.delete(mode);
+      else next.add(mode);
+      return next;
+    });
+  }, []);
+
+  // Toggle display
+  const handleDisplayToggle = useCallback((key: string) => {
+    setDisplayToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
+  // Standard view (dispatch event for 3D engine to handle)
+  const handleStandardView = useCallback((view: string) => {
+    document.dispatchEvent(new CustomEvent('beamlab-set-view', { detail: { view } }));
+  }, []);
 
   // Helper function to set tool in both stores
   const handleToolSelect = useCallback(
@@ -239,44 +488,76 @@ export const ModelingToolbar: FC = () => {
   }
 
   return (
-    <div className="flex items-center gap-1 p-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg">
-      {/* Quick Access Tools */}
-      {QUICK_TOOLS.map((toolId) => {
-        const tool = TOOL_DEFINITIONS[toolId];
-        if (!tool) return null;
+    <div className="flex flex-col gap-1">
+      {/* Primary Toolbar: Quick Tools + Tool Groups */}
+      <div className="flex items-center gap-1 p-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-800 shadow-lg">
+        {/* Quick Access Tools */}
+        {QUICK_TOOLS.map((toolId) => {
+          const tool = TOOL_DEFINITIONS[toolId];
+          if (!tool) return null;
 
-        const Icon = tool.icon;
-        return (
-          <button type="button"
-            key={toolId}
-            onClick={() => handleToolSelect(toolId)}
-            className={`
-              p-2 rounded-md transition-all
-              ${
-                activeTool === toolId
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
-              }
-            `}
-            title={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ""}`}
-            aria-label={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ""}`}
-          >
-            <Icon className="w-4 h-4" aria-hidden="true" />
-          </button>
-        );
-      })}
+          const Icon = tool.icon;
+          return (
+            <button type="button"
+              key={toolId}
+              onClick={() => handleToolSelect(toolId)}
+              className={`
+                p-2 rounded-md transition-all
+                ${
+                  activeTool === toolId
+                    ? "bg-blue-600 text-white"
+                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                }
+              `}
+              title={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ""}`}
+              aria-label={`${tool.tooltip}${tool.shortcut ? ` (${tool.shortcut})` : ""}`}
+            >
+              <Icon className="w-4 h-4" aria-hidden="true" />
+            </button>
+          );
+        })}
 
-      <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
+        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
 
-      {/* Tool Groups */}
-      {MODELING_TOOL_GROUPS.map((group) => (
-        <ToolGroupDropdown
-          key={group.id}
-          group={group}
-          activeTool={activeTool}
-          onToolSelect={handleToolSelect}
-        />
-      ))}
+        {/* Tool Groups */}
+        {MODELING_TOOL_GROUPS.map((group) => (
+          <ToolGroupDropdown
+            key={group.id}
+            group={group}
+            activeTool={activeTool}
+            onToolSelect={handleToolSelect}
+          />
+        ))}
+      </div>
+
+      {/* Secondary Toolbar: View Controls + Snap + Coordinates + Status */}
+      <div className="flex items-center justify-between gap-2 px-1.5 py-1 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center gap-2 flex-wrap">
+          <ViewControlsBar
+            renderMode={renderMode}
+            onRenderModeChange={setRenderMode}
+            displayToggles={displayToggles}
+            onDisplayToggle={handleDisplayToggle}
+            onStandardView={handleStandardView}
+          />
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-700" />
+          <SnapBar
+            activeSnaps={activeSnaps}
+            onToggle={toggleSnap}
+            gridSize={gridSize}
+            onGridSizeChange={setGridSize}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <CoordinateDisplay
+            coordSystem={coordSystem}
+            onToggleCoordSystem={() => setCoordSystem((p) => p === 'global' ? 'local' : 'global')}
+            cursorPos={cursorPos}
+          />
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-700" />
+          <ModelStatusBar />
+        </div>
+      </div>
     </div>
   );
 };

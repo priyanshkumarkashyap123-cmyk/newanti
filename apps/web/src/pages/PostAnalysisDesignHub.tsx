@@ -317,6 +317,172 @@ function clientSideDesignSteel(input: ClientDesignInput): MemberDesignResult & {
   };
 }
 
+// ================================================================
+// CLIENT-SIDE CONCRETE BEAM DESIGN ENGINE (IS456 / ACI318)
+// ================================================================
+
+interface ConcreteDesignInput {
+  width: number;   // mm
+  depth: number;   // mm
+  cover: number;   // mm
+  fck: number;     // MPa (concrete characteristic strength)
+  fy: number;      // MPa (rebar yield strength)
+  Mu: number;      // kN·m (design moment)
+  Vu: number;      // kN (design shear)
+  Nu: number;      // kN (design axial — for columns)
+  code: 'IS456' | 'ACI318';
+}
+
+interface ConcreteDesignOutput {
+  status: 'PASS' | 'FAIL';
+  utilizationRatio: number;
+  governingCheck: string;
+  checks: Array<{ name: string; clause?: string; ratio: number; status: string }>;
+  flexure: { Mu_capacity: number; Ast_required: number; Ast_provided: number; barConfig: string };
+  shear: { Vu_capacity: number; Asv_required: number; stirrupConfig: string };
+}
+
+function clientSideDesignConcreteBeam(input: ConcreteDesignInput): ConcreteDesignOutput {
+  const { width: b, depth: D, cover, fck, fy, Mu, Vu, code } = input;
+  const d = D - cover - 10; // effective depth (assuming 20mm bars, 10mm stirrups)
+
+  let Mu_cap: number;
+  let xu_max_ratio: number;
+  let Ast_req: number;
+
+  if (code === 'IS456') {
+    // IS 456:2000 — Limit State of Flexure
+    // xu_max/d for Fe415=0.48, Fe500=0.46, Fe250=0.53
+    xu_max_ratio = fy <= 300 ? 0.53 : fy <= 450 ? 0.48 : 0.46;
+    const xu_max = xu_max_ratio * d;
+
+    // Mu_lim = 0.36 fck b xu_max (d - 0.42 xu_max)
+    Mu_cap = 0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6; // kN·m
+
+    // Ast for singly reinforced beam
+    // Mu = 0.87 fy Ast (d - 0.42 xu), xu = 0.87 fy Ast / (0.36 fck b)
+    // Simplified: Ast = Mu / (0.87 fy (d - 0.42 xu))
+    // Using direct formula: Ast = (fck * b * d / fy) * (1 - sqrt(1 - 4.598 * Mu*1e6 / (fck * b * d^2)))
+    const MuNmm = Math.abs(Mu) * 1e6;
+    const discriminant = 1 - (4.598 * MuNmm) / (fck * b * d * d);
+    if (discriminant > 0) {
+      Ast_req = (fck * b * d / (2 * fy)) * (1 - Math.sqrt(discriminant));
+    } else {
+      // Section needs doubly reinforced — use simplified
+      Ast_req = MuNmm / (0.87 * fy * 0.80 * d);
+    }
+  } else {
+    // ACI 318-19 — Flexure
+    xu_max_ratio = 0.375; // balanced condition
+    const a_max = xu_max_ratio * d * 0.85;
+
+    // Mn_max = 0.85 f'c b a_max (d - a_max/2)
+    Mu_cap = 0.9 * 0.85 * fck * b * a_max * (d - a_max / 2) / 1e6;
+
+    // Ast = Mu / (phi * fy * (d - a/2)) → iterative, simplified:
+    const MuNmm = Math.abs(Mu) * 1e6;
+    const Rn = MuNmm / (0.9 * b * d * d);
+    const rho = (0.85 * fck / fy) * (1 - Math.sqrt(1 - 2 * Rn / (0.85 * fck)));
+    Ast_req = Math.max(rho * b * d, 0);
+  }
+
+  // Minimum reinforcement
+  const Ast_min = code === 'IS456'
+    ? 0.85 * b * d / fy  // IS 456 Cl 26.5.1.1
+    : Math.max(0.25 * Math.sqrt(fck) / fy, 1.4 / fy) * b * d; // ACI 318 §9.6.1.2
+
+  Ast_req = Math.max(Ast_req, Ast_min);
+
+  // Select bar configuration
+  const barArea20 = Math.PI * 20 * 20 / 4; // ~314 mm²
+  const barArea16 = Math.PI * 16 * 16 / 4; // ~201 mm²
+  const numBars20 = Math.ceil(Ast_req / barArea20);
+  const numBars16 = Math.ceil(Ast_req / barArea16);
+  const useBar20 = Ast_req > 800;
+  const Ast_prov = useBar20 ? numBars20 * barArea20 : numBars16 * barArea16;
+  const barConfig = useBar20 ? `${numBars20}-20Ø` : `${numBars16}-16Ø`;
+
+  // Flexure ratio
+  const flexureRatio = Math.abs(Mu) / Math.max(Mu_cap, 0.001);
+
+  // Shear design
+  let Vu_cap: number;
+  let Asv_req: number;
+  let stirrupConfig: string;
+
+  if (code === 'IS456') {
+    // IS 456 Cl 40.2: τc = 0.25√fck (simplified)
+    const tau_c = 0.25 * Math.sqrt(fck); // MPa (conservative)
+    const Vc = tau_c * b * d / 1000; // kN
+    Vu_cap = Vc;
+    const Vus = Math.max(Math.abs(Vu) - Vc, 0);
+    // Asv/sv = Vus / (0.87 fy d) — using 2-legged 8mm stirrups
+    const sv_calc = Vus > 0 ? (0.87 * fy * d * 2 * Math.PI * 8 * 8 / 4) / (Vus * 1000) : 300;
+    const sv = Math.min(Math.max(Math.floor(sv_calc / 25) * 25, 75), 300);
+    Asv_req = 2 * Math.PI * 8 * 8 / 4; // 2-legged 8mm
+    stirrupConfig = `2L-8Ø @ ${sv}mm c/c`;
+    Vu_cap += Asv_req * 0.87 * fy * d / (sv * 1000);
+  } else {
+    // ACI 318 §22.5: Vc = 0.17√f'c bw d
+    const Vc = 0.17 * Math.sqrt(fck) * b * d / 1000;
+    Vu_cap = 0.75 * Vc;
+    const Vus = Math.max(Math.abs(Vu) / 0.75 - Vc, 0);
+    const Av_s = Vus > 0 ? Vus * 1000 / (fy * d) : 0;
+    const Av_min = Math.max(0.062 * Math.sqrt(fck) * b / fy, 0.35 * b / fy);
+    const Av_design = Math.max(Av_s, Av_min);
+    const sv = Math.min(Math.floor(2 * Math.PI * 10 * 10 / 4 / Math.max(Av_design, 0.01) / 25) * 25, 300);
+    Asv_req = Av_design * sv;
+    stirrupConfig = `2L-10Ø @ ${sv}mm c/c`;
+    Vu_cap += 0.75 * 2 * Math.PI * 10 * 10 / 4 * fy * d / (sv * 1000);
+  }
+
+  const shearRatio = Math.abs(Vu) / Math.max(Vu_cap, 0.001);
+  const maxRatio = Math.max(flexureRatio, shearRatio);
+
+  const checks = [
+    { name: 'Flexure', clause: code === 'IS456' ? 'Cl 38' : '§22.2', ratio: flexureRatio, status: flexureRatio <= 1 ? 'PASS' : 'FAIL' },
+    { name: 'Shear', clause: code === 'IS456' ? 'Cl 40' : '§22.5', ratio: shearRatio, status: shearRatio <= 1 ? 'PASS' : 'FAIL' },
+    { name: 'Min. Reinf.', clause: code === 'IS456' ? 'Cl 26.5.1' : '§9.6.1', ratio: Ast_prov >= Ast_min ? 0.5 : 1.1, status: Ast_prov >= Ast_min ? 'PASS' : 'FAIL' },
+  ];
+
+  const governing = checks.reduce((max, c) => c.ratio > max.ratio ? c : max, checks[0]);
+
+  return {
+    status: maxRatio <= 1 ? 'PASS' : 'FAIL',
+    utilizationRatio: maxRatio,
+    governingCheck: governing.name,
+    checks,
+    flexure: {
+      Mu_capacity: Math.round(Mu_cap * 10) / 10,
+      Ast_required: Math.round(Ast_req),
+      Ast_provided: Math.round(Ast_prov),
+      barConfig,
+    },
+    shear: {
+      Vu_capacity: Math.round(Vu_cap * 10) / 10,
+      Asv_required: Math.round(Asv_req),
+      stirrupConfig,
+    },
+  };
+}
+
+// ================================================================
+// MEMBER GROUP TYPES
+// ================================================================
+
+interface MemberGroup {
+  id: string;
+  name: string;
+  memberIds: Set<string>;
+  sectionId: string;
+  color: string;
+}
+
+const GROUP_COLORS = [
+  '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+  '#EC4899', '#06B6D4', '#F97316', '#6366F1', '#14B8A6',
+];
+
 /** Fast backend availability probe — cached for session */
 let _backendAvailable: boolean | null = null;
 async function isBackendAvailable(): Promise<boolean> {
@@ -1293,6 +1459,10 @@ const PostAnalysisDesignHub: FC = () => {
   const [isDesigning, setIsDesigning] = useState(false);
   const [assignedSection, setAssignedSection] = useState('ISMB 300');
   const [designProgress, setDesignProgress] = useState({ current: 0, total: 0 });
+  const [memberGroups, setMemberGroups] = useState<MemberGroup[]>([]);
+  const [preOptWeight, setPreOptWeight] = useState<number | null>(null);
+  const [concreteSection, setConcreteSection] = useState({ width: 300, depth: 500, cover: 40 });
+  const [concreteDesignResults, setConcreteDesignResults] = useState<Map<string, ConcreteDesignOutput>>(new Map());
 
   const [params, setParams] = useState<DesignParameters>({
     steelCode: 'IS800',
@@ -1409,6 +1579,75 @@ const PostAnalysisDesignHub: FC = () => {
       setSelectedMemberIds(new Set());
     }
   }, [memberRows]);
+
+  // ============================
+  // MEMBER GROUPING
+  // ============================
+  const createGroupFromSelection = useCallback(() => {
+    if (selectedMemberIds.size === 0) return;
+    const groupId = `G${memberGroups.length + 1}`;
+    const newGroup: MemberGroup = {
+      id: groupId,
+      name: `Group ${memberGroups.length + 1}`,
+      memberIds: new Set(selectedMemberIds),
+      sectionId: assignedSection,
+      color: GROUP_COLORS[memberGroups.length % GROUP_COLORS.length],
+    };
+    setMemberGroups(prev => [...prev, newGroup]);
+  }, [selectedMemberIds, memberGroups.length, assignedSection]);
+
+  const deleteGroup = useCallback((groupId: string) => {
+    setMemberGroups(prev => prev.filter(g => g.id !== groupId));
+  }, []);
+
+  const selectGroup = useCallback((groupId: string) => {
+    const group = memberGroups.find(g => g.id === groupId);
+    if (group) setSelectedMemberIds(new Set(group.memberIds));
+  }, [memberGroups]);
+
+  // ============================
+  // RUN CONCRETE BEAM DESIGN — Client-side IS456/ACI318
+  // ============================
+  const runConcreteDesign = useCallback(async () => {
+    const targetRows = selectedMemberIds.size > 0
+      ? memberRows.filter(r => selectedMemberIds.has(r.id))
+      : memberRows;
+    if (targetRows.length === 0) return;
+
+    setIsDesigning(true);
+    setDesignProgress({ current: 0, total: targetRows.length });
+
+    const concreteGrade = CONCRETE_GRADES.find(g => g.name === params.concreteGrade) ?? CONCRETE_GRADES[0];
+    const rebarGrade = REBAR_GRADES.find(g => g.name === params.rebarGrade) ?? REBAR_GRADES[0];
+    const designCode = params.concreteCode === 'ACI318' ? 'ACI318' : 'IS456';
+
+    const newResults = new Map(concreteDesignResults);
+    let completed = 0;
+
+    for (const row of targetRows) {
+      const result = clientSideDesignConcreteBeam({
+        width: concreteSection.width,
+        depth: concreteSection.depth,
+        cover: concreteSection.cover,
+        fck: concreteGrade.fck,
+        fy: rebarGrade.fy,
+        Mu: row.maxMomentZ,
+        Vu: row.maxShearY,
+        Nu: row.maxAxial,
+        code: designCode as 'IS456' | 'ACI318',
+      });
+      newResults.set(row.id, result);
+      completed++;
+      if (completed % 10 === 0) {
+        setDesignProgress({ current: completed, total: targetRows.length });
+        await new Promise(r => setTimeout(r, 0)); // yield
+      }
+    }
+
+    setConcreteDesignResults(newResults);
+    setDesignProgress({ current: targetRows.length, total: targetRows.length });
+    setIsDesigning(false);
+  }, [selectedMemberIds, memberRows, params, concreteSection, concreteDesignResults]);
 
   // ============================
   // RUN BATCH STEEL DESIGN — Fast client-side + optional API
@@ -1543,6 +1782,14 @@ const PostAnalysisDesignHub: FC = () => {
   const runOptimization = useCallback(async () => {
     if (designResults.size === 0) return;
     setIsOptimizing(true);
+
+    // Save pre-optimization weight
+    const weightMap = new Map(STEEL_SECTIONS.map(s => [s.designation, s.weight]));
+    const preWeight = memberRows.reduce((acc, row) => {
+      const sec = designResults.get(row.id)?.section || assignedSection;
+      return acc + (weightMap.get(sec) ?? 25) * row.length;
+    }, 0);
+    setPreOptWeight(preWeight);
 
     // Allow UI to update before heavy computation
     await new Promise(r => setTimeout(r, 50));
@@ -1898,7 +2145,18 @@ const PostAnalysisDesignHub: FC = () => {
                       {STEEL_CODES.find(c => c.id === params.steelCode)?.name}
                     </span>
                   </div>
-                  <div className="relative">
+                  <div className="flex items-center gap-2">
+                    {selectedMemberIds.size > 0 && (
+                      <button type="button"
+                        onClick={createGroupFromSelection}
+                        className="px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+                        title="Create group from selected members"
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        Group ({selectedMemberIds.size})
+                      </button>
+                    )}
+                    <div className="relative">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
                     <input
                       type="text"
@@ -1907,6 +2165,7 @@ const PostAnalysisDesignHub: FC = () => {
                       onChange={e => setSearchQuery(e.target.value)}
                       className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
                     />
+                    </div>
                   </div>
                 </div>
 
@@ -1939,21 +2198,66 @@ const PostAnalysisDesignHub: FC = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Width (mm)</label>
-                      <input type="number" defaultValue={300}
+                      <input type="number" value={concreteSection.width}
+                        onChange={e => setConcreteSection(p => ({ ...p, width: Number(e.target.value) || 300 }))}
                         className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Depth (mm)</label>
-                      <input type="number" defaultValue={500}
+                      <input type="number" value={concreteSection.depth}
+                        onChange={e => setConcreteSection(p => ({ ...p, depth: Number(e.target.value) || 500 }))}
                         className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Cover (mm)</label>
-                    <input type="number" defaultValue={40}
+                    <input type="number" value={concreteSection.cover}
+                      onChange={e => setConcreteSection(p => ({ ...p, cover: Number(e.target.value) || 40 }))}
                       className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
                   </div>
                 </div>
+
+                {/* Run Concrete Design Button */}
+                <button type="button"
+                  onClick={runConcreteDesign}
+                  disabled={isDesigning || !hasAnalysis}
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                >
+                  {isDesigning ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                      Designing {designProgress.current}/{designProgress.total}...
+                    </>
+                  ) : (
+                    <>
+                      <Building2 className="w-5 h-5" />
+                      Run Concrete Design
+                      {selectedMemberIds.size > 0 && ` (${selectedMemberIds.size})`}
+                    </>
+                  )}
+                </button>
+
+                {concreteDesignResults.size > 0 && (
+                  <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+                    <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">CONCRETE DESIGN SUMMARY</h4>
+                    <div className="space-y-2 text-sm">
+                      {(() => {
+                        let pass = 0, fail = 0, maxU = 0;
+                        concreteDesignResults.forEach(r => {
+                          if (r.status === 'PASS') pass++; else fail++;
+                          if (r.utilizationRatio > maxU) maxU = r.utilizationRatio;
+                        });
+                        return (
+                          <>
+                            <div className="flex justify-between"><span className="text-emerald-400">Pass</span><span className="font-bold text-emerald-400">{pass}</span></div>
+                            <div className="flex justify-between"><span className="text-red-400">Fail</span><span className="font-bold text-red-400">{fail}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-400">Max Util.</span><span className={`font-bold ${utilizationColor(maxU)}`}>{(maxU * 100).toFixed(1)}%</span></div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Design</h3>
@@ -1975,15 +2279,65 @@ const PostAnalysisDesignHub: FC = () => {
                     {CONCRETE_CODES.find(c => c.id === params.concreteCode)?.name}
                   </span>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-                  <MemberDesignTable
-                    rows={memberRows}
-                    onToggleSelect={toggleSelect}
-                    onSelectAll={selectAll}
-                    onViewDetail={setDetailMemberId}
-                    searchQuery={searchQuery}
-                  />
-                </div>
+
+                {/* Concrete design results table */}
+                {concreteDesignResults.size > 0 ? (
+                  <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                            <th className="py-3 px-2 text-left">Member</th>
+                            <th className="py-3 px-2 text-right">Mu (kN·m)</th>
+                            <th className="py-3 px-2 text-right">Vu (kN)</th>
+                            <th className="py-3 px-2 text-left">Flexure Reinf.</th>
+                            <th className="py-3 px-2 text-left">Shear Reinf.</th>
+                            <th className="py-3 px-2 text-center">Status</th>
+                            <th className="py-3 px-2 text-left w-40">Utilization</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {memberRows.map(row => {
+                            const cr = concreteDesignResults.get(row.id);
+                            if (!cr) return null;
+                            return (
+                              <tr key={row.id} className="border-b border-slate-200 dark:border-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/30">
+                                <td className="py-2 px-2 font-medium text-slate-700 dark:text-slate-200">{row.label}</td>
+                                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxMomentZ)}</td>
+                                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxShearY)}</td>
+                                <td className="py-2 px-2 text-slate-600 dark:text-slate-400 font-mono text-xs">
+                                  {cr.flexure.barConfig} ({cr.flexure.Ast_provided}mm²)
+                                </td>
+                                <td className="py-2 px-2 text-slate-600 dark:text-slate-400 font-mono text-xs">
+                                  {cr.shear.stirrupConfig}
+                                </td>
+                                <td className="py-2 px-2 text-center">{statusIcon(cr.status)}</td>
+                                <td className="py-2 px-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1"><UtilizationBar ratio={cr.utilizationRatio} /></div>
+                                    <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(cr.utilizationRatio)}`}>
+                                      {(cr.utilizationRatio * 100).toFixed(0)}%
+                                    </span>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                    <MemberDesignTable
+                      rows={memberRows}
+                      onToggleSelect={toggleSelect}
+                      onSelectAll={selectAll}
+                      onViewDetail={setDetailMemberId}
+                      searchQuery={searchQuery}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -2014,7 +2368,7 @@ const PostAnalysisDesignHub: FC = () => {
         {/* ========== OPTIMIZATION TAB ========== */}
         {activeTab === 'optimization' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Zap className="w-8 h-8 text-amber-400 mb-3" />
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Auto-Optimize</h3>
@@ -2043,7 +2397,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Target Utilization</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
                   Set a target utilization ratio. The optimizer picks the lightest section
-                  whose utilization ≤ this target. E.g. 0.85 = 85% of section capacity used.
+                  whose utilization ≤ this target.
                 </p>
                 <div className="mb-3">
                   <input
@@ -2079,13 +2433,59 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Award className="w-8 h-8 text-emerald-400 mb-3" />
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Weight Summary</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Total structural steel weight based on current section assignments.
-                </p>
-                <div className="text-3xl font-bold text-emerald-400">
-                  {totalWeight.toFixed(0)} kg
+                <div className="space-y-3">
+                  {preOptWeight !== null && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Before optimization:</span>
+                      <span className="font-mono text-slate-400">{preOptWeight.toFixed(0)} kg</span>
+                    </div>
+                  )}
+                  <div className="text-3xl font-bold text-emerald-400">
+                    {totalWeight.toFixed(0)} kg
+                  </div>
+                  {preOptWeight !== null && preOptWeight > 0 && (
+                    <div className={`text-sm font-semibold ${totalWeight < preOptWeight ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {totalWeight < preOptWeight
+                        ? `↓ ${((1 - totalWeight / preOptWeight) * 100).toFixed(1)}% savings (${(preOptWeight - totalWeight).toFixed(0)} kg saved)`
+                        : `↑ ${((totalWeight / preOptWeight - 1) * 100).toFixed(1)}% increase`
+                      }
+                    </div>
+                  )}
+                  <p className="text-xs text-slate-500">Based on current section assignments</p>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Estimated total weight</p>
+              </div>
+
+              {/* Member Groups Panel */}
+              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+                <Layers className="w-8 h-8 text-purple-400 mb-3" />
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Member Groups</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                  Group members to design/optimize as a batch with the same section.
+                </p>
+                <button type="button"
+                  onClick={createGroupFromSelection}
+                  disabled={selectedMemberIds.size === 0}
+                  className="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg text-sm font-medium transition-colors mb-3"
+                >
+                  Create Group ({selectedMemberIds.size} selected)
+                </button>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {memberGroups.map(g => (
+                    <div key={g.id} className="flex items-center justify-between px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                      <button type="button" onClick={() => selectGroup(g.id)} className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: g.color }} />
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{g.name}</span>
+                        <span className="text-[10px] text-slate-500">({g.memberIds.size})</span>
+                      </button>
+                      <button type="button" onClick={() => deleteGroup(g.id)} className="text-slate-400 hover:text-red-400">
+                        <XCircle className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {memberGroups.length === 0 && (
+                    <p className="text-xs text-slate-500 text-center">No groups yet</p>
+                  )}
+                </div>
               </div>
             </div>
 

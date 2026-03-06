@@ -36,6 +36,16 @@ import {
   Eye,
   BarChart3,
   Waves,
+  Search,
+  Table2,
+  ChevronDown,
+  ChevronUp,
+  Hash,
+  ArrowUpDown,
+  Crosshair,
+  AlertTriangle,
+  CheckCircle2,
+  Palette,
 } from "lucide-react";
 import { useModelStore, type AnalysisResults } from "../../store/model";
 import { useShallow } from 'zustand/react/shallow';
@@ -555,6 +565,16 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
   const [showMemberDetail, setShowMemberDetail] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
+  // === STAAD.Pro-level post-processing state ===
+  const [showTabularResults, setShowTabularResults] = useState(false);
+  const [tabularTab, setTabularTab] = useState<'displacements' | 'forces' | 'reactions' | 'summary'>('forces');
+  const [queryMemberId, setQueryMemberId] = useState('');
+  const [showForceSummary, setShowForceSummary] = useState(false);
+  const [contourLevels, setContourLevels] = useState(10);
+  const [colorScheme, setColorScheme] = useState<'jet' | 'rainbow' | 'thermal' | 'grayscale'>('jet');
+  const [sortColumn, setSortColumn] = useState<string>('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
   // Get member IDs for navigation
   const memberIds = useMemo(() => {
     if (!analysisResults?.memberForces) return [];
@@ -576,6 +596,99 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
       diagramData: forces.diagramData,
     };
   }, [selectedMemberId, analysisResults?.memberForces]);
+
+  // ===== FORCE SUMMARY — Max/Min per force type with member IDs (STAAD.Pro Table output) =====
+  const forceSummary = useMemo(() => {
+    if (!analysisResults?.memberForces || analysisResults.memberForces.size === 0) return null;
+    const summary = {
+      maxAxial: { value: -Infinity, memberId: '' },
+      minAxial: { value: Infinity, memberId: '' },
+      maxShearY: { value: -Infinity, memberId: '' },
+      minShearY: { value: Infinity, memberId: '' },
+      maxShearZ: { value: -Infinity, memberId: '' },
+      minShearZ: { value: Infinity, memberId: '' },
+      maxMomentZ: { value: -Infinity, memberId: '' },
+      minMomentZ: { value: Infinity, memberId: '' },
+      maxMomentY: { value: -Infinity, memberId: '' },
+      minMomentY: { value: Infinity, memberId: '' },
+      maxTorsion: { value: -Infinity, memberId: '' },
+    };
+    for (const [memberId, f] of analysisResults.memberForces.entries()) {
+      if (f.axial > summary.maxAxial.value) { summary.maxAxial = { value: f.axial, memberId }; }
+      if (f.axial < summary.minAxial.value) { summary.minAxial = { value: f.axial, memberId }; }
+      if (f.shearY > summary.maxShearY.value) { summary.maxShearY = { value: f.shearY, memberId }; }
+      if (f.shearY < summary.minShearY.value) { summary.minShearY = { value: f.shearY, memberId }; }
+      if ((f.shearZ ?? 0) > summary.maxShearZ.value) { summary.maxShearZ = { value: f.shearZ ?? 0, memberId }; }
+      if ((f.shearZ ?? 0) < summary.minShearZ.value) { summary.minShearZ = { value: f.shearZ ?? 0, memberId }; }
+      if (f.momentZ > summary.maxMomentZ.value) { summary.maxMomentZ = { value: f.momentZ, memberId }; }
+      if (f.momentZ < summary.minMomentZ.value) { summary.minMomentZ = { value: f.momentZ, memberId }; }
+      if ((f.momentY ?? 0) > summary.maxMomentY.value) { summary.maxMomentY = { value: f.momentY ?? 0, memberId }; }
+      if ((f.momentY ?? 0) < summary.minMomentY.value) { summary.minMomentY = { value: f.momentY ?? 0, memberId }; }
+      if (Math.abs(f.torsion ?? 0) > summary.maxTorsion.value) { summary.maxTorsion = { value: Math.abs(f.torsion ?? 0), memberId }; }
+    }
+    return summary;
+  }, [analysisResults?.memberForces]);
+
+  // ===== TABULAR DATA — Sortable tables for Node Displacements, Member Forces =====
+  const nodeDisplacementTable = useMemo(() => {
+    if (!analysisResults?.displacements) return [];
+    const rows: Array<{ nodeId: string; dx: number; dy: number; dz: number; rx: number; ry: number; rz: number; resultant: number }> = [];
+    for (const [nodeId, d] of analysisResults.displacements.entries()) {
+      const resultant = Math.sqrt(d.dx * d.dx + d.dy * d.dy + (d.dz ?? 0) * (d.dz ?? 0));
+      rows.push({
+        nodeId,
+        dx: d.dx, dy: d.dy, dz: d.dz ?? 0,
+        rx: d.rx ?? 0, ry: d.ry ?? 0, rz: d.rz ?? 0,
+        resultant,
+      });
+    }
+    return rows;
+  }, [analysisResults?.displacements]);
+
+  const memberForceTable = useMemo(() => {
+    if (!analysisResults?.memberForces) return [];
+    const rows: Array<{ memberId: string; axial: number; shearY: number; shearZ: number; momentZ: number; momentY: number; torsion: number }> = [];
+    for (const [memberId, f] of analysisResults.memberForces.entries()) {
+      rows.push({
+        memberId,
+        axial: f.axial,
+        shearY: f.shearY,
+        shearZ: f.shearZ ?? 0,
+        momentZ: f.momentZ,
+        momentY: f.momentY ?? 0,
+        torsion: f.torsion ?? 0,
+      });
+    }
+    return rows;
+  }, [analysisResults?.memberForces]);
+
+  // ===== QUICK MEMBER QUERY — Inline force lookup by member ID =====
+  const queriedMemberForces = useMemo(() => {
+    if (!queryMemberId.trim() || !analysisResults?.memberForces) return null;
+    const forces = analysisResults.memberForces.get(queryMemberId.trim());
+    if (!forces) return null;
+    const memberModel = members.get(queryMemberId.trim());
+    const length = memberModel ? getMemberLength(memberModel, nodes) : 0;
+    return { ...forces, length };
+  }, [queryMemberId, analysisResults?.memberForces, members, nodes]);
+
+  // ===== MAX DISPLACEMENT PER DOF — STAAD.Pro "Max Displacement Summary" =====
+  const maxDispPerDOF = useMemo(() => {
+    if (!analysisResults?.displacements || analysisResults.displacements.size === 0) return null;
+    const result = {
+      maxDx: { value: 0, nodeId: '' }, maxDy: { value: 0, nodeId: '' }, maxDz: { value: 0, nodeId: '' },
+      maxRx: { value: 0, nodeId: '' }, maxRy: { value: 0, nodeId: '' }, maxRz: { value: 0, nodeId: '' },
+    };
+    for (const [nodeId, d] of analysisResults.displacements.entries()) {
+      if (Math.abs(d.dx) > Math.abs(result.maxDx.value)) { result.maxDx = { value: d.dx, nodeId }; }
+      if (Math.abs(d.dy) > Math.abs(result.maxDy.value)) { result.maxDy = { value: d.dy, nodeId }; }
+      if (Math.abs(d.dz ?? 0) > Math.abs(result.maxDz.value)) { result.maxDz = { value: d.dz ?? 0, nodeId }; }
+      if (Math.abs(d.rx ?? 0) > Math.abs(result.maxRx.value)) { result.maxRx = { value: d.rx ?? 0, nodeId }; }
+      if (Math.abs(d.ry ?? 0) > Math.abs(result.maxRy.value)) { result.maxRy = { value: d.ry ?? 0, nodeId }; }
+      if (Math.abs(d.rz ?? 0) > Math.abs(result.maxRz.value)) { result.maxRz = { value: d.rz ?? 0, nodeId }; }
+    }
+    return result;
+  }, [analysisResults?.displacements]);
 
   // Handle member navigation
   const handleMemberNavigate = (direction: "prev" | "next") => {
@@ -1316,14 +1429,46 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
                 <span className="text-[9px] text-slate-500 dark:text-slate-400">Low</span>
                 <div
                   className={`flex-1 h-2 rounded bg-gradient-to-r ${
-                    heatmapType === "displacement"
-                      ? "from-[#1e3a8a] via-[#22c55e] to-[#dc2626]"
-                      : heatmapType === "stress"
-                        ? "from-[#1e3a8a] via-[#22c55e] to-[#dc2626]"
-                        : "from-[#22c55e] via-[#f59e0b] to-[#ef4444]"
+                    colorScheme === 'jet' ? 'from-[#1e3a8a] via-[#22c55e] to-[#dc2626]' :
+                    colorScheme === 'rainbow' ? 'from-[#7c3aed] via-[#06b6d4] via-[#22c55e] via-[#eab308] to-[#ef4444]' :
+                    colorScheme === 'thermal' ? 'from-[#0c0c2c] via-[#6b21a8] via-[#dc2626] to-[#fbbf24]' :
+                    'from-[#1e293b] via-[#94a3b8] to-[#f8fafc]'
                   }`}
                 />
                 <span className="text-[9px] text-slate-500 dark:text-slate-400">High</span>
+              </div>
+
+              {/* Contour Settings — STAAD.Pro-level color map control */}
+              <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1">
+                    <Palette className="w-3 h-3" />
+                    Color Scheme
+                  </span>
+                  <span className="text-[9px] text-slate-400">{contourLevels} levels</span>
+                </div>
+                <div className="grid grid-cols-4 gap-1 mb-2">
+                  {(['jet', 'rainbow', 'thermal', 'grayscale'] as const).map((scheme) => (
+                    <button type="button" key={scheme}
+                      onClick={() => setColorScheme(scheme)}
+                      className={`px-1.5 py-1 text-[8px] font-medium rounded capitalize transition-all ${
+                        colorScheme === scheme
+                          ? 'bg-blue-500 text-white shadow-sm'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {scheme}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] text-slate-400 whitespace-nowrap">Levels:</span>
+                  <input
+                    type="range" min="4" max="24" step="2" value={contourLevels}
+                    onChange={(e) => setContourLevels(Number(e.target.value))}
+                    className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -1418,7 +1563,129 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           </div>
         </div>
 
-        {/* Support Reactions Table — NEW: Visible computed reactions */}
+        {/* Force Summary — STAAD.Pro-style max/min per force type */}
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+          <button type="button"
+            onClick={() => setShowForceSummary(!showForceSummary)}
+            className="flex items-center justify-between w-full"
+          >
+            <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <ArrowUpDown className="w-3 h-3" />
+              Force Summary
+            </h4>
+            {showForceSummary ? <ChevronUp className="w-3 h-3 text-slate-400" /> : <ChevronDown className="w-3 h-3 text-slate-400" />}
+          </button>
+          {showForceSummary && forceSummary && (
+            <div className="mt-2 space-y-1 text-[9px]">
+              {[
+                { label: 'Axial', max: forceSummary.maxAxial, min: forceSummary.minAxial, unit: 'kN' },
+                { label: 'Shear Y', max: forceSummary.maxShearY, min: forceSummary.minShearY, unit: 'kN' },
+                { label: 'Moment Z', max: forceSummary.maxMomentZ, min: forceSummary.minMomentZ, unit: 'kN·m' },
+                { label: 'Shear Z', max: forceSummary.maxShearZ, min: forceSummary.minShearZ, unit: 'kN' },
+                { label: 'Moment Y', max: forceSummary.maxMomentY, min: forceSummary.minMomentY, unit: 'kN·m' },
+                { label: 'Torsion', max: forceSummary.maxTorsion, min: null, unit: 'kN·m' },
+              ].map((row) => (
+                <div key={row.label} className="grid grid-cols-3 gap-1 items-center">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">{row.label}</span>
+                  <div className="text-right">
+                    <span className="text-red-500 font-mono">{row.max.value.toFixed(2)}</span>
+                    <span className="text-slate-400 ml-0.5">({row.max.memberId})</span>
+                  </div>
+                  {row.min ? (
+                    <div className="text-right">
+                      <span className="text-blue-500 font-mono">{row.min.value.toFixed(2)}</span>
+                      <span className="text-slate-400 ml-0.5">({row.min.memberId})</span>
+                    </div>
+                  ) : (
+                    <div className="text-right text-slate-400">—</div>
+                  )}
+                </div>
+              ))}
+              <div className="grid grid-cols-3 gap-1 text-[8px] text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-1 mt-1">
+                <span>Force Type</span>
+                <span className="text-right text-red-400">Max (Member)</span>
+                <span className="text-right text-blue-400">Min (Member)</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Quick Member Query — STAAD.Pro "Member Query" */}
+        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+          <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+            <Search className="w-3 h-3" />
+            Member Query
+          </h4>
+          <div className="flex gap-1">
+            <div className="relative flex-1">
+              <Hash className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+              <input
+                type="text"
+                value={queryMemberId}
+                onChange={(e) => setQueryMemberId(e.target.value)}
+                placeholder="Member ID..."
+                className="w-full pl-6 pr-2 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-white"
+              />
+            </div>
+            {queryMemberId && (
+              <button type="button" onClick={() => setQueryMemberId('')} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          {queriedMemberForces && (
+            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-medium text-blue-600 dark:text-blue-300">
+                  Member {queryMemberId.trim()} — L = {(queriedMemberForces as any).length?.toFixed(3) ?? '?'} m
+                </span>
+                <button type="button" onClick={() => handleOpenMemberDetail(queryMemberId.trim())} className="text-[9px] text-blue-500 hover:text-blue-700 underline">
+                  Detail →
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-x-2 gap-y-0.5 text-[9px]">
+                <div className="text-slate-500 dark:text-slate-400">Axial: <span className="font-mono text-slate-900 dark:text-white">{queriedMemberForces.axial?.toFixed(2)} kN</span></div>
+                <div className="text-slate-500 dark:text-slate-400">Vy: <span className="font-mono text-slate-900 dark:text-white">{queriedMemberForces.shearY?.toFixed(2)} kN</span></div>
+                <div className="text-slate-500 dark:text-slate-400">Vz: <span className="font-mono text-slate-900 dark:text-white">{(queriedMemberForces.shearZ ?? 0).toFixed(2)} kN</span></div>
+                <div className="text-slate-500 dark:text-slate-400">Mz: <span className="font-mono text-slate-900 dark:text-white">{queriedMemberForces.momentZ?.toFixed(2)} kN·m</span></div>
+                <div className="text-slate-500 dark:text-slate-400">My: <span className="font-mono text-slate-900 dark:text-white">{(queriedMemberForces.momentY ?? 0).toFixed(2)} kN·m</span></div>
+                <div className="text-slate-500 dark:text-slate-400">T: <span className="font-mono text-slate-900 dark:text-white">{(queriedMemberForces.torsion ?? 0).toFixed(2)} kN·m</span></div>
+              </div>
+            </div>
+          )}
+          {queryMemberId.trim() && !queriedMemberForces && (
+            <div className="mt-1 text-[9px] text-amber-500 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" />
+              No results for member "{queryMemberId.trim()}"
+            </div>
+          )}
+        </div>
+
+        {/* Max Displacement per DOF — STAAD.Pro "Max Node Displacement Summary" */}
+        {maxDispPerDOF && (
+          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+            <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+              <Crosshair className="w-3 h-3" />
+              Max Displacements
+            </h4>
+            <div className="grid grid-cols-3 gap-1 text-[9px]">
+              {[
+                { dof: 'X', val: maxDispPerDOF.maxDx, unit: 'm' },
+                { dof: 'Y', val: maxDispPerDOF.maxDy, unit: 'm' },
+                { dof: 'Z', val: maxDispPerDOF.maxDz, unit: 'm' },
+                { dof: 'Rx', val: maxDispPerDOF.maxRx, unit: 'rad' },
+                { dof: 'Ry', val: maxDispPerDOF.maxRy, unit: 'rad' },
+                { dof: 'Rz', val: maxDispPerDOF.maxRz, unit: 'rad' },
+              ].map(({ dof, val, unit }) => (
+                <div key={dof} className="p-1 bg-slate-50 dark:bg-slate-800 rounded text-center">
+                  <div className="text-slate-400">{dof}</div>
+                  <div className="font-mono text-slate-900 dark:text-white">{val.value.toFixed(4)}</div>
+                  <div className="text-slate-400">N{val.nodeId} {unit}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {activeDiagram === "reactions" && supportReactions.length > 0 && (
           <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 max-h-48 overflow-y-auto scroll-smooth">
             <h4 className="text-xs font-medium text-purple-400 mb-2 uppercase tracking-wider flex items-center gap-1">
@@ -1529,6 +1796,14 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             Next Steps
           </h4>
           <div className="flex flex-col gap-2">
+            {/* Tabular Results — STAAD.Pro-style full results tables */}
+            <button type="button"
+              onClick={() => setShowTabularResults(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg text-sm"
+            >
+              <Table2 className="w-4 h-4" />
+              <span className="font-medium">Tabular Results View</span>
+            </button>
             {/* Member Force Diagrams Button */}
             <button type="button"
               onClick={() => handleOpenMemberDetail()}
@@ -1629,6 +1904,240 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
       {showDesignStudio && (
         <PostProcessingDesignStudio onClose={() => setShowDesignStudio(false)} />
       )}
+
+      {/* Tabular Results Dialog — STAAD.Pro-style full results tables */}
+      <Dialog open={showTabularResults} onOpenChange={(open) => !open && setShowTabularResults(false)}>
+        <DialogContent className="max-w-[1200px] w-[95vw] h-[85vh] p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Table2 className="w-5 h-5 text-blue-500" />
+              Tabular Results — Analysis Output
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Tab Navigation */}
+            <div className="flex border-b border-slate-200 dark:border-slate-700 px-4 flex-shrink-0">
+              {([
+                { id: 'displacements', label: 'Node Displacements', count: nodeDisplacementTable.length },
+                { id: 'forces', label: 'Member End Forces', count: memberForceTable.length },
+                { id: 'reactions', label: 'Support Reactions', count: supportReactions.length },
+                { id: 'summary', label: 'Summary', count: null },
+              ] as const).map((tab) => (
+                <button type="button" key={tab.id}
+                  onClick={() => setTabularTab(tab.id)}
+                  className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                    tabularTab === tab.id
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                  {tab.count !== null && (
+                    <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-slate-100 dark:bg-slate-800 rounded-full">{tab.count}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {/* Table Content */}
+            <div className="flex-1 overflow-auto p-4">
+              {/* Node Displacements Table */}
+              {tabularTab === 'displacements' && (
+                <table className="w-full text-xs border-collapse">
+                  <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                    <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                          onClick={() => { setSortColumn('nodeId'); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
+                        Node {sortColumn === 'nodeId' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </th>
+                      {['dx', 'dy', 'dz', 'rx', 'ry', 'rz', 'resultant'].map((col) => (
+                        <th key={col} className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                            onClick={() => { setSortColumn(col); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
+                          {col.toUpperCase()} {col === 'resultant' ? '(m)' : col.startsWith('r') ? '(rad)' : '(m)'}
+                          {sortColumn === col && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...nodeDisplacementTable]
+                      .sort((a, b) => {
+                        const valA = sortColumn === 'nodeId' ? a.nodeId : a[sortColumn as keyof typeof a] as number;
+                        const valB = sortColumn === 'nodeId' ? b.nodeId : b[sortColumn as keyof typeof b] as number;
+                        const cmp = typeof valA === 'string' ? valA.localeCompare(valB as string) : (valA as number) - (valB as number);
+                        return sortDirection === 'asc' ? cmp : -cmp;
+                      })
+                      .map((row, i) => (
+                      <tr key={row.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
+                        <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">{row.nodeId}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.dx.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.dy.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.dz.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.rx.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.ry.toExponential(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.rz.toExponential(3)}</td>
+                        <td className={`px-3 py-1.5 text-right font-mono font-semibold ${row.resultant > 0.01 ? 'text-red-500' : 'text-slate-700 dark:text-slate-300'}`}>
+                          {row.resultant.toExponential(3)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+              {/* Member End Forces Table */}
+              {tabularTab === 'forces' && (
+                <table className="w-full text-xs border-collapse">
+                  <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                    <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                          onClick={() => { setSortColumn('memberId'); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
+                        Member {sortColumn === 'memberId' && (sortDirection === 'asc' ? '↑' : '↓')}
+                      </th>
+                      {['axial', 'shearY', 'shearZ', 'momentZ', 'momentY', 'torsion'].map((col) => (
+                        <th key={col} className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300 cursor-pointer hover:text-blue-500"
+                            onClick={() => { setSortColumn(col); setSortDirection(d => d === 'asc' ? 'desc' : 'asc'); }}>
+                          {col === 'axial' ? 'Fx (kN)' : col === 'shearY' ? 'Vy (kN)' : col === 'shearZ' ? 'Vz (kN)' : col === 'momentZ' ? 'Mz (kN·m)' : col === 'momentY' ? 'My (kN·m)' : 'T (kN·m)'}
+                          {sortColumn === col && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+                        </th>
+                      ))}
+                      <th className="px-3 py-2 text-center font-semibold text-slate-700 dark:text-slate-300">Detail</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...memberForceTable]
+                      .sort((a, b) => {
+                        const valA = sortColumn === 'memberId' ? a.memberId : a[sortColumn as keyof typeof a] as number;
+                        const valB = sortColumn === 'memberId' ? b.memberId : b[sortColumn as keyof typeof b] as number;
+                        const cmp = typeof valA === 'string' ? valA.localeCompare(valB as string) : (valA as number) - (valB as number);
+                        return sortDirection === 'asc' ? cmp : -cmp;
+                      })
+                      .map((row, i) => (
+                      <tr key={row.memberId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'} hover:bg-blue-50 dark:hover:bg-blue-900/20`}>
+                        <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">{row.memberId}</td>
+                        <td className={`px-3 py-1.5 text-right font-mono ${row.axial < 0 ? 'text-blue-500' : row.axial > 0 ? 'text-red-500' : 'text-slate-500'}`}>{row.axial.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.shearY.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.shearZ.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.momentZ.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.momentY.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{row.torsion.toFixed(2)}</td>
+                        <td className="px-3 py-1.5 text-center">
+                          <button type="button" onClick={() => { setShowTabularResults(false); handleOpenMemberDetail(row.memberId); }}
+                            className="text-blue-500 hover:text-blue-700 underline text-[10px]">
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+              {/* Support Reactions Table */}
+              {tabularTab === 'reactions' && (
+                <table className="w-full text-xs border-collapse">
+                  <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                    <tr className="border-b-2 border-slate-300 dark:border-slate-600">
+                      <th className="px-3 py-2 text-left font-semibold text-slate-700 dark:text-slate-300">Node</th>
+                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Fx (kN)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Fy (kN)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Fz (kN)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Mx (kN·m)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">My (kN·m)</th>
+                      <th className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300">Mz (kN·m)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {supportReactions.map((sr, i) => (
+                      <tr key={sr.nodeId} className={`border-b border-slate-100 dark:border-slate-800 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                        <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">{sr.nodeId}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.fx.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.fy.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.fz.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.mx.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.my.toFixed(3)}</td>
+                        <td className="px-3 py-1.5 text-right font-mono text-slate-700 dark:text-slate-300">{sr.mz.toFixed(3)}</td>
+                      </tr>
+                    ))}
+                    {/* Totals row */}
+                    <tr className="border-t-2 border-slate-400 dark:border-slate-500 bg-slate-100 dark:bg-slate-800 font-semibold">
+                      <td className="px-3 py-1.5 text-slate-900 dark:text-white">ΣTotal</td>
+                      {['fx', 'fy', 'fz', 'mx', 'my', 'mz'].map((key) => (
+                        <td key={key} className="px-3 py-1.5 text-right font-mono text-slate-900 dark:text-white">
+                          {supportReactions.reduce((sum, sr) => sum + (sr[key as keyof typeof sr] as number), 0).toFixed(3)}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              )}
+
+              {/* Summary Tab */}
+              {tabularTab === 'summary' && (
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Analysis Statistics */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                      <BarChart2 className="w-4 h-4 text-blue-500" /> Analysis Statistics
+                    </h3>
+                    <div className="space-y-2">
+                      {[
+                        { label: 'Total Nodes', value: nodes.size.toString() },
+                        { label: 'Total Members', value: members.size.toString() },
+                        { label: 'Total DOF', value: (nodes.size * 6).toString() },
+                        { label: 'Condition Number', value: analysisResults?.conditionNumber?.toExponential(2) ?? '—' },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="flex justify-between text-sm">
+                          <span className="text-slate-500 dark:text-slate-400">{label}</span>
+                          <span className="font-mono text-slate-900 dark:text-white">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Equilibrium Check */}
+                    {analysisResults?.equilibriumCheck && (
+                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800">
+                        <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
+                          {analysisResults.equilibriumCheck.pass ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> : <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />}
+                          Equilibrium Check — {analysisResults.equilibriumCheck.pass ? 'PASS' : 'FAIL'}
+                        </h4>
+                        <div className="grid grid-cols-2 gap-2 text-[10px]">
+                          <div className="text-slate-500">Error: <span className="font-mono">{analysisResults.equilibriumCheck.error_percent.toFixed(4)}%</span></div>
+                          <div className="text-slate-500">Residual: <span className="font-mono">[{analysisResults.equilibriumCheck.residual.map(v => v.toExponential(2)).join(', ')}]</span></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Max Values Summary */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                      <ArrowUpDown className="w-4 h-4 text-red-500" /> Maximum Values
+                    </h3>
+                    {forceSummary && (
+                      <div className="space-y-1.5">
+                        {[
+                          { label: 'Max Axial Force', val: forceSummary.maxAxial.value, unit: 'kN', member: forceSummary.maxAxial.memberId },
+                          { label: 'Max Shear (Vy)', val: forceSummary.maxShearY.value, unit: 'kN', member: forceSummary.maxShearY.memberId },
+                          { label: 'Max Moment (Mz)', val: forceSummary.maxMomentZ.value, unit: 'kN·m', member: forceSummary.maxMomentZ.memberId },
+                          { label: 'Max Displacement', val: maxDispPerDOF ? Math.max(Math.abs(maxDispPerDOF.maxDx.value), Math.abs(maxDispPerDOF.maxDy.value), Math.abs(maxDispPerDOF.maxDz.value)) * 1000 : 0, unit: 'mm', member: maxDispPerDOF?.maxDy.nodeId ?? '' },
+                        ].map(({ label, val, unit, member }) => (
+                          <div key={label} className="flex justify-between items-center text-xs p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                            <span className="text-slate-500 dark:text-slate-400">{label}</span>
+                            <div className="text-right">
+                              <span className="font-mono font-semibold text-slate-900 dark:text-white">{val.toFixed(2)} {unit}</span>
+                              <span className="text-[9px] text-slate-400 ml-1">({member})</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Member Detail Panel Modal */}
       <Dialog open={showMemberDetail && !!selectedMemberId && !!selectedMemberForces} onOpenChange={(open) => !open && setShowMemberDetail(false)}>

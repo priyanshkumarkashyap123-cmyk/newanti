@@ -17,7 +17,16 @@ import {
     CornerUpRight, CircleDot, Hexagon, Milestone,
     ArrowDown, Wind, Zap, Thermometer, Waves,
     Weight, Play, Eye, FileText, Settings,
-    Wrench, Hammer, ChevronDown, LucideIcon
+    Wrench, Hammer, ChevronDown, LucideIcon,
+    Magnet, Crosshair, Axis3D, Scan, Table,
+    Hash, RefreshCw, FolderTree, Shapes, Pipette,
+    CopyPlus, Scissors, ScanLine, Frame, Paintbrush,
+    FocusIcon, EyeOff, Grip, ArrowUpDown, Workflow,
+    Navigation, Orbit, SquareDashedBottom, List,
+    ListTree, Tag, Search, Globe, Sparkles,
+    Diff, Group, Ungroup, Lock, Unlock,
+    PanelTop, History, Undo2, Redo2, Aperture,
+    MoveHorizontal, MoveVertical, Move3D, LayoutGrid
 } from 'lucide-react';
 
 // ============================================
@@ -30,7 +39,7 @@ export interface ToolDefinition {
     tooltip: string;
     icon: LucideIcon;
     shortcut?: string;
-    category: 'MODELING' | 'PROPERTIES' | 'LOADING' | 'ANALYSIS' | 'DESIGN';
+    category: 'MODELING' | 'PROPERTIES' | 'LOADING' | 'ANALYSIS' | 'DESIGN' | 'VIEW' | 'SNAP';
     group?: string;
     isGenerator?: boolean;
 }
@@ -93,6 +102,36 @@ export const MODELING_TOOL_GROUPS: ToolGroup[] = [
         label: 'Measure',
         icon: Ruler,
         tools: ['MEASURE_DISTANCE', 'MEASURE_ANGLE', 'MEASURE_AREA']
+    },
+    {
+        id: 'snap',
+        label: 'Snap',
+        icon: Magnet,
+        tools: ['SNAP_GRID', 'SNAP_NODE', 'SNAP_MIDPOINT', 'SNAP_INTERSECTION', 'SNAP_PERPENDICULAR', 'SNAP_NEAREST']
+    },
+    {
+        id: 'view',
+        label: 'View',
+        icon: Eye,
+        tools: [
+            'VIEW_FRONT', 'VIEW_TOP', 'VIEW_RIGHT', 'VIEW_ISO',
+            'VIEW_FIT', 'VIEW_PREVIOUS',
+            'RENDER_WIREFRAME', 'RENDER_SOLID', 'RENDER_ANALYTICAL',
+            'SHOW_LABELS', 'SHOW_LOADS', 'SHOW_SUPPORTS',
+            'SHOW_MEMBER_NUMBERS', 'SHOW_NODE_NUMBERS', 'SHOW_DIMENSIONS'
+        ]
+    },
+    {
+        id: 'utilities',
+        label: 'Utilities',
+        icon: Wrench,
+        tools: [
+            'RENUMBER_NODES', 'RENUMBER_MEMBERS',
+            'CHECK_GEOMETRY', 'MEMBER_QUERY',
+            'SELECT_BY_PROPERTY', 'SELECT_BY_GROUP',
+            'CREATE_GROUP', 'MEMBER_OFFSET_SPECS',
+            'UNDO', 'REDO'
+        ]
     }
 ];
 
@@ -462,6 +501,270 @@ export const TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
         group: 'measure'
     },
 
+    // ========== SNAP TOOLS ==========
+    SNAP_GRID: {
+        id: 'SNAP_GRID',
+        label: 'Grid Snap',
+        tooltip: 'Snap to grid intersections (Ctrl+G)',
+        icon: Grid,
+        shortcut: 'Ctrl+G',
+        category: 'SNAP',
+        group: 'snap'
+    },
+    SNAP_NODE: {
+        id: 'SNAP_NODE',
+        label: 'Node Snap',
+        tooltip: 'Snap to existing nodes',
+        icon: CircleDot,
+        category: 'SNAP',
+        group: 'snap'
+    },
+    SNAP_MIDPOINT: {
+        id: 'SNAP_MIDPOINT',
+        label: 'Midpoint',
+        tooltip: 'Snap to member midpoints',
+        icon: Minus,
+        category: 'SNAP',
+        group: 'snap'
+    },
+    SNAP_INTERSECTION: {
+        id: 'SNAP_INTERSECTION',
+        label: 'Intersection',
+        tooltip: 'Snap to member intersections',
+        icon: Crosshair,
+        category: 'SNAP',
+        group: 'snap'
+    },
+    SNAP_PERPENDICULAR: {
+        id: 'SNAP_PERPENDICULAR',
+        label: 'Perpendicular',
+        tooltip: 'Snap perpendicular to members',
+        icon: CornerUpRight,
+        category: 'SNAP',
+        group: 'snap'
+    },
+    SNAP_NEAREST: {
+        id: 'SNAP_NEAREST',
+        label: 'Nearest',
+        tooltip: 'Snap to nearest point on member',
+        icon: Magnet,
+        category: 'SNAP',
+        group: 'snap'
+    },
+
+    // ========== VIEW TOOLS ==========
+    VIEW_FRONT: {
+        id: 'VIEW_FRONT',
+        label: 'Front (XY)',
+        tooltip: 'View from front (XY plane)',
+        icon: Square,
+        shortcut: '1',
+        category: 'VIEW',
+        group: 'view'
+    },
+    VIEW_TOP: {
+        id: 'VIEW_TOP',
+        label: 'Top (XZ)',
+        tooltip: 'View from top (plan view)',
+        icon: Square,
+        shortcut: '2',
+        category: 'VIEW',
+        group: 'view'
+    },
+    VIEW_RIGHT: {
+        id: 'VIEW_RIGHT',
+        label: 'Right (YZ)',
+        tooltip: 'View from right (elevation)',
+        icon: Square,
+        shortcut: '3',
+        category: 'VIEW',
+        group: 'view'
+    },
+    VIEW_ISO: {
+        id: 'VIEW_ISO',
+        label: 'Isometric',
+        tooltip: 'Standard isometric view',
+        icon: Box,
+        shortcut: '0',
+        category: 'VIEW',
+        group: 'view'
+    },
+    VIEW_FIT: {
+        id: 'VIEW_FIT',
+        label: 'Zoom Fit',
+        tooltip: 'Fit entire model in view (F)',
+        icon: Maximize2,
+        shortcut: 'F',
+        category: 'VIEW',
+        group: 'view'
+    },
+    VIEW_PREVIOUS: {
+        id: 'VIEW_PREVIOUS',
+        label: 'Previous View',
+        tooltip: 'Restore previous camera view',
+        icon: History,
+        category: 'VIEW',
+        group: 'view'
+    },
+    RENDER_WIREFRAME: {
+        id: 'RENDER_WIREFRAME',
+        label: 'Wireframe',
+        tooltip: 'Wireframe rendering mode',
+        icon: Box,
+        category: 'VIEW',
+        group: 'view'
+    },
+    RENDER_SOLID: {
+        id: 'RENDER_SOLID',
+        label: 'Solid/Extrude',
+        tooltip: 'Solid 3D rendering with section shapes',
+        icon: Hexagon,
+        category: 'VIEW',
+        group: 'view'
+    },
+    RENDER_ANALYTICAL: {
+        id: 'RENDER_ANALYTICAL',
+        label: 'Analytical',
+        tooltip: 'Line model with centerline representation',
+        icon: Minus,
+        category: 'VIEW',
+        group: 'view'
+    },
+    SHOW_LABELS: {
+        id: 'SHOW_LABELS',
+        label: 'Toggle Labels',
+        tooltip: 'Show/hide element labels',
+        icon: Tag,
+        shortcut: 'L',
+        category: 'VIEW',
+        group: 'view'
+    },
+    SHOW_LOADS: {
+        id: 'SHOW_LOADS',
+        label: 'Toggle Loads',
+        tooltip: 'Show/hide applied loads with values',
+        icon: ArrowDown,
+        category: 'VIEW',
+        group: 'view'
+    },
+    SHOW_SUPPORTS: {
+        id: 'SHOW_SUPPORTS',
+        label: 'Toggle Supports',
+        tooltip: 'Show/hide support symbols',
+        icon: Triangle,
+        category: 'VIEW',
+        group: 'view'
+    },
+    SHOW_MEMBER_NUMBERS: {
+        id: 'SHOW_MEMBER_NUMBERS',
+        label: 'Member Nos.',
+        tooltip: 'Show/hide member numbers',
+        icon: Hash,
+        category: 'VIEW',
+        group: 'view'
+    },
+    SHOW_NODE_NUMBERS: {
+        id: 'SHOW_NODE_NUMBERS',
+        label: 'Node Nos.',
+        tooltip: 'Show/hide node numbers',
+        icon: Hash,
+        category: 'VIEW',
+        group: 'view'
+    },
+    SHOW_DIMENSIONS: {
+        id: 'SHOW_DIMENSIONS',
+        label: 'Dimensions',
+        tooltip: 'Show/hide member length dimensions',
+        icon: Ruler,
+        category: 'VIEW',
+        group: 'view'
+    },
+
+    // ========== UTILITY TOOLS ==========
+    RENUMBER_NODES: {
+        id: 'RENUMBER_NODES',
+        label: 'Renumber Nodes',
+        tooltip: 'Renumber nodes sequentially',
+        icon: Hash,
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    RENUMBER_MEMBERS: {
+        id: 'RENUMBER_MEMBERS',
+        label: 'Renumber Members',
+        tooltip: 'Renumber members sequentially',
+        icon: Hash,
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    CHECK_GEOMETRY: {
+        id: 'CHECK_GEOMETRY',
+        label: 'Check Geometry',
+        tooltip: 'Find duplicate nodes, zero-length members, orphan nodes',
+        icon: Search,
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    MEMBER_QUERY: {
+        id: 'MEMBER_QUERY',
+        label: 'Member Query',
+        tooltip: 'Query member properties, forces, and section details',
+        icon: Pipette,
+        shortcut: 'Q',
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    SELECT_BY_PROPERTY: {
+        id: 'SELECT_BY_PROPERTY',
+        label: 'Select by Property',
+        tooltip: 'Select elements by section or material',
+        icon: Paintbrush,
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    SELECT_BY_GROUP: {
+        id: 'SELECT_BY_GROUP',
+        label: 'Select by Group',
+        tooltip: 'Select elements by member group',
+        icon: FolderTree,
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    CREATE_GROUP: {
+        id: 'CREATE_GROUP',
+        label: 'Create Group',
+        tooltip: 'Create named member/node group',
+        icon: Group,
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    MEMBER_OFFSET_SPECS: {
+        id: 'MEMBER_OFFSET_SPECS',
+        label: 'Offset Specs',
+        tooltip: 'Rigid end offset specifications (STAAD format)',
+        icon: MoveHorizontal,
+        category: 'PROPERTIES',
+        group: 'utilities'
+    },
+    UNDO: {
+        id: 'UNDO',
+        label: 'Undo',
+        tooltip: 'Undo last operation (Ctrl+Z)',
+        icon: Undo2,
+        shortcut: 'Ctrl+Z',
+        category: 'MODELING',
+        group: 'utilities'
+    },
+    REDO: {
+        id: 'REDO',
+        label: 'Redo',
+        tooltip: 'Redo last operation (Ctrl+Y)',
+        icon: Redo2,
+        shortcut: 'Ctrl+Y',
+        category: 'MODELING',
+        group: 'utilities'
+    },
+
     // ========== PROPERTIES TOOLS ==========
     ASSIGN_SECTION: {
         id: 'ASSIGN_SECTION',
@@ -718,6 +1021,12 @@ export const KEYBOARD_SHORTCUTS: Record<string, string> = {
     'w': 'ADD_WIND',
     't': 'ADD_TEMPERATURE',
     'g': 'ADD_SELF_WEIGHT',
+    'q': 'MEMBER_QUERY',
+    'l': 'SHOW_LABELS',
+    '1': 'VIEW_FRONT',
+    '2': 'VIEW_TOP',
+    '3': 'VIEW_RIGHT',
+    '0': 'VIEW_ISO',
     'F5': 'RUN_ANALYSIS',
     'Delete': 'DELETE',
     'Backspace': 'DELETE'
@@ -758,5 +1067,43 @@ export function getToolByShortcut(key: string): string | undefined {
 export function getGeneratorTools(): ToolDefinition[] {
     return Object.values(TOOL_DEFINITIONS).filter(t => t.isGenerator);
 }
+
+/**
+ * Get all view/display tools
+ */
+export function getViewTools(): ToolDefinition[] {
+    return Object.values(TOOL_DEFINITIONS).filter(t => t.category === 'VIEW');
+}
+
+/**
+ * Get all snap tools
+ */
+export function getSnapTools(): ToolDefinition[] {
+    return Object.values(TOOL_DEFINITIONS).filter(t => t.category === 'SNAP');
+}
+
+/**
+ * View groups for quick access
+ */
+export const VIEW_TOOL_GROUPS: ToolGroup[] = [
+    {
+        id: 'camera',
+        label: 'Camera',
+        icon: Eye,
+        tools: ['VIEW_FRONT', 'VIEW_TOP', 'VIEW_RIGHT', 'VIEW_ISO', 'VIEW_FIT', 'VIEW_PREVIOUS']
+    },
+    {
+        id: 'rendering',
+        label: 'Render',
+        icon: Paintbrush,
+        tools: ['RENDER_WIREFRAME', 'RENDER_SOLID', 'RENDER_ANALYTICAL']
+    },
+    {
+        id: 'display',
+        label: 'Display',
+        icon: Eye,
+        tools: ['SHOW_LABELS', 'SHOW_LOADS', 'SHOW_SUPPORTS', 'SHOW_MEMBER_NUMBERS', 'SHOW_NODE_NUMBERS', 'SHOW_DIMENSIONS']
+    }
+];
 
 export default TOOL_DEFINITIONS;
