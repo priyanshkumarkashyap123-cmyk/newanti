@@ -3,8 +3,8 @@
  * Routes between Landing, Dashboard, and Workspace
  */
 
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
 import { ScrollToTop } from './components/ScrollToTop';
 
 // Lazy-load components that use framer-motion to avoid loading ~45KB on every page
@@ -17,6 +17,7 @@ const CookieConsent = lazy(() =>
 
 // Auth/layout (small, needed on every route)
 import { RequireAuth } from './components/layout/RequireAuth';
+import { useAuth } from './providers/AuthProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './App.css';
 
@@ -195,6 +196,9 @@ const PowerAIPanel = lazy(() =>
 // 404 Page
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
+// Shared layout shell for authenticated pages (sidebar, topbar, search, breadcrumbs)
+const AppShell = lazy(() => import('./layouts/AppShell'));
+
 // Post-Analysis Design Hub (STAAD.Pro-style workflow)
 const PostAnalysisDesignHub = lazy(() => import('./pages/PostAnalysisDesignHub'));
 
@@ -290,6 +294,76 @@ import { useDeviceSession } from './hooks/useDeviceSession';
 import { useGlobalErrorHandler } from './hooks/useGlobalErrorHandler';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 
+// ============================================
+// CONDITIONAL LAYOUT — wraps authenticated pages in AppShell
+// ============================================
+const PUBLIC_PATHS = [
+  '/',
+  '/sign-in',
+  '/sign-up',
+  '/pricing',
+  '/pricing-old',
+  '/forgot-password',
+  '/reset-password',
+  '/privacy-policy',
+  '/privacy',
+  '/terms-of-service',
+  '/terms-and-conditions',
+  '/terms',
+  '/refund-cancellation',
+  '/help',
+  '/about',
+  '/contact',
+  '/capabilities',
+  '/civil-engineering',
+  '/account-locked',
+  '/link-expired',
+  '/auth/callback',
+  '/verify-email',
+  '/ui-showcase',
+  '/error-report',
+  '/rust-wasm-demo',
+  '/nafems-benchmarks',
+  '/worker-test',
+  '/learning',
+  '/sitemap',
+];
+
+function ConditionalLayout({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const { isSignedIn, isLoaded } = useAuth();
+
+  const isPublicRoute = PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + '/'),
+  );
+  const isFullScreenRoute =
+    pathname === '/app' ||
+    pathname === '/demo' ||
+    pathname.startsWith('/workspace/');
+
+  // Public & full-screen routes render without AppShell
+  if (isPublicRoute || isFullScreenRoute) {
+    return <main id="main-content">{children}</main>;
+  }
+
+  // While auth is loading, show a spinner
+  if (!isLoaded) {
+    return <PageLoader />;
+  }
+
+  // Non-authenticated users see pages without AppShell (RequireAuth on individual routes handles redirect)
+  if (!isSignedIn) {
+    return <main id="main-content">{children}</main>;
+  }
+
+  // Authenticated users see the full shell: sidebar + topbar + breadcrumbs + search
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <AppShell>{children}</AppShell>
+    </Suspense>
+  );
+}
+
 function App() {
   // Ensure user is registered in MongoDB upon login/load
   useUserRegistration();
@@ -307,7 +381,7 @@ function App() {
       <AnalyticsProvider>
         <Suspense fallback={<PageLoader />}>
           <ScrollToTop />
-          <main id="main-content">
+          <ConditionalLayout>
             <Routes>
               {/* Landing Page */}
               <Route path="/" element={<LandingPage />} />
@@ -534,31 +608,10 @@ function App() {
                   </RequireAuth>
                 }
               />
-              {/* Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14) */}
-              <Route
-                path="/analysis/modal-page"
-                element={
-                  <RequireAuth>
-                    <ModalAnalysisPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/time-history-page"
-                element={
-                  <RequireAuth>
-                    <TimeHistoryAnalysisPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/nonlinear-page"
-                element={
-                  <RequireAuth>
-                    <NonlinearAnalysisPage />
-                  </RequireAuth>
-                }
-              />
+              {/* Duplicate analysis routes → redirect to canonical paths */}
+              <Route path="/analysis/modal-page" element={<Navigate to="/analysis/modal" replace />} />
+              <Route path="/analysis/time-history-page" element={<Navigate to="/analysis/time-history" replace />} />
+              <Route path="/analysis/nonlinear-page" element={<Navigate to="/analysis/nonlinear" replace />} />
               <Route
                 path="/analysis/dynamic"
                 element={
@@ -890,7 +943,7 @@ function App() {
               {/* Fallback - Show proper 404 page */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </main>
+          </ConditionalLayout>
           <BackToTopButton />
           <CookieConsent />
         </Suspense>
