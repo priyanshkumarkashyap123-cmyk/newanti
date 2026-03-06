@@ -65,8 +65,9 @@ interface CommandPaletteProps {
 
 const useCommands = (): Command[] => {
     const setCategory = useUIStore((s) => s.setCategory);
-    const setActiveTool = useUIStore((s) => s.setActiveTool);
     const openModal = useUIStore((s) => s.openModal);
+    const showNotification = useUIStore((s) => s.showNotification);
+    const setTool = useModelStore((s) => s.setTool);
     const clearModel = useModelStore((s) => s.clearModel);
     const loadStructure = useModelStore((s) => s.loadStructure);
 
@@ -329,7 +330,7 @@ const useCommands = (): Command[] => {
             category: 'MODELING' as Category,
             icon: <Box className="w-4 h-4 text-slate-500 dark:text-slate-400" />,
             shortcut: 'V',
-            action: () => { setCategory('MODELING'); setActiveTool('SELECT'); },
+            action: () => { setCategory('MODELING'); setTool('select'); showNotification('info', 'Select tool — click to select elements'); },
             keywords: ['select', 'pick', 'choose']
         },
         {
@@ -339,7 +340,7 @@ const useCommands = (): Command[] => {
             category: 'MODELING' as Category,
             icon: <Plus className="w-4 h-4 text-blue-400" />,
             shortcut: 'N',
-            action: () => { setCategory('MODELING'); setActiveTool('DRAW_NODE'); },
+            action: () => { setCategory('MODELING'); setTool('node'); showNotification('info', 'Node tool — click on grid to place nodes'); },
             keywords: ['node', 'point', 'joint', 'add']
         },
         {
@@ -349,7 +350,7 @@ const useCommands = (): Command[] => {
             category: 'MODELING' as Category,
             icon: <Box className="w-4 h-4 text-green-400" />,
             shortcut: 'B',
-            action: () => { setCategory('MODELING'); setActiveTool('DRAW_BEAM'); },
+            action: () => { setCategory('MODELING'); setTool('member'); showNotification('info', 'Beam tool — click two points to draw a beam'); },
             keywords: ['beam', 'member', 'line', 'element']
         },
         {
@@ -362,7 +363,7 @@ const useCommands = (): Command[] => {
             action: () => useModelStore.getState().deleteSelection(),
             keywords: ['delete', 'remove', 'erase']
         },
-    ], [setCategory, setActiveTool, openModal, clearModel, loadStructure]);
+    ], [setCategory, setTool, openModal, clearModel, loadStructure, showNotification]);
 };
 
 // ============================================

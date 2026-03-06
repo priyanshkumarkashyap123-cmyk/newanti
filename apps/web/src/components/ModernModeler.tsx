@@ -745,8 +745,8 @@ export const ModernModeler: FC = () => {
         e.preventDefault();
         setShowShortcuts((prev) => !prev);
       }
-      // Delete key
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+      // Backspace delete (Delete key is handled by useKeyboardShortcuts)
+      if (e.key === 'Backspace') {
         e.preventDefault();
         useModelStore.getState().deleteSelection();
       }

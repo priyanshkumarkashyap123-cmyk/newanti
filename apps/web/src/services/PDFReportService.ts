@@ -1,5 +1,5 @@
 
-import { AnalysisResults, Node, Member } from '../store/model';
+import { AnalysisResults, Node, Member, NodeLoad, MemberLoad } from '../store/model';
 import { SteelDesignResults } from './SteelDesignService';
 import { API_CONFIG } from '../config/env';
 
@@ -17,7 +17,9 @@ export const generateProfessionalReport = async (
     members: Member[],
     nodes: Node[],
     analysisResults: AnalysisResults | null,
-    designResults: Map<string, SteelDesignResults>
+    designResults: Map<string, SteelDesignResults>,
+    nodeLoads?: NodeLoad[],
+    memberLoads?: MemberLoad[],
 ): Promise<void> => {
     try {
         // Format input data
@@ -96,7 +98,23 @@ export const generateProfessionalReport = async (
                 input: {
                     nodes: inputNodes,
                     members: inputMembers,
-                    loads: [] // Add loads if available
+                    loads: [
+                        ...(nodeLoads || []).map(nl => ({
+                            type: 'nodal',
+                            nodeId: nl.nodeId,
+                            fx: nl.fx || 0, fy: nl.fy || 0, fz: nl.fz || 0,
+                            mx: nl.mx || 0, my: nl.my || 0, mz: nl.mz || 0,
+                        })),
+                        ...(memberLoads || []).map(ml => ({
+                            type: ml.type || 'UDL',
+                            memberId: ml.memberId,
+                            value: ml.value || 0,
+                            direction: ml.direction || 'Y',
+                            ...(ml.startValue !== undefined && { startValue: ml.startValue }),
+                            ...(ml.endValue !== undefined && { endValue: ml.endValue }),
+                            ...(ml.position !== undefined && { position: ml.position }),
+                        })),
+                    ]
                 },
                 results: resultsData,
                 design_checks: {

@@ -141,7 +141,42 @@ export {
 
 // Backward compat type aliases for slab module
 export type SlabDesignInput = import('./RCSlabDesignEngine').SlabMaterials;
-export const IS456_MOMENT_COEFFICIENTS = {}; // Placeholder for backwards compat
+export const IS456_MOMENT_COEFFICIENTS: Record<string, {
+  shortSpan: { negative: number; positive: number };
+  longSpan:  { negative: number; positive: number };
+}> = {
+  // IS 456:2000 Table 26 — BM coefficients (α) for rectangular panels
+  // Format: ly/lx ratio → { short span, long span } × { negative (support), positive (midspan) }
+  // Case 1: Interior panel (all edges continuous)
+  'interior_1.0': { shortSpan: { negative: 0.032, positive: 0.024 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  'interior_1.1': { shortSpan: { negative: 0.037, positive: 0.028 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  'interior_1.2': { shortSpan: { negative: 0.042, positive: 0.032 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  'interior_1.3': { shortSpan: { negative: 0.046, positive: 0.036 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  'interior_1.4': { shortSpan: { negative: 0.050, positive: 0.039 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  'interior_1.5': { shortSpan: { negative: 0.053, positive: 0.041 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  'interior_1.75': { shortSpan: { negative: 0.059, positive: 0.045 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  'interior_2.0': { shortSpan: { negative: 0.063, positive: 0.049 }, longSpan: { negative: 0.032, positive: 0.024 } },
+  // Case 2: One short edge discontinuous
+  'oneShortDiscont_1.0': { shortSpan: { negative: 0.037, positive: 0.028 }, longSpan: { negative: 0.037, positive: 0.028 } },
+  'oneShortDiscont_1.2': { shortSpan: { negative: 0.044, positive: 0.035 }, longSpan: { negative: 0.037, positive: 0.028 } },
+  'oneShortDiscont_1.5': { shortSpan: { negative: 0.055, positive: 0.043 }, longSpan: { negative: 0.037, positive: 0.028 } },
+  'oneShortDiscont_2.0': { shortSpan: { negative: 0.065, positive: 0.051 }, longSpan: { negative: 0.037, positive: 0.028 } },
+  // Case 3: One long edge discontinuous
+  'oneLongDiscont_1.0': { shortSpan: { negative: 0.037, positive: 0.028 }, longSpan: { negative: 0.037, positive: 0.028 } },
+  'oneLongDiscont_1.2': { shortSpan: { negative: 0.045, positive: 0.035 }, longSpan: { negative: 0.040, positive: 0.030 } },
+  'oneLongDiscont_1.5': { shortSpan: { negative: 0.057, positive: 0.044 }, longSpan: { negative: 0.043, positive: 0.033 } },
+  'oneLongDiscont_2.0': { shortSpan: { negative: 0.067, positive: 0.053 }, longSpan: { negative: 0.043, positive: 0.033 } },
+  // Case 4: Two adjacent edges discontinuous
+  'twoAdjDiscont_1.0': { shortSpan: { negative: 0.047, positive: 0.035 }, longSpan: { negative: 0.047, positive: 0.035 } },
+  'twoAdjDiscont_1.2': { shortSpan: { negative: 0.053, positive: 0.040 }, longSpan: { negative: 0.047, positive: 0.035 } },
+  'twoAdjDiscont_1.5': { shortSpan: { negative: 0.060, positive: 0.047 }, longSpan: { negative: 0.047, positive: 0.035 } },
+  'twoAdjDiscont_2.0': { shortSpan: { negative: 0.071, positive: 0.055 }, longSpan: { negative: 0.047, positive: 0.035 } },
+  // Case 9: Four edges discontinuous (simply supported)
+  'allDiscont_1.0': { shortSpan: { negative: 0, positive: 0.056 }, longSpan: { negative: 0, positive: 0.056 } },
+  'allDiscont_1.2': { shortSpan: { negative: 0, positive: 0.064 }, longSpan: { negative: 0, positive: 0.056 } },
+  'allDiscont_1.5': { shortSpan: { negative: 0, positive: 0.072 }, longSpan: { negative: 0, positive: 0.056 } },
+  'allDiscont_2.0': { shortSpan: { negative: 0, positive: 0.080 }, longSpan: { negative: 0, positive: 0.056 } },
+};
 
 // =============================================================================
 // FOOTING DESIGN ENGINE

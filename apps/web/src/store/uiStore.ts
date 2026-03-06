@@ -293,6 +293,16 @@ interface UIState {
     steelDetailing: boolean;
     sectionOptimization: boolean;
     designHub: boolean;
+    // Load type-specific dialogs
+    momentLoadDialog: boolean;
+    trapezoidalLoadDialog: boolean;
+    pointLoadDialog: boolean;
+    memberLoadDialog: boolean;
+    // Civil engineering sub-domain dialogs
+    geotechnicalDesign: boolean;
+    hydraulicsDesign: boolean;
+    transportDesign: boolean;
+    constructionMgmt: boolean;
   };
 
   // Graphics State
@@ -463,6 +473,16 @@ export const useUIStore = create<UIState>()(
         steelDetailing: false,
         sectionOptimization: false,
         designHub: false,
+        // Load type-specific dialogs
+        momentLoadDialog: false,
+        trapezoidalLoadDialog: false,
+        pointLoadDialog: false,
+        memberLoadDialog: false,
+        // Civil engineering sub-domain dialogs
+        geotechnicalDesign: false,
+        hydraulicsDesign: false,
+        transportDesign: false,
+        constructionMgmt: false,
       },
 
       // Graphics State
@@ -739,6 +759,16 @@ export const useUIStore = create<UIState>()(
             steelDetailing: false,
             sectionOptimization: false,
             designHub: false,
+            // Load type-specific dialogs
+            momentLoadDialog: false,
+            trapezoidalLoadDialog: false,
+            pointLoadDialog: false,
+            memberLoadDialog: false,
+            // Civil engineering sub-domain dialogs
+            geotechnicalDesign: false,
+            hydraulicsDesign: false,
+            transportDesign: false,
+            constructionMgmt: false,
           },
         }),
       // Grid Settings

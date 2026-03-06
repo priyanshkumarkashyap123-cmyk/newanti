@@ -368,12 +368,32 @@ export class MemberDesignService {
     }
     
     private static checkDeflection(input: DesignInput): DesignCheck {
-        const { geometry, section } = input;
+        const { geometry, section, forces, material } = input;
         const L = geometry.length * 1000; // mm
-        const limit = L / 360; // Typical limit
+        const limit = L / 360; // Typical limit for steel beams (L/360 for live load)
         
-        // Estimated deflection (would need actual load data for accurate calculation)
-        const estimatedDeflection = L / 500; // Placeholder
+        // Calculate deflection using elastic beam theory
+        // For uniform load approximation from max moment: w = 8*M/L²
+        // δ_max = 5wL⁴/(384EI) = 5ML²/(48EI)
+        const E = (material.Es || material.Ec || 200) * 1e3; // MPa
+        const I = section.Ix || section.Iy || (section.depth! * Math.pow(section.width || section.depth!, 3) / 12);
+        const M = Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ)) * 1e6; // N·mm
+        const V = Math.max(Math.abs(forces.shearY), Math.abs(forces.shearZ)) * 1e3; // N
+        
+        let estimatedDeflection: number;
+        if (M > 0 && I > 0) {
+            // Equivalent uniform load from max moment: M = wL²/8, so w = 8M/L²
+            // δ = 5wL⁴/(384EI) = 5ML²/(48EI)
+            estimatedDeflection = (5 * M * L * L) / (48 * E * I);
+        } else if (V > 0 && I > 0) {
+            // From shear: w = 2V/L, δ = 5wL⁴/(384EI)
+            const w = (2 * V) / L;
+            estimatedDeflection = (5 * w * Math.pow(L, 4)) / (384 * E * I);
+        } else {
+            // Self-weight estimate: assume 1 kN/m distributed
+            const w = 1.0; // N/mm
+            estimatedDeflection = (5 * w * Math.pow(L, 4)) / (384 * E * I);
+        }
         
         const utilization = estimatedDeflection / limit;
         
@@ -384,7 +404,7 @@ export class MemberDesignService {
             capacity: limit,
             utilization,
             status: utilization > 1.0 ? 'FAIL' : utilization > 0.9 ? 'WARNING' : 'PASS',
-            formula: `δ_max ≤ L/360 = ${limit.toFixed(1)} mm`,
+            formula: `δ = 5ML²/(48EI) = ${estimatedDeflection.toFixed(2)} mm ≤ L/360 = ${limit.toFixed(1)} mm`,
         };
     }
     
@@ -645,20 +665,65 @@ export class MemberDesignService {
     }
     
     private static checkCrackWidth(input: DesignInput): DesignCheck {
-        // Simplified crack width check
-        const limit = 0.3; // mm for normal exposure
-        const estimated = 0.2; // Placeholder
+        const { forces, section, material, geometry } = input;
+        // Crack width calculation per IS 456:2000 Annex F / EC2 Section 7.3
+        // w_k = S_r,max × (ε_sm - ε_cm)
+        
+        // Exposure-based limits
+        const limit = 0.3; // mm for normal exposure (moderate: 0.3, severe: 0.2)
+        
+        const fck = material.fck || 25; // MPa
+        const fy = material.fy || 415; // MPa
+        const Es = (material.Es || 200) * 1e3; // MPa
+        const Ec = (material.Ec || (5000 * Math.sqrt(fck))) ; // MPa (IS 456 clause 6.2.3.1)
+        const d = section.depth || 500; // mm
+        const b = section.width || 300; // mm
+        
+        // Effective depth & reinforcement estimate
+        const cover = 40; // mm nominal cover
+        const d_eff = d - cover - 10; // effective depth (assuming 20mm bars)
+        const barDia = 16; // mm assumed bar diameter
+        
+        // Moment at section
+        const M = Math.max(Math.abs(forces.momentY), Math.abs(forces.momentZ)) * 1e6; // N·mm
+        
+        // Estimate steel area from equilibrium: As ≈ M / (0.87 × fy × 0.9 × d)
+        const As_est = M > 0 ? M / (0.87 * fy * 0.9 * d_eff) : (0.8 / 100) * b * d_eff; // min steel
+        
+        // Steel stress under service loads (approximately 0.58 × fy for factored → service)
+        const fs = M > 0 ? Math.min(M / (As_est * 0.9 * d_eff), 0.8 * fy) : 0.58 * fy;
+        
+        // Strain in steel
+        const epsilon_s = fs / Es;
+        
+        // Mean strain accounting for tension stiffening (EC2 7.3.4)
+        const rho_eff = As_est / (b * Math.min(2.5 * (d - d_eff + cover + barDia / 2), d / 2));
+        const fct_eff = 0.7 * Math.sqrt(fck); // Mean tensile strength approximation
+        const kt = 0.4; // Long-term loading factor
+        const epsilon_sm_minus_cm = Math.max(
+            epsilon_s - kt * (fct_eff / (rho_eff * Es)) * (1 + Es / Ec * rho_eff),
+            0.6 * epsilon_s
+        );
+        
+        // Maximum crack spacing (IS 456 / EC2)
+        // S_r,max = 3.4c + 0.425 × k1 × k2 × φ / ρ_eff
+        const k1 = 0.8; // High bond bars
+        const k2 = 0.5; // Bending
+        const Sr_max = 3.4 * cover + 0.425 * k1 * k2 * barDia / rho_eff;
+        
+        // Crack width
+        const estimated = Sr_max * epsilon_sm_minus_cm;
         
         const utilization = estimated / limit;
         
         return {
             name: 'Crack Width Check',
-            description: 'Check serviceability crack width',
-            demand: estimated,
+            description: 'Check serviceability crack width (IS 456 Annex F / EC2 7.3)',
+            demand: Math.round(estimated * 1000) / 1000,
             capacity: limit,
             utilization,
             status: utilization > 1.0 ? 'FAIL' : utilization > 0.9 ? 'WARNING' : 'PASS',
-            formula: `w_max ≤ ${limit} mm`,
+            formula: `w_k = S_r,max × (ε_sm - ε_cm) = ${estimated.toFixed(3)} mm ≤ ${limit} mm`,
         };
     }
     

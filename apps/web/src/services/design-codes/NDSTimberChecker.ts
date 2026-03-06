@@ -202,8 +202,12 @@ export class NDSTimberChecker {
         // Cr - Repetitive Member
         const Cr = options.repetitive ? 1.15 : 1.0;
 
-        // CP - Column Stability (calculated separately)
-        const CP = 1.0; // Placeholder
+        // CP - Column Stability (NDS 3.7.1)
+        // Use calculateCP if member is in compression with unbraced length
+        let CP = 1.0;
+        if (options.Lu > 0) {
+            CP = this.calculateCP(section, options.Lu, { CD, CM, Ct, CF, Ci });
+        }
 
         // Cb - Bearing Area (3.10.4)
         const lb = options.bearingLength || 1.5;

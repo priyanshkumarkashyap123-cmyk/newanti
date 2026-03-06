@@ -571,13 +571,19 @@ export async function designSteelMembers(
     const API_BASE = API_CONFIG.baseUrl;
 
     const payload = {
-      members: members.map((m) => ({
+      members: members.map((m) => {
+        // Calculate member length from section/design parameters or use default
+        const memberLength = (m as unknown as { designParams?: { Lx?: number } }).designParams?.Lx
+          || (m.section?.L ? m.section.L : 0)
+          || (m.compressionCheck?.details ? parseFloat(m.compressionCheck.details.match(/L\s*=\s*([\d.]+)/)?.[1] || '0') : 0)
+          || 3000; // Default 3m if no geometry available
+        return {
         id: m.memberId,
         code: code,
         grade: typeof m.material.name === "string" ? m.material.name : "E250",
         fy: m.material.fy || 250,
         fu: m.material.fu || 410,
-        length: 1000, // Placeholder, should come from geometry
+        length: memberLength,
         effective_length_factor_y: 1.0,
         effective_length_factor_z: 1.0,
         section: {
@@ -597,7 +603,8 @@ export async function designSteelMembers(
           tw: m.section.tw || 0,
         },
         forces: m.forces,
-      })),
+      };
+      }),
     };
 
     // Route through Node gateway → Python design endpoint

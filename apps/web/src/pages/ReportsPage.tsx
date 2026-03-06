@@ -281,6 +281,8 @@ export const ReportsPage = () => {
                     nodeList,
                     analysisResults,
                     new Map(),
+                    loads,
+                    memberLoads,
                 ),
             );
         } catch {

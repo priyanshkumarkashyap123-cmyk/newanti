@@ -157,8 +157,8 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   activeCategory,
   onCategoryChange,
 }) => {
-  const { openModal, activeStep, setActiveStep } = useUIStore(
-    useShallow((s) => ({ openModal: s.openModal, activeStep: s.activeStep, setActiveStep: s.setActiveStep }))
+  const { openModal, activeStep, setActiveStep, showNotification } = useUIStore(
+    useShallow((s) => ({ openModal: s.openModal, activeStep: s.activeStep, setActiveStep: s.setActiveStep, showNotification: s.showNotification }))
   );
   const [collapsed, setCollapsed] = useState(false);
   const [showSubTools, setShowSubTools] = useState(true);
@@ -188,12 +188,27 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
     setShowSubTools(true);
   }, [onCategoryChange, setActiveStep]);
 
+  // ─── Tool activation feedback messages ───
+  const TOOL_MESSAGES: Record<string, string> = {
+    select: 'Select tool — click to select elements',
+    select_range: 'Box select — drag to select region',
+    node: 'Node tool — click on grid to place nodes',
+    member: 'Beam tool — click two points to draw a beam',
+    support: 'Support tool — click a node to assign restraint',
+    load: 'Load tool — click a node to apply force/moment',
+    memberLoad: 'Member load — click a member to apply distributed load',
+  };
+
   // ─── THE CORE FIX: Route every tool to its proper backend ───
   const handleSubToolClick = useCallback((tool: SubTool) => {
     switch (tool.handler) {
       case 'setTool':
         // Route directly to modelStore — this is what the canvas reads
         useModelStore.getState().setTool(tool.target as any);
+        // Provide user feedback
+        if (TOOL_MESSAGES[tool.target]) {
+          showNotification('info', TOOL_MESSAGES[tool.target]);
+        }
         break;
       case 'openModal':
         openModal(tool.target as any);
@@ -208,7 +223,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
         }
         break;
     }
-  }, [openModal]);
+  }, [openModal, showNotification]);
 
   const nodes = useModelStore((s) => s.nodes);
   const members = useModelStore((s) => s.members);

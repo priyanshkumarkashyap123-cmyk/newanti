@@ -840,9 +840,105 @@ export class AdvancedFoundationDesignEngine {
   // --------------------------------------------------------------------------
 
   private designCircularFooting(): FootingDesignResult {
-    // Implementation for circular footings
-    // Similar structure to isolated footing but with circular geometry
-    return this.designIsolatedFooting(); // Placeholder - extend for circular
+    const { soil, loads, concrete, reinforcement, columns, code, options } = this.config;
+    const checks: DesignCheck[] = [];
+
+    const designLoads = this.getDesignLoads(loads);
+    const serviceLoads = this.getServiceLoads(loads);
+    const P_u = designLoads.axial;
+    const P_s = serviceLoads.axial;
+    const M_sx = serviceLoads.momentX;
+    const M_sy = serviceLoads.momentY;
+
+    // Bearing capacity
+    const qall = this.calculateBearingCapacity(soil, this.config.geometry?.depth || 1.5, options.bearingCapacityMethod);
+
+    // Size: A_req = P_s / qall → D = sqrt(4A/π)
+    const A_req = (P_s * 1.1) / qall; // 10% self-weight allowance
+    const D_footing = Math.ceil(Math.sqrt((4 * A_req) / Math.PI) * 20) / 20; // round to 50mm
+    const R = D_footing / 2;
+    const A_actual = Math.PI * R * R;
+
+    // Soil pressure
+    const q_max = P_s / A_actual + Math.sqrt(M_sx ** 2 + M_sy ** 2) / (Math.PI * R ** 3 / 4);
+    const q_min = Math.max(0, P_s / A_actual - Math.sqrt(M_sx ** 2 + M_sy ** 2) / (Math.PI * R ** 3 / 4));
+
+    checks.push(this.createBearingCapacityCheck(
+      { type: 'uniform' as const, maximum: q_max, minimum: q_min, average: P_s / A_actual, allowable: qall, eccentricityX: 0, eccentricityY: 0, effectiveArea: A_actual, contactRatio: 100 },
+      qall, code
+    ));
+
+    // Thickness via punching shear
+    const column = columns[0] || { width: 400, depth: 400, shape: 'circular' as const };
+    const colDiam = column.shape === 'circular' ? column.width : Math.sqrt(column.width * column.depth * 4 / Math.PI);
+    const q_u_net = P_u / A_actual;
+    // Iterative: d such that punching perimeter capacity ≥ demand
+    let d = 300; // starting guess
+    for (let iter = 0; iter < 10; iter++) {
+      const b_0 = Math.PI * (colDiam + d); // critical perimeter
+      const tau_c = 0.25 * Math.sqrt(concrete.fck); // MPa (IS 456 simplified)
+      const V_cap = tau_c * b_0 * d / 1000; // kN
+      const A_punch = Math.PI * ((colDiam / 2 + d / 2) / 1000) ** 2;
+      const V_demand = P_u - q_u_net * A_punch;
+      if (V_cap >= V_demand * 1.1) break;
+      d += 25;
+    }
+    const D_thick = d + concrete.cover + 16; // mm total
+
+    checks.push({
+      id: 'punching-shear-circular', name: 'Punching Shear', category: 'strength',
+      clause: code === 'IS456' ? 'Cl. 31.6.1' : 'ACI 22.6.5',
+      codeReference: code, description: 'Two-way shear at d/2 from column face',
+      demand: P_u, demandUnit: 'kN', capacity: 0.25 * Math.sqrt(concrete.fck) * Math.PI * (colDiam + d) * d / 1000,
+      capacityUnit: 'kN', ratio: P_u / (0.25 * Math.sqrt(concrete.fck) * Math.PI * (colDiam + d) * d / 1000),
+      utilizationPercent: P_u / (0.25 * Math.sqrt(concrete.fck) * Math.PI * (colDiam + d) * d / 1000) * 100,
+      status: P_u / (0.25 * Math.sqrt(concrete.fck) * Math.PI * (colDiam + d) * d / 1000) <= 1 ? 'PASS' : 'FAIL',
+      severity: 'critical',
+    });
+
+    // Flexure: cantilever from column face to edge = R - colDiam/2000
+    const cantilever = R - colDiam / 2000; // m
+    const M_u = q_u_net * cantilever ** 2 / 2 * 1; // per unit width
+    const fck = concrete.fck;
+    const fy_r = reinforcement.fy;
+    const Ast_req = (M_u * 1e6) / (0.87 * fy_r * 0.9 * d); // mm²/m simplified
+    const Ast_min = 0.12 * D_thick * 10; // 0.12% of gross area per m width
+    const Ast = Math.max(Ast_req, Ast_min);
+
+    const bar_dia = Ast > 600 ? 16 : 12;
+    const bar_area = Math.PI * bar_dia ** 2 / 4;
+    const spacing = Math.floor(1000 * bar_area / Ast / 5) * 5;
+
+    const rebarDetail: ReinforcementDetail = {
+      layer: 'bottom', direction: 'X', diameter: bar_dia, spacing,
+      areaProvided: 1000 * bar_area / spacing,
+      areaRequired: Ast, utilizationRatio: Ast / (1000 * bar_area / spacing),
+      anchorageLength: 40 * bar_dia,
+    };
+
+    // Settlement
+    let settlement: SettlementAnalysis | undefined;
+    if (options.checkSettlement) {
+      settlement = this.calculateSettlementAdvanced(P_s, D_footing, D_footing, this.config.geometry?.depth || 1.5, soil);
+      checks.push(this.createSettlementCheck(settlement, options.settlementLimit));
+    }
+
+    const stability = this.checkStability(P_s, M_sx, M_sy, D_footing, D_footing, this.config.geometry?.depth || 1.5, soil);
+    const checksSummary = this.summarizeChecks(checks);
+
+    return {
+      id: this.config.id, type: this.config.type, code,
+      status: this.determineOverallStatus(checks),
+      geometry: { length: D_footing, width: D_footing, thickness: D_thick / 1000, effectiveDepth: d / 1000, depth: this.config.geometry?.depth || 1.5, area: A_actual, volume: A_actual * D_thick / 1000, centroid: { x: R, y: R } },
+      reinforcement: { bottomX: rebarDetail, bottomY: { ...rebarDetail, direction: 'Y' }, totalWeight: Ast * 2 * A_actual * 7850 / 1e9, reinforcementRatio: Ast * 2 / (D_thick * 1000) * 100 },
+      soilPressure: { type: 'uniform', maximum: q_max, minimum: q_min, average: P_s / A_actual, allowable: qall, eccentricityX: 0, eccentricityY: 0, effectiveArea: A_actual, contactRatio: 100 },
+      settlement, stability,
+      checks, checksSummary,
+      materialQuantities: { concrete: { volume: A_actual * D_thick / 1000, weight: A_actual * D_thick / 1000 * 25 }, reinforcement: { weight: Ast * 2 * A_actual * 7850 / 1e9, itemized: { [bar_dia]: Math.ceil(2 * D_footing * 1000 / spacing) * 2 } }, excavation: A_actual * (this.config.geometry?.depth || 1.5) },
+      warnings: [...this.validationWarnings], errors: [...this.validationErrors],
+      recommendations: this.generateRecommendations(checks, this.determineOverallStatus(checks)),
+      calculationReport: { summary: `Circular footing Ø${D_footing}m, ${D_thick}mm thick for ${P_u} kN factored load`, detailedSteps: this.calculationLog, references: this.getCodeReferences(code) },
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -850,8 +946,98 @@ export class AdvancedFoundationDesignEngine {
   // --------------------------------------------------------------------------
 
   private designCombinedFooting(): FootingDesignResult {
-    // Implementation for combined footings
-    return this.designIsolatedFooting(); // Placeholder - extend for combined
+    const { soil, loads, concrete, reinforcement, columns, code, options } = this.config;
+    const checks: DesignCheck[] = [];
+
+    const designLoads = this.getDesignLoads(loads);
+    const serviceLoads = this.getServiceLoads(loads);
+
+    // Combined footing supports 2+ columns
+    const numCols = Math.max(columns.length, 2);
+    const P_u = designLoads.axial;
+    const P_s = serviceLoads.axial;
+
+    const qall = this.calculateBearingCapacity(soil, this.config.geometry?.depth || 1.5, options.bearingCapacityMethod);
+
+    // CG of column loads → footing centroid must coincide
+    const colSpacing = numCols > 1 && columns[1]?.position
+      ? Math.abs((columns[1].position?.x || 0) - (columns[0]?.position?.x || 0))
+      : 3.0; // default 3m spacing
+    const col1X = columns[0]?.position?.x || 0;
+    const col2X = columns[1]?.position?.x || colSpacing;
+    const cgX = (col1X + col2X) / 2; // assume equal loads for sizing
+
+    // Length ~ span between columns + 2×overhang
+    const overhang = 0.3; // m each side
+    const L = Math.ceil((colSpacing + 2 * overhang) * 10) / 10;
+    const B = Math.ceil(((P_s * 1.1) / (qall * L)) * 10) / 10;
+
+    const A = L * B;
+    const q_max = P_s / A + Math.abs(serviceLoads.momentX) * 6 / (B * L * L);
+    const q_min = Math.max(0, P_s / A - Math.abs(serviceLoads.momentX) * 6 / (B * L * L));
+
+    const soilPressure: SoilPressureDistribution = {
+      type: q_max === q_min ? 'uniform' : 'trapezoidal',
+      maximum: q_max, minimum: q_min, average: P_s / A, allowable: qall,
+      eccentricityX: cgX - L / 2, eccentricityY: 0, effectiveArea: A, contactRatio: q_min >= 0 ? 100 : (q_max / (q_max - q_min)) * 100,
+    };
+    checks.push(this.createBearingCapacityCheck(soilPressure, qall, code));
+
+    // Structural design (beam-on-elastic-foundation approach)
+    const q_u_net = P_u / A;
+    // Max hogging moment at interior column face
+    const col = columns[0] || { width: 400, depth: 400, shape: 'rectangular' as const };
+    const M_hog = q_u_net * B * (overhang + col.width / 2000) ** 2 / 2; // kNm
+    // Max sagging moment between columns
+    const M_sag = q_u_net * B * colSpacing ** 2 / 8 - P_u / numCols * colSpacing / 4; // simplified
+
+    // Thickness
+    let d = 400;
+    const tau_c = 0.25 * Math.sqrt(concrete.fck);
+    const V_u = q_u_net * B * (L / 2 - col.width / 2000 - d / 1000);
+    while (V_u / (B * 1000 * d) > tau_c && d < 1200) d += 25;
+    const D_thick = d + concrete.cover + 20;
+
+    // Longitudinal reinforcement (bottom for sagging, top for hogging)
+    const fy_r = reinforcement.fy;
+    const Ast_sag = Math.max(Math.abs(M_sag) * 1e6 / (0.87 * fy_r * 0.9 * d), 0.12 * D_thick * B * 10);
+    const Ast_hog = Math.max(Math.abs(M_hog) * 1e6 / (0.87 * fy_r * 0.9 * d), 0.12 * D_thick * B * 10);
+
+    const barDia = 16;
+    const barArea = Math.PI * barDia ** 2 / 4;
+    const spacingBot = Math.min(300, Math.floor(B * 1000 * barArea / Ast_sag / 5) * 5);
+    const spacingTop = Math.min(300, Math.floor(B * 1000 * barArea / Ast_hog / 5) * 5);
+
+    const rebarBot: ReinforcementDetail = { layer: 'bottom', direction: 'X', diameter: barDia, spacing: spacingBot, areaProvided: B * 1000 * barArea / spacingBot, areaRequired: Ast_sag, utilizationRatio: Ast_sag / (B * 1000 * barArea / spacingBot), anchorageLength: 40 * barDia };
+    const rebarTop: ReinforcementDetail = { layer: 'top', direction: 'X', diameter: barDia, spacing: spacingTop, areaProvided: B * 1000 * barArea / spacingTop, areaRequired: Ast_hog, utilizationRatio: Ast_hog / (B * 1000 * barArea / spacingTop), anchorageLength: 40 * barDia };
+
+    // Transverse reinforcement
+    const M_transverse = q_u_net * 1 * ((B - col.depth / 1000) / 2) ** 2 / 2;
+    const Ast_trans = Math.max(M_transverse * 1e6 / (0.87 * fy_r * 0.9 * d), 0.12 * D_thick * 10);
+    const spacingTrans = Math.min(300, Math.floor(1000 * barArea / Ast_trans / 5) * 5);
+    const rebarTrans: ReinforcementDetail = { layer: 'bottom', direction: 'Y', diameter: 12, spacing: spacingTrans, areaProvided: 1000 * Math.PI * 144 / 4 / spacingTrans, areaRequired: Ast_trans, utilizationRatio: Ast_trans / (1000 * Math.PI * 144 / 4 / spacingTrans), anchorageLength: 40 * 12 };
+
+    let settlement: SettlementAnalysis | undefined;
+    if (options.checkSettlement) {
+      settlement = this.calculateSettlementAdvanced(P_s, L, B, this.config.geometry?.depth || 1.5, soil);
+      checks.push(this.createSettlementCheck(settlement, options.settlementLimit));
+    }
+
+    const stability = this.checkStability(P_s, serviceLoads.momentX, serviceLoads.momentY, L, B, this.config.geometry?.depth || 1.5, soil);
+    const checksSummary = this.summarizeChecks(checks);
+
+    return {
+      id: this.config.id, type: this.config.type, code,
+      status: this.determineOverallStatus(checks),
+      geometry: { length: L, width: B, thickness: D_thick / 1000, effectiveDepth: d / 1000, depth: this.config.geometry?.depth || 1.5, area: A, volume: A * D_thick / 1000, centroid: { x: L / 2, y: B / 2 } },
+      reinforcement: { bottomX: rebarBot, bottomY: rebarTrans, topX: rebarTop, totalWeight: (Ast_sag + Ast_hog + Ast_trans * L) * 7850 / 1e6, reinforcementRatio: (Ast_sag + Ast_hog) / (D_thick * B * 1000) * 100 },
+      soilPressure, settlement, stability,
+      checks, checksSummary,
+      materialQuantities: { concrete: { volume: A * D_thick / 1000, weight: A * D_thick / 1000 * 25 }, reinforcement: { weight: (Ast_sag + Ast_hog + Ast_trans * L) * 7850 / 1e6, itemized: { [barDia]: Math.ceil(B * 1000 / spacingBot) + Math.ceil(B * 1000 / spacingTop), 12: Math.ceil(L * 1000 / spacingTrans) } }, excavation: A * (this.config.geometry?.depth || 1.5) },
+      warnings: [...this.validationWarnings], errors: [...this.validationErrors],
+      recommendations: this.generateRecommendations(checks, this.determineOverallStatus(checks)),
+      calculationReport: { summary: `Combined footing ${L}m × ${B}m × ${D_thick}mm for ${numCols} columns, ${P_u} kN total factored load`, detailedSteps: this.calculationLog, references: this.getCodeReferences(code) },
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -859,8 +1045,81 @@ export class AdvancedFoundationDesignEngine {
   // --------------------------------------------------------------------------
 
   private designStrapFooting(): FootingDesignResult {
-    // Implementation for strap footings
-    return this.designIsolatedFooting(); // Placeholder - extend for strap
+    // Strap footing = two isolated footings connected by a strap beam
+    // The exterior footing is eccentric; the strap beam transfers the moment to the interior footing
+    const { soil, loads, concrete, reinforcement, columns, code, options } = this.config;
+    const checks: DesignCheck[] = [];
+
+    const designLoads = this.getDesignLoads(loads);
+    const serviceLoads = this.getServiceLoads(loads);
+    const P_u = designLoads.axial;
+    const P_s = serviceLoads.axial;
+
+    const qall = this.calculateBearingCapacity(soil, this.config.geometry?.depth || 1.5, options.bearingCapacityMethod);
+
+    // Assume 2 columns; exterior at property line
+    const colSpacing = columns.length >= 2 && columns[1]?.position
+      ? Math.abs((columns[1].position?.x || 0) - (columns[0]?.position?.x || 0))
+      : 4.0;
+
+    // Split load equally for sizing
+    const P_each = P_s / 2;
+    const A_each = (P_each * 1.15) / qall;
+    const B1 = Math.ceil(Math.sqrt(A_each) * 10) / 10;
+    const L1 = B1; // square footings
+    const L_total = colSpacing + L1; // total system length
+
+    // Strap beam design: transfers eccentric moment
+    const eccentricity = L1 / 2; // exterior column at edge
+    const M_strap = P_each * eccentricity; // moment to resist
+    const V_strap = M_strap / colSpacing;
+
+    // Individual footing thickness
+    const col = columns[0] || { width: 350, depth: 350, shape: 'rectangular' as const };
+    const d = 350; // mm effective depth (adequate for isolated)
+    const D_thick = d + concrete.cover + 16;
+
+    // Strap beam sizing: width = column width, depth ≥ L_strap/10
+    const strapWidth = col.width;
+    const strapDepth = Math.max(colSpacing * 1000 / 10, 400);
+
+    const fy_r = reinforcement.fy;
+    const Ast_footing = Math.max(P_each * 1.5 * 1e3 * (B1 / 2 - col.width / 2000) / (0.87 * fy_r * 0.9 * d), 0.12 * D_thick * B1 * 10);
+    const Ast_strap = Math.max(M_strap * 1.5 * 1e6 / (0.87 * fy_r * 0.9 * strapDepth * 0.9), 0.12 * strapDepth * strapWidth / 100);
+
+    const barDia = 16;
+    const barArea = Math.PI * barDia ** 2 / 4;
+    const spacingFooting = Math.min(250, Math.floor(B1 * 1000 * barArea / Ast_footing / 5) * 5);
+
+    const rebarDetail: ReinforcementDetail = { layer: 'bottom', direction: 'X', diameter: barDia, spacing: spacingFooting, areaProvided: B1 * 1000 * barArea / spacingFooting, areaRequired: Ast_footing, utilizationRatio: Ast_footing / (B1 * 1000 * barArea / spacingFooting), anchorageLength: 40 * barDia };
+
+    const soilPressure: SoilPressureDistribution = {
+      type: 'uniform', maximum: P_each / (B1 * L1), minimum: P_each / (B1 * L1), average: P_each / (B1 * L1),
+      allowable: qall, eccentricityX: 0, eccentricityY: 0, effectiveArea: B1 * L1 * 2, contactRatio: 100,
+    };
+    checks.push(this.createBearingCapacityCheck(soilPressure, qall, code));
+
+    let settlement: SettlementAnalysis | undefined;
+    if (options.checkSettlement) {
+      settlement = this.calculateSettlementAdvanced(P_each, B1, L1, this.config.geometry?.depth || 1.5, soil);
+      checks.push(this.createSettlementCheck(settlement, options.settlementLimit));
+    }
+
+    const stability = this.checkStability(P_s, serviceLoads.momentX, serviceLoads.momentY, L_total, B1, this.config.geometry?.depth || 1.5, soil);
+    const checksSummary = this.summarizeChecks(checks);
+
+    return {
+      id: this.config.id, type: this.config.type, code,
+      status: this.determineOverallStatus(checks),
+      geometry: { length: L_total, width: B1, thickness: D_thick / 1000, effectiveDepth: d / 1000, depth: this.config.geometry?.depth || 1.5, area: B1 * L1 * 2, volume: B1 * L1 * 2 * D_thick / 1000 + strapWidth / 1000 * strapDepth / 1000 * colSpacing, centroid: { x: L_total / 2, y: B1 / 2 } },
+      reinforcement: { bottomX: rebarDetail, bottomY: { ...rebarDetail, direction: 'Y' }, totalWeight: (Ast_footing * 2 + Ast_strap) * 7850 / 1e6, reinforcementRatio: Ast_footing / (D_thick * B1 * 1000) * 100 },
+      soilPressure, settlement, stability,
+      checks, checksSummary,
+      materialQuantities: { concrete: { volume: B1 * L1 * 2 * D_thick / 1000 + strapWidth / 1000 * strapDepth / 1000 * colSpacing, weight: (B1 * L1 * 2 * D_thick / 1000 + strapWidth / 1000 * strapDepth / 1000 * colSpacing) * 25 }, reinforcement: { weight: (Ast_footing * 2 + Ast_strap) * 7850 / 1e6, itemized: { [barDia]: Math.ceil(B1 * 1000 / spacingFooting) * 4 } }, excavation: (B1 * L1 * 2 + strapWidth / 1000 * colSpacing) * (this.config.geometry?.depth || 1.5) },
+      warnings: [...this.validationWarnings, `Strap beam: ${strapWidth}mm × ${strapDepth}mm, top steel ≥ ${Math.ceil(Ast_strap)} mm²`], errors: [...this.validationErrors],
+      recommendations: this.generateRecommendations(checks, this.determineOverallStatus(checks)),
+      calculationReport: { summary: `Strap footing: 2×${B1}m² footings + strap ${strapWidth}×${strapDepth}mm, span ${colSpacing}m`, detailedSteps: this.calculationLog, references: this.getCodeReferences(code) },
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -868,8 +1127,74 @@ export class AdvancedFoundationDesignEngine {
   // --------------------------------------------------------------------------
 
   private designStripFooting(): FootingDesignResult {
-    // Implementation for strip footings
-    return this.designIsolatedFooting(); // Placeholder - extend for strip
+    const { soil, loads, concrete, reinforcement, columns, code, options } = this.config;
+    const checks: DesignCheck[] = [];
+
+    const designLoads = this.getDesignLoads(loads);
+    const serviceLoads = this.getServiceLoads(loads);
+    const P_u = designLoads.axial; // kN/m (linear load for strip)
+    const P_s = serviceLoads.axial;
+
+    const qall = this.calculateBearingCapacity(soil, this.config.geometry?.depth || 1.0, options.bearingCapacityMethod);
+
+    // Strip width: B = P_s / (qall × L), where L = 1m run
+    const B = Math.ceil((P_s * 1.1 / qall) * 10) / 10; // per metre run
+    const L = this.config.geometry?.length || 10; // total length of wall/strip
+
+    const q_actual = P_s / B;
+    const soilPressure: SoilPressureDistribution = {
+      type: 'uniform', maximum: q_actual, minimum: q_actual, average: q_actual,
+      allowable: qall, eccentricityX: 0, eccentricityY: 0, effectiveArea: B * L, contactRatio: 100,
+    };
+    checks.push(this.createBearingCapacityCheck(soilPressure, qall, code));
+
+    // Thickness: cantilever projection from wall face
+    const wallWidth = columns[0]?.width || 230; // mm
+    const projection = (B * 1000 - wallWidth) / 2; // mm
+    const q_u_net = P_u / B;
+    const M_cant = q_u_net * (projection / 1000) ** 2 / 2; // kNm per m run
+    const V_cant = q_u_net * projection / 1000; // kN per m run
+
+    // Min depth by shear (no shear reinforcement in footings)
+    const tau_c = 0.36 * Math.sqrt(concrete.fck); // MPa conservative
+    let d = Math.max(150, Math.ceil(V_cant * 1000 / (1000 * tau_c) / 25) * 25);
+    const D_thick = d + concrete.cover + 12;
+
+    // Reinforcement (transverse — main steel)
+    const fy_r = reinforcement.fy;
+    const Ast_main = Math.max(M_cant * 1e6 / (0.87 * fy_r * 0.9 * d), 0.12 * D_thick * 10);
+    const barDia = 12;
+    const barArea = Math.PI * barDia ** 2 / 4;
+    const mainSpacing = Math.min(300, Math.floor(1000 * barArea / Ast_main / 5) * 5);
+
+    // Distribution steel (longitudinal) = 0.12% of gross
+    const Ast_dist = 0.12 * D_thick * 10;
+    const distSpacing = Math.min(450, Math.floor(1000 * barArea / Ast_dist / 5) * 5);
+
+    const rebarMain: ReinforcementDetail = { layer: 'bottom', direction: 'X', diameter: barDia, spacing: mainSpacing, areaProvided: 1000 * barArea / mainSpacing, areaRequired: Ast_main, utilizationRatio: Ast_main / (1000 * barArea / mainSpacing), anchorageLength: 40 * barDia };
+    const rebarDist: ReinforcementDetail = { layer: 'bottom', direction: 'Y', diameter: barDia, spacing: distSpacing, areaProvided: 1000 * barArea / distSpacing, areaRequired: Ast_dist, utilizationRatio: Ast_dist / (1000 * barArea / distSpacing), anchorageLength: 40 * barDia };
+
+    let settlement: SettlementAnalysis | undefined;
+    if (options.checkSettlement) {
+      settlement = this.calculateSettlementAdvanced(P_s, L, B, this.config.geometry?.depth || 1.0, soil);
+      checks.push(this.createSettlementCheck(settlement, options.settlementLimit));
+    }
+
+    const stability = this.checkStability(P_s, serviceLoads.momentX, serviceLoads.momentY, L, B, this.config.geometry?.depth || 1.0, soil);
+    const checksSummary = this.summarizeChecks(checks);
+
+    return {
+      id: this.config.id, type: this.config.type, code,
+      status: this.determineOverallStatus(checks),
+      geometry: { length: L, width: B, thickness: D_thick / 1000, effectiveDepth: d / 1000, depth: this.config.geometry?.depth || 1.0, area: B * L, volume: B * L * D_thick / 1000, centroid: { x: L / 2, y: B / 2 } },
+      reinforcement: { bottomX: rebarMain, bottomY: rebarDist, totalWeight: (Ast_main * L + Ast_dist * B) * 7850 / 1e6, reinforcementRatio: Ast_main / (D_thick * 1000) * 100 },
+      soilPressure, settlement, stability,
+      checks, checksSummary,
+      materialQuantities: { concrete: { volume: B * L * D_thick / 1000, weight: B * L * D_thick / 1000 * 25 }, reinforcement: { weight: (Ast_main * L + Ast_dist * B) * 7850 / 1e6, itemized: { [barDia]: Math.ceil(L * 1000 / mainSpacing) + Math.ceil(B * 1000 / distSpacing) } }, excavation: B * L * (this.config.geometry?.depth || 1.0), pcc: B * L * 0.075 },
+      warnings: [...this.validationWarnings], errors: [...this.validationErrors],
+      recommendations: this.generateRecommendations(checks, this.determineOverallStatus(checks)),
+      calculationReport: { summary: `Strip footing ${L}m × ${B}m × ${D_thick}mm for wall load ${P_s} kN/m`, detailedSteps: this.calculationLog, references: this.getCodeReferences(code) },
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -877,8 +1202,99 @@ export class AdvancedFoundationDesignEngine {
   // --------------------------------------------------------------------------
 
   private designRaftFoundation(): FootingDesignResult {
-    // Implementation for raft foundations
-    return this.designIsolatedFooting(); // Placeholder - extend for raft
+    const { soil, loads, concrete, reinforcement, columns, code, options } = this.config;
+    const checks: DesignCheck[] = [];
+
+    const designLoads = this.getDesignLoads(loads);
+    const serviceLoads = this.getServiceLoads(loads);
+    const P_u = designLoads.axial;
+    const P_s = serviceLoads.axial;
+
+    const qall = this.calculateBearingCapacity(soil, this.config.geometry?.depth || 2.0, options.bearingCapacityMethod);
+
+    // Raft dimensions: cover entire building footprint with 0.5m edge offset
+    const columnXs = columns.map(c => c.position?.x || 0);
+    const columnYs = columns.map(c => c.position?.y || 0);
+    const edgeOffset = 0.75; // m beyond extreme columns
+    const xMin = Math.min(...columnXs, 0) - edgeOffset;
+    const xMax = Math.max(...columnXs, 6) + edgeOffset;
+    const yMin = Math.min(...columnYs, 0) - edgeOffset;
+    const yMax = Math.max(...columnYs, 6) + edgeOffset;
+
+    const L = Math.ceil((xMax - xMin) * 5) / 5;
+    const B = Math.ceil((yMax - yMin) * 5) / 5;
+    const A = L * B;
+
+    // Average bearing pressure
+    const q_avg = P_s / A;
+    const M_x = serviceLoads.momentX;
+    const M_y = serviceLoads.momentY;
+    const q_max = q_avg + 6 * Math.abs(M_y) / (B * L * L) + 6 * Math.abs(M_x) / (L * B * B);
+    const q_min = Math.max(0, q_avg - 6 * Math.abs(M_y) / (B * L * L) - 6 * Math.abs(M_x) / (L * B * B));
+
+    const soilPressure: SoilPressureDistribution = {
+      type: q_max > q_min * 1.1 ? 'trapezoidal' : 'uniform',
+      maximum: q_max, minimum: q_min, average: q_avg, allowable: qall,
+      eccentricityX: M_y / P_s, eccentricityY: M_x / P_s,
+      effectiveArea: A, contactRatio: q_min >= 0 ? 100 : (q_max / (q_max - q_min)) * 100,
+    };
+    checks.push(this.createBearingCapacityCheck(soilPressure, qall, code));
+
+    // Raft thickness (governed by punching shear at most loaded column)
+    const maxColLoad = P_u / Math.max(columns.length, 1);
+    const col = columns[0] || { width: 500, depth: 500, shape: 'rectangular' as const };
+    let d = 500; // starting effective depth for raft
+    for (let iter = 0; iter < 15; iter++) {
+      const b_0 = 2 * (col.width + col.depth + 2 * d); // critical perimeter
+      const tau_c = 0.25 * Math.sqrt(concrete.fck);
+      const V_cap = tau_c * b_0 * d / 1000;
+      const V_demand = maxColLoad - (P_u / A) * ((col.width + d) / 1000) * ((col.depth + d) / 1000);
+      if (V_cap >= V_demand * 1.1) break;
+      d += 25;
+    }
+    const D_thick = d + concrete.cover + 20 + 20; // two layers of rebar
+
+    // Two-way reinforcement (both directions, top and bottom)
+    const q_u = P_u / A;
+    // Span between columns (approximate)
+    const colSpanX = columns.length >= 2 ? Math.abs((columns[1]?.position?.x || 3) - (columns[0]?.position?.x || 0)) : 4;
+    const colSpanY = columns.length >= 2 ? Math.abs((columns[1]?.position?.y || 3) - (columns[0]?.position?.y || 0)) : 4;
+    const M_midspan = q_u * B * Math.max(colSpanX, colSpanY) ** 2 / 12; // hogging
+    const M_support = q_u * B * Math.max(colSpanX, colSpanY) ** 2 / 8; // sagging
+
+    const fy_r = reinforcement.fy;
+    const Ast_bot = Math.max(Math.abs(M_midspan) * 1e6 / (0.87 * fy_r * 0.9 * d), 0.12 * D_thick * 10);
+    const Ast_top = Math.max(Math.abs(M_support) * 1e6 / (0.87 * fy_r * 0.9 * d), 0.12 * D_thick * 10);
+
+    const barDia = 20;
+    const barArea = Math.PI * barDia ** 2 / 4;
+    const spacingBot = Math.min(200, Math.floor(1000 * barArea / Ast_bot / 5) * 5);
+    const spacingTop = Math.min(200, Math.floor(1000 * barArea / Ast_top / 5) * 5);
+
+    const rebarBot: ReinforcementDetail = { layer: 'bottom', direction: 'X', diameter: barDia, spacing: spacingBot, areaProvided: 1000 * barArea / spacingBot, areaRequired: Ast_bot, utilizationRatio: Ast_bot / (1000 * barArea / spacingBot), anchorageLength: 50 * barDia };
+    const rebarTop: ReinforcementDetail = { layer: 'top', direction: 'X', diameter: barDia, spacing: spacingTop, areaProvided: 1000 * barArea / spacingTop, areaRequired: Ast_top, utilizationRatio: Ast_top / (1000 * barArea / spacingTop), anchorageLength: 50 * barDia };
+
+    let settlement: SettlementAnalysis | undefined;
+    if (options.checkSettlement) {
+      settlement = this.calculateSettlementAdvanced(P_s, L, B, this.config.geometry?.depth || 2.0, soil);
+      checks.push(this.createSettlementCheck(settlement, options.settlementLimit));
+    }
+
+    const stability = this.checkStability(P_s, serviceLoads.momentX, serviceLoads.momentY, L, B, this.config.geometry?.depth || 2.0, soil);
+    const checksSummary = this.summarizeChecks(checks);
+
+    return {
+      id: this.config.id, type: this.config.type, code,
+      status: this.determineOverallStatus(checks),
+      geometry: { length: L, width: B, thickness: D_thick / 1000, effectiveDepth: d / 1000, depth: this.config.geometry?.depth || 2.0, area: A, volume: A * D_thick / 1000, centroid: { x: L / 2, y: B / 2 } },
+      reinforcement: { bottomX: rebarBot, bottomY: { ...rebarBot, direction: 'Y' }, topX: rebarTop, topY: { ...rebarTop, direction: 'Y' }, totalWeight: (Ast_bot + Ast_top) * 2 * A * 7850 / 1e9, reinforcementRatio: (Ast_bot + Ast_top) / (D_thick * 1000) * 100 },
+      soilPressure, settlement, stability,
+      checks, checksSummary,
+      materialQuantities: { concrete: { volume: A * D_thick / 1000, weight: A * D_thick / 1000 * 25 }, reinforcement: { weight: (Ast_bot + Ast_top) * 2 * A * 7850 / 1e9, itemized: { [barDia]: Math.ceil(L * 1000 / spacingBot + B * 1000 / spacingBot + L * 1000 / spacingTop + B * 1000 / spacingTop) } }, excavation: A * (this.config.geometry?.depth || 2.0), pcc: A * 0.1, formwork: 2 * (L + B) * D_thick / 1000 },
+      warnings: [...this.validationWarnings, 'Raft designed using rigid method. Consider FE analysis for irregular column layouts.'], errors: [...this.validationErrors],
+      recommendations: [...this.generateRecommendations(checks, this.determineOverallStatus(checks)), 'For rafts >200m², consider ribbed/cellular construction to reduce concrete volume'],
+      calculationReport: { summary: `Raft foundation ${L}m × ${B}m × ${D_thick}mm for ${columns.length} columns, ${P_u} kN total factored load`, detailedSteps: this.calculationLog, references: this.getCodeReferences(code) },
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -886,8 +1302,113 @@ export class AdvancedFoundationDesignEngine {
   // --------------------------------------------------------------------------
 
   private designPileFoundation(): FootingDesignResult {
-    // Implementation for pile foundations
-    return this.designIsolatedFooting(); // Placeholder - extend for piles
+    const { soil, loads, concrete, reinforcement, columns, code, options } = this.config;
+    const checks: DesignCheck[] = [];
+
+    const designLoads = this.getDesignLoads(loads);
+    const serviceLoads = this.getServiceLoads(loads);
+    const P_u = designLoads.axial;
+    const P_s = serviceLoads.axial;
+
+    // Pile capacity estimation
+    const pileDiam = 450; // mm default
+    const pileLength = 15; // m default
+    const Ap = Math.PI * (pileDiam / 1000) ** 2 / 4; // m² — end bearing area
+    const perimeterPile = Math.PI * pileDiam / 1000; // m
+
+    // End bearing: Qb = Nc × c × Ab (cohesive) or Nq × σ'v × Ab (cohesionless)
+    let Q_end = 0;
+    let Q_skin = 0;
+    if (soil.type === 'cohesive') {
+      const Nc = 9; // bearing capacity factor for piles (Skempton)
+      Q_end = Nc * soil.cohesion * Ap; // kN
+      // Skin friction: α method
+      const alpha = soil.cohesion <= 25 ? 1.0 : soil.cohesion <= 50 ? 0.7 : soil.cohesion <= 100 ? 0.5 : 0.4;
+      Q_skin = alpha * soil.cohesion * perimeterPile * pileLength; // kN
+    } else {
+      // Cohesionless: Nq from Berezantsev
+      const phi = soil.frictionAngle;
+      const Nq = Math.exp(Math.PI * Math.tan(phi * Math.PI / 180)) * Math.tan(Math.PI / 4 + phi * Math.PI / 360) ** 2;
+      const sigma_v = soil.unitWeight * pileLength / 2; // average effective stress
+      Q_end = Nq * sigma_v * Ap; // kN
+      // Skin friction: β method
+      const K = 1 - Math.sin(phi * Math.PI / 180);
+      const delta = 0.75 * phi; // interface friction angle
+      Q_skin = K * sigma_v * Math.tan(delta * Math.PI / 180) * perimeterPile * pileLength;
+    }
+
+    const Q_ultimate_single = Q_end + Q_skin;
+    const FOS_pile = 2.5;
+    const Q_safe_single = Q_ultimate_single / FOS_pile;
+
+    // Number of piles
+    const nPiles = Math.ceil(P_s / Q_safe_single);
+    const nPilesMin = Math.max(nPiles, 2); // minimum 2 piles
+
+    checks.push({
+      id: 'pile-capacity', name: 'Single Pile Capacity', category: 'strength',
+      clause: code === 'IS456' ? 'IS 2911 Part 1' : 'ACI 543',
+      codeReference: code, description: `Ultimate capacity: ${Q_ultimate_single.toFixed(0)} kN (end bearing: ${Q_end.toFixed(0)} + skin: ${Q_skin.toFixed(0)})`,
+      demand: P_s / nPilesMin, demandUnit: 'kN', capacity: Q_safe_single, capacityUnit: 'kN',
+      ratio: (P_s / nPilesMin) / Q_safe_single, utilizationPercent: (P_s / nPilesMin) / Q_safe_single * 100,
+      status: (P_s / nPilesMin) / Q_safe_single <= 1 ? 'PASS' : 'FAIL', severity: 'critical',
+    });
+
+    // Pile cap sizing (for the group)
+    const pileSpacing = 3 * pileDiam / 1000; // 3D spacing
+    const gridSize = Math.ceil(Math.sqrt(nPilesMin));
+    const capL = (gridSize - 1) * pileSpacing + 2 * 0.15 + pileDiam / 1000; // edge distance 150mm
+    const capB = capL;
+    const capD = Math.max(600, pileLength * 1000 * 0.05); // mm, min 600mm
+    const capEffD = capD - concrete.cover - 20;
+
+    // Pile cap reinforcement
+    const fy_r = reinforcement.fy;
+    const M_cap = P_u / nPilesMin * gridSize * pileSpacing / 4; // simplified
+    const Ast_cap = Math.max(M_cap * 1e6 / (0.87 * fy_r * 0.9 * capEffD), 0.12 * capD * capL * 10);
+    const barDia = 20;
+    const barArea = Math.PI * barDia ** 2 / 4;
+    const spacing = Math.min(200, Math.floor(capB * 1000 * barArea / Ast_cap / 5) * 5);
+
+    const rebarDetail: ReinforcementDetail = { layer: 'bottom', direction: 'X', diameter: barDia, spacing, areaProvided: capB * 1000 * barArea / spacing, areaRequired: Ast_cap, utilizationRatio: Ast_cap / (capB * 1000 * barArea / spacing), anchorageLength: 50 * barDia };
+
+    const soilPressure: SoilPressureDistribution = {
+      type: 'uniform', maximum: 0, minimum: 0, average: 0, allowable: 0,
+      eccentricityX: 0, eccentricityY: 0, effectiveArea: capL * capB, contactRatio: 0,
+      // Piles transfer load to depth - no direct soil pressure under cap
+    };
+
+    let settlement: SettlementAnalysis | undefined;
+    if (options.checkSettlement) {
+      // Pile group settlement (equivalent raft method)
+      const eqRaftDepth = pileLength * 2 / 3;
+      const eqRaftL = capL + pileLength * Math.tan(30 * Math.PI / 180);
+      const eqRaftB = capB + pileLength * Math.tan(30 * Math.PI / 180);
+      settlement = {
+        immediate: P_s * 1000 / (soil.elasticModulus * 1e3 * Math.sqrt(eqRaftL * eqRaftB)) * (1 - soil.poissonRatio ** 2) * 1000,
+        consolidation: 0, secondary: 0,
+        total: P_s * 1000 / (soil.elasticModulus * 1e3 * Math.sqrt(eqRaftL * eqRaftB)) * (1 - soil.poissonRatio ** 2) * 1000,
+        allowable: options.settlementLimit, method: 'Equivalent Raft (Tomlinson)',
+        status: P_s * 1000 / (soil.elasticModulus * 1e3 * Math.sqrt(eqRaftL * eqRaftB)) * (1 - soil.poissonRatio ** 2) * 1000 <= options.settlementLimit ? 'PASS' : 'FAIL',
+      };
+      checks.push(this.createSettlementCheck(settlement, options.settlementLimit));
+    }
+
+    const stability: StabilityAnalysis = { slidingFOS: 99, overturningFOSX: 99, overturningFOSY: 99, minimumFOSRequired: 1.5, status: 'PASS' };
+    const checksSummary = this.summarizeChecks(checks);
+
+    return {
+      id: this.config.id, type: this.config.type, code,
+      status: this.determineOverallStatus(checks),
+      geometry: { length: capL, width: capB, thickness: capD / 1000, effectiveDepth: capEffD / 1000, depth: pileLength, area: capL * capB, volume: capL * capB * capD / 1000, centroid: { x: capL / 2, y: capB / 2 } },
+      reinforcement: { bottomX: rebarDetail, bottomY: { ...rebarDetail, direction: 'Y' }, totalWeight: Ast_cap * 2 * capL * capB * 7850 / 1e9, reinforcementRatio: Ast_cap * 2 / (capD * capB * 1000) * 100 },
+      soilPressure, settlement, stability,
+      checks, checksSummary,
+      materialQuantities: { concrete: { volume: capL * capB * capD / 1000 + nPilesMin * Ap * pileLength, weight: (capL * capB * capD / 1000 + nPilesMin * Ap * pileLength) * 25 }, reinforcement: { weight: (Ast_cap * 2 * capL * capB + nPilesMin * 4 * barArea * pileLength * 1000) * 7850 / 1e9, itemized: { [barDia]: Math.ceil(capB * 1000 / spacing) * 2 + nPilesMin * 4 } }, excavation: capL * capB * 2 },
+      warnings: [...this.validationWarnings, `Pile group: ${nPilesMin} piles of Ø${pileDiam}mm × ${pileLength}m at ${pileSpacing.toFixed(2)}m c/c`, `Group efficiency factor not applied — verify for closely-spaced piles`], errors: [...this.validationErrors],
+      recommendations: [...this.generateRecommendations(checks, this.determineOverallStatus(checks)), `Recommend pile load test for capacity verification`, `Consider negative skin friction if fill or consolidating layers present`],
+      calculationReport: { summary: `Pile foundation: ${nPilesMin}× Ø${pileDiam}mm piles, ${pileLength}m deep, cap ${capL}m×${capB}m×${capD}mm`, detailedSteps: this.calculationLog, references: this.getCodeReferences(code) },
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -895,8 +1416,10 @@ export class AdvancedFoundationDesignEngine {
   // --------------------------------------------------------------------------
 
   private designPileCap(): FootingDesignResult {
-    // Implementation for pile caps
-    return this.designIsolatedFooting(); // Placeholder - extend for pile caps
+    // Pile cap design delegates to pile foundation with focus on the cap structure
+    const result = this.designPileFoundation();
+    // Override the type label
+    return { ...result, type: this.config.type };
   }
 
   // --------------------------------------------------------------------------

@@ -310,6 +310,7 @@ export const PricingPage: FC = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setBillingPeriod('monthly')}
+                                aria-pressed={billingPeriod === 'monthly'}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all ${billingPeriod === 'monthly'
                                     ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white'
                                     : 'text-slate-600 hover:text-slate-700 dark:text-slate-300'
@@ -321,6 +322,7 @@ export const PricingPage: FC = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setBillingPeriod('yearly')}
+                                aria-pressed={billingPeriod === 'yearly'}
                                 className={`flex-1 h-full rounded-lg px-4 text-sm font-bold transition-all flex items-center justify-center gap-2 ${billingPeriod === 'yearly'
                                     ? 'bg-slate-100 dark:bg-slate-800 shadow-sm text-slate-900 dark:text-white'
                                     : 'text-slate-600 hover:text-slate-700 dark:text-slate-300'
@@ -436,10 +438,10 @@ export const PricingPage: FC = () => {
                                 transition={{ delay: i * 0.05 }}
                                 className="flex flex-col gap-2"
                             >
-                                <h5 className="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
+                                <h3 className="font-bold text-slate-900 dark:text-white text-lg flex items-center gap-2">
                                     <HelpCircle className="w-5 h-5 text-blue-400" />
                                     {item.question}
-                                </h5>
+                                </h3>
                                 <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed pl-7">
                                     {item.answer}
                                 </p>

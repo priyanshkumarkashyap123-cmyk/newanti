@@ -104,7 +104,16 @@ export interface AnalysisResult {
     string,
     { axial: number; shear?: number; momentStart?: number; momentEnd?: number }
   >;
-  plateResults?: Record<string, { stress: number }>; // Placeholder
+  plateResults?: Record<string, { 
+    stress: number;              // Von Mises stress (MPa)
+    stressXX?: number;           // Normal stress in X direction
+    stressYY?: number;           // Normal stress in Y direction  
+    stressXY?: number;           // Shear stress
+    momentXX?: number;           // Plate bending moment in X (kN·m/m)
+    momentYY?: number;           // Plate bending moment in Y (kN·m/m)
+    momentXY?: number;           // Twisting moment (kN·m/m)
+    displacement?: number;       // Out-of-plane displacement (mm)
+  }>;
   stats?: {
     totalDof?: number;
     nnz?: number;

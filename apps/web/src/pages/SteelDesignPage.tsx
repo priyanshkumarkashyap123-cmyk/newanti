@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Loader2, Play, AlertTriangle } from 'lucide-react';
+import { Loader2, Play, AlertTriangle, Box } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useShallow } from 'zustand/react/shallow';
 import { 
@@ -18,7 +18,7 @@ import { getSectionById, Material } from '../data/SectionDatabase';
 
 export function SteelDesignPage() {
     const store = useModelStore(
-      useShallow((s) => ({ members: s.members, analysisResults: s.analysisResults }))
+      useShallow((s) => ({ members: s.members, nodes: s.nodes, analysisResults: s.analysisResults }))
     );
     const [selectedMember, setSelectedMember] = useState<string>('');
     const [designCode, setDesignCode] = useState<'AISC360' | 'IS800'>('AISC360');
@@ -75,6 +75,13 @@ export function SteelDesignPage() {
                     continue;
                 }
 
+                // Calculate actual member length from node coordinates
+                const n1 = store.nodes.get(member.startNodeId);
+                const n2 = store.nodes.get(member.endNodeId);
+                const memberLength = (n1 && n2)
+                    ? Math.sqrt((n2.x - n1.x) ** 2 + (n2.y - n1.y) ** 2 + ((n2.z || 0) - (n1.z || 0)) ** 2) * 1000 // m → mm
+                    : params.Lx; // fallback to design parameter
+
                 // Get material (default to steel)
                 const material: Material = {
                     id: 'steel-grade-50',
@@ -97,13 +104,20 @@ export function SteelDesignPage() {
                     momentZ: memberForceData?.momentZ || 0
                 };
 
-                // Perform local design check
+                // Perform local design check with actual member length
+                const memberParams = {
+                    ...params,
+                    Lx: memberLength,
+                    Ly: memberLength,
+                    Lb: memberLength,
+                };
+
                 const designResult = performSteelDesignCheck(
                     member.id,
                     section,
                     material,
                     forces,
-                    params
+                    memberParams
                 );
 
                 designChecks.push(designResult);
@@ -253,7 +267,7 @@ export function SteelDesignPage() {
             )}
 
             {/* Results Display */}
-            {results.length > 0 && (
+            {results.length > 0 ? (
                 <div className="bg-[#2d2d2d] p-5 rounded-lg">
                     <h3 className="mb-5">Design Check Results</h3>
                     
@@ -335,6 +349,30 @@ export function SteelDesignPage() {
                                 {results.filter(r => r.overallStatus === 'FAIL').length}
                             </div>
                         </div>
+                    </div>
+                </div>
+            ) : !analyzing && (
+                <div className="bg-[#2d2d2d] p-8 rounded-lg">
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Box size={48} className="text-[#555] mb-4" />
+                        <h3 className="text-lg font-semibold text-[#aaa] mb-2">No Design Results</h3>
+                        <p className="text-sm text-[#777] max-w-md">
+                            {members.length === 0 
+                                ? 'Add structural members to your model first, then run structural analysis before performing design checks.'
+                                : !store.analysisResults
+                                    ? 'Run structural analysis first to compute member forces, then click "Run Steel Design" to check all members.'
+                                    : 'Click "Run Steel Design" above to perform AISC 360-16 / IS 800 design checks on all members.'}
+                        </p>
+                        {members.length > 0 && store.analysisResults && (
+                            <button 
+                                type="button"
+                                onClick={handleRunDesign}
+                                className="mt-4 py-2 px-6 bg-[#2196F3] text-white rounded text-sm font-medium hover:bg-[#1976D2] transition-colors flex items-center gap-2"
+                            >
+                                <Play size={16} />
+                                Run Steel Design
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
