@@ -391,13 +391,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           label="Force"
           onClick={() => setTool("load")}
           isActive={activeTool === "load"}
-          tooltip="Apply Nodal Force (Fx, Fy, Fz)"
+          tooltip="Apply Nodal Force (Fx, Fy, Fz) — click on node"
           shortcut="L"
         />
         <ToolButton
           icon={RotateCcw}
           label="Moment"
-          onClick={() => setTool("load")}
+          onClick={() => { setTool("load"); openModal("momentLoadDialog"); }}
           tooltip="Apply Nodal Moment (Mx, My, Mz)"
         />
         <ToolButton
@@ -413,20 +413,20 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           label="UDL"
           onClick={() => setTool("memberLoad")}
           isActive={activeTool === "memberLoad"}
-          tooltip="Uniformly Distributed Load"
+          tooltip="Uniformly Distributed Load — select member first"
           shortcut="U"
         />
         <ToolButton
           icon={TrendingUp}
           label="Trapezoidal"
-          onClick={() => setTool("memberLoad")}
-          tooltip="Trapezoidal / Triangular Load"
+          onClick={() => { setTool("memberLoad"); openModal("trapezoidalLoadDialog"); }}
+          tooltip="Trapezoidal / Triangular Load — specify start & end values"
         />
         <ToolButton
           icon={Target}
           label="Point"
-          onClick={() => setTool("memberLoad")}
-          tooltip="Concentrated Point Load at any point on Member"
+          onClick={() => { setTool("memberLoad"); openModal("pointLoadDialog"); }}
+          tooltip="Concentrated Point Load at specific position on member"
         />
         <ToolButton
           icon={Activity}
@@ -688,7 +688,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={Eye}
                 label="Results"
-                onClick={() => document.dispatchEvent(new CustomEvent("toggle-design-results"))}
+                onClick={() => document.dispatchEvent(new CustomEvent("toggle-results-dock"))}
                 tooltip="View Design Results Dashboard"
               />
             </ToolGroup>
@@ -787,13 +787,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={Mountain}
                 label="Geotech"
-                onClick={() => openModal("civilEngineering")}
+                onClick={() => openModal("geotechnicalDesign")}
                 tooltip="Geotechnical — Bearing Capacity, Settlement, Slope Stability"
               />
               <ToolButton
                 icon={Droplets}
                 label="Hydraulics"
-                onClick={() => openModal("civilEngineering")}
+                onClick={() => openModal("hydraulicsDesign")}
                 tooltip="Hydraulics — Open Channel, Pipe Networks, Culverts"
               />
             </ToolGroup>
@@ -801,13 +801,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={Car}
                 label="Transport"
-                onClick={() => openModal("civilEngineering")}
+                onClick={() => openModal("transportDesign")}
                 tooltip="Transportation — Highway Geometry, Pavement Design, Traffic"
               />
               <ToolButton
                 icon={HardHat}
                 label="Construction"
-                onClick={() => openModal("civilEngineering")}
+                onClick={() => openModal("constructionMgmt")}
                 tooltip="Construction Mgmt — CPM/PERT, Gantt, Cost Estimation"
               />
             </ToolGroup>

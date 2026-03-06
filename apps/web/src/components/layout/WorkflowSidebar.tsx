@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from "react";
+import { FC, useState, useMemo, useCallback } from "react";
 import {
   Box,
   Layers,
@@ -8,7 +8,6 @@ import {
   Download,
   BarChart3,
   Ruler,
-  Globe,
   ChevronsLeft,
   ChevronsRight,
   Check,
@@ -31,105 +30,118 @@ import {
   ChevronDown,
   ChevronRight,
   ArrowRight,
+  Play,
+  Eye,
+  Activity,
+  FileText,
+  Shield,
+  Columns,
+  Building2,
+  Link2,
+  Landmark,
+  Wind,
+  Zap,
 } from "lucide-react";
 import { Category, useUIStore } from "../../store/uiStore";
 import { useShallow } from 'zustand/react/shallow';
 import { useModelStore } from "../../store/model";
 
-// --- Context-sensitive sub-tools per workflow step (STAAD Pro-style) ---
+// ─── Types ───
 interface SubTool {
   id: string;
   label: string;
   icon: FC<{ className?: string }>;
-  action?: string; // modal/tool to trigger
   shortcut?: string;
+  /** How this tool connects to the backend */
+  handler: 'setTool' | 'openModal' | 'dispatch' | 'storeAction';
+  /** tool name / modal name / event name / store method */
+  target: string;
 }
 
+// ─── GEOMETRY TOOLS ─── Connected to modelStore.setTool() and CustomEvents
 const GEOMETRY_TOOLS: SubTool[] = [
-  { id: 'select', label: 'Select', icon: MousePointer, shortcut: 'V' },
-  { id: 'select-node', label: 'Select Node', icon: Crosshair },
-  { id: 'select-beam', label: 'Select Beam', icon: Maximize2 },
-  { id: 'select-parallel', label: 'Select Parallel To', icon: ArrowDownUp },
-  { id: 'select-by-level', label: 'Select by Level', icon: Layers },
-  { id: 'select-by-material', label: 'Select by Material', icon: Database },
-  { id: 'add-node', label: 'Add Node', icon: Plus, shortcut: 'N' },
-  { id: 'add-beam', label: 'Add Beam', icon: Box, shortcut: 'M' },
-  { id: 'add-plate', label: 'Add Plate', icon: Square, shortcut: 'P' },
-  { id: 'copy', label: 'Copy', icon: Copy, shortcut: '⌘C' },
-  { id: 'paste', label: 'Paste', icon: File, shortcut: '⌘V' },
-  { id: 'move', label: 'Move', icon: Move },
-  { id: 'rotate', label: 'Rotate', icon: RotateCcw },
-  { id: 'mirror', label: 'Mirror', icon: FlipHorizontal },
-  { id: 'ortho', label: 'Ortho Mode', icon: Grid3X3 },
-  { id: 'split', label: 'Split Member', icon: Scissors },
-  { id: 'divide', label: 'Divide Member', icon: ArrowDownUp },
-  { id: 'merge', label: 'Merge Nodes', icon: Merge },
-  { id: 'delete', label: 'Delete', icon: Trash2, shortcut: 'Del' },
+  { id: 'select', label: 'Select', icon: MousePointer, shortcut: 'V', handler: 'setTool', target: 'select' },
+  { id: 'select-range', label: 'Box Select', icon: Maximize2, shortcut: 'B', handler: 'setTool', target: 'select_range' },
+  { id: 'add-node', label: 'Add Node', icon: Plus, shortcut: 'N', handler: 'setTool', target: 'node' },
+  { id: 'add-beam', label: 'Add Beam', icon: Box, shortcut: 'M', handler: 'setTool', target: 'member' },
+  { id: 'add-plate', label: 'Add Plate', icon: Square, shortcut: 'P', handler: 'openModal', target: 'plateDialog' },
+  { id: 'copy', label: 'Copy / Duplicate', icon: Copy, shortcut: '⌘C', handler: 'dispatch', target: 'trigger-copy' },
+  { id: 'move', label: 'Move', icon: Move, handler: 'dispatch', target: 'trigger-move' },
+  { id: 'rotate', label: 'Rotate', icon: RotateCcw, handler: 'openModal', target: 'geometryTools' },
+  { id: 'mirror', label: 'Mirror', icon: FlipHorizontal, handler: 'openModal', target: 'geometryTools' },
+  { id: 'split', label: 'Split Member', icon: Scissors, handler: 'dispatch', target: 'trigger-split' },
+  { id: 'divide', label: 'Divide Member', icon: ArrowDownUp, handler: 'openModal', target: 'divideMember' },
+  { id: 'merge', label: 'Merge Nodes', icon: Merge, handler: 'openModal', target: 'mergeNodes' },
+  { id: 'ortho', label: 'Ortho / Grid Snap', icon: Grid3X3, handler: 'dispatch', target: 'toggle-grid-snap' },
+  { id: 'delete', label: 'Delete Selection', icon: Trash2, shortcut: 'Del', handler: 'dispatch', target: 'trigger-delete' },
 ];
 
+// ─── PROPERTIES TOOLS ─── Connected to modal dialogs
 const PROPERTIES_TOOLS: SubTool[] = [
-  { id: 'section-library', label: 'Section Database', icon: Database, action: 'sectionBrowserDialog' },
-  { id: 'assign-section', label: 'Assign Section', icon: Layers },
-  { id: 'assign-parallel', label: 'Assign Parallel To', icon: ArrowDownUp },
-  { id: 'material-library', label: 'Material Library', icon: Database, action: 'materialLibrary' },
-  { id: 'assign-material', label: 'Assign Material', icon: Layers },
-  { id: 'beta-angle', label: 'Beta Angle', icon: RotateCcw },
-  { id: 'releases', label: 'Member Releases', icon: Settings },
-  { id: 'offsets', label: 'Member Offsets', icon: Move },
-  { id: 'custom-section', label: 'Custom Section', icon: Square, action: 'sectionBuilder' },
+  { id: 'section-library', label: 'Section Database', icon: Database, handler: 'openModal', target: 'sectionBrowserDialog' },
+  { id: 'assign-section', label: 'Assign Section', icon: Layers, handler: 'openModal', target: 'sectionAssign' },
+  { id: 'material-library', label: 'Material Library', icon: Database, handler: 'openModal', target: 'materialLibrary' },
+  { id: 'assign-material', label: 'Assign Material', icon: Layers, handler: 'openModal', target: 'materialAssign' },
+  { id: 'custom-section', label: 'Section Builder', icon: Square, handler: 'openModal', target: 'sectionBuilder' },
+  { id: 'material-props', label: 'Material Properties', icon: Settings, handler: 'openModal', target: 'materialProperties' },
+  { id: 'beta-angle', label: 'Beta Angle', icon: RotateCcw, handler: 'openModal', target: 'betaAngle' },
+  { id: 'releases', label: 'Member Releases', icon: Settings, handler: 'openModal', target: 'memberReleases' },
+  { id: 'offsets', label: 'Member Offsets', icon: Move, handler: 'openModal', target: 'memberOffsets' },
 ];
 
+// ─── SUPPORT TOOLS ─── Connected to boundary conditions
+const SUPPORT_TOOLS: SubTool[] = [
+  { id: 'boundary', label: 'Define Supports', icon: Anchor, handler: 'openModal', target: 'boundaryConditionsDialog' },
+  { id: 'support-tool', label: 'Add Support (Click)', icon: Crosshair, handler: 'setTool', target: 'support' },
+];
+
+// ─── LOADING TOOLS ─── Connected to load system
 const LOADING_TOOLS: SubTool[] = [
-  { id: 'define-load', label: 'Define Load Cases', icon: File },
-  { id: 'dead-load', label: 'Dead Load (DL)', icon: Download },
-  { id: 'live-load', label: 'Live Load (LL)', icon: Download },
-  { id: 'wind-load', label: 'Wind Load (WL)', icon: Download, action: 'windLoadDialog' },
-  { id: 'earthquake-load', label: 'Earthquake Load (EQ)', icon: Download, action: 'seismicLoadDialog' },
-  { id: 'point-load', label: 'Point Load', icon: ArrowRight, shortcut: 'L' },
-  { id: 'udl', label: 'UDL (Distributed)', icon: ArrowDownUp, shortcut: 'U' },
-  { id: 'self-weight', label: 'Self Weight', icon: Download },
-  { id: 'load-combos', label: 'Load Combinations', icon: Layers, action: 'loadCombinationsDialog' },
-  { id: 'codal-loads', label: 'Codal Load Cases', icon: Ruler },
+  { id: 'define-load', label: 'Define Load Cases', icon: File, handler: 'openModal', target: 'is875Load' },
+  { id: 'load-combos', label: 'Load Combinations', icon: Layers, handler: 'openModal', target: 'loadCombinationsDialog' },
+  { id: 'point-load', label: 'Nodal Force / Moment', icon: ArrowRight, shortcut: 'L', handler: 'setTool', target: 'load' },
+  { id: 'udl', label: 'Member Load (UDL)', icon: ArrowDownUp, shortcut: 'U', handler: 'setTool', target: 'memberLoad' },
+  { id: 'self-weight', label: 'Self Weight', icon: Download, handler: 'openModal', target: 'deadLoadGenerator' },
+  { id: 'wind-load', label: 'Wind Load', icon: Wind, handler: 'openModal', target: 'windLoadDialog' },
+  { id: 'earthquake', label: 'Seismic Load', icon: Zap, handler: 'openModal', target: 'seismicLoadDialog' },
+  { id: 'temperature', label: 'Temperature Load', icon: Activity, handler: 'openModal', target: 'temperatureLoad' },
+  { id: 'floor-load', label: 'Floor / Area Load', icon: Square, handler: 'openModal', target: 'floorSlabDialog' },
 ];
 
+// ─── ANALYSIS TOOLS ─── Connected to analysis engine via CustomEvents & store
 const ANALYSIS_TOOLS: SubTool[] = [
-  { id: 'run-analysis', label: 'Run Analysis', icon: BarChart3, shortcut: 'F5' },
-  { id: 'view-results', label: 'View Results', icon: BarChart3 },
-  { id: 'deformed-shape', label: 'Deformed Shape', icon: Box },
-  { id: 'reactions', label: 'Support Reactions', icon: Anchor },
-  { id: 'sfd', label: 'Shear Force Diagram', icon: BarChart3 },
-  { id: 'bmd', label: 'Bending Moment Diagram', icon: BarChart3 },
-  { id: 'afd', label: 'Axial Force Diagram', icon: BarChart3 },
-  { id: 'deflection', label: 'Deflection Diagram', icon: BarChart3 },
-  { id: 'pdelta', label: 'P-Delta Analysis', icon: BarChart3, action: 'pDeltaAnalysis' },
-  { id: 'buckling', label: 'Buckling Analysis', icon: BarChart3, action: 'bucklingAnalysis' },
-  { id: 'modal', label: 'Modal Analysis', icon: BarChart3, action: 'modalAnalysis' },
-  { id: 'response-spectrum', label: 'Response Spectrum', icon: BarChart3 },
-  { id: 'nonlinear', label: 'Non-linear Analysis', icon: BarChart3 },
-  { id: 'pushover', label: 'Pushover Analysis', icon: BarChart3 },
-  { id: 'export-results', label: 'Export Results', icon: Upload },
+  { id: 'run-analysis', label: 'Run Analysis', icon: Play, shortcut: 'F5', handler: 'dispatch', target: 'trigger-analysis' },
+  { id: 'deformed-shape', label: 'Deformed Shape', icon: Activity, handler: 'dispatch', target: 'toggle-deformed' },
+  { id: 'sfd', label: 'Shear Force Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-sfd' },
+  { id: 'bmd', label: 'Bending Moment Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-bmd' },
+  { id: 'afd', label: 'Axial Force Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-afd' },
+  { id: 'deflection', label: 'Deflection Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-deflection' },
+  { id: 'reactions', label: 'Support Reactions', icon: Anchor, handler: 'dispatch', target: 'toggle-reactions' },
+  { id: 'view-results', label: 'Results Table', icon: Eye, handler: 'dispatch', target: 'toggle-results-dock' },
+  { id: 'pdelta', label: 'P-Delta Analysis', icon: BarChart3, handler: 'openModal', target: 'pDeltaAnalysis' },
+  { id: 'buckling', label: 'Buckling Analysis', icon: BarChart3, handler: 'openModal', target: 'bucklingAnalysis' },
+  { id: 'modal', label: 'Modal Analysis', icon: BarChart3, handler: 'dispatch', target: 'trigger-modal-analysis' },
+  { id: 'export-results', label: 'Export Results', icon: Upload, handler: 'dispatch', target: 'trigger-export' },
 ];
 
+// ─── DESIGN TOOLS ─── Connected to design dialogs & hub
 const DESIGN_TOOLS: SubTool[] = [
-  { id: 'design-check', label: 'Design Code Check', icon: Check },
-  { id: 'member-forces', label: 'Member Force Diagrams', icon: BarChart3 },
-  { id: 'results-dashboard', label: 'Full Results Dashboard', icon: BarChart3 },
-  { id: 'advanced-analysis', label: 'Advanced Analysis', icon: Settings, action: 'advancedAnalysis' },
-  { id: 'post-processing', label: 'Post-Processing Studio', icon: Ruler },
-  { id: 'design-hub', label: 'Open Design Hub', icon: Globe },
-  { id: 'steel-design', label: 'Steel Design (IS 800)', icon: Ruler },
-  { id: 'rc-design', label: 'RC Design (IS 456)', icon: Square },
-  { id: 'connection-design', label: 'Connection Design', icon: Settings },
-  { id: 'foundation-design', label: 'Foundation Design', icon: Anchor },
-  { id: 'optimize', label: 'Auto-Optimize Sections', icon: BarChart3 },
-  { id: 'detail-drawing', label: 'Detail Drawing', icon: File },
+  { id: 'design-codes', label: 'Select Design Code', icon: Shield, handler: 'openModal', target: 'designCodes' },
+  { id: 'design-check', label: 'Run Design Check', icon: Check, handler: 'dispatch', target: 'trigger-analysis' },
+  { id: 'steel-design', label: 'Steel Design', icon: Building2, handler: 'openModal', target: 'steelDesign' },
+  { id: 'rc-design', label: 'RC Design', icon: Columns, handler: 'openModal', target: 'concreteDesign' },
+  { id: 'connection-design', label: 'Connection Design', icon: Link2, handler: 'openModal', target: 'connectionDesign' },
+  { id: 'foundation-design', label: 'Foundation Design', icon: Landmark, handler: 'openModal', target: 'foundationDesign' },
+  { id: 'design-hub', label: 'Full Design Hub', icon: Ruler, handler: 'openModal', target: 'designHub' },
+  { id: 'pdf-report', label: 'Generate Report', icon: FileText, handler: 'dispatch', target: 'trigger-pdf-report' },
+  { id: 'csv-export', label: 'CSV Export', icon: File, handler: 'dispatch', target: 'trigger-csv-export' },
 ];
 
+// ─── Category → tools mapping ───
 const CONTEXT_TOOLS: Record<string, SubTool[]> = {
   MODELING: GEOMETRY_TOOLS,
   PROPERTIES: PROPERTIES_TOOLS,
-  MATERIALS: PROPERTIES_TOOLS,
-  SPECS: PROPERTIES_TOOLS,
+  SUPPORTS: SUPPORT_TOOLS,
   LOADING: LOADING_TOOLS,
   ANALYSIS: ANALYSIS_TOOLS,
   DESIGN: DESIGN_TOOLS,
@@ -145,66 +157,58 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   activeCategory,
   onCategoryChange,
 }) => {
-  const { openModal, activeStep, setActiveStep, setActiveTool } = useUIStore(
-    useShallow((s) => ({ openModal: s.openModal, activeStep: s.activeStep, setActiveStep: s.setActiveStep, setActiveTool: s.setActiveTool }))
+  const { openModal, activeStep, setActiveStep } = useUIStore(
+    useShallow((s) => ({ openModal: s.openModal, activeStep: s.activeStep, setActiveStep: s.setActiveStep }))
   );
   const [collapsed, setCollapsed] = useState(false);
   const [showSubTools, setShowSubTools] = useState(true);
 
+  // Streamlined workflow — removed redundant MATERIALS/SPECS/CIVIL
   const workflowItems = [
     { id: "MODELING", label: "Geometry", icon: Box, subtext: "Nodes & Beams" },
-    { id: "PROPERTIES", label: "Properties", icon: Layers, subtext: "Sections" },
-    { id: "MATERIALS", label: "Materials", icon: Database, subtext: "Concrete/Steel" },
-    { id: "SPECS", label: "Specifications", icon: Settings, subtext: "Releases" },
+    { id: "PROPERTIES", label: "Properties", icon: Layers, subtext: "Sections & Materials" },
     { id: "SUPPORTS", label: "Supports", icon: Anchor, subtext: "Restraints" },
-    { id: "LOADING", label: "Loading", icon: Download, subtext: "Load Cases" },
+    { id: "LOADING", label: "Loading", icon: Download, subtext: "Forces & Loads" },
     { id: "ANALYSIS", label: "Analysis", icon: BarChart3, subtext: "Run Solver" },
     { id: "DESIGN", label: "Design", icon: Ruler, subtext: "Code Check" },
-    { id: "CIVIL", label: "Civil Engg", icon: Globe, subtext: "Geo/Hydro/Trans" },
   ];
 
-  const handleClick = (id: string) => {
-    if (id === "SUPPORTS") {
-      openModal("boundaryConditionsDialog");
-      return;
-    }
-
+  const handleClick = useCallback((id: string) => {
     let category: Category = "MODELING";
     switch (id) {
       case "MODELING": category = "MODELING"; break;
-      case "PROPERTIES": case "MATERIALS": case "SPECS": category = "PROPERTIES"; break;
+      case "PROPERTIES": category = "PROPERTIES"; break;
+      case "SUPPORTS": category = "PROPERTIES"; break;
       case "LOADING": category = "LOADING"; break;
       case "ANALYSIS": category = "ANALYSIS"; break;
       case "DESIGN": category = "DESIGN"; break;
-      case "CIVIL": category = "CIVIL"; break;
     }
-
     onCategoryChange(category);
     setActiveStep(id);
     setShowSubTools(true);
-  };
+  }, [onCategoryChange, setActiveStep]);
 
-  const handleSubToolClick = (tool: SubTool) => {
-    if (tool.action) {
-      openModal(tool.action);
-    } else if (tool.id === 'select') {
-      setActiveTool('select');
-    } else if (tool.id === 'add-node') {
-      setActiveTool('node');
-    } else if (tool.id === 'add-beam') {
-      setActiveTool('member');
-    } else if (tool.id === 'add-plate') {
-      setActiveTool('plate');
-    } else if (tool.id === 'point-load') {
-      setActiveTool('nodeLoad');
-    } else if (tool.id === 'udl') {
-      setActiveTool('memberLoad');
-    } else if (tool.id === 'delete') {
-      // Trigger delete of selection
-      const store = useModelStore.getState();
-      store.deleteSelection();
+  // ─── THE CORE FIX: Route every tool to its proper backend ───
+  const handleSubToolClick = useCallback((tool: SubTool) => {
+    switch (tool.handler) {
+      case 'setTool':
+        // Route directly to modelStore — this is what the canvas reads
+        useModelStore.getState().setTool(tool.target as any);
+        break;
+      case 'openModal':
+        openModal(tool.target as any);
+        break;
+      case 'dispatch':
+        // Dispatch CustomEvent — ModernModeler has listeners for all of these
+        document.dispatchEvent(new CustomEvent(tool.target));
+        break;
+      case 'storeAction':
+        if (tool.target === 'deleteSelection') {
+          useModelStore.getState().deleteSelection();
+        }
+        break;
     }
-  };
+  }, [openModal]);
 
   const nodes = useModelStore((s) => s.nodes);
   const members = useModelStore((s) => s.members);
@@ -215,14 +219,15 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   const completedSteps = useMemo(() => {
     const done = new Set<string>();
     if (nodes.size > 0 || members.size > 0) done.add("MODELING");
-    if (members.size > 0) { done.add("PROPERTIES"); done.add("MATERIALS"); }
-    if (members.size > 0) done.add("SPECS");
+    if (members.size > 0) done.add("PROPERTIES");
     const hasSupports = Array.from(nodes.values()).some((n: any) => n.support || n.constraint || n.restraint);
     if (hasSupports) done.add("SUPPORTS");
     if (loads.length > 0 || memberLoads.length > 0) done.add("LOADING");
     if (analysisResults) { done.add("ANALYSIS"); done.add("DESIGN"); }
     return done;
   }, [nodes, members, loads, memberLoads, analysisResults]);
+
+  const activeTool = useModelStore((s) => s.activeTool);
 
   // Get current context tools
   const currentSubTools = CONTEXT_TOOLS[activeStep || 'MODELING'] || GEOMETRY_TOOLS;
@@ -234,7 +239,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
         {!collapsed && (
           <div>
             <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Workflow</h2>
-            <div className="text-[9px] text-slate-600 mt-0.5 font-mono">ANALYTICAL MODELING</div>
+            <div className="text-[9px] text-slate-600 mt-0.5 font-mono">STRUCTURAL MODELING</div>
           </div>
         )}
         <button type="button" onClick={() => setCollapsed(!collapsed)}
@@ -304,12 +309,17 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
             <div className="flex flex-col gap-px">
               {currentSubTools.map((tool) => {
                 const ToolIcon = tool.icon;
+                const isToolActive = tool.handler === 'setTool' && activeTool === tool.target;
                 return (
                   <button key={tool.id} type="button"
                     onClick={() => handleSubToolClick(tool)}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded text-left text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors group"
+                    className={`flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors group
+                      ${isToolActive
+                        ? 'text-blue-300 bg-blue-500/15 border-l-2 border-blue-400'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                      }`}
                     title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}>
-                    <ToolIcon className="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-400 flex-shrink-0" />
+                    <ToolIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isToolActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`} />
                     <span className="text-[11px] truncate flex-1">{tool.label}</span>
                     {tool.shortcut && (
                       <span className="text-[9px] text-slate-600 font-mono">{tool.shortcut}</span>
@@ -322,7 +332,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
         </div>
       )}
 
-      {/* Show sub-tools toggle when collapsed */}
+      {/* Show sub-tools toggle when hidden */}
       {!collapsed && !showSubTools && (
         <div className="flex-1 flex items-start px-2 pt-2">
           <button type="button" onClick={() => setShowSubTools(true)}
@@ -332,13 +342,15 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
         </div>
       )}
 
-      {/* Bottom Section */}
+      {/* Bottom Status */}
       <div className={`bg-white dark:bg-slate-950 border-t border-slate-800/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
         {collapsed ? (
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Online" aria-label="Connection: Online" />
         ) : (
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-slate-600">Connection</span>
+            <span className="text-[10px] text-slate-600">
+              {activeTool ? `Tool: ${activeTool}` : 'Ready'}
+            </span>
             <span className="text-[10px] text-emerald-500 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" aria-hidden="true" />
               Online

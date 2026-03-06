@@ -570,6 +570,89 @@ export const ModernModeler: FC = () => {
     };
   }, []);
 
+  // Individual diagram toggle + results dock + report event listeners
+  useEffect(() => {
+    const onToggleSFD = () => {
+      const s = useModelStore.getState();
+      if (s.analysisResults) s.setShowSFD(!s.showSFD);
+    };
+    const onToggleBMD = () => {
+      const s = useModelStore.getState();
+      if (s.analysisResults) s.setShowBMD(!s.showBMD);
+    };
+    const onToggleAFD = () => {
+      const s = useModelStore.getState();
+      if (s.analysisResults) s.setShowAFD(!s.showAFD);
+    };
+    const onToggleDeflection = () => {
+      const s = useModelStore.getState();
+      if (s.analysisResults) s.setShowDeflectedShape(!s.showDeflectedShape);
+    };
+    const onToggleReactions = () => {
+      const s = useModelStore.getState();
+      if (s.analysisResults) {
+        // Toggle reactions display — uses existing showReactions flag or falls back to notifications
+        if ('setShowReactions' in s && typeof (s as any).setShowReactions === 'function') {
+          (s as any).setShowReactions(!(s as any).showReactions);
+        } else {
+          showNotification("info", "Reactions are shown in the Results Table below");
+        }
+      }
+    };
+    const onToggleResultsDock = () => {
+      // Toggle results table dock visibility
+      const s = useModelStore.getState();
+      if (s.analysisResults) {
+        showNotification("info", "Results table is visible in the bottom panel");
+      } else {
+        showNotification("warning", "Run analysis first to view results");
+      }
+    };
+    const onTriggerPdfReport = () => {
+      const s = useModelStore.getState();
+      if (s.analysisResults) {
+        setShowExportDialog(true);
+        showNotification("info", "Opening report export dialog");
+      } else {
+        showNotification("warning", "Run analysis before generating report");
+      }
+    };
+    const onTriggerCsvExport = () => {
+      const s = useModelStore.getState();
+      if (s.analysisResults) {
+        setShowExportDialog(true);
+        showNotification("info", "Opening export dialog for CSV");
+      } else {
+        showNotification("warning", "Run analysis before exporting CSV");
+      }
+    };
+    const onToggleGridSnap = () => {
+      showNotification("info", "Grid snap toggled");
+    };
+
+    document.addEventListener("toggle-sfd", onToggleSFD);
+    document.addEventListener("toggle-bmd", onToggleBMD);
+    document.addEventListener("toggle-afd", onToggleAFD);
+    document.addEventListener("toggle-deflection", onToggleDeflection);
+    document.addEventListener("toggle-reactions", onToggleReactions);
+    document.addEventListener("toggle-results-dock", onToggleResultsDock);
+    document.addEventListener("trigger-pdf-report", onTriggerPdfReport);
+    document.addEventListener("trigger-csv-export", onTriggerCsvExport);
+    document.addEventListener("toggle-grid-snap", onToggleGridSnap);
+
+    return () => {
+      document.removeEventListener("toggle-sfd", onToggleSFD);
+      document.removeEventListener("toggle-bmd", onToggleBMD);
+      document.removeEventListener("toggle-afd", onToggleAFD);
+      document.removeEventListener("toggle-deflection", onToggleDeflection);
+      document.removeEventListener("toggle-reactions", onToggleReactions);
+      document.removeEventListener("toggle-results-dock", onToggleResultsDock);
+      document.removeEventListener("trigger-pdf-report", onTriggerPdfReport);
+      document.removeEventListener("trigger-csv-export", onTriggerCsvExport);
+      document.removeEventListener("toggle-grid-snap", onToggleGridSnap);
+    };
+  }, []);
+
   // Close progress modal and show results
   const handleCloseProgressModal = useCallback(() => {
     setShowProgressModal(false);

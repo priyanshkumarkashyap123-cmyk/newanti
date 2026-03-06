@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { useFrame, useThree, ThreeEvent } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { useModelStore } from '../store/model';
+import { useUIStore } from '../store/uiStore';
 import { useShallow } from 'zustand/react/shallow';
 
 // ============================================
@@ -47,16 +48,18 @@ export const InteractionManager: FC<InteractionManagerProps> = memo(({
 
     // Store access — batched with useShallow to prevent cascading re-renders
     const {
-        activeTool, nodes, addNode, addMember, selectNode,
+        activeTool, nodes, members, addNode, addMember, selectNode,
     } = useModelStore(
         useShallow((state) => ({
             activeTool: state.activeTool,
             nodes: state.nodes,
+            members: state.members,
             addNode: state.addNode,
             addMember: state.addMember,
             selectNode: state.selectNode,
         }))
     );
+    const openModal = useUIStore((s) => s.openModal);
 
     // Refs
     const planeRef = useRef<THREE.Mesh>(null!);
@@ -206,7 +209,8 @@ export const InteractionManager: FC<InteractionManagerProps> = memo(({
         }
 
         // Show/hide cursor based on active tool
-        const showCursor = (activeTool === 'node' || activeTool === 'member') && isHovering.current;
+        const cursorTools = ['node', 'member', 'support', 'load', 'memberLoad'];
+        const showCursor = cursorTools.includes(activeTool || '') && isHovering.current;
         cursorRef.current.visible = showCursor;
         if (cursorRingRef.current) cursorRingRef.current.visible = showCursor;
 
@@ -290,6 +294,57 @@ export const InteractionManager: FC<InteractionManagerProps> = memo(({
                 break;
 
             case 'select':
+                if (nodeId) {
+                    selectNode(nodeId);
+                }
+                break;
+
+            case 'support':
+                // Click on a node to assign support/restraint
+                if (nodeId) {
+                    selectNode(nodeId);
+                    openModal('boundaryConditionsDialog' as any);
+                }
+                break;
+
+            case 'load':
+                // Click on a node to apply nodal force/moment
+                if (nodeId) {
+                    selectNode(nodeId);
+                    openModal('loadDialog' as any);
+                }
+                break;
+
+            case 'memberLoad': {
+                // Find the closest member to the click point and apply load
+                let closestMember: { id: string; distance: number } | null = null;
+                for (const [mId, m] of members) {
+                    const n1 = nodes.get(m.startNodeId);
+                    const n2 = nodes.get(m.endNodeId);
+                    if (!n1 || !n2) continue;
+                    // Point-to-line-segment distance
+                    const a = new THREE.Vector3(n1.x, n1.y, n1.z ?? 0);
+                    const b = new THREE.Vector3(n2.x, n2.y, n2.z ?? 0);
+                    const ab = new THREE.Vector3().subVectors(b, a);
+                    const ap = new THREE.Vector3().subVectors(point, a);
+                    const t = Math.max(0, Math.min(1, ap.dot(ab) / ab.dot(ab)));
+                    const closest = new THREE.Vector3().copy(a).addScaledVector(ab, t);
+                    const dist = closest.distanceTo(point);
+                    if (dist < 0.8 && (!closestMember || dist < closestMember.distance)) {
+                        closestMember = { id: mId, distance: dist };
+                    }
+                }
+                if (closestMember) {
+                    // Select the member and open UDL dialog
+                    const store = useModelStore.getState();
+                    store.selectNode(closestMember.id); // Select the member in the store
+                    openModal('memberLoadDialog' as any);
+                }
+                break;
+            }
+
+            case 'select_range':
+                // For box select, use single-click as fallback to select node
                 if (nodeId) {
                     selectNode(nodeId);
                 }

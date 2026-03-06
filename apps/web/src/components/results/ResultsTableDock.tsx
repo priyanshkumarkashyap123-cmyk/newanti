@@ -489,7 +489,16 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                   <tr
                     key={r.id}
                     className="hover:bg-blue-500/5 transition-colors cursor-pointer"
-                    onClick={() => useModelStore.getState().selectNode(r.id)}
+                    onClick={() => {
+                      const store = useModelStore.getState();
+                      // Try to select as member first; fall back to node selection
+                      if (store.members.has(r.id)) {
+                        store.selectedIds.clear();
+                        store.selectedIds.add(r.id);
+                      } else {
+                        store.selectNode(r.id);
+                      }
+                    }}
                   >
                     <td className="px-3 py-1.5 font-semibold text-blue-400">
                       {r.id}
