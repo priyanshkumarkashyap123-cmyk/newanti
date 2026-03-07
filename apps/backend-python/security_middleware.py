@@ -42,6 +42,7 @@ _BASE_PUBLIC = frozenset({
     "/sections/custom/calculate",
     "/sections/recommend",
     "/sections/shapes/list",
+    "/design/codes",  # Read-only catalog of supported design codes
 })
 PUBLIC_PATHS = _BASE_PUBLIC | (_DOC_PATHS if os.getenv("ENVIRONMENT", "development") != "production" else frozenset())
 
