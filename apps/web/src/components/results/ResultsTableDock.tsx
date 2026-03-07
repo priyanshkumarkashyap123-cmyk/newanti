@@ -16,8 +16,6 @@ import {
   Check,
   AlertTriangle,
   X,
-  Maximize2,
-  Minimize2,
   Filter,
 } from "lucide-react";
 import { useModelStore, type AnalysisResults } from "../../store/model";
@@ -64,7 +62,6 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
   ({ analysisResults, onClose }) => {
     const [activeTab, setActiveTab] = useState<TabId>("displacements");
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [isMaximized, setIsMaximized] = useState(false);
     const [sortKey, setSortKey] = useState<string>("id");
     const [sortDir, setSortDir] = useState<SortDir>("asc");
     const [filterText, setFilterText] = useState("");
@@ -299,13 +296,11 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
       };
     }, [memberForceRows]);
 
-    const dockHeight = isMaximized ? "h-[60vh]" : "h-[240px]";
-
     // ─── Render ──────────────────────────────────────────────────────
 
     return (
       <div
-        className={`${dockHeight} flex flex-col bg-white/98 dark:bg-slate-900/98 backdrop-blur-md border-t border-slate-700/40 flex-shrink-0 transition-all duration-200 animate-[slideInUp_200ms_ease-out]`}
+        className="h-[240px] flex flex-col bg-white/98 dark:bg-slate-900/98 backdrop-blur-md border-t border-slate-700/40 flex-shrink-0 transition-all duration-200 animate-[slideInUp_200ms_ease-out]"
       >
         {/* Tab Header Bar */}
         <div className="flex items-center justify-between h-8 px-2 bg-slate-100/80 dark:bg-slate-950/80 border-b border-slate-700/30 flex-shrink-0">
@@ -381,17 +376,6 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
               title="Print"
             >
               <Printer className="w-3.5 h-3.5" />
-            </button>
-            <button type="button"
-              onClick={() => setIsMaximized(!isMaximized)}
-              className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
-              title={isMaximized ? "Restore" : "Maximize"}
-            >
-              {isMaximized ? (
-                <Minimize2 className="w-3.5 h-3.5" />
-              ) : (
-                <Maximize2 className="w-3.5 h-3.5" />
-              )}
             </button>
             <button type="button"
               onClick={() => setIsCollapsed(true)}

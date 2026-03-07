@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 import { useUIStore, Category } from '../store/uiStore';
 import { useShallow } from 'zustand/react/shallow';
-const beamLabLogo = '/branding/beamlab_icon_colored.svg';
+import { Logo } from '../components/branding';
 
 // Lazy load heavy components
 const CivilPanel = lazy(() => import('../components/civil/CivilPanel'));
@@ -396,8 +396,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                 {/* Logo */}
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                        <img src={beamLabLogo} alt="BeamLab Logo" className="w-8 h-8 object-contain" />
-                        <span className="font-bold text-lg">BeamLab</span>
+                        <Logo size="sm" variant="full" href="/" />
                         <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded">
                             PRO
                         </span>

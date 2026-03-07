@@ -11,8 +11,8 @@ import {
     ChevronDown, ChevronUp, ExternalLink, Plus,
     Zap, BookOpen, ArrowLeft
 } from 'lucide-react';
-const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import { Button } from '../components/ui/button';
+import { Logo } from '../components/branding';
 
 // ============================================
 // TYPES & DATA
@@ -188,14 +188,7 @@ export const HelpPage = () => {
             <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        <Link to="/" className="flex items-center gap-3 group">
-                            <div className="relative w-9 h-9 flex items-center justify-center">
-                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
-                            </div>
-                            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                                BeamLab
-                            </span>
-                        </Link>
+                        <Logo size="sm" variant="full" href="/" />
                         <div className="hidden md:flex items-center gap-8">
                             <Link to="/dashboard" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
                             <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">Projects</Link>

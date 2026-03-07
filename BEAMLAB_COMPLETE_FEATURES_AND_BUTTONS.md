@@ -251,8 +251,8 @@ Display:
 
 ### Step 2: Design Code Selection
 **Radio Button Groups**:
-- Concrete Design Code:
-  - IS 456:2000 (Indian Standard)
+- Concrete Design Cod savae:
+  - IS 456:2000 (Indian pani Standard)
   - ACI 318 (American)
   - BS 8110 (British)
   - Eurocode 2

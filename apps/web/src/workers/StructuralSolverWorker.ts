@@ -2389,6 +2389,33 @@ function generateDiagramData(
       shear_z[numSt - 1] = -Vz2;
     }
 
+    // When there are no member loads (only nodal loads), accumulateLoadEffects
+    // returns dVy=0 — making shear constant and moment purely linear. For nodal
+    // point loads, the shear is a step function and moment is tent-shaped.
+    // Re-derive M by integrating the shear diagram (trapezoidal rule) using
+    // linearly interpolated shear, which matches equilibrium.
+    if (myLoads.length === 0 && numSt > 1) {
+      // Re-fill shear with linear interpolation between correct end values
+      for (let s = 0; s < numSt; s++) {
+        const t = stations[s] / L;
+        shear_y[s] = V1 + (-V2 - V1) * t;
+        shear_z[s] = Vz1 + (-Vz2 - Vz1) * t;
+      }
+      // Re-integrate moment from shear (dM/dx = V)
+      Mz_arr[0] = -M1;
+      for (let s = 1; s < numSt; s++) {
+        const dx_s = stations[s] - stations[s - 1];
+        Mz_arr[s] = Mz_arr[s - 1] + 0.5 * (shear_y[s - 1] + shear_y[s]) * dx_s;
+      }
+      Mz_arr[numSt - 1] = M2; // enforce endpoint
+      My_arr[0] = My1;
+      for (let s = 1; s < numSt; s++) {
+        const dx_s = stations[s] - stations[s - 1];
+        My_arr[s] = My_arr[s - 1] - 0.5 * (shear_z[s - 1] + shear_z[s]) * dx_s;
+      }
+      My_arr[numSt - 1] = -My2; // enforce endpoint
+    }
+
     // ─── Deflection Y via double integration of Mz(x) ───
     //   EI_z · v″ = M_z → integrate with sign = +1
     const rawDeflY = integrateDeflection(stations, Mz_arr, EIz, vy1, vy2, L, 1);

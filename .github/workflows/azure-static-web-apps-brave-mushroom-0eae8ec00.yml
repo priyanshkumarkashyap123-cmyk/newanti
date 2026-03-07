@@ -67,10 +67,13 @@ jobs:
           VITE_API_URL: https://beamlab-backend-node.azurewebsites.net
           VITE_PYTHON_API_URL: https://beamlab-backend-python.azurewebsites.net
           VITE_RUST_API_URL: https://beamlab-rust-api.azurewebsites.net
+          VITE_WEBSOCKET_URL: wss://beamlab-backend-node.azurewebsites.net
           VITE_USE_CLERK: "true"
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           VITE_PHONEPE_MERCHANT_ID: ${{ secrets.PHONEPE_MERCHANT_ID }}
           VITE_PHONEPE_ENV: PRODUCTION
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_ENABLE_PERFORMANCE_METRICS: "true"
         run: pnpm run build
 
       - name: Deploy to Azure Static Web Apps

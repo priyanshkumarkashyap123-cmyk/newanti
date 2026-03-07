@@ -15,6 +15,7 @@ import analysisRouter from "./routes/analysis/index.js";
 import designRouter from "./routes/design/index.js";
 import advancedRouter from "./routes/advanced/index.js";
 import interopRouter from "./routes/interop/index.js";
+import layoutRouter from "./routes/layout/index.js";
 import templateRouter from "./routes/templates/index.js";
 import jobsRouter from "./routes/jobs/index.js";
 import authRouter from "./routes/authRoutes.js";
@@ -75,13 +76,13 @@ if (process.env.SENTRY_DSN) {
   });
 }
 
-console.log("[STARTUP] Starting BeamLab API...");
-console.log("[STARTUP] NODE_ENV:", process.env.NODE_ENV || "not set");
-console.log("[STARTUP] PORT env:", process.env.PORT || "not set");
+logger.info("Starting BeamLab API...");
+logger.info(`NODE_ENV: ${process.env.NODE_ENV || "not set"}`);
+logger.info(`PORT env: ${process.env.PORT || "not set"}`);
 
 const app = express();
 const PORT = process.env["PORT"] ?? 3001;
-console.log("[STARTUP] Effective PORT:", PORT);
+logger.info(`Effective PORT: ${PORT}`);
 
 const openApiSpec = {
   openapi: "3.0.3",
@@ -411,6 +412,10 @@ app.use("/api/advanced", authRequired, analysisRateLimit, advancedRouter);
 app.use("/api/v1/interop", authRequired, analysisRateLimit, interopRouter);
 app.use("/api/interop", authRequired, analysisRateLimit, interopRouter);
 
+// Space Planning Layout API (proxied to Python optimizer — auth required)
+app.use("/api/v1/layout", authRequired, analysisRateLimit, layoutRouter);
+app.use("/api/layout", authRequired, analysisRateLimit, layoutRouter);
+
 // Template generation API (auth required)
 app.use("/api/v1/templates", authRequired, analysisRateLimit, templateRouter);
 app.use("/api/templates", authRequired, analysisRateLimit, templateRouter);
@@ -490,10 +495,10 @@ app.get(
 app.use(secureErrorHandler);
 
 // Start server immediately to satisfy startup probes
-console.log("[STARTUP] About to call httpServer.listen()...");
-console.log("[STARTUP] Port to listen on:", PORT);
+logger.info("Starting HTTP server...");
+logger.info(`Port to listen on: ${PORT}`);
 httpServer.listen(PORT, () => {
-  console.log("[STARTUP] ✅ Server listening successfully!");
+  logger.info("Server listening successfully");
   logger.info(`BeamLab Ultimate API running on http://localhost:${PORT}`);
   logger.info(`WebSocket server ready for real-time collaboration`);
   logger.info(`Security middleware active: helmet, rate limiting, logging`);

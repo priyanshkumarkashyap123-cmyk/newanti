@@ -125,16 +125,16 @@ function createRateLimit(
   }) as unknown as RequestHandler;
 }
 
-// General API: 100 req/min
+// General API: 200 req/min per IP (supports 10K+ concurrent users)
 export const generalRateLimit: RequestHandler = createRateLimit(
-  60_000, 100,
+  60_000, 200,
   "Too many requests. Please try again later.",
   { skipPaths: ["/health"], skipMethods: ["OPTIONS"] },
 );
 
-// Analysis API: 10 req/min (expensive compute)
+// Analysis API: 20 req/min (expensive compute - still generous for real users)
 export const analysisRateLimit: RequestHandler = createRateLimit(
-  60_000, 10,
+  60_000, 20,
   "Analysis rate limit exceeded. Please wait before running more analyses.",
 );
 
@@ -144,15 +144,15 @@ export const billingRateLimit: RequestHandler = createRateLimit(
   "Billing rate limit exceeded. Please try again later.",
 );
 
-// CRUD endpoints: 30 req/min
+// CRUD endpoints: 60 req/min
 export const crudRateLimit: RequestHandler = createRateLimit(
-  60_000, 30,
+  60_000, 60,
   "Request rate limit exceeded. Please slow down.",
 );
 
-// Auth endpoints: 5 req/min (brute force protection)
+// Auth endpoints: 10 req/min (brute force protection)
 export const authRateLimit: RequestHandler = createRateLimit(
-  60_000, 5,
+  60_000, 10,
   "Too many authentication attempts. Please try again later.",
 );
 

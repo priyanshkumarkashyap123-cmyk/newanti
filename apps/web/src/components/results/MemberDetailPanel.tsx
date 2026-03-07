@@ -8,7 +8,7 @@
  * - Critical section identification
  */
 
-import React, { FC, useState, useMemo } from 'react';
+import React, { FC, useState, useMemo, useRef, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, AlertTriangle, CheckCircle } from 'lucide-react';
 import { ForceDiagramRenderer, MemberDiagramData, DiagramConfig, SupportType } from '../diagrams/ForceDiagramRenderer';
 import { ForcePoint } from '../../utils/MemberForcesCalculator';
@@ -82,6 +82,23 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
     const [activeDiagram, setActiveDiagram] = useState<'SFD' | 'BMD' | 'AFD' | 'ALL'>('ALL');
     const [showDesign, setShowDesign] = useState(true);
     const [designCode, setDesignCode] = useState<'IS800' | 'IS456' | 'EC3' | 'AISC360'>('IS800');
+
+    // Responsive diagram width — measured from actual container
+    const diagramContainerRef = useRef<HTMLDivElement>(null);
+    const [diagramWidth, setDiagramWidth] = useState(640);
+    useEffect(() => {
+        const el = diagramContainerRef.current;
+        if (!el) return;
+        const ro = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (entry) {
+                // Subtract 32px for p-4 horizontal padding (16px each side)
+                setDiagramWidth(Math.max(320, Math.floor(entry.contentRect.width) - 32));
+            }
+        });
+        ro.observe(el);
+        return () => ro.disconnect();
+    }, []);
 
     // Convert to diagram data
     const diagramData = useMemo((): MemberDiagramData | null => {
@@ -240,7 +257,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
     };
 
     return (
-        <div className="flex flex-col h-full w-[400px] bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xl border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col h-full w-full min-w-0 bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xl border border-slate-200 dark:border-slate-700">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
                 <div className="flex items-center gap-3">
@@ -341,7 +358,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
 
                 {/* Force Diagrams */}
                 {diagramData && (
-                    <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                    <div ref={diagramContainerRef} className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
                         <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
                             {activeDiagram === 'ALL' ? 'Combined Force Diagrams' :
                                 activeDiagram === 'SFD' ? 'Shear Force Diagram' :
@@ -351,7 +368,7 @@ export const MemberDetailPanel: FC<MemberDetailPanelProps> = React.memo(({
                         <ForceDiagramRenderer
                             memberData={diagramData}
                             config={getConfig(activeDiagram)}
-                            width={700}
+                            width={diagramWidth}
                             height={activeDiagram === 'ALL' ? 350 : 250}
                         />
                     </div>

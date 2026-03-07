@@ -19,13 +19,22 @@ RUN useradd -r -s /bin/false -m app
 # Copy application code
 COPY --chown=app:app . .
 
+# Copy startup script with execute permission
+COPY --chown=app:app startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
+
+# Set production environment
+ENV ENVIRONMENT=production
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 USER app
 
 # Expose port
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Start application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start with Gunicorn (production)
+CMD ["/app/startup.sh"]

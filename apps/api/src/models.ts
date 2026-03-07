@@ -1216,12 +1216,16 @@ export async function connectDB(uri?: string): Promise<void> {
 
     try {
         await mongoose.connect(connectionUri, {
-            maxPoolSize: 20,        // Max connections in pool (default: 100, reduced for typical workloads)
-            minPoolSize: 5,         // Keep warm connections ready
+            maxPoolSize: 50,        // Max connections in pool (scaled for 10K+ concurrent users)
+            minPoolSize: 10,        // Keep warm connections ready  
             maxIdleTimeMS: 30000,   // Close idle connections after 30s
             serverSelectionTimeoutMS: 30000,
             connectTimeoutMS: 30000,
             socketTimeoutMS: 45000,
+            // Production optimizations
+            retryWrites: true,
+            retryReads: true,
+            compressors: ['zstd', 'snappy'],  // Compress wire protocol for lower latency
         });
         logger.info('MongoDB connected successfully');
     } catch (error) {

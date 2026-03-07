@@ -68,7 +68,7 @@ export const API_CONFIG = {
   baseUrl: getEnv(
     "VITE_API_URL",
     import.meta.env.PROD
-      ? "https://api.beamlab.app"
+      ? "https://beamlab-backend-node.azurewebsites.net"
       : "http://localhost:3001",
   ),
 

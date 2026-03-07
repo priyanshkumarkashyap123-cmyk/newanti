@@ -59,10 +59,9 @@ import {
   solveLayout,
   solveMultipleCandidates,
   placementsToPlacedRooms,
-  wizardConfigToRequest,
+  checkSolverBackendHealth,
   type ConstraintReport,
   type PlacementResponse,
-  type SolverCandidate,
   type MultiCandidateResult,
 } from '../services/space-planning/layoutApiService';
 import type { HousePlanProject, ColorScheme } from '../services/space-planning/types';
@@ -130,13 +129,55 @@ export function SpacePlanningPage() {
   const [showCandidates, setShowCandidates] = useState(false);
   const [generationMode, setGenerationMode] = useState<'single' | 'multi'>('single');
   const [solverError, setSolverError] = useState<string | null>(null);
+  const [solverBackendState, setSolverBackendState] = useState<'unknown' | 'checking' | 'online' | 'offline'>('unknown');
+  const [solverBackendMessage, setSolverBackendMessage] = useState<string | null>(null);
   const [lastWizardConfig, setLastWizardConfig] = useState<WizardConfig | null>(null);
+
+  const parseSolverError = (err: unknown): string => {
+    if (err && typeof err === 'object') {
+      const anyErr = err as Record<string, unknown>;
+      const status = typeof anyErr.status === 'number' ? anyErr.status : undefined;
+      const code = typeof anyErr.code === 'string' ? anyErr.code : undefined;
+      const message = typeof anyErr.message === 'string' ? anyErr.message : undefined;
+
+      if (status === 404) return 'Optimization service route not found (HTTP 404).';
+      if (status === 0 || code === 'NETWORK_ERROR') return 'Optimization service is currently unreachable.';
+      if (status && status >= 500) return `Optimization service error (HTTP ${status}).`;
+      if (status && status >= 400) return `Optimization request failed (HTTP ${status}).`;
+      if (code === 'TIMEOUT') return 'Optimization request timed out. Please retry.';
+      if (message) return message;
+    }
+
+    if (err instanceof Error && err.message) return err.message;
+    return 'Unknown solver error.';
+  };
+
+  const runSolverHealthCheck = useCallback(async () => {
+    setSolverBackendState('checking');
+    setSolverBackendMessage('Checking optimization service...');
+
+    const health = await checkSolverBackendHealth();
+    if (health.ok) {
+      setSolverBackendState('online');
+      setSolverBackendMessage('Optimization service is available.');
+    } else {
+      setSolverBackendState('offline');
+      setSolverBackendMessage('Optimization service is currently unavailable.');
+    }
+
+    return health;
+  }, []);
 
   useEffect(() => {
     document.title = 'Space Planning | BeamLab';
     // Record session start
     sessionStartRef.current = Date.now();
   }, []);
+
+  useEffect(() => {
+    // Warm check backend once so retry banner has immediate diagnostics
+    runSolverHealthCheck();
+  }, [runSolverHealthCheck]);
 
   const handleTemplateCompletion = useCallback(() => {
     if (!templateId) return;
@@ -200,11 +241,16 @@ export function SpacePlanningPage() {
             placements = solverResult.placements;
             setConstraintReport(report);
             setSolverPlacements(placements);
+            setSolverBackendState('online');
+            setSolverBackendMessage('Backend solver connected.');
           } catch (apiErr) {
-            console.warn('Backend solver unavailable, using client-side engine:', apiErr);
+            console.warn('Optimization service unavailable, using client-side engine:', apiErr);
+            setSolverBackendState('offline');
+            const diag = parseSolverError(apiErr);
+            setSolverBackendMessage(diag);
             setSolverError(
-              'Backend solver unavailable — using client-side placement. ' +
-              'Constraint analysis will not be available.',
+              'Optimization service unavailable — using client-side placement. ' +
+              `Constraint analysis will not be available. ${diag}`,
             );
           }
         }
@@ -587,12 +633,40 @@ export function SpacePlanningPage() {
                       <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="text-[10px] text-amber-700 dark:text-amber-400">{solverError}</p>
-                        <button
-                          onClick={handleRegenerate}
-                          className="text-[10px] text-amber-600 underline mt-0.5 hover:text-amber-800"
-                        >
-                          Retry with backend solver
-                        </button>
+                        {solverBackendMessage && (
+                          <p className="text-[10px] text-amber-600/90 dark:text-amber-400/80 mt-0.5">
+                            {solverBackendMessage}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-3 mt-1">
+                          <button
+                            onClick={async () => {
+                              const health = await runSolverHealthCheck();
+                              if (health.ok && lastWizardConfig) {
+                                handleRegenerate();
+                              }
+                            }}
+                            disabled={isGenerating || solverBackendState === 'checking'}
+                            className="text-[10px] text-amber-700 underline hover:text-amber-900 disabled:opacity-60"
+                          >
+                            {solverBackendState === 'checking'
+                              ? 'Checking service...'
+                              : 'Check service & retry'}
+                          </button>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded border ${
+                              solverBackendState === 'online'
+                                ? 'bg-green-100 text-green-700 border-green-200'
+                                : solverBackendState === 'offline'
+                                  ? 'bg-red-100 text-red-700 border-red-200'
+                                  : solverBackendState === 'checking'
+                                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                    : 'bg-slate-100 text-slate-600 border-slate-200'
+                            }`}
+                          >
+                            Optimizer: {solverBackendState}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1524,6 +1598,34 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
   const allWindows = allRooms.flatMap((r) =>
     r.windows.map((w) => ({ ...w, roomName: r.spec.name })),
   );
+  const [boqPreset, setBoqPreset] = useState<'economy' | 'standard' | 'premium'>('standard');
+
+  const BOQ_RATE_PRESETS: Record<'economy' | 'standard' | 'premium', Record<string, number>> = {
+    economy: {
+      'A-001': 1500, 'A-002': 280, 'A-003': 650, 'A-004': 350, 'A-005': 4200, 'A-006': 5200,
+      'S-001': 7800, 'S-002': 8400, 'S-003': 8600, 'S-004': 7600,
+      'E-001': 950, 'E-002': 3500, 'E-003': 18000, 'E-004': 2800,
+      'P-001': 3200, 'P-002': 420, 'P-003': 0.5, 'P-004': 0.4,
+      'M-001': 4200, 'M-002': 52000, 'M-003': 4500, 'M-004': 30000, 'M-005': 850,
+      'X-001': 0, 'X-002': 0, 'X-003': 0,
+    },
+    standard: {
+      'A-001': 2100, 'A-002': 420, 'A-003': 950, 'A-004': 520, 'A-005': 7000, 'A-006': 8200,
+      'S-001': 9800, 'S-002': 10400, 'S-003': 10600, 'S-004': 9200,
+      'E-001': 1450, 'E-002': 5200, 'E-003': 26000, 'E-004': 3600,
+      'P-001': 5200, 'P-002': 620, 'P-003': 0.7, 'P-004': 0.6,
+      'M-001': 6200, 'M-002': 72000, 'M-003': 6800, 'M-004': 42000, 'M-005': 1200,
+      'X-001': 0, 'X-002': 0, 'X-003': 0,
+    },
+    premium: {
+      'A-001': 3200, 'A-002': 680, 'A-003': 1650, 'A-004': 860, 'A-005': 13000, 'A-006': 15200,
+      'S-001': 13200, 'S-002': 14100, 'S-003': 14500, 'S-004': 12600,
+      'E-001': 2400, 'E-002': 7600, 'E-003': 42000, 'E-004': 5200,
+      'P-001': 9200, 'P-002': 980, 'P-003': 1.0, 'P-004': 0.9,
+      'M-001': 9800, 'M-002': 115000, 'M-003': 9800, 'M-004': 62000, 'M-005': 2200,
+      'X-001': 0, 'X-002': 0, 'X-003': 0,
+    },
+  };
 
   const toCSV = (headers: string[], rows: Array<Array<string | number | boolean>>) => {
     const escape = (v: string | number | boolean) => {
@@ -1685,6 +1787,184 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
     downloadCSV('simulation_schedule.csv', csv);
   };
 
+  const buildMasterBoq = (preset: 'economy' | 'standard' | 'premium') => {
+    const floorPlans = project.floorPlans;
+    const avgFloorHeight =
+      floorPlans.length > 0
+        ? floorPlans.reduce((s, f) => s + f.floorHeight, 0) / floorPlans.length
+        : 3;
+
+    const roomArea = allRooms.reduce((s, r) => s + r.width * r.height, 0);
+    const wallLengthExt = floorPlans
+      .flatMap((fp) => fp.walls)
+      .filter((w) => w.type === 'external')
+      .reduce((s, w) => s + Math.hypot(w.endX - w.startX, w.endY - w.startY), 0);
+    const wallLengthInt = floorPlans
+      .flatMap((fp) => fp.walls)
+      .filter((w) => w.type === 'internal')
+      .reduce((s, w) => s + Math.hypot(w.endX - w.startX, w.endY - w.startY), 0);
+
+    const plasterArea = (wallLengthExt + wallLengthInt * 2) * avgFloorHeight * 2;
+    const tileArea = allRooms
+      .filter((r) => ['kitchen', 'bathroom', 'toilet', 'utility', 'laundry'].includes(r.spec.type))
+      .reduce((s, r) => s + r.width * r.height, 0);
+
+    const slabVolume = floorPlans.reduce(
+      (s, fp) =>
+        s +
+        (project.plot.width - project.constraints.setbacks.left - project.constraints.setbacks.right) *
+          (project.plot.depth - project.constraints.setbacks.front - project.constraints.setbacks.rear) *
+          fp.slabThickness,
+      0,
+    );
+    const beamVolume = project.structural.beams.reduce(
+      (s, b) => s + Math.hypot(b.endX - b.startX, b.endY - b.startY) * b.width * b.depth,
+      0,
+    );
+    const columnVolume = project.structural.columns.reduce(
+      (s, c) => s + c.width * c.depth * avgFloorHeight,
+      0,
+    );
+    const foundationVolume = project.structural.foundations.reduce(
+      (s, f) => s + f.width * f.depth * f.thickness,
+      0,
+    );
+
+    const doorArea = allDoors.reduce((s, d) => s + d.width * d.height, 0);
+    const windowArea = allWindows.reduce((s, w) => s + w.width * w.height, 0);
+
+    const acUnits = project.hvac.equipment.filter((e) =>
+      ['split_ac', 'window_ac', 'vrf_unit', 'cassette_ac'].includes(e.type),
+    ).length;
+    const exhaustFans = project.hvac.equipment.filter((e) => e.type === 'exhaust_fan').length;
+
+    const rates = BOQ_RATE_PRESETS[preset];
+
+    const rawRows: Array<{
+      section: string;
+      code: string;
+      desc: string;
+      unit: string;
+      qty: number;
+      remarks: string;
+    }> = [
+      { section: 'ARCH', code: 'A-001', desc: 'Built-up floor area', unit: 'm²', qty: roomArea, remarks: 'Sum of room floor areas' },
+      { section: 'ARCH', code: 'A-002', desc: 'Floor finish area', unit: 'm²', qty: roomArea, remarks: 'General floor finish' },
+      { section: 'ARCH', code: 'A-003', desc: 'Wet-area anti-skid tiling', unit: 'm²', qty: tileArea, remarks: 'Kitchen + toilets + utility + laundry' },
+      { section: 'ARCH', code: 'A-004', desc: 'Wall plaster + putty + paint (both sides)', unit: 'm²', qty: plasterArea, remarks: 'Approximate' },
+      { section: 'ARCH', code: 'A-005', desc: 'Door shutters and frames', unit: 'm²', qty: doorArea, remarks: `${allDoors.length} doors` },
+      { section: 'ARCH', code: 'A-006', desc: 'Window units + glazing', unit: 'm²', qty: windowArea, remarks: `${allWindows.length} windows` },
+
+      { section: 'STR', code: 'S-001', desc: 'RCC slab concrete', unit: 'm³', qty: slabVolume, remarks: 'Based on slab thickness and buildable footprint' },
+      { section: 'STR', code: 'S-002', desc: 'RCC beam concrete', unit: 'm³', qty: beamVolume, remarks: `${project.structural.beams.length} beams` },
+      { section: 'STR', code: 'S-003', desc: 'RCC columns concrete', unit: 'm³', qty: columnVolume, remarks: `${project.structural.columns.length} columns` },
+      { section: 'STR', code: 'S-004', desc: 'Foundation concrete', unit: 'm³', qty: foundationVolume, remarks: `${project.structural.foundations.length} foundations` },
+
+      { section: 'ELE', code: 'E-001', desc: 'Electrical points (all fixtures)', unit: 'nos', qty: project.electrical.fixtures.length, remarks: 'Includes LV + safety points' },
+      { section: 'ELE', code: 'E-002', desc: 'Circuiting with DB/MCB', unit: 'nos', qty: project.electrical.circuits.length, remarks: 'Distribution circuits' },
+      { section: 'ELE', code: 'E-003', desc: 'Panel boards', unit: 'nos', qty: project.electrical.panels.length, remarks: 'DB panels' },
+      { section: 'ELE', code: 'E-004', desc: 'Connected electrical load', unit: 'kW', qty: project.electrical.connectedLoad, remarks: 'For service sizing' },
+
+      { section: 'PLB', code: 'P-001', desc: 'Plumbing fixtures', unit: 'nos', qty: project.plumbing.fixtures.length, remarks: 'All sanitary and utility fixtures' },
+      {
+        section: 'PLB',
+        code: 'P-002',
+        desc: 'Plumbing pipelines',
+        unit: 'rm',
+        qty: project.plumbing.pipes.reduce((s, p) => s + Math.hypot(p.endX - p.startX, p.endY - p.startY), 0),
+        remarks: 'Supply + drainage + vent + rain',
+      },
+      { section: 'PLB', code: 'P-003', desc: 'Overhead tank capacity', unit: 'L', qty: project.plumbing.overheadTankCapacity, remarks: 'Storage' },
+      { section: 'PLB', code: 'P-004', desc: 'Sump capacity', unit: 'L', qty: project.plumbing.sumpCapacity, remarks: 'Underground storage' },
+
+      { section: 'MECH', code: 'M-001', desc: 'HVAC equipment points', unit: 'nos', qty: project.hvac.equipment.length, remarks: 'AC + fans + FAU + accessories' },
+      { section: 'MECH', code: 'M-002', desc: 'Air-conditioning units', unit: 'nos', qty: acUnits, remarks: 'Split/VRF/Window/Cassette' },
+      { section: 'MECH', code: 'M-003', desc: 'Exhaust fan points', unit: 'nos', qty: exhaustFans, remarks: 'Kitchen/wet areas' },
+      { section: 'MECH', code: 'M-004', desc: 'Cooling load', unit: 'TR', qty: project.hvac.coolingLoad, remarks: 'Total cooling tonnage' },
+      {
+        section: 'MECH',
+        code: 'M-005',
+        desc: 'Duct routing length',
+        unit: 'rm',
+        qty: project.hvac.ductRoutes.reduce((s, d) => s + Math.hypot(d.endX - d.startX, d.endY - d.startY), 0),
+        remarks: 'Indicative',
+      },
+
+      {
+        section: 'SIM',
+        code: 'X-001',
+        desc: 'Average daylight factor',
+        unit: '%',
+        qty:
+          (project.sunlight.roomSunlight.reduce((s, r) => s + r.naturalLightFactor, 0) /
+            Math.max(1, project.sunlight.roomSunlight.length)) *
+          100,
+        remarks: 'Simulation KPI',
+      },
+      {
+        section: 'SIM',
+        code: 'X-002',
+        desc: 'Average room ACH',
+        unit: 'ACH',
+        qty:
+          project.airflow.roomVentilation.reduce((s, r) => s + r.airChangesPerHour, 0) /
+          Math.max(1, project.airflow.roomVentilation.length),
+        remarks: 'Ventilation KPI',
+      },
+      {
+        section: 'SIM',
+        code: 'X-003',
+        desc: 'Cross-vent paths',
+        unit: 'nos',
+        qty: project.airflow.crossVentilationPaths.length,
+        remarks: 'Natural airflow connectivity',
+      },
+    ];
+
+    const rows = rawRows.map((r) => {
+      const rate = rates[r.code] ?? 0;
+      const amount = rate > 0 ? r.qty * rate : 0;
+      return { ...r, rate, amount };
+    });
+
+    const subtotal = rows.reduce((s, r) => s + r.amount, 0);
+    const contingency = subtotal * 0.05;
+    const gst = (subtotal + contingency) * 0.18;
+    const total = subtotal + contingency + gst;
+
+    return { rows, subtotal, contingency, gst, total };
+  };
+
+  const handleExportMasterBOQ = () => {
+    const { rows, subtotal, contingency, gst, total } = buildMasterBoq(boqPreset);
+
+    const boqRows: Array<Array<string | number>> = rows.map((r) => [
+      r.section,
+      r.code,
+      r.desc,
+      r.unit,
+      r.qty.toFixed(2),
+      r.rate.toFixed(2),
+      r.amount.toFixed(2),
+      r.remarks,
+    ]);
+
+    boqRows.push(
+      ['', '', 'SUBTOTAL', '', '', '', subtotal.toFixed(2), `Preset: ${boqPreset}`],
+      ['', '', 'CONTINGENCY (5%)', '', '', '', contingency.toFixed(2), 'Project risk allowance'],
+      ['', '', 'GST (18%)', '', '', '', gst.toFixed(2), 'Tax'],
+      ['', '', 'GRAND TOTAL', '', '', '', total.toFixed(2), 'Estimated project amount'],
+    );
+
+    const csv = toCSV(
+      ['Section', 'Item Code', 'Description', 'Unit', 'Quantity', 'Rate', 'Amount', 'Remarks'],
+      boqRows,
+    );
+    downloadCSV(`master_boq_${boqPreset}.csv`, csv);
+  };
+
+  const masterBoqTotals = buildMasterBoq(boqPreset);
+
   const acCount = project.hvac.equipment.filter((e) =>
     ['split_ac', 'window_ac', 'vrf_unit', 'cassette_ac'].includes(e.type),
   ).length;
@@ -1693,6 +1973,18 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
     <div className="space-y-6">
       {/* Export bar */}
       <div className="flex flex-wrap gap-2">
+        <div className="inline-flex items-center gap-1 px-2 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs">
+          <span className="text-slate-500">BOQ Preset:</span>
+          <select
+            value={boqPreset}
+            onChange={(e) => setBoqPreset(e.target.value as 'economy' | 'standard' | 'premium')}
+            className="bg-transparent outline-none text-slate-700 dark:text-slate-200"
+          >
+            <option value="economy">Economy</option>
+            <option value="standard">Standard</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
         <button
           onClick={handleExportRooms}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -1711,6 +2003,15 @@ const SchedulePanel: React.FC<{ project: HousePlanProject }> = ({ project }) => 
         >
           <FileDown className="w-3.5 h-3.5" /> Export Simulation CSV
         </button>
+        <button
+          onClick={handleExportMasterBOQ}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/50"
+        >
+          <FileDown className="w-3.5 h-3.5" /> Export Master BOQ CSV
+        </button>
+        <div className="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 text-amber-700 dark:text-amber-300">
+          Est. Total: ₹{masterBoqTotals.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+        </div>
       </div>
 
       {/* Room Schedule */}

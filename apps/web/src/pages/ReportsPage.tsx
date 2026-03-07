@@ -27,7 +27,8 @@ import { useModelStore } from '../store/model';
 import type { Member, NodeLoad, MemberLoad, LoadCase, LoadCombination, ModeShape } from '../store/model';
 import type { SectionProperties } from '../data/SectionDatabase';
 import { useAuth } from '../providers/AuthProvider';
-const beamLabLogo = '/branding/beamlab_icon_colored.svg';
+import { Logo } from '../components/branding';
+import { LOGO_ICON_COLORED } from '../utils/LogoData';
 import { generateDesignReport } from '../services/PDFReportService';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
@@ -340,12 +341,7 @@ export const ReportsPage = () => {
             {/* ━━━ App header (hidden in print) ━━━ */}
             <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
                 <div className="flex items-center gap-4">
-                    <Link to="/" className="flex items-center gap-3 group">
-                        <div className="w-8 h-8 flex items-center justify-center">
-                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
-                        </div>
-                        <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">BeamLab</h2>
-                    </Link>
+                    <Logo size="sm" variant="full" href="/" />
                 </div>
                 <div className="hidden md:flex flex-1 justify-center">
                     <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800">
@@ -402,7 +398,7 @@ export const ReportsPage = () => {
                         <div className="flex items-start justify-between mt-2">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 flex items-center justify-center">
-                                    <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
+                                    <img src={LOGO_ICON_COLORED} alt="BeamLab" className="w-full h-full object-contain" />
                                 </div>
                                 <div>
                                     <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">BeamLab</h1>

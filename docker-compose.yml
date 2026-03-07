@@ -34,10 +34,11 @@ services:
       - frontend
       - backend
     deploy:
+      replicas: ${WEB_REPLICAS:-2}
       resources:
         limits:
-          memory: 256M
-          cpus: '0.5'
+          memory: 512M
+          cpus: '1.0'
         reservations:
           memory: 128M
     healthcheck:
@@ -69,13 +70,18 @@ services:
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:?INTERNAL_SERVICE_SECRET is required (min 16 chars)}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - MAX_REQUEST_BODY_MB=10
+      - GUNICORN_WORKERS=4
+      - GUNICORN_MAX_REQUESTS=5000
+      - GUNICORN_MAX_REQUESTS_JITTER=500
+      - ENVIRONMENT=production
     restart: unless-stopped
     networks:
       - backend
     deploy:
+      replicas: ${PYTHON_REPLICAS:-2}
       resources:
         limits:
-          memory: 1G
+          memory: 2G
           cpus: '2.0'
         reservations:
           memory: 512M
@@ -112,10 +118,11 @@ services:
       - backend
       - data
     deploy:
+      replicas: ${RUST_REPLICAS:-2}
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
+          memory: 1G
+          cpus: '2.0'
         reservations:
           memory: 256M
     healthcheck:
@@ -157,10 +164,11 @@ services:
       - backend
       - data
     deploy:
+      replicas: ${API_REPLICAS:-2}
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
+          memory: 1G
+          cpus: '2.0'
         reservations:
           memory: 256M
     healthcheck:
@@ -190,13 +198,14 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
+          memory: 2G
+          cpus: '2.0'
         reservations:
-          memory: 512M
+          memory: 1G
     volumes:
       - mongo-data:/data/db
       - mongo-backup:/backup
+    command: ["mongod", "--wiredTigerCacheSizeGB", "1", "--setParameter", "maxTransactionLockRequestTimeoutMillis=10000"]
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 }).ok"]
       interval: 30s

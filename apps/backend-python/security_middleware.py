@@ -25,9 +25,9 @@ logger = get_logger(__name__)
 # Configuration
 # ─────────────────────────────────────────────────
 
-RATE_LIMIT_GENERAL = int(os.getenv("RATE_LIMIT_GENERAL", "100"))  # req/min
-RATE_LIMIT_ANALYSIS = int(os.getenv("RATE_LIMIT_ANALYSIS", "15"))  # req/min
-RATE_LIMIT_AI = int(os.getenv("RATE_LIMIT_AI", "20"))  # req/min
+RATE_LIMIT_GENERAL = int(os.getenv("RATE_LIMIT_GENERAL", "200"))  # req/min
+RATE_LIMIT_ANALYSIS = int(os.getenv("RATE_LIMIT_ANALYSIS", "30"))  # req/min
+RATE_LIMIT_AI = int(os.getenv("RATE_LIMIT_AI", "30"))  # req/min
 RATE_WINDOW_SEC = 60
 
 # Public paths that skip authentication

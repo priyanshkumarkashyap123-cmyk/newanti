@@ -29,11 +29,11 @@ import type { WizardConfig } from '../../components/space-planning/RoomConfigWiz
 import type { RoomSpec, RoomType, SiteConstraints } from './types';
 
 // ============================================================================
-// API CLIENT (uses Python backend URL)
+// API CLIENT (uses Node API gateway URL)
 // ============================================================================
 
 const layoutApiClient = new ApiClient({
-  baseUrl: API_CONFIG.pythonUrl,
+  baseUrl: API_CONFIG.baseUrl,
   timeout: 60000, // Layout solving can take time for complex plans
   retries: 2,
   retryDelay: 2000,
@@ -318,6 +318,15 @@ export interface MultiCandidateResult {
   candidates: SolverCandidate[];
   bestCandidateId: string;
   config: WizardConfig;
+}
+
+/** Solver backend health status returned to UI for diagnostics */
+export interface SolverBackendHealth {
+  ok: boolean;
+  status: number;
+  message: string;
+  url: string;
+  details?: unknown;
 }
 
 // ============================================================================
@@ -802,6 +811,54 @@ export function buildConstraintReport(response: LayoutV2Response): ConstraintRep
 // ============================================================================
 // API CALL FUNCTIONS
 // ============================================================================
+
+/**
+ * Probe optimizer health endpoint via Node gateway.
+ * Used by UI when optimization appears unavailable so users can diagnose quickly.
+ */
+export async function checkSolverBackendHealth(): Promise<SolverBackendHealth> {
+  const url = '/api/layout/v2/health';
+
+  try {
+    const { data, status } = await layoutApiClient.get<{
+      ok?: boolean;
+      status?: number;
+      message?: string;
+      details?: unknown;
+    }>(url, { cache: false });
+
+    if (!data?.ok) {
+      return {
+        ok: false,
+        status,
+        message: data?.message || `Optimization service responded with HTTP ${status}`,
+        url,
+        details: data,
+      };
+    }
+
+    return {
+      ok: true,
+      status,
+      message: data?.message || 'Optimization service health check successful',
+      url,
+      details: data?.details,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Network error while checking optimization service';
+
+    return {
+      ok: false,
+      status: 0,
+      message,
+      url,
+      details: error,
+    };
+  }
+}
 
 /**
  * Call the v2 layout optimizer endpoint.

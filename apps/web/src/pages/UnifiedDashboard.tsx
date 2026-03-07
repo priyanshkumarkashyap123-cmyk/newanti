@@ -50,7 +50,7 @@ import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
 import { useUserRegistration } from "../hooks/useUserRegistration";
 import { useConfirm } from "../components/ui/ConfirmDialog";
-const beamLabLogo = '/branding/beamlab_icon_colored.svg';
+import { Logo } from "../components/branding";
 import {
   ProjectService,
   Project as APIProject,
@@ -499,12 +499,7 @@ export const UnifiedDashboard: FC<{
         <div className="mx-auto flex max-w-[1360px] items-center justify-between px-6 py-3">
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-7">
-            <Link to="/" className="flex items-center gap-2.5">
-              <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7 object-contain" />
-              <span className="text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
-                BeamLab
-              </span>
-            </Link>
+            <Logo size="sm" variant="full" href="/" className="gap-2.5" />
 
             <nav className="hidden md:flex items-center gap-0.5">
               {[

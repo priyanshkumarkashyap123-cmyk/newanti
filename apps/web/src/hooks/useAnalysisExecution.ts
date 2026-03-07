@@ -817,6 +817,34 @@ export function useAnalysisExecution(
                 sz[numSt - 1] = -vz2;
               }
 
+              // When there are no member distributed/point loads (only nodal loads),
+              // accumulateLoadEffects returns dVy=0 everywhere — making shear constant
+              // and moment purely linear. For nodal point loads, the shear IS a step
+              // function and moment IS a tent. Re-derive M by integrating the shear
+              // diagram (trapezoidal rule) using linearly interpolated shear between
+              // the correct end values, which matches equilibrium.
+              if (myMLs.length === 0 && numSt > 1) {
+                // Re-fill shear with linear interpolation between known end values
+                for (let s = 0; s < numSt; s++) {
+                  const t = stations[s] / L;
+                  sy[s] = v1 + ((-v2) - v1) * t;
+                  sz[s] = vz1 + ((-vz2) - vz1) * t;
+                }
+                // Re-integrate moment from shear (dM/dx = V)
+                mzArr[0] = -m1;
+                for (let s = 1; s < numSt; s++) {
+                  const dx_s = stations[s] - stations[s - 1];
+                  mzArr[s] = mzArr[s - 1] + 0.5 * (sy[s - 1] + sy[s]) * dx_s;
+                }
+                mzArr[numSt - 1] = m2; // enforce endpoint
+                myArr[0] = my1;
+                for (let s = 1; s < numSt; s++) {
+                  const dx_s = stations[s] - stations[s - 1];
+                  myArr[s] = myArr[s - 1] - 0.5 * (sz[s - 1] + sz[s]) * dx_s;
+                }
+                myArr[numSt - 1] = -my2; // enforce endpoint
+              }
+
               // Solver displacement BCs for deflection
               const disp_nd_i = nodesDict[mInfo.startNodeId];
               const disp_nd_j = nodesDict[mInfo.endNodeId];

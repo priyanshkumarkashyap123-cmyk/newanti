@@ -11,8 +11,8 @@ import { usePhonePePayment } from '../components/PhonePePayment';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { CheckCircle, X, HelpCircle, ChevronRight, Menu } from 'lucide-react';
-const beamLabLogo = '/branding/beamlab_icon_colored.svg';
 import { Button } from '../components/ui/button';
+import { Logo } from '../components/branding';
 
 // ============================================
 // PRICING DATA
@@ -188,14 +188,7 @@ export const PricingPage: FC = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
-                        <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
-                            <div className="relative w-9 h-9 flex items-center justify-center">
-                                <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
-                            </div>
-                            <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 whitespace-nowrap">
-                                BeamLab
-                            </span>
-                        </Link>
+                        <Logo size="sm" variant="full" href="/" className="flex-shrink-0" />
 
                         {/* Desktop Links */}
                         <div className="hidden md:flex items-center justify-center flex-1 px-8">
@@ -454,12 +447,7 @@ export const PricingPage: FC = () => {
             {/* Footer - Dark Theme */}
             <footer className="border-t border-slate-200 dark:border-slate-800 py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-950">
                 <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 flex items-center justify-center">
-                            <img src={beamLabLogo} alt="BeamLab" className="w-full h-full object-contain" />
-                        </div>
-                        <span className="text-xl font-bold text-slate-900 dark:text-white">BeamLab</span>
-                    </div>
+                    <Logo size="sm" variant="full" href="/" />
                     <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
                         <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>
