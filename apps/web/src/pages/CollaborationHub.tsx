@@ -591,7 +591,7 @@ const CollaborationHub: React.FC = () => {
             {activities.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-start gap-4 p-3 bg-slate-700/50 rounded-lg"
+                className="flex items-start gap-4 p-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-lg"
               >
                 <span className="text-2xl">
                   {teamMembers.find((m) => m.id === activity.userId)?.avatar ||
@@ -666,7 +666,7 @@ const CollaborationHub: React.FC = () => {
           {sharedProjects.map((project) => (
             <div
               key={project.id}
-              className="p-4 bg-slate-700 rounded-lg hover:bg-slate-600/50 transition-colors cursor-pointer"
+              className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg hover:bg-slate-300/50 dark:hover:bg-slate-600/50 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-slate-900 dark:text-white font-medium">
@@ -682,7 +682,7 @@ const CollaborationHub: React.FC = () => {
                 <span>👤 {project.owner}</span>
                 <span>👥 {project.members} members</span>
               </div>
-              <div className="h-2 bg-slate-600 rounded-full overflow-hidden">
+              <div className="h-2 bg-slate-300 dark:bg-slate-600 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
                   style={{ width: `${project.progress}%` }}
@@ -720,11 +720,11 @@ const CollaborationHub: React.FC = () => {
           {teamMembers.map((member) => (
             <div
               key={member.id}
-              className="p-4 bg-slate-700 rounded-lg border border-slate-600 hover:border-cyan-500 transition-all"
+              className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 hover:border-cyan-500 transition-all"
             >
               <div className="flex items-center gap-4 mb-4">
                 <div className="relative">
-                  <div className="w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-3xl">
+                  <div className="w-16 h-16 bg-slate-300 dark:bg-slate-600 rounded-full flex items-center justify-center text-3xl">
                     {member.avatar}
                   </div>
                   <span
@@ -753,7 +753,7 @@ const CollaborationHub: React.FC = () => {
                   <button type="button" className="p-2 text-blue-400 hover:bg-blue-900/30 rounded">
                     💬
                   </button>
-                  <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-600 rounded">
+                  <button type="button" className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 rounded">
                     ⚙️
                   </button>
                 </div>
@@ -879,7 +879,7 @@ const CollaborationHub: React.FC = () => {
                 className={`px-3 py-1 rounded-lg text-sm capitalize transition-colors ${
                   commentFilter === filter
                     ? "bg-cyan-600 text-white"
-                    : "bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600"
+                    : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
                 }`}
               >
                 {filter}
@@ -942,7 +942,7 @@ const CollaborationHub: React.FC = () => {
 
                   {/* Replies */}
                   {comment.replies.length > 0 && (
-                    <div className="mt-4 pl-4 border-l-2 border-slate-600 space-y-3">
+                    <div className="mt-4 pl-4 border-l-2 border-slate-300 dark:border-slate-600 space-y-3">
                       {comment.replies.map((reply) => (
                         <div key={reply.id} className="flex items-start gap-3">
                           <span className="text-xl">{reply.avatar}</span>
@@ -983,7 +983,7 @@ const CollaborationHub: React.FC = () => {
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder="Write a reply..."
-                        className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 text-sm"
+                        className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 text-sm"
                         onKeyDown={(e) => e.key === 'Enter' && handleReply(comment.id)}
                       />
                       <button type="button" onClick={() => handleReply(comment.id)} disabled={!replyText.trim()} className="px-3 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-500 disabled:opacity-50">
@@ -998,20 +998,20 @@ const CollaborationHub: React.FC = () => {
         </div>
 
         {/* Add Comment */}
-        <div className="mt-6 p-4 bg-slate-700 rounded-lg">
+        <div className="mt-6 p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
           <textarea
             placeholder="Add a comment or flag an issue..."
             value={newCommentText}
             onChange={(e) => setNewCommentText(e.target.value)}
-            className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
+            className="w-full p-3 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 resize-none"
             rows={3}
           />
           <div className="flex justify-between items-center mt-3">
             <div className="flex gap-2">
-              <button type="button" className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
+              <button type="button" className="px-3 py-1 bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-400 dark:hover:bg-slate-500">
                 📍 Pin to Element
               </button>
-              <button type="button" className="px-3 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-500">
+              <button type="button" className="px-3 py-1 bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded text-sm hover:bg-slate-400 dark:hover:bg-slate-500">
                 📎 Attach File
               </button>
             </div>
@@ -1044,7 +1044,7 @@ const CollaborationHub: React.FC = () => {
 
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-600" />
+          <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-300 dark:bg-slate-600" />
 
           <div className="space-y-6">
             {versions.map((version, _idx) => (
@@ -1056,7 +1056,7 @@ const CollaborationHub: React.FC = () => {
                       ? "bg-green-600"
                       : version.status === "milestone"
                         ? "bg-cyan-600"
-                        : "bg-slate-600"
+                        : "bg-slate-300 dark:bg-slate-600"
                   }`}
                 >
                   {version.status === "current"
@@ -1072,7 +1072,7 @@ const CollaborationHub: React.FC = () => {
                       ? "bg-green-900/20 border-green-600"
                       : version.status === "milestone"
                         ? "bg-cyan-900/20 border-cyan-600"
-                        : "bg-slate-700 border-slate-600"
+                        : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -1095,13 +1095,13 @@ const CollaborationHub: React.FC = () => {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button type="button" aria-label="View" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                      <button type="button" aria-label="View" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-600 rounded">
                         👁️
                       </button>
-                      <button type="button" aria-label="Restore" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                      <button type="button" aria-label="Restore" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-600 rounded">
                         ↩️
                       </button>
-                      <button type="button" aria-label="Download" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-600 rounded">
+                      <button type="button" aria-label="Download" className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-600 rounded">
                         📥
                       </button>
                     </div>
@@ -1276,7 +1276,7 @@ const CollaborationHub: React.FC = () => {
             <label
               key={idx}
               onClick={() => handleToggleAccess(setting.key)}
-              className="flex items-center justify-between p-4 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600 transition-colors"
+              className="flex items-center justify-between p-4 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
             >
               <div>
                 <p className="text-slate-900 dark:text-white font-medium">
@@ -1287,7 +1287,7 @@ const CollaborationHub: React.FC = () => {
                 </p>
               </div>
               <div
-                className={`relative w-12 h-6 rounded-full transition-colors ${accessSettings[setting.key] ? "bg-green-600" : "bg-slate-500"}`}
+                className={`relative w-12 h-6 rounded-full transition-colors ${accessSettings[setting.key] ? "bg-green-600" : "bg-slate-300 dark:bg-slate-500"}`}
               >
                 <div
                   className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${accessSettings[setting.key] ? "right-1" : "left-1"}`}
@@ -1346,7 +1346,7 @@ const CollaborationHub: React.FC = () => {
           ].map((int, idx) => (
             <div
               key={idx}
-              className="p-4 bg-slate-700 rounded-lg border border-slate-600"
+              className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600"
             >
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-2xl">{int.icon}</span>
@@ -1363,7 +1363,7 @@ const CollaborationHub: React.FC = () => {
                 className={`w-full py-2 rounded text-sm ${
                   int.status === "connected"
                     ? "bg-green-600 text-white"
-                    : "bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-500"
+                    : "bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-400 dark:hover:bg-slate-500"
                 }`}
               >
                 {int.status === "connected" ? "✓ Connected" : "Connect"}
@@ -1376,7 +1376,7 @@ const CollaborationHub: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1418,7 +1418,7 @@ const CollaborationHub: React.FC = () => {
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? "bg-cyan-600 text-white"
-                  : "bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
               }`}
             >
               <span>{tab.icon}</span>

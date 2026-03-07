@@ -77,7 +77,7 @@ export const ROUTES: Record<string, NavRoute> = {
   },
   DASHBOARD: {
     id: 'dashboard',
-    path: '/dashboard',
+    path: '/stream',
     label: 'Dashboard',
     icon: BarChart3,
     description: 'Project overview and analytics',

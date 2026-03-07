@@ -27,11 +27,10 @@ export interface ModeState {
 
 export type ModeTransition = (currentMode: CursorMode) => CursorMode | null;
 
-export interface StateTransitions {
-  [key: CursorMode]: {
-    [eventKey: string]: CursorMode | null;
-  };
-}
+export type StateTransitions = Record<
+  CursorMode,
+  Record<string, CursorMode | null>
+>;
 
 /**
  * Simple but extensible state machine for modeling interactions
@@ -89,6 +88,7 @@ export class CanvasCursorStateMachine {
       return false;
     }
 
+    const previousMode = this.state.mode;
     const validTransitions = this.transitions[this.state.mode];
     const allowedNextMode = Object.values(validTransitions).includes(nextMode);
 
@@ -104,7 +104,7 @@ export class CanvasCursorStateMachine {
     if (
       nextMode === CursorMode.SELECT &&
       ![CursorMode.ADD_BEAM, CursorMode.ADD_COLUMN, CursorMode.ADD_BRACE].includes(
-        this.state.mode
+        previousMode
       )
     ) {
       this.state.selectedNodeId = null;

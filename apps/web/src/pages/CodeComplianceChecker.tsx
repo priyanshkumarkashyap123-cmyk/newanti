@@ -978,7 +978,7 @@ const CodeComplianceChecker: React.FC = () => {
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 selectedCodes.includes(code.id)
                   ? "border-cyan-500 bg-cyan-900/20"
-                  : "border-slate-600 bg-slate-700 hover:border-slate-500"
+                  : "border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
               }`}
             >
               <div className="flex items-center gap-4">
@@ -1055,7 +1055,7 @@ const CodeComplianceChecker: React.FC = () => {
             ].map((cat) => (
               <label
                 key={cat.id}
-                className="flex items-center gap-3 p-3 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600"
+                className="flex items-center gap-3 p-3 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600"
               >
                 <input
                   type="checkbox"
@@ -1095,7 +1095,7 @@ const CodeComplianceChecker: React.FC = () => {
             ].map((scope) => (
               <label
                 key={scope.id}
-                className="flex items-center justify-between p-3 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600"
+                className="flex items-center justify-between p-3 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600"
               >
                 <div className="flex items-center gap-3">
                   <input
@@ -1157,7 +1157,7 @@ const CodeComplianceChecker: React.FC = () => {
 
         {isRunning && (
           <div className="mt-4">
-            <div className="h-3 bg-slate-600 rounded-full overflow-hidden">
+            <div className="h-3 bg-slate-300 dark:bg-slate-600 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-100"
                 style={{ width: `${progress}%` }}
@@ -1266,7 +1266,7 @@ const CodeComplianceChecker: React.FC = () => {
                 key={check.id}
                 className={`p-4 rounded-lg border-l-4 ${
                   check.status === "pass"
-                    ? "border-green-500 bg-slate-700/50"
+                    ? "border-green-500 bg-slate-100 dark:bg-slate-700/50"
                     : check.status === "fail"
                       ? "border-red-500 bg-red-900/20"
                       : "border-yellow-500 bg-yellow-900/20"
@@ -1352,7 +1352,7 @@ const CodeComplianceChecker: React.FC = () => {
               {codeStandards
                 .filter((c) => c.country.includes("India"))
                 .map((code) => (
-                  <div key={code.id} className="p-4 bg-slate-700 rounded-lg">
+                  <div key={code.id} className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
@@ -1382,7 +1382,7 @@ const CodeComplianceChecker: React.FC = () => {
               {codeStandards
                 .filter((c) => c.country.includes("USA"))
                 .map((code) => (
-                  <div key={code.id} className="p-4 bg-slate-700 rounded-lg">
+                  <div key={code.id} className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
@@ -1412,7 +1412,7 @@ const CodeComplianceChecker: React.FC = () => {
               {codeStandards
                 .filter((c) => c.country.includes("Europe"))
                 .map((code) => (
-                  <div key={code.id} className="p-4 bg-slate-700 rounded-lg">
+                  <div key={code.id} className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{code.icon}</span>
                       <div>
@@ -1490,7 +1490,7 @@ const CodeComplianceChecker: React.FC = () => {
           ].map((entry, idx) => (
             <div
               key={idx}
-              className="p-4 bg-slate-700 rounded-lg flex items-center justify-between hover:bg-slate-600 transition-colors cursor-pointer"
+              className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-between hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-4">
                 <span
@@ -1540,7 +1540,7 @@ const CodeComplianceChecker: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1571,7 +1571,7 @@ const CodeComplianceChecker: React.FC = () => {
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? "bg-cyan-600 text-white"
-                  : "bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600"
+                  : "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
               }`}
             >
               <span>{tab.icon}</span>

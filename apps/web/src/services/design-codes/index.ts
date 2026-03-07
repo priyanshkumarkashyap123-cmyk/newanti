@@ -79,6 +79,50 @@ export interface DesignChecker {
     version: string;
 }
 
+function toSteelSectionProps(section: any, length = 3000): SteelSectionProps {
+    return {
+        d: section?.d ?? 300,
+        bf: section?.bf ?? 140,
+        tf: section?.tf ?? 12,
+        tw: section?.tw ?? 8,
+        A: section?.A ?? 4750,
+        Zx: section?.Zx ?? 5734e3 / 150,
+        Zy: section?.Zy ?? 453e3 / 70,
+        Zpx: section?.Zpx ?? section?.Zx ?? 5734e3 / 150,
+        Zpy: section?.Zpy ?? section?.Zy ?? 453e3 / 70,
+        Ix: section?.Ix ?? 8603e4,
+        Iy: section?.Iy ?? 453e4,
+        rx: section?.rx ?? Math.sqrt((section?.Ix ?? 8603e4) / (section?.A ?? 4750)),
+        ry: section?.ry ?? Math.sqrt((section?.Iy ?? 453e4) / (section?.A ?? 4750)),
+        fy: section?.fy ?? 250,
+        fu: section?.fu ?? 410,
+        E: section?.E ?? 200000,
+        L: length,
+        Lx: section?.Lx,
+        Ly: section?.Ly,
+        Lb: section?.Lb,
+        J: section?.J,
+        Iw: section?.Iw,
+        sectionType: section?.sectionType,
+    };
+}
+
+function toConcreteSectionProps(section: any): ConcreteSectionProps {
+    const h = section?.h ?? section?.D ?? 550;
+    return {
+        b: section?.b ?? 300,
+        d: section?.d ?? h - 50,
+        D: section?.D ?? h,
+        fck: section?.fck ?? 25,
+        fy: section?.fy ?? section?.fyk ?? 500,
+        Ast: section?.Ast ?? section?.As1 ?? 1200,
+        Asc: section?.Asc ?? 0,
+        cover: section?.cover ?? section?.c ?? 35,
+        span: section?.span ?? section?.L,
+        memberType: section?.memberType,
+    };
+}
+
 /**
  * Get the appropriate checker for a design code.
  *
@@ -96,9 +140,9 @@ export function getDesignChecker(code: DesignCode): DesignChecker {
                     const Mx = forces?.momentMajor ?? forces?.moment ?? 0;
                     const My = forces?.momentMinor ?? 0;
                     const V = forces?.shear ?? 0;
-                    const L = length ?? section?.L ?? 3000;
+                    const normalizedSection = toSteelSectionProps(section, length ?? section?.L ?? 3000);
                     const result = checkSteelMember(
-                        P, Mx, My, V, section, L,
+                        'member', P, V, Mx, My, 0, normalizedSection,
                     );
                     return result.checks;
                 },
@@ -113,11 +157,12 @@ export function getDesignChecker(code: DesignCode): DesignChecker {
                     const M = forces?.moment ?? forces?.momentMajor ?? 0;
                     const V = forces?.shear ?? 0;
                     const P = forces?.axial ?? 0;
-                    if (section?.memberType === 'column' || Math.abs(P) > 0.1 * (section?.fck ?? 25) * (section?.b ?? 300) * (section?.d ?? 500) / 1000) {
-                        const result = checkConcreteColumn(P, M, 0, section);
+                    const normalizedSection = toConcreteSectionProps(section);
+                    if (normalizedSection?.memberType === 'column' || Math.abs(P) > 0.1 * (normalizedSection?.fck ?? 25) * (normalizedSection?.b ?? 300) * (normalizedSection?.d ?? 500) / 1000) {
+                        const result = checkConcreteColumn('member', P, M, 0, normalizedSection, normalizedSection.span ?? 3000, normalizedSection.span ?? 3000);
                         return result.checks;
                     }
-                    const result = checkConcreteBeam(M, V, M / 1.5, section);
+                    const result = checkConcreteBeam('member', V, M, 0, normalizedSection);
                     return result.checks;
                 },
                 code: 'IS 456',
@@ -292,38 +337,38 @@ export class MultiCodeChecker {
                 return { code: 'ACI 318-19', passed: result.passed, checks: result.checks };
             }
             case 'IS_800': {
-                const section: SteelSectionProps = {
-                    A: 4750, // Default ISMB 300 values
+                const section = toSteelSectionProps({
+                    A: 4750,
                     Ix: 8603e4,
                     Iy: 453e4,
                     Zx: 5734e3 / 150,
                     Zy: 453e3 / 70,
-                    Sx: 5734e3 / 150 * 1.14,
-                    Sy: 453e3 / 70 * 1.5,
-                    rx: Math.sqrt(8603e4 / 4750),
-                    ry: Math.sqrt(453e4 / 4750),
+                    Zpx: (5734e3 / 150) * 1.14,
+                    Zpy: (453e3 / 70) * 1.5,
                     d: 300,
                     bf: 140,
                     tf: 12.4,
                     tw: 7.5,
                     fy: member.fy || 250,
+                    fu: 410,
                     E: 200000,
                     J: 15.4e4,
                     Iw: 0,
-                };
+                }, member.length);
                 const result = checkSteelMember(
+                    'member',
                     forces.axial,
+                    forces.shear,
                     forces.momentMajor,
                     0,
-                    forces.shear,
+                    0,
                     section,
-                    member.length,
                 );
                 const allPassed = result.checks.every((c: any) => c.pass);
                 return { code: 'IS 800:2007', passed: allPassed, checks: result.checks };
             }
             case 'IS_456': {
-                const section: ConcreteSectionProps = {
+                const section = toConcreteSectionProps({
                     b: member.b ?? 300,
                     d: member.d ?? 500,
                     D: member.h ?? 550,
@@ -331,13 +376,14 @@ export class MultiCodeChecker {
                     fy: member.fy || 500,
                     Ast: member.Ast ?? 1200,
                     Asc: 0,
-                    cc: 40,
+                    cover: 40,
                     memberType: 'beam',
-                };
+                });
                 const result = checkConcreteBeam(
-                    forces.momentMajor,
+                    'member',
                     forces.shear,
-                    forces.momentMajor / 1.5,
+                    forces.momentMajor,
+                    0,
                     section,
                 );
                 const allPassed = result.checks.every((c: any) => c.pass);

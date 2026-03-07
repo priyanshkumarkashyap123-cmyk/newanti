@@ -190,7 +190,7 @@ export const HelpPage = () => {
                     <div className="flex items-center justify-between h-16">
                         <Logo size="sm" variant="full" href="/" />
                         <div className="hidden md:flex items-center gap-8">
-                            <Link to="/dashboard" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
+                            <Link to="/stream" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">Dashboard</Link>
                             <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors">Projects</Link>
                             <Link to="/help" className="text-slate-900 dark:text-white font-semibold text-sm">Help</Link>
                             <Link to="/app" className="flex items-center gap-2 rounded-full h-9 px-5 bg-white text-slate-950 text-sm font-bold hover:bg-slate-100 transition-colors">

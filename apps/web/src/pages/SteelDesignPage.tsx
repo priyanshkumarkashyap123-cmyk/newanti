@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Loader2, Play, AlertTriangle, Box } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Play, AlertTriangle, Box, ArrowLeft } from 'lucide-react';
 import { useModelStore } from '../store/model';
 import { useShallow } from 'zustand/react/shallow';
 import { 
@@ -17,6 +18,7 @@ import {
 import { getSectionById, Material } from '../data/SectionDatabase';
 
 export function SteelDesignPage() {
+    const navigate = useNavigate();
     const store = useModelStore(
       useShallow((s) => ({ members: s.members, nodes: s.nodes, analysisResults: s.analysisResults }))
     );
@@ -135,29 +137,32 @@ export function SteelDesignPage() {
     };
 
     return (
-        <div className="steel-design-page p-5 bg-[#1e1e1e] text-white min-h-screen">
-            <header className="mb-[30px]">
-                <h1 className="text-[32px] mb-2.5">
-                    🏗️ Steel Member Design
+        <div className="steel-design-page p-5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
+            <header className="mb-8">
+                <button type="button" onClick={() => navigate('/stream')} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4 transition-colors">
+                    <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+                </button>
+                <h1 className="text-2xl font-bold mb-1">
+                    Steel Member Design
                 </h1>
-                <p className="text-[#888] text-sm">
-                    ⚡ Powered by Rust API (10x faster than Python) | AISC 360-16 & IS 800
+                <p className="text-slate-500 dark:text-slate-400 text-sm">
+                    Powered by Rust API | AISC 360-16 &amp; IS 800
                 </p>
             </header>
 
             {/* Configuration Panel */}
-            <div className="bg-[#2d2d2d] p-5 rounded-lg mb-[30px]">
-                <h3 className="mb-5">Design Parameters</h3>
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-lg mb-8 border border-slate-200 dark:border-slate-700">
+                <h3 className="mb-5 font-semibold">Design Parameters</h3>
                 
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5">
                     <div>
-                        <label className="block mb-2">
+                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Design Code:
                         </label>
                         <select
                             value={designCode}
                             onChange={(e) => setDesignCode(e.target.value as 'AISC360' | 'IS800')}
-                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
+                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
                         >
                             <option value="AISC360">AISC 360-16 (USA)</option>
                             <option value="IS800">IS 800:2007 (India)</option>
@@ -165,13 +170,13 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label className="block mb-2">
+                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Member:
                         </label>
                         <select
                             value={selectedMember}
                             onChange={(e) => setSelectedMember(e.target.value)}
-                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
+                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
                         >
                             <option value="">All Members</option>
                             {members.map(m => (
@@ -183,19 +188,19 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label className="block mb-2">
+                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Unbraced Length (mm):
                         </label>
                         <input
                             type="number"
                             value={params.Lb}
                             onChange={(e) => setParams({ ...params, Lb: parseFloat(e.target.value) || 3000 })}
-                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
+                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
                         />
                     </div>
 
                     <div>
-                        <label className="block mb-2">
+                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Kx (Effective Length Factor):
                         </label>
                         <input
@@ -203,12 +208,12 @@ export function SteelDesignPage() {
                             step="0.1"
                             value={params.Kx}
                             onChange={(e) => setParams({ ...params, Kx: parseFloat(e.target.value) || 1.0 })}
-                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
+                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
                         />
                     </div>
 
                     <div>
-                        <label className="block mb-2">
+                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Ky (Effective Length Factor):
                         </label>
                         <input
@@ -216,12 +221,12 @@ export function SteelDesignPage() {
                             step="0.1"
                             value={params.Ky}
                             onChange={(e) => setParams({ ...params, Ky: parseFloat(e.target.value) || 1.0 })}
-                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
+                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
                         />
                     </div>
 
                     <div>
-                        <label className="block mb-2">
+                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Cb (LTB Modifier):
                         </label>
                         <input
@@ -229,7 +234,7 @@ export function SteelDesignPage() {
                             step="0.1"
                             value={params.Cb}
                             onChange={(e) => setParams({ ...params, Cb: parseFloat(e.target.value) || 1.0 })}
-                            className="w-full p-2.5 bg-[#1e1e1e] text-white border border-[#444] rounded"
+                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
                         />
                     </div>
                 </div>
@@ -237,12 +242,7 @@ export function SteelDesignPage() {
                 <button type="button"
                     onClick={handleRunDesign}
                     disabled={analyzing || members.length === 0}
-                    className="mt-5 py-3 px-8 text-white border-0 rounded text-base font-bold flex items-center justify-center gap-2"
-                    style={{
-                        background: analyzing ? '#555' : '#2196F3',
-                        cursor: analyzing ? 'not-allowed' : 'pointer',
-                        opacity: (analyzing || members.length === 0) ? 0.6 : 1,
-                    }}
+                    className="mt-5 py-3 px-8 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 dark:disabled:bg-slate-600 text-white rounded text-base font-bold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
                 >
                     {analyzing ? (
                         <>
@@ -260,7 +260,7 @@ export function SteelDesignPage() {
 
             {/* Error Display */}
             {error && (
-                <div className="p-[15px] bg-[#d32f2f22] border border-[#d32f2f] rounded-lg mb-5 flex items-center gap-2.5 text-[#ff6b6b]">
+                <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg mb-5 flex items-center gap-2.5 text-red-600 dark:text-red-400">
                     <AlertTriangle size={18} />
                     <span><strong>Error:</strong> {error}</span>
                 </div>
@@ -268,13 +268,13 @@ export function SteelDesignPage() {
 
             {/* Results Display */}
             {results.length > 0 ? (
-                <div className="bg-[#2d2d2d] p-5 rounded-lg">
-                    <h3 className="mb-5">Design Check Results</h3>
+                <div className="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <h3 className="mb-5 font-semibold">Design Check Results</h3>
                     
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                             <thead>
-                                <tr className="border-b-2 border-[#444]">
+                                <tr className="border-b-2 border-slate-300 dark:border-slate-600">
                                     <th className="p-3 text-left">Member</th>
                                     <th className="p-3 text-left">Section</th>
                                     <th className="p-3 text-center">Status</th>
@@ -293,9 +293,9 @@ export function SteelDesignPage() {
                                         result.overallStatus === 'WARNING' ? '⚠️' : '✗';
 
                                     return (
-                                        <tr key={idx} className="border-b border-[#333]">
+                                        <tr key={idx} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                             <td className="p-3">{result.memberId}</td>
-                                            <td className="p-3 text-[#4fc3f7]">
+                                            <td className="p-3 text-blue-600 dark:text-blue-400 font-medium">
                                                 {result.section.name}
                                             </td>
                                             <td className="p-3 text-center">
@@ -305,10 +305,10 @@ export function SteelDesignPage() {
                                                     {statusIcon} {result.overallStatus}
                                                 </span>
                                             </td>
-                                            <td className="p-3 text-right font-bold" style={{ 
-                                                color: result.criticalRatio > 1.0 ? '#f44336' : '#4fc3f7',
-                                            }}>
+                                            <td className="p-3 text-right font-bold">
+                                                <span className={result.criticalRatio > 1.0 ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}>
                                                 {(result.criticalRatio * 100).toFixed(1)}%
+                                                </span>
                                             </td>
                                             <td className="p-3 text-sm">
                                                 {result.governingCheck || 'N/A'}
@@ -321,42 +321,42 @@ export function SteelDesignPage() {
                     </div>
 
                     {/* Summary Statistics */}
-                    <div className="mt-[30px] grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-[15px]">
-                        <div className="p-5 bg-[#1e1e1e] rounded">
-                            <div className="text-[#888] text-xs">TOTAL MEMBERS</div>
-                            <div className="text-[28px] text-[#4fc3f7] mt-1">
+                    <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Total Members</div>
+                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                                 {results.length}
                             </div>
                         </div>
                         
-                        <div className="p-5 bg-[#1e1e1e] rounded">
-                            <div className="text-[#888] text-xs">PASSING</div>
-                            <div className="text-[28px] text-[#4caf50] mt-1">
+                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Passing</div>
+                            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
                                 {results.filter(r => r.overallStatus === 'PASS').length}
                             </div>
                         </div>
                         
-                        <div className="p-5 bg-[#1e1e1e] rounded">
-                            <div className="text-[#888] text-xs">WARNING</div>
-                            <div className="text-[28px] text-[#ff9800] mt-1">
+                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Warning</div>
+                            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
                                 {results.filter(r => r.overallStatus === 'WARNING').length}
                             </div>
                         </div>
                         
-                        <div className="p-5 bg-[#1e1e1e] rounded">
-                            <div className="text-[#888] text-xs">FAILING</div>
-                            <div className="text-[28px] text-[#f44336] mt-1">
+                        <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Failing</div>
+                            <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
                                 {results.filter(r => r.overallStatus === 'FAIL').length}
                             </div>
                         </div>
                     </div>
                 </div>
             ) : !analyzing && (
-                <div className="bg-[#2d2d2d] p-8 rounded-lg">
+                <div className="bg-white dark:bg-slate-800 p-8 rounded-lg border border-slate-200 dark:border-slate-700">
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                        <Box size={48} className="text-[#555] mb-4" />
-                        <h3 className="text-lg font-semibold text-[#aaa] mb-2">No Design Results</h3>
-                        <p className="text-sm text-[#777] max-w-md">
+                        <Box size={48} className="text-slate-300 dark:text-slate-600 mb-4" />
+                        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">No Design Results</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
                             {members.length === 0 
                                 ? 'Add structural members to your model first, then run structural analysis before performing design checks.'
                                 : !store.analysisResults
@@ -367,7 +367,7 @@ export function SteelDesignPage() {
                             <button 
                                 type="button"
                                 onClick={handleRunDesign}
-                                className="mt-4 py-2 px-6 bg-[#2196F3] text-white rounded text-sm font-medium hover:bg-[#1976D2] transition-colors flex items-center gap-2"
+                                className="mt-4 py-2 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition-colors flex items-center gap-2"
                             >
                                 <Play size={16} />
                                 Run Steel Design
@@ -378,9 +378,9 @@ export function SteelDesignPage() {
             )}
 
             {/* Info Section */}
-            <div className="mt-[30px] p-[15px] bg-[#424242] rounded-lg text-sm">
-                <strong>ℹ️ About Steel Design</strong>
-                <p className="mt-2.5 leading-[1.6] text-[#bbb]">
+            <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-sm">
+                <strong className="text-blue-700 dark:text-blue-400">About Steel Design</strong>
+                <p className="mt-2 leading-relaxed text-slate-600 dark:text-slate-400">
                     This module performs comprehensive steel member design checks according to {designCode} standards.
                     All checks (tension, compression, flexure, shear, combined forces) are performed locally and 
                     validated using the Rust API for 10x faster computation. Ensure you have run structural analysis

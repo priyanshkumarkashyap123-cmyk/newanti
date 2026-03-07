@@ -28,6 +28,7 @@ import {
   Key,
 } from "lucide-react";
 import { useState, useEffect, memo } from "react";
+import { PageHeader, type NavLink } from "../components/layout";
 
 // ============================================
 // TYPES & CONSTANTS
@@ -119,7 +120,7 @@ export const PrivacyPolicyPageNew = () => {
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 group ${
                       activeSection === section.id
                         ? "bg-blue-500/20 text-blue-300"
-                        : "text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-white/5"
+                        : "text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
                     <ChevronRight
@@ -138,7 +139,7 @@ export const PrivacyPolicyPageNew = () => {
               </nav>
 
               {/* Quick Links */}
-              <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10">
                 <h4 className="text-sm font-semibold text-slate-900/50 dark:text-white/50 uppercase tracking-wider mb-3">
                   Related Documents
                 </h4>
@@ -398,7 +399,7 @@ export const PrivacyPolicyPageNew = () => {
                   These entities and affiliates may market to you as a result of
                   such sharing unless you explicitly opt-out.
                 </p>
-                <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="mt-4 p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <p className="text-slate-900/70 dark:text-white/70 text-sm">
                     <strong>Note:</strong> We do not sell your personal data to
                     any unaffiliated third parties for their marketing purposes
@@ -554,7 +555,7 @@ export const PrivacyPolicyPageNew = () => {
                   </strong>{" "}
                   in your communication&apos;s subject line.
                 </p>
-                <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="mt-4 p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <p className="text-slate-900/70 dark:text-white/70 text-sm">
                     <strong>Please note:</strong> Withdrawal of consent will not
                     be retrospective and will be in accordance with the Terms of
@@ -660,7 +661,7 @@ export const PrivacyPolicyPageNew = () => {
                   made thereunder, the name and contact details of the Grievance
                   Officer are provided below:
                 </p>
-                <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
+                <div className="p-5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                     Grievance Officer Details
                   </h3>
@@ -777,7 +778,7 @@ export const PrivacyPolicyPageNew = () => {
               </section>
 
               {/* Acceptance Footer */}
-              <div className="border-t border-white/10 pt-8">
+              <div className="border-t border-slate-200 dark:border-white/10 pt-8">
                 <div className="p-6 bg-blue-500/10 border border-blue-500/30 rounded-xl">
                   <div className="flex items-start gap-3">
                     <Shield className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -809,7 +810,7 @@ export const PrivacyPolicyPageNew = () => {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 mt-16">
+      <footer className="border-t border-slate-200 dark:border-white/10 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-900/50 dark:text-white/50 text-sm">

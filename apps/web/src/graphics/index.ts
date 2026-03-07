@@ -137,7 +137,8 @@ import { AdvancedRenderingEngine } from './AdvancedRenderingEngine';
 import { SectionProfileLibrary, sectionLibrary as _sectionLibrary } from './ProfessionalModelingTools';
 import { DiagramGenerator, DeflectedShapeVisualizer, LoadVisualizer, ReactionVisualizer } from './StructuralVisualization';
 import { StressContourRenderer, UtilizationRenderer, ModeShapeAnimator, ResultTableGenerator } from './AnalysisResultRenderer';
-import { CanvasManager, CursorMode } from './CanvasCursorStateMachine';
+import { CanvasManager } from './CanvasManager';
+import { CanvasCursorStateMachine, CursorMode } from './CanvasCursorStateMachine';
 import * as THREE from 'three';
 
 // Use the singleton imported from ProfessionalModelingTools

@@ -345,7 +345,7 @@ const BIMExportEnhanced: React.FC = () => {
               className={`p-4 rounded-lg border-2 text-left transition-all ${
                 exportSettings.format === format.id
                   ? 'border-cyan-500 bg-cyan-900/30'
-                  : 'border-slate-600 bg-slate-700 hover:border-slate-500'
+                  : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
               }`}
             >
               <div className="flex items-center gap-3 mb-2">
@@ -376,7 +376,7 @@ const BIMExportEnhanced: React.FC = () => {
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 exportSettings[option.key as keyof ExportSettings]
                   ? 'border-green-500 bg-green-900/30'
-                  : 'border-slate-600 bg-slate-700'
+                  : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -506,7 +506,7 @@ const BIMExportEnhanced: React.FC = () => {
               { key: 'viewGeneration', label: 'Generate Plan/Section Views' },
               { key: 'schedulesExport', label: 'Include Schedules' },
             ].map((option) => (
-              <label key={option.key} className="flex items-center gap-3 cursor-pointer p-3 bg-slate-700 rounded-lg">
+              <label key={option.key} className="flex items-center gap-3 cursor-pointer p-3 bg-slate-200 dark:bg-slate-700 rounded-lg">
                 <input
                   type="checkbox"
                   checked={exportSettings.revitSettings[option.key as keyof typeof exportSettings.revitSettings] as boolean}
@@ -561,7 +561,7 @@ const BIMExportEnhanced: React.FC = () => {
               className={`p-4 rounded-lg border-2 text-center transition-all ${
                 importSettings.format === format
                   ? 'border-green-500 bg-green-900/30'
-                  : 'border-slate-600 bg-slate-700 hover:border-slate-500'
+                  : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
               }`}
             >
               <span className="text-slate-900 dark:text-white font-medium">{format}</span>
@@ -749,7 +749,7 @@ const BIMExportEnhanced: React.FC = () => {
             { ifc: 'UPN200', beamlab: 'ISMC 200', status: 'mapped' },
             { ifc: 'L100x100x10', beamlab: 'ISA 100x100x10', status: 'mapped' },
           ].map((mapping, idx) => (
-            <div key={idx} className="p-4 bg-slate-700 rounded-lg">
+            <div key={idx} className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-cyan-400 font-mono text-sm">{mapping.ifc}</span>
                 <span className="text-slate-600 dark:text-slate-400">→</span>
@@ -779,7 +779,7 @@ const BIMExportEnhanced: React.FC = () => {
           {exportJobs.map((job) => (
             <div
               key={job.id}
-              className="p-4 bg-slate-700 rounded-lg border border-slate-600 hover:border-slate-500 transition-colors"
+              className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 transition-colors"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-4">
@@ -824,7 +824,7 @@ const BIMExportEnhanced: React.FC = () => {
               
               {(job.status === 'processing' || job.status === 'pending') && (
                 <div className="mt-3">
-                  <div className="h-2 bg-slate-600 rounded-full overflow-hidden">
+                  <div className="h-2 bg-slate-300 dark:bg-slate-600 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-500"
                       style={{ width: `${job.progress}%` }}
@@ -841,7 +841,7 @@ const BIMExportEnhanced: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -871,7 +871,7 @@ const BIMExportEnhanced: React.FC = () => {
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
-                  : 'bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600'
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
               }`}
             >
               <span>{tab.icon}</span>
@@ -900,7 +900,7 @@ const BIMExportEnhanced: React.FC = () => {
               { name: 'COBie', status: '✅' },
               { name: 'MVD 2.0', status: '✅' },
             ].map((std, idx) => (
-              <div key={idx} className="p-3 bg-slate-700 rounded-lg">
+              <div key={idx} className="p-3 bg-slate-200 dark:bg-slate-700 rounded-lg">
                 <span className="text-lg">{std.status}</span>
                 <p className="text-slate-700 dark:text-slate-300 text-sm mt-1">{std.name}</p>
               </div>

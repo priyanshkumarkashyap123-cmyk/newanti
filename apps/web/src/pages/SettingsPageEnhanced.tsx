@@ -4,7 +4,6 @@
  */
 
 import { FC, useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { AdvancedToggle, RangeSlider } from '../components/ui';
 import { useConfirm } from '../components/ui/ConfirmDialog';
 
@@ -26,7 +25,6 @@ interface NavItem {
 
 export const SettingsPageEnhanced: FC = () => {
     const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const navigate = useNavigate();
     const confirm = useConfirm();
     const [activeTab, setActiveTab] = useState<TabId>('general');
 
@@ -107,37 +105,26 @@ export const SettingsPageEnhanced: FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background-dark flex flex-col font-display">
-            {/* Header */}
-            <header className="h-16 bg-surface-dark border-b border-border-dark flex items-center justify-between px-6 shrink-0">
-                <div className="flex items-center gap-4">
-                    <button type="button"
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-text-muted hover:text-slate-900 dark:hover:text-white transition-colors"
-                    >
-                        <span className="material-symbols-outlined">arrow_back</span>
-                        <span className="text-sm font-medium">Back</span>
-                    </button>
-                    <div className="h-6 w-px bg-border-dark"></div>
-                    <h1 className="text-xl font-bold text-slate-900 dark:text-white">Settings</h1>
-                </div>
+        <div className="flex flex-col font-display">
+            {/* Action Bar */}
+            <div className="h-14 border-b border-slate-200 dark:border-slate-800 flex items-center justify-end px-6 shrink-0 bg-slate-50 dark:bg-slate-900/50">
                 <div className="flex items-center gap-3">
                     <button type="button"
                         onClick={handleResetSettings}
-                        className="flex items-center gap-2 h-10 px-4 rounded-lg border border-border-dark text-text-muted hover:text-slate-900 dark:hover:text-white hover:border-text-muted transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 h-9 px-4 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 transition-colors text-sm font-medium"
                     >
                         <span className="material-symbols-outlined text-[18px]">restart_alt</span>
                         Reset
                     </button>
                     <button type="button"
                         onClick={handleSaveSettings}
-                        className="flex items-center gap-2 h-10 px-5 rounded-lg bg-primary hover:bg-primary/90 text-slate-900 dark:text-white text-sm font-bold transition-all shadow-lg shadow-primary/20"
+                        className="flex items-center gap-2 h-9 px-5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-all shadow-sm"
                     >
                         <span className="material-symbols-outlined text-[18px]">save</span>
                         {saved ? '✓ Saved' : 'Save Changes'}
                     </button>
                 </div>
-            </header>
+            </div>
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar Navigation */}

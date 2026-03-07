@@ -412,7 +412,7 @@ export const BarBendingSchedulePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-center gap-4 mb-4">
             <button type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => { if (window.history.length > 1) navigate(-1); else navigate('/app'); }}
               className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />

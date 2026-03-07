@@ -18,7 +18,7 @@ import {
   useRef,
   memo,
 } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -31,26 +31,18 @@ import {
   Triangle,
   Building2,
   Columns,
-  Settings,
   ChevronRight,
   Upload,
   Zap,
   Layers,
   Grid3X3,
   ArrowUpRight,
-  LayoutDashboard,
-  FileText,
-  LogOut,
   Cpu,
   Activity as ActivityIcon,
   Sparkles,
-  Users,
 } from "lucide-react";
-import { UserButton } from "@clerk/clerk-react";
-import { useAuth, isUsingClerk } from "../providers/AuthProvider";
-import { useUserRegistration } from "../hooks/useUserRegistration";
+import { useAuth } from "../providers/AuthProvider";
 import { useConfirm } from "../components/ui/ConfirmDialog";
-import { Logo } from "../components/branding";
 import {
   ProjectService,
   Project as APIProject,
@@ -81,6 +73,13 @@ interface QuickAction {
   route: string;
   accent: string;
   badge?: string;
+}
+
+interface Template {
+  id: string;
+  name: string;
+  type: string;
+  icon: React.ReactNode;
 }
 
 // ============================================
@@ -367,12 +366,9 @@ export const UnifiedDashboard: FC<{
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [projectsError, setProjectsError] = useState<string | null>(null);
 
-  useUserRegistration();
-
   useEffect(() => { document.title = 'Dashboard | BeamLab'; }, []);
 
-  const { isSignedIn, user, signOut, getToken } = useAuth();
-  const isClerkEnabled = isUsingClerk();
+  const { isSignedIn, user, getToken } = useAuth();
   const userName = isSignedIn && user?.firstName ? user.firstName : "Engineer";
 
   // Fetch projects
@@ -465,95 +461,7 @@ export const UnifiedDashboard: FC<{
   // ==========================================
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0e17] text-slate-700 dark:text-slate-200">
-      {/* ---- Ambient glow (top-left) ---- */}
-      <div className="pointer-events-none fixed -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-600/[0.04] blur-[120px] hidden dark:block" />
-      <div className="pointer-events-none fixed -bottom-40 -right-40 h-[400px] w-[400px] rounded-full bg-purple-600/[0.03] blur-[120px] hidden dark:block" />
-
-      {/* ======== HEADER ======== */}
-      <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/[0.06] bg-white/80 dark:bg-[#0a0e17]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1360px] items-center justify-between px-6 py-3">
-          {/* Left: Logo + Nav */}
-          <div className="flex items-center gap-7">
-            <Logo size="sm" variant="full" href="/" className="gap-2.5" />
-
-            <nav className="hidden md:flex items-center gap-0.5">
-              {[
-                {
-                  to: "/stream",
-                  label: "Dashboard",
-                  icon: <LayoutDashboard className="w-3.5 h-3.5" />,
-                  active: true,
-                },
-                {
-                  to: "/app",
-                  label: "Analysis",
-                  icon: <Box className="w-3.5 h-3.5" />,
-                },
-                {
-                  to: "/steel-design",
-                  label: "Design",
-                  icon: <Columns className="w-3.5 h-3.5" />,
-                },
-                {
-                  to: "/reports",
-                  label: "Reports",
-                  icon: <FileText className="w-3.5 h-3.5" />,
-                },
-                {
-                  to: "/space-planning",
-                  label: "Space Planning",
-                  icon: <Building2 className="w-3.5 h-3.5" />,
-                },
-                {
-                  to: "/collaboration",
-                  label: "Collaborate",
-                  icon: <Users className="w-3.5 h-3.5" />,
-                },
-                {
-                  to: "/capabilities",
-                  label: "All Tools",
-                  icon: <Sparkles className="w-3.5 h-3.5" />,
-                },
-              ].map((n) => (
-                <Link
-                  key={n.to}
-                  to={n.to}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors
-                    ${n.active ? "text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.03]"}`}
-                >
-                  {n.icon} {n.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          {/* Right: User */}
-          <div className="flex items-center gap-3">
-            <Link
-              to="/settings"
-              className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
-            >
-              <Settings className="w-4 h-4" />
-            </Link>
-            <div className="h-5 w-px bg-slate-200 dark:bg-white/[0.08]" />
-            {isClerkEnabled ? (
-              <UserButton afterSignOutUrl="/" />
-            ) : (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">{userName}</span>
-                <button type="button"
-                  onClick={() => signOut()}
-                  className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
-
+    <div className="text-slate-700 dark:text-slate-200">
       {/* ======== MAIN ======== */}
       <main className="mx-auto max-w-[1360px] px-6 py-8 space-y-8 relative">
         {/* ---- Welcome Row ---- */}

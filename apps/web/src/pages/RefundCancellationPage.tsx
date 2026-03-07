@@ -97,7 +97,7 @@ function RefundCancellationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
+      <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
@@ -174,7 +174,7 @@ function RefundCancellationPage() {
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 group ${
                       activeSection === section.id
                         ? "bg-blue-500/20 text-blue-300"
-                        : "text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-white/5"
+                        : "text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                     }`}
                   >
                     <ChevronRight
@@ -193,7 +193,7 @@ function RefundCancellationPage() {
               </nav>
 
               {/* Quick Links */}
-              <div className="mt-8 pt-6 border-t border-white/10">
+              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/10">
                 <h4 className="text-sm font-semibold text-slate-900/50 dark:text-white/50 uppercase tracking-wider mb-3">
                   Related Documents
                 </h4>
@@ -265,7 +265,7 @@ function RefundCancellationPage() {
             <div className="prose prose-invert prose-lg max-w-none">
               {/* Overview */}
               <section id="overview" className="mb-12 scroll-mt-24">
-                <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
+                <div className="p-5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <p className="text-slate-900/80 dark:text-white/80 leading-relaxed text-sm">
                     This refund and cancellation policy outlines how you can
                     cancel or seek a refund for a digital product or service
@@ -334,7 +334,7 @@ function RefundCancellationPage() {
                   </li>
                 </ul>
 
-                <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="mt-6 p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
                     <Clock className="w-4 h-4 text-blue-400" />
                     <p className="text-slate-900/60 dark:text-white/60 text-sm font-semibold uppercase tracking-wider">
@@ -453,7 +453,7 @@ function RefundCancellationPage() {
                 </p>
 
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                  <div className="p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
                       <Clock className="w-4 h-4 text-red-400" />
                       <p className="text-slate-900/60 dark:text-white/60 text-xs font-semibold uppercase tracking-wider">
@@ -473,7 +473,7 @@ function RefundCancellationPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                  <div className="p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
                       <Clock className="w-4 h-4 text-amber-400" />
                       <p className="text-slate-900/60 dark:text-white/60 text-xs font-semibold uppercase tracking-wider">
@@ -525,7 +525,7 @@ function RefundCancellationPage() {
                   documented specifications and standards.
                 </p>
 
-                <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="mt-4 p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <p className="text-slate-900/70 dark:text-white/70 text-sm">
                     <strong>Examples include but are not limited to:</strong>{" "}
                     Exports to third-party CAD/BIM software, data files intended
@@ -551,7 +551,7 @@ function RefundCancellationPage() {
                   </p>
                 </div>
 
-                <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl">
+                <div className="mt-6 p-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <div className="flex items-center gap-2 mb-3">
                     <Clock className="w-4 h-4 text-blue-400" />
                     <p className="text-slate-900/60 dark:text-white/60 text-sm font-semibold uppercase tracking-wider">
@@ -650,7 +650,7 @@ function RefundCancellationPage() {
                   For any questions, concerns, or requests regarding refunds and
                   cancellations, please contact us:
                 </p>
-                <div className="p-5 bg-white/5 border border-white/10 rounded-xl">
+                <div className="p-5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
                   <div className="space-y-4 text-slate-900/80 dark:text-white/80">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-blue-400 flex-shrink-0" />
@@ -718,14 +718,14 @@ function RefundCancellationPage() {
               </section>
 
               {/* Summary / Quick Reference */}
-              <div className="border-t border-white/10 pt-8 mb-8">
+              <div className="border-t border-slate-200 dark:border-white/10 pt-8 mb-8">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
                   Quick Reference
                 </h3>
-                <div className="overflow-hidden rounded-xl border border-white/10">
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-white/5">
+                      <tr className="bg-slate-50 dark:bg-white/5">
                         <th className="text-left px-4 py-3 text-slate-900/60 dark:text-white/60 font-semibold uppercase tracking-wider text-xs">
                           Scenario
                         </th>
@@ -836,7 +836,7 @@ function RefundCancellationPage() {
               </div>
 
               {/* Acceptance Footer */}
-              <div className="border-t border-white/10 pt-8">
+              <div className="border-t border-slate-200 dark:border-white/10 pt-8">
                 <div className="p-6 bg-blue-500/10 border border-blue-500/30 rounded-xl">
                   <div className="flex items-start gap-3">
                     <RefreshCcw className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -865,7 +865,7 @@ function RefundCancellationPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 mt-16">
+      <footer className="border-t border-slate-200 dark:border-white/10 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-slate-900/50 dark:text-white/50 text-sm">

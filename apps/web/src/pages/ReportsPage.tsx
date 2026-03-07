@@ -27,7 +27,6 @@ import { useModelStore } from '../store/model';
 import type { Member, NodeLoad, MemberLoad, LoadCase, LoadCombination, ModeShape } from '../store/model';
 import type { SectionProperties } from '../data/SectionDatabase';
 import { useAuth } from '../providers/AuthProvider';
-import { Logo } from '../components/branding';
 import { LOGO_ICON_COLORED } from '../utils/LogoData';
 import { generateDesignReport } from '../services/PDFReportService';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
@@ -337,27 +336,7 @@ export const ReportsPage = () => {
 
     /* ──────────────────────── RENDER ──────────────────────── */
     return (
-        <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col font-sans selection:bg-blue-500/30 print:bg-white print:text-black">
-            {/* ━━━ App header (hidden in print) ━━━ */}
-            <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/90 backdrop-blur-md px-6 py-3 print:hidden">
-                <div className="flex items-center gap-4">
-                    <Logo size="sm" variant="full" href="/" />
-                </div>
-                <div className="hidden md:flex flex-1 justify-center">
-                    <nav className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800">
-                        <Link to="/stream" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Projects</Link>
-                        <Link to="/app" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Design</Link>
-                        <span className="text-blue-600 dark:text-white text-sm font-bold bg-white dark:bg-slate-800 shadow-sm px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">Reports</span>
-                        <Link to="/settings" className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-sm font-medium transition-colors px-4 py-1.5 rounded-full hover:bg-white dark:hover:bg-slate-100 dark:bg-slate-800">Settings</Link>
-                    </nav>
-                </div>
-                <div className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center text-white font-bold text-sm">
-                        {userName.charAt(0)}
-                    </div>
-                </div>
-            </header>
-
+        <div className="flex flex-col font-sans selection:bg-blue-500/30 print:bg-white print:text-black">
             {/* ━━━ Main content ━━━ */}
             <main className="flex-1 w-full flex flex-col items-center py-8 px-4 overflow-y-auto print:p-0 print:overflow-visible">
                 {/* Breadcrumbs (hidden in print) */}

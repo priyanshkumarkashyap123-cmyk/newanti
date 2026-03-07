@@ -35,7 +35,6 @@ import {
   Activity,
   Sliders,
   RefreshCw,
-  ArrowLeft,
   Home,
   Loader2,
   ChevronRight,
@@ -50,7 +49,6 @@ import {
   Weight,
   Ruler,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useModelStore, type Member, type Node as ModelNode, type MemberForceData } from '../store/model';
 import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
 import { STEEL_GRADES } from '../api/design';
@@ -435,12 +433,6 @@ const SensitivityOptimizationDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link
-                to="/dashboard"
-                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-              </Link>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Target className="w-7 h-7 text-green-400" />

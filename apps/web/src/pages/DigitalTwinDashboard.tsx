@@ -17,9 +17,7 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import { Link } from "react-router-dom";
 import {
-  ArrowLeft,
   Activity,
   AlertTriangle,
   Bell,
@@ -368,12 +366,6 @@ const DigitalTwinDashboard: React.FC = () => {
       {/* Header */}
       <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link
-            to="/dashboard"
-            className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-          </Link>
           <div className="flex items-center gap-2">
             <Radio className="w-5 h-5 text-cyan-400" />
             <span className="font-semibold text-lg">Digital Twin</span>

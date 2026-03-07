@@ -574,7 +574,7 @@ export async function designSteelMembers(
       members: members.map((m) => {
         // Calculate member length from section/design parameters or use default
         const memberLength = (m as unknown as { designParams?: { Lx?: number } }).designParams?.Lx
-          || (m.section?.L ? m.section.L : 0)
+          || ((m.section as SectionProperties & { L?: number })?.L ?? 0)
           || (m.compressionCheck?.details ? parseFloat(m.compressionCheck.details.match(/L\s*=\s*([\d.]+)/)?.[1] || '0') : 0)
           || 3000; // Default 3m if no geometry available
         return {

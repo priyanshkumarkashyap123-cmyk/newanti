@@ -108,7 +108,7 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
     };
 
     const handleGoHome = () => {
-        navigate('/dashboard');
+        navigate('/stream');
     };
 
     // Prepare nodes/members for data tables (nodes & members are Maps)

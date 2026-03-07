@@ -150,13 +150,23 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Forwarded-By': 'beamlab-node-gateway',
+            };
+
+            // Add internal service auth for Python API (bypass JWT verification)
+            if (service === 'python') {
+                const internalSecret = process.env['INTERNAL_SERVICE_SECRET'] || '';
+                if (internalSecret) {
+                    headers['X-Internal-Service'] = internalSecret;
+                }
+            }
+
             const fetchOptions: RequestInit = {
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-Forwarded-By': 'beamlab-node-gateway',
-                },
+                headers,
                 signal: controller.signal,
             };
 

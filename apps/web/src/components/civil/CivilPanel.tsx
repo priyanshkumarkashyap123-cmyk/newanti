@@ -94,7 +94,7 @@ const GeotechPanel: FC = () => {
             type: 'bearing_capacity',
             timestamp: now,
             input: { width, depth },
-            output: res,
+            output: res as unknown as Record<string, unknown>,
             linkedElementIds: [plateId]
         });
 

@@ -158,7 +158,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
 
         try {
             const token = await getToken();
-            const PYTHON_API = API_CONFIG.pythonUrl;
+            const NODE_API = API_CONFIG.baseUrl; // Use Node API as auth gateway
 
             // Prepare payload
             const payload = {
@@ -209,7 +209,7 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                 combination_method: 'CQC'
             };
 
-            const res = await fetch(`${PYTHON_API}/analyze/spectrum`, {
+            const res = await fetch(`${NODE_API}/api/advanced/spectrum`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

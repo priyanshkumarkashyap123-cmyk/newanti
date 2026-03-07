@@ -19,10 +19,10 @@
  */
 
 import React, { FC, useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, CheckCircle2, XCircle, AlertTriangle, ChevronRight,
+  CheckCircle2, XCircle, AlertTriangle, ChevronRight,
   ChevronDown, Search, Download, Settings, Columns, Building2,
   Box, Triangle, BarChart3, Zap, RefreshCw, FileText, Layers,
   ChevronUp, Eye, EyeOff, SlidersHorizontal,
@@ -1446,7 +1446,6 @@ const FoundationDesignTab: FC<{
 // ================================================================
 
 const PostAnalysisDesignHub: FC = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<DesignTab>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
@@ -1900,40 +1899,21 @@ const PostAnalysisDesignHub: FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
-      {/* Header */}
-      <header className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
-        <div className="max-w-[1600px] mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button type="button" onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-3">
-                <Logo size="xs" variant="icon" clickable={false} />
-                <div>
-                  <h1 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    Design Hub
-                    <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 text-xs font-bold">POST-ANALYSIS</span>
-                  </h1>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
-                    {totalMembers} members • {hasAnalysis ? 'Analysis complete' : 'No analysis results'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Link to="/app" className="px-4 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 transition-colors">
-                ← Back to Modeler
-              </Link>
-              <Link to="/stream" className="px-4 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:bg-slate-800 transition-colors">
-                Dashboard
-              </Link>
-            </div>
+    <div className="text-slate-900 dark:text-white">
+      {/* Page Info Bar */}
+      <div className="bg-slate-50 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 px-6 py-3">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              Design Hub
+              <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold">POST-ANALYSIS</span>
+            </h1>
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {totalMembers} members • {hasAnalysis ? 'Analysis complete' : 'No analysis results'}
+            </span>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Tab Bar */}
       <div className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
@@ -2266,7 +2246,7 @@ const PostAnalysisDesignHub: FC = () => {
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Design</h3>
                   <div className="space-y-2">
                     {['RC Beam Designer', 'RC Column Designer', 'Slab Designer', 'Footing Designer'].map((name) => (
-                      <Link key={name} to="/structural-design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
+                      <Link key={name} to="/design-center" className="w-full flex items-center justify-between px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors group">
                         <span className="text-sm text-slate-700 dark:text-slate-200">{name}</span>
                         <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400" />
                       </Link>

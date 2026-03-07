@@ -11,12 +11,12 @@
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Line, Points } from '@react-three/drei';
+import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import type { Node, Member } from '../store/modelTypes';
-import { CanvasManager } from './CanvasManager';
-import { CanvasCursorStateMachine, CursorMode, type ModeState } from './CanvasCursorStateMachine';
+import { CanvasManager } from '../graphics/CanvasManager';
+import { CanvasCursorStateMachine, CursorMode, type ModeState } from '../graphics/CanvasCursorStateMachine';
 
 interface StructuralModelingCanvasProps {
   nodes: Map<string, Node>;
@@ -51,7 +51,6 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
   );
   const nodesPointsRef = useRef<THREE.Points>(null);
   const membersLineRef = useRef<THREE.LineSegments>(null);
-  const previewLineRef = useRef<THREE.Line>(null);
   const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
   const frameCountRef = useRef(0);
@@ -85,7 +84,7 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
 
   // Handle state machine changes
   useEffect(() => {
-    const unsubscribe = stateMachineRef.current.onStateChange((state) => {
+    const unsubscribe = stateMachineRef.current.onStateChange((state: ModeState) => {
       onModeChange?.(state.mode);
     });
     return unsubscribe;
@@ -123,8 +122,8 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
     // Update member line segments
     const memberPositions: number[] = [];
     members.forEach((member) => {
-      const nodeI = nodes.get(member.nodeI);
-      const nodeJ = nodes.get(member.nodeJ);
+      const nodeI = nodes.get(member.startNodeId);
+      const nodeJ = nodes.get(member.endNodeId);
       if (nodeI && nodeJ) {
         memberPositions.push(nodeI.x, nodeI.y, nodeI.z);
         memberPositions.push(nodeJ.x, nodeJ.y, nodeJ.z);
@@ -146,15 +145,15 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
 
   // Mouse click handler for node/member selection and creation
   const handleCanvasClick = useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
+    (event: ThreeEvent<MouseEvent>) => {
       if (!canvasManagerRef.current || !nodesPointsRef.current || !membersLineRef.current) {
         return;
       }
 
       const mode = stateMachineRef.current.getMode();
       const rect = gl.domElement.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const x = event.nativeEvent.clientX - rect.left;
+      const y = event.nativeEvent.clientY - rect.top;
 
       const intersections = canvasManagerRef.current.rayCastAt(
         x,
@@ -184,16 +183,16 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
         case CursorMode.ADD_NODE: {
           // Snap to grid and create node
           const [snappedX, snappedY, snappedZ] = canvasManagerRef.current.snapToGrid(
-            event.clientX - rect.left,
+            event.nativeEvent.clientX - rect.left,
             0, // Ground plane
-            event.clientY - rect.top
+            event.nativeEvent.clientY - rect.top
           );
 
           // For 3D positioning, use actual click position with snap
           const raycaster = new THREE.Raycaster();
           const normalizedX = ((x / rect.width) * 2 - 1);
           const normalizedY = (-(y / rect.height) * 2 + 1);
-          raycaster.setFromCamera({ x: normalizedX, y: normalizedY }, camera);
+          raycaster.setFromCamera(new THREE.Vector2(normalizedX, normalizedY), camera);
 
           // Intersect with a ground plane at y=0
           const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -285,7 +284,7 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
   });
 
   return (
-    <group onClick={handleCanvasClick} style={{ width: '100%', height: '100%' }}>
+    <group onClick={handleCanvasClick}>
       <OrbitControls makeDefault />
 
       {/* Nodes as Points */}
@@ -314,18 +313,6 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
         <lineBasicMaterial color={0xff8844} linewidth={2} />
       </lineSegments>
 
-      {/* Preview line for two-click operations */}
-      <line ref={previewLineRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={2}
-            array={new Float32Array(6)}
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial color={0xffff00} linewidth={1} transparent opacity={0.5} />
-      </line>
     </group>
   );
 };

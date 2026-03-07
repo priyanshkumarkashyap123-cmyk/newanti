@@ -39,7 +39,6 @@ import {
   Ruler,
   Scissors,
   ChevronRight,
-  ArrowLeft,
   Play,
   SkipBack,
   SkipForward,
@@ -49,7 +48,7 @@ import {
   BarChart3,
   Thermometer,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
 
 // Types
 type ViewMode =
@@ -246,14 +245,6 @@ const Visualization3DEngine: React.FC = () => {
       {/* Header Toolbar */}
       <header className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {!isFullscreen && (
-            <Link
-              to="/dashboard"
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            </Link>
-          )}
           <div className="flex items-center gap-2">
             <Box className="w-6 h-6 text-blue-400" />
             <span className="text-slate-900 dark:text-white font-semibold">

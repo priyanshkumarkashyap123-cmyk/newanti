@@ -761,7 +761,10 @@ ${topic.referenceLinks.map(r => `      <ReferenceLink>${xmlEsc(r)}</ReferenceLin
         const topicGuid = path.split('/')[0];
         const topic = topics.find(t => t.guid === topicGuid);
         if (topic) {
-          topic.viewpoint = this.parseViewpointXml(content);
+          const parsedViewpoint = this.parseViewpointXml(content);
+          if (parsedViewpoint) {
+            topic.viewpoint = parsedViewpoint;
+          }
         }
       }
     }

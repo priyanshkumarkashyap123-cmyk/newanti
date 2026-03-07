@@ -34,7 +34,6 @@ import {
   FileDown,
   Layers,
   Table2,
-  ArrowLeft,
   ChevronDown,
   Settings2,
   AlertTriangle,
@@ -47,7 +46,7 @@ import {
   Trophy,
   RefreshCw,
 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { FloorPlanRenderer, OverlayMode } from '../components/space-planning/FloorPlanRenderer';
 import { ElevationSectionViewer } from '../components/space-planning/ElevationSectionViewer';
 import { VastuCompass } from '../components/space-planning/VastuCompass';
@@ -115,7 +114,6 @@ const PLAN_TABS: { key: PlanTab; label: string; icon: typeof Building2; group: s
 // ============================================
 
 export function SpacePlanningPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const templateId = searchParams.get('template') || undefined;
   const [activeTab, setActiveTab] = useState<PlanTab>('wizard');
@@ -397,11 +395,23 @@ export function SpacePlanningPage() {
             setSolverPlacements(bestVariant.placements);
             // Create constraint report from variant data
             setConstraintReport({
-              compactness_penalty: bestVariant.score?.compactness || 0,
-              zone_grouping_penalty: 100 - (bestVariant.score?.zone_coherence || 0),
-              hard_violations: [],
-              soft_violations: [],
-              total_cost: bestVariant.score?.composite_score || 0,
+              score: bestVariant.score?.composite_score || 0,
+              totalPenalty: 100 - (bestVariant.score?.composite_score || 0),
+              constraintsMet: 0,
+              constraintsTotal: 0,
+              constraintsMetRatio: 0,
+              iterationFound: 0,
+              totalIterations: 0,
+              violations: [],
+              fsi: { plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true },
+              circulation: { total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0, compliant: true },
+              egress: { max_travel_distance_m: 0, limit_m: 0, compliant: true, rooms_beyond_limit: [] },
+              structuralChecks: [],
+              solarScores: [],
+              fenestrationChecks: [],
+              anthropometricIssues: [],
+              staircaseReport: null,
+              constraintsDetail: { fsi: true, overlap: true, min_width: true, aspect_ratio: true, exterior_wall: true, plumbing_cluster: true, acoustic_zones: true, clearance: true, grid_snap: true, circulation: true, span_limits: true, staircase: true, fenestration: true, egress: true, solar: true },
             });
           }
         }
@@ -480,11 +490,23 @@ export function SpacePlanningPage() {
       
       // Create constraint report from variant scores
       setConstraintReport({
-        compactness_penalty: variant.score?.compactness || 0,
-        zone_grouping_penalty: 100 - (variant.score?.zone_coherence || 0),
-        hard_violations: [],
-        soft_violations: [],
-        total_cost: variant.score?.composite_score || 0,
+        score: variant.score?.composite_score || 0,
+        totalPenalty: 100 - (variant.score?.composite_score || 0),
+        constraintsMet: 0,
+        constraintsTotal: 0,
+        constraintsMetRatio: 0,
+        iterationFound: 0,
+        totalIterations: 0,
+        violations: [],
+        fsi: { plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true },
+        circulation: { total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0, compliant: true },
+        egress: { max_travel_distance_m: 0, limit_m: 0, compliant: true, rooms_beyond_limit: [] },
+        structuralChecks: [],
+        solarScores: [],
+        fenestrationChecks: [],
+        anthropometricIssues: [],
+        staircaseReport: null,
+        constraintsDetail: { fsi: true, overlap: true, min_width: true, aspect_ratio: true, exterior_wall: true, plumbing_cluster: true, acoustic_zones: true, clearance: true, grid_snap: true, circulation: true, span_limits: true, staircase: true, fenestration: true, egress: true, solar: true },
       });
 
       // Re-merge this variant's placements into the project
@@ -620,12 +642,6 @@ export function SpacePlanningPage() {
       {/* Header */}
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/stream')}
-            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-blue-600" />
             <h1 className="text-sm font-bold text-slate-800 dark:text-slate-200">Space Planning</h1>

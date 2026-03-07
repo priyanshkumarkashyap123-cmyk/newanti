@@ -489,12 +489,12 @@ const AuditSectionCard: FC<{ section: AuditSection; defaultOpen?: boolean }> = (
       {/* Header */}
       <button type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
       >
         <Icon className={`w-5 h-5 ${config.text} shrink-0`} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5">
-            <h3 className="text-sm font-semibold text-white truncate">{section.title}</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{section.title}</h3>
             <SeverityBadge severity={section.status} />
             {section.items.length > 0 && (
               <span className="text-[10px] text-slate-500 font-mono">
@@ -502,7 +502,7 @@ const AuditSectionCard: FC<{ section: AuditSection; defaultOpen?: boolean }> = (
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5 truncate">{section.summary}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{section.summary}</p>
         </div>
         {section.items.length > 0 && (
           isOpen
@@ -513,9 +513,9 @@ const AuditSectionCard: FC<{ section: AuditSection; defaultOpen?: boolean }> = (
 
       {/* Items */}
       {isOpen && section.items.length > 0 && (
-        <div className="border-t border-slate-800/60 divide-y divide-slate-800/40">
+        <div className="border-t border-slate-200 dark:border-slate-800/60 divide-y divide-slate-200 dark:divide-slate-800/40">
           {section.items.map((item) => (
-            <div key={item.id} className="px-5 py-3 hover:bg-white/[0.02] transition-colors">
+            <div key={item.id} className="px-5 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
               <div className="flex items-start gap-3">
                 <StatusIcon severity={item.severity} className="w-4 h-4 mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -527,7 +527,7 @@ const AuditSectionCard: FC<{ section: AuditSection; defaultOpen?: boolean }> = (
                       {item.rule}
                     </code>
                   </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">{item.message}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">{item.message}</p>
                   {item.suggestion && (
                     <p className="text-[11px] text-slate-500 mt-1.5 italic">
                       💡 {item.suggestion}
@@ -564,18 +564,18 @@ const ErrorReportPage: FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <header className="border-b border-slate-800/60 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-slate-200 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link
             to="/app"
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to App
           </Link>
-          <div className="h-5 w-px bg-slate-800" />
+          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800" />
           <div className="flex items-center gap-2.5">
             <Terminal className="w-5 h-5 text-blue-400" />
             <h1 className="text-lg font-bold">Codebase Error Report</h1>
@@ -589,7 +589,7 @@ const ErrorReportPage: FC = () => {
       </header>
 
       {/* Stats Bar */}
-      <div className="border-b border-slate-800/40 bg-slate-900/40">
+      <div className="border-b border-slate-200 dark:border-slate-800/40 bg-slate-100/60 dark:bg-slate-900/40">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center gap-6">
           <StatPill label="Errors" count={stats.errors} color="red" active={filter === 'error'} onClick={() => setFilter(filter === 'error' ? 'all' : 'error')} />
           <StatPill label="Warnings" count={stats.warnings} color="amber" active={filter === 'warning'} onClick={() => setFilter(filter === 'warning' ? 'all' : 'warning')} />
@@ -599,7 +599,7 @@ const ErrorReportPage: FC = () => {
             {filter !== 'all' && (
               <button type="button"
                 onClick={() => setFilter('all')}
-                className="text-xs text-slate-500 hover:text-white transition-colors"
+                className="text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 Show All
               </button>
@@ -611,9 +611,9 @@ const ErrorReportPage: FC = () => {
       {/* Content */}
       <div className="max-w-5xl mx-auto px-6 py-8 flex flex-col gap-4">
         {/* Executive Summary */}
-        <div className="rounded-lg border border-slate-700/40 bg-slate-900/60 px-5 py-4 mb-2">
-          <h2 className="text-sm font-bold text-white mb-2">Executive Summary</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-400 leading-relaxed">
+        <div className="rounded-lg border border-slate-200 dark:border-slate-700/40 bg-white dark:bg-slate-900/60 px-5 py-4 mb-2">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-2">Executive Summary</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
             <div>
               <span className="text-emerald-400 font-semibold">TypeScript:</span> Clean — 0 type errors. Full <code className="text-blue-300">tsc --noEmit</code> passes.
             </div>
@@ -639,11 +639,11 @@ const ErrorReportPage: FC = () => {
         ))}
 
         {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-slate-800/40 text-center">
-          <p className="text-xs text-slate-600">
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800/40 text-center">
+          <p className="text-xs text-slate-400 dark:text-slate-600">
             BeamLab Codebase Audit — Generated by automated analysis pipeline
           </p>
-          <p className="text-[10px] text-slate-700 mt-1">
+          <p className="text-[10px] text-slate-400 dark:text-slate-700 mt-1">
             tsc {'{'}noEmit{'}'} • eslint {'{'}src/{'}'}  • vite build • VS Code diagnostics
           </p>
         </div>
@@ -675,7 +675,7 @@ const StatPill: FC<{
     <button type="button"
       onClick={onClick}
       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
-        active ? `${c.ring} ring-1 bg-white/5 ${c.text}` : 'text-slate-400 hover:text-white'
+        active ? `${c.ring} ring-1 bg-slate-100 dark:bg-white/5 ${c.text}` : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
       }`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />

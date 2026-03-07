@@ -45,8 +45,8 @@ export class CanvasManager {
   private gridConfig: GridConfig;
   private spatialGrid: SpatialGrid = {};
   private instancedMeshes: Map<string, THREE.InstancedMesh> = new Map();
-  private nodeGeometries: Map<string, THREE.Geometry | THREE.BufferGeometry> = new Map();
-  private memberGeometries: Map<string, THREE.Geometry | THREE.BufferGeometry> = new Map();
+  private nodeGeometries: Map<string, THREE.BufferGeometry> = new Map();
+  private memberGeometries: Map<string, THREE.BufferGeometry> = new Map();
   private gridHelper: THREE.GridHelper | null = null;
 
   constructor(canvas: HTMLCanvasElement, width: number, height: number) {
@@ -69,7 +69,7 @@ export class CanvasManager {
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
     // Lighting
     this.setupLighting();
@@ -223,7 +223,7 @@ export class CanvasManager {
     const normalizedY = -((y - rect.top) / rect.height) * 2 + 1;
 
     this.raycaster.setFromCamera(
-      { x: normalizedX, y: normalizedY },
+      new THREE.Vector2(normalizedX, normalizedY),
       this.camera
     );
 

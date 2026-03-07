@@ -519,7 +519,7 @@ const CADIntegrationHub: React.FC = () => {
               className={`p-4 rounded-lg border-2 text-center transition-all ${
                 exportSettings.exportType === type.id
                   ? 'border-green-500 bg-green-900/30'
-                  : 'border-slate-600 bg-slate-700 hover:border-slate-500'
+                  : 'border-slate-300 dark:border-slate-600 bg-slate-200 dark:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500'
               }`}
             >
               <div className="text-3xl mb-2">{type.icon}</div>
@@ -610,8 +610,8 @@ const CADIntegrationHub: React.FC = () => {
               key={option.key}
               className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                 exportSettings[option.key as keyof CADExportSettings]
-                  ? 'border-green-500 bg-green-900/30'
-                  : 'border-slate-600 bg-slate-700'
+                  ? 'border-green-500 bg-green-50 dark:bg-green-900/30'
+                  : 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -669,7 +669,7 @@ const CADIntegrationHub: React.FC = () => {
           {templates.map((template) => (
             <div
               key={template.id}
-              className="p-4 bg-slate-700 rounded-lg border border-slate-600 hover:border-cyan-500 transition-all cursor-pointer group"
+              className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg border border-slate-300 dark:border-slate-600 hover:border-cyan-500 transition-all cursor-pointer group"
             >
               <div className="text-center mb-4">
                 <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">
@@ -706,11 +706,11 @@ const CADIntegrationHub: React.FC = () => {
             { name: 'Welded Joints', code: 'IS 816', count: 10 },
             { name: 'Anchor Bolts', code: 'IS 5624', count: 6 },
           ].map((lib, idx) => (
-            <div key={idx} className="p-4 bg-slate-700 rounded-lg text-center hover:bg-slate-600 transition-colors cursor-pointer">
+            <div key={idx} className="p-4 bg-slate-200 dark:bg-slate-700 rounded-lg text-center hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors cursor-pointer">
               <div className="text-3xl mb-2">📐</div>
               <p className="text-slate-900 dark:text-white text-sm font-medium">{lib.name}</p>
               <p className="text-slate-600 dark:text-slate-400 text-xs">{lib.code}</p>
-              <span className="inline-block mt-2 px-2 py-1 bg-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded">
+              <span className="inline-block mt-2 px-2 py-1 bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 text-xs rounded">
                 {lib.count} details
               </span>
             </div>
@@ -742,7 +742,7 @@ const CADIntegrationHub: React.FC = () => {
               { name: 'Connection Details', count: 24 },
               { name: 'Reinforcement Details', count: 18 },
             ].map((set, idx) => (
-              <label key={idx} className="flex items-center gap-3 p-3 bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-600 transition-colors">
+              <label key={idx} className="flex items-center gap-3 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                 <input
                   type="checkbox"
                   defaultChecked={idx < 3}

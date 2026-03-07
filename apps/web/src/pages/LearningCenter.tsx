@@ -339,30 +339,30 @@ export function LearningCenter() {
   }, [searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-950 dark:to-black">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/95 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/stream')}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-white">Learning Center</h1>
-              <p className="text-sm text-slate-400">From fundamentals to advanced structural engineering</p>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">Learning Center</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">From fundamentals to advanced structural engineering</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/10">
-            <Search className="w-4 h-4 text-slate-400" />
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 rounded-lg px-3 py-2 border border-slate-200 dark:border-white/10">
+            <Search className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             <input
               type="text"
               placeholder="Search paths..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-48"
+              className="bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none w-48"
             />
           </div>
         </div>
@@ -399,38 +399,38 @@ export function LearningCenter() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-slate-950/50 mt-24 py-12">
+      <footer className="border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950/50 mt-24 py-12">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-bold text-white mb-3">Learning Paths</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><button onClick={() => setSelectedPath('fundamentals')} className="hover:text-white">Fundamentals</button></li>
-              <li><button className="hover:text-white opacity-50 cursor-not-allowed">Intermediate</button></li>
-              <li><button className="hover:text-white opacity-50 cursor-not-allowed">Advanced</button></li>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-3">Learning Paths</h3>
+            <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <li><button onClick={() => setSelectedPath('fundamentals')} className="hover:text-slate-900 dark:hover:text-white">Fundamentals</button></li>
+              <li><button className="hover:text-slate-900 dark:hover:text-white opacity-50 cursor-not-allowed">Intermediate</button></li>
+              <li><button className="hover:text-slate-900 dark:hover:text-white opacity-50 cursor-not-allowed">Advanced</button></li>
             </ul>
           </div>
           <div>
-            <h3 className="font-bold text-white mb-3">Templates</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
+            <h3 className="font-bold text-slate-900 dark:text-white mb-3">Templates</h3>
+            <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
               {TEMPLATES.slice(0, 3).map(t => (
                 <li key={t.id}>{t.name}</li>
               ))}
             </ul>
           </div>
           <div>
-            <h3 className="font-bold text-white mb-3">Resources</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><a href="#" className="hover:text-white">Code References</a></li>
-              <li><a href="#" className="hover:text-white">Video Library</a></li>
-              <li><a href="/help" className="hover:text-white">FAQs</a></li>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-3">Resources</h3>
+            <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Code References</a></li>
+              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Video Library</a></li>
+              <li><a href="/help" className="hover:text-slate-900 dark:hover:text-white">FAQs</a></li>
             </ul>
           </div>
           <div>
-            <h3 className="font-bold text-white mb-3">Community</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li><a href="#" className="hover:text-white">Forum</a></li>
-              <li><a href="#" className="hover:text-white">Discussion</a></li>
-              <li><a href="#" className="hover:text-white">Newsletter</a></li>
+            <h3 className="font-bold text-slate-900 dark:text-white mb-3">Community</h3>
+            <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Forum</a></li>
+              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Discussion</a></li>
+              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Newsletter</a></li>
             </ul>
           </div>
         </div>
@@ -454,8 +454,8 @@ const PathOverview: React.FC<{
       animate={{ opacity: 1, y: 0 }}
       className="mb-12 text-center"
     >
-      <h2 className="text-4xl font-bold text-white mb-4">Structural Engineering Learning Paths</h2>
-      <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+      <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">Structural Engineering Learning Paths</h2>
+      <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
         Choose your learning level and progress through structured modules. Each path includes videos, interactive lessons, templates, and real projects.
       </p>
     </motion.div>
@@ -471,8 +471,8 @@ const PathOverview: React.FC<{
           onClick={() => !path.locked && onSelectPath(path.id)}
           className={`rounded-xl border transition-all cursor-pointer ${
             path.locked
-              ? 'border-white/10 bg-white/5 opacity-50 cursor-not-allowed'
-              : 'border-white/20 bg-gradient-to-br from-white/10 to-white/5 hover:border-white/30 hover:bg-white/[0.08]'
+              ? 'border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 opacity-50 cursor-not-allowed'
+              : 'border-slate-200 dark:border-white/20 bg-gradient-to-br from-slate-100 dark:from-white/10 to-slate-50 dark:to-white/5 hover:border-slate-300 dark:hover:border-white/30 hover:bg-slate-100 dark:hover:bg-white/[0.08]'
           }`}
         >
           <div className={`h-1 bg-gradient-to-r ${path.color}`} />
@@ -483,22 +483,22 @@ const PathOverview: React.FC<{
                   {path.icon}
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-lg">{path.title}</h3>
-                  <p className="text-sm text-slate-400">{path.totalHours}h total time</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">{path.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{path.totalHours}h total time</p>
                 </div>
               </div>
               {path.locked ? (
                 <Lock className="w-5 h-5 text-slate-500" />
               ) : (
-                <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-white" />
+                <ChevronRight className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
               )}
             </div>
-            <p className="text-sm text-slate-300 mb-4">{path.description}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">{path.description}</p>
             <div className="mb-4">
               <p className="text-xs text-slate-500 font-semibold mb-2">FOR: {path.targetAudience}</p>
               <div className="flex flex-wrap gap-1">
                 {path.outcomes.slice(0, 2).map((outcome, i) => (
-                  <span key={i} className="text-xs bg-white/10 text-slate-300 px-2 py-1 rounded">
+                  <span key={i} className="text-xs bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 px-2 py-1 rounded">
                     {outcome}
                   </span>
                 ))}
@@ -516,15 +516,15 @@ const PathOverview: React.FC<{
 
     {/* Templates Showcase */}
     <div className="mt-16">
-      <h3 className="text-2xl font-bold text-white mb-6">Educational Templates</h3>
+      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Educational Templates</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {TEMPLATES.map((template) => (
           <div
             key={template.id}
-            className="p-4 rounded-lg border border-white/10 bg-white/5 hover:bg-white/[0.08] transition-colors cursor-pointer"
+            className="p-4 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
           >
             <div className="flex items-start justify-between mb-2">
-              <h4 className="font-semibold text-white">{template.name}</h4>
+              <h4 className="font-semibold text-slate-900 dark:text-white">{template.name}</h4>
               <span className={`text-xs px-2 py-1 rounded ${
                   template.difficulty === 'BEGINNER' ? 'bg-blue-500/30 text-blue-300' :
                 template.difficulty === 'INTERMEDIATE' ? 'bg-purple-500/30 text-purple-300' :
@@ -533,7 +533,7 @@ const PathOverview: React.FC<{
                 {template.difficulty}
               </span>
             </div>
-            <p className="text-sm text-slate-400 mb-3">{template.description}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{template.description}</p>
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500">{template.codeReference}</span>
               <button className="text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center gap-1">
@@ -575,44 +575,44 @@ const PathDetail: React.FC<{
     <div className="mb-8">
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-slate-400 hover:text-white mb-6"
+        className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-6"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Paths
       </button>
       <div className={`h-2 bg-gradient-to-r ${path.color} rounded mb-4`} />
-      <h2 className="text-3xl font-bold text-white mb-2">{path.title}</h2>
-      <p className="text-slate-400 mb-6 max-w-2xl">{path.description}</p>
+      <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{path.title}</h2>
+      <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-2xl">{path.description}</p>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
+        <div className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
           <p className="text-xs text-slate-500">Total Duration</p>
-          <p className="text-lg font-bold text-white">{path.totalHours}h</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-white">{path.totalHours}h</p>
         </div>
-        <div className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
+        <div className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
           <p className="text-xs text-slate-500">Modules</p>
-          <p className="text-lg font-bold text-white">{path.modules.length}</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-white">{path.modules.length}</p>
         </div>
-        <div className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
+        <div className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
           <p className="text-xs text-slate-500">Difficulty</p>
-          <p className="text-lg font-bold text-white capitalize flex items-center gap-2">
+          <p className="text-lg font-bold text-slate-900 dark:text-white capitalize flex items-center gap-2">
             <Star className="w-4 h-4 text-yellow-500" /> {path.level}
           </p>
         </div>
-        <div className="px-4 py-3 rounded-lg bg-white/5 border border-white/10">
+        <div className="px-4 py-3 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
           <p className="text-xs text-slate-500">Progress</p>
-          <p className="text-lg font-bold text-white">{pathProgress}%</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-white">{pathProgress}%</p>
         </div>
       </div>
     </div>
 
-    <div className="mb-8 rounded-xl border border-white/10 bg-white/5 p-5">
-      <h3 className="font-bold text-white mb-3">Contextual Code Help</h3>
+    <div className="mb-8 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-5">
+      <h3 className="font-bold text-slate-900 dark:text-white mb-3">Contextual Code Help</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
         {Object.entries(CODE_REFERENCE_SUMMARY)
           .slice(0, 4)
           .map(([code, details]) => (
-            <div key={code} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-              <div className="font-semibold text-slate-100">{code}</div>
-              <div className="text-slate-400 text-xs mt-1">{details.subject}</div>
+            <div key={code} className="rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] p-3">
+              <div className="font-semibold text-slate-800 dark:text-slate-100">{code}</div>
+              <div className="text-slate-500 dark:text-slate-400 text-xs mt-1">{details.subject}</div>
               <div className="text-slate-500 text-xs mt-1">
                 Safety factor: {details.safetyFactor} · Deflection: {details.deflectionLimit}
               </div>
@@ -627,13 +627,13 @@ const PathDetail: React.FC<{
     </div>
 
     {/* Learning Outcomes */}
-    <div className="mb-10 p-6 rounded-xl bg-white/5 border border-white/10">
-      <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+    <div className="mb-10 p-6 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+      <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
         <Target className="w-5 h-5" /> Learning Outcomes
       </h3>
       <ul className="space-y-2">
         {path.outcomes.map((outcome, i) => (
-          <li key={i} className="flex items-start gap-3 text-slate-300">
+          <li key={i} className="flex items-start gap-3 text-slate-600 dark:text-slate-300">
             <CheckCircle2 className="w-4 h-4 text-green-500 mt-1 flex-shrink-0" />
             {outcome}
           </li>
@@ -643,7 +643,7 @@ const PathDetail: React.FC<{
 
     {/* Modules */}
     <div>
-      <h3 className="text-2xl font-bold text-white mb-6">Module Curriculum</h3>
+      <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Module Curriculum</h3>
       <div className="space-y-3">
         {path.modules.map((module) => (
           <ModuleCard
@@ -684,18 +684,18 @@ const ModuleCard: React.FC<{
 }) => (
   <div
     onClick={onToggle}
-    className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.08] transition-colors cursor-pointer overflow-hidden"
+    className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-colors cursor-pointer overflow-hidden"
   >
     <div className="p-6 flex items-start justify-between">
       <div className="flex-1">
         <div className="flex items-center gap-3 mb-2">
-          <h4 className="font-bold text-white">{module.title}</h4>
+          <h4 className="font-bold text-slate-900 dark:text-white">{module.title}</h4>
           {module.status === 'LOCKED' && <Lock className="w-4 h-4 text-slate-500" />}
           {(module.status === 'COMPLETED' || completed) && <CheckCircle2 className="w-4 h-4 text-green-500" />}
         </div>
-        <p className="text-sm text-slate-400 mb-3">{module.description}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">{module.description}</p>
         <div className="mb-3">
-          <div className="h-1.5 w-full rounded bg-white/10 overflow-hidden">
+          <div className="h-1.5 w-full rounded bg-slate-200 dark:bg-white/10 overflow-hidden">
             <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: `${progress}%` }} />
           </div>
           <div className="mt-1 text-[11px] text-slate-500">Progress: {progress}%</div>
@@ -711,7 +711,7 @@ const ModuleCard: React.FC<{
           {module.certificate && <span className="flex items-center gap-1"><Trophy className="w-3 h-3" /> Certificate</span>}
         </div>
       </div>
-      <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+      <ChevronRight className={`w-5 h-5 text-slate-500 dark:text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
     </div>
 
     <AnimatePresence>
@@ -720,11 +720,11 @@ const ModuleCard: React.FC<{
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className="border-t border-white/10 bg-white/[0.03] px-6 py-4"
+          className="border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] px-6 py-4"
         >
           <ul className="space-y-2">
             {module.lessons.map((lesson) => (
-              <li key={lesson.id} className="flex items-center gap-3 text-sm text-slate-300">
+              <li key={lesson.id} className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
                 <button
                   type="button"
                   onClick={(e) => {

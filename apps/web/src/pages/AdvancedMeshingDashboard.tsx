@@ -34,14 +34,13 @@ import {
   BarChart3,
   RefreshCw,
   Sliders,
-  ArrowLeft,
   Home,
   Loader2,
   ChevronRight,
   ChevronDown,
   Activity,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
 
 // Types
 type ElementType =
@@ -254,12 +253,6 @@ const AdvancedMeshingDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link
-                to="/dashboard"
-                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-              </Link>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Grid className="w-7 h-7 text-cyan-400" />

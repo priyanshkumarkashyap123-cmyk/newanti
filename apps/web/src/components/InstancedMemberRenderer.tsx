@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useRef, useMemo } from 'react';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useDisposables, disposeGroup } from '../utils/useDisposable';
 import type { Member, Node } from '../store/modelTypes';
@@ -42,9 +42,8 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
   nodes,
   hoveredMemberId,
   selectedMemberIds = new Set(),
-  onMemberClick,
+  onMemberClick: _onMemberClick,
 }) => {
-  const { scene } = useThree();
   const batchesRef = useRef<Map<string, MemberBatch>>(new Map());
   const instanceMatricesRef = useRef<Map<string, THREE.Matrix4>>(new Map());
   const dirtyFlagsRef = useRef<Map<string, Set<number>>>(new Map());
@@ -87,7 +86,7 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
     // Count members by type
     const memberCounts = { column: 0, beam: 0, brace: 0 };
     members.forEach((member) => {
-      const type = (member.type || 'beam') as 'column' | 'beam' | 'brace';
+      const type = inferMemberType(member);
       memberCounts[type]++;
     });
 
@@ -98,7 +97,7 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
     if (groupRef.current) {
       // Clear previous instances
       while (groupRef.current.children.length > 0) {
-        groupRef.current.removeChild(groupRef.current.children[0]);
+        groupRef.current.remove(groupRef.current.children[0]);
       }
     }
 
@@ -202,7 +201,7 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
 
           // Find corresponding member
           members.forEach((member) => {
-            if ((member.type || 'beam') !== batch.type) return;
+            if (inferMemberType(member) !== batch.type) return;
             if (batch.instanceMap.get(member.id) !== idx) return;
 
             const m = instanceMatricesRef.current.get(member.id);
@@ -327,3 +326,10 @@ function computeMemberMatrix(
 }
 
 export default InstancedMemberRenderer;
+
+function inferMemberType(member: Member): 'column' | 'beam' | 'brace' {
+  if (member.sectionType === 'CIRCLE' || member.sectionType === 'PIPE') {
+    return 'brace';
+  }
+  return 'beam';
+}

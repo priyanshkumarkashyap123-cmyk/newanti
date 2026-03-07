@@ -46,14 +46,13 @@ import {
   Loader2,
   ChevronRight,
   ChevronDown,
-  ArrowLeft,
   Home,
   Building2,
   Box,
   Zap,
   ExternalLink,
 } from "lucide-react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 
 // Types
@@ -388,12 +387,6 @@ const CloudStorageDashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <RouterLink
-                to="/dashboard"
-                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-              </RouterLink>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Cloud className="w-7 h-7 text-blue-400" />

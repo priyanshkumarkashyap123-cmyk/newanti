@@ -62,7 +62,7 @@ export const ReportViewerEnhanced: FC = () => {
                     {/* Breadcrumbs */}
                     <nav className="flex items-center gap-2 text-sm mb-3">
                         <button type="button"
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate('/stream')}
                             className="text-steel-blue/60 hover:text-steel-blue transition-colors"
                         >
                             Dashboard

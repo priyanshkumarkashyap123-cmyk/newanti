@@ -20,8 +20,17 @@ export default function BIMIntegrationPage() {
   const [clashResults, setClashResults] = useState<ClashResult[]>([]);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'valid' | 'invalid'>('idle');
   const [isProcessing, setIsProcessing] = useState(false);
+  const clashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { document.title = 'BIM Integration | BeamLab'; }, []);
+
+  useEffect(() => {
+    return () => {
+      if (clashTimerRef.current) clearTimeout(clashTimerRef.current);
+      if (exportTimerRef.current) clearTimeout(exportTimerRef.current);
+    };
+  }, []);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
