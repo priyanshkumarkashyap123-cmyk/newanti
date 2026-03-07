@@ -161,8 +161,9 @@ export const ConcreteDesignPage: React.FC = () => {
       if (beamInput.effectiveDepth <= 0) {
         return 'Effective depth must be positive';
       }
-      if (beamInput.Mu < 0 || beamInput.Vu < 0) {
-        return 'Moments and shear forces must be non-negative';
+      // Allow signed moments (positive=sagging, negative=hogging)
+      if (Math.abs(beamInput.Vu) < 0.001) {
+        return 'Shear force magnitude must be non-zero';
       }
     } else if (memberType === 'column') {
       if (columnInput.width <= 0 || columnInput.depth <= 0) {
@@ -196,21 +197,37 @@ export const ConcreteDesignPage: React.FC = () => {
 
     try {
       if (memberType === 'beam') {
-        // Call Python backend API (port 8081)
+        // Call Python backend API (port 8081) with sign convention support
         const result = await designBeamIS456({
           width: beamInput.width,
           depth: beamInput.depth,
           cover: beamInput.cover,
-          Mu: beamInput.Mu,
-          Vu: beamInput.Vu,
+          Mu: beamInput.Mu,              // SIGNED: positive=sagging, negative=hogging
+          Vu: beamInput.Vu,              // SIGNED: preserved from analysis
+          code: designCode,              // Design code for sign convention interpretation
           fck: beamInput.fck,
           fy: beamInput.fy
         });
         
         // Transform API response to UI format
+        // Transform API response to UI format
+        // API returns unsigned demand and capacity, but also signed moment for interpretation
+        const muDemand = result.demand?.Mu || Math.abs(beamInput.Mu);
+        const vuDemand = result.demand?.Vu || Math.abs(beamInput.Vu);
+        const muUtil = result.Mu_capacity > 0 ? muDemand / result.Mu_capacity : (muDemand > 0 ? Infinity : 0);
+        const vuUtil = result.Vu_capacity > 0 ? vuDemand / result.Vu_capacity : (vuDemand > 0 ? Infinity : 0);
+        const governingUtil = Math.max(muUtil, vuUtil);
+        const flexurePass = muUtil <= 1;
+        const shearPass = vuUtil <= 1;
+        
+        // Get moment interpretation from backend sign convention handler
+        const momentType = result.moment_type || (beamInput.Mu > 0 ? 'sagging' : beamInput.Mu < 0 ? 'hogging' : 'neutral');
+        const rebarNotes = result.reinforcement_note || '';
+
         setResults({
-          passed: result.status === 'PASS',
-          utilization: result.Mu_capacity > 0 ? beamInput.Mu / result.Mu_capacity : 0,
+          passed: flexurePass && shearPass,
+          utilization: governingUtil,
+          momentType,
           reinforcement: {
             mainBottom: `${result.tension_steel.count} - ${result.tension_steel.diameter}mm φ (${result.tension_steel.area.toFixed(0)} mm²)`,
             mainTop: result.compression_steel ? 
@@ -222,24 +239,39 @@ export const ConcreteDesignPage: React.FC = () => {
             Mu: result.Mu_capacity,
             Vu: result.Vu_capacity
           },
-          checks: result.checks.map((check: string, i: number) => ({
-            description: check,
-            passed: !check.toLowerCase().includes('fail') && !check.toLowerCase().includes('unsafe'),
-            clause: designCode === 'IS456' ? `Cl. 38.${i + 1}` : `Sec. 22.${i + 1}`
-          }))
+          momentAnalysis: result.moment_analysis, // From sign convention handler
+          signConvention: result.sign_convention,  // E.g., "IS 456:2000"
+          checks: [
+            {
+              description: `Max bending check (moment type: ${momentType}): Mu (${muDemand.toFixed(2)} kN·m) ${flexurePass ? '≤' : '>'} Mu,cap (${result.Mu_capacity.toFixed(2)} kN·m) | ${rebarNotes}`,
+              passed: flexurePass,
+              clause: designCode === 'IS456' ? 'Cl. 38' : 'Sec. 22'
+            },
+            {
+              description: `Max shear check: Vu (${vuDemand.toFixed(2)} kN) ${shearPass ? '≤' : '>'} Vu,cap (${result.Vu_capacity.toFixed(2)} kN)` ,
+              passed: shearPass,
+              clause: designCode === 'IS456' ? 'Cl. 40' : 'Sec. 22'
+            },
+            ...result.checks.map((check: string, i: number) => ({
+              description: check,
+              passed: !check.toLowerCase().includes('fail') && !check.toLowerCase().includes('unsafe'),
+              clause: designCode === 'IS456' ? `Cl. 38.${i + 1}` : `Sec. 22.${i + 1}`
+            }))
+          ]
         });
 
       } else if (memberType === 'column') {
-        // Call Python backend API (port 8081)
+        // Call Python backend API (port 8081) with sign convention support
         const result = await designColumnIS456({
           width: columnInput.width,
           depth: columnInput.depth,
           cover: columnInput.cover,
           Pu: columnInput.Pu,
-          Mux: columnInput.Mux,
-          Muy: columnInput.Muy,
+          Mux: columnInput.Mux,            // SIGNED: preserves direction for biaxial interaction
+          Muy: columnInput.Muy,            // SIGNED: preserves direction for biaxial interaction
           unsupported_length: columnInput.effectiveLength,
           effective_length_factor: 1.0,
+          code: designCode,                // Design code for sign convention
           fck: columnInput.fck,
           fy: columnInput.fy
         });
@@ -354,17 +386,25 @@ export const ConcreteDesignPage: React.FC = () => {
           const Asv = 2 * Math.PI * stirDia * stirDia / 4;
           const sv = Vus > 0.1 ? Math.min(Math.floor(0.87 * fy * Asv * d / (Vus * 1000)), 300, 0.75 * d) : Math.min(300, 0.75 * d);
 
+          const Mu_capacity = Mu_limit;
+          const Vu_capacity = tauC * b * d / 1000 + 0.87 * fy * Asv * d / (sv * 1000);
+          const muUtil = Mu_capacity > 0 ? Math.abs(Mu) / Mu_capacity : (Math.abs(Mu) > 0 ? Infinity : 0);
+          const vuUtil = Vu_capacity > 0 ? Math.abs(Vu) / Vu_capacity : (Math.abs(Vu) > 0 ? Infinity : 0);
+          const flexurePass = muUtil <= 1;
+          const shearPass = vuUtil <= 1;
+
           setResults({
-            passed: Mu <= Mu_limit * 1.05,
-            utilization: Mu / Mu_limit,
+            passed: flexurePass && shearPass,
+            utilization: Math.max(muUtil, vuUtil),
             reinforcement: {
               mainBottom: `${barCount} - ${barDia}mm φ (${(barCount * barArea).toFixed(0)} mm²)`,
               mainTop: 'Nominal (2-12mm φ holding stirrups)',
               stirrups: `${stirDia}mm φ 2-legged @ ${sv}mm c/c`
             },
-            capacities: { Mu: Mu_limit, Vu: tauC * b * d / 1000 + 0.87 * fy * Asv * d / (sv * 1000) },
+            capacities: { Mu: Mu_capacity, Vu: Vu_capacity },
             checks: [
-              { description: `Mu (${Mu.toFixed(1)} kNm) ${Mu <= Mu_limit ? '≤' : '>'} Mu,lim (${Mu_limit.toFixed(1)} kNm)`, passed: Mu <= Mu_limit, clause: 'Cl. 38.1' },
+              { description: `Max bending check: Mu (${Mu.toFixed(1)} kNm) ${flexurePass ? '≤' : '>'} Mu,cap (${Mu_capacity.toFixed(1)} kNm)`, passed: flexurePass, clause: 'Cl. 38.1' },
+              { description: `Max shear check: Vu (${Vu.toFixed(1)} kN) ${shearPass ? '≤' : '>'} Vu,cap (${Vu_capacity.toFixed(1)} kN)`, passed: shearPass, clause: 'Cl. 40.2' },
               { description: `Ast (${(barCount * barArea).toFixed(0)} mm²) ≥ Ast,min (${AstMin.toFixed(0)} mm²)`, passed: barCount * barArea >= AstMin, clause: 'Cl. 26.5.1.1' },
               { description: `τv (${tauV.toFixed(2)} MPa) check against τc,max`, passed: tauV < 0.62 * Math.sqrt(fck), clause: 'Cl. 40.2' },
               { description: `Stirrup spacing ${sv}mm ≤ 0.75d (${(0.75 * d).toFixed(0)}mm)`, passed: sv <= 0.75 * d, clause: 'Cl. 26.5.1.5' },
@@ -614,16 +654,18 @@ export const ConcreteDesignPage: React.FC = () => {
           </div>
           <div className="col-span-2 md:col-span-1" />
           <div>
-            <label className="text-xs text-slate-600 dark:text-slate-400">Ultimate Moment Mu (kN·m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Ultimate Moment Mu (kN·m) [+Sag/-Hog]</label>
             <input
               type="number"
               value={beamInput.Mu}
               onChange={(e) => setBeamInput({...beamInput, Mu: Number(e.target.value)})}
+              placeholder="+150 (sagging) or -80 (hogging)"
               className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
+            <p className="text-xs text-slate-500 mt-1">Positive = Sagging (bottom tension), Negative = Hogging (top tension)</p>
           </div>
           <div>
-            <label className="text-xs text-slate-600 dark:text-slate-400">Ultimate Shear Vu (kN)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Ultimate Shear Vu (kN) [Signed]</label>
             <input
               type="number"
               value={beamInput.Vu}
@@ -740,22 +782,26 @@ export const ConcreteDesignPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="text-xs text-slate-600 dark:text-slate-400">Moment Mux (kN·m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Moment Mux (kN·m) [Signed]</label>
             <input
               type="number"
               value={columnInput.Mux}
               onChange={(e) => setColumnInput({...columnInput, Mux: Number(e.target.value)})}
+              placeholder="+100 or -80"
               className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
+            <p className="text-xs text-slate-500 mt-1">Sign preserved for biaxial interaction</p>
           </div>
           <div>
-            <label className="text-xs text-slate-600 dark:text-slate-400">Moment Muy (kN·m)</label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">Moment Muy (kN·m) [Signed]</label>
             <input
               type="number"
               value={columnInput.Muy}
               onChange={(e) => setColumnInput({...columnInput, Muy: Number(e.target.value)})}
+              placeholder="+50 or -40"
               className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
             />
+            <p className="text-xs text-slate-500 mt-1">Biaxial bending interaction</p>
           </div>
         </div>
       </div>
@@ -912,8 +958,38 @@ export const ConcreteDesignPage: React.FC = () => {
                 <span className="text-slate-600 dark:text-slate-400">Utilization:</span>
                 <span className="ml-2 font-semibold text-slate-900 dark:text-white">{(results.utilization * 100).toFixed(1)}%</span>
               </div>
+              {results.momentType && (
+                <div>
+                  <span className="text-slate-600 dark:text-slate-400">Moment Type:</span>
+                  <span className="ml-2 font-semibold text-blue-400 capitalize">{results.momentType}</span>
+                </div>
+              )}
+              {results.signConvention && (
+                <div>
+                  <span className="text-slate-600 dark:text-slate-400">Design Code:</span>
+                  <span className="ml-2 font-semibold text-amber-400">{results.signConvention}</span>
+                </div>
+              )}
             </div>
           </div>
+          
+          {/* Moment Analysis (Rebar Placement) */}
+          {results.momentAnalysis && (
+            <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg border-l-4 border-blue-500">
+              <h3 className="text-sm font-semibold text-blue-400 mb-2 flex items-center gap-2">
+                💡 Moment Interpretation & Rebar Placement
+              </h3>
+              <div className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
+                <p>{results.momentAnalysis.notes}</p>
+                {results.momentAnalysis.bottom_main > 0 && (
+                  <p className="text-emerald-400">• Bottom Steel: {results.momentAnalysis.bottom_main.toFixed(0)} mm² (sagging moment)</p>
+                )}
+                {results.momentAnalysis.top_main > 0 && (
+                  <p className="text-orange-400">• Top Steel: {results.momentAnalysis.top_main.toFixed(0)} mm² (hogging moment)</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Reinforcement */}
           {results.reinforcement && (
