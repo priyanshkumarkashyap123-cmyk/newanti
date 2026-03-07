@@ -116,13 +116,16 @@ describe('secureErrorHandler', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        error: 'An unexpected error occurred. Please try again later.', // Never exposes actual error in production
+        error: expect.objectContaining({
+          code: 'ERR_500',
+          message: 'An unexpected error occurred. Please try again later.', // Never exposes actual error in production
+        }),
       })
     );
     // Should NOT contain the actual error message or stack
     const jsonArg = (res.json as any).mock.calls[0][0];
-    expect(jsonArg.error).not.toContain('Database');
-    expect(jsonArg.stack).toBeUndefined();
+    expect(jsonArg.error.message).not.toContain('Database');
+    expect(jsonArg.error.stack).toBeUndefined();
 
     process.env['NODE_ENV'] = originalEnv;
   });
@@ -141,11 +144,14 @@ describe('secureErrorHandler', () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: false,
-        error: 'Test error',
+        error: expect.objectContaining({
+          code: 'ERR_500',
+          message: 'Test error',
+        }),
       })
     );
     const jsonArg = (res.json as any).mock.calls[0][0];
-    expect(jsonArg.stack).toBeDefined();
+    expect(jsonArg.error.stack).toBeDefined();
 
     process.env['NODE_ENV'] = originalEnv;
   });

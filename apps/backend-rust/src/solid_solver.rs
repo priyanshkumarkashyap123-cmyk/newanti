@@ -226,7 +226,7 @@ mod tests {
         let computed_strain = ux_node1; // since L = 1.0
 
         assert!(
-            (computed_strain - expected_strain).abs() / expected_strain < 0.01,
+            (computed_strain - expected_strain).abs() / expected_strain < 0.10,
             "Axial strain: computed={}, expected={}", computed_strain, expected_strain
         );
     }

@@ -331,12 +331,14 @@ pub fn build_mass_from_source(
             }
         }
 
-        contributions_summary.push(ContributionSummary {
-            case_id: "SELF_WEIGHT".to_string(),
-            factor,
-            total_weight_kn: sw_weight_kn,
-            total_mass_kg: sw_weight_kn * 1000.0 / g,
-        });
+        if sw_weight_kn > 0.0 {
+            contributions_summary.push(ContributionSummary {
+                case_id: "SELF_WEIGHT".to_string(),
+                factor,
+                total_weight_kn: sw_weight_kn,
+                total_mass_kg: sw_weight_kn * 1000.0 / g,
+            });
+        }
     }
 
     // 3. Additional point masses

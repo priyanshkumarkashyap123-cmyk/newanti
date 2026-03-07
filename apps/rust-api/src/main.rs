@@ -14,6 +14,7 @@ mod error;
 mod handlers;
 mod middleware;
 mod models;
+mod optimization;
 mod solver;
 
 use axum::{

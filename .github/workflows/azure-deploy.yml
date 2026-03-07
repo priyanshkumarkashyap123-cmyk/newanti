@@ -77,7 +77,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME_API }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_API }}
           package: api-app.zip
 
   # Python deployment - Re-enabled for Advanced Analysis & Templates
@@ -103,7 +103,7 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME_PYTHON }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_PYTHON }}
           package: python-app.zip
 
   # Frontend is deployed via the separate Azure Static Web Apps CI/CD workflow

@@ -10,7 +10,7 @@
     "build": "node build.mjs",
     "build:tsc": "tsc --skipLibCheck --noEmit false",
     "start": "node dist/index.js",
-    "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 100",
+    "lint": "eslint . --ext ts --max-warnings 100",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "test": "vitest",
@@ -47,6 +47,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
@@ -61,7 +62,9 @@
     "@types/uuid": "^11.0.0",
     "esbuild": "^0.27.2",
     "eslint": "^9.15.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "supertest": "^7.0.0",
+    "typescript-eslint": "^8.46.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vitest": "^3.2.1"

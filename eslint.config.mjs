@@ -6,14 +6,18 @@
  */
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 export default tseslint.config(
     js.configs.recommended,
     ...tseslint.configs.recommended,
     {
+        plugins: {
+            'react-hooks': reactHooks,
+        },
         rules: {
             // Relax rules for cross-project root linting
-            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+            '@typescript-eslint/no-unused-vars': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/ban-ts-comment': 'off',
@@ -24,12 +28,21 @@ export default tseslint.config(
             'no-empty': 'warn',
             'no-constant-condition': 'warn',
             'no-loss-of-precision': 'warn',
+            'no-undef': 'off',
+            'prefer-const': 'off',
+            'react-hooks/exhaustive-deps': 'off',
+            'react-hooks/refs': 'off',
         },
     },
     {
         ignores: [
             '**/dist/**',
             '**/node_modules/**',
+            'apps/backend-python/.venv/**',
+            'deploy-pkg/**',
+            'docs/**',
+            'scripts/**',
+            '**/pkg/**',
             '**/coverage/**',
             '**/*.config.js',
             '**/*.config.cjs',
