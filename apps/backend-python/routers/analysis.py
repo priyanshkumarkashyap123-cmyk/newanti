@@ -13,6 +13,7 @@ from logging_config import get_logger
 from routers.schemas import (
     FrameNodeInput, FrameMemberInput, NodeLoadInput,
     FramePlateInput, MemberDistLoadInput,
+    PlateElementInput, SolidElementInput, LinkElementInput, DiaphragmInput,
 )
 
 logger = get_logger(__name__)
@@ -93,6 +94,30 @@ class BucklingAnalysisRequest(BaseModel):
     backend: Optional[str] = "rust"  # "python", "rust", "auto"
     debug_compare: Optional[bool] = False
     debug_compare_tolerance: Optional[float] = 1e-3
+
+
+class AdvancedAnalysisRequest(BaseModel):
+    """
+    Advanced FEM analysis supporting plates, solids, links, diaphragms,
+    and tension/compression-only members.
+    """
+    nodes: List[FrameNodeInput]
+    members: Optional[List[FrameMemberInput]] = []
+    node_loads: Optional[List[NodeLoadInput]] = []
+    distributed_loads: Optional[List[MemberDistLoadInput]] = []
+
+    # Advanced element types
+    plate_elements: Optional[List[PlateElementInput]] = []
+    solid_elements: Optional[List[SolidElementInput]] = []
+    link_elements: Optional[List[LinkElementInput]] = []
+    diaphragms: Optional[List[DiaphragmInput]] = []
+
+    # Tension/compression-only member IDs
+    tension_only: Optional[List[str]] = []
+    compression_only: Optional[List[str]] = []
+
+    include_self_weight: Optional[bool] = False
+    solver: Optional[str] = "direct"  # "direct" | "iterative"
 
 
 # ── Endpoints ──
@@ -1515,3 +1540,167 @@ async def run_buckling_analysis(request: BucklingAnalysisRequest):
     except Exception as e:
         logger.error(f"Buckling analysis error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Buckling analysis failed: {str(e)}")
+
+
+# ── Advanced FEM Analysis ──
+
+@router.post("/analyze/advanced")
+async def analyze_advanced_fem(request: AdvancedAnalysisRequest):
+    """
+    Advanced Finite Element Analysis supporting:
+    - Frame (Timoshenko beam) elements
+    - Thick (Mindlin-Reissner) and thin (Kirchhoff) plate/shell elements
+    - 3-D solid (Hex8 / Hex20) brick elements
+    - Non-linear link elements (gap, hook, friction pendulum, viscous damper, multi-linear)
+    - Rigid / semi-rigid diaphragm constraints
+    - Tension-only and compression-only frame members (iterative NR solver)
+    """
+    try:
+        from analysis.solvers.advanced_solver import analyze_advanced
+        start_time = time.perf_counter()
+
+        logger.info(
+            "Advanced FEM request received",
+            extra={
+                "nodes": len(request.nodes),
+                "members": len(request.members or []),
+                "plates": len(request.plate_elements or []),
+                "solids": len(request.solid_elements or []),
+                "links": len(request.link_elements or []),
+                "diaphragms": len(request.diaphragms or []),
+                "t_only": len(request.tension_only or []),
+                "c_only": len(request.compression_only or []),
+            },
+        )
+
+        # Build node dict
+        nodes_dict = {}
+        for n in request.nodes:
+            nodes_dict[n.id] = {"x": n.x, "y": n.y, "z": n.z}
+
+        # Build supports
+        supports_dict: Dict[str, List[int]] = {}
+        for n in request.nodes:
+            if not n.support or n.support.lower() == "none":
+                continue
+            support = n.support.lower()
+            dofs: List[int] = []
+            if support == "fixed":
+                dofs = [0, 1, 2, 3, 4, 5]
+            elif support in ("pinned", "pin"):
+                dofs = [0, 1, 2]
+            elif support == "roller":
+                dofs = [1]
+            elif support == "roller_x":
+                dofs = [0]
+            elif support == "roller_z":
+                dofs = [2]
+            if dofs:
+                supports_dict[n.id] = dofs
+
+        # Build frame elements
+        frame_elements = []
+        for m in (request.members or []):
+            frame_elements.append({
+                "id": m.id,
+                "node_i": m.startNodeId,
+                "node_j": m.endNodeId,
+                "E": m.E or 200e6,
+                "G": m.G or 77e6,
+                "Iy": m.Iy or 1e-4,
+                "Iz": m.Iz or 1e-4,
+                "J": m.J or 1e-5,
+                "A": m.A or 0.01,
+            })
+
+        # Build nodal loads
+        nodal_loads_dict: Dict[str, Dict[str, float]] = {}
+        for l in (request.node_loads or []):
+            nodal_loads_dict[l.nodeId] = {
+                "ux": l.fx or 0, "uy": l.fy or 0, "uz": l.fz or 0,
+                "rx": l.mx or 0, "ry": l.my or 0, "rz": l.mz or 0,
+            }
+
+        # Build member loads
+        member_loads_list = []
+        for dl in (request.distributed_loads or []):
+            direction_map = {
+                "Fx": "local_x", "Fy": "local_y", "Fz": "local_z",
+                "fx": "local_x", "fy": "local_y", "fz": "local_z",
+            }
+            member_loads_list.append({
+                "element_id": dl.memberId,
+                "load_type": "trapez" if dl.w2 is not None and dl.w2 != dl.w1 else "udl",
+                "direction": direction_map.get(dl.direction, "local_y"),
+                "w1": dl.w1,
+                "w2": dl.w2 if dl.w2 is not None else dl.w1,
+            })
+
+        # Build plate elements
+        plate_list = None
+        if request.plate_elements:
+            plate_list = [pe.model_dump() for pe in request.plate_elements]
+
+        # Build solid elements
+        solid_list = None
+        if request.solid_elements:
+            solid_list = [se.model_dump() for se in request.solid_elements]
+
+        # Build link elements
+        link_list = None
+        if request.link_elements:
+            link_list = [le.model_dump() for le in request.link_elements]
+
+        # Build diaphragm constraints
+        diaphragm_list = None
+        if request.diaphragms:
+            diaphragm_list = [d.model_dump() for d in request.diaphragms]
+
+        # Run advanced solver
+        result = await asyncio.get_event_loop().run_in_executor(
+            None,
+            lambda: analyze_advanced(
+                nodes=nodes_dict,
+                elements=frame_elements or None,
+                supports=supports_dict or None,
+                nodal_loads=nodal_loads_dict or None,
+                member_loads=member_loads_list or None,
+                plate_elements=plate_list,
+                solid_elements=solid_list,
+                link_elements=link_list,
+                diaphragms=diaphragm_list,
+                tension_only=request.tension_only or None,
+                compression_only=request.compression_only or None,
+                include_self_weight=request.include_self_weight or False,
+                solver=request.solver or "direct",
+            ),
+        )
+
+        total_time = (time.perf_counter() - start_time) * 1000
+
+        logger.info(
+            "Advanced FEM analysis complete",
+            extra={
+                "n_dofs": result.get("n_dofs", 0),
+                "solve_time_ms": result.get("solve_time_ms", 0),
+                "max_displacement": result.get("max_displacement", 0),
+            },
+        )
+
+        return {
+            "success": True,
+            **result,
+            "stats": {
+                "backend_used": "python_advanced_dsm",
+                "total_ms": round(total_time, 2),
+                "solve_ms": round(result.get("solve_time_ms", 0), 2),
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Advanced FEM analysis error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"Advanced analysis failed: {str(e)}"
+        )

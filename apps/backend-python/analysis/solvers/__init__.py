@@ -8,6 +8,7 @@ Modules:
 - cable: Tension/Compression Only and Cable Elements
 - rc_limit_state_design: Reinforced Concrete LSD Design per IS 456:2000
 - lsd_integration: Integration with structural analysis results
+- advanced_solver: Multi-element DSM with plates, solids, links, diaphragms
 """
 
 from .nonlinear import (
@@ -59,6 +60,14 @@ from .lsd_integration import (
     LoadFactoring,
 )
 
+from .advanced_solver import (
+    AdvancedDirectStiffnessMethod,
+    AdvancedAssembler,
+    AdvancedModel,
+    analyze_advanced,
+    build_advanced_model_from_dicts,
+)
+
 __all__ = [
     # Nonlinear
     'GeometricStiffnessMatrix',
@@ -97,4 +106,10 @@ __all__ = [
     'RCBeamDesigner',
     'DesignInput',
     'LoadFactoring',
+    # Advanced DSM
+    'AdvancedDirectStiffnessMethod',
+    'AdvancedAssembler',
+    'AdvancedModel',
+    'analyze_advanced',
+    'build_advanced_model_from_dicts',
 ]

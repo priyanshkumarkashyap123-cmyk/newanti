@@ -92,12 +92,127 @@ export interface SeismicAnalysisResponse {
   performance_ms: number;
 }
 
+// ── Advanced FEM Element Input Types ──
+
+export interface PlateElementInput {
+  id: string;
+  nodes: string[];          // 4 node IDs (Q4)
+  thickness?: number;       // default 0.2 m
+  E?: number;               // Young's modulus, default 30e6 kPa
+  nu?: number;              // Poisson's ratio, default 0.2
+  rho?: number;             // density kg/m³, default 2400
+  formulation?: 'thick' | 'thin';  // Mindlin-Reissner or Kirchhoff
+}
+
+export interface SolidElementInput {
+  id: string;
+  nodes: string[];          // 8 or 20 node IDs
+  E?: number;               // default 200e6 kPa
+  nu?: number;              // default 0.3
+  rho?: number;             // default 7850 kg/m³
+  element_type?: 'hex8' | 'hex20';
+  use_bbar?: boolean;       // B-bar formulation for volumetric locking
+}
+
+export interface LinkElementInput {
+  id: string;
+  node_i: string;
+  node_j: string;
+  link_type: 'gap' | 'hook' | 'friction_pendulum' | 'viscous_damper' | 'multilinear';
+  direction?: number;       // 0=X, 1=Y, 2=Z
+  properties?: Record<string, unknown>;
+}
+
+export interface DiaphragmInput {
+  floor_z: number;
+  master_node: string;
+  slave_nodes: string[];
+  k_membrane?: number | null;  // null = rigid
+  mass?: number;
+  mmoi?: number;
+}
+
+export interface FrameNodeInput {
+  id: string;
+  x: number;
+  y: number;
+  z: number;
+  support?: string;  // 'fixed' | 'pinned' | 'roller' | 'none'
+}
+
+export interface FrameMemberInput {
+  id: string;
+  startNodeId: string;
+  endNodeId: string;
+  E?: number;
+  G?: number;
+  A?: number;
+  Iy?: number;
+  Iz?: number;
+  J?: number;
+}
+
+export interface NodeLoadInput {
+  nodeId: string;
+  fx?: number;
+  fy?: number;
+  fz?: number;
+  mx?: number;
+  my?: number;
+  mz?: number;
+}
+
+export interface MemberDistLoadInput {
+  memberId: string;
+  w1: number;
+  w2?: number;
+  direction?: string;
+}
+
+export interface AdvancedFEMRequest {
+  nodes: FrameNodeInput[];
+  members?: FrameMemberInput[];
+  node_loads?: NodeLoadInput[];
+  distributed_loads?: MemberDistLoadInput[];
+
+  // Advanced element types
+  plate_elements?: PlateElementInput[];
+  solid_elements?: SolidElementInput[];
+  link_elements?: LinkElementInput[];
+  diaphragms?: DiaphragmInput[];
+
+  // Tension/compression-only member IDs
+  tension_only?: string[];
+  compression_only?: string[];
+
+  include_self_weight?: boolean;
+  solver?: 'direct' | 'iterative';
+}
+
+export interface AdvancedFEMResponse {
+  success: boolean;
+  displacements?: Record<string, { ux: number; uy: number; uz: number; rx: number; ry: number; rz: number }>;
+  reactions?: Record<string, { fx: number; fy: number; fz: number; mx: number; my: number; mz: number }>;
+  member_forces?: Record<string, { axial: number; shear_y: number; shear_z: number; torsion: number; moment_y: number; moment_z: number }>;
+  n_dofs?: number;
+  max_displacement?: number;
+  solve_time_ms?: number;
+  stats?: {
+    backend_used: string;
+    total_ms: number;
+    solve_ms: number;
+  };
+  error?: string;
+}
+
 export class AdvancedAnalysisService {
   private baseUrl: string;
+  private analyzeUrl: string;
 
   constructor() {
     const base = API_CONFIG.rustUrl || API_CONFIG.baseUrl;
     this.baseUrl = `${base}/api/analysis`;
+    this.analyzeUrl = `${API_CONFIG.baseUrl}/api/analyze`;
   }
 
   private getAuthHeaders(): Record<string, string> {
@@ -128,6 +243,18 @@ export class AdvancedAnalysisService {
   async seismicAnalysis(req: SeismicAnalysisRequest): Promise<SeismicAnalysisResponse> {
     return postJson<SeismicAnalysisResponse>(`${this.baseUrl}/seismic`, req, {
       timeout: 30000,
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  /**
+   * Advanced FEM analysis: plates, solids, links, diaphragms,
+   * tension/compression-only members, auto-meshing.
+   * Calls Python backend POST /analyze/advanced
+   */
+  async advancedFEMAnalysis(req: AdvancedFEMRequest): Promise<AdvancedFEMResponse> {
+    return postJson<AdvancedFEMResponse>(`${this.analyzeUrl}/advanced`, req, {
+      timeout: 120000,
       headers: this.getAuthHeaders(),
     });
   }
