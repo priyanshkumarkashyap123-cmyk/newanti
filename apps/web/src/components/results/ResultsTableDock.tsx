@@ -237,17 +237,17 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
 
     if (isCollapsed) {
       return (
-        <div className="h-7 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/40 flex items-center justify-between px-3 flex-shrink-0">
+        <div className="h-7 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700/40 flex items-center justify-between px-3 flex-shrink-0">
           <div className="flex items-center gap-4 text-[11px] font-mono">
             <span className="font-semibold text-slate-400">Results</span>
             <span className="text-slate-500">
-              Nodes: <span className="text-slate-300">{displacementRows.length}</span>
+              Nodes: <span className="text-slate-700 dark:text-slate-300">{displacementRows.length}</span>
             </span>
             <span className="text-slate-500">
-              Members: <span className="text-slate-300">{memberForceRows.length}</span>
+              Members: <span className="text-slate-700 dark:text-slate-300">{memberForceRows.length}</span>
             </span>
             <span className="text-slate-500">
-              Reactions: <span className="text-slate-300">{reactionRows.length}</span>
+              Reactions: <span className="text-slate-700 dark:text-slate-300">{reactionRows.length}</span>
             </span>
             {equilibriumOk !== null && (
               <span
@@ -265,14 +265,14 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
           <div className="flex items-center gap-1">
             <button type="button"
               onClick={() => setIsCollapsed(false)}
-              className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               title="Expand results panel"
             >
               <ChevronUp className="w-3.5 h-3.5" />
             </button>
             <button type="button"
               onClick={onClose}
-              className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               title="Close results panel"
             >
               <X className="w-3.5 h-3.5" />
@@ -300,10 +300,10 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
 
     return (
       <div
-        className="h-[240px] flex flex-col bg-white/98 dark:bg-slate-900/98 backdrop-blur-md border-t border-slate-700/40 flex-shrink-0 transition-all duration-200 animate-[slideInUp_200ms_ease-out]"
+        className="h-[240px] flex flex-col bg-white/98 dark:bg-slate-900/98 backdrop-blur-md border-t border-slate-200 dark:border-slate-700/40 flex-shrink-0 transition-all duration-200 animate-[slideInUp_200ms_ease-out]"
       >
         {/* Tab Header Bar */}
-        <div className="flex items-center justify-between h-8 px-2 bg-slate-100/80 dark:bg-slate-950/80 border-b border-slate-700/30 flex-shrink-0">
+        <div className="flex items-center justify-between h-8 px-2 bg-slate-100/80 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-700/30 flex-shrink-0">
           <div className="flex items-center gap-0.5">
             {tabs.map((tab) => {
               const tabColors: Record<string, { active: string; border: string }> = {
@@ -320,13 +320,13 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                   px-3 py-1 text-[11px] font-semibold rounded-t transition-colors
                   ${
                     activeTab === tab.id
-                      ? `${colors.active} bg-slate-800/50 border-b-2 ${colors.border}`
-                      : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/30"
+                      ? `${colors.active} bg-slate-200 dark:bg-slate-800/50 border-b-2 ${colors.border}`
+                      : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/30"
                   }
                 `}
               >
                 {tab.label}
-                <span className="ml-1.5 px-1.5 py-0.5 rounded text-[9px] bg-slate-700/50 text-slate-400">
+                <span className="ml-1.5 px-1.5 py-0.5 rounded text-[9px] bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400">
                   {tab.count}
                 </span>
               </button>
@@ -360,26 +360,26 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                 value={filterText}
                 onChange={(e) => setFilterText(e.target.value)}
                 placeholder="Filter by ID..."
-                className="w-24 h-5 px-1.5 text-[10px] bg-slate-800/50 border border-slate-700/40 rounded text-slate-300 placeholder:text-slate-600 focus:border-blue-500/50 focus:outline-none"
+                className="w-24 h-5 px-1.5 text-[10px] bg-slate-100 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700/40 rounded text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:border-blue-500/50 focus:outline-none"
               />
             </div>
             <button type="button"
               onClick={handleExportCSV}
-              className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               title="Export CSV"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
             <button type="button"
               onClick={() => window.print()}
-              className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               title="Print"
             >
               <Printer className="w-3.5 h-3.5" />
             </button>
             <button type="button"
               onClick={() => setIsCollapsed(true)}
-              className="p-1 hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-200 transition-colors"
+              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
               title="Collapse"
             >
               <ChevronDown className="w-3.5 h-3.5" />
@@ -434,7 +434,7 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/30">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/30">
               {/* Displacements */}
               {activeTab === "displacements" &&
                 sortRows(displacementRows).map((r) => (
@@ -446,22 +446,22 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                     <td className="px-3 py-1.5 font-semibold text-cyan-400">
                       {r.id}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-300 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300 tabular-nums">
                       {formatNum(r.dx)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-300 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300 tabular-nums">
                       {formatNum(r.dy)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-300 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300 tabular-nums">
                       {formatNum(r.dz)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-400 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400 tabular-nums">
                       {formatNum(r.rx, 6)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-400 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400 tabular-nums">
                       {formatNum(r.ry, 6)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-400 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400 tabular-nums">
                       {formatNum(r.rz, 6)}
                     </td>
                   </tr>
@@ -531,22 +531,22 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
                     <td className="px-3 py-1.5 font-semibold text-amber-400">
                       {r.id}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-300 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300 tabular-nums">
                       {formatNum(r.rx)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-300 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300 tabular-nums">
                       {formatNum(r.ry)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-300 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-700 dark:text-slate-300 tabular-nums">
                       {formatNum(r.rz)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-400 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400 tabular-nums">
                       {formatNum(r.mrx)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-400 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400 tabular-nums">
                       {formatNum(r.mry)}
                     </td>
-                    <td className="px-3 py-1.5 text-slate-400 tabular-nums">
+                    <td className="px-3 py-1.5 text-slate-500 dark:text-slate-400 tabular-nums">
                       {formatNum(r.mrz)}
                     </td>
                   </tr>
@@ -555,7 +555,7 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
 
             {/* Summary row */}
             {activeTab === "reactions" && reactionRows.length > 0 && (
-              <tfoot className="sticky bottom-0 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-700/40">
+              <tfoot className="sticky bottom-0 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700/40">
                 <tr className="font-semibold text-emerald-400">
                   <td className="px-3 py-1.5">ΣR</td>
                   <td className="px-3 py-1.5 tabular-nums">
@@ -581,7 +581,7 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
             )}
 
             {activeTab === "memberForces" && memberForceRows.length > 0 && (
-              <tfoot className="sticky bottom-0 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-700/40">
+              <tfoot className="sticky bottom-0 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700/40">
                 <tr className="font-semibold text-red-400">
                   <td className="px-3 py-1.5">Max</td>
                   <td className="px-3 py-1.5 tabular-nums">
@@ -607,7 +607,7 @@ export const ResultsTableDock: FC<ResultsTableDockProps> = memo(
             )}
 
             {activeTab === "displacements" && displacementRows.length > 0 && (
-              <tfoot className="sticky bottom-0 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-700/40">
+              <tfoot className="sticky bottom-0 bg-slate-100/95 dark:bg-slate-950/95 backdrop-blur-sm border-t border-slate-200 dark:border-slate-700/40">
                 <tr className="font-semibold text-orange-400">
                   <td className="px-3 py-1.5">Max</td>
                   <td className="px-3 py-1.5 tabular-nums">

@@ -1036,3 +1036,285 @@ export const DynamicLoadingEngines = {
   runInfluenceSurface,
   runSpectrumDirectional,
 };
+
+// =====================================================================
+// 8.  Design, Optimization & Detailing Engines
+// =====================================================================
+
+// ── 8-A. Auto-Design Optimization Loop ──
+
+export interface AutoDesignMemberInput {
+  id: string;
+  member_type: string;
+  length_mm: number;
+  unbraced_length_mm?: number;
+  moment_demand_knm: number;
+  shear_demand_kn: number;
+  axial_demand_kn?: number;
+  deflection_limit?: number;
+  current_section?: string;
+}
+
+export interface CatalogueSectionInput {
+  name: string;
+  depth_mm: number;
+  width_mm: number;
+  area_mm2: number;
+  ix_mm4: number;
+  iy_mm4: number;
+  sx_mm3: number;
+  sy_mm3: number;
+  zx_mm3: number;
+  zy_mm3: number;
+  weight_kg_per_m: number;
+  fy_mpa?: number;
+  tw_mm?: number;
+  tf_mm?: number;
+  ry_mm?: number;
+  j_mm4?: number;
+  cw_mm6?: number;
+}
+
+export interface AutoDesignRequest {
+  members: AutoDesignMemberInput[];
+  catalogue?: CatalogueSectionInput[];
+  design_code?: string;
+  selection_strategy?: string;
+  max_iterations?: number;
+  dc_target?: number;
+  convergence_tolerance?: number;
+}
+
+export interface AutoDesignMemberResult {
+  id: string;
+  selected_section: string;
+  dc_flexure: number;
+  dc_shear: number;
+  dc_axial: number;
+  dc_interaction: number;
+  dc_deflection: number;
+  dc_governing: number;
+  weight_kg_per_m: number;
+  iteration_selected: number;
+}
+
+export interface AutoDesignResponse {
+  success: boolean;
+  iterations: number;
+  converged: boolean;
+  total_weight_kg: number;
+  members: AutoDesignMemberResult[];
+  performance_ms: number;
+}
+
+export async function runAutoDesign(
+  req: AutoDesignRequest,
+): Promise<AutoDesignResponse> {
+  return postJson(
+    `${API_CONFIG.rustUrl}/api/advanced/auto-design`,
+    req,
+  );
+}
+
+// ── 8-B. Cracked Section Analysis ──
+
+export interface RebarLayerInput {
+  n_bars: number;
+  diameter_mm: number;
+  depth_mm: number;
+}
+
+export interface CrackedSectionRequest {
+  b_mm: number;
+  h_mm: number;
+  d_mm: number;
+  fck_mpa: number;
+  fy_mpa: number;
+  concrete_code?: string;
+  tension_bars: RebarLayerInput[];
+  compression_bars?: RebarLayerInput[];
+  applied_moment_knm: number;
+  ie_method?: string;
+  span_mm?: number;
+  loading_type?: string;
+  sustained_load_ratio?: number;
+  loading_age_months?: number;
+  is_flanged?: boolean;
+  flange_width_mm?: number;
+  flange_depth_mm?: number;
+}
+
+export interface CrackedSectionResponse {
+  success: boolean;
+  gross_inertia_mm4: number;
+  cracking_moment_knm: number;
+  cracked_na_depth_mm: number;
+  cracked_inertia_mm4: number;
+  effective_inertia_mm4: number;
+  modular_ratio: number;
+  ie_method: string;
+  is_cracked: boolean;
+  long_term_multiplier: number;
+  deflection_mm?: number;
+  span_over_deflection?: number;
+  performance_ms: number;
+}
+
+export async function runCrackedSection(
+  req: CrackedSectionRequest,
+): Promise<CrackedSectionResponse> {
+  return postJson(
+    `${API_CONFIG.rustUrl}/api/advanced/cracked-section`,
+    req,
+  );
+}
+
+// ── 8-C. Floor Walking & Vibration Check ──
+
+export interface FloorWalkingRequest {
+  occupancy: string;
+  beam_span_m: number;
+  girder_span_m: number;
+  beam_spacing_m: number;
+  beam_ix_mm4: number;
+  girder_ix_mm4: number;
+  slab_depth_mm: number;
+  concrete_density_kg_m3?: number;
+  damping_ratio?: number;
+  walker_weight_n?: number;
+  walking_frequency_hz?: number;
+  check_rhythmic?: boolean;
+  rhythmic_weight_n?: number;
+  rhythmic_activity_freq_hz?: number;
+  check_codes?: string[];
+}
+
+export interface DG11CheckOutput {
+  peak_acceleration_g: number;
+  acceleration_limit_g: number;
+  effective_panel_weight_kn: number;
+  pass: boolean;
+  harmonics_checked: number;
+}
+
+export interface SCIP354CheckOutput {
+  response_factor: number;
+  response_limit: number;
+  pass: boolean;
+}
+
+export interface MinFreqCheckOutput {
+  frequency_hz: number;
+  min_required_hz: number;
+  pass: boolean;
+  code: string;
+}
+
+export interface RhythmicCheckOutput {
+  dynamic_amplification: number;
+  peak_acceleration_g: number;
+  limit_g: number;
+  pass: boolean;
+}
+
+export interface FloorWalkingResponse {
+  success: boolean;
+  beam_frequency_hz: number;
+  girder_frequency_hz: number;
+  combined_frequency_hz: number;
+  dg11_result?: DG11CheckOutput;
+  sci_p354_result?: SCIP354CheckOutput;
+  is800_result?: MinFreqCheckOutput;
+  en1990_result?: MinFreqCheckOutput;
+  rhythmic_result?: RhythmicCheckOutput;
+  overall_pass: boolean;
+  recommendations: string[];
+  performance_ms: number;
+}
+
+export async function runFloorWalking(
+  req: FloorWalkingRequest,
+): Promise<FloorWalkingResponse> {
+  return postJson(
+    `${API_CONFIG.rustUrl}/api/advanced/floor-walking`,
+    req,
+  );
+}
+
+// ── 8-D. Rebar Curtailment & Detailing ──
+
+export interface MomentPointInput {
+  x_mm: number;
+  moment_knm: number;
+}
+
+export interface RebarDetailingRequest {
+  bar_dia_mm: number;
+  n_bars: number;
+  b_mm: number;
+  h_mm: number;
+  d_mm: number;
+  fck_mpa: number;
+  fy_mpa: number;
+  clear_cover_mm: number;
+  bar_type?: string;
+  code?: string;
+  span_mm: number;
+  moment_diagram?: MomentPointInput[];
+  pct_bars_spliced?: number;
+  hook_type?: string;
+  is_top_bar?: boolean;
+  is_tension?: boolean;
+  max_aggregate_mm?: number;
+}
+
+export interface CutoffScheduleItem {
+  bars_continuing: number;
+  bars_cutoff: number;
+  theoretical_x_mm: number;
+  actual_x_mm: number;
+  moment_capacity_knm: number;
+}
+
+export interface CurtailmentOutput {
+  n_cutoff_points: number;
+  savings_pct: number;
+  cutoff_schedule: CutoffScheduleItem[];
+}
+
+export interface RebarDetailingResponse {
+  success: boolean;
+  development_length_mm: number;
+  ld_over_db: number;
+  lap_splice_mm: number;
+  lap_class: string;
+  hook_ldh_mm: number;
+  hook_total_mm: number;
+  bar_spacing_mm: number;
+  spacing_pass: boolean;
+  rho_pct: number;
+  rho_min_pct: number;
+  rho_max_pct: number;
+  reinforcement_pass: boolean;
+  curtailment?: CurtailmentOutput;
+  all_checks_pass: boolean;
+  issues: string[];
+  performance_ms: number;
+}
+
+export async function runRebarDetailing(
+  req: RebarDetailingRequest,
+): Promise<RebarDetailingResponse> {
+  return postJson(
+    `${API_CONFIG.rustUrl}/api/advanced/rebar-detailing`,
+    req,
+  );
+}
+
+// Re-export convenience bundle
+export const DesignOptimizationEngines = {
+  runAutoDesign,
+  runCrackedSection,
+  runFloorWalking,
+  runRebarDetailing,
+};

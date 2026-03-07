@@ -83,13 +83,6 @@ interface QuickAction {
   badge?: string;
 }
 
-interface Template {
-  id: string;
-  name: string;
-  type: string;
-  icon: React.ReactNode;
-}
-
 // ============================================
 // API → DASHBOARD MAPPING
 // ============================================
@@ -177,15 +170,6 @@ const TYPE_ICON: Record<Project["type"], React.ReactNode> = {
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
-    id: "space-planning",
-    title: "Space Planning",
-    subtitle: "House design & layouts",
-    icon: <Building2 className="w-5 h-5" />,
-    route: "/space-planning",
-    accent: "group-hover:text-green-400",
-    badge: "New",
-  },
-  {
     id: "new",
     title: "New Project",
     subtitle: "Blank canvas",
@@ -217,14 +201,6 @@ const QUICK_ACTIONS: QuickAction[] = [
     icon: <Upload className="w-5 h-5" />,
     route: "/app?tool=import",
     accent: "group-hover:text-orange-400",
-  },
-  {
-    id: "collaborate",
-    title: "Collaborate",
-    subtitle: "Team workspace",
-    icon: <Users className="w-5 h-5" />,
-    route: "/collaboration",
-    accent: "group-hover:text-cyan-400",
   },
 ];
 
@@ -265,8 +241,8 @@ const StatPill: FC<{
   value: string | number;
   icon: React.ReactNode;
 }> = memo(({ label, value, icon }) => (
-  <div className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 backdrop-blur-sm">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] text-slate-600 dark:text-slate-400">
+  <div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] px-4 py-3 backdrop-blur-sm">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-slate-400">
       {icon}
     </div>
     <div className="min-w-0">
@@ -293,12 +269,12 @@ const ProjectCard: FC<{
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
       whileHover={{ y: -2 }}
-      className="group relative rounded-xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm
-          hover:border-white/[0.12] hover:bg-white/[0.04] transition-colors cursor-pointer overflow-hidden"
+      className="group relative rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] backdrop-blur-sm
+          hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer overflow-hidden shadow-sm dark:shadow-none"
       onClick={onClick}
     >
       {/* Thumbnail area */}
-      <div className="aspect-[16/9] bg-white dark:bg-slate-950/60 flex items-center justify-center relative overflow-hidden">
+      <div className="aspect-[16/9] bg-slate-50 dark:bg-slate-950/60 flex items-center justify-center relative overflow-hidden">
         {/* Subtle grid background */}
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -489,13 +465,13 @@ export const UnifiedDashboard: FC<{
   // ==========================================
 
   return (
-    <div className="min-h-screen bg-[#0a0e17] text-slate-700 dark:text-slate-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0e17] text-slate-700 dark:text-slate-200">
       {/* ---- Ambient glow (top-left) ---- */}
-      <div className="pointer-events-none fixed -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-600/[0.04] blur-[120px]" />
-      <div className="pointer-events-none fixed -bottom-40 -right-40 h-[400px] w-[400px] rounded-full bg-purple-600/[0.03] blur-[120px]" />
+      <div className="pointer-events-none fixed -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-600/[0.04] blur-[120px] hidden dark:block" />
+      <div className="pointer-events-none fixed -bottom-40 -right-40 h-[400px] w-[400px] rounded-full bg-purple-600/[0.03] blur-[120px] hidden dark:block" />
 
       {/* ======== HEADER ======== */}
-      <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0a0e17]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-white/[0.06] bg-white/80 dark:bg-[#0a0e17]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1360px] items-center justify-between px-6 py-3">
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-7">
@@ -544,7 +520,7 @@ export const UnifiedDashboard: FC<{
                   key={n.to}
                   to={n.to}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors
-                    ${n.active ? "text-slate-900 dark:text-white bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.03]"}`}
+                    ${n.active ? "text-slate-900 dark:text-white bg-slate-100 dark:bg-white/[0.06]" : "text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.03]"}`}
                 >
                   {n.icon} {n.label}
                 </Link>
@@ -556,11 +532,11 @@ export const UnifiedDashboard: FC<{
           <div className="flex items-center gap-3">
             <Link
               to="/settings"
-              className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.04] transition-colors"
+              className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
             >
               <Settings className="w-4 h-4" />
             </Link>
-            <div className="h-5 w-px bg-white/[0.08]" />
+            <div className="h-5 w-px bg-slate-200 dark:bg-white/[0.08]" />
             {isClerkEnabled ? (
               <UserButton afterSignOutUrl="/" />
             ) : (
@@ -568,7 +544,7 @@ export const UnifiedDashboard: FC<{
                 <span className="text-xs text-slate-500">{userName}</span>
                 <button type="button"
                   onClick={() => signOut()}
-                  className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-white/[0.04] transition-colors"
+                  className="rounded-lg p-2 text-slate-500 hover:text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -636,11 +612,11 @@ export const UnifiedDashboard: FC<{
               <button type="button"
                 key={a.id}
                 onClick={() => navigate(a.route)}
-                className="group flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02]
-                  px-4 py-3.5 text-left transition-all hover:border-white/[0.12] hover:bg-white/[0.04]"
+                className="group flex items-center gap-3 rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02]
+                  px-4 py-3.5 text-left transition-all hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm dark:shadow-none"
               >
                 <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-white/[0.04]
                   text-slate-600 dark:text-slate-400 transition-colors ${a.accent}`}
                 >
                   {a.icon}
@@ -684,7 +660,7 @@ export const UnifiedDashboard: FC<{
                     aria-label="Search projects"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-48 rounded-lg border border-white/[0.06] bg-white/[0.02] py-1.5 pl-8 pr-3 text-xs text-slate-700 dark:text-slate-300
+                    className="w-48 rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] py-1.5 pl-8 pr-3 text-xs text-slate-700 dark:text-slate-300
                       placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/20
                       transition-colors"
                   />
@@ -692,7 +668,7 @@ export const UnifiedDashboard: FC<{
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-400
+                  className="rounded-lg border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-400
                     focus:outline-none focus:border-blue-500/40"
                 >
                   <option value="all">All</option>
@@ -710,12 +686,12 @@ export const UnifiedDashboard: FC<{
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
-                    className="rounded-xl border border-white/[0.04] bg-white/[0.01] animate-pulse"
+                    className="rounded-xl border border-slate-200/60 dark:border-white/[0.04] bg-slate-100 dark:bg-white/[0.01] animate-pulse"
                   >
-                    <div className="aspect-[16/9] bg-white/[0.02]" />
+                    <div className="aspect-[16/9] bg-slate-200/60 dark:bg-white/[0.02]" />
                     <div className="p-3.5 space-y-2">
-                      <div className="h-3.5 w-3/4 rounded bg-white/[0.04]" />
-                      <div className="h-3 w-1/2 rounded bg-white/[0.03]" />
+                      <div className="h-3.5 w-3/4 rounded bg-slate-200 dark:bg-white/[0.04]" />
+                      <div className="h-3 w-1/2 rounded bg-slate-200/60 dark:bg-white/[0.03]" />
                     </div>
                   </div>
                 ))
@@ -747,7 +723,7 @@ export const UnifiedDashboard: FC<{
             {!projectsLoading &&
               !projectsError &&
               filteredProjects.length === 0 && (
-                <div className="mt-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[0.08] py-16 text-center">
+                <div className="mt-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 dark:border-white/[0.08] py-16 text-center">
                   <FolderOpen className="w-10 h-10 text-slate-400 dark:text-slate-500 mb-4" />
                   <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                     {searchQuery ? "No matching projects" : "No projects yet"}
@@ -775,64 +751,32 @@ export const UnifiedDashboard: FC<{
               }
             />
 
-            {/* Templates */}
-            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5" />
-                Templates
-              </h3>
-              <div className="space-y-1">
-                {TEMPLATES.map((t) => (
-                  <button type="button"
-                    key={t.id}
-                    onClick={() => navigate(`/app?template=${t.id}`)}
-                    className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left
-                      hover:bg-white/[0.04] transition-colors group"
-                  >
-                    <div
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/[0.04] text-slate-500
-                      group-hover:text-slate-700 dark:text-slate-300 transition-colors"
-                    >
-                      {t.icon}
-                    </div>
-                    <div>
-                      <div className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                        {t.name}
-                      </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{t.type}</div>
-                    </div>
-                    <ChevronRight className="ml-auto w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Keyboard shortcuts / tips */}
-            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+            <div className="rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
                 Quick Tips
               </h3>
               <div className="space-y-2.5 text-[11px] text-slate-500">
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
                     N
                   </kbd>
                   <span>New node in modeler</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
                     M
                   </kbd>
                   <span>New member between selected</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
                     F5
                   </kbd>
                   <span>Run analysis</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <kbd className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono">
+                  <kbd className="shrink-0 rounded bg-slate-100 dark:bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-slate-600 dark:text-slate-400 font-mono border border-slate-200 dark:border-transparent">
                     Ctrl+S
                   </kbd>
                   <span>Save project</span>

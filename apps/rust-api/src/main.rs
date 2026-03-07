@@ -181,6 +181,11 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/advanced/wind-tunnel", post(handlers::advanced::wind_tunnel_analysis))
         .route("/api/advanced/influence-surface", post(handlers::advanced::influence_surface_analysis))
         .route("/api/advanced/spectrum-directional", post(handlers::advanced::spectrum_directional_analysis))
+        // Design, Optimization & Detailing Engines
+        .route("/api/advanced/auto-design", post(handlers::advanced::auto_design_optimization))
+        .route("/api/advanced/cracked-section", post(handlers::advanced::cracked_section_analysis))
+        .route("/api/advanced/floor-walking", post(handlers::advanced::floor_walking_vibration))
+        .route("/api/advanced/rebar-detailing", post(handlers::advanced::rebar_detailing_analysis))
         // Structure CRUD (fast database operations)
         .route("/api/structures", get(handlers::structures::list_structures))
         .route("/api/structures", post(handlers::structures::create_structure))

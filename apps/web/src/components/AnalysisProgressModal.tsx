@@ -228,7 +228,7 @@ export const AnalysisProgressModal: FC<AnalysisProgressModalProps> = ({
                             onClick={onClose}
                             className={`w-full ${isComplete
                                     ? 'bg-green-600 hover:bg-green-700 text-white'
-                                    : 'bg-slate-600 hover:bg-slate-500 dark:hover:bg-slate-700 text-white'
+                                    : 'bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 text-slate-800 dark:text-white'
                                 }`}
                         >
                             {isComplete ? 'View Results' : 'Close'}

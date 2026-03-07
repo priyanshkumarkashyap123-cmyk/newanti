@@ -89,26 +89,26 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
             </span>
           </span>
 
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Active Mode */}
           <span>
-            <span className="text-slate-600">Mode:</span>{" "}
+            <span className="text-slate-500 dark:text-slate-500">Mode:</span>{" "}
             <span className="text-slate-500 dark:text-slate-400">{activeCategory}</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Active Tool */}
           <span>
-            <span className="text-slate-600">Tool:</span>{" "}
+            <span className="text-slate-500 dark:text-slate-500">Tool:</span>{" "}
             <span className="text-blue-400">{activeTool || "Select"}</span>
           </span>
 
           {/* Selection Info */}
           {selCount > 0 && (
             <>
-              <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+              <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
               <span className="text-cyan-400">
                 Selected: {selCount}
                 {selNodes > 0 && ` (${selNodes}N`}
@@ -147,47 +147,47 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
             </span>
           </button>
 
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Model Statistics — Figma §6.1 N/M/P counters */}
           <span>
-            <span className="text-slate-600">N:</span>
+            <span className="text-slate-500 dark:text-slate-500">N:</span>
             <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{nodeCount}</span>
           </span>
           <span>
-            <span className="text-slate-600">M:</span>
+            <span className="text-slate-500 dark:text-slate-500">M:</span>
             <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{memberCount}</span>
           </span>
           <span>
-            <span className="text-slate-600">P:</span>
+            <span className="text-slate-500 dark:text-slate-500">P:</span>
             <span className="text-slate-500 dark:text-slate-400 font-mono ml-0.5">{plateCount}</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Active Load Case — Figma §6.1 */}
           <span className="cursor-pointer hover:text-blue-400 transition-colors" title="Click to change load case">
-            <span className="text-slate-600">LC:</span>{" "}
+            <span className="text-slate-500 dark:text-slate-500">LC:</span>{" "}
             <span className="text-cyan-400 font-mono">DL+LL</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Units — Figma §6.1 */}
           <span className="cursor-pointer hover:text-blue-400 transition-colors" title="Click to change units">
-            <span className="text-slate-600">Units:</span>{" "}
+            <span className="text-slate-500 dark:text-slate-500">Units:</span>{" "}
             <span className="text-slate-500 dark:text-slate-400">kN, m</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Zoom Level — Figma §6.1 zone D */}
           <span>
-            <span className="text-slate-600">Zoom:</span>{" "}
+            <span className="text-slate-500 dark:text-slate-500">Zoom:</span>{" "}
             <span className="text-slate-500 dark:text-slate-400 font-mono">{zoomLevel}%</span>
           </span>
 
-          <span className="h-3 w-px bg-slate-100 dark:bg-slate-800" />
+          <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Backend Health */}
           <button type="button"

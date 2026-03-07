@@ -215,7 +215,7 @@ const SnapBar: FC<{
         className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-all ${
           activeSnaps.has(snap.id)
             ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-            : 'text-slate-500 hover:text-slate-300 border border-transparent'
+            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
         }`}
         title={`Snap to ${snap.label}`}
       >
@@ -289,7 +289,7 @@ const ViewControlsBar: FC<{
             className={`p-1 rounded transition-all ${
               renderMode === rm.id
                 ? 'bg-blue-600/20 text-blue-400'
-                : 'text-slate-500 hover:text-slate-300'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
             }`}
             title={`${rm.label} mode`}
           >
@@ -377,11 +377,11 @@ const ModelStatusBar: FC = () => {
 
   return (
     <div className="flex items-center gap-3 px-2 py-1 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-      <span>N: <span className="text-slate-300 font-medium">{nodeCount}</span></span>
-      <span>M: <span className="text-slate-300 font-medium">{memberCount}</span></span>
+      <span>N: <span className="text-slate-700 dark:text-slate-300 font-medium">{nodeCount}</span></span>
+      <span>M: <span className="text-slate-700 dark:text-slate-300 font-medium">{memberCount}</span></span>
       {selCount > 0 && (
         <>
-          <div className="w-px h-3 bg-slate-600" />
+          <div className="w-px h-3 bg-slate-300 dark:bg-slate-600" />
           <span className="text-blue-400">Sel: {selCount}</span>
         </>
       )}

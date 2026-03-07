@@ -248,9 +248,9 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   const currentSubTools = CONTEXT_TOOLS[activeStep || 'MODELING'] || GEOMETRY_TOOLS;
 
   return (
-    <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-800/60 transition-all duration-300 ease-in-out ${collapsed ? 'w-12' : 'w-52'}`}>
+    <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-200 dark:border-slate-800/60 transition-all duration-300 ease-in-out ${collapsed ? 'w-12' : 'w-52'}`}>
       {/* Header */}
-      <div className={`border-b border-slate-800/60 bg-white dark:bg-slate-950 flex items-center ${collapsed ? 'px-1.5 py-3 justify-center' : 'px-3 py-3 justify-between'}`}>
+      <div className={`border-b border-slate-200 dark:border-slate-800/60 bg-white dark:bg-slate-950 flex items-center ${collapsed ? 'px-1.5 py-3 justify-center' : 'px-3 py-3 justify-between'}`}>
         {!collapsed && (
           <div>
             <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Workflow</h2>
@@ -266,7 +266,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       </div>
 
       {/* Workflow Steps */}
-      <div className={`${collapsed ? 'flex-1' : ''} overflow-y-auto py-1.5 eng-scroll ${collapsed ? '' : 'border-b border-slate-800/40'}`}>
+      <div className={`${collapsed ? 'flex-1' : ''} overflow-y-auto py-1.5 eng-scroll ${collapsed ? '' : 'border-b border-slate-200 dark:border-slate-800/40'}`}>
         <div className={`flex flex-col gap-0.5 ${collapsed ? 'px-0.5 items-center' : 'px-1.5'}`}>
           {workflowItems.map((item, index) => {
             const isActive = activeStep === item.id;
@@ -289,7 +289,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                     <div className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-colors flex-shrink-0
                       ${completedSteps.has(item.id) && !isActive
                         ? "bg-emerald-500/20 text-emerald-400"
-                        : isActive ? "bg-blue-500/20 text-blue-400" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"}
+                        : isActive ? "bg-blue-500/20 text-blue-400" : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 group-hover:text-slate-700 dark:group-hover:text-slate-300"}
                     `} aria-hidden="true">
                       {completedSteps.has(item.id) && !isActive ? <Check className="w-3.5 h-3.5" /> : index + 1}
                     </div>
@@ -317,7 +317,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                 {activeStep || 'Geometry'} Tools
               </span>
               <button type="button" onClick={() => setShowSubTools(false)}
-                className="text-slate-500 hover:text-slate-300 p-0.5 rounded hover:bg-slate-800/40">
+                className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 p-0.5 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800/40">
                 <ChevronDown className="w-3 h-3" />
               </button>
             </div>
@@ -330,8 +330,8 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
                     onClick={() => handleSubToolClick(tool)}
                     className={`flex items-center gap-2 px-2 py-1.5 rounded text-left transition-colors group
                       ${isToolActive
-                        ? 'text-blue-300 bg-blue-500/15 border-l-2 border-blue-400'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                        ? 'text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/15 border-l-2 border-blue-500 dark:border-blue-400'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                       }`}
                     title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}>
                     <ToolIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isToolActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`} />
@@ -351,14 +351,14 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
       {!collapsed && !showSubTools && (
         <div className="flex-1 flex items-start px-2 pt-2">
           <button type="button" onClick={() => setShowSubTools(true)}
-            className="text-[10px] text-slate-500 hover:text-slate-300 flex items-center gap-1">
+            className="text-[10px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 flex items-center gap-1">
             <ChevronRight className="w-3 h-3" /> Show Tools
           </button>
         </div>
       )}
 
       {/* Bottom Status */}
-      <div className={`bg-white dark:bg-slate-950 border-t border-slate-800/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
+      <div className={`bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800/60 ${collapsed ? 'px-1.5 py-2.5 flex justify-center' : 'px-3 py-2.5'}`}>
         {collapsed ? (
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Online" aria-label="Connection: Online" />
         ) : (

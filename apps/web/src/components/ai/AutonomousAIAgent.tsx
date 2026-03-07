@@ -885,12 +885,12 @@ ${apiStatus}
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
                     placeholder={hasApiKey ? '••••••••••••••••' : 'Enter your API key'}
-                    className="flex-1 px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
+                    className="flex-1 px-3 py-2 bg-slate-200/50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm placeholder:text-slate-400 focus:outline-none focus:border-purple-500"
                   />
                   <button type="button"
                     onClick={handleSaveApiKey}
                     disabled={!apiKey.trim()}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium transition-colors"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-lg text-sm font-medium transition-colors"
                   >
                     Save
                   </button>
@@ -955,10 +955,10 @@ ${apiStatus}
                   message.role === 'user'
                     ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
                     : message.role === 'system'
-                    ? 'bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-200'
+                    ? 'bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-200'
                     : message.type === 'error'
                     ? 'bg-red-900/30 border border-red-700/50 text-red-200'
-                    : 'bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-200'
+                    : 'bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-700 dark:text-slate-200'
                 }`}
               >
                 <div className="prose prose-sm prose-invert max-w-none [&>h1]:text-lg [&>h2]:text-base [&>h3]:text-sm [&>h1]:mt-2 [&>h2]:mt-2 [&>ul]:my-2 [&>p]:my-2">
@@ -1026,7 +1026,7 @@ ${apiStatus}
                       </button>
                       <button type="button"
                         onClick={() => setInput('Modify the plan to...')}
-                        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm transition-colors"
+                        className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg text-sm transition-colors"
                       >
                         Modify
                       </button>

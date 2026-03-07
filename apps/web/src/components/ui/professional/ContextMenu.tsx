@@ -164,7 +164,7 @@ const MenuItemComponent: FC<MenuItemComponentProps> = memo(({
           ? 'opacity-40 cursor-not-allowed'
           : item.danger
             ? 'hover:bg-red-500/20 text-red-400'
-            : 'hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-slate-200'
+            : 'hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200'
         }
         ${openSubmenuId === item.id ? 'bg-slate-200/50 dark:bg-slate-700/50' : ''}
       `}

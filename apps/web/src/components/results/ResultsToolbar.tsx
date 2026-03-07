@@ -1254,7 +1254,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
             onClick={() => {
               useUIStore.getState().setCategory("MODELING");
             }}
-            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 text-blue-300 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
+            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-300 rounded-lg shadow-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700"
             title="Back to Model"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -1337,7 +1337,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
           onClick={() => {
             useUIStore.getState().setCategory("MODELING");
           }}
-          className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border-b border-slate-200 dark:border-slate-800 transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 border-b border-slate-200 dark:border-slate-800 transition-colors focus:ring-2 focus:ring-blue-500 focus:outline-none"
           title="Return to modeling view while keeping results visible"
           aria-label="Back to modeling view"
         >

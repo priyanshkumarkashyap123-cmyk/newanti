@@ -2482,3 +2482,992 @@ pub async fn spectrum_directional_analysis(
         performance_ms,
     }))
 }
+
+// =====================================================================
+// 4.  Design, Optimization & Detailing Engines
+// =====================================================================
+
+// ── 4-A.  Auto-Design Optimization Loop ─────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct AutoDesignRequest {
+    pub members: Vec<AutoDesignMemberInput>,
+    pub catalogue: Option<Vec<CatalogueSectionInput>>,
+    pub design_code: Option<String>,      // "AISC360" | "IS800" | "EN1993"
+    pub selection_strategy: Option<String>, // "MinWeight" | "MinDepth" | "MinCost"
+    pub max_iterations: Option<usize>,
+    pub dc_target: Option<f64>,
+    pub convergence_tolerance: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AutoDesignMemberInput {
+    pub id: String,
+    pub member_type: String,  // "Beam" | "Column" | "Brace"
+    pub length_mm: f64,
+    pub unbraced_length_mm: Option<f64>,
+    pub moment_demand_knm: f64,
+    pub shear_demand_kn: f64,
+    pub axial_demand_kn: Option<f64>,
+    pub deflection_limit: Option<f64>,  // e.g. L/360
+    pub current_section: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CatalogueSectionInput {
+    pub name: String,
+    pub depth_mm: f64,
+    pub width_mm: f64,
+    pub area_mm2: f64,
+    pub ix_mm4: f64,
+    pub iy_mm4: f64,
+    pub sx_mm3: f64,
+    pub sy_mm3: f64,
+    pub zx_mm3: f64,
+    pub zy_mm3: f64,
+    pub weight_kg_per_m: f64,
+    pub fy_mpa: Option<f64>,
+    pub tw_mm: Option<f64>,
+    pub tf_mm: Option<f64>,
+    pub ry_mm: Option<f64>,
+    pub j_mm4: Option<f64>,
+    pub cw_mm6: Option<f64>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AutoDesignResponse {
+    pub success: bool,
+    pub iterations: usize,
+    pub converged: bool,
+    pub total_weight_kg: f64,
+    pub members: Vec<AutoDesignMemberResult>,
+    pub performance_ms: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AutoDesignMemberResult {
+    pub id: String,
+    pub selected_section: String,
+    pub dc_flexure: f64,
+    pub dc_shear: f64,
+    pub dc_axial: f64,
+    pub dc_interaction: f64,
+    pub dc_deflection: f64,
+    pub dc_governing: f64,
+    pub weight_kg_per_m: f64,
+    pub iteration_selected: usize,
+}
+
+pub async fn auto_design_optimization(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<AutoDesignRequest>,
+) -> ApiResult<Json<AutoDesignResponse>> {
+    let start = std::time::Instant::now();
+
+    let design_code = req.design_code.as_deref().unwrap_or("AISC360");
+    let strategy = req.selection_strategy.as_deref().unwrap_or("MinWeight");
+    let max_iter = req.max_iterations.unwrap_or(20);
+    let dc_target = req.dc_target.unwrap_or(0.95);
+    let tol = req.convergence_tolerance.unwrap_or(0.02);
+
+    let phi = match design_code {
+        "IS800" => 0.90,
+        "EN1993" => 1.0 / 1.0,
+        _ => 0.90,
+    };
+
+    // Build section catalogue
+    struct CatSec {
+        name: String, depth: f64, area: f64, ix: f64, iy: f64,
+        sx: f64, zx: f64, ry: f64, w: f64, tw: f64, tf: f64,
+        j: f64, cw: f64,
+    }
+    let catalogue: Vec<CatSec> = if let Some(ref c) = req.catalogue {
+        c.iter().map(|s| CatSec {
+            name: s.name.clone(), depth: s.depth_mm, area: s.area_mm2,
+            ix: s.ix_mm4, iy: s.iy_mm4, sx: s.sx_mm3, zx: s.zx_mm3,
+            ry: s.ry_mm.unwrap_or(s.iy_mm4.sqrt() / s.area_mm2.sqrt()),
+            w: s.weight_kg_per_m, tw: s.tw_mm.unwrap_or(8.0),
+            tf: s.tf_mm.unwrap_or(12.0), j: s.j_mm4.unwrap_or(1e5),
+            cw: s.cw_mm6.unwrap_or(1e9),
+        }).collect()
+    } else {
+        // Default AISC W-shapes (representative)
+        vec![
+            ("W8X10",  203.0, 1900.0, 14.5e6, 1.33e6, 143e3, 161e3, 26.4, 10.0, 4.3, 5.6, 5.08e3, 3.26e9),
+            ("W10X19", 260.0, 3610.0, 42.6e6, 4.19e6, 328e3, 370e3, 34.0, 19.0, 6.4, 8.5, 27.9e3, 28.8e9),
+            ("W12X26", 310.0, 4950.0, 85.1e6, 8.55e6, 549e3, 618e3, 41.6, 26.0, 6.1, 9.7, 51.0e3, 77.6e9),
+            ("W14X30", 352.0, 5710.0, 121e6, 9.70e6, 689e3, 786e3, 41.2, 30.0, 6.9, 10.0, 58.2e3, 108e9),
+            ("W16X36", 403.0, 6840.0, 199e6, 12.4e6, 988e3, 1130e3, 42.6, 36.0, 7.5, 10.9, 83.9e3, 226e9),
+            ("W18X50", 457.0, 9480.0, 339e6, 24.1e6, 1490e3, 1690e3, 50.4, 50.0, 9.0, 14.5, 264e3, 575e9),
+            ("W21X57", 535.0, 10800.0, 486e6, 21.1e6, 1820e3, 2060e3, 44.2, 57.0, 8.4, 13.1, 199e3, 804e9),
+            ("W24X76", 608.0, 14500.0, 812e6, 37.3e6, 2670e3, 3040e3, 50.7, 76.0, 11.2, 17.3, 624e3, 2230e9),
+            ("W27X84", 684.0, 16000.0, 1080e6, 34.4e6, 3160e3, 3570e3, 46.4, 84.0, 10.7, 16.3, 537e3, 2650e9),
+            ("W30X99", 753.0, 18800.0, 1490e6, 41.4e6, 3960e3, 4470e3, 46.9, 99.0, 11.2, 17.0, 696e3, 4380e9),
+            ("W33X118",838.0, 22400.0, 2070e6, 55.6e6, 4940e3, 5620e3, 49.8, 118.0, 13.5, 18.8, 1290e3, 8500e9),
+            ("W36X135",912.0, 25700.0, 2700e6, 63.3e6, 5920e3, 6750e3, 49.6, 135.0, 13.0, 19.8, 1380e3, 11000e9),
+        ].into_iter().map(|(n,d,a,ix,iy,sx,zx,ry,w,tw,tf,j,cw)| CatSec {
+            name: n.to_string(), depth: d, area: a, ix, iy, sx, zx, ry, w, tw, tf, j, cw,
+        }).collect()
+    };
+
+    // Sort by weight for MinWeight, by depth for MinDepth
+    let mut sorted_cat: Vec<usize> = (0..catalogue.len()).collect();
+    match strategy {
+        "MinDepth" => sorted_cat.sort_by(|a, b| catalogue[*a].depth.partial_cmp(&catalogue[*b].depth).unwrap()),
+        _ => sorted_cat.sort_by(|a, b| catalogue[*a].w.partial_cmp(&catalogue[*b].w).unwrap()),
+    }
+
+    // D/C ratio computation (AISC H1-1)
+    let compute_dc = |sec: &CatSec, m_knm: f64, v_kn: f64, p_kn: f64, lb: f64, defl_limit: f64, span: f64| -> (f64, f64, f64, f64, f64) {
+        let fy = 345.0; // A992
+
+        // Flexure
+        let mn = phi * fy * sec.zx / 1e6; // kN·m
+        let dc_flex = m_knm.abs() / mn.max(1e-12);
+
+        // Shear
+        let aw = sec.depth * sec.tw;
+        let vn = phi * 0.6 * fy * aw / 1e3;
+        let dc_shear = v_kn.abs() / vn.max(1e-12);
+
+        // Axial compression (Euler with reduction)
+        let pe = std::f64::consts::PI.powi(2) * 200000.0 * sec.iy / (lb * lb);
+        let pn_comp = phi * fy * sec.area / 1e3 * (1.0 - fy * sec.area / (4.0 * pe)).max(0.1);
+        let dc_axial = p_kn.abs() / pn_comp.max(1e-12);
+
+        // Interaction H1-1a/b
+        let pr_over_pc = dc_axial;
+        let dc_inter = if pr_over_pc >= 0.2 {
+            pr_over_pc + 8.0 / 9.0 * dc_flex
+        } else {
+            pr_over_pc / 2.0 + dc_flex
+        };
+
+        // Deflection (assume uniform load → δ = 5wL4/384EI)
+        let w_per_mm = if span > 0.0 { 8.0 * m_knm * 1e6 / (span * span) } else { 0.0 };
+        let delta = 5.0 * w_per_mm * span.powi(4) / (384.0 * 200000.0 * sec.ix);
+        let delta_limit = span / defl_limit;
+        let dc_defl = if delta_limit > 0.0 { delta / delta_limit } else { 0.0 };
+
+        (dc_flex, dc_shear, dc_axial, dc_inter, dc_defl)
+    };
+
+    // Iterative design
+    let mut member_results: Vec<AutoDesignMemberResult> = Vec::new();
+    let mut converged = true;
+    let mut iterations_used = 0;
+
+    for member in &req.members {
+        let lb = member.unbraced_length_mm.unwrap_or(member.length_mm);
+        let p_kn = member.axial_demand_kn.unwrap_or(0.0);
+        let defl_lim = member.deflection_limit.unwrap_or(360.0);
+
+        let mut best_idx = 0;
+        let mut best_dc = f64::MAX;
+        let mut best_iter = 0;
+        let mut best_dcs = (0.0, 0.0, 0.0, 0.0, 0.0);
+
+        for iter in 0..max_iter {
+            iterations_used = iterations_used.max(iter + 1);
+            let mut found = false;
+            for &si in &sorted_cat {
+                let sec = &catalogue[si];
+                let (df, ds, da, di, dd) = compute_dc(sec, member.moment_demand_knm, member.shear_demand_kn, p_kn, lb, defl_lim, member.length_mm);
+                let governing = df.max(ds).max(da).max(di).max(dd);
+                if governing <= dc_target {
+                    if sec.w < catalogue[best_idx].w || best_dc > dc_target {
+                        best_idx = si;
+                        best_dc = governing;
+                        best_dcs = (df, ds, da, di, dd);
+                        best_iter = iter;
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                // Use largest section
+                let si = *sorted_cat.last().unwrap();
+                let sec = &catalogue[si];
+                let (df, ds, da, di, dd) = compute_dc(sec, member.moment_demand_knm, member.shear_demand_kn, p_kn, lb, defl_lim, member.length_mm);
+                best_idx = si;
+                best_dc = df.max(ds).max(da).max(di).max(dd);
+                best_dcs = (df, ds, da, di, dd);
+                best_iter = iter;
+                converged = false;
+            }
+            // Check convergence
+            if best_dc <= dc_target && (best_dc - dc_target).abs() < tol {
+                break;
+            }
+        }
+
+        member_results.push(AutoDesignMemberResult {
+            id: member.id.clone(),
+            selected_section: catalogue[best_idx].name.clone(),
+            dc_flexure: (best_dcs.0 * 1000.0).round() / 1000.0,
+            dc_shear: (best_dcs.1 * 1000.0).round() / 1000.0,
+            dc_axial: (best_dcs.2 * 1000.0).round() / 1000.0,
+            dc_interaction: (best_dcs.3 * 1000.0).round() / 1000.0,
+            dc_deflection: (best_dcs.4 * 1000.0).round() / 1000.0,
+            dc_governing: (best_dc * 1000.0).round() / 1000.0,
+            weight_kg_per_m: catalogue[best_idx].w,
+            iteration_selected: best_iter,
+        });
+    }
+
+    let total_weight = member_results.iter()
+        .zip(req.members.iter())
+        .map(|(r, m)| r.weight_kg_per_m * m.length_mm / 1000.0)
+        .sum();
+
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(AutoDesignResponse {
+        success: true,
+        iterations: iterations_used,
+        converged,
+        total_weight_kg: total_weight,
+        members: member_results,
+        performance_ms,
+    }))
+}
+
+// ── 4-B.  Cracked Section Analysis ──────────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct CrackedSectionRequest {
+    pub b_mm: f64,
+    pub h_mm: f64,
+    pub d_mm: f64,
+    pub fck_mpa: f64,
+    pub fy_mpa: f64,
+    pub concrete_code: Option<String>,  // "IS456" | "ACI318"
+    pub tension_bars: Vec<RebarLayerInput>,
+    pub compression_bars: Option<Vec<RebarLayerInput>>,
+    pub applied_moment_knm: f64,
+    pub ie_method: Option<String>,  // "BransonACI" | "Eurocode2" | "BischoffACI318_19"
+    pub span_mm: Option<f64>,
+    pub loading_type: Option<String>,  // "UDL" | "Point" | "Cantilever"
+    pub sustained_load_ratio: Option<f64>,
+    pub loading_age_months: Option<f64>,
+    pub is_flanged: Option<bool>,
+    pub flange_width_mm: Option<f64>,
+    pub flange_depth_mm: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RebarLayerInput {
+    pub n_bars: usize,
+    pub diameter_mm: f64,
+    pub depth_mm: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CrackedSectionResponse {
+    pub success: bool,
+    pub gross_inertia_mm4: f64,
+    pub cracking_moment_knm: f64,
+    pub cracked_na_depth_mm: f64,
+    pub cracked_inertia_mm4: f64,
+    pub effective_inertia_mm4: f64,
+    pub modular_ratio: f64,
+    pub ie_method: String,
+    pub is_cracked: bool,
+    pub long_term_multiplier: f64,
+    pub deflection_mm: Option<f64>,
+    pub span_over_deflection: Option<f64>,
+    pub performance_ms: f64,
+}
+
+pub async fn cracked_section_analysis(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<CrackedSectionRequest>,
+) -> ApiResult<Json<CrackedSectionResponse>> {
+    let start = std::time::Instant::now();
+
+    let b = req.b_mm;
+    let h = req.h_mm;
+    let d = req.d_mm;
+    let fck = req.fck_mpa;
+    let fy = req.fy_mpa;
+
+    // Concrete properties
+    let is_aci = req.concrete_code.as_deref().unwrap_or("IS456") == "ACI318";
+    let ec = if is_aci { 4700.0 * fck.sqrt() } else { 5000.0 * fck.sqrt() };
+    let es = 200000.0;
+    let m_ratio = es / ec;
+
+    // Flexural tensile strength
+    let fr = if is_aci { 0.62 * fck.sqrt() } else { 0.7 * fck.sqrt() };
+
+    // Gross section
+    let ig = b * h.powi(3) / 12.0;
+    let yt = h / 2.0;
+    let mcr = fr * ig / (yt * 1e6); // kN·m
+
+    // Tension reinforcement area
+    let ast: f64 = req.tension_bars.iter()
+        .map(|l| l.n_bars as f64 * std::f64::consts::PI / 4.0 * l.diameter_mm.powi(2))
+        .sum();
+    // Compression reinforcement
+    let asc: f64 = req.compression_bars.as_ref().map(|bars| {
+        bars.iter().map(|l| l.n_bars as f64 * std::f64::consts::PI / 4.0 * l.diameter_mm.powi(2)).sum()
+    }).unwrap_or(0.0);
+    let d_prime = req.compression_bars.as_ref()
+        .and_then(|bars| bars.first())
+        .map(|l| l.depth_mm)
+        .unwrap_or(40.0);
+
+    // Cracked section analysis — NA depth by quadratic
+    let (xcr, icr) = if req.is_flanged.unwrap_or(false) {
+        let bf = req.flange_width_mm.unwrap_or(b * 3.0);
+        let hf = req.flange_depth_mm.unwrap_or(h * 0.15);
+        // Iterative for T-beam
+        let mut x = hf;
+        for _ in 0..50 {
+            let cf = if x <= hf { bf * x } else { bf * hf + b * (x - hf) };
+            let f = cf * x / 2.0 + (m_ratio - 1.0) * asc * (x - d_prime) - m_ratio * ast * (d - x);
+            let df_dx = if x <= hf { bf * x + cf / 2.0 } else { bf * hf + b * (2.0 * x - hf) / 2.0 + b * (x - hf) }
+                + (m_ratio - 1.0) * asc + m_ratio * ast;
+            let x_new = x - f / df_dx.max(1.0);
+            if (x_new - x).abs() < 0.01 { x = x_new; break; }
+            x = x_new.max(1.0).min(d);
+        }
+        let icr_val = if x <= hf {
+            bf * x.powi(3) / 3.0 + m_ratio * ast * (d - x).powi(2) + (m_ratio - 1.0) * asc * (x - d_prime).powi(2)
+        } else {
+            bf * hf.powi(3) / 12.0 + bf * hf * (x - hf / 2.0).powi(2)
+                + b * (x - hf).powi(3) / 3.0
+                + m_ratio * ast * (d - x).powi(2)
+                + (m_ratio - 1.0) * asc * (x - d_prime).powi(2)
+        };
+        (x, icr_val)
+    } else {
+        // Rectangular: b·x²/2 + (m-1)·Asc·(x-d') = m·Ast·(d-x)
+        let a_coeff = b / 2.0;
+        let b_coeff = (m_ratio - 1.0) * asc + m_ratio * ast;
+        let c_coeff = -((m_ratio - 1.0) * asc * d_prime + m_ratio * ast * d);
+        let disc = b_coeff * b_coeff - 4.0 * a_coeff * c_coeff;
+        let x = (-b_coeff + disc.max(0.0).sqrt()) / (2.0 * a_coeff);
+        let x = x.max(1.0).min(d);
+        let icr_val = b * x.powi(3) / 3.0
+            + m_ratio * ast * (d - x).powi(2)
+            + (m_ratio - 1.0) * asc * (x - d_prime).powi(2);
+        (x, icr_val)
+    };
+
+    let ma = req.applied_moment_knm;
+    let is_cracked = ma.abs() > mcr;
+
+    // Effective inertia
+    let ie_method = req.ie_method.as_deref().unwrap_or("BransonACI");
+    let ie = if !is_cracked {
+        ig
+    } else {
+        let ratio = mcr / ma.abs().max(1e-12);
+        match ie_method {
+            "Eurocode2" => {
+                let zeta = 1.0 - 0.5 * ratio * ratio;
+                let zeta = zeta.max(0.0).min(1.0);
+                1.0 / ((1.0 - zeta) / ig + zeta / icr)
+            }
+            "BischoffACI318_19" => {
+                icr / (1.0 - (1.0 - icr / ig) * ratio * ratio)
+            }
+            _ => {
+                // Branson: Ie = (Mcr/Ma)³·Ig + (1-(Mcr/Ma)³)·Icr
+                let r3 = ratio.powi(3);
+                r3 * ig + (1.0 - r3) * icr
+            }
+        }
+    };
+
+    // Long-term multiplier
+    let sustained = req.sustained_load_ratio.unwrap_or(0.5);
+    let months = req.loading_age_months.unwrap_or(60.0);
+    let rho_prime = asc / (b * d);
+    let xi_aci = if months >= 60.0 { 2.0 } else if months >= 36.0 { 1.8 } else if months >= 12.0 { 1.4 } else if months >= 6.0 { 1.2 } else { 1.0 };
+    let lt_mult = 1.0 + xi_aci / (1.0 + 50.0 * rho_prime) * sustained;
+
+    // Deflection
+    let (defl, span_over_defl) = if let Some(span) = req.span_mm {
+        let load_type = req.loading_type.as_deref().unwrap_or("UDL");
+        // Back-calculate w from moment
+        let w = match load_type {
+            "Point" => 0.0, // special case below
+            "Cantilever" => 2.0 * ma.abs() * 1e6 / (span * span),
+            _ => 8.0 * ma.abs() * 1e6 / (span * span),
+        };
+        let delta_inst = match load_type {
+            "Point" => ma.abs() * 1e6 * span * span / (48.0 * ec * ie),
+            "Cantilever" => w * span.powi(4) / (8.0 * ec * ie),
+            _ => 5.0 * w * span.powi(4) / (384.0 * ec * ie),
+        };
+        let delta_lt = delta_inst * lt_mult;
+        let sod = if delta_lt > 0.0 { span / delta_lt } else { f64::INFINITY };
+        (Some(delta_lt), Some(sod))
+    } else {
+        (None, None)
+    };
+
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(CrackedSectionResponse {
+        success: true,
+        gross_inertia_mm4: ig,
+        cracking_moment_knm: (mcr * 1000.0).round() / 1000.0,
+        cracked_na_depth_mm: (xcr * 100.0).round() / 100.0,
+        cracked_inertia_mm4: icr,
+        effective_inertia_mm4: ie,
+        modular_ratio: (m_ratio * 100.0).round() / 100.0,
+        ie_method: ie_method.to_string(),
+        is_cracked,
+        long_term_multiplier: (lt_mult * 1000.0).round() / 1000.0,
+        deflection_mm: defl.map(|d| (d * 100.0).round() / 100.0),
+        span_over_deflection: span_over_defl.map(|s| (s * 10.0).round() / 10.0),
+        performance_ms,
+    }))
+}
+
+// ── 4-C.  Floor Walking & Vibration Check ───────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct FloorWalkingRequest {
+    pub occupancy: String,          // "Office" | "Residential" | "Hospital" | etc.
+    pub beam_span_m: f64,
+    pub girder_span_m: f64,
+    pub beam_spacing_m: f64,
+    pub beam_ix_mm4: f64,
+    pub girder_ix_mm4: f64,
+    pub slab_depth_mm: f64,
+    pub concrete_density_kg_m3: Option<f64>,
+    pub damping_ratio: Option<f64>,
+    pub walker_weight_n: Option<f64>,
+    pub walking_frequency_hz: Option<f64>,
+    pub check_rhythmic: Option<bool>,
+    pub rhythmic_weight_n: Option<f64>,
+    pub rhythmic_activity_freq_hz: Option<f64>,
+    pub check_codes: Option<Vec<String>>,  // ["DG11", "SCIP354", "IS800", "EN1990"]
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FloorWalkingResponse {
+    pub success: bool,
+    pub beam_frequency_hz: f64,
+    pub girder_frequency_hz: f64,
+    pub combined_frequency_hz: f64,
+    pub dg11_result: Option<DG11CheckOutput>,
+    pub sci_p354_result: Option<SCIP354CheckOutput>,
+    pub is800_result: Option<MinFreqCheckOutput>,
+    pub en1990_result: Option<MinFreqCheckOutput>,
+    pub rhythmic_result: Option<RhythmicCheckOutput>,
+    pub overall_pass: bool,
+    pub recommendations: Vec<String>,
+    pub performance_ms: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DG11CheckOutput {
+    pub peak_acceleration_g: f64,
+    pub acceleration_limit_g: f64,
+    pub effective_panel_weight_kn: f64,
+    pub pass: bool,
+    pub harmonics_checked: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SCIP354CheckOutput {
+    pub response_factor: f64,
+    pub response_limit: f64,
+    pub pass: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MinFreqCheckOutput {
+    pub frequency_hz: f64,
+    pub min_required_hz: f64,
+    pub pass: bool,
+    pub code: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RhythmicCheckOutput {
+    pub dynamic_amplification: f64,
+    pub peak_acceleration_g: f64,
+    pub limit_g: f64,
+    pub pass: bool,
+}
+
+pub async fn floor_walking_vibration(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<FloorWalkingRequest>,
+) -> ApiResult<Json<FloorWalkingResponse>> {
+    let start = std::time::Instant::now();
+
+    let conc_density = req.concrete_density_kg_m3.unwrap_or(2400.0);
+    let walker_w = req.walker_weight_n.unwrap_or(700.0);
+    let walk_freq = req.walking_frequency_hz.unwrap_or(2.0);
+
+    // Occupancy parameters
+    let (accel_limit, damping_default, resp_factor_limit) = match req.occupancy.as_str() {
+        "Residential" => (0.005, 0.03, 8.0),
+        "Hospital" | "Surgery" => (0.0015, 0.03, 1.0),
+        "ShoppingMall" => (0.015, 0.02, 4.0),
+        "Gymnasium" | "SportsFacility" => (0.05, 0.06, 24.0),
+        "Industrial" => (0.05, 0.03, 24.0),
+        _ => (0.005, 0.03, 8.0), // Office default
+    };
+    let beta = req.damping_ratio.unwrap_or(damping_default);
+
+    // Slab weight per unit area
+    let slab_w = conc_density * 9.81 * req.slab_depth_mm / 1000.0; // N/m²
+
+    // Component frequencies (simply-supported beam: fn = π/2 × √(EI g / w L⁴))
+    let e_conc = 5000.0 * 30.0_f64.sqrt(); // assume M30 concrete, MPa
+    let g = 9810.0; // mm/s²
+
+    let beam_span = req.beam_span_m * 1000.0;
+    let girder_span = req.girder_span_m * 1000.0;
+    let beam_spacing = req.beam_spacing_m * 1000.0;
+
+    // Beam: distributed load = slab_w × spacing
+    let w_beam = slab_w * beam_spacing / 1e6; // N/mm per mm length => slab_w is N/m², spacing in mm
+    let w_beam_n_per_mm = slab_w * beam_spacing / 1e6; // N/mm
+    let delta_beam = 5.0 * w_beam_n_per_mm * beam_span.powi(4) / (384.0 * 200000.0 * req.beam_ix_mm4);
+    let fn_beam = if delta_beam > 0.0 { 0.18 * (g / delta_beam).sqrt() } else { 100.0 };
+
+    // Girder: concentrated loads from beams
+    let w_girder_total = slab_w * beam_span * girder_span / 1e6; // total N
+    let w_girder_per_mm = w_girder_total / girder_span;
+    let delta_girder = 5.0 * w_girder_per_mm * girder_span.powi(4) / (384.0 * 200000.0 * req.girder_ix_mm4);
+    let fn_girder = if delta_girder > 0.0 { 0.18 * (g / delta_girder).sqrt() } else { 100.0 };
+
+    // Dunkerley combined
+    let fn_combined = 1.0 / (1.0 / (fn_beam * fn_beam) + 1.0 / (fn_girder * fn_girder)).sqrt();
+
+    let checks = req.check_codes.as_ref().map(|c| c.iter().map(|s| s.as_str()).collect::<Vec<_>>())
+        .unwrap_or_else(|| vec!["DG11", "SCIP354", "IS800", "EN1990"]);
+
+    let mut overall_pass = true;
+    let mut recommendations = Vec::new();
+
+    // DG11 walking excitation (Ch 4, Eq 4-1)
+    let dg11_result = if checks.contains(&"DG11") {
+        let alpha_i = [0.5, 0.2, 0.1, 0.05]; // harmonic force coefficients
+        // Effective panel weight
+        let ds = e_conc * req.slab_depth_mm.powi(3) / 12.0; // slab stiffness per unit width
+        let bj = (2.0 / 3.0 * (ds / (200000.0 * req.beam_ix_mm4 / beam_spacing)).powf(0.25) * beam_span).min(2.0 / 3.0 * girder_span);
+        let bg = (2.0 / 3.0 * (ds / (200000.0 * req.girder_ix_mm4 / girder_span)).powf(0.25) * girder_span).min(2.0 / 3.0 * beam_span);
+        let wj = slab_w * bj * beam_span / 1000.0; // kN
+        let wg = slab_w * bg * girder_span / 1000.0;
+        let w_eff = wj + wg;
+
+        let mut peak_accel = 0.0;
+        for (i, &alpha) in alpha_i.iter().enumerate() {
+            let f_harm = (i as f64 + 1.0) * walk_freq;
+            let ratio = f_harm / fn_combined;
+            let r2 = ratio * ratio;
+            let daf = 1.0 / ((1.0 - r2).powi(2) + (2.0 * beta * ratio).powi(2)).sqrt();
+            let a_harm = alpha * walker_w * daf / (w_eff * 1000.0).max(1.0);
+            if a_harm > peak_accel { peak_accel = a_harm; }
+        }
+
+        let pass = peak_accel <= accel_limit;
+        if !pass {
+            overall_pass = false;
+            recommendations.push(format!("DG11 FAIL: peak accel {:.4}g > limit {:.4}g — increase beam stiffness or add damping", peak_accel, accel_limit));
+        }
+        Some(DG11CheckOutput {
+            peak_acceleration_g: (peak_accel * 10000.0).round() / 10000.0,
+            acceleration_limit_g: accel_limit,
+            effective_panel_weight_kn: (w_eff * 10.0).round() / 10.0,
+            pass,
+            harmonics_checked: 4,
+        })
+    } else { None };
+
+    // SCI P354
+    let sci_result = if checks.contains(&"SCIP354") {
+        let rms_accel = walker_w * 0.4 / ((2.0 * beta * fn_combined * slab_w * beam_span * girder_span / 1e6).max(1.0));
+        let a_rms_g = rms_accel / 9.81;
+        let response_factor = a_rms_g / 0.005;
+        let pass = response_factor <= resp_factor_limit;
+        if !pass {
+            overall_pass = false;
+            recommendations.push(format!("SCI P354 FAIL: R={:.1} > limit {:.0}", response_factor, resp_factor_limit));
+        }
+        Some(SCIP354CheckOutput {
+            response_factor: (response_factor * 100.0).round() / 100.0,
+            response_limit: resp_factor_limit,
+            pass,
+        })
+    } else { None };
+
+    // IS 800 check
+    let is800_result = if checks.contains(&"IS800") {
+        let min_freq = 5.0;
+        let pass = fn_combined >= min_freq;
+        if !pass {
+            overall_pass = false;
+            recommendations.push(format!("IS 800 FAIL: fn={:.2} Hz < 5.0 Hz minimum", fn_combined));
+        }
+        Some(MinFreqCheckOutput {
+            frequency_hz: (fn_combined * 100.0).round() / 100.0,
+            min_required_hz: min_freq,
+            pass,
+            code: "IS 800".to_string(),
+        })
+    } else { None };
+
+    // EN 1990 check
+    let en1990_result = if checks.contains(&"EN1990") {
+        let min_freq = 3.0;
+        let pass = fn_combined >= min_freq;
+        if !pass {
+            overall_pass = false;
+            recommendations.push(format!("EN 1990 FAIL: fn={:.2} Hz < 3.0 Hz minimum", fn_combined));
+        }
+        Some(MinFreqCheckOutput {
+            frequency_hz: (fn_combined * 100.0).round() / 100.0,
+            min_required_hz: min_freq,
+            pass,
+            code: "EN 1990".to_string(),
+        })
+    } else { None };
+
+    // Rhythmic check
+    let rhythmic_result = if req.check_rhythmic.unwrap_or(false) {
+        let f_act = req.rhythmic_activity_freq_hz.unwrap_or(2.5);
+        let wp = req.rhythmic_weight_n.unwrap_or(1500.0); // weight of participants
+        let ratio = f_act / fn_combined;
+        let r2 = ratio * ratio;
+        let daf = 1.0 / ((1.0 - r2).powi(2) + (2.0 * beta * ratio).powi(2)).sqrt();
+        let alpha = 0.5; // rhythmic force coefficient
+        let w_total = slab_w * beam_span * girder_span / 1e6; // N total
+        let peak_a = alpha * wp * daf / w_total.max(1.0);
+        let limit = 0.05; // 5% g for rhythmic
+        let pass = peak_a <= limit;
+        if !pass {
+            overall_pass = false;
+            recommendations.push(format!("Rhythmic FAIL: peak accel {:.4}g > {:.2}g", peak_a, limit));
+        }
+        Some(RhythmicCheckOutput {
+            dynamic_amplification: (daf * 100.0).round() / 100.0,
+            peak_acceleration_g: (peak_a * 10000.0).round() / 10000.0,
+            limit_g: limit,
+            pass,
+        })
+    } else { None };
+
+    if overall_pass {
+        recommendations.push("All vibration checks passed.".to_string());
+    }
+
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(FloorWalkingResponse {
+        success: true,
+        beam_frequency_hz: (fn_beam * 100.0).round() / 100.0,
+        girder_frequency_hz: (fn_girder * 100.0).round() / 100.0,
+        combined_frequency_hz: (fn_combined * 100.0).round() / 100.0,
+        dg11_result,
+        sci_p354_result: sci_result,
+        is800_result,
+        en1990_result: en1990_result,
+        rhythmic_result,
+        overall_pass,
+        recommendations,
+        performance_ms,
+    }))
+}
+
+// ── 4-D.  Rebar Curtailment & Detailing ─────────────────────────────
+
+#[derive(Debug, Deserialize)]
+pub struct RebarDetailingRequest {
+    pub bar_dia_mm: f64,
+    pub n_bars: usize,
+    pub b_mm: f64,
+    pub h_mm: f64,
+    pub d_mm: f64,
+    pub fck_mpa: f64,
+    pub fy_mpa: f64,
+    pub clear_cover_mm: f64,
+    pub bar_type: Option<String>,        // "Deformed" | "Plain"
+    pub code: Option<String>,            // "IS456" | "ACI318" | "Eurocode2"
+    pub span_mm: f64,
+    pub moment_diagram: Option<Vec<MomentPointInput>>,
+    pub pct_bars_spliced: Option<f64>,
+    pub hook_type: Option<String>,       // "Standard90" | "Standard180" | "HeadedBar"
+    pub is_top_bar: Option<bool>,
+    pub is_tension: Option<bool>,
+    pub max_aggregate_mm: Option<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct MomentPointInput {
+    pub x_mm: f64,
+    pub moment_knm: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RebarDetailingResponse {
+    pub success: bool,
+    pub development_length_mm: f64,
+    pub ld_over_db: f64,
+    pub lap_splice_mm: f64,
+    pub lap_class: String,
+    pub hook_ldh_mm: f64,
+    pub hook_total_mm: f64,
+    pub bar_spacing_mm: f64,
+    pub spacing_pass: bool,
+    pub rho_pct: f64,
+    pub rho_min_pct: f64,
+    pub rho_max_pct: f64,
+    pub reinforcement_pass: bool,
+    pub curtailment: Option<CurtailmentOutput>,
+    pub all_checks_pass: bool,
+    pub issues: Vec<String>,
+    pub performance_ms: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CurtailmentOutput {
+    pub n_cutoff_points: usize,
+    pub savings_pct: f64,
+    pub cutoff_schedule: Vec<CutoffScheduleItem>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CutoffScheduleItem {
+    pub bars_continuing: usize,
+    pub bars_cutoff: usize,
+    pub theoretical_x_mm: f64,
+    pub actual_x_mm: f64,
+    pub moment_capacity_knm: f64,
+}
+
+pub async fn rebar_detailing_analysis(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<RebarDetailingRequest>,
+) -> ApiResult<Json<RebarDetailingResponse>> {
+    let start = std::time::Instant::now();
+
+    let db = req.bar_dia_mm;
+    let fck = req.fck_mpa;
+    let fy = req.fy_mpa;
+    let cover = req.clear_cover_mm;
+    let is_deformed = req.bar_type.as_deref().unwrap_or("Deformed") == "Deformed";
+    let code = req.code.as_deref().unwrap_or("IS456");
+    let is_top = req.is_top_bar.unwrap_or(false);
+    let is_tension = req.is_tension.unwrap_or(true);
+
+    let mut issues = Vec::new();
+
+    // ── Development length ──
+    let (ld, ld_db) = match code {
+        "ACI318" => {
+            let psi_t = if is_top { 1.3 } else { 1.0 };
+            let psi_s = if db <= 22.0 { 0.8 } else { 1.0 };
+            let cb_ktr = ((cover) / db).min(2.5);
+            let ld_val = if is_tension {
+                let v = (fy * psi_t * psi_s * db) / (1.1 * fck.sqrt() * cb_ktr);
+                v.max(300.0)
+            } else {
+                ((0.24 * fy / fck.sqrt()) * db).max(200.0)
+            };
+            (ld_val, ld_val / db)
+        }
+        "Eurocode2" => {
+            let fctd = 0.21 * fck.powf(2.0 / 3.0) / 1.5;
+            let fbd = 2.25 * fctd;
+            let fyd = fy / 1.15;
+            let lb_rqd = db / 4.0 * fyd / fbd;
+            let alpha5 = if !is_tension { 0.7 } else { 1.0 };
+            let lbd = (alpha5 * lb_rqd).max(10.0 * db).max(100.0);
+            (lbd, lbd / db)
+        }
+        _ => {
+            // IS 456
+            let tau_bd_base = match fck as u32 {
+                0..=19 => 1.2, 20..=24 => 1.4, 25..=29 => 1.5,
+                30..=34 => 1.7, 35..=39 => 1.9, _ => 2.2,
+            };
+            let tau_bd = if is_deformed { tau_bd_base * 1.6 } else { tau_bd_base };
+            let mut ld_val = fy * db / (4.0 * tau_bd);
+            if is_top { ld_val *= 1.3; }
+            if !is_tension { ld_val *= 0.8; }
+            (ld_val, ld_val / db)
+        }
+    };
+
+    // ── Lap splice ──
+    let pct_spliced = req.pct_bars_spliced.unwrap_or(0.50);
+    let (lap_class_str, lap_len) = {
+        let factor = if pct_spliced <= 0.50 { 1.0 } else { 1.3 };
+        let cls = if pct_spliced <= 0.50 { "ClassA" } else { "ClassB" };
+        let min_lap = match code {
+            "ACI318" => 300.0,
+            _ => (15.0 * db).max(200.0),
+        };
+        (cls.to_string(), (ld * factor).max(min_lap))
+    };
+
+    // ── Hook anchorage ──
+    let hook = req.hook_type.as_deref().unwrap_or("Standard90");
+    let (bend_r, ext) = match hook {
+        "Standard180" => (4.0 * db, 4.0 * db),
+        "HeadedBar" => (0.0, 0.0),
+        _ => (4.0 * db, 12.0 * db),
+    };
+    let ldh = match code {
+        "ACI318" => ((0.24 * fy / fck.sqrt()) * db).max(8.0 * db).max(150.0),
+        "Eurocode2" => {
+            let fctd = 0.21 * fck.powf(2.0 / 3.0) / 1.5;
+            let fbd = 2.25 * fctd;
+            let fyd = fy / 1.15;
+            let lb = db / 4.0 * fyd / fbd;
+            (lb * 0.7).max(10.0 * db).max(100.0)
+        }
+        _ => {
+            let anch_val = if hook == "Standard180" { 16.0 * db } else { 8.0 * db };
+            (ld - anch_val).max(0.0)
+        }
+    };
+    let hook_total = ldh + std::f64::consts::PI * bend_r + ext;
+
+    // ── Bar spacing ──
+    let max_agg = req.max_aggregate_mm.unwrap_or(20.0);
+    let total_bar_w = req.n_bars as f64 * db;
+    let available = req.b_mm - 2.0 * cover - total_bar_w;
+    let clear_spacing = if req.n_bars > 1 { available / (req.n_bars - 1) as f64 } else { available };
+    let min_spacing = db.max(max_agg + 5.0);
+    let max_spacing = 300.0;
+    let spacing_pass_min = clear_spacing >= min_spacing;
+    let spacing_pass_max = clear_spacing <= max_spacing;
+    if !spacing_pass_min { issues.push(format!("Spacing {:.0} mm < min {:.0} mm", clear_spacing, min_spacing)); }
+    if !spacing_pass_max { issues.push(format!("Spacing {:.0} mm > max {:.0} mm for crack control", clear_spacing, max_spacing)); }
+
+    // ── Reinforcement limits ──
+    let bar_area = std::f64::consts::PI / 4.0 * db * db;
+    let ast = req.n_bars as f64 * bar_area;
+    let bd = req.b_mm * req.d_mm;
+    let rho = ast / bd;
+    let (rho_min, rho_max) = match code {
+        "ACI318" => {
+            let r1 = 0.25 * fck.sqrt() / fy;
+            let r2 = 1.4 / fy;
+            (r1.max(r2), 0.04)
+        }
+        "Eurocode2" => {
+            let fctm = 0.30 * fck.powf(2.0 / 3.0);
+            ((0.26 * fctm / fy).max(0.0013), 0.04)
+        }
+        _ => (0.0012, 0.04),
+    };
+    let rho_pass_min = rho >= rho_min;
+    let rho_pass_max = rho <= rho_max;
+    if !rho_pass_min { issues.push(format!("ρ={:.3}% < min {:.3}%", rho * 100.0, rho_min * 100.0)); }
+    if !rho_pass_max { issues.push(format!("ρ={:.3}% > max {:.1}%", rho * 100.0, rho_max * 100.0)); }
+
+    // ── Curtailment ──
+    let curtailment = if let Some(ref md) = req.moment_diagram {
+        if md.len() >= 2 {
+            let n = req.n_bars;
+            let min_bars = (n + 2) / 3;
+            let m_capacity_n = |nb: usize| -> f64 {
+                let a_s = nb as f64 * bar_area;
+                let a = a_s * fy / (0.36 * fck * req.b_mm);
+                0.87 * fy * a_s * (req.d_mm - a / 2.0) / 1e6
+            };
+
+            let m_max = md.iter().map(|p| p.moment_knm.abs()).fold(0.0_f64, f64::max);
+            let mid = req.span_mm / 2.0;
+
+            let mut schedule = Vec::new();
+            let mut bars_rem = n;
+
+            while bars_rem > min_bars {
+                let new_rem = bars_rem - 1;
+                let mc = m_capacity_n(new_rem);
+                if mc < 1.0 { break; }
+
+                // Find theoretical cutoff
+                let mut sorted: Vec<&MomentPointInput> = md.iter().collect();
+                sorted.sort_by(|a, b| {
+                    let da = (a.x_mm - mid).abs();
+                    let db_val = (b.x_mm - mid).abs();
+                    da.partial_cmp(&db_val).unwrap()
+                });
+
+                let mut theo_x = None;
+                for pt in &sorted {
+                    if pt.moment_knm.abs() <= mc {
+                        theo_x = Some(pt.x_mm);
+                        break;
+                    }
+                }
+
+                if let Some(tx) = theo_x {
+                    let actual = if tx < mid {
+                        (tx - ld - req.d_mm).max(0.0)
+                    } else {
+                        (tx + ld + req.d_mm).min(req.span_mm)
+                    };
+                    schedule.push(CutoffScheduleItem {
+                        bars_continuing: new_rem,
+                        bars_cutoff: 1,
+                        theoretical_x_mm: (tx * 10.0).round() / 10.0,
+                        actual_x_mm: (actual * 10.0).round() / 10.0,
+                        moment_capacity_knm: (mc * 100.0).round() / 100.0,
+                    });
+                    bars_rem = new_rem;
+                } else {
+                    break;
+                }
+            }
+
+            let full_len = n as f64 * req.span_mm;
+            let actual_len: f64 = {
+                let mut total = bars_rem as f64 * req.span_mm;
+                for cp in &schedule {
+                    let bar_len = req.span_mm - 2.0 * cp.actual_x_mm.min(req.span_mm / 2.0);
+                    total += cp.bars_cutoff as f64 * bar_len.max(0.0);
+                }
+                total
+            };
+            let savings = (1.0 - actual_len / full_len.max(1.0)) * 100.0;
+
+            Some(CurtailmentOutput {
+                n_cutoff_points: schedule.len(),
+                savings_pct: (savings * 10.0).round() / 10.0,
+                cutoff_schedule: schedule,
+            })
+        } else { None }
+    } else { None };
+
+    let all_pass = spacing_pass_min && spacing_pass_max && rho_pass_min && rho_pass_max;
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(RebarDetailingResponse {
+        success: true,
+        development_length_mm: (ld * 10.0).round() / 10.0,
+        ld_over_db: (ld_db * 10.0).round() / 10.0,
+        lap_splice_mm: (lap_len * 10.0).round() / 10.0,
+        lap_class: lap_class_str,
+        hook_ldh_mm: (ldh * 10.0).round() / 10.0,
+        hook_total_mm: (hook_total * 10.0).round() / 10.0,
+        bar_spacing_mm: (clear_spacing * 10.0).round() / 10.0,
+        spacing_pass: spacing_pass_min && spacing_pass_max,
+        rho_pct: (rho * 100.0 * 1000.0).round() / 1000.0,
+        rho_min_pct: (rho_min * 100.0 * 1000.0).round() / 1000.0,
+        rho_max_pct: (rho_max * 100.0 * 100.0).round() / 100.0,
+        reinforcement_pass: rho_pass_min && rho_pass_max,
+        curtailment,
+        all_checks_pass: all_pass,
+        issues,
+        performance_ms,
+    }))
+}

@@ -143,7 +143,7 @@ const NumberInput: FC<NumberInputProps> = memo(({ value, onChange, step = 0.1, d
             value={localValue}
             onChange={handleChange}
             disabled={disabled}
-            className={`bg-slate-100 dark:bg-slate-800 border border-slate-600 text-slate-900 dark:text-slate-50 px-2 py-1.5 rounded text-xs w-full
+            className={`bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-50 px-2 py-1.5 rounded text-xs w-full
                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none
                        disabled:opacity-50 disabled:cursor-not-allowed
                        transition-colors font-mono tabular-nums ${className ?? ''}`}
@@ -200,7 +200,7 @@ const PresetBtn: FC<{ label: string; active: boolean; onClick: () => void; title
         onClick={onClick}
         title={title}
         className={`flex-1 py-1 px-2 rounded text-[10px] font-medium transition-all
-            ${active ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+            ${active ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
     >
         {label}
     </button>
@@ -210,7 +210,7 @@ const PresetBtn: FC<{ label: string; active: boolean; onClick: () => void; title
 const PanelSelect: FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => (
     <select
         {...props}
-        className={`mt-1 bg-slate-100 dark:bg-slate-800 border border-slate-600 text-slate-900 dark:text-slate-50 px-2 py-1.5 rounded text-xs w-full
+        className={`mt-1 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-50 px-2 py-1.5 rounded text-xs w-full
                    cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors ${props.className ?? ''}`}
     />
 );
@@ -873,7 +873,7 @@ export const PropertiesPanel: FC = memo(() => {
 
                     {/* Custom Section Dialog */}
                     {showCustomSection && (
-                        <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg mt-2 border border-slate-600">
+                        <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg mt-2 border border-slate-300 dark:border-slate-600">
                             <div className="text-xs font-semibold mb-2 text-emerald-400 flex items-center gap-1.5">
                                 <Settings2 className="w-3 h-3" /> Custom Section Properties
                             </div>
@@ -896,7 +896,7 @@ export const PropertiesPanel: FC = memo(() => {
                                     Apply
                                 </button>
                                 <button type="button" onClick={() => setShowCustomSection(false)}
-                                    className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded transition-colors">
+                                    className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded transition-colors">
                                     Cancel
                                 </button>
                             </div>
@@ -930,7 +930,7 @@ export const PropertiesPanel: FC = memo(() => {
 
                     {/* Custom Material Dialog */}
                     {showCustomMaterial && (
-                        <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg mt-2 border border-slate-600">
+                        <div className="bg-slate-100 dark:bg-slate-800 p-3 rounded-lg mt-2 border border-slate-300 dark:border-slate-600">
                             <div className="text-xs font-semibold mb-2 text-blue-400 flex items-center gap-1.5">
                                 <Settings2 className="w-3 h-3" /> Custom Material Properties
                             </div>
@@ -944,7 +944,7 @@ export const PropertiesPanel: FC = memo(() => {
                                     Apply
                                 </button>
                                 <button type="button" onClick={() => setShowCustomMaterial(false)}
-                                    className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded transition-colors">
+                                    className="flex-1 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded transition-colors">
                                     Cancel
                                 </button>
                             </div>

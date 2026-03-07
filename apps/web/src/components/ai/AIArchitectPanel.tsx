@@ -1212,7 +1212,7 @@ export const AIArchitectPanel: FC = () => {
                       aiOrchestrator.resetConversation();
                       setGeminiConfigured(aiOrchestrator.isGeminiConfigured);
                     }}
-                    className="flex-1 text-[10px] py-1.5 px-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-600 transition-colors"
+                    className="flex-1 text-[10px] py-1.5 px-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
                   >
                     Reset Chat
                   </button>
@@ -1238,7 +1238,7 @@ export const AIArchitectPanel: FC = () => {
                     value={geminiKeyInput}
                     onChange={(e) => setGeminiKeyInput(e.target.value)}
                     placeholder="AIzaSy..."
-                    className="flex-1 px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-600 rounded text-xs text-slate-700 dark:text-slate-200 placeholder-slate-600 focus:border-blue-500 focus:outline-none"
+                    className="flex-1 px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-blue-500 focus:outline-none"
                   />
                   <button type="button"
                     onClick={() => {
@@ -1321,7 +1321,7 @@ export const AIArchitectPanel: FC = () => {
               className="
                                 w-full h-24 px-3 py-2
                                 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg
-                                text-sm text-slate-700 dark:text-slate-200 placeholder-slate-600
+                                text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600
                                 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500
                                 resize-none
                                 disabled:opacity-50 disabled:cursor-not-allowed
@@ -1439,7 +1439,7 @@ export const AIArchitectPanel: FC = () => {
               className="
                                 w-full h-20 px-3 py-2
                                 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg
-                                text-sm text-slate-700 dark:text-slate-200 placeholder-slate-600
+                                text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600
                                 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500
                                 resize-none
                                 disabled:opacity-50 disabled:cursor-not-allowed
@@ -1639,7 +1639,7 @@ export const AIArchitectPanel: FC = () => {
                 }
                 placeholder="Type a command or ask a question..."
                 disabled={isChatting}
-                className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 placeholder-slate-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50"
+                className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 disabled:opacity-50"
               />
               <button type="button"
                 onClick={handleChat}

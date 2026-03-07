@@ -641,7 +641,7 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
                 className={`
                   px-2 py-1 text-xs rounded transition-colors
                   ${mode === tab.mode 
-                    ? 'bg-blue-500/20 text-blue-300' 
+                    ? 'bg-blue-500/20 text-blue-600 dark:text-blue-300' 
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
                   }
                 `}

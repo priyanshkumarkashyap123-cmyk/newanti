@@ -2000,3 +2000,32 @@ async def spectrum_directional(req: SpectrumDirectionalRequest):
     """Enhanced Response Spectrum with directional combination – proxy to Rust solver."""
     payload = req.model_dump(mode="json")
     return await _proxy_to_rust("spectrum-directional", payload)
+
+
+# =====================================================================
+# 8.  Design, Optimization & Detailing Engines
+# =====================================================================
+
+
+@router.post("/analysis/auto-design")
+async def auto_design_optimization(req: dict):
+    """Iterative auto-design loop: analyse → check D/C → re-select section → re-run until optimal weight."""
+    return await _proxy_to_rust("auto-design", req)
+
+
+@router.post("/analysis/cracked-section")
+async def cracked_section_analysis(req: dict):
+    """Cracked section modulus & effective Ie for long-term deflection (ACI / IS 456 / EC2)."""
+    return await _proxy_to_rust("cracked-section", req)
+
+
+@router.post("/analysis/floor-walking")
+async def floor_walking_vibration(req: dict):
+    """Floor walking & vibration comfort check: AISC DG11, SCI P354, IS 800, EN 1990."""
+    return await _proxy_to_rust("floor-walking", req)
+
+
+@router.post("/analysis/rebar-detailing")
+async def rebar_detailing_analysis(req: dict):
+    """Rebar curtailment & detailing: development lengths, lap splices, anchorage, curtailment schedule."""
+    return await _proxy_to_rust("rebar-detailing", req)

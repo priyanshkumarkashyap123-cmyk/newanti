@@ -111,10 +111,10 @@ const ToolButton = memo<ToolButtonProps>(
           className={`
                   flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-md
                   border border-transparent transition-all duration-150
-                  hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:border-slate-600/30
-                  active:scale-[0.96] active:bg-slate-700/70
+                  hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:border-slate-300/50 dark:hover:border-slate-600/30
+                  active:scale-[0.96] active:bg-slate-200 dark:active:bg-slate-700/70
                   ${isActive
-                    ? "bg-blue-600/15 border-blue-500/30 text-blue-300 shadow-sm shadow-blue-500/5"
+                    ? "bg-blue-600/15 border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-sm shadow-blue-500/5"
                     : accent
                       ? `${accent}`
                       : "text-slate-500 hover:text-slate-700 dark:text-slate-200"
@@ -189,12 +189,12 @@ const RIBBON_TABS: { id: Category; label: string; color: string }[] = [
 ];
 
 const TAB_ACTIVE_COLORS: Record<string, string> = {
-  blue: "bg-slate-800/60 text-blue-400 border-t-2 border-t-blue-500",
-  purple: "bg-slate-800/60 text-purple-400 border-t-2 border-t-purple-500",
-  orange: "bg-slate-800/60 text-orange-400 border-t-2 border-t-orange-500",
-  emerald: "bg-slate-800/60 text-emerald-400 border-t-2 border-t-emerald-500",
-  rose: "bg-slate-800/60 text-rose-400 border-t-2 border-t-rose-500",
-  amber: "bg-slate-800/60 text-amber-400 border-t-2 border-t-amber-500",
+  blue: "bg-blue-50 dark:bg-slate-800/60 text-blue-600 dark:text-blue-400 border-t-2 border-t-blue-500",
+  purple: "bg-purple-50 dark:bg-slate-800/60 text-purple-600 dark:text-purple-400 border-t-2 border-t-purple-500",
+  orange: "bg-orange-50 dark:bg-slate-800/60 text-orange-600 dark:text-orange-400 border-t-2 border-t-orange-500",
+  emerald: "bg-emerald-50 dark:bg-slate-800/60 text-emerald-600 dark:text-emerald-400 border-t-2 border-t-emerald-500",
+  rose: "bg-rose-50 dark:bg-slate-800/60 text-rose-600 dark:text-rose-400 border-t-2 border-t-rose-500",
+  amber: "bg-amber-50 dark:bg-slate-800/60 text-amber-600 dark:text-amber-400 border-t-2 border-t-amber-500",
 };
 
 /* ─── Main ribbon component ─── */
@@ -590,11 +590,11 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
       aria-label="Engineering Ribbon"
     >
       {/* Title Bar */}
-      <div className="h-8 flex items-center justify-between px-3 border-b border-slate-800/60 bg-white/90 dark:bg-slate-950/90">
+      <div className="h-8 flex items-center justify-between px-3 border-b border-slate-200 dark:border-slate-800/60 bg-white/90 dark:bg-slate-950/90">
         <div className="flex items-center gap-2">
           {/* Mobile sidebar toggle */}
           <button type="button"
-            className="md:hidden text-slate-400 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-0.5 transition-colors"
+            className="md:hidden text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded p-0.5 transition-colors"
             onClick={() => document.dispatchEvent(new CustomEvent('toggle-sidebar'))}
             aria-label="Toggle sidebar navigation"
             aria-expanded={isSidebarOpen ?? false}
@@ -608,7 +608,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[4px] flex items-center justify-center shadow-sm shadow-blue-500/20">
             <Cpu className="w-3 h-3 text-white" />
           </div>
-          <span className="font-bold text-[11px] text-slate-200 tracking-tight">BeamLab</span>
+          <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200 tracking-tight">BeamLab</span>
           <span className="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded flex items-center gap-1">
             ULTIMATE
           </span>
@@ -647,7 +647,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           <button type="button"
             onClick={() => document.dispatchEvent(new CustomEvent("trigger-upgrade"))}
             aria-label="Upgrade to premium plan"
-            className="flex items-center gap-1 px-2 py-0.5 text-amber-400/80 hover:text-amber-300 text-[9px] font-semibold transition-colors"
+            className="flex items-center gap-1 px-2 py-0.5 text-amber-600 dark:text-amber-400/80 hover:text-amber-500 dark:hover:text-amber-300 text-[9px] font-semibold transition-colors"
           >
             <Crown className="w-3 h-3" aria-hidden="true" />
             Upgrade
