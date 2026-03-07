@@ -580,3 +580,225 @@ export const WasmAnalysis = {
   checkIS13920BeamDuctility,
   getPlatformInfo,
 };
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  RIGOROUS SOLVER MECHANICS — Rust-backed endpoints
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ── 1. Staged Construction Analysis ──
+
+export interface StageDefinition {
+  stage_id: string;
+  label: string;
+  activate_elements: string[];
+  remove_elements?: string[];
+  loads?: Record<string, number>;
+  boundary_changes?: Record<string, string>;
+  duration_days?: number;
+  concrete_age_days?: number;
+}
+
+export interface ConcreteTimeConfig {
+  fc28: number;
+  ec28: number;
+  cement_type?: number;
+  creep_ultimate?: number;
+  shrinkage_ultimate?: number;
+  humidity?: number;
+  vs_ratio?: number;
+}
+
+export interface StagedConstructionRequest {
+  nodes: { id: string; x: number; y: number; z: number; [k: string]: unknown }[];
+  members: { id: string; start_node_id: string; end_node_id: string; [k: string]: unknown }[];
+  supports?: unknown[];
+  loads?: unknown[];
+  stages: StageDefinition[];
+  concrete_config?: ConcreteTimeConfig;
+  time_dependent?: boolean;
+}
+
+export interface StageResultData {
+  stage_id: string;
+  label: string;
+  active_elements: number;
+  displacements: { node_id: string; dx: number; dy: number; dz: number }[];
+  max_displacement_mm: number;
+  cumulative_displacements: { node_id: string; dx: number; dy: number; dz: number }[];
+  max_cumulative_mm: number;
+  concrete_strength_mpa?: number;
+  concrete_modulus_mpa?: number;
+  creep_coefficient?: number;
+  shrinkage_strain?: number;
+}
+
+export interface StagedConstructionResponse {
+  success: boolean;
+  num_stages: number;
+  stage_results: StageResultData[];
+  final_displacements: { node_id: string; dx: number; dy: number; dz: number }[];
+  max_final_displacement_mm: number;
+  performance_ms: number;
+}
+
+export async function runStagedConstruction(
+  req: StagedConstructionRequest,
+): Promise<StagedConstructionResponse> {
+  return postJson(`${API_CONFIG.rustUrl}/api/advanced/staged-construction`, req);
+}
+
+// ── 2. Direct Analysis Method (DAM) — AISC 360 ──
+
+export interface DAMLevel {
+  height: number;
+  gravity_load: number;
+}
+
+export interface DAMMember {
+  member_id: string;
+  length: number;
+  e: number;
+  i: number;
+  a: number;
+  fy: number;
+  pr: number;
+  k: number;
+  cm: number;
+  sway?: boolean;
+}
+
+export interface DAMRequest {
+  nodes: { id: string; x: number; y: number; z: number; [k: string]: unknown }[];
+  members: { id: string; start_node_id: string; end_node_id: string; [k: string]: unknown }[];
+  supports?: unknown[];
+  loads?: unknown[];
+  levels: DAMLevel[];
+  dam_members: DAMMember[];
+  alpha?: number;
+  run_pdelta?: boolean;
+  pdelta_tolerance?: number;
+  pdelta_max_iter?: number;
+}
+
+export interface DAMResponse {
+  success: boolean;
+  notional_loads: { level_index: number; height: number; gravity_yi: number; notional_ni: number }[];
+  member_results: { member_id: string; tau_b: number; ei_star: number; b1: number; b2: number; capacity_check: string }[];
+  load_cases: { name: string; gravity_factor: number; notional_direction: string; description: string }[];
+  pdelta_converged?: boolean;
+  pdelta_iterations?: number;
+  b2_max: number;
+  dam_applicable: boolean;
+  dam_requirements_met: boolean;
+  performance_ms: number;
+}
+
+export async function runDAM(req: DAMRequest): Promise<DAMResponse> {
+  return postJson(`${API_CONFIG.rustUrl}/api/advanced/dam`, req);
+}
+
+// ── 3. Newton-Raphson / Arc-Length Nonlinear Solve ──
+
+export type NonlinearMethod =
+  | 'newton_raphson'
+  | 'modified_newton_raphson'
+  | 'arc_length'
+  | 'displacement_control';
+
+export interface NonlinearSolveRequest {
+  nodes: { id: string; x: number; y: number; z: number; [k: string]: unknown }[];
+  members: { id: string; start_node_id: string; end_node_id: string; [k: string]: unknown }[];
+  supports?: unknown[];
+  loads?: unknown[];
+  method?: NonlinearMethod;
+  load_steps?: number;
+  target_load_factor?: number;
+  force_tolerance?: number;
+  displacement_tolerance?: number;
+  max_iterations?: number;
+  line_search?: boolean;
+  line_search_tolerance?: number;
+  initial_arc_length?: number;
+  geometric_nonlinearity?: boolean;
+  control_dof?: number;
+  control_increment?: number;
+}
+
+export interface LoadStepResult {
+  step: number;
+  load_factor: number;
+  iterations: number;
+  converged: boolean;
+  force_residual: number;
+  displacement_norm: number;
+  max_displacement: { node_id: string; dx: number; dy: number; dz: number };
+}
+
+export interface NonlinearSolveResponse {
+  success: boolean;
+  method: string;
+  total_steps_completed: number;
+  fully_converged: boolean;
+  final_load_factor: number;
+  step_results: LoadStepResult[];
+  load_displacement_curve: { load_factor: number; displacement: number }[];
+  final_displacements: { node_id: string; dx: number; dy: number; dz: number }[];
+  performance_ms: number;
+}
+
+export async function runNonlinearSolve(
+  req: NonlinearSolveRequest,
+): Promise<NonlinearSolveResponse> {
+  return postJson(`${API_CONFIG.rustUrl}/api/advanced/nonlinear`, req);
+}
+
+// ── 4. Mass Source Definition ──
+
+export interface MassContribution {
+  case_id: string;
+  factor: number;
+}
+
+export interface NodalGravityLoad {
+  node_id: string;
+  force_kn: number;
+}
+
+export interface MassSourceRequest {
+  contributions: MassContribution[];
+  load_cases: Record<string, NodalGravityLoad[]>;
+  include_self_weight?: boolean;
+  self_weight_factor?: number;
+  element_masses?: Record<string, number>;
+  additional_masses?: Record<string, number>;
+  mass_type?: 'lumped' | 'consistent';
+  gravity?: number;
+  dofs_per_node?: number;
+  code_preset?: 'is1893' | 'asce7' | 'eurocode8';
+  ll_fraction?: number;
+}
+
+export interface MassSourceResponse {
+  success: boolean;
+  mass_diagonal: number[];
+  nodal_masses: Record<string, number>;
+  total_mass_kg: number;
+  total_weight_kn: number;
+  contributions: { case_id: string; factor: number; total_weight_kn: number; total_mass_kg: number }[];
+  mass_type: string;
+  performance_ms: number;
+}
+
+export async function buildMassSource(
+  req: MassSourceRequest,
+): Promise<MassSourceResponse> {
+  return postJson(`${API_CONFIG.rustUrl}/api/advanced/mass-source`, req);
+}
+
+// Re-export convenience bundle
+export const RigorousSolvers = {
+  runStagedConstruction,
+  runDAM,
+  runNonlinearSolve,
+  buildMassSource,
+};

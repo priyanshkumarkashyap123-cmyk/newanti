@@ -157,6 +157,7 @@ pub mod long_span_structures;
 pub mod machine_learning_structural;
 pub mod macneal_harder_benchmarks;
 pub mod marine_offshore;
+pub mod mass_source;
 pub mod masonry_design;
 pub mod material_models_complete;
 pub mod material_nonlinearity;

@@ -1704,3 +1704,173 @@ async def analyze_advanced_fem(request: AdvancedAnalysisRequest):
         raise HTTPException(
             status_code=500, detail=f"Advanced analysis failed: {str(e)}"
         )
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# RIGOROUS SOLVER MECHANICS — Proxies to Rust API
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import httpx
+import os
+
+RUST_API_URL = os.environ.get("RUST_API_URL", "http://localhost:8080")
+
+
+async def _proxy_to_rust(endpoint: str, payload: dict) -> dict:
+    """Forward a request to the Rust API and return the JSON response."""
+    url = f"{RUST_API_URL}/api/advanced/{endpoint}"
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(url, json=payload)
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Rust API error ({endpoint}): {e.response.status_code} – {e.response.text}")
+        raise HTTPException(
+            status_code=e.response.status_code,
+            detail=f"Rust solver error: {e.response.text}",
+        )
+    except httpx.ConnectError:
+        logger.warning(f"Rust API unreachable at {url}, falling back to stub")
+        raise HTTPException(
+            status_code=503,
+            detail="Rust analysis backend unavailable. Deploy rust-api or use direct Rust endpoint.",
+        )
+
+
+# ── 1. Staged Construction ──
+
+class StageInput(BaseModel):
+    stage_id: str
+    label: str
+    activate_elements: List[str] = []
+    remove_elements: List[str] = []
+    loads: Dict[str, float] = {}
+    boundary_changes: Dict[str, str] = {}
+    duration_days: float = 28.0
+    concrete_age_days: Optional[float] = None
+
+
+class ConcreteTimeInput(BaseModel):
+    fc28: float
+    ec28: float
+    cement_type: int = 1
+    creep_ultimate: float = 2.35
+    shrinkage_ultimate: float = 780e-6
+    humidity: float = 60.0
+    vs_ratio: float = 38.0
+
+
+class StagedConstructionRequest(BaseModel):
+    nodes: List[FrameNodeInput]
+    members: List[FrameMemberInput]
+    stages: List[StageInput]
+    concrete_config: Optional[ConcreteTimeInput] = None
+    time_dependent: bool = False
+    node_loads: Optional[List[NodeLoadInput]] = []
+
+
+@router.post("/analysis/staged-construction")
+async def staged_construction(req: StagedConstructionRequest):
+    """Construction Sequence Analysis – proxy to Rust solver."""
+    payload = req.model_dump(mode="json")
+    return await _proxy_to_rust("staged-construction", payload)
+
+
+# ── 2. Direct Analysis Method (DAM) ──
+
+class DAMLevelInput(BaseModel):
+    height: float
+    gravity_load: float
+
+
+class DAMMemberInput(BaseModel):
+    member_id: str
+    length: float
+    e: float
+    i: float
+    a: float
+    fy: float
+    pr: float
+    k: float
+    cm: float
+    sway: bool = False
+
+
+class DAMAnalysisRequest(BaseModel):
+    nodes: List[FrameNodeInput]
+    members: List[FrameMemberInput]
+    levels: List[DAMLevelInput]
+    dam_members: List[DAMMemberInput]
+    alpha: float = 0.002
+    run_pdelta: bool = True
+    pdelta_tolerance: float = 1e-6
+    pdelta_max_iter: int = 10
+    node_loads: Optional[List[NodeLoadInput]] = []
+
+
+@router.post("/analysis/dam")
+async def dam_analysis(req: DAMAnalysisRequest):
+    """Direct Analysis Method (AISC 360-22) – proxy to Rust solver."""
+    payload = req.model_dump(mode="json")
+    return await _proxy_to_rust("dam", payload)
+
+
+# ── 3. Newton-Raphson / Arc-Length Nonlinear Solve ──
+
+class NonlinearSolveRequest(BaseModel):
+    nodes: List[FrameNodeInput]
+    members: List[FrameMemberInput]
+    method: str = "newton_raphson"  # newton_raphson | modified_newton_raphson | arc_length | displacement_control
+    load_steps: int = 10
+    target_load_factor: float = 1.0
+    force_tolerance: float = 1e-6
+    displacement_tolerance: float = 1e-6
+    max_iterations: int = 10
+    line_search: bool = False
+    line_search_tolerance: float = 0.5
+    initial_arc_length: float = 1.0
+    geometric_nonlinearity: bool = True
+    control_dof: Optional[int] = None
+    control_increment: Optional[float] = None
+    node_loads: Optional[List[NodeLoadInput]] = []
+
+
+@router.post("/analysis/nonlinear-solve")
+async def nonlinear_solve(req: NonlinearSolveRequest):
+    """Newton-Raphson / Arc-Length nonlinear solve – proxy to Rust solver."""
+    payload = req.model_dump(mode="json")
+    return await _proxy_to_rust("nonlinear", payload)
+
+
+# ── 4. Mass Source Definition ──
+
+class MassContributionInput(BaseModel):
+    case_id: str
+    factor: float
+
+
+class NodalGravityInput(BaseModel):
+    node_id: str
+    force_kn: float
+
+
+class MassSourceRequest(BaseModel):
+    contributions: List[MassContributionInput]
+    load_cases: Dict[str, List[NodalGravityInput]]
+    include_self_weight: bool = True
+    self_weight_factor: float = 1.0
+    element_masses: Dict[str, float] = {}
+    additional_masses: Dict[str, float] = {}
+    mass_type: str = "lumped"
+    gravity: float = 9.80665
+    dofs_per_node: int = 6
+    code_preset: Optional[str] = None
+    ll_fraction: Optional[float] = None
+
+
+@router.post("/analysis/mass-source")
+async def mass_source(req: MassSourceRequest):
+    """Mass Source Definition for seismic analysis – proxy to Rust solver."""
+    payload = req.model_dump(mode="json")
+    return await _proxy_to_rust("mass-source", payload)
