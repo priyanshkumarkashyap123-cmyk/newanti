@@ -129,6 +129,46 @@ export interface LayoutV2Request {
 }
 
 // ============================================================================
+// VARIANT GENERATION REQUEST/RESPONSE TYPES (NEW)
+// ============================================================================
+
+export interface VariantScoreResponse {
+  variant_id: string;
+  strategy_name: string;
+  strategy_description: string;
+  composite_score: number;
+  compactness: number;
+  zone_coherence: number;
+  adjacency_satisfaction: number;
+  circulation_efficiency: number;
+  usable_area_ratio: number;
+}
+
+export interface VariantResponse {
+  variant_id: string;
+  strategy_key: string;
+  strategy_name: string;
+  strategy_description: string;
+  score: VariantScoreResponse | null;
+  placements: PlacementResponse[];
+  penalty_weights_used: Record<string, number>;
+}
+
+export interface LayoutVariantsRequest extends LayoutV2Request {
+  max_iterations_per_variant?: number;
+  strategies_to_generate?: string[];
+}
+
+export interface LayoutVariantsResponse {
+  success: boolean;
+  total_variants_generated: number;
+  variants: VariantResponse[];
+  best_variant_id: string | null;
+  recommendation: string;
+  generated_at_ms: number;
+}
+
+// ============================================================================
 // RESPONSE TYPES — Match backend Pydantic response exactly
 // ============================================================================
 
@@ -931,6 +971,55 @@ export async function solveMultipleCandidates(
     bestCandidateId: candidates[0].id,
     config,
   };
+}
+
+/**
+ * 🎯 WORKFLOW-AWARE MULTI-VARIANT GENERATION (NEW)
+ * 
+ * Generate 5 competing design solutions using different architectural philosophies:
+ *   1. active_first: Open living concept
+ *   2. sleeping_refuge: Private sleeping wing
+ *   3. central_circulation: Hub & spoke layout
+ *   4. compact_zones: Efficient clustering
+ *   5. linear_flow: Sequential entry flow
+ * 
+ * Each variant explores a different layout strategy with optimized penalty weights.
+ * Returns solutions ranked by composite quality score (0-100).
+ * 
+ * @param config - The wizard configuration
+ * @param options - Optional generation parameters
+ * @returns LayoutVariantsResponse with 5 ranked variants
+ */
+export async function generateLayoutVariants(
+  config: WizardConfig,
+  options?: {
+    maxIterationsPerVariant?: number;
+    strategiesToGenerate?: string[];
+    penaltyWeights?: PenaltyWeightsRequest;
+  },
+): Promise<LayoutVariantsResponse> {
+  const request: LayoutVariantsRequest = {
+    ...wizardConfigToRequest(config, {
+      maxIterations: options?.maxIterationsPerVariant || 150,
+      penaltyWeights: options?.penaltyWeights,
+    }),
+    max_iterations_per_variant: options?.maxIterationsPerVariant || 150,
+    strategies_to_generate: options?.strategiesToGenerate || [
+      'active_first',
+      'sleeping_refuge',
+      'central_circulation',
+      'compact_zones',
+      'linear_flow',
+    ],
+  };
+
+  const { data } = await layoutApiClient.post<LayoutVariantsResponse>(
+    '/api/layout/v2/variants',
+    request,
+    { timeout: 180000 }, // 3 min timeout for 5 variants
+  );
+
+  return data;
 }
 
 // ============================================================================

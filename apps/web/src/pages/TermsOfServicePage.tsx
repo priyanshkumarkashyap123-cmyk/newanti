@@ -4,8 +4,9 @@
  */
 
 import { Link } from 'react-router-dom';
-import { Shield, ChevronRight, Menu, X, FileText } from 'lucide-react';
+import { ChevronRight, FileText, Shield } from 'lucide-react';
 import { useState, useEffect, memo } from 'react';
+import { PageHeader, type NavLink } from '../components/layout';
 
 interface Section {
     id: string;
@@ -30,7 +31,6 @@ const sections: Section[] = [
 
 export const TermsOfServicePage = () => {
     const [activeSection, setActiveSection] = useState('acceptance');
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => { document.title = 'Terms of Service | BeamLab'; }, []);
 
@@ -39,51 +39,24 @@ export const TermsOfServicePage = () => {
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
             setActiveSection(id);
-            setMobileMenuOpen(false);
         }
     };
 
+    const navLinks: NavLink[] = [
+        { to: '/', label: 'Features' },
+        { to: '/pricing', label: 'Pricing' },
+    ];
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
-            {/* Header */}
-            <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <Link to="/" className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-                                <Shield className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-xl font-bold text-white">
-                                BeamLab <span className="text-slate-500 dark:text-slate-400 font-normal">Ultimate</span>
-                            </span>
-                        </Link>
-
-                        <div className="hidden md:flex items-center gap-8">
-                            <nav className="flex gap-6">
-                                <Link to="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Features</Link>
-                                <Link to="/pricing" className="text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-colors">Pricing</Link>
-                            </nav>
-                            <div className="flex items-center gap-4 border-l border-slate-200 dark:border-slate-700 pl-8">
-                                <Link to="/sign-in" className="text-sm font-medium text-slate-900 dark:text-white">Log in</Link>
-                                <Link to="/sign-up" className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors">
-                                    Get Started
-                                </Link>
-                            </div>
-                        </div>
-
-                        <button type="button"
-                            className="md:hidden p-2 text-slate-500 dark:text-slate-300"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        >
-                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-                    </div>
-                </div>
-            </header>
+            <PageHeader
+                showAuth={true}
+                navLinks={navLinks}
+            />
 
             <div className="flex-grow flex flex-col md:flex-row max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 md:py-16 gap-10">
                 {/* Sidebar Navigation */}
-                <aside className={`${mobileMenuOpen ? 'block' : 'hidden'} md:block w-64 flex-shrink-0`}>
+                <aside className="w-64 flex-shrink-0">
                     <div className="sticky top-28">
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Contents</h3>
                         <nav className="space-y-1 border-l border-slate-200 dark:border-slate-700 ml-1">

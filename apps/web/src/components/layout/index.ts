@@ -8,4 +8,6 @@ export { CanvasWrapper } from './CanvasWrapper';
 export { RightPropertiesPanel } from './RightPropertiesPanel';
 export { DataTablesPanel } from './DataTablesPanel';
 export { SmartSidebar } from './SmartSidebar';
+export { PageHeader } from './PageHeader';
+export type { PageHeaderProps, NavLink } from './PageHeader';
 

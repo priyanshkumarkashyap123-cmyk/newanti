@@ -203,10 +203,7 @@ logger.info(
     extra={"allowed_origin_count": len(allow_origins), "origins": sorted(allow_origins)},
 )
 
-# Request logging middleware (added BEFORE CORS so it wraps everything)
-app.add_middleware(RequestLoggingMiddleware)
-
-# CORS Middleware - use configured origins for security
+# CORS Middleware - must be added FIRST (executes LAST in chain, closest to route handlers)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,  # Use the curated allow list
@@ -215,6 +212,9 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
     expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
+
+# Request logging middleware (added AFTER CORS so it wraps CORS)
+app.add_middleware(RequestLoggingMiddleware)
 
 # Security middleware stack (order matters — outermost middleware runs first)
 if HAS_SECURITY_MW:

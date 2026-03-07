@@ -54,15 +54,21 @@ import { VastuCompass } from '../components/space-planning/VastuCompass';
 import { RoomConfigWizard, WizardConfig } from '../components/space-planning/RoomConfigWizard';
 import { ConstraintScorecard } from '../components/space-planning/ConstraintScorecard';
 import { CandidateComparison } from '../components/space-planning/CandidateComparison';
+import { VariantSelector } from '../components/space-planning/VariantSelector';
+import { VariantComparison } from '../components/space-planning/VariantComparison';
+import { VariantDetail } from '../components/space-planning/VariantDetail';
 import { spacePlanningEngine } from '../services/space-planning/SpacePlanningEngine';
 import {
   solveLayout,
   solveMultipleCandidates,
+  generateLayoutVariants,
   placementsToPlacedRooms,
   checkSolverBackendHealth,
   type ConstraintReport,
   type PlacementResponse,
   type MultiCandidateResult,
+  type LayoutVariantsResponse,
+  type VariantResponse,
 } from '../services/space-planning/layoutApiService';
 import type { HousePlanProject, ColorScheme } from '../services/space-planning/types';
 import { getLearningProgress, saveLearningProgress, completeTemplate } from '../services/learning/progressTracker';
@@ -127,11 +133,17 @@ export function SpacePlanningPage() {
   const [multiCandidateResult, setMultiCandidateResult] = useState<MultiCandidateResult | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [showCandidates, setShowCandidates] = useState(false);
-  const [generationMode, setGenerationMode] = useState<'single' | 'multi'>('single');
+  const [generationMode, setGenerationMode] = useState<'single' | 'multi' | 'variants'>('single');
   const [solverError, setSolverError] = useState<string | null>(null);
   const [solverBackendState, setSolverBackendState] = useState<'unknown' | 'checking' | 'online' | 'offline'>('unknown');
   const [solverBackendMessage, setSolverBackendMessage] = useState<string | null>(null);
   const [lastWizardConfig, setLastWizardConfig] = useState<WizardConfig | null>(null);
+
+  // ── NEW: Workflow-aware variant state ──
+  const [layoutVariantsResult, setLayoutVariantsResult] = useState<LayoutVariantsResponse | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const [showVariants, setShowVariants] = useState(false);
+  const [isGeneratingVariants, setIsGeneratingVariants] = useState(false);
 
   const parseSolverError = (err: unknown): string => {
     if (err && typeof err === 'object') {
@@ -356,6 +368,158 @@ export function SpacePlanningPage() {
       }
     },
     [multiCandidateResult, lastWizardConfig, project],
+  );
+
+  // ── Generate workflow-aware variants ──
+  const handleGenerateVariants = useCallback(
+    async (config: WizardConfig) => {
+      setIsGenerating(true);
+      setIsGeneratingVariants(true);
+      setSolverError(null);
+      setLastWizardConfig(config);
+      
+      try {
+        // Call the 5-variant generator
+        const variantsResult = await generateLayoutVariants(config, {
+          maxIterationsPerVariant: 150,
+        });
+
+        setLayoutVariantsResult(variantsResult);
+        setShowVariants(true);
+
+        // Auto-select the best variant
+        if (variantsResult.best_variant_id) {
+          setSelectedVariantId(variantsResult.best_variant_id);
+          const bestVariant = variantsResult.variants.find(
+            (v) => v.variant_id === variantsResult.best_variant_id
+          );
+          if (bestVariant) {
+            setSolverPlacements(bestVariant.placements);
+            // Create constraint report from variant data
+            setConstraintReport({
+              compactness_penalty: bestVariant.score?.compactness || 0,
+              zone_grouping_penalty: 100 - (bestVariant.score?.zone_coherence || 0),
+              hard_violations: [],
+              soft_violations: [],
+              total_cost: bestVariant.score?.composite_score || 0,
+            });
+          }
+        }
+
+        // ── Phase 2: Generate complete project using the engine ──
+        const result = spacePlanningEngine.generateCompletePlan(
+          config.plot,
+          config.orientation,
+          config.constraints,
+          config.roomSpecs,
+          config.preferences,
+          config.location,
+        );
+
+        // ── Phase 3: Merge best variant placements with engine ──
+        if (variantsResult.best_variant_id) {
+          const bestVariant = variantsResult.variants.find(
+            (v) => v.variant_id === variantsResult.best_variant_id
+          );
+          if (bestVariant) {
+            const optimizedRooms = placementsToPlacedRooms(bestVariant.placements, config.roomSpecs);
+
+            if (result.floorPlans.length > 0) {
+              const basePlan = result.floorPlans[0];
+              const mergedRooms = basePlan.rooms.map((engineRoom) => {
+                const solverRoom = optimizedRooms.find(
+                  (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
+                );
+                if (solverRoom) {
+                  return {
+                    ...engineRoom,
+                    x: solverRoom.x,
+                    y: solverRoom.y,
+                    width: solverRoom.width,
+                    height: solverRoom.height,
+                  };
+                }
+                return engineRoom;
+              });
+              result.floorPlans[0] = { ...basePlan, rooms: mergedRooms };
+            }
+          }
+        }
+
+        setProject(result);
+        setActiveTab('floor_plan');
+        setSelectedFloor(0);
+        setSolverBackendState('online');
+
+        // Mark template as completed if this was a guided template
+        if (templateId) {
+          handleTemplateCompletion();
+        }
+      } catch (err) {
+        console.error('Variant generation failed:', err);
+        setSolverError(
+          `Variant generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+        );
+      } finally {
+        setIsGenerating(false);
+        setIsGeneratingVariants(false);
+      }
+    },
+    [templateId, handleTemplateCompletion],
+  );
+
+  // ── Handle variant selection from selector panel ──
+  const handleSelectVariant = useCallback(
+    (variantId: string) => {
+      if (!layoutVariantsResult || !lastWizardConfig) return;
+      const variant = layoutVariantsResult.variants.find((v) => v.variant_id === variantId);
+      if (!variant) return;
+
+      setSelectedVariantId(variantId);
+      setSolverPlacements(variant.placements);
+      
+      // Create constraint report from variant scores
+      setConstraintReport({
+        compactness_penalty: variant.score?.compactness || 0,
+        zone_grouping_penalty: 100 - (variant.score?.zone_coherence || 0),
+        hard_violations: [],
+        soft_violations: [],
+        total_cost: variant.score?.composite_score || 0,
+      });
+
+      // Re-merge this variant's placements into the project
+      if (project && project.floorPlans.length > 0) {
+        const optimizedRooms = placementsToPlacedRooms(
+          variant.placements,
+          lastWizardConfig.roomSpecs,
+        );
+        const basePlan = project.floorPlans[0];
+        const mergedRooms = basePlan.rooms.map((engineRoom) => {
+          const solverRoom = optimizedRooms.find(
+            (sr) => sr.id === engineRoom.id || sr.spec.type === engineRoom.spec.type,
+          );
+          if (solverRoom) {
+            return {
+              ...engineRoom,
+              x: solverRoom.x,
+              y: solverRoom.y,
+              width: solverRoom.width,
+              height: solverRoom.height,
+            };
+          }
+          return engineRoom;
+        });
+
+        setProject({
+          ...project,
+          floorPlans: [
+            { ...basePlan, rooms: mergedRooms },
+            ...project.floorPlans.slice(1),
+          ],
+        });
+      }
+    },
+    [layoutVariantsResult, lastWizardConfig, project],
   );
 
   // ── Handle re-solve with different seed ──
@@ -616,12 +780,77 @@ export function SpacePlanningPage() {
             >
               {/* ======================== WIZARD ======================== */}
               {activeTab === 'wizard' && (
-                <RoomConfigWizard
-                  initialTemplateId={templateId}
-                  onGenerate={handleGenerate}
-                  isGenerating={isGenerating}
-                  className="max-w-2xl mx-auto"
-                />
+                <div className="max-w-2xl mx-auto space-y-4">
+                  {/* Generation Mode Selector */}
+                  <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+                    <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-3">
+                      Generation Mode
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => setGenerationMode('single')}
+                        className={`p-3 rounded-lg border-2 transition-all text-left ${
+                          generationMode === 'single'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                          Single
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          One optimized layout
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setGenerationMode('multi')}
+                        className={`p-3 rounded-lg border-2 transition-all text-left ${
+                          generationMode === 'multi'
+                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                          <Trophy className="w-4 h-4" />
+                          Compare
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          3 candidate solutions
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setGenerationMode('variants')}
+                        className={`p-3 rounded-lg border-2 transition-all text-left ${
+                          generationMode === 'variants'
+                            ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="font-semibold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                          <Layers className="w-4 h-4" />
+                          Variants
+                        </div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          5 design strategies
+                        </div>
+                      </button>
+                    </div>
+                    {generationMode === 'variants' && (
+                      <div className="mt-3 p-2 bg-purple-50 dark:bg-purple-900/10 rounded border border-purple-200 dark:border-purple-800/30">
+                        <p className="text-xs text-purple-700 dark:text-purple-400">
+                          💡 Workflow-aware planning: Generates 5 competing design philosophies with quality scoring.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <RoomConfigWizard
+                    initialTemplateId={templateId}
+                    onGenerate={generationMode === 'variants' ? handleGenerateVariants : handleGenerate}
+                    isGenerating={isGenerating}
+                    className=""
+                  />
+                </div>
               )}
 
               {/* ======================== FLOOR PLAN ======================== */}
@@ -701,6 +930,17 @@ export function SpacePlanningPage() {
                           <Trophy className="w-3 h-3" />
                           Compare
                         </button>
+                        <button
+                          onClick={() => setGenerationMode('variants')}
+                          className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors flex items-center gap-1 ${
+                            generationMode === 'variants'
+                              ? 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm'
+                              : 'text-slate-400 hover:text-slate-600'
+                          }`}
+                        >
+                          <Layers className="w-3 h-3" />
+                          Variants
+                        </button>
                       </div>
                       <OverlaySelector current={overlayMode} onChange={setOverlayMode} />
                     </div>
@@ -764,6 +1004,43 @@ export function SpacePlanningPage() {
                       selectedCandidateId={selectedCandidateId || undefined}
                     />
                   )}
+
+                  {/* Workflow-aware variant panels */}
+                  {layoutVariantsResult && showVariants && (
+                    <div className="space-y-4">
+                      {/* Variant selector with cards */}
+                      <VariantSelector
+                        variants={layoutVariantsResult.variants}
+                        selectedVariantId={selectedVariantId}
+                        onSelectVariant={handleSelectVariant}
+                        isLoading={isGeneratingVariants}
+                      />
+
+                      {/* Variant comparison table */}
+                      {layoutVariantsResult.variants.length > 1 && (
+                        <VariantComparison
+                          variants={layoutVariantsResult.variants}
+                          selectedVariantId={selectedVariantId}
+                        />
+                      )}
+
+                      {/* Selected variant detail */}
+                      {selectedVariantId && (
+                        <VariantDetail
+                          variant={
+                            layoutVariantsResult.variants.find(
+                              (v) => v.variant_id === selectedVariantId
+                            )!
+                          }
+                          onExport={(variant) => {
+                            console.log('Export variant:', variant.strategy_name);
+                            // TODO: Wire to export flow
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
+
                   {/* Room details panel */}
                   {selectedRoom && <RoomDetailsPanel room={selectedRoom} project={project} />}
                 </div>

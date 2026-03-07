@@ -60,14 +60,12 @@ const sections: Section[] = [
 
 export const PrivacyPolicyPageNew = () => {
   const [activeSection, setActiveSection] = useState("introduction");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveSection(id);
-      setMobileMenuOpen(false);
     }
   };
 
@@ -94,69 +92,22 @@ export const PrivacyPolicyPageNew = () => {
     return () => observer.disconnect();
   }, []);
 
+  const navLinks: NavLink[] = [
+    { to: '/terms-and-conditions', label: 'Terms and Conditions' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                <Lock className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">
-                BeamLab
-              </span>
-            </Link>
-
-            {/* Mobile menu button */}
-            <button type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
-
-            <nav className="hidden lg:flex items-center gap-6">
-              <Link
-                to="/terms-and-conditions"
-                className="text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white transition-colors"
-              >
-                Terms and Conditions
-              </Link>
-              <Link
-                to="/"
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                Back to Home
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        showAuth={true}
+        navLinks={navLinks}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
           {/* Sidebar - Table of Contents */}
-          <aside
-            className={`
-              ${mobileMenuOpen ? "fixed inset-0 z-40 bg-slate-50 dark:bg-slate-900 p-6 overflow-y-auto" : "hidden"}
-              lg:block lg:relative lg:w-72 lg:flex-shrink-0
-            `}
-          >
-            <div className="lg:sticky lg:top-24">
-              {mobileMenuOpen && (
-                <button type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="lg:hidden mb-4 p-2 text-slate-900/70 dark:text-white/70 hover:text-slate-900 dark:hover:text-white"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              )}
+          <aside className="w-72 flex-shrink-0">
+            <div className="sticky top-24">
               <h3 className="text-sm font-semibold text-slate-900/50 dark:text-white/50 uppercase tracking-wider mb-4">
                 Table of Contents
               </h3>
