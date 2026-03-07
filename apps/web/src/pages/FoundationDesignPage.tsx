@@ -20,6 +20,9 @@ import {
   FileText,
   AlertTriangle
 } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input, Select } from '../components/ui/FormInputs';
+import { Alert } from '../components/ui/alert';
 
 // REAL API Client
 import { designFoundation, FootingRequest, FootingResult } from '../api/design';
@@ -431,18 +434,16 @@ export const FoundationDesignPage: React.FC = () => {
                       { value: 'strap', label: 'Strap', icon: Minus },
                       { value: 'mat', label: 'Mat/Raft', icon: Layers }
                     ].map(({ value, label, icon: Icon }) => (
-                      <button type="button"
+                      <Button type="button"
                         key={value}
                         onClick={() => updateInput('type', value)}
-                        className={`py-3 px-4 rounded-lg font-medium transition-colors flex flex-col items-center gap-2 ${
-                          input.type === value
-                            ? 'bg-gradient-to-br from-amber-600 to-orange-600 text-white shadow-lg'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
-                        }`}
+                        variant={input.type === value ? 'premium' : 'outline'}
+                        size="lg"
+                        className="flex flex-col items-center gap-2 h-auto py-3"
                       >
                         <Icon className="w-5 h-5" />
                         <span className="text-xs">{label}</span>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -451,26 +452,18 @@ export const FoundationDesignPage: React.FC = () => {
                 <div>
                   <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 block">Design Code</label>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button"
+                    <Button type="button"
                       onClick={() => updateInput('code', 'IS456')}
-                      className={`py-2 px-4 rounded-lg font-medium transition-colors ${
-                        input.code === 'IS456'
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                      }`}
+                      variant={input.code === 'IS456' ? 'default' : 'outline'}
                     >
                       IS 456
-                    </button>
-                    <button type="button"
+                    </Button>
+                    <Button type="button"
                       onClick={() => updateInput('code', 'ACI318')}
-                      className={`py-2 px-4 rounded-lg font-medium transition-colors ${
-                        input.code === 'ACI318'
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                      }`}
+                      variant={input.code === 'ACI318' ? 'default' : 'outline'}
                     >
                       ACI 318
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -480,51 +473,36 @@ export const FoundationDesignPage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-amber-400 mb-4">Column Loads</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Axial Load P (kN)</label>
-                  <input
-                    type="number"
-                    value={input.axialLoad}
-                    onChange={(e) => updateInput('axialLoad', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Moment Mx (kN·m)</label>
-                  <input
-                    type="number"
-                    value={input.momentX}
-                    onChange={(e) => updateInput('momentX', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Moment My (kN·m)</label>
-                  <input
-                    type="number"
-                    value={input.momentY}
-                    onChange={(e) => updateInput('momentY', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Shear Vx (kN)</label>
-                  <input
-                    type="number"
-                    value={input.shearX}
-                    onChange={(e) => updateInput('shearX', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Shear Vy (kN)</label>
-                  <input
-                    type="number"
-                    value={input.shearY}
-                    onChange={(e) => updateInput('shearY', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
+                <Input
+                  label="Axial Load P (kN)"
+                  type="number"
+                  value={input.axialLoad}
+                  onChange={(e) => updateInput('axialLoad', Number(e.target.value))}
+                />
+                <Input
+                  label="Moment Mx (kN·m)"
+                  type="number"
+                  value={input.momentX}
+                  onChange={(e) => updateInput('momentX', Number(e.target.value))}
+                />
+                <Input
+                  label="Moment My (kN·m)"
+                  type="number"
+                  value={input.momentY}
+                  onChange={(e) => updateInput('momentY', Number(e.target.value))}
+                />
+                <Input
+                  label="Shear Vx (kN)"
+                  type="number"
+                  value={input.shearX}
+                  onChange={(e) => updateInput('shearX', Number(e.target.value))}
+                />
+                <Input
+                  label="Shear Vy (kN)"
+                  type="number"
+                  value={input.shearY}
+                  onChange={(e) => updateInput('shearY', Number(e.target.value))}
+                />
               </div>
             </div>
 
@@ -535,64 +513,46 @@ export const FoundationDesignPage: React.FC = () => {
                 <div className="col-span-2 md:col-span-3 mb-2">
                   <p className="text-xs text-slate-600 dark:text-slate-400 italic">Column Dimensions</p>
                 </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Column Width (mm)</label>
-                  <input
-                    type="number"
-                    value={input.columnWidth}
-                    onChange={(e) => updateInput('columnWidth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Column Depth (mm)</label>
-                  <input
-                    type="number"
-                    value={input.columnDepth}
-                    onChange={(e) => updateInput('columnDepth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
+                <Input
+                  label="Column Width (mm)"
+                  type="number"
+                  value={input.columnWidth}
+                  onChange={(e) => updateInput('columnWidth', Number(e.target.value))}
+                />
+                <Input
+                  label="Column Depth (mm)"
+                  type="number"
+                  value={input.columnDepth}
+                  onChange={(e) => updateInput('columnDepth', Number(e.target.value))}
+                />
                 
                 <div className="col-span-2 md:col-span-3 mt-4 mb-2">
                   <p className="text-xs text-slate-600 dark:text-slate-400 italic">Footing Dimensions</p>
                 </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Footing Length L (mm)</label>
-                  <input
-                    type="number"
-                    value={input.footingLength}
-                    onChange={(e) => updateInput('footingLength', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Footing Width B (mm)</label>
-                  <input
-                    type="number"
-                    value={input.footingWidth}
-                    onChange={(e) => updateInput('footingWidth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Footing Depth D (mm)</label>
-                  <input
-                    type="number"
-                    value={input.footingDepth}
-                    onChange={(e) => updateInput('footingDepth', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Clear Cover (mm)</label>
-                  <input
-                    type="number"
-                    value={input.cover}
-                    onChange={(e) => updateInput('cover', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
+                <Input
+                  label="Footing Length L (mm)"
+                  type="number"
+                  value={input.footingLength}
+                  onChange={(e) => updateInput('footingLength', Number(e.target.value))}
+                />
+                <Input
+                  label="Footing Width B (mm)"
+                  type="number"
+                  value={input.footingWidth}
+                  onChange={(e) => updateInput('footingWidth', Number(e.target.value))}
+                />
+                <Input
+                  label="Footing Depth D (mm)"
+                  type="number"
+                  value={input.footingDepth}
+                  onChange={(e) => updateInput('footingDepth', Number(e.target.value))}
+                />
+                <Input
+                  label="Clear Cover (mm)"
+                  type="number"
+                  value={input.cover}
+                  onChange={(e) => updateInput('cover', Number(e.target.value))}
+                />
               </div>
             </div>
 
@@ -602,24 +562,18 @@ export const FoundationDesignPage: React.FC = () => {
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-emerald-400 mb-4">Soil Properties</h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400">Bearing Capacity (kN/m²)</label>
-                    <input
-                      type="number"
-                      value={input.bearingCapacity}
-                      onChange={(e) => updateInput('bearingCapacity', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400">Soil Density (kN/m³)</label>
-                    <input
-                      type="number"
-                      value={input.soilDensity}
-                      onChange={(e) => updateInput('soilDensity', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
+                  <Input
+                    label="Bearing Capacity (kN/m²)"
+                    type="number"
+                    value={input.bearingCapacity}
+                    onChange={(e) => updateInput('bearingCapacity', Number(e.target.value))}
+                  />
+                  <Input
+                    label="Soil Density (kN/m³)"
+                    type="number"
+                    value={input.soilDensity}
+                    onChange={(e) => updateInput('soilDensity', Number(e.target.value))}
+                  />
                 </div>
               </div>
 
@@ -627,39 +581,38 @@ export const FoundationDesignPage: React.FC = () => {
               <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-sm font-semibold text-purple-400 mb-4">Materials</h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400">Concrete Grade f'ck (MPa)</label>
-                    <select
-                      value={input.fck}
-                      onChange={(e) => updateInput('fck', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="20">M20 / 3000 psi</option>
-                      <option value="25">M25 / 3600 psi</option>
-                      <option value="30">M30 / 4350 psi</option>
-                      <option value="35">M35 / 5075 psi</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-slate-600 dark:text-slate-400">Steel Grade fy (MPa)</label>
-                    <select
-                      value={input.fy}
-                      onChange={(e) => updateInput('fy', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-purple-500 focus:outline-none"
-                    >
-                      <option value="415">Fe 415 / Grade 60</option>
-                      <option value="500">Fe 500 / Grade 75</option>
-                    </select>
-                  </div>
+                  <Select
+                    label="Concrete Grade f'ck (MPa)"
+                    options={[
+                      { value: '20', label: 'M20 / 3000 psi' },
+                      { value: '25', label: 'M25 / 3600 psi' },
+                      { value: '30', label: 'M30 / 4350 psi' },
+                      { value: '35', label: 'M35 / 5075 psi' },
+                    ]}
+                    value={String(input.fck)}
+                    onChange={(val) => updateInput('fck', Number(val))}
+                  />
+                  <Select
+                    label="Steel Grade fy (MPa)"
+                    options={[
+                      { value: '415', label: 'Fe 415 / Grade 60' },
+                      { value: '500', label: 'Fe 500 / Grade 75' },
+                    ]}
+                    value={String(input.fy)}
+                    onChange={(val) => updateInput('fy', Number(val))}
+                  />
                 </div>
               </div>
             </div>
 
             {/* Analyze Button */}
-            <button type="button"
+            <Button
+              type="button"
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full"
+              variant="premium"
+              size="lg"
             >
               {analyzing ? (
                 <>
@@ -672,16 +625,16 @@ export const FoundationDesignPage: React.FC = () => {
                   Run Foundation Design
                 </>
               )}
-            </button>
+            </Button>
 
             {error && (
-              <div className="p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <Alert variant="destructive" className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-red-400 font-medium">Design Error</p>
-                  <p className="text-red-700 dark:text-red-400 text-sm mt-1">{error}</p>
+                  <p className="font-medium">Design Error</p>
+                  <p className="text-sm mt-1">{error}</p>
                 </div>
-              </div>
+              </Alert>
             )}
           </div>
 
@@ -689,7 +642,7 @@ export const FoundationDesignPage: React.FC = () => {
           <div className="lg:col-span-1">
             {results ? (
               <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <CheckCircle2 className="w-6 h-6 text-emerald-400" />
                   Design Results
                   {results._clientSide && (
@@ -766,10 +719,10 @@ export const FoundationDesignPage: React.FC = () => {
                   )}
 
                   {/* Download Report */}
-                  <button type="button" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
+                  <Button type="button" className="w-full" variant="secondary" size="lg">
                     <Download className="w-5 h-5" />
                     Download Report
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (

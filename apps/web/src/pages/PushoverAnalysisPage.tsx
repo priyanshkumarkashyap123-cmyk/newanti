@@ -17,6 +17,9 @@ import {
   BarChart3,
   Info
 } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input, Select } from '../components/ui/FormInputs';
+import { Alert } from '../components/ui/alert';
 
 type LoadPattern = 'uniform' | 'triangular' | 'first-mode' | 'adaptive';
 type TargetType = 'displacement' | 'drift' | 'force';
@@ -201,18 +204,16 @@ export const PushoverAnalysisPage: React.FC = () => {
                   { value: 'first-mode', label: '1st Mode', icon: '∿' },
                   { value: 'adaptive', label: 'Adaptive', icon: '⚡' }
                 ].map(({ value, label, icon }) => (
-                  <button type="button"
+                  <Button type="button"
                     key={value}
                     onClick={() => updateInput('loadPattern', value)}
-                    className={`py-3 px-4 rounded-lg font-medium transition-colors flex flex-col items-center gap-2 ${
-                      input.loadPattern === value
-                        ? 'bg-gradient-to-br from-amber-600 to-orange-600 text-white shadow-lg'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-750'
-                    }`}
+                    variant={input.loadPattern === value ? 'premium' : 'outline'}
+                    size="lg"
+                    className="flex flex-col items-center gap-2 h-auto py-3"
                   >
                     <span className="text-2xl">{icon}</span>
                     <span className="text-xs">{label}</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -221,38 +222,28 @@ export const PushoverAnalysisPage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-blue-400 mb-4">Analysis Parameters</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="col-span-2 md:col-span-1">
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Target Type</label>
-                  <select
-                    value={input.targetType}
-                    onChange={(e) => updateInput('targetType', e.target.value as TargetType)}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="displacement">Displacement</option>
-                    <option value="drift">Drift Ratio</option>
-                    <option value="force">Base Shear</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">
-                    Target Value {input.targetType === 'displacement' ? '(mm)' : input.targetType === 'drift' ? '(%)' : '(kN)'}
-                  </label>
-                  <input
-                    type="number"
-                    value={input.targetValue}
-                    onChange={(e) => updateInput('targetValue', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Number of Steps</label>
-                  <input
-                    type="number"
-                    value={input.numberOfSteps}
-                    onChange={(e) => updateInput('numberOfSteps', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
+                <Select
+                  label="Target Type"
+                  options={[
+                    { value: 'displacement', label: 'Displacement' },
+                    { value: 'drift', label: 'Drift Ratio' },
+                    { value: 'force', label: 'Base Shear' },
+                  ]}
+                  value={input.targetType}
+                  onChange={(val) => updateInput('targetType', val as TargetType)}
+                />
+                <Input
+                  label={`Target Value ${input.targetType === 'displacement' ? '(mm)' : input.targetType === 'drift' ? '(%)' : '(kN)'}`}
+                  type="number"
+                  value={input.targetValue}
+                  onChange={(e) => updateInput('targetValue', Number(e.target.value))}
+                />
+                <Input
+                  label="Number of Steps"
+                  type="number"
+                  value={input.numberOfSteps}
+                  onChange={(e) => updateInput('numberOfSteps', Number(e.target.value))}
+                />
               </div>
             </div>
 
@@ -260,25 +251,19 @@ export const PushoverAnalysisPage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-emerald-400 mb-4">Convergence Settings</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Max Iterations</label>
-                  <input
-                    type="number"
-                    value={input.maxIterations}
-                    onChange={(e) => updateInput('maxIterations', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Convergence Tolerance</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={input.convergenceTolerance}
-                    onChange={(e) => updateInput('convergenceTolerance', Number(e.target.value))}
-                    className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
+                <Input
+                  label="Max Iterations"
+                  type="number"
+                  value={input.maxIterations}
+                  onChange={(e) => updateInput('maxIterations', Number(e.target.value))}
+                />
+                <Input
+                  label="Convergence Tolerance"
+                  type="number"
+                  step="0.0001"
+                  value={input.convergenceTolerance}
+                  onChange={(e) => updateInput('convergenceTolerance', Number(e.target.value))}
+                />
               </div>
             </div>
 
@@ -314,10 +299,13 @@ export const PushoverAnalysisPage: React.FC = () => {
             </div>
 
             {/* Analyze Button */}
-            <button type="button"
+            <Button
+              type="button"
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="w-full py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full"
+              variant="premium"
+              size="lg"
             >
               {analyzing ? (
                 <>
@@ -330,16 +318,16 @@ export const PushoverAnalysisPage: React.FC = () => {
                   Run Pushover Analysis
                 </>
               )}
-            </button>
+            </Button>
 
             {error && (
-              <div className="p-4 bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <Alert variant="destructive" className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-red-400 font-medium">Analysis Error</p>
-                  <p className="text-red-300/80 text-sm mt-1">{error}</p>
+                  <p className="font-medium">Analysis Error</p>
+                  <p className="text-sm mt-1">{error}</p>
                 </div>
-              </div>
+              </Alert>
             )}
           </div>
 
@@ -347,7 +335,7 @@ export const PushoverAnalysisPage: React.FC = () => {
           <div className="lg:col-span-1">
             {results ? (
               <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
-                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Activity className="w-6 h-6 text-emerald-400" />
                   Pushover Results
                 </h2>
@@ -436,10 +424,10 @@ export const PushoverAnalysisPage: React.FC = () => {
                   )}
 
                   {/* Download Report */}
-                  <button type="button" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
+                  <Button type="button" className="w-full" variant="secondary" size="lg">
                     <Download className="w-5 h-5" />
                     Download Report
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (

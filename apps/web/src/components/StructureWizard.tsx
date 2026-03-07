@@ -357,9 +357,10 @@ function genBuildingFrame(p: Record<string, number>): GeneratedStructure {
     // --- GRAVITY LOADS (UDL on beams per IS 875) ---
     // Floor load applied as UDL on each beam, using tributary width
     // For 2D frames: full tributary width = bayWidth (slab spanning one way)
-    // For 3D frames: each beam carries tributary width = bayWidth/2 from each side
+    // For 3D frames: each beam carries tributary width = bayWidth/4
+    //   (bayWidth/2 from tributary area, divided by 2 for two-way distribution)
     if (w !== 0) {
-        const tributaryWidth = is3D ? bayW / 2 : 1; // 3D: half bay each side; 2D: per meter run
+        const tributaryWidth = is3D ? bayW / 4 : 1; // 3D: two-way slab distribution; 2D: per meter run
         const udlIntensity = w * tributaryWidth; // kN/m on beam
 
         for (const { memberId } of beamMemberIds) {

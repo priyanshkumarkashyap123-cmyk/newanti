@@ -18,6 +18,8 @@ import {
   Database,
   CheckCircle2
 } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/FormInputs';
 import { useModelStore } from '../store/model';
 
 // Import IS section data
@@ -258,20 +260,16 @@ export const SectionDatabasePage: React.FC = () => {
             {/* Search Bar */}
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
               <div className="flex gap-3">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 dark:text-slate-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search sections (e.g., ISMB 200, W14x82, IPE 300)..."
-                    className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:outline-none"
-                  />
-                </div>
-                <button type="button" className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search sections (e.g., ISMB 200, W14x82, IPE 300)..."
+                  leftIcon={<Search className="w-5 h-5" />}
+                />
+                <Button type="button" variant="default" size="lg" className="px-4">
                   <Filter className="w-5 h-5" />
                   Filter
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -279,28 +277,22 @@ export const SectionDatabasePage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-purple-400 mb-4">Standard</h3>
               <div className="flex flex-wrap gap-2">
-                <button type="button"
+                <Button type="button"
                   onClick={() => setSelectedStandard('ALL')}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedStandard === 'ALL'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                  variant={selectedStandard === 'ALL' ? 'default' : 'outline'}
+                  size="sm"
                 >
                   All Standards
-                </button>
+                </Button>
                 {standards.map((std) => (
-                  <button type="button"
+                  <Button type="button"
                     key={std}
                     onClick={() => setSelectedStandard(std)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                      selectedStandard === std
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                    variant={selectedStandard === std ? 'default' : 'outline'}
+                    size="sm"
                   >
                     {std}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -350,19 +342,21 @@ export const SectionDatabasePage: React.FC = () => {
                         </div>
                       </div>
                       
-                      <button type="button"
+                      <Button type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleSaveSection(section.id);
                         }}
-                        className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9"
                       >
                         {savedSections.has(section.id) ? (
                           <BookmarkCheck className="w-5 h-5 text-purple-400" />
                         ) : (
                           <Bookmark className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                         )}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -375,13 +369,15 @@ export const SectionDatabasePage: React.FC = () => {
             {selectedSection ? (
               <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 sticky top-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-white">{selectedSection.designation}</h2>
-                  <button type="button"
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{selectedSection.designation}</h2>
+                  <Button type="button"
                     onClick={() => exportSection(selectedSection)}
-                    className="p-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                    variant="default"
+                    size="icon"
+                    className="h-9 w-9"
                   >
                     <Download className="w-5 h-5" />
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="space-y-6">
@@ -491,12 +487,15 @@ export const SectionDatabasePage: React.FC = () => {
                   </div>
 
                   {/* Use in Model Button */}
-                  <button type="button"
+                  <Button
+                    type="button"
                     onClick={() => applyToModel(selectedSection)}
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-semibold transition-all shadow-lg"
+                    className="w-full"
+                    variant="premium"
+                    size="lg"
                   >
                     {selectedIds.size > 0 ? `Apply to ${selectedIds.size} Selected Members` : 'Apply to All Members'}
-                  </button>
+                  </Button>
                   <p className="text-xs text-slate-500 text-center mt-1">
                     {members.size} members in model
                   </p>

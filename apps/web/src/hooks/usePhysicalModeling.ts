@@ -124,7 +124,10 @@ export function usePhysicalModeling(): UsePhysicalModelingReturn {
             material: sectionParams?.material ?? 'Steel'
         };
         
-        const id = `PM_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        // Use sequential ID from store for consistency
+        const state = useModelStore.getState();
+        const id = `PM${state.nextMemberNumber}`;
+        state.nextMemberNumber++;
         
         return manager.addPhysicalMember({
             id,

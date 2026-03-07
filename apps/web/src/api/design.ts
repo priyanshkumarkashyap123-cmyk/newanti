@@ -265,48 +265,140 @@ async function apiCall<T>(endpoint: string, data: unknown): Promise<T> {
 }
 
 /**
- * Design steel member per IS 800 or AISC 360
+ * Design steel member per IS 800:2007
+ * Routes to Python backend's /design/steel endpoint
  */
 export async function designSteelMember(
     request: SteelDesignRequest
 ): Promise<SteelDesignResult> {
-    return apiCall<SteelDesignResult>('/api/design/steel', request);
+    const payload = {
+        section_name: request.section.name,
+        depth: request.section.depth,
+        width: request.section.width,
+        web_thickness: request.section.webThickness,
+        flange_thickness: request.section.flangeThickness,
+        root_radius: 0,
+        area: request.section.area,
+        Iz: request.section.Iz,
+        Iy: request.section.Iy,
+        Zz: request.section.Zz ?? 0,
+        Zy: request.section.Zy ?? 0,
+        rz: request.section.rz,
+        ry: request.section.ry,
+        length: request.geometry.length,
+        effective_length_y: request.geometry.effectiveLengthY ?? request.geometry.length,
+        effective_length_z: request.geometry.effectiveLengthZ ?? request.geometry.length,
+        unbraced_length: request.geometry.unbracedLength ?? request.geometry.length,
+        Cb: request.geometry.Cb ?? 1.0,
+        N: request.forces.N,
+        Vy: request.forces.Vy,
+        Vz: request.forces.Vz,
+        My: request.forces.My,
+        Mz: request.forces.Mz,
+        T: 0,
+        steel_grade: 'E250',
+        fy: request.material.fy,
+        fu: request.material.fu,
+        E: request.material.E ?? 200000
+    };
+    const result = await pythonApiCall<{
+        success: boolean;
+        section_class: string;
+        governing_ratio: number;
+        overall_status: string;
+        capacities: { tension_kN: number; compression_kN: number; moment_major_kNm: number; shear_kN: number };
+        checks: Array<{ name: string; clause: string; demand: number; capacity: number; ratio: number; status: string }>;
+    }>('/design/steel', payload);
+    return {
+        code: 'IS 800:2007',
+        sectionClass: result.section_class,
+        method: 'LRFD',
+        tensionCapacity: result.capacities.tension_kN,
+        compressionCapacity: result.capacities.compression_kN,
+        momentCapacity: result.capacities.moment_major_kNm,
+        shearCapacity: result.capacities.shear_kN,
+        interactionRatio: result.governing_ratio,
+        status: result.overall_status === 'PASS' ? 'PASS' : 'FAIL',
+        checks: result.checks.map(c => ({ name: c.name, clause: c.clause, ratio: c.ratio, status: c.status }))
+    };
 }
 
 /**
  * Design concrete beam per IS 456
+ * Delegates to the Python-backed designBeamIS456
  */
 export async function designConcreteBeam(
     request: ConcreteBeamRequest
 ): Promise<ConcreteBeamResult> {
-    return apiCall<ConcreteBeamResult>('/api/design/concrete/beam', request);
+    const result = await designBeamIS456({
+        width: request.section.width,
+        depth: request.section.depth,
+        cover: request.section.cover ?? 40,
+        Mu: request.forces.Mu,
+        Vu: request.forces.Vu,
+        fck: request.material.fck,
+        fy: request.material.fy
+    });
+    return {
+        tensionSteel: result.tension_steel,
+        compressionSteel: result.compression_steel,
+        stirrups: result.stirrups,
+        MuCapacity: result.Mu_capacity,
+        VuCapacity: result.Vu_capacity,
+        status: result.status === 'PASS' ? 'PASS' : 'FAIL',
+        checks: result.checks
+    };
 }
 
 /**
  * Design concrete column per IS 456
+ * Delegates to the Python-backed designColumnIS456
  */
 export async function designConcreteColumn(
     request: ConcreteColumnRequest
 ): Promise<ConcreteColumnResult> {
-    return apiCall<ConcreteColumnResult>('/api/design/concrete/column', request);
+    const result = await designColumnIS456({
+        width: request.section.width,
+        depth: request.section.depth,
+        cover: request.section.cover ?? 40,
+        Pu: request.forces.Pu,
+        Mux: request.forces.Mux,
+        Muy: request.forces.Muy,
+        unsupported_length: request.geometry.unsupportedLength,
+        effective_length_factor: request.geometry.effectiveLengthFactor ?? 1.0,
+        fck: request.material.fck,
+        fy: request.material.fy
+    });
+    return {
+        longitudinalSteel: result.longitudinal_steel,
+        ties: result.ties,
+        PuCapacity: result.Pu_capacity,
+        MuxCapacity: result.Mux_capacity,
+        MuyCapacity: result.Muy_capacity,
+        interactionRatio: result.interaction_ratio,
+        status: result.status === 'PASS' ? 'PASS' : 'FAIL',
+        checks: result.checks
+    };
 }
 
 /**
  * Design steel connection
+ * Routes to Python backend's /design/connection/check endpoint
  */
 export async function designConnection(
     request: ConnectionRequest
 ): Promise<ConnectionResult> {
-    return apiCall<ConnectionResult>('/api/design/connection', request);
+    return pythonApiCall<ConnectionResult>('/design/connection/check', request);
 }
 
 /**
  * Design foundation
+ * Routes to Python backend's /design/foundation/check endpoint
  */
 export async function designFoundation(
     request: FootingRequest
 ): Promise<FootingResult> {
-    return apiCall<FootingResult>('/api/design/foundation', request);
+    return pythonApiCall<FootingResult>('/design/foundation/check', request);
 }
 
 /**
@@ -318,14 +410,16 @@ export async function getDesignCodes(): Promise<{
     connections: Array<{ code: string; name: string; country: string }>;
     foundations: Array<{ code: string; name: string; country: string }>;
 }> {
+    const normalizedBase = PYTHON_API.endsWith('/') ? PYTHON_API.slice(0, -1) : PYTHON_API;
     const { data } = await apiClient.get<{
+        success: boolean;
         codes: {
             steel: Array<{ code: string; name: string; country: string }>;
             concrete: Array<{ code: string; name: string; country: string }>;
             connections: Array<{ code: string; name: string; country: string }>;
             foundations: Array<{ code: string; name: string; country: string }>;
         }
-    }>('/api/design/codes');
+    }>(`${normalizedBase}/design/codes`);
 
     return data.codes;
 }
@@ -500,6 +594,9 @@ export async function designBeamIS456(params: {
     cover?: number;         // mm (default 40)
     Mu: number;             // kNm - Design moment (SIGNED: +sagging, -hogging)
     Vu: number;             // kN - Design shear
+    Tu?: number;            // kNm - Torsion (IS 456 Cl. 41)
+    stirrup_dia?: number;   // mm - Stirrup diameter (default 8)
+    main_bar_dia?: number;  // mm - Main bar diameter (default 16)
     code?: string;          // Design code (default 'IS456')
     fck?: number;           // MPa (default 25)
     fy?: number;            // MPa (default 500)
@@ -521,6 +618,16 @@ export async function designBeamIS456(params: {
     checks: string[];
     // Section-wise results (only present when span > 0)
     section_wise?: SectionWiseResult;
+    // Effective depth & torsion results
+    effective_depth?: number;
+    effective_depth_formula?: string;
+    torsion?: {
+        Tu: number;
+        Me: number;
+        Ve: number;
+        is_significant: boolean;
+        clause: string;
+    };
     // Sign convention fields
     moment_type?: string;
     reinforcement_note?: string;
@@ -534,6 +641,9 @@ export async function designBeamIS456(params: {
         cover: params.cover ?? 40,
         Mu: params.Mu,
         Vu: params.Vu,
+        Tu: params.Tu ?? 0,
+        stirrup_dia: params.stirrup_dia ?? 8,
+        main_bar_dia: params.main_bar_dia ?? 16,
         code: params.code ?? 'IS456',
         fck: params.fck ?? 25,
         fy: params.fy ?? 500

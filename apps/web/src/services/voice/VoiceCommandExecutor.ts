@@ -163,21 +163,19 @@ class VoiceCommandExecutorClass {
             const length = parsed.parameters.length || 5;
             const nodes = Array.from(store.nodes.values());
             const lastNode = nodes[nodes.length - 1];
-            const nodeCount = store.nodes.size;
-            const memberCount = store.members.size;
 
-            // Create new node
-            const newNodeId = `n${nodeCount + 1}`;
+            // Create new node with sequential ID
+            const newNodeId = store.getNextNodeId();
             const newX = lastNode ? lastNode.x + length : length;
 
             store.addNode({ id: newNodeId, x: newX, y: 0, z: 0 });
 
             // Create member if we have at least 2 nodes
             if (nodes.length > 0) {
-                const newMemberId = `m${memberCount + 1}`;
+                const newMemberId = store.getNextMemberId();
                 store.addMember({
                     id: newMemberId,
-                    startNodeId: lastNode?.id || 'n1',
+                    startNodeId: lastNode?.id || 'N1',
                     endNodeId: newNodeId
                 });
 

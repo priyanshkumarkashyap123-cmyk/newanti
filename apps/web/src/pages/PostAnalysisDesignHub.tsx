@@ -43,6 +43,7 @@ import {
 } from '../api/design';
 import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
 import { Logo } from '../components/branding';
+import { Button } from '../components/ui/button';
 
 // ================================================================
 // TYPES
@@ -2094,10 +2095,12 @@ const PostAnalysisDesignHub: FC = () => {
                 />
 
                 {/* Run Design Button */}
-                <button type="button"
+                <Button
+                  type="button"
                   onClick={runSteelDesign}
                   disabled={isDesigning || !hasAnalysis}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                  className="w-full"
+                  size="lg"
                 >
                   {isDesigning ? (
                     <>
@@ -2111,7 +2114,7 @@ const PostAnalysisDesignHub: FC = () => {
                       {selectedMemberIds.size > 0 && ` (${selectedMemberIds.size})`}
                     </>
                   )}
-                </button>
+                </Button>
 
                 {designResults.size > 0 && (
                   <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
@@ -2218,10 +2221,13 @@ const PostAnalysisDesignHub: FC = () => {
                 </div>
 
                 {/* Run Concrete Design Button */}
-                <button type="button"
+                <Button
+                  type="button"
                   onClick={runConcreteDesign}
                   disabled={isDesigning || !hasAnalysis}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                  className="w-full"
+                  variant="success"
+                  size="lg"
                 >
                   {isDesigning ? (
                     <>
@@ -2235,7 +2241,7 @@ const PostAnalysisDesignHub: FC = () => {
                       {selectedMemberIds.size > 0 && ` (${selectedMemberIds.size})`}
                     </>
                   )}
-                </button>
+                </Button>
 
                 {concreteDesignResults.size > 0 && (
                   <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
@@ -2376,17 +2382,20 @@ const PostAnalysisDesignHub: FC = () => {
                   Automatically find the lightest section that passes all design checks for each member.
                   Iterates through the section database from lightest to heaviest.
                 </p>
-                <button type="button"
+                <Button
+                  type="button"
                   onClick={runOptimization}
                   disabled={isOptimizing || designResults.size === 0}
-                  className="w-full py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                  className="w-full"
+                  variant="premium"
+                  size="lg"
                 >
                   {isOptimizing ? (
                     <><RefreshCw className="w-5 h-5 animate-spin" /> Optimizing...</>
                   ) : (
                     <><Zap className="w-5 h-5" /> Run Optimization</>
                   )}
-                </button>
+                </Button>
                 {designResults.size === 0 && (
                   <p className="text-xs text-slate-500 mt-2 text-center">Run design checks first</p>
                 )}

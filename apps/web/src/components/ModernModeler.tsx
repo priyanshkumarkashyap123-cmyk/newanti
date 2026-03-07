@@ -481,7 +481,7 @@ export const ModernModeler: FC = () => {
       for (const id of sel) {
         const node = state.nodes.get(id);
         if (node) {
-          const newId = `n${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+          const newId = state.getNextNodeId();
           state.addNode({ ...node, id: newId, x: node.x + 1 });
           nodeIdMap.set(id, newId);
         }
@@ -492,7 +492,7 @@ export const ModernModeler: FC = () => {
           const newStart = nodeIdMap.get(m.startNodeId);
           const newEnd = nodeIdMap.get(m.endNodeId);
           if (newStart && newEnd) {
-            state.addMember({ ...m, id: `m${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, startNodeId: newStart, endNodeId: newEnd });
+            state.addMember({ ...m, id: state.getNextMemberId(), startNodeId: newStart, endNodeId: newEnd });
           }
         }
       }
@@ -515,7 +515,7 @@ export const ModernModeler: FC = () => {
         const n2 = state.nodes.get(member.endNodeId);
         if (!n1 || !n2) continue;
         // Create midpoint node
-        const midId = `n${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        const midId = state.getNextNodeId();
         state.addNode({
           id: midId,
           x: (n1.x + n2.x) / 2,
@@ -523,8 +523,8 @@ export const ModernModeler: FC = () => {
           z: ((n1.z ?? 0) + (n2.z ?? 0)) / 2,
         });
         // Create two new members
-        const m1Id = `m${Date.now()}-a${Math.random().toString(36).slice(2, 5)}`;
-        const m2Id = `m${Date.now()}-b${Math.random().toString(36).slice(2, 5)}`;
+        const m1Id = state.getNextMemberId();
+        const m2Id = state.getNextMemberId();
         state.addMember({ ...member, id: m1Id, startNodeId: member.startNodeId, endNodeId: midId });
         state.addMember({ ...member, id: m2Id, startNodeId: midId, endNodeId: member.endNodeId });
         // Remove original member
