@@ -40,8 +40,15 @@ class BeamDesignRequest(BaseModel):
     cover: float = 40
     Mu: float
     Vu: float
+    code: str = 'IS456'
     fck: float = 25
     fy: float = 500
+    # Section-wise design parameters
+    span: float = 0              # mm — if > 0, enables section-wise design
+    w_factored: float = 0        # kN/m — factored UDL for demand envelope
+    support_condition: str = 'simple'  # 'simple', 'fixed-fixed', 'propped', 'cantilever'
+    n_sections: int = 11          # Number of sections to check along span
+    section_forces: Optional[List[Dict]] = None  # User-supplied force arrays [{x, Mu, Vu}]
 
 
 class ColumnDesignRequest(BaseModel):
@@ -53,8 +60,15 @@ class ColumnDesignRequest(BaseModel):
     Muy: float = 0
     unsupported_length: float
     effective_length_factor: float = 1.0
+    code: str = 'IS456'
     fck: float = 25
     fy: float = 500
+    # Section-wise column checking
+    Mux_top: Optional[float] = None   # Top moment about x-axis (kNm)
+    Mux_bottom: Optional[float] = None # Bottom moment about x-axis (kNm)
+    Muy_top: Optional[float] = None
+    Muy_bottom: Optional[float] = None
+    n_sections: int = 5
 
 
 class SlabDesignRequest(BaseModel):
@@ -64,6 +78,7 @@ class SlabDesignRequest(BaseModel):
     floor_finish: float = 1.0
     support_type: str = 'simple'
     edge_conditions: str = 'all_simple'
+    code: str = 'IS456'
     fck: float = 25
     fy: float = 500
 
@@ -113,7 +128,15 @@ async def check_design(request: DesignCheckRequest):
 
 @router.post("/design/beam")
 async def design_beam(request: BeamDesignRequest):
-    """Design RC beam per IS 456:2000"""
+    """
+    Design RC beam per IS 456:2000
+    
+    If span > 0 and w_factored > 0 (or section_forces provided),
+    performs SECTION-WISE design — checks every section, provides
+    curtailment schedule, and ensures demand ≤ capacity everywhere.
+    
+    Otherwise, designs for the single maximum section (traditional).
+    """
     try:
         from design.concrete.is456 import IS456Designer, BeamSection
 
@@ -124,10 +147,12 @@ async def design_beam(request: BeamDesignRequest):
             cover=request.cover
         )
 
-        result = await asyncio.to_thread(designer.design_beam, section, request.Mu, request.Vu)
+        # ── Single-section design (traditional: max values only) ──
+        result = await asyncio.to_thread(designer.design_beam, section, abs(request.Mu), abs(request.Vu))
 
-        return {
+        response = {
             "success": True,
+            "design_approach": "single_section",
             "tension_steel": {
                 "diameter": result.tension_steel.diameter,
                 "count": result.tension_steel.count,
@@ -148,13 +173,110 @@ async def design_beam(request: BeamDesignRequest):
             "status": result.status,
             "checks": result.checks
         }
+
+        # ── Section-wise design (if span & loads provided) ──
+        if request.span > 0 and (request.w_factored > 0 or request.section_forces):
+            from design.concrete.section_wise_design import (
+                SectionWiseDesigner,
+                generate_simply_supported_demands,
+                generate_continuous_beam_demands,
+                generate_demands_from_forces
+            )
+            
+            sw_designer = SectionWiseDesigner(fck=request.fck, fy=request.fy, code=request.code)
+            
+            # Generate demand envelope
+            if request.section_forces:
+                demands = generate_demands_from_forces(
+                    L=request.span,
+                    section_forces=request.section_forces,
+                    n_sections=request.n_sections
+                )
+            elif request.support_condition == 'simple':
+                demands = generate_simply_supported_demands(
+                    L=request.span, w=request.w_factored, n_sections=request.n_sections
+                )
+            else:
+                demands = generate_continuous_beam_demands(
+                    L=request.span, w=request.w_factored,
+                    end_condition=request.support_condition,
+                    n_sections=request.n_sections
+                )
+            
+            sw_result = await asyncio.to_thread(
+                sw_designer.design_member_sectionwise,
+                width=request.width, depth=request.depth,
+                cover=request.cover, span=request.span,
+                demands=demands, n_sections=request.n_sections
+            )
+            
+            response["design_approach"] = "section_wise"
+            response["section_wise"] = {
+                "n_sections": sw_result.n_sections,
+                "is_safe_everywhere": sw_result.is_safe_everywhere,
+                "economy_ratio": sw_result.economy_ratio,
+                "summary": sw_result.summary,
+                "engineering_notes": sw_result.engineering_notes,
+                "section_checks": [
+                    {
+                        "location": sc.location.label,
+                        "x_ratio": sc.location.x_ratio,
+                        "Mu_capacity": sc.Mu_capacity,
+                        "Vu_capacity": sc.Vu_capacity,
+                        "Ast_bottom": sc.Ast_bottom,
+                        "Ast_top": sc.Ast_top,
+                        "stirrup_spacing": sc.stirrup_spacing,
+                        "utilization_M": sc.utilization_M,
+                        "utilization_V": sc.utilization_V,
+                        "status": sc.status
+                    }
+                    for sc in sw_result.section_checks
+                ],
+                "rebar_zones": [
+                    {
+                        "x_start": z.x_start,
+                        "x_end": z.x_end,
+                        "bottom_bars": z.bottom_bars,
+                        "top_bars": z.top_bars,
+                        "stirrup_spec": z.stirrup_spec,
+                        "Ast_bottom": z.Ast_bottom,
+                        "note": z.note
+                    }
+                    for z in sw_result.rebar_zones
+                ],
+                "curtailment_points": [
+                    {
+                        "x": cp.x,
+                        "description": cp.bar_description,
+                        "Ld_required": cp.Ld_required,
+                        "Ld_available": cp.Ld_available,
+                        "is_valid": cp.is_valid,
+                        "clause": cp.clause
+                    }
+                    for cp in sw_result.curtailment_points
+                ],
+                "critical_section": {
+                    "location": sw_result.max_section.location.label,
+                    "utilization_M": sw_result.max_section.utilization_M,
+                    "utilization_V": sw_result.max_section.utilization_V,
+                    "Ast_bottom": sw_result.max_section.Ast_bottom
+                }
+            }
+            response["checks"] = sw_result.checks
+
+        return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/design/column")
 async def design_column(request: ColumnDesignRequest):
-    """Design RC column per IS 456:2000"""
+    """
+    Design RC column per IS 456:2000
+    
+    If Mux_top and Mux_bottom are provided, performs section-wise checking
+    along column height — moments interpolated + P-delta effects.
+    """
     try:
         from design.concrete.is456 import IS456Designer, ColumnSection
 
@@ -164,13 +286,14 @@ async def design_column(request: ColumnDesignRequest):
         )
 
         result = await asyncio.to_thread(lambda: designer.design_column(
-            section, Pu=request.Pu, Mux=request.Mux, Muy=request.Muy,
+            section, Pu=request.Pu, Mux=abs(request.Mux), Muy=abs(request.Muy),
             unsupported_length=request.unsupported_length,
             effective_length_factor=request.effective_length_factor
         ))
 
-        return {
+        response = {
             "success": True,
+            "design_approach": "single_section",
             "longitudinal_steel": [
                 {"diameter": bar.diameter, "count": bar.count, "area": round(bar.area, 1)}
                 for bar in result.longitudinal_steel
@@ -183,6 +306,26 @@ async def design_column(request: ColumnDesignRequest):
             "status": result.status,
             "checks": result.checks
         }
+
+        # ── Section-wise column check (if end moments provided) ──
+        if request.Mux_top is not None and request.Mux_bottom is not None:
+            from design.concrete.section_wise_design import check_column_at_sections
+            
+            col_sw = await asyncio.to_thread(
+                check_column_at_sections,
+                width=request.width, depth=request.depth, cover=request.cover,
+                height=request.unsupported_length,
+                Pu=request.Pu,
+                Mux_top=request.Mux_top, Mux_bottom=request.Mux_bottom,
+                Muy_top=request.Muy_top or 0, Muy_bottom=request.Muy_bottom or 0,
+                fck=request.fck, fy=request.fy,
+                n_sections=request.n_sections
+            )
+            
+            response["design_approach"] = "section_wise"
+            response["section_wise"] = col_sw
+
+        return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

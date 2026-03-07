@@ -444,16 +444,74 @@ async function pythonApiCall<T>(endpoint: string, payload: unknown): Promise<T> 
 /**
  * Design RC beam per IS 456:2000 using Python backend
  */
+// Section-wise design types
+export interface SectionCheck {
+    location: string;
+    x_ratio: number;
+    Mu_capacity: number;
+    Vu_capacity: number;
+    Ast_bottom: number;
+    Ast_top: number;
+    stirrup_spacing: number;
+    utilization_M: number;
+    utilization_V: number;
+    status: string;
+}
+
+export interface RebarZone {
+    x_start: number;
+    x_end: number;
+    bottom_bars: string;
+    top_bars: string;
+    stirrup_spec: string;
+    Ast_bottom: number;
+    note: string;
+}
+
+export interface CurtailmentPoint {
+    x: number;
+    description: string;
+    Ld_required: number;
+    Ld_available: number;
+    is_valid: boolean;
+    clause: string;
+}
+
+export interface SectionWiseResult {
+    n_sections: number;
+    is_safe_everywhere: boolean;
+    economy_ratio: number;
+    summary: string;
+    engineering_notes: string[];
+    section_checks: SectionCheck[];
+    rebar_zones: RebarZone[];
+    curtailment_points: CurtailmentPoint[];
+    critical_section: {
+        location: string;
+        utilization_M: number;
+        utilization_V: number;
+        Ast_bottom: number;
+    };
+}
+
 export async function designBeamIS456(params: {
     width: number;          // mm
     depth: number;          // mm
     cover?: number;         // mm (default 40)
-    Mu: number;             // kNm - Design moment
+    Mu: number;             // kNm - Design moment (SIGNED: +sagging, -hogging)
     Vu: number;             // kN - Design shear
+    code?: string;          // Design code (default 'IS456')
     fck?: number;           // MPa (default 25)
     fy?: number;            // MPa (default 500)
+    // Section-wise design parameters
+    span?: number;          // mm - if > 0, enables section-wise design
+    w_factored?: number;    // kN/m - factored UDL for demand envelope
+    support_condition?: string; // 'simple', 'fixed-fixed', 'propped', 'cantilever'
+    n_sections?: number;    // Number of check sections (default 11)
+    section_forces?: Array<{ x: number; Mu: number; Vu: number }>; // Custom force array
 }): Promise<{
     success: boolean;
+    design_approach: 'single_section' | 'section_wise';
     tension_steel: { diameter: number; count: number; area: number };
     compression_steel?: { diameter: number; count: number; area: number } | null;
     stirrups: { diameter: number; legs: number; spacing: number };
@@ -461,16 +519,34 @@ export async function designBeamIS456(params: {
     Vu_capacity: number;
     status: string;
     checks: string[];
+    // Section-wise results (only present when span > 0)
+    section_wise?: SectionWiseResult;
+    // Sign convention fields
+    moment_type?: string;
+    reinforcement_note?: string;
+    sign_convention?: string;
+    demand?: { Mu: number; Mu_signed: number; Vu: number; Vu_signed: number };
+    moment_analysis?: { bottom_main: number; top_main: number; notes: string };
 }> {
-    return pythonApiCall('/design/beam', {
+    const body: Record<string, unknown> = {
         width: params.width,
         depth: params.depth,
         cover: params.cover ?? 40,
         Mu: params.Mu,
         Vu: params.Vu,
+        code: params.code ?? 'IS456',
         fck: params.fck ?? 25,
         fy: params.fy ?? 500
-    });
+    };
+    // Add section-wise parameters if provided
+    if (params.span && params.span > 0) {
+        body.span = params.span;
+        if (params.w_factored) body.w_factored = params.w_factored;
+        if (params.support_condition) body.support_condition = params.support_condition;
+        if (params.n_sections) body.n_sections = params.n_sections;
+        if (params.section_forces) body.section_forces = params.section_forces;
+    }
+    return pythonApiCall('/design/beam', body);
 }
 
 /**
@@ -481,14 +557,22 @@ export async function designColumnIS456(params: {
     depth: number;          // mm
     cover?: number;         // mm (default 40)
     Pu: number;             // kN - Axial load
-    Mux?: number;           // kNm - Moment about x-axis
-    Muy?: number;           // kNm - Moment about y-axis
+    Mux?: number;           // kNm - Moment about x-axis (SIGNED)
+    Muy?: number;           // kNm - Moment about y-axis (SIGNED)
     unsupported_length: number;  // mm
     effective_length_factor?: number;
+    code?: string;          // Design code
     fck?: number;
     fy?: number;
+    // Section-wise column checking
+    Mux_top?: number;       // Top moment about x-axis (kNm)
+    Mux_bottom?: number;    // Bottom moment about x-axis (kNm)
+    Muy_top?: number;
+    Muy_bottom?: number;
+    n_sections?: number;    // Default 5
 }): Promise<{
     success: boolean;
+    design_approach: 'single_section' | 'section_wise';
     longitudinal_steel: Array<{ diameter: number; count: number; area: number }>;
     ties: { diameter: number; spacing: number };
     Pu_capacity: number;
@@ -497,8 +581,30 @@ export async function designColumnIS456(params: {
     interaction_ratio: number;
     status: string;
     checks: string[];
+    // Section-wise column checking results
+    section_wise?: {
+        n_sections: number;
+        section_checks: Array<{
+            location: string;
+            height_ratio: number;
+            Mux: number;
+            Muy: number;
+            Pu: number;
+            interaction_ratio: number;
+            status: string;
+            Ast_required: number;
+        }>;
+        governing_section: {
+            location: string;
+            interaction_ratio: number;
+            status: string;
+        };
+        is_safe_everywhere: boolean;
+        summary: string;
+        engineering_notes: string[];
+    };
 }> {
-    return pythonApiCall('/design/column', {
+    const body: Record<string, unknown> = {
         width: params.width,
         depth: params.depth,
         cover: params.cover ?? 40,
@@ -507,9 +613,19 @@ export async function designColumnIS456(params: {
         Muy: params.Muy ?? 0,
         unsupported_length: params.unsupported_length,
         effective_length_factor: params.effective_length_factor ?? 1.0,
+        code: params.code ?? 'IS456',
         fck: params.fck ?? 25,
         fy: params.fy ?? 500
-    });
+    };
+    // Add section-wise parameters if provided
+    if (params.Mux_top !== undefined && params.Mux_bottom !== undefined) {
+        body.Mux_top = params.Mux_top;
+        body.Mux_bottom = params.Mux_bottom;
+        if (params.Muy_top !== undefined) body.Muy_top = params.Muy_top;
+        if (params.Muy_bottom !== undefined) body.Muy_bottom = params.Muy_bottom;
+        if (params.n_sections) body.n_sections = params.n_sections;
+    }
+    return pythonApiCall('/design/column', body);
 }
 
 /**

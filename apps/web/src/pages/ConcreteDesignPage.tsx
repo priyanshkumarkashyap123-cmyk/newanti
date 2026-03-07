@@ -22,7 +22,9 @@ import {
   Settings,
   Play,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Scissors,
+  TrendingDown
 } from 'lucide-react';
 
 // REAL API Client - connects to Python backend at :8081
@@ -57,6 +59,11 @@ interface BeamInput {
   // Moments & Shear
   Mu: number;
   Vu: number;
+
+  // Section-wise design
+  enableSectionWise: boolean;
+  supportCondition: 'simple' | 'fixed-fixed' | 'propped' | 'cantilever';
+  nSections: number;
 }
 
 interface ColumnInput {
@@ -75,6 +82,13 @@ interface ColumnInput {
   Pu: number;  // Axial load
   Mux: number; // Moment about major axis
   Muy: number; // Moment about minor axis
+
+  // Section-wise design (end moments)
+  enableSectionWise: boolean;
+  MuxTop: number;
+  MuxBottom: number;
+  MuyTop: number;
+  MuyBottom: number;
 }
 
 interface SlabInput {
@@ -117,7 +131,10 @@ export const ConcreteDesignPage: React.FC = () => {
     factorDL: 1.5,
     factorLL: 1.5,
     Mu: 150,
-    Vu: 80
+    Vu: 80,
+    enableSectionWise: false,
+    supportCondition: 'simple',
+    nSections: 11
   });
 
   // Column input state
@@ -131,7 +148,12 @@ export const ConcreteDesignPage: React.FC = () => {
     fy: 415,
     Pu: 800,
     Mux: 100,
-    Muy: 50
+    Muy: 50,
+    enableSectionWise: false,
+    MuxTop: 100,
+    MuxBottom: 60,
+    MuyTop: 50,
+    MuyBottom: 30
   });
 
   // Slab input state
@@ -197,7 +219,10 @@ export const ConcreteDesignPage: React.FC = () => {
 
     try {
       if (memberType === 'beam') {
-        // Call Python backend API (port 8081) with sign convention support
+        // Compute factored UDL from dead/live loads
+        const wFactored = beamInput.deadLoad * beamInput.factorDL + beamInput.liveLoad * beamInput.factorLL;
+        
+        // Call Python backend API (port 8081) with sign convention + section-wise support
         const result = await designBeamIS456({
           width: beamInput.width,
           depth: beamInput.depth,
@@ -206,7 +231,14 @@ export const ConcreteDesignPage: React.FC = () => {
           Vu: beamInput.Vu,              // SIGNED: preserved from analysis
           code: designCode,              // Design code for sign convention interpretation
           fck: beamInput.fck,
-          fy: beamInput.fy
+          fy: beamInput.fy,
+          // Section-wise parameters (only when enabled)
+          ...(beamInput.enableSectionWise && beamInput.span > 0 ? {
+            span: beamInput.span,
+            w_factored: wFactored,
+            support_condition: beamInput.supportCondition,
+            n_sections: beamInput.nSections
+          } : {})
         });
         
         // Transform API response to UI format
@@ -228,6 +260,8 @@ export const ConcreteDesignPage: React.FC = () => {
           passed: flexurePass && shearPass,
           utilization: governingUtil,
           momentType,
+          designApproach: result.design_approach || 'single_section',
+          sectionWise: result.section_wise || null,
           reinforcement: {
             mainBottom: `${result.tension_steel.count} - ${result.tension_steel.diameter}mm φ (${result.tension_steel.area.toFixed(0)} mm²)`,
             mainTop: result.compression_steel ? 
@@ -261,7 +295,7 @@ export const ConcreteDesignPage: React.FC = () => {
         });
 
       } else if (memberType === 'column') {
-        // Call Python backend API (port 8081) with sign convention support
+        // Call Python backend API (port 8081) with sign convention + section-wise support
         const result = await designColumnIS456({
           width: columnInput.width,
           depth: columnInput.depth,
@@ -273,7 +307,15 @@ export const ConcreteDesignPage: React.FC = () => {
           effective_length_factor: 1.0,
           code: designCode,                // Design code for sign convention
           fck: columnInput.fck,
-          fy: columnInput.fy
+          fy: columnInput.fy,
+          // Section-wise parameters (only when enabled)
+          ...(columnInput.enableSectionWise ? {
+            Mux_top: columnInput.MuxTop,
+            Mux_bottom: columnInput.MuxBottom,
+            Muy_top: columnInput.MuyTop,
+            Muy_bottom: columnInput.MuyBottom,
+            n_sections: 5
+          } : {})
         });
         
         // Transform API response to UI format
@@ -284,6 +326,8 @@ export const ConcreteDesignPage: React.FC = () => {
         setResults({
           passed: result.status === 'PASS',
           utilization: result.interaction_ratio,
+          designApproach: result.design_approach || 'single_section',
+          sectionWise: result.section_wise || null,
           reinforcement: {
             longitudinal: result.longitudinal_steel.map(
               (bar: { count: number; diameter: number }) => `${bar.count} - ${bar.diameter}mm φ`
@@ -675,6 +719,61 @@ export const ConcreteDesignPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Section-Wise Design Toggle */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+            <Scissors className="w-4 h-4" />
+            Section-Wise Design (Economical)
+          </h3>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={beamInput.enableSectionWise}
+              onChange={(e) => setBeamInput({...beamInput, enableSectionWise: e.target.checked})}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+          Checks demand ≤ capacity at every section along the beam. Enables bar curtailment for 15-30% steel savings while maintaining safety at all cross-sections.
+        </p>
+        {beamInput.enableSectionWise && (
+          <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-700">
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-400">Support Condition</label>
+              <select
+                value={beamInput.supportCondition}
+                onChange={(e) => setBeamInput({...beamInput, supportCondition: e.target.value as BeamInput['supportCondition']})}
+                className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
+              >
+                <option value="simple">Simply Supported</option>
+                <option value="fixed-fixed">Fixed-Fixed</option>
+                <option value="propped">Propped Cantilever</option>
+                <option value="cantilever">Cantilever</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-400">Check Sections</label>
+              <select
+                value={beamInput.nSections}
+                onChange={(e) => setBeamInput({...beamInput, nSections: Number(e.target.value)})}
+                className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
+              >
+                <option value="5">5 sections</option>
+                <option value="11">11 sections (standard)</option>
+                <option value="21">21 sections (detailed)</option>
+              </select>
+            </div>
+            <div className="col-span-2 bg-indigo-100 dark:bg-indigo-900/40 p-2 rounded text-xs text-indigo-700 dark:text-indigo-300">
+              <strong>Engineering Principle:</strong> Applied stress at any section must be &lt; capacity at that section.
+              Maximum values give safe design; section-wise check gives safe <em>and</em> economical design with bar curtailment.
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -804,6 +903,72 @@ export const ConcreteDesignPage: React.FC = () => {
             <p className="text-xs text-slate-500 mt-1">Biaxial bending interaction</p>
           </div>
         </div>
+      </div>
+
+      {/* Section-Wise Column Checking */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+            <TrendingDown className="w-4 h-4" />
+            Section-Wise Column Check
+          </h3>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={columnInput.enableSectionWise}
+              onChange={(e) => setColumnInput({...columnInput, enableSectionWise: e.target.checked})}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+          Checks interaction ratio at multiple heights along the column with P-delta moment amplification per IS 456 Cl. 39.7.1.
+        </p>
+        {columnInput.enableSectionWise && (
+          <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-700">
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-400">Mux Top (kN·m)</label>
+              <input
+                type="number"
+                value={columnInput.MuxTop}
+                onChange={(e) => setColumnInput({...columnInput, MuxTop: Number(e.target.value)})}
+                className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-400">Mux Bottom (kN·m)</label>
+              <input
+                type="number"
+                value={columnInput.MuxBottom}
+                onChange={(e) => setColumnInput({...columnInput, MuxBottom: Number(e.target.value)})}
+                className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-400">Muy Top (kN·m)</label>
+              <input
+                type="number"
+                value={columnInput.MuyTop}
+                onChange={(e) => setColumnInput({...columnInput, MuyTop: Number(e.target.value)})}
+                className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-600 dark:text-slate-400">Muy Bottom (kN·m)</label>
+              <input
+                type="number"
+                value={columnInput.MuyBottom}
+                onChange={(e) => setColumnInput({...columnInput, MuyBottom: Number(e.target.value)})}
+                className="w-full mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded text-slate-900 dark:text-white text-sm"
+              />
+            </div>
+            <div className="col-span-2 bg-indigo-100 dark:bg-indigo-900/40 p-2 rounded text-xs text-indigo-700 dark:text-indigo-300">
+              <strong>End Moments:</strong> Provide moments at top and bottom of column. The moment varies linearly between ends, 
+              with P-delta amplification checked at each section along the height.
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1037,6 +1202,148 @@ export const ConcreteDesignPage: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Section-Wise Design Results */}
+          {results.sectionWise && results.designApproach === 'section_wise' && (
+            <div className="space-y-4 border-t border-indigo-300 dark:border-indigo-700 pt-4 mt-4">
+              {/* Section-Wise Header */}
+              <div className={`p-4 rounded-lg ${results.sectionWise.is_safe_everywhere 
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700' 
+                : 'bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700'}`}>
+                <h3 className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-2">
+                  <Scissors className="w-4 h-4" />
+                  Section-Wise Design Results
+                </h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-slate-600 dark:text-slate-400">All Sections:</span>
+                    <span className={`ml-2 font-bold ${results.sectionWise.is_safe_everywhere ? 'text-emerald-500' : 'text-red-500'}`}>
+                      {results.sectionWise.is_safe_everywhere ? 'SAFE' : 'UNSAFE'}
+                    </span>
+                  </div>
+                  {results.sectionWise.economy_ratio && (
+                    <div>
+                      <span className="text-slate-600 dark:text-slate-400">Economy Ratio:</span>
+                      <span className="ml-2 font-bold text-indigo-500">
+                        {results.sectionWise.economy_ratio.toFixed(2)}x
+                      </span>
+                      <span className="text-xs text-slate-500 ml-1">
+                        ({((1 - 1/results.sectionWise.economy_ratio) * 100).toFixed(0)}% steel savings)
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{results.sectionWise.summary}</p>
+              </div>
+
+              {/* Section Checks Table */}
+              {results.sectionWise.section_checks && (
+                <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg overflow-x-auto">
+                  <h3 className="text-sm font-semibold text-blue-400 mb-2">Section-by-Section Verification</h3>
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-slate-500 border-b border-slate-300 dark:border-slate-600">
+                        <th className="py-1 text-left">Location</th>
+                        <th className="py-1 text-right">x/L</th>
+                        <th className="py-1 text-right">Mu,cap</th>
+                        <th className="py-1 text-right">Util(M)</th>
+                        <th className="py-1 text-right">Util(V)</th>
+                        <th className="py-1 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.sectionWise.section_checks.map((sec: any, idx: number) => (
+                        <tr key={idx} className={`border-b border-slate-200 dark:border-slate-700 ${
+                          sec.status !== 'PASS' ? 'bg-red-50 dark:bg-red-900/10' : ''
+                        }`}>
+                          <td className="py-1 text-slate-700 dark:text-slate-300">{sec.location}</td>
+                          <td className="py-1 text-right text-slate-600 dark:text-slate-400">{sec.x_ratio?.toFixed(2)}</td>
+                          <td className="py-1 text-right text-slate-600 dark:text-slate-400">{sec.Mu_capacity?.toFixed(1)}</td>
+                          <td className="py-1 text-right font-mono">
+                            <span className={sec.utilization_M > 1 ? 'text-red-500' : sec.utilization_M > 0.8 ? 'text-amber-500' : 'text-emerald-500'}>
+                              {(sec.utilization_M * 100).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="py-1 text-right font-mono">
+                            <span className={sec.utilization_V > 1 ? 'text-red-500' : sec.utilization_V > 0.8 ? 'text-amber-500' : 'text-emerald-500'}>
+                              {(sec.utilization_V * 100).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="py-1 text-center">
+                            {sec.status === 'PASS' ? (
+                              <CheckCircle2 className="w-3 h-3 text-emerald-400 inline" />
+                            ) : (
+                              <AlertCircle className="w-3 h-3 text-red-400 inline" />
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Rebar Zones / Curtailment Schedule */}
+              {results.sectionWise.rebar_zones && results.sectionWise.rebar_zones.length > 0 && (
+                <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-emerald-400 mb-2 flex items-center gap-2">
+                    <Scissors className="w-4 h-4" />
+                    Reinforcement Schedule (Bar Curtailment)
+                  </h3>
+                  <div className="space-y-2">
+                    {results.sectionWise.rebar_zones.map((zone: any, idx: number) => (
+                      <div key={idx} className="flex items-center gap-3 text-xs bg-slate-200 dark:bg-slate-700/50 p-2 rounded">
+                        <div className="w-24 text-slate-500 font-mono">
+                          {zone.x_start?.toFixed(0)} - {zone.x_end?.toFixed(0)} mm
+                        </div>
+                        <div className="flex-1">
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">Bottom: {zone.bottom_bars}</span>
+                          {zone.top_bars && zone.top_bars !== 'Nominal' && (
+                            <span className="text-orange-500 ml-3">Top: {zone.top_bars}</span>
+                          )}
+                        </div>
+                        <span className="text-slate-500 text-xs italic">{zone.note}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Curtailment Points */}
+              {results.sectionWise.curtailment_points && results.sectionWise.curtailment_points.length > 0 && (
+                <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
+                  <h3 className="text-sm font-semibold text-purple-400 mb-2">Curtailment Points & Ld Checks</h3>
+                  <div className="space-y-1">
+                    {results.sectionWise.curtailment_points.map((pt: any, idx: number) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs">
+                        {pt.is_valid ? (
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                        ) : (
+                          <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                        )}
+                        <span className="text-slate-700 dark:text-slate-300">
+                          x={pt.x?.toFixed(0)}mm: {pt.description} | Ld={pt.Ld_required?.toFixed(0)}mm
+                        </span>
+                        <span className="text-slate-500 ml-auto">{pt.clause}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Engineering Notes */}
+              {results.sectionWise.engineering_notes && results.sectionWise.engineering_notes.length > 0 && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border-l-4 border-indigo-500">
+                  <h4 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Engineering Notes</h4>
+                  <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                    {results.sectionWise.engineering_notes.map((note: string, idx: number) => (
+                      <li key={idx}>• {note}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 
