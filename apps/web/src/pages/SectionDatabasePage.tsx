@@ -5,7 +5,7 @@
  * Contains 500+ sections: ISMB, ISMC, ISA, SHS, RHS, CHS, W-shapes, IPE, HE
  */
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   Search,
   Filter,
@@ -151,9 +151,13 @@ export const SectionDatabasePage: React.FC = () => {
 
   useEffect(() => { document.title = 'Section Database | BeamLab'; }, []);
 
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
+
   const showToast = useCallback((msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3000);
   }, []);
 
   const applyToModel = useCallback((section: SectionData) => {

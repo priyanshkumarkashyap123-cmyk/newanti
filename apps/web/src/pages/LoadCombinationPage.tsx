@@ -3,7 +3,7 @@
  * Auto-generate load combinations for seismic, wind, gravity loads
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
   Wind,
   Weight,
@@ -505,4 +505,4 @@ export const LoadCombinationPage: React.FC = () => {
   );
 };
 
-export default LoadCombinationPage;
+export default memo(LoadCombinationPage);

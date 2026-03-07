@@ -139,6 +139,7 @@ export const AdvancedAIBrain: FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
   
   const { subscription, canAccess } = useSubscription();
   const { nodes, members, addNode, addMember, clearModel } = useModelStore(
@@ -155,6 +156,11 @@ export const AdvancedAIBrain: FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Cleanup copied timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(copiedTimerRef.current);
+  }, []);
 
   // Update context based on model state
   useEffect(() => {
@@ -427,7 +433,8 @@ export const AdvancedAIBrain: FC = () => {
   const copyToClipboard = async (text: string, id: string) => {
     await navigator.clipboard.writeText(text);
     setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+    clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleQuickPrompt = (text: string) => {

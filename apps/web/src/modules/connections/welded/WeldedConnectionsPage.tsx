@@ -4,7 +4,7 @@
  */
 
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import * as Select from '@radix-ui/react-select';
 import * as Label from '@radix-ui/react-label';
@@ -1080,4 +1080,4 @@ function BasePlatePanel() {
   );
 }
 
-export default WeldedConnectionsPage;
+export default memo(WeldedConnectionsPage);

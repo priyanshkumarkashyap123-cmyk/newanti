@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+// Timer cleanup for toast auto-dismiss
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useModelStore } from '../store/model';
@@ -73,9 +74,13 @@ const MaterialsDatabasePage: React.FC = () => {
   const [customThermal, setCustomThermal] = useState('');
   const [customGammaM, setCustomGammaM] = useState('');
 
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
+
   const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3000);
   }, []);
 
   const memberCount = members.size;

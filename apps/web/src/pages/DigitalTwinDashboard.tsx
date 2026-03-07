@@ -49,6 +49,7 @@ import {
   type Alert,
   type PredictiveMaintenanceResult,
 } from "../services/digital-twin";
+import { usePageVisibility } from "../hooks/usePageVisibility";
 import { useModelStore } from "../store/model";
 
 // ============================================
@@ -235,6 +236,7 @@ const HealthGauge: React.FC<{ value: number; label: string }> = ({
 const DigitalTwinDashboard: React.FC = () => {
   const nodes = useModelStore((s) => s.nodes);
   const members = useModelStore((s) => s.members);
+  const isPageVisible = usePageVisibility();
 
   const [connected, setConnected] = useState(false);
   const [simulating, setSimulating] = useState(false);
@@ -294,6 +296,8 @@ const DigitalTwinDashboard: React.FC = () => {
 
     setSimulating(true);
     intervalRef.current = setInterval(() => {
+      if (!isPageVisible) return;
+
       tickRef.current += 1;
 
       // Collect all sensor readings in a single pass (avoid N Map copies)
@@ -320,7 +324,7 @@ const DigitalTwinDashboard: React.FC = () => {
       setAlerts(alertsList);
       setMaintenance(maint);
     }, 1200);
-  }, [simulating, sensors]);
+  }, [simulating, sensors, isPageVisible]);
 
   // Cleanup on unmount
   useEffect(() => {

@@ -633,7 +633,8 @@ Welcome to the **most powerful AI** in structural engineering!
 
   const handleSuggestionSelect = (command: string) => {
     setInput(command);
-    setTimeout(() => inputRef.current?.focus(), 100);
+    // Focus is intentionally delayed to ensure dropdown closes first
+    requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const handleFeedback = (messageId: string, helpful: boolean) => {

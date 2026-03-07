@@ -16,7 +16,7 @@
  */
 
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import {
   Plus,
@@ -542,6 +542,8 @@ export const ModernLoadCombinator: React.FC<{
   className?: string;
   onCombinationsGenerated?: (combinations: LoadCombination[]) => void;
 }> = ({ className, onCombinationsGenerated }) => {
+  const genTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => () => { if (genTimerRef.current) clearTimeout(genTimerRef.current); }, []);
   const [loadCases, setLoadCases] = useState<LoadCase[]>(DEFAULT_LOAD_CASES);
   const [selectedCode, setSelectedCode] = useState<DesignCode>('IS875');
   const [combinations, setCombinations] = useState<LoadCombination[]>([]);
@@ -553,7 +555,8 @@ export const ModernLoadCombinator: React.FC<{
   const generateCombinations = useCallback(() => {
     setIsGenerating(true);
     
-    setTimeout(() => {
+    if (genTimerRef.current) clearTimeout(genTimerRef.current);
+    genTimerRef.current = setTimeout(() => {
       const codeConfig = CODE_COMBINATIONS[selectedCode];
       const enabledLoadCases = loadCases.filter(lc => lc.isEnabled);
       

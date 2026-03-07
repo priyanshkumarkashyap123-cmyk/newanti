@@ -12,7 +12,7 @@
  * Industry Standard: Matches STAAD.Pro Connect Edition, Tekla Model Sharing
  */
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, memo } from "react";
 import {
   Cloud,
   HardDrive,
@@ -996,4 +996,4 @@ const CloudStorageDashboard: React.FC = () => {
   );
 };
 
-export default CloudStorageDashboard;
+export default memo(CloudStorageDashboard);

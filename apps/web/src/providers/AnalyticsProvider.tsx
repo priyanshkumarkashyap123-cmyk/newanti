@@ -166,9 +166,19 @@ export const AnalyticsProvider: FC<AnalyticsProviderProps> = ({
   // Auto-flush every 5 seconds if there are pending events
   useEffect(() => {
     const interval = setInterval(() => {
+      if (document.hidden) return;
       flushBatch();
     }, 5000);
+
+    const onVisibilityChange = () => {
+      if (!document.hidden) {
+        flushBatch();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       clearInterval(interval);
       flushBatch();
     };

@@ -15,7 +15,7 @@
  * - Fatigue assessment factors
  */
 
-import { FC, useState, useMemo, useCallback } from 'react';
+import { FC, useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
     Train, Calculator, ArrowDown, ArrowRight,
     Check, ChevronDown, Info, AlertTriangle, Play,
@@ -501,6 +501,8 @@ function generateRailwayTruss(config: BridgeConfig): { nodes: Node[]; members: M
 // ============================================
 
 export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onClose }) => {
+    const loadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => { if (loadTimerRef.current) clearTimeout(loadTimerRef.current); }, []);
     const loadStructure = useModelStore((s) => s.loadStructure);
     const addMemberLoad = useModelStore((s) => s.addMemberLoad);
     const members = useModelStore((s) => s.members);
@@ -541,7 +543,8 @@ export const RailwayBridgeDialog: FC<RailwayBridgeDialogProps> = ({ isOpen, onCl
             loadStructure(nodes, members);
 
             // Add EUDL as member loads on bottom chord
-            setTimeout(() => {
+            if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
+            loadTimerRef.current = setTimeout(() => {
                 const loadPerPanel = factoredLoad * (config.span / config.numPanels);
                 const membersList = Array.from(members);
 

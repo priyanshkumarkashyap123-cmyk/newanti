@@ -27,7 +27,7 @@ import {
   Puzzle,
   CreditCard,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 // ============================================
 // TYPES & CONSTANTS
@@ -910,4 +910,4 @@ function RefundCancellationPage() {
   );
 }
 
-export default RefundCancellationPage;
+export default memo(RefundCancellationPage);

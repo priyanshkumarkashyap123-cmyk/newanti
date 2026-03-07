@@ -5,7 +5,7 @@
 
 import { Link } from 'react-router-dom';
 import { Shield, ChevronRight, Menu, X, FileText } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 interface Section {
     id: string;
@@ -498,4 +498,4 @@ export const TermsOfServicePage = () => {
     );
 };
 
-export default TermsOfServicePage;
+export default memo(TermsOfServicePage);

@@ -544,6 +544,8 @@ export const SeismicDesignStudio: React.FC<{
   className?: string;
   onAnalysisComplete?: (results: any) => void;
 }> = ({ className, onAnalysisComplete }) => {
+  const analysisTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => () => { if (analysisTimerRef.current) clearTimeout(analysisTimerRef.current); }, []);
   // State
   const [selectedCode, setSelectedCode] = useState<SeismicCode>('IS1893');
   const [analysisMethod, setAnalysisMethod] = useState<AnalysisMethod>('response-spectrum');
@@ -600,7 +602,8 @@ export const SeismicDesignStudio: React.FC<{
   // Run analysis
   const runAnalysis = useCallback(() => {
     setIsAnalyzing(true);
-    setTimeout(() => {
+    if (analysisTimerRef.current) clearTimeout(analysisTimerRef.current);
+    analysisTimerRef.current = setTimeout(() => {
       setIsAnalyzing(false);
       setShowResults(true);
       onAnalysisComplete?.({

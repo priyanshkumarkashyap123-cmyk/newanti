@@ -8,7 +8,7 @@
  * - Clear CTAs
  */
 
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, memo, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { usePhonePePayment } from '../components/PhonePePayment';
@@ -1212,4 +1212,4 @@ const FeatureValue: FC<{ value: boolean | string; highlight?: boolean }> = ({
   );
 };
 
-export default EnhancedPricingPage;
+export default memo(EnhancedPricingPage);

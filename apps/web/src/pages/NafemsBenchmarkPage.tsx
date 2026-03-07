@@ -8,7 +8,7 @@
  *      (provided for reference only; clearly marked as non-solver validation).
  */
 
-import { FC, useState, useEffect, useCallback } from 'react';
+import { FC, useState, useEffect, useCallback, memo } from 'react';
 import {
   run_real_benchmarks,
   run_nafems_all_benchmarks,
@@ -735,4 +735,4 @@ export const NafemsBenchmarkPage: FC = () => {
   );
 };
 
-export default NafemsBenchmarkPage;
+export default memo(NafemsBenchmarkPage);

@@ -212,10 +212,10 @@ const ViewportContainer: FC<{
           shadows
           dpr={[1, 1.5]}
           gl={{
-            preserveDrawingBuffer: true,
+            preserveDrawingBuffer: false,
             antialias: true,
             alpha: false,
-            powerPreference: "high-performance",
+            powerPreference: "low-power",
             failIfMajorPerformanceCaveat: false,
           }}
           camera={{ position: [20, 20, 20], fov: 50 }}
@@ -349,10 +349,10 @@ const ViewportContainer: FC<{
         shadows
         dpr={[1, 1.5]}
         gl={{
-          preserveDrawingBuffer: true,
+          preserveDrawingBuffer: false,
           antialias: true,
           alpha: false,
-          powerPreference: "high-performance",
+          powerPreference: "low-power",
           failIfMajorPerformanceCaveat: false, // Don't fail on software renderers
         }}
         camera={{ position: [20, 20, 20], fov: 50 }}

@@ -469,6 +469,8 @@ export const AIDesignAssistant: React.FC<{
   className?: string;
   onSuggestionApply?: (suggestion: DesignSuggestion) => void;
 }> = ({ className, onSuggestionApply }) => {
+  const voiceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(() => () => { if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current); }, []);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -592,7 +594,8 @@ Format important sections with **bold**.`;
     setIsRecording(!isRecording);
     if (!isRecording) {
       // Simulate voice recognition
-      setTimeout(() => {
+      if (voiceTimerRef.current) clearTimeout(voiceTimerRef.current);
+      voiceTimerRef.current = setTimeout(() => {
         setInputValue('Optimize my beam design for minimum cost');
         setIsRecording(false);
       }, 2000);

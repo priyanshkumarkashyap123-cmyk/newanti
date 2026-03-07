@@ -3,7 +3,7 @@
  * Based on IRC 6:2017 and AASHTO HL-93
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -225,6 +225,13 @@ const MovingLoadDialog: React.FC = () => {
     
     const [envelopeResults, setEnvelopeResults] = useState<EnvelopeResult[]>([]);
     const [animationFrame, setAnimationFrame] = useState<number | null>(null);
+    const animTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+      return () => {
+        if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+      };
+    }, []);
     
     // Calculate impact factor per IRC 6
     const calculateImpactFactor = (span: number, vehicleType: string): number => {
@@ -374,6 +381,10 @@ const MovingLoadDialog: React.FC = () => {
     
     const stopAnimation = () => {
         setParams(prev => ({ ...prev, isAnimating: false }));
+        if (animTimeoutRef.current) {
+            clearTimeout(animTimeoutRef.current);
+            animTimeoutRef.current = null;
+        }
         if (animationFrame) {
             cancelAnimationFrame(animationFrame);
         }
@@ -389,7 +400,7 @@ const MovingLoadDialog: React.FC = () => {
         });
         
         setAnimationFrame(requestAnimationFrame(() => {
-            setTimeout(animateStep, 50);
+            animTimeoutRef.current = setTimeout(animateStep, 50);
         }));
     };
     

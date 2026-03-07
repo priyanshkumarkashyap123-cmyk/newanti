@@ -101,6 +101,7 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
     const [showSearch, setShowSearch] = useState(false);
     const [bookmarkedPages, setBookmarkedPages] = useState<number[]>([]);
     const [linkCopied, setLinkCopied] = useState(false);
+    const linkCopiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const viewerRef = useRef<HTMLDivElement>(null);
@@ -168,7 +169,8 @@ export const ReportPreviewPanel: React.FC<ReportPreviewProps> = ({
     const handleCopyLink = useCallback(() => {
         navigator.clipboard.writeText(reportUrl);
         setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
+        if (linkCopiedTimerRef.current) clearTimeout(linkCopiedTimerRef.current);
+        linkCopiedTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
     }, [reportUrl]);
 
     // ---------- Thumbnail renderer ----------

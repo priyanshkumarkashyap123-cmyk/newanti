@@ -7,7 +7,7 @@
  * - Auto-analysis after generation
  */
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Loader2, Zap, CheckCircle, Lock } from 'lucide-react';
 import { TEMPLATE_BANK } from '../../data/templates';
@@ -128,6 +128,12 @@ export const AICommandCenter: FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [status, setStatus] = useState<'idle' | 'generating' | 'analyzing' | 'done'>('idle');
     const [lastResult, setLastResult] = useState<string | null>(null);
+    const staggerTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+    // Cleanup stagger timer on unmount
+    useEffect(() => {
+        return () => clearTimeout(staggerTimerRef.current);
+    }, []);
 
     // Store actions
     const clearModel = useModelStore((state) => state.clearModel);
@@ -200,7 +206,7 @@ export const AICommandCenter: FC = () => {
                 });
             }
 
-            await new Promise(r => setTimeout(r, 50)); // Stagger
+            await new Promise<void>(r => { staggerTimerRef.current = setTimeout(r, 50); }); // Stagger
         }
 
         // Add members
@@ -215,7 +221,7 @@ export const AICommandCenter: FC = () => {
                 sectionId: member.section || 'ISMB300'
             });
 
-            await new Promise(r => setTimeout(r, 30)); // Stagger
+            await new Promise<void>(r => { staggerTimerRef.current = setTimeout(r, 30); }); // Stagger
         }
 
         return { nodeCount: nodes.length, memberCount: members.length };
@@ -236,7 +242,7 @@ export const AICommandCenter: FC = () => {
             });
         } catch (e) {
             // Demo mode - just wait
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise<void>(r => { staggerTimerRef.current = setTimeout(r, 1000); });
         }
 
         setStatus('done');

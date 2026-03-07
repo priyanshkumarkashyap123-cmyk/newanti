@@ -8,7 +8,7 @@
  * and modern cloud engineering platform integrations.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
 
 // Types
@@ -794,4 +794,4 @@ const results = await response.json();
   );
 };
 
-export default APIIntegrationDashboard;
+export default memo(APIIntegrationDashboard);

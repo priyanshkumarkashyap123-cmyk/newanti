@@ -5,7 +5,7 @@
  * Shows full calculation steps for transparency.
  */
 
-import { FC, useState, useMemo } from 'react';
+import { FC, useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
     Zap, Wind, Activity, Copy, Check, ChevronDown,
@@ -125,11 +125,14 @@ interface CopyButtonProps {
 
 const CopyButton: FC<CopyButtonProps> = ({ value, label = 'Copy' }) => {
     const [copied, setCopied] = useState(false);
+    const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => { if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current); }, []);
 
     const handleCopy = async () => {
         await navigator.clipboard.writeText(value);
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+        copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
     };
 
     return (

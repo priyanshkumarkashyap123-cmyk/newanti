@@ -17,7 +17,7 @@
  * @version 1.0.0
  */
 
-import React, { ReactNode } from 'react';
+import React, { memo, ReactNode } from 'react';
 
 // ============================================================================
 // BASE EMPTY STATE

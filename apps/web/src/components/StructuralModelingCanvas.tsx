@@ -337,8 +337,9 @@ export const StructuralModelingCanvas: React.FC<StructuralModelingCanvasProps> =
   return (
     <Canvas
       style={{ width: '100%', height: '100%' }}
+      dpr={[1, 1.5]}
       camera={{ fov: 50, position: [30, 25, 30] }}
-      gl={{ antialias: true, precision: 'highp' }}
+      gl={{ antialias: true, precision: 'highp', powerPreference: 'low-power' }}
     >
       <ModelingCanvasInner {...props} />
     </Canvas>

@@ -8,7 +8,7 @@
  * SAP2000 BIM Exchange, and RAM Structural System BIM capabilities.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 import { IFCParser } from '@/modules/bim/BIMIntegrationEngine';
 
@@ -74,6 +74,7 @@ interface ExportJob {
 const BIMExportEnhanced: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'export' | 'import' | 'mapping' | 'history'>('export');
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout>>();
   
   const [exportSettings, setExportSettings] = useState<ExportSettings>({
     format: 'IFC4',
@@ -197,6 +198,11 @@ const BIMExportEnhanced: React.FC = () => {
 
   useEffect(() => { document.title = 'BIM Export | BeamLab'; }, []);
 
+  // Cleanup status message timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(statusTimerRef.current);
+  }, []);
+
   const supportedFormats = [
     { id: 'IFC4', name: 'IFC 4.0', icon: '🏗️', description: 'Industry Foundation Classes 4.0 - Latest stable standard' },
     { id: 'IFC4.3', name: 'IFC 4.3', icon: '🏗️', description: 'IFC 4.3 with infrastructure extensions' },
@@ -281,7 +287,8 @@ const BIMExportEnhanced: React.FC = () => {
     } catch (err) {
       console.error('Export error:', err);
       setStatusMsg({ type: 'error', text: 'Export failed. Please check the console for details.' });
-      setTimeout(() => setStatusMsg(null), 5000);
+      clearTimeout(statusTimerRef.current);
+      statusTimerRef.current = setTimeout(() => setStatusMsg(null), 5000);
     }
   };
 
@@ -315,7 +322,8 @@ const BIMExportEnhanced: React.FC = () => {
       } catch (err) {
         console.error('Import error:', err);
         setStatusMsg({ type: 'error', text: 'Import failed. Please check if the file format is correct.' });
-        setTimeout(() => setStatusMsg(null), 5000);
+        clearTimeout(statusTimerRef.current);
+        statusTimerRef.current = setTimeout(() => setStatusMsg(null), 5000);
       }
     };
     input.click();
@@ -904,4 +912,4 @@ const BIMExportEnhanced: React.FC = () => {
   );
 };
 
-export default BIMExportEnhanced;
+export default memo(BIMExportEnhanced);

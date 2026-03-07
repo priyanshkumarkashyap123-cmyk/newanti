@@ -23,7 +23,7 @@ import {
   Clock,
   Gavel,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 
 // ============================================
 // TYPES & CONSTANTS
@@ -1043,4 +1043,4 @@ function TermsAndConditionsPage() {
   );
 }
 
-export default TermsAndConditionsPage;
+export default memo(TermsAndConditionsPage);

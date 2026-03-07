@@ -160,6 +160,7 @@ const TimeHistoryAnalysisPage = lazy(() => import('./pages/TimeHistoryAnalysisPa
 const ModalAnalysisPage = lazy(() => import('./pages/ModalAnalysisPage'));
 const NonlinearAnalysisPage = lazy(() => import('./pages/NonlinearAnalysisPage'));
 const DynamicAnalysisPage = lazy(() => import('./pages/DynamicAnalysisPage'));
+const FloorVibrationPage = lazy(() => import('./pages/FloorVibrationPage'));
 const AdvancedSettingsPage = lazy(() => import('./pages/AdvancedSettingsPage'));
 
 // Phase 15: Professional Tools (Industry Parity)
@@ -625,6 +626,14 @@ function App() {
               <Route path="/analysis/modal-page" element={<Navigate to="/analysis/modal" replace />} />
               <Route path="/analysis/time-history-page" element={<Navigate to="/analysis/time-history" replace />} />
               <Route path="/analysis/nonlinear-page" element={<Navigate to="/analysis/nonlinear" replace />} />
+              <Route
+                path="/analysis/floor-vibration"
+                element={
+                  <RequireAuth>
+                    <FloorVibrationPage />
+                  </RequireAuth>
+                }
+              />
               <Route
                 path="/analysis/dynamic"
                 element={

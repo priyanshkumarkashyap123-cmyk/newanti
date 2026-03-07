@@ -3,7 +3,7 @@
  * Dark theme with sidebar navigation and analysis preferences
  */
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Settings, Monitor, BarChart2, User, LogOut, ChevronDown,
@@ -197,6 +197,7 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
 // ============================================
 
 export const SettingsPage: FC = () => {
+    const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [activeTab, setActiveTab] = useState<TabId>('analysis');
     const navigate = useNavigate();
     const { signOut, user } = useAuth();
@@ -288,7 +289,8 @@ export const SettingsPage: FC = () => {
         };
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         setSettingsSaved(true);
-        setTimeout(() => setSettingsSaved(false), 2000);
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+        savedTimerRef.current = setTimeout(() => setSettingsSaved(false), 2000);
     };
 
     const handleResetDefaults = () => {

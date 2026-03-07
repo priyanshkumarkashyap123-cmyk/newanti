@@ -525,6 +525,13 @@ export const AdvancedMemberDesignWizard: React.FC<{
   const [reinforcement, setReinforcement] = useState<ReinforcementDesign | null>(null);
   const [isDesigning, setIsDesigning] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<string[]>([]);
+  const designTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (designTimerRef.current) clearTimeout(designTimerRef.current);
+    };
+  }, []);
   
   // Steps definition
   const [steps, setSteps] = useState<WizardStep[]>([
@@ -541,7 +548,8 @@ export const AdvancedMemberDesignWizard: React.FC<{
     setIsDesigning(true);
     
     // Simulate design calculation
-    setTimeout(() => {
+    if (designTimerRef.current) clearTimeout(designTimerRef.current);
+    designTimerRef.current = setTimeout(() => {
       // Calculate effective depth
       const effectiveDepth = geometry.depth - geometry.cover - 25; // Assuming 25mm bar dia
       

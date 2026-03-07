@@ -42,7 +42,7 @@ import {
   createSectionFromDatabase,
 } from '../api/design';
 import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
-const beamLabLogo = '/branding/beamlab_icon_colored.svg';
+import { Logo } from '../components/branding';
 
 // ================================================================
 // TYPES
@@ -1914,7 +1914,7 @@ const PostAnalysisDesignHub: FC = () => {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div className="flex items-center gap-3">
-                <img src={beamLabLogo} alt="BeamLab" className="h-7 w-7 object-contain" />
+                <Logo size="xs" variant="icon" clickable={false} />
                 <div>
                   <h1 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     Design Hub
@@ -2607,7 +2607,7 @@ const PostAnalysisDesignHub: FC = () => {
                     {/* Report Branding Header */}
                     <div className="flex items-start justify-between mb-6 pb-4 border-b-2 border-blue-500">
                       <div className="flex items-center gap-3">
-                        <img src={beamLabLogo} alt="BeamLab" className="w-10 h-10" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <Logo size="md" variant="icon" clickable={false} />
                         <div>
                           <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">STRUCTURAL DESIGN REPORT</h3>
                           <p className="text-xs text-blue-500 font-semibold">BeamLab Ultimate — Professional Engineering Software</p>
@@ -2785,4 +2785,4 @@ const PostAnalysisDesignHub: FC = () => {
   );
 };
 
-export default PostAnalysisDesignHub;
+export default memo(PostAnalysisDesignHub);

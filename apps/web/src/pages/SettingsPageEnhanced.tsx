@@ -3,7 +3,7 @@
  * Professional dark theme with advanced UI components and tabbed navigation
  */
 
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AdvancedToggle, RangeSlider } from '../components/ui';
 import { useConfirm } from '../components/ui/ConfirmDialog';
@@ -25,6 +25,7 @@ interface NavItem {
 // ============================================
 
 export const SettingsPageEnhanced: FC = () => {
+    const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const navigate = useNavigate();
     const confirm = useConfirm();
     const [activeTab, setActiveTab] = useState<TabId>('general');
@@ -83,7 +84,8 @@ export const SettingsPageEnhanced: FC = () => {
         // Save to localStorage or backend
 // console.log('Settings saved');
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+        savedTimerRef.current = setTimeout(() => setSaved(false), 2000);
     };
 
     const handleResetSettings = async () => {

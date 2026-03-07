@@ -12,7 +12,7 @@
  * Industry Standard: Matches STAAD.Pro, SAP2000, ETABS print systems
  */
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, memo } from "react";
 import {
   Printer,
   FileText,
@@ -1375,4 +1375,4 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
   );
 };
 
-export default PrintExportCenter;
+export default memo(PrintExportCenter);

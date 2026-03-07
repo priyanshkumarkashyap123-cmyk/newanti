@@ -763,6 +763,7 @@ export const RealisticBook: React.FC = () => {
   const [isFlipping, setIsFlipping] = useState(false);
   const [flipDirection, setFlipDirection] = useState<'next' | 'prev'>('next');
   const bookRef = useRef<HTMLDivElement>(null);
+  const flipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Total spreads: Cover, Title/Ded, TOC/Preface, then chapters (2 pages each), Appendix
   const totalSpreads = 2 + 1 + CHAPTERS.length + 1;
@@ -779,7 +780,7 @@ export const RealisticBook: React.FC = () => {
     setFlipDirection(direction);
     setIsFlipping(true);
     
-    setTimeout(() => {
+    flipTimerRef.current = setTimeout(() => {
       setCurrentSpread(newSpread);
       setIsFlipping(false);
     }, 600);
@@ -789,12 +790,19 @@ export const RealisticBook: React.FC = () => {
     if (isFlipping || spread === currentSpread) return;
     setFlipDirection(spread > currentSpread ? 'next' : 'prev');
     setIsFlipping(true);
-    setTimeout(() => {
+    flipTimerRef.current = setTimeout(() => {
       setCurrentSpread(spread);
       setIsFlipping(false);
     }, 400);
   }, [currentSpread, isFlipping]);
   
+  // Cleanup flip timer on unmount
+  useEffect(() => {
+    return () => {
+      if (flipTimerRef.current) clearTimeout(flipTimerRef.current);
+    };
+  }, []);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {

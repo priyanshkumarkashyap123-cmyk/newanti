@@ -8,7 +8,7 @@
  * SAP2000 verification, and RAM Structural System code checking.
  */
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { useModelStore } from "../store/model";
 import { aisc360 } from "../services/design-codes/AISC360Checker";
@@ -1590,4 +1590,4 @@ const CodeComplianceChecker: React.FC = () => {
   );
 };
 
-export default CodeComplianceChecker;
+export default memo(CodeComplianceChecker);

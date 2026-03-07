@@ -223,8 +223,8 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
     });
   });
 
-  // Update colors for hovered/selected members
-  useFrame(() => {
+  // Update colors only when selection/hover changes (avoids per-frame CPU work)
+  useEffect(() => {
     const batches = batchesRef.current;
 
     batches.forEach((batch) => {
@@ -270,7 +270,7 @@ export const InstancedMemberRenderer: React.FC<InstancedMemberRendererProps> = (
         }
       });
     });
-  });
+  }, [hoveredMemberId, selectedMemberIds, members, nodes]);
 
   return <group ref={groupRef} />;
 };

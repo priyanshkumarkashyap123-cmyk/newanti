@@ -576,7 +576,8 @@ const Visualization3DEngine: React.FC = () => {
           style={{ backgroundColor: settings.backgroundColor }}
         >
           <Canvas
-            gl={{ preserveDrawingBuffer: true, antialias: true }}
+            dpr={[1, 1.5]}
+            gl={{ preserveDrawingBuffer: true, antialias: true, powerPreference: 'low-power' }}
             shadows={settings.shadowsEnabled}
             style={{ position: "absolute", inset: 0 }}
             onCreated={({ gl }) => {

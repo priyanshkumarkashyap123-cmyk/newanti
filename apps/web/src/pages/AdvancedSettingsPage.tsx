@@ -4,7 +4,7 @@
  * Unified interface for all solver and analysis parameters
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Settings,
   Sliders,
@@ -223,8 +223,15 @@ export default function AdvancedSettingsPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['solver']));
   const [hasChanges, setHasChanges] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const savedMsgTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   useEffect(() => { document.title = 'Advanced Settings | BeamLab'; }, []);
+
+  useEffect(() => {
+    return () => {
+      if (savedMsgTimerRef.current) clearTimeout(savedMsgTimerRef.current);
+    };
+  }, []);
 
   const toggleCategory = useCallback((id: string) => {
     setExpandedCategories(prev => {
@@ -267,7 +274,8 @@ export default function AdvancedSettingsPage() {
     localStorage.setItem('beamlab-settings', JSON.stringify(settings));
     setHasChanges(false);
     setSavedMessage('Settings saved successfully!');
-    setTimeout(() => setSavedMessage(null), 3000);
+    if (savedMsgTimerRef.current) clearTimeout(savedMsgTimerRef.current);
+    savedMsgTimerRef.current = setTimeout(() => setSavedMessage(null), 3000);
   }, [settings]);
   
   const renderSolverSettings = () => (

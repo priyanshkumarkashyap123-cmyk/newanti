@@ -8,7 +8,7 @@
  * and modern cloud engineering workflows.
  */
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { useMultiplayer, RemoteUser } from "../hooks/useMultiplayer";
 
@@ -95,6 +95,11 @@ const CollaborationHub: React.FC = () => {
 
   useEffect(() => { document.title = 'Collaboration | BeamLab'; }, []);
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(linkCopiedTimerRef.current);
+  }, []);
+
   // ============================================
   // REAL MULTIPLAYER CONNECTION
   // ============================================
@@ -141,6 +146,7 @@ const CollaborationHub: React.FC = () => {
     },
   ];
   const activitiesRef = useRef<ProjectActivity[]>([]);
+  const linkCopiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [activities, setActivities] =
     useState<ProjectActivity[]>(DEMO_ACTIVITIES);
 
@@ -467,7 +473,8 @@ const CollaborationHub: React.FC = () => {
       .writeText(shareLink)
       .then(() => {
         setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
+        clearTimeout(linkCopiedTimerRef.current);
+        linkCopiedTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
       })
       .catch(() => {
         // Fallback for non-HTTPS
@@ -478,7 +485,8 @@ const CollaborationHub: React.FC = () => {
         document.execCommand("copy");
         document.body.removeChild(textArea);
         setLinkCopied(true);
-        setTimeout(() => setLinkCopied(false), 2000);
+        clearTimeout(linkCopiedTimerRef.current);
+        linkCopiedTimerRef.current = setTimeout(() => setLinkCopied(false), 2000);
       });
   }, [shareLink]);
 
@@ -1430,4 +1438,4 @@ const CollaborationHub: React.FC = () => {
   );
 };
 
-export default CollaborationHub;
+export default memo(CollaborationHub);

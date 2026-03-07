@@ -3,7 +3,7 @@
  * Modern project hub with BeamLab Branding & New UI System
  */
 
-import { FC, useState, useEffect, useCallback, useRef } from "react";
+import { FC, useState, useEffect, useCallback, useRef, memo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
@@ -1143,4 +1143,4 @@ const TEMPLATES = [
   },
 ];
 
-export default Dashboard;
+export default memo(Dashboard);

@@ -8,7 +8,7 @@
  * ETABS CAD features, and RAM Concept drawing capabilities.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 
 // Types
@@ -74,6 +74,12 @@ const CADIntegrationHub: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'import' | 'export' | 'templates' | 'batch'>('import');
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'info'; text: string } | null>(null);
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Cleanup status message timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(statusTimerRef.current);
+  }, []);
   
   const [importSettings, setImportSettings] = useState<CADImportSettings>({
     format: 'DWG',
@@ -217,13 +223,15 @@ const CADIntegrationHub: React.FC = () => {
   const handleImport = () => {
 // console.log('Starting CAD import with settings:', importSettings);
     setStatusMsg({ type: 'info', text: `Importing ${importSettings.format} — Extract: ${importSettings.extractMethod}, Analytical: ${importSettings.convertToAnalytical ? 'Yes' : 'No'}` });
-    setTimeout(() => setStatusMsg(null), 4000);
+    clearTimeout(statusTimerRef.current);
+    statusTimerRef.current = setTimeout(() => setStatusMsg(null), 4000);
   };
 
   const handleExport = () => {
 // console.log('Starting CAD export with settings:', exportSettings);
     setStatusMsg({ type: 'success', text: `Exporting ${exportSettings.format} (${exportSettings.version}) — ${exportSettings.exportType}, Scale: ${exportSettings.scale}` });
-    setTimeout(() => setStatusMsg(null), 4000);
+    clearTimeout(statusTimerRef.current);
+    statusTimerRef.current = setTimeout(() => setStatusMsg(null), 4000);
   };
 
   const renderImportTab = () => (
@@ -868,4 +876,4 @@ const CADIntegrationHub: React.FC = () => {
   );
 };
 
-export default CADIntegrationHub;
+export default memo(CADIntegrationHub);

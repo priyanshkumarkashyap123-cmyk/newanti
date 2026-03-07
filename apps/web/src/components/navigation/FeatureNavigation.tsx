@@ -3,7 +3,7 @@
  * Provides easy access to all pages and features organized by category
  */
 
-import React, { FC, useState, useMemo, useCallback } from 'react';
+import React, { FC, useState, useMemo, useCallback, useDeferredValue } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { prefetchRoute, prefetchRoutes } from '../../utils/routePrefetch';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -504,14 +504,15 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
 }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set(FEATURE_CATEGORIES.map((c) => c.id))
   );
 
   const filteredCategories = useMemo(() => {
-    if (!searchQuery) return FEATURE_CATEGORIES;
+    if (!deferredSearchQuery) return FEATURE_CATEGORIES;
 
-    const query = searchQuery.toLowerCase();
+    const query = deferredSearchQuery.toLowerCase();
     return FEATURE_CATEGORIES.map((category) => ({
       ...category,
       features: category.features.filter(
@@ -521,7 +522,7 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
           feature.id.toLowerCase().includes(query)
       ),
     })).filter((category) => category.features.length > 0);
-  }, [searchQuery]);
+  }, [deferredSearchQuery]);
 
   const toggleCategory = (categoryId: string) => {
     const newExpanded = new Set(expandedCategories);
@@ -636,4 +637,4 @@ export const FeatureNavigation: FC<FeatureNavigationProps> = ({
   );
 };
 
-export default FeatureNavigation;
+export default React.memo(FeatureNavigation);

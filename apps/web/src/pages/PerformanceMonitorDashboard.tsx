@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { usePageVisibility } from '../hooks/usePageVisibility';
 import {
   Activity,
   Cpu,
@@ -74,6 +75,7 @@ interface BenchmarkResult {
 
 // Simulate real-time metrics
 function useSimulatedMetrics(isAnalysisRunning: boolean) {
+  const isPageVisible = usePageVisibility();
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
     cpuUsage: 0,
     memoryUsage: 0,
@@ -94,7 +96,7 @@ function useSimulatedMetrics(isAnalysisRunning: boolean) {
   });
 
   useEffect(() => {
-    if (!isAnalysisRunning) return;
+    if (!isAnalysisRunning || !isPageVisible) return;
 
     const interval = setInterval(() => {
       setMetrics(prev => {
@@ -120,10 +122,10 @@ function useSimulatedMetrics(isAnalysisRunning: boolean) {
           peakMemory: Math.max(prev.peakMemory, prev.memoryUsed)
         };
       });
-    }, 100);
+    }, 250);
 
     return () => clearInterval(interval);
-  }, [isAnalysisRunning]);
+  }, [isAnalysisRunning, isPageVisible]);
 
   return metrics;
 }

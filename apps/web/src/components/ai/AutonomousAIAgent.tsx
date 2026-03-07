@@ -115,6 +115,7 @@ export const AutonomousAIAgent: FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
+  const diagnoseTimerRef = useRef<ReturnType<typeof setTimeout>>();
   
   // Model store — batched selector to reduce re-renders
   const {
@@ -215,13 +216,16 @@ ${apiStatus}
         type: 'error',
       }]);
       // Auto-submit diagnosis request
-      setTimeout(() => {
+      diagnoseTimerRef.current = setTimeout(() => {
         setInput(`Please diagnose this analysis error and suggest fixes: ${errorMessage}`);
       }, 500);
     };
 
     window.addEventListener('ai-diagnose-error', handleDiagnoseError as EventListener);
-    return () => window.removeEventListener('ai-diagnose-error', handleDiagnoseError as EventListener);
+    return () => {
+      window.removeEventListener('ai-diagnose-error', handleDiagnoseError as EventListener);
+      clearTimeout(diagnoseTimerRef.current);
+    };
   }, []);
 
   // Auto-scroll

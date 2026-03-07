@@ -15,7 +15,7 @@
  * - Highlight critical values
  */
 
-import React, { FC, useState, useMemo, useCallback } from "react";
+import React, { FC, useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useModelStore } from "../../store/model";
 import {
   ArrowUpDown,
@@ -768,6 +768,14 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
   const [activeTab, setActiveTab] = useState<ResultsTab>(defaultTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+    };
+  }, []);
+
   const analysisResults = useModelStore((state) => state.analysisResults);
   const nodes = useModelStore((state) => state.nodes);
   const members = useModelStore((state) => state.members);
@@ -873,7 +881,8 @@ export const ResultsTablePanel: FC<ResultsTablePanelProps> = React.memo(({
 
   const handleCopyTable = useCallback(() => {
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
   }, []);
 
   return (

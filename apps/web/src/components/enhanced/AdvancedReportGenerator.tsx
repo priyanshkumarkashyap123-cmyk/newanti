@@ -17,7 +17,7 @@
  */
 
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FileText,
@@ -434,6 +434,8 @@ export const AdvancedReportGenerator: React.FC<{
   projectData?: any;
   onExport?: (format: ReportFormat, options: ExportOptions) => void;
 }> = ({ className, projectData, onExport }) => {
+  const exportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (exportTimerRef.current) clearTimeout(exportTimerRef.current); }, []);
   const [selectedTemplate, setSelectedTemplate] = useState<ReportTemplate>(TEMPLATES[0]);
   const [sections, setSections] = useState<ReportSection[]>(DEFAULT_SECTIONS);
   const [style, setStyle] = useState<ReportStyle>(TEMPLATES[0].style);
@@ -479,7 +481,8 @@ export const AdvancedReportGenerator: React.FC<{
   // Handle export
   const handleExport = useCallback(() => {
     setIsGenerating(true);
-    setTimeout(() => {
+    if (exportTimerRef.current) clearTimeout(exportTimerRef.current);
+    exportTimerRef.current = setTimeout(() => {
       setIsGenerating(false);
       onExport?.(exportOptions.format, exportOptions);
     }, 2000);

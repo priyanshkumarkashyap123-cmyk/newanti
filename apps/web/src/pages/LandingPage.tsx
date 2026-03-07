@@ -5,7 +5,7 @@
  * Updated to match Figma spec 03_LANDING_MARKETING
  */
 
-import { FC, useState, useEffect, useCallback } from "react";
+import { FC, useState, useEffect, useCallback, memo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, Variants } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
@@ -1575,4 +1575,4 @@ const PRICING_TIERS = [
   },
 ];
 
-export default LandingPage;
+export default memo(LandingPage);

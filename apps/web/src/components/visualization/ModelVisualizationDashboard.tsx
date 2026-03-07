@@ -766,7 +766,13 @@ export const ModelVisualizationDashboard: React.FC<ModelVisualizationDashboardPr
             {/* 3D Canvas */}
             <Canvas
                 shadows={settings.shadows}
-                gl={{ preserveDrawingBuffer: true }}
+                dpr={[1, 1.5]}
+                gl={{
+                    preserveDrawingBuffer: false,
+                    antialias: true,
+                    alpha: false,
+                    powerPreference: 'low-power',
+                }}
                 style={{ background: settings.backgroundColor }}
             >
                 <CameraController viewPreset={settings.viewPreset} />

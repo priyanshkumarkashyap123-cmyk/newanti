@@ -27,7 +27,7 @@ import {
   Trash2,
   Key,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 // ============================================
 // TYPES & CONSTANTS
@@ -897,4 +897,4 @@ export const PrivacyPolicyPageNew = () => {
   );
 };
 
-export default PrivacyPolicyPageNew;
+export default memo(PrivacyPolicyPageNew);

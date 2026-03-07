@@ -238,6 +238,8 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(initialPlanType);
   const abortRef = useRef<AbortController | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const successTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const { getToken } = useAuth();
   const { refreshSubscription } = useSubscription();
@@ -259,6 +261,7 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
+      clearTimeout(redirectTimerRef.current);
     };
   }, []);
 
@@ -287,7 +290,7 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
           if (result.success) {
             setPaymentState("success");
             await refreshSubscription();
-            setTimeout(() => onSuccess?.(), 1500);
+            successTimerRef.current = setTimeout(() => onSuccess?.(), 1500);
           } else {
             throw new Error(result.message || "Payment verification failed");
           }
@@ -303,6 +306,9 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
         window.history.replaceState({}, "", url.toString());
       })();
     }
+    return () => {
+      clearTimeout(successTimerRef.current);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUpgrade = useCallback(async () => {
@@ -334,7 +340,7 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
 
       // 3. Redirect to PhonePe payment page
       // Small delay so user sees the "Redirecting..." state
-      setTimeout(() => {
+      redirectTimerRef.current = setTimeout(() => {
         window.location.href = redirectUrl;
       }, 500);
     } catch (err) {

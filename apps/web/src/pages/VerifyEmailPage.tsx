@@ -5,7 +5,7 @@
  * User receives a verification code via email and enters it here
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Mail, CheckCircle, AlertCircle, Loader, RefreshCw } from 'lucide-react';
@@ -24,7 +24,17 @@ export const VerifyEmailPage: React.FC = () => {
     const [resendSuccess, setResendSuccess] = useState(false);
     const email = searchParams.get('email') || user?.email || '';
 
+    const navigateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const resendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     useEffect(() => { document.title = 'Verify Email | BeamLab'; }, []);
+
+    useEffect(() => {
+      return () => {
+        if (navigateTimerRef.current) clearTimeout(navigateTimerRef.current);
+        if (resendTimerRef.current) clearTimeout(resendTimerRef.current);
+      };
+    }, []);
 
     // Auto-fill code if provided in URL
     useEffect(() => {
@@ -49,7 +59,7 @@ export const VerifyEmailPage: React.FC = () => {
             if (success) {
                 setIsVerified(true);
                 // Redirect to app after 2 seconds
-                setTimeout(() => navigate('/app'), 2000);
+                navigateTimerRef.current = setTimeout(() => navigate('/app'), 2000);
             } else {
                 setVerifyError('Invalid verification code. Please try again.');
             }
@@ -79,7 +89,7 @@ export const VerifyEmailPage: React.FC = () => {
             const data = await response.json();
             if (data.success) {
                 setResendSuccess(true);
-                setTimeout(() => setResendSuccess(false), 5000);
+                resendTimerRef.current = setTimeout(() => setResendSuccess(false), 5000);
             } else {
                 setVerifyError(data.message || 'Failed to resend code');
             }

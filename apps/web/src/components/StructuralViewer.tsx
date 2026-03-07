@@ -95,12 +95,12 @@ export const StructuralViewer: FC<StructuralViewerProps> = ({ className = '' }) 
         >
             <Canvas
                 shadows
-                dpr={[1, 2]}
+                dpr={[1, 1.5]}
                 gl={{
-                    preserveDrawingBuffer: true,
+                    preserveDrawingBuffer: false,
                     antialias: true,
                     alpha: false,
-                    powerPreference: 'high-performance',
+                    powerPreference: 'low-power',
                 }}
                 style={{
                     width: '100%',

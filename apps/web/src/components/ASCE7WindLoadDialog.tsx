@@ -3,7 +3,7 @@
  * Based on ASCE 7-22 Chapter 27 (Directional Procedure)
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -113,6 +113,8 @@ interface ASCE7WindResult {
 }
 
 const ASCE7WindLoadDialog: React.FC = () => {
+    const applyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => { if (applyTimerRef.current) clearTimeout(applyTimerRef.current); }, []);
     const { modals, setModal } = useUIStore(
       useShallow((s) => ({ modals: s.modals, setModal: s.setModal }))
     );
@@ -220,7 +222,8 @@ const ASCE7WindLoadDialog: React.FC = () => {
         // Apply logic here
 // console.log('Applying wind loads:', result);
         setCalcStatus({ type: 'success', text: 'Wind Loads generated. Nodal application pending integration.' });
-        setTimeout(() => {
+        if (applyTimerRef.current) clearTimeout(applyTimerRef.current);
+        applyTimerRef.current = setTimeout(() => {
             setCalcStatus(null);
             setModal('asce7WindDialog', false);
         }, 1500);

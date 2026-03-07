@@ -14,7 +14,7 @@
  * - apps/backend-rust/src/nonlinear_solver_framework.rs
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, memo } from 'react';
 import {
   TrendingUp,
   AlertTriangle,
@@ -687,4 +687,4 @@ export const NonlinearAnalysisPage: React.FC = () => {
   );
 };
 
-export default NonlinearAnalysisPage;
+export default memo(NonlinearAnalysisPage);

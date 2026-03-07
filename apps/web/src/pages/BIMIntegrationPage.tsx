@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { 
   IFC_STRUCTURAL_TYPES, 
   IFCParser, 
@@ -65,7 +65,8 @@ export default function BIMIntegrationPage() {
 
   const runClashDetection = useCallback(() => {
     setIsProcessing(true);
-    setTimeout(() => {
+    if (clashTimerRef.current) clearTimeout(clashTimerRef.current);
+    clashTimerRef.current = setTimeout(() => {
       try {
         const detector = new ClashDetector();
         const realClashes = detector.detectClashes(parsedMembers);
@@ -81,7 +82,8 @@ export default function BIMIntegrationPage() {
 
   const exportIFC = useCallback(() => {
     setIsProcessing(true);
-    setTimeout(() => {
+    if (exportTimerRef.current) clearTimeout(exportTimerRef.current);
+    exportTimerRef.current = setTimeout(() => {
       try {
         const writer = new IFCWriter();
         const ifcContent = writer.generate(parsedMembers as any);

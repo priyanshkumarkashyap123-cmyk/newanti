@@ -50,7 +50,7 @@ const securityHeaders = {
   ].join(", "),
 
   // Strict Transport Security (for production)
-  // 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
 };
 
 // https://vitejs.dev/config/

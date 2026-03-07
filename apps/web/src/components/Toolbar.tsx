@@ -1,5 +1,5 @@
 
-import { FC, useState, useCallback, memo, useSyncExternalStore } from 'react';
+import { FC, useState, useCallback, useRef, useEffect, memo, useSyncExternalStore } from 'react';
 import {
     MousePointer2,
     Circle,
@@ -112,6 +112,12 @@ export const Toolbar: FC = () => {
     const { undo, redo, pastStates, futureStates } = temporalState;
     const [message, setMessage] = useState<string | null>(null);
     const [showPlateDialog, setShowPlateDialog] = useState(false);
+    const messageTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+    // Cleanup message timer on unmount
+    useEffect(() => {
+        return () => clearTimeout(messageTimerRef.current);
+    }, []);
 
     // Subscription for feature gating
     const { subscription, canAccess } = useSubscription();
@@ -202,7 +208,8 @@ export const Toolbar: FC = () => {
             setMessage(`Error: ${error instanceof Error ? error.message : 'Analysis failed'}`);
         } finally {
             useModelStore.getState().setIsAnalyzing(false);
-            setTimeout(() => {
+            clearTimeout(messageTimerRef.current);
+            messageTimerRef.current = setTimeout(() => {
                 setMessage((prev) => prev?.startsWith('Analysis Complete') ? null : prev);
             }, 5000);
         }
@@ -250,7 +257,8 @@ export const Toolbar: FC = () => {
         });
         report.generateReport(screenshot);
         setMessage('PDF Report exported successfully');
-        setTimeout(() => setMessage(null), 4000);
+        clearTimeout(messageTimerRef.current);
+        messageTimerRef.current = setTimeout(() => setMessage(null), 4000);
     }, [subscription, canAccess, analysisResults]);
 
     const isSuccess = message?.startsWith('Analysis Complete') || message?.startsWith('PDF');

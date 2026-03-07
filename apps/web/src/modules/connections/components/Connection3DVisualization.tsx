@@ -774,8 +774,8 @@ export const Connection3DVisualization: React.FC<Connection3DVisualizationProps>
     >
       <Canvas
         shadows
-        dpr={[1, 2]}
-        gl={{ antialias: true, preserveDrawingBuffer: true }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: true, preserveDrawingBuffer: false, powerPreference: 'low-power' }}
         camera={{ position: [8, 8, 8], fov: 50 }}
       >
         <Suspense fallback={null}>
