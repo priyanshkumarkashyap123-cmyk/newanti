@@ -13,6 +13,12 @@ import type {
   ProjectInfo,
   AnalysisResults,
 } from './modelTypes';
+import {
+  serializeModel,
+  deserializeModel,
+  BEAMLAB_FILE,
+  type SerializableModel,
+} from '../core/BinaryModelSerializer';
 
 // ============================================
 // LOCAL STORAGE PERSISTENCE
@@ -171,6 +177,181 @@ export const clearSavedProject = (): void => {
 };
 
 // ============================================
+// BINARY (.beamlab) FILE PERSISTENCE
+// ============================================
+
+/**
+ * Export the current model as a .beamlab binary file (5-10× smaller than JSON).
+ * Triggers a browser download.
+ */
+export function downloadProjectBinary(filename?: string): boolean {
+  try {
+    const state = useModelStore.getState();
+    // Cast needed: domain types (Restraints, Plate etc.) have strict interfaces
+    // that don't satisfy Record<string, unknown>, but are structurally compatible.
+    const model = {
+      projectInfo: state.projectInfo,
+      nodes: state.nodes,
+      members: state.members,
+      loads: state.loads,
+      memberLoads: state.memberLoads,
+      plates: state.plates,
+      loadCases: state.loadCases,
+      loadCombinations: state.loadCombinations,
+      settings: state.settings,
+    } as unknown as SerializableModel;
+
+    const buffer = serializeModel(model);
+    const blob = new Blob([buffer], { type: BEAMLAB_FILE.mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename || `${state.projectInfo.name || 'project'}${BEAMLAB_FILE.extension}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    logger.info(`Binary export: ${(buffer.byteLength / 1024).toFixed(1)} KB`);
+    return true;
+  } catch (e) {
+    logger.error('Failed to export binary project', { error: e });
+    return false;
+  }
+}
+
+/**
+ * Import a .beamlab binary file and load it into the store.
+ * @param file - File object from <input type="file"> or drag-drop
+ */
+export async function loadProjectBinary(file: File): Promise<boolean> {
+  try {
+    const buffer = await file.arrayBuffer();
+    const data = deserializeModel(buffer);
+
+    // Cast: DeserializedModel uses generic Record types, SavedProjectData uses strict domain types.
+    // They're structurally identical at runtime (same shape), just different TS type constraints.
+    const projectData = {
+      projectInfo: data.projectInfo,
+      nodes: data.nodes,
+      members: data.members,
+      loads: data.loads,
+      memberLoads: data.memberLoads,
+      plates: data.plates,
+      loadCases: data.loadCases,
+      loadCombinations: data.loadCombinations,
+      floorLoads: [],
+      savedAt: data.savedAt,
+    } as unknown as SavedProjectData;
+
+    const success = useModelStore.getState().loadProject(projectData);
+    if (success) {
+      logger.info(`Binary import: ${data.nodes.length} nodes, ${data.members.length} members from ${(buffer.byteLength / 1024).toFixed(1)} KB`);
+    }
+    return success;
+  } catch (e) {
+    logger.error('Failed to import binary project', { error: e });
+    return false;
+  }
+}
+
+/**
+ * Save to IndexedDB as binary instead of localStorage JSON.
+ * Avoids the 5MB localStorage limit — IndexedDB can store hundreds of MB.
+ */
+export async function saveProjectToIndexedDB(): Promise<boolean> {
+  try {
+    const state = useModelStore.getState();
+    const model = {
+      projectInfo: state.projectInfo,
+      nodes: state.nodes,
+      members: state.members,
+      loads: state.loads,
+      memberLoads: state.memberLoads,
+      plates: state.plates,
+      loadCases: state.loadCases,
+      loadCombinations: state.loadCombinations,
+      settings: state.settings,
+    } as unknown as SerializableModel;
+
+    const buffer = serializeModel(model);
+
+    return new Promise((resolve) => {
+      const request = indexedDB.open('beamlab_projects', 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('projects')) {
+          db.createObjectStore('projects');
+        }
+      };
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('projects', 'readwrite');
+        const store = tx.objectStore('projects');
+        store.put(buffer, 'current');
+        tx.oncomplete = () => { resolve(true); db.close(); };
+        tx.onerror = () => { resolve(false); db.close(); };
+      };
+      request.onerror = () => resolve(false);
+    });
+  } catch (e) {
+    logger.error('Failed to save to IndexedDB', { error: e });
+    return false;
+  }
+}
+
+/**
+ * Load project from IndexedDB binary store.
+ */
+export async function loadProjectFromIndexedDB(): Promise<boolean> {
+  try {
+    return new Promise((resolve) => {
+      const request = indexedDB.open('beamlab_projects', 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('projects')) {
+          db.createObjectStore('projects');
+        }
+      };
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('projects', 'readonly');
+        const store = tx.objectStore('projects');
+        const getReq = store.get('current');
+        getReq.onsuccess = () => {
+          const buffer = getReq.result as ArrayBuffer | undefined;
+          if (!buffer) { resolve(false); db.close(); return; }
+          try {
+            const data = deserializeModel(buffer);
+            const projectData = {
+              projectInfo: data.projectInfo,
+              nodes: data.nodes,
+              members: data.members,
+              loads: data.loads,
+              memberLoads: data.memberLoads,
+              plates: data.plates,
+              loadCases: data.loadCases,
+              loadCombinations: data.loadCombinations,
+              floorLoads: [],
+              savedAt: data.savedAt,
+            } as unknown as SavedProjectData;
+            resolve(useModelStore.getState().loadProject(projectData));
+          } catch {
+            resolve(false);
+          }
+          db.close();
+        };
+        getReq.onerror = () => { resolve(false); db.close(); };
+      };
+      request.onerror = () => resolve(false);
+    });
+  } catch (e) {
+    logger.error('Failed to load from IndexedDB', { error: e });
+    return false;
+  }
+}
+
+// ============================================
 // AUTO-SAVE (debounced subscription)
 // ============================================
 
@@ -183,6 +364,10 @@ let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
  * Only saves when structural data (nodes, members, loads) changes.
  */
 export function initAutoSave(): void {
+  if (typeof useModelStore?.subscribe !== 'function') {
+    return;
+  }
+
   useModelStore.subscribe(
     (state, prevState) => {
       // Only auto-save when structural data changes (not UI state or analysis results)

@@ -196,7 +196,7 @@ describe('validateStructure', () => {
     const result = validateStructure(nodes, members);
 
     const matWarn = result.warnings.find((w) =>
-      w.message.includes('material properties'),
+      w.message.includes('material/section'),
     );
     expect(matWarn).toBeDefined();
   });

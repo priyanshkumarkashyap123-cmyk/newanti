@@ -33,15 +33,15 @@ describe("buildLocalAxesForDiagram", () => {
     approx(lz[2], 1);
   });
 
-  it("vertical member (along +Y) → ly=[0,0,1], lz=[1,0,0]", () => {
+  it("vertical member (along +Y) → ly=[-1,0,0], lz=[0,0,1]", () => {
     const { ly, lz } = buildLocalAxesForDiagram(0, 5, 0, 5, 0);
-    approx(ly[0], 0);
+    approx(ly[0], -1);
     approx(ly[1], 0);
-    approx(ly[2], 1);
-    // lz = lx × ly = [0,1,0] × [0,0,1] = [1,0,0]
-    approx(lz[0], 1);
+    approx(ly[2], 0);
+    // lz = lx × ly = [0,1,0] × [-1,0,0] = [0,0,1]
+    approx(lz[0], 0);
     approx(lz[1], 0);
-    approx(lz[2], 0);
+    approx(lz[2], 1);
   });
 
   it("45-degree inclined member in XY plane", () => {

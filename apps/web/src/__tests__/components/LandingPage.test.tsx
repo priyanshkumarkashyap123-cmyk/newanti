@@ -4,7 +4,7 @@
  * Verifies that the landing page renders correctly with:
  * - Hero heading and sub-heading
  * - CTA buttons (Get Started, Demo)
- * - Navigation links (Features, Pricing, Docs, Demo)
+ * - Navigation links (Features, Pricing, Tools, Demo)
  * - Stats section
  * - Accessibility skip link
  * - Pricing section
@@ -117,12 +117,12 @@ describe('LandingPage', () => {
         // Use getAllByText since they appear in both desktop and mobile menu markup
         const featureLinks = screen.getAllByText('Features');
         const pricingLinks = screen.getAllByText('Pricing');
-        const docsLinks = screen.getAllByText('Docs');
+        const toolsLinks = screen.getAllByText('Tools');
         const demoLinks = screen.getAllByText('Demo');
 
         expect(featureLinks.length).toBeGreaterThanOrEqual(1);
         expect(pricingLinks.length).toBeGreaterThanOrEqual(1);
-        expect(docsLinks.length).toBeGreaterThanOrEqual(1);
+        expect(toolsLinks.length).toBeGreaterThanOrEqual(1);
         expect(demoLinks.length).toBeGreaterThanOrEqual(1);
     });
 

@@ -168,13 +168,13 @@ describe('computePointMomentFEF', () => {
     }];
     const fef = computePointMomentFEF(loads, horizStart, horizEnd, 0);
     const M0 = 50, a = 5, b = 5, L = 10;
-    // Moment FEF about Mz:
-    // R1 = -6*M0*a*b/L³
-    near(fef.forces_i[1], -6 * M0 * a * b / (L * L * L));
+    // Moment FEF about Mz (current implementation convention):
+    // R1 = +6*M0*a*b/L³
+    near(fef.forces_i[1], 6 * M0 * a * b / (L * L * L));
     // M1 = M0*b*(2a-b)/L²
     near(fef.forces_i[5], M0 * b * (2 * a - b) / (L * L));
-    // R2 = +6*M0*a*b/L³
-    near(fef.forces_j[1], 6 * M0 * a * b / (L * L * L));
+    // R2 = -6*M0*a*b/L³
+    near(fef.forces_j[1], -6 * M0 * a * b / (L * L * L));
     // M2 = M0*a*(2b-a)/L²
     near(fef.forces_j[5], M0 * a * (2 * b - a) / (L * L));
   });
