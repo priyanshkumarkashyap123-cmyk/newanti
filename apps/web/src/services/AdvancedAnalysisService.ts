@@ -795,10 +795,244 @@ export async function buildMassSource(
   return postJson(`${API_CONFIG.rustUrl}/api/advanced/mass-source`, req);
 }
 
-// Re-export convenience bundle
+// ============================================================================
+// Dynamic & Advanced Loading Engines
+// ============================================================================
+
+// ── 5. Wind Tunnel / CFD Pressure Profile ──
+
+export interface WindTunnelTap {
+  tap_id: string;
+  x: number;
+  y: number;
+  z: number;
+  face: string;
+  tributary_area: number;
+  normal: [number, number, number];
+}
+
+export interface CpTimeSeries {
+  wind_direction_deg: number;
+  q_ref: number;
+  sampling_rate: number;
+  cp_values: number[];
+}
+
+export interface TapToNodeMapping {
+  tap_id: string;
+  node_id: string;
+  tributary_area: number;
+  normal: [number, number, number];
+}
+
+export interface WindTunnelRequest {
+  building_id: string;
+  geometric_scale: number;
+  velocity_scale: number;
+  reference_height?: number;
+  taps: WindTunnelTap[];
+  cp_data: Record<string, CpTimeSeries[]>;
+  mappings: TapToNodeMapping[];
+  q_design: number;
+  peak_factor?: number;
+  compute_psd?: boolean;
+}
+
+export interface CpStats {
+  tap_id: string;
+  wind_direction_deg: number;
+  mean: number;
+  rms: number;
+  peak_positive: number;
+  peak_negative: number;
+  std_dev: number;
+}
+
+export interface NodalForce {
+  node_id: string;
+  fx_kn: number;
+  fy_kn: number;
+  fz_kn: number;
+}
+
+export interface DirectionScan {
+  critical_direction_deg: number;
+  max_base_shear_x_kn: number;
+  max_base_shear_y_kn: number;
+  max_overturning_moment_knm: number;
+  n_directions: number;
+}
+
+export interface WindTunnelResponse {
+  success: boolean;
+  statistics: CpStats[];
+  equivalent_static_loads: NodalForce[];
+  force_timesteps: number;
+  direction_scan: DirectionScan | null;
+  performance_ms: number;
+}
+
+export async function runWindTunnel(
+  req: WindTunnelRequest,
+): Promise<WindTunnelResponse> {
+  return postJson(`${API_CONFIG.rustUrl}/api/advanced/wind-tunnel`, req);
+}
+
+// ── 6. Influence Surface (2-D Bridge Deck) ──
+
+export interface InfluenceSurfaceRequest {
+  span: number;
+  width: number;
+  thickness: number;
+  elastic_modulus?: number;
+  poisson_ratio?: number;
+  output_x: number;
+  output_y: number;
+  grid_nx?: number;
+  grid_ny?: number;
+  scan_step_x?: number;
+  scan_step_y?: number;
+  vehicles: string[];
+  response_type?: 'deflection' | 'moment_mx' | 'moment_my';
+}
+
+export interface VehicleScanResult {
+  vehicle_label: string;
+  max_response: number;
+  min_response: number;
+  impact_factor: number;
+  critical_x: number;
+  critical_y: number;
+  n_positions_evaluated: number;
+}
+
+export interface InfluenceSurfaceResponse {
+  success: boolean;
+  span: number;
+  width: number;
+  scan_results: VehicleScanResult[];
+  governing_max_response: number;
+  governing_min_response: number;
+  governing_vehicle: string;
+  performance_ms: number;
+}
+
+export async function runInfluenceSurface(
+  req: InfluenceSurfaceRequest,
+): Promise<InfluenceSurfaceResponse> {
+  return postJson(
+    `${API_CONFIG.rustUrl}/api/advanced/influence-surface`,
+    req,
+  );
+}
+
+// ── 7. Enhanced Spectrum Directional Combination ──
+
+export type CombinationMethod = 'SRSS' | 'CQC' | 'ABS' | 'CQC_GROUPED';
+export type DirectionalRule = 'single' | '100_30' | '100_30_30' | 'srss';
+
+export interface DirectionalSpectrumInput {
+  direction: string;
+  spectrum_ordinates: [number, number][];
+  scale_factor?: number;
+}
+
+export interface ModalPropertiesInput {
+  n_modes: number;
+  periods: number[];
+  damping_ratios: number[];
+  participation_factors: [number, number, number][];
+  effective_masses: [number, number, number][];
+  mode_shapes: number[][];
+  total_weight: number;
+  n_dofs: number;
+}
+
+export interface IS1893Params {
+  zone_factor: number;
+  importance_factor: number;
+  response_reduction: number;
+  soil_type?: 'I' | 'II' | 'III';
+}
+
+export interface ASCE7Params {
+  sds: number;
+  sd1: number;
+  tl: number;
+}
+
+export interface SpectrumDirectionalRequest {
+  combination_method?: CombinationMethod;
+  directional_rule?: DirectionalRule;
+  spectra: DirectionalSpectrumInput[];
+  modal: ModalPropertiesInput;
+  closely_spaced_threshold?: number;
+  missing_mass_correction?: boolean;
+  code?: 'is1893' | 'asce7' | 'ec8';
+  is1893_params?: IS1893Params;
+  asce7_params?: ASCE7Params;
+}
+
+export interface CloselySpacedPair {
+  mode_i: number;
+  mode_j: number;
+  freq_i_hz: number;
+  freq_j_hz: number;
+  ratio: number;
+}
+
+export interface NodeDisplacementResult {
+  node_id: number;
+  disp_x: number;
+  disp_y: number;
+  disp_z: number;
+  disp_magnitude: number;
+}
+
+export interface ModalSummary {
+  mode: number;
+  period_s: number;
+  frequency_hz: number;
+  effective_mass_x: number;
+  effective_mass_y: number;
+  sa_x: number;
+  sa_y: number;
+  is_closely_spaced: boolean;
+}
+
+export interface SpectrumDirectionalResponse {
+  success: boolean;
+  combination_method: string;
+  directional_rule: string;
+  modes_used: number;
+  closely_spaced_pairs: CloselySpacedPair[];
+  missing_mass_fractions: [number, number, number];
+  node_results: NodeDisplacementResult[];
+  base_shear_per_direction: number[];
+  combined_base_shear: number;
+  modal_summary: ModalSummary[];
+  performance_ms: number;
+}
+
+export async function runSpectrumDirectional(
+  req: SpectrumDirectionalRequest,
+): Promise<SpectrumDirectionalResponse> {
+  return postJson(
+    `${API_CONFIG.rustUrl}/api/advanced/spectrum-directional`,
+    req,
+  );
+}
+
+// Re-export convenience bundles
 export const RigorousSolvers = {
   runStagedConstruction,
   runDAM,
   runNonlinearSolve,
   buildMassSource,
+};
+
+export const DynamicLoadingEngines = {
+  runWindTunnel,
+  runInfluenceSurface,
+  runSpectrumDirectional,
 };

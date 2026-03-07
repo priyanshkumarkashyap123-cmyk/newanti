@@ -140,6 +140,7 @@ pub mod hysteretic_models;
 pub mod ifc_export;
 pub mod impact_analysis;
 pub mod incremental_dynamic_analysis;
+pub mod influence_surface;
 pub mod industrial_flooring;
 pub mod industry_complete_parity;
 pub mod industry_gaps_closure;
@@ -253,6 +254,7 @@ pub mod sparse_multifidelity;
 pub mod sparse_solver_advanced;
 pub mod special_elements;
 pub mod special_functions;
+pub mod spectrum_directional;
 pub mod ssi_probabilistic;
 pub mod steel_connection;
 pub mod steel_connection_design;
@@ -295,6 +297,7 @@ pub mod vtk_export;
 pub mod water_treatment;
 pub mod wind_load_generator;
 pub mod wind_performance;
+pub mod wind_tunnel_cfd;
 
 // ============================================================================
 // IMPORTS

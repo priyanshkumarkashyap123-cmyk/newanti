@@ -26,6 +26,7 @@ import {
   GitBranch,
   Database
 } from 'lucide-react';
+import { Button } from '../components/ui/button';
 
 interface SettingCategory {
   id: string;
@@ -1104,7 +1105,7 @@ export default function AdvancedSettingsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-gradient-to-r from-white to-slate-50 dark:from-slate-900 dark:to-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -1132,26 +1133,19 @@ export default function AdvancedSettingsPage() {
                 </span>
               )}
               
-              <button type="button"
-                onClick={resetToDefaults}
-                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg font-medium transition-colors flex items-center gap-2"
-              >
+              <Button type="button" onClick={resetToDefaults} variant="outline">
                 <RotateCcw className="w-4 h-4" />
                 Reset
-              </button>
+              </Button>
               
-              <button type="button"
+              <Button type="button"
                 onClick={saveSettings}
                 disabled={!hasChanges}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                  hasChanges
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 cursor-not-allowed'
-                }`}
+                variant={hasChanges ? 'premium' : 'secondary'}
               >
                 <Save className="w-4 h-4" />
                 Save Settings
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1159,11 +1153,11 @@ export default function AdvancedSettingsPage() {
       
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Quick Info */}
-        <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-start gap-3">
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-lg flex items-start gap-3">
           <Info className="w-5 h-5 text-blue-400 mt-0.5" />
-          <div className="text-sm text-blue-200">
+          <div className="text-sm text-blue-700 dark:text-blue-200">
             <p className="font-medium">Pro Tip</p>
-            <p className="text-blue-300 mt-1">
+            <p className="text-blue-600 dark:text-blue-300 mt-1">
               These settings affect all analyses. For analysis-specific overrides, use the settings panel in each analysis page.
               Settings are automatically applied to new analyses.
             </p>
@@ -1179,7 +1173,7 @@ export default function AdvancedSettingsPage() {
             >
               <button type="button"
                 onClick={() => toggleCategory(category.id)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 dark:bg-slate-800 transition-colors"
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400">
@@ -1215,17 +1209,17 @@ export default function AdvancedSettingsPage() {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button type="button" className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
+            <button type="button" className="p-4 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg text-left transition-colors">
               <div className="font-medium text-slate-900 dark:text-white">High Performance</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Optimized for speed with GPU acceleration</div>
             </button>
             
-            <button type="button" className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
+            <button type="button" className="p-4 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg text-left transition-colors">
               <div className="font-medium text-slate-900 dark:text-white">High Accuracy</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Maximum precision for critical designs</div>
             </button>
             
-            <button type="button" className="p-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-600 rounded-lg text-left transition-colors">
+            <button type="button" className="p-4 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg text-left transition-colors">
               <div className="font-medium text-slate-900 dark:text-white">Balanced</div>
               <div className="text-sm text-slate-600 dark:text-slate-400 mt-1">Good balance of speed and accuracy</div>
             </button>

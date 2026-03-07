@@ -44,6 +44,7 @@ import {
 import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
 import { Logo } from '../components/branding';
 import { Button } from '../components/ui/button';
+import { Input, Select } from '../components/ui/FormInputs';
 
 // ================================================================
 // TYPES
@@ -617,7 +618,7 @@ const MemberDesignTable: FC<{
                 type="checkbox"
                 checked={allSelected}
                 onChange={() => onSelectAll(!allSelected)}
-                className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
+                className="rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
               />
             </th>
             <th className="py-3 px-2 text-left">Member</th>
@@ -644,7 +645,7 @@ const MemberDesignTable: FC<{
                     type="checkbox"
                     checked={row.selected}
                     onChange={() => onToggleSelect(row.id)}
-                    className="rounded border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
+                    className="rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
                   />
                 </td>
                 <td className="py-2 px-2 font-medium text-slate-700 dark:text-slate-200">{row.label}</td>
@@ -717,30 +718,22 @@ const DesignParametersPanel: FC<{
         <>
           {/* Steel Code Selection */}
           <div>
-            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Steel Design Code</label>
-            <select
+            <Select
+              label="Steel Design Code"
               value={params.steelCode}
-              onChange={e => updateParam('steelCode', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
-            >
-              {STEEL_CODES.map(c => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name} — {c.region}</option>
-              ))}
-            </select>
+              onChange={(value) => updateParam('steelCode', value)}
+              options={STEEL_CODES.map((c) => ({ value: c.id, label: `${c.icon} ${c.name} — ${c.region}` }))}
+            />
           </div>
 
           {/* Steel Grade */}
           <div>
-            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Steel Grade</label>
-            <select
+            <Select
+              label="Steel Grade"
               value={params.steelGrade}
-              onChange={e => updateParam('steelGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
-            >
-              {STEEL_GRADES.map(g => (
-                <option key={g.name} value={g.name}>{g.name} (fy={g.fy} MPa, fu={g.fu} MPa)</option>
-              ))}
-            </select>
+              onChange={(value) => updateParam('steelGrade', value)}
+              options={STEEL_GRADES.map((g) => ({ value: g.name, label: `${g.name} (fy=${g.fy} MPa, fu=${g.fu} MPa)` }))}
+            />
           </div>
 
           {/* Design Method */}
@@ -748,17 +741,15 @@ const DesignParametersPanel: FC<{
             <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Design Method</label>
             <div className="flex gap-2">
               {(['LRFD', 'ASD'] as const).map(m => (
-                <button type="button"
+                <Button
+                  type="button"
                   key={m}
                   onClick={() => updateParam('designMethod', m)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    params.designMethod === m
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
+                  variant={params.designMethod === m ? 'default' : 'outline'}
+                  className="flex-1"
                 >
                   {m}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -766,56 +757,52 @@ const DesignParametersPanel: FC<{
           {/* Effective Length Factors */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">K<sub>y</sub> (Eff. Length Y)</label>
-              <input
+              <Input
+                label="Ky (Eff. Length Y)"
                 type="number"
                 step="0.1"
                 min="0.5"
                 max="2.0"
                 value={params.effectiveLengthFactorY}
                 onChange={e => updateParam('effectiveLengthFactorY', parseFloat(e.target.value) || 1.0)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">K<sub>z</sub> (Eff. Length Z)</label>
-              <input
+              <Input
+                label="Kz (Eff. Length Z)"
                 type="number"
                 step="0.1"
                 min="0.5"
                 max="2.0"
                 value={params.effectiveLengthFactorZ}
                 onChange={e => updateParam('effectiveLengthFactorZ', parseFloat(e.target.value) || 1.0)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Unbraced Length Ratio */}
           <div>
-            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">L<sub>b</sub>/L (Unbraced Length Ratio)</label>
-            <input
+            <Input
+              label="Lb/L (Unbraced Length Ratio)"
               type="number"
               step="0.1"
               min="0"
               max="1.0"
               value={params.unbracedLengthRatio}
               onChange={e => updateParam('unbracedLengthRatio', parseFloat(e.target.value) || 1.0)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
           {/* Cb Factor */}
           <div>
-            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">C<sub>b</sub> (Moment Gradient Factor)</label>
-            <input
+            <Input
+              label="Cb (Moment Gradient Factor)"
               type="number"
               step="0.1"
               min="1.0"
               max="3.0"
               value={params.Cb}
               onChange={e => updateParam('Cb', parseFloat(e.target.value) || 1.0)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
             />
           </div>
         </>
@@ -823,44 +810,32 @@ const DesignParametersPanel: FC<{
         <>
           {/* Concrete Code Selection */}
           <div>
-            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Concrete Design Code</label>
-            <select
+            <Select
+              label="Concrete Design Code"
               value={params.concreteCode}
-              onChange={e => updateParam('concreteCode', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
-            >
-              {CONCRETE_CODES.map(c => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name} — {c.region}</option>
-              ))}
-            </select>
+              onChange={(value) => updateParam('concreteCode', value)}
+              options={CONCRETE_CODES.map((c) => ({ value: c.id, label: `${c.icon} ${c.name} — ${c.region}` }))}
+            />
           </div>
 
           {/* Concrete Grade */}
           <div>
-            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Concrete Grade</label>
-            <select
+            <Select
+              label="Concrete Grade"
               value={params.concreteGrade}
-              onChange={e => updateParam('concreteGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
-            >
-              {CONCRETE_GRADES.map(g => (
-                <option key={g.name} value={g.name}>{g.name} (f<sub>ck</sub>={g.fck} MPa)</option>
-              ))}
-            </select>
+              onChange={(value) => updateParam('concreteGrade', value)}
+              options={CONCRETE_GRADES.map((g) => ({ value: g.name, label: `${g.name} (fck=${g.fck} MPa)` }))}
+            />
           </div>
 
           {/* Rebar Grade */}
           <div>
-            <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Rebar Grade</label>
-            <select
+            <Select
+              label="Rebar Grade"
               value={params.rebarGrade}
-              onChange={e => updateParam('rebarGrade', e.target.value)}
-              className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
-            >
-              {REBAR_GRADES.map(g => (
-                <option key={g.name} value={g.name}>{g.name} (f<sub>y</sub>={g.fy} MPa)</option>
-              ))}
-            </select>
+              onChange={(value) => updateParam('rebarGrade', value)}
+              options={REBAR_GRADES.map((g) => ({ value: g.name, label: `${g.name} (fy=${g.fy} MPa)` }))}
+            />
           </div>
         </>
       )}
@@ -919,16 +894,13 @@ const SectionAssignmentPanel: FC<{
           animate={{ height: 'auto', opacity: 1 }}
           className="mt-3 space-y-2"
         >
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search sections (e.g. ISMB 300, W14x22)..."
-              value={sectionSearch}
-              onChange={e => setSectionSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-500 focus:outline-none"
-            />
-          </div>
+          <Input
+            type="text"
+            placeholder="Search sections (e.g. ISMB 300, W14x22)..."
+            value={sectionSearch}
+            onChange={e => setSectionSearch(e.target.value)}
+            leftIcon={<Search className="w-4 h-4" />}
+          />
           <div className="max-h-48 overflow-y-auto space-y-1">
             {filteredSections.map(s => (
               <button type="button"
@@ -1127,29 +1099,34 @@ const ConnectionDesignTab: FC<{
               Connection Parameters
             </h3>
             <div>
-              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Connection Type</label>
-              <select value={connType} onChange={e => setConnType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
-                <option value="bolted_shear">Bolted Shear Connection</option>
-                <option value="bolted_moment">Bolted Moment Connection</option>
-                <option value="welded">Welded Connection</option>
-                <option value="base_plate">Base Plate Connection</option>
-              </select>
+              <Select
+                label="Connection Type"
+                value={connType}
+                onChange={(value) => setConnType(value as typeof connType)}
+                options={[
+                  { value: 'bolted_shear', label: 'Bolted Shear Connection' },
+                  { value: 'bolted_moment', label: 'Bolted Moment Connection' },
+                  { value: 'welded', label: 'Welded Connection' },
+                  { value: 'base_plate', label: 'Base Plate Connection' },
+                ]}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bolt Grade</label>
-                <select value={boltGrade} onChange={e => setBoltGrade(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
-                  {BOLT_GRADES.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}
-                </select>
+                <Select
+                  label="Bolt Grade"
+                  value={boltGrade}
+                  onChange={(value) => setBoltGrade(value)}
+                  options={BOLT_GRADES.map((b) => ({ value: b.name, label: b.name }))}
+                />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bolt Ø (mm)</label>
-                <select value={boltDia} onChange={e => setBoltDia(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
-                  {[12, 16, 20, 24, 30, 36].map(d => <option key={d} value={d}>{d} mm</option>)}
-                </select>
+                <Select
+                  label="Bolt Ø (mm)"
+                  value={String(boltDia)}
+                  onChange={(value) => setBoltDia(Number(value))}
+                  options={[12, 16, 20, 24, 30, 36].map((d) => ({ value: String(d), label: `${d} mm` }))}
+                />
               </div>
             </div>
           </div>
@@ -1180,14 +1157,16 @@ const ConnectionDesignTab: FC<{
               <p className="text-sm text-slate-500 text-center py-4">No support reactions available</p>
             )}
           </div>
-          <button type="button"
+          <Button
+            type="button"
             onClick={runConnectionDesign}
             disabled={!selectedSupport || loading}
-            className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            className="mt-4 w-full"
+            variant="default"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
             Design Connection
-          </button>
+          </Button>
         </div>
 
         {/* Right: Result */}
@@ -1315,45 +1294,59 @@ const FoundationDesignTab: FC<{
               Foundation Parameters
             </h3>
             <div>
-              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Footing Type</label>
-              <select value={footingType} onChange={e => setFootingType(e.target.value as any)}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
-                <option value="isolated">Isolated Footing</option>
-                <option value="combined">Combined Footing</option>
-                <option value="mat">Mat/Raft Foundation</option>
-              </select>
+              <Select
+                label="Footing Type"
+                value={footingType}
+                onChange={(value) => setFootingType(value as typeof footingType)}
+                options={[
+                  { value: 'isolated', label: 'Isolated Footing' },
+                  { value: 'combined', label: 'Combined Footing' },
+                  { value: 'mat', label: 'Mat/Raft Foundation' },
+                ]}
+              />
             </div>
             <div>
-              <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Bearing Capacity (kN/m²)</label>
-              <input type="number" value={bearingCapacity} onChange={e => setBearingCapacity(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
+              <Input
+                label="Bearing Capacity (kN/m²)"
+                type="number"
+                value={bearingCapacity}
+                onChange={e => setBearingCapacity(Number(e.target.value))}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Column Width (mm)</label>
-                <input type="number" value={colWidth} onChange={e => setColWidth(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
+                <Input
+                  label="Column Width (mm)"
+                  type="number"
+                  value={colWidth}
+                  onChange={e => setColWidth(Number(e.target.value))}
+                />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Column Depth (mm)</label>
-                <input type="number" value={colDepth} onChange={e => setColDepth(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
+                <Input
+                  label="Column Depth (mm)"
+                  type="number"
+                  value={colDepth}
+                  onChange={e => setColDepth(Number(e.target.value))}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">f<sub>ck</sub> (MPa)</label>
-                <select value={fck} onChange={e => setFck(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
-                  {CONCRETE_GRADES.map(g => <option key={g.fck} value={g.fck}>{g.name} ({g.fck} MPa)</option>)}
-                </select>
+                <Select
+                  label="fck (MPa)"
+                  value={String(fck)}
+                  onChange={(value) => setFck(Number(value))}
+                  options={CONCRETE_GRADES.map((g) => ({ value: String(g.fck), label: `${g.name} (${g.fck} MPa)` }))}
+                />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">f<sub>y</sub> (MPa)</label>
-                <select value={fy} onChange={e => setFy(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none">
-                  {REBAR_GRADES.map(g => <option key={g.fy} value={g.fy}>{g.name} ({g.fy} MPa)</option>)}
-                </select>
+                <Select
+                  label="fy (MPa)"
+                  value={String(fy)}
+                  onChange={(value) => setFy(Number(value))}
+                  options={REBAR_GRADES.map((g) => ({ value: String(g.fy), label: `${g.name} (${g.fy} MPa)` }))}
+                />
               </div>
             </div>
           </div>
@@ -1379,14 +1372,16 @@ const FoundationDesignTab: FC<{
               </button>
             ))}
           </div>
-          <button type="button"
+          <Button
+            type="button"
             onClick={runFoundationDesign}
             disabled={!selectedSupport || loading}
-            className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            className="mt-4 w-full"
+            variant="default"
           >
             {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
             Design Foundation
-          </button>
+          </Button>
         </div>
 
         {/* Result */}
@@ -2150,24 +2145,26 @@ const PostAnalysisDesignHub: FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedMemberIds.size > 0 && (
-                      <button type="button"
+                      <Button
+                        type="button"
                         onClick={createGroupFromSelection}
-                        className="px-3 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+                        variant="outline"
+                        size="sm"
+                        className="border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-500/30 dark:text-purple-300 dark:hover:bg-purple-500/10"
                         title="Create group from selected members"
                       >
                         <Layers className="w-3.5 h-3.5" />
                         Group ({selectedMemberIds.size})
-                      </button>
+                      </Button>
                     )}
-                    <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder="Search members..."
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 w-64"
-                    />
+                    <div className="w-64">
+                      <Input
+                        type="text"
+                        placeholder="Search members..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        leftIcon={<Search className="w-4 h-4" />}
+                      />
                     </div>
                   </div>
                 </div>
@@ -2199,25 +2196,25 @@ const PostAnalysisDesignHub: FC = () => {
                     Concrete Section
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Width (mm)</label>
-                      <input type="number" value={concreteSection.width}
-                        onChange={e => setConcreteSection(p => ({ ...p, width: Number(e.target.value) || 300 }))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Depth (mm)</label>
-                      <input type="number" value={concreteSection.depth}
-                        onChange={e => setConcreteSection(p => ({ ...p, depth: Number(e.target.value) || 500 }))}
-                        className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
-                    </div>
+                    <Input
+                      label="Width (mm)"
+                      type="number"
+                      value={concreteSection.width}
+                      onChange={e => setConcreteSection(p => ({ ...p, width: Number(e.target.value) || 300 }))}
+                    />
+                    <Input
+                      label="Depth (mm)"
+                      type="number"
+                      value={concreteSection.depth}
+                      onChange={e => setConcreteSection(p => ({ ...p, depth: Number(e.target.value) || 500 }))}
+                    />
                   </div>
-                  <div>
-                    <label className="block text-xs text-slate-600 dark:text-slate-400 mb-1">Cover (mm)</label>
-                    <input type="number" value={concreteSection.cover}
-                      onChange={e => setConcreteSection(p => ({ ...p, cover: Number(e.target.value) || 40 }))}
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none" />
-                  </div>
+                  <Input
+                    label="Cover (mm)"
+                    type="number"
+                    value={concreteSection.cover}
+                    onChange={e => setConcreteSection(p => ({ ...p, cover: Number(e.target.value) || 40 }))}
+                  />
                 </div>
 
                 {/* Run Concrete Design Button */}
@@ -2420,18 +2417,19 @@ const PostAnalysisDesignHub: FC = () => {
                   />
                 </div>
                 <div className="flex items-center gap-3">
-                  <input
-                    type="number"
-                    step="0.05"
-                    min="0.50"
-                    max="0.99"
-                    value={targetUtilization}
-                    onChange={e => {
-                      const v = parseFloat(e.target.value);
-                      if (!isNaN(v) && v >= 0.5 && v <= 0.99) setTargetUtilization(v);
-                    }}
-                    className="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:border-blue-500 focus:outline-none"
-                  />
+                  <div className="flex-1">
+                    <Input
+                      type="number"
+                      step="0.05"
+                      min="0.50"
+                      max="0.99"
+                      value={targetUtilization}
+                      onChange={e => {
+                        const v = parseFloat(e.target.value);
+                        if (!isNaN(v) && v >= 0.5 && v <= 0.99) setTargetUtilization(v);
+                      }}
+                    />
+                  </div>
                   <span className="text-sm text-slate-600 dark:text-slate-400">ratio</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">

@@ -1680,3 +1680,805 @@ pub async fn mass_source_analysis(
         performance_ms,
     }))
 }
+
+// ============================================
+// WIND TUNNEL / CFD PRESSURE PROFILE ANALYSIS
+// ============================================
+
+#[derive(Debug, Deserialize)]
+pub struct WindTunnelRequest {
+    pub building_id: String,
+    pub geometric_scale: f64,
+    pub velocity_scale: f64,
+    pub reference_height: f64,
+    pub taps: Vec<WindTunnelTapInput>,
+    pub cp_data: HashMap<String, Vec<CpSeriesInput>>,
+    pub mappings: Vec<TapNodeMappingInput>,
+    pub q_design: f64,
+    #[serde(default = "default_peak_factor")]
+    pub peak_factor: f64,
+    #[serde(default)]
+    pub compute_psd: bool,
+}
+
+fn default_peak_factor() -> f64 { 3.5 }
+
+#[derive(Debug, Deserialize)]
+pub struct WindTunnelTapInput {
+    pub tap_id: String,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+    pub face: String,
+    pub tributary_area: f64,
+    pub normal: [f64; 3],
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CpSeriesInput {
+    pub wind_direction_deg: f64,
+    pub q_ref: f64,
+    pub sampling_rate: f64,
+    pub cp_values: Vec<f64>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TapNodeMappingInput {
+    pub tap_id: String,
+    pub node_id: String,
+    pub tributary_area: f64,
+    pub normal: [f64; 3],
+}
+
+#[derive(Debug, Serialize)]
+pub struct WindTunnelResponse {
+    pub success: bool,
+    pub statistics: Vec<CpStatsOutput>,
+    pub equivalent_static_loads: Vec<NodalForceOutput>,
+    pub force_timesteps: usize,
+    pub direction_scan: Option<DirectionScanOutput>,
+    pub performance_ms: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CpStatsOutput {
+    pub tap_id: String,
+    pub wind_direction_deg: f64,
+    pub mean: f64,
+    pub rms: f64,
+    pub peak_positive: f64,
+    pub peak_negative: f64,
+    pub std_dev: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct NodalForceOutput {
+    pub node_id: String,
+    pub fx_kn: f64,
+    pub fy_kn: f64,
+    pub fz_kn: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct DirectionScanOutput {
+    pub critical_direction_deg: f64,
+    pub max_base_shear_x_kn: f64,
+    pub max_base_shear_y_kn: f64,
+    pub max_overturning_moment_knm: f64,
+    pub n_directions: usize,
+}
+
+/// Compute Cp statistics inline
+fn compute_cp_stats_inline(tap_id: &str, dir: f64, vals: &[f64]) -> CpStatsOutput {
+    let n = vals.len() as f64;
+    if n < 2.0 {
+        return CpStatsOutput {
+            tap_id: tap_id.to_string(), wind_direction_deg: dir,
+            mean: 0.0, rms: 0.0, peak_positive: 0.0, peak_negative: 0.0, std_dev: 0.0,
+        };
+    }
+    let mean: f64 = vals.iter().sum::<f64>() / n;
+    let var: f64 = vals.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / (n - 1.0);
+    let std_dev = var.sqrt();
+    let rms = (vals.iter().map(|v| v * v).sum::<f64>() / n).sqrt();
+    let peak_pos = vals.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    let peak_neg = vals.iter().copied().fold(f64::INFINITY, f64::min);
+    CpStatsOutput {
+        tap_id: tap_id.to_string(), wind_direction_deg: dir,
+        mean, rms, peak_positive: peak_pos, peak_negative: peak_neg, std_dev,
+    }
+}
+
+pub async fn wind_tunnel_analysis(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<WindTunnelRequest>,
+) -> ApiResult<Json<WindTunnelResponse>> {
+    let start = std::time::Instant::now();
+
+    // 1. Compute Cp statistics for every tap/direction
+    let mut all_stats: Vec<CpStatsOutput> = Vec::new();
+    for (tap_id, series_list) in &req.cp_data {
+        for s in series_list {
+            all_stats.push(compute_cp_stats_inline(tap_id, s.wind_direction_deg, &s.cp_values));
+        }
+    }
+
+    // 2. Equivalent static loads: F = (Cp_mean + g × std_dev) × q × A / 1000 (kN)
+    let mut eswl: Vec<NodalForceOutput> = Vec::new();
+    // Build tap stats lookup by tap_id
+    let stats_by_tap: HashMap<String, &CpStatsOutput> = all_stats.iter()
+        .map(|s| (s.tap_id.clone(), s)).collect();
+    for m in &req.mappings {
+        if let Some(s) = stats_by_tap.get(&m.tap_id) {
+            let cp_eq = s.mean + req.peak_factor * s.std_dev;
+            let pressure = cp_eq * req.q_design;
+            let f = pressure * m.tributary_area; // N
+            eswl.push(NodalForceOutput {
+                node_id: m.node_id.clone(),
+                fx_kn: f * m.normal[0] / 1000.0,
+                fy_kn: f * m.normal[1] / 1000.0,
+                fz_kn: f * m.normal[2] / 1000.0,
+            });
+        }
+    }
+
+    // 3. Force time-history count (from first direction's first series length)
+    let force_timesteps = req.cp_data.values()
+        .flat_map(|v| v.first())
+        .map(|s| s.cp_values.len())
+        .max()
+        .unwrap_or(0);
+
+    // 4. Direction scan — find worst direction by total base shear
+    let dir_scan = if req.cp_data.values().any(|v| v.len() > 1) {
+        // Group stats by direction
+        let mut by_dir: HashMap<i32, Vec<&CpStatsOutput>> = HashMap::new();
+        for s in &all_stats {
+            let key = s.wind_direction_deg.round() as i32;
+            by_dir.entry(key).or_default().push(s);
+        }
+        let mut best_dir = 0.0_f64;
+        let mut best_bsx = 0.0_f64;
+        let mut best_bsy = 0.0_f64;
+        let mut best_moment = 0.0_f64;
+        let mut best_total = 0.0_f64;
+        for (&dir_key, dir_stats) in &by_dir {
+            let mut fx_sum = 0.0_f64;
+            let mut fy_sum = 0.0_f64;
+            for m in &req.mappings {
+                if let Some(s) = dir_stats.iter().find(|s| s.tap_id == m.tap_id) {
+                    let cp_eq = s.mean + req.peak_factor * s.std_dev;
+                    let f = cp_eq * req.q_design * m.tributary_area / 1000.0;
+                    fx_sum += f * m.normal[0];
+                    fy_sum += f * m.normal[1];
+                }
+            }
+            let total = (fx_sum * fx_sum + fy_sum * fy_sum).sqrt();
+            if total > best_total {
+                best_total = total;
+                best_bsx = fx_sum;
+                best_bsy = fy_sum;
+                best_moment = fy_sum.abs() * req.reference_height;
+                best_dir = dir_key as f64;
+            }
+        }
+        Some(DirectionScanOutput {
+            critical_direction_deg: best_dir,
+            max_base_shear_x_kn: best_bsx,
+            max_base_shear_y_kn: best_bsy,
+            max_overturning_moment_knm: best_moment,
+            n_directions: by_dir.len(),
+        })
+    } else {
+        None
+    };
+
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(WindTunnelResponse {
+        success: true,
+        statistics: all_stats,
+        equivalent_static_loads: eswl,
+        force_timesteps,
+        direction_scan: dir_scan,
+        performance_ms,
+    }))
+}
+
+// ============================================
+// INFLUENCE SURFACE ANALYSIS (2-D BRIDGE DECK)
+// ============================================
+
+#[derive(Debug, Deserialize)]
+pub struct InfluenceSurfaceRequest {
+    pub span: f64,
+    pub width: f64,
+    pub thickness: f64,
+    #[serde(default = "default_elastic_modulus")]
+    pub elastic_modulus: f64,
+    #[serde(default = "default_poisson")]
+    pub poisson_ratio: f64,
+    pub output_x: f64,
+    pub output_y: f64,
+    #[serde(default = "default_grid_n")]
+    pub grid_nx: usize,
+    #[serde(default = "default_grid_n")]
+    pub grid_ny: usize,
+    #[serde(default = "default_scan_step")]
+    pub scan_step_x: f64,
+    #[serde(default = "default_scan_step")]
+    pub scan_step_y: f64,
+    pub vehicles: Vec<String>,
+    #[serde(default = "default_response_type")]
+    pub response_type: String,
+}
+
+fn default_elastic_modulus() -> f64 { 30000.0 }
+fn default_poisson() -> f64 { 0.2 }
+fn default_grid_n() -> usize { 20 }
+fn default_scan_step() -> f64 { 0.5 }
+fn default_response_type() -> String { "deflection".to_string() }
+
+#[derive(Debug, Serialize)]
+pub struct InfluenceSurfaceResponse {
+    pub success: bool,
+    pub span: f64,
+    pub width: f64,
+    pub scan_results: Vec<VehicleScanOutput>,
+    pub governing_max_response: f64,
+    pub governing_min_response: f64,
+    pub governing_vehicle: String,
+    pub performance_ms: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct VehicleScanOutput {
+    pub vehicle_label: String,
+    pub max_response: f64,
+    pub min_response: f64,
+    pub impact_factor: f64,
+    pub critical_x: f64,
+    pub critical_y: f64,
+    pub n_positions_evaluated: usize,
+}
+
+/// AASHTO HL-93 truck wheel positions: (x_offset, y_offset, load_kn)
+fn aashto_hl93_wheels() -> Vec<(f64, f64, f64)> {
+    let hw = 0.9;
+    vec![
+        (0.0, -hw, 17.5), (0.0, hw, 17.5),
+        (4.3, -hw, 72.5), (4.3, hw, 72.5),
+        (8.6, -hw, 72.5), (8.6, hw, 72.5),
+    ]
+}
+fn aashto_tandem_wheels() -> Vec<(f64, f64, f64)> {
+    let hw = 0.9;
+    vec![
+        (0.0, -hw, 55.0), (0.0, hw, 55.0),
+        (1.2, -hw, 55.0), (1.2, hw, 55.0),
+    ]
+}
+fn irc_aa_tracked_wheels() -> Vec<(f64, f64, f64)> {
+    vec![(0.0, 0.0, 700.0)]
+}
+fn eurocode_lm1_wheels() -> Vec<(f64, f64, f64)> {
+    let hw = 1.0;
+    vec![
+        (0.0, -hw, 150.0), (0.0, hw, 150.0),
+        (1.2, -hw, 150.0), (1.2, hw, 150.0),
+    ]
+}
+
+/// Generate 2-D influence surface using Navier series for simply-supported slab
+fn generate_influence_surface(
+    span: f64, width: f64, x0: f64, y0: f64,
+    nx: usize, ny: usize, d: f64,
+) -> (Vec<f64>, Vec<f64>, Vec<Vec<f64>>) {
+    let x_grid: Vec<f64> = (0..=nx).map(|i| i as f64 * span / nx as f64).collect();
+    let y_grid: Vec<f64> = (0..=ny).map(|j| j as f64 * width / ny as f64).collect();
+    let n_terms = 10;
+    let pi = std::f64::consts::PI;
+    let mut ordinates = vec![vec![0.0; ny + 1]; nx + 1];
+    for (ix, &xi) in x_grid.iter().enumerate() {
+        for (iy, &psi) in y_grid.iter().enumerate() {
+            let mut w = 0.0_f64;
+            for m in 1..=n_terms {
+                for n in 1..=n_terms {
+                    let mf = m as f64;
+                    let nf = n as f64;
+                    let amn = (mf * pi / span).powi(2) + (nf * pi / width).powi(2);
+                    let phi_load = (mf * pi * xi / span).sin() * (nf * pi * psi / width).sin();
+                    let phi_resp = (mf * pi * x0 / span).sin() * (nf * pi * y0 / width).sin();
+                    w += phi_load * phi_resp / (amn * amn);
+                }
+            }
+            ordinates[ix][iy] = 4.0 * w / (span * width * d);
+        }
+    }
+    (x_grid, y_grid, ordinates)
+}
+
+/// Bilinear interpolation on influence surface
+fn interp_surface(x_grid: &[f64], y_grid: &[f64], ord: &[Vec<f64>], x: f64, y: f64) -> f64 {
+    let nx = x_grid.len();
+    let ny = y_grid.len();
+    if nx < 2 || ny < 2 { return 0.0; }
+    let ix = x_grid.iter().position(|&gx| gx >= x).unwrap_or(nx - 1).max(1) - 1;
+    let iy = y_grid.iter().position(|&gy| gy >= y).unwrap_or(ny - 1).max(1) - 1;
+    let ix = ix.min(nx - 2);
+    let iy = iy.min(ny - 2);
+    let dx = ((x - x_grid[ix]) / (x_grid[ix + 1] - x_grid[ix]).max(1e-12)).clamp(0.0, 1.0);
+    let dy = ((y - y_grid[iy]) / (y_grid[iy + 1] - y_grid[iy]).max(1e-12)).clamp(0.0, 1.0);
+    ord[ix][iy] * (1.0 - dx) * (1.0 - dy) + ord[ix + 1][iy] * dx * (1.0 - dy)
+        + ord[ix][iy + 1] * (1.0 - dx) * dy + ord[ix + 1][iy + 1] * dx * dy
+}
+
+pub async fn influence_surface_analysis(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<InfluenceSurfaceRequest>,
+) -> ApiResult<Json<InfluenceSurfaceResponse>> {
+    let start = std::time::Instant::now();
+
+    let d = req.elastic_modulus * req.thickness.powi(3) / (12.0 * (1.0 - req.poisson_ratio.powi(2)));
+    let (xg, yg, ord) = generate_influence_surface(
+        req.span, req.width, req.output_x, req.output_y,
+        req.grid_nx, req.grid_ny, d,
+    );
+
+    // Vehicle definitions: (label, wheels, impact_factor)
+    struct VehicleDef { label: String, wheels: Vec<(f64,f64,f64)>, impact: f64 }
+    let vehicle_defs: Vec<VehicleDef> = req.vehicles.iter().map(|v| {
+        match v.to_lowercase().as_str() {
+            "aashto_hl93_truck" | "hl93_truck" | "hl93" =>
+                VehicleDef { label: "AASHTO HL-93 Truck".into(), wheels: aashto_hl93_wheels(), impact: 1.33 },
+            "aashto_hl93_tandem" | "hl93_tandem" =>
+                VehicleDef { label: "AASHTO HL-93 Tandem".into(), wheels: aashto_tandem_wheels(), impact: 1.33 },
+            "irc_class_aa_tracked" | "irc_aa_tracked" =>
+                VehicleDef { label: "IRC Class AA Tracked".into(), wheels: irc_aa_tracked_wheels(), impact: 1.10 },
+            "eurocode_lm1" | "lm1" =>
+                VehicleDef { label: "Eurocode LM1".into(), wheels: eurocode_lm1_wheels(), impact: 1.0 },
+            _ => VehicleDef { label: "AASHTO HL-93 Truck".into(), wheels: aashto_hl93_wheels(), impact: 1.33 },
+        }
+    }).collect();
+
+    let mut scan_results = Vec::new();
+    let mut gov_max = f64::NEG_INFINITY;
+    let mut gov_min = f64::INFINITY;
+    let mut gov_vehicle = String::new();
+
+    for vdef in &vehicle_defs {
+        let mut max_resp = f64::NEG_INFINITY;
+        let mut min_resp = f64::INFINITY;
+        let mut best_x = 0.0_f64;
+        let mut best_y = 0.0_f64;
+        let mut n_pos = 0_usize;
+
+        let mut rx = 0.0_f64;
+        while rx <= req.span {
+            let mut ry = 0.0_f64;
+            while ry <= req.width {
+                let response: f64 = vdef.wheels.iter()
+                    .map(|&(wxo, wyo, load)| {
+                        let wx = rx + wxo;
+                        let wy = ry + wyo;
+                        load * interp_surface(&xg, &yg, &ord, wx, wy)
+                    }).sum();
+                if response > max_resp {
+                    max_resp = response;
+                    best_x = rx;
+                    best_y = ry;
+                }
+                if response < min_resp { min_resp = response; }
+                n_pos += 1;
+                ry += req.scan_step_y;
+            }
+            rx += req.scan_step_x;
+        }
+
+        let max_with_impact = max_resp * vdef.impact;
+        let min_with_impact = min_resp * vdef.impact;
+        if max_with_impact > gov_max {
+            gov_max = max_with_impact;
+            gov_vehicle = vdef.label.clone();
+        }
+        if min_with_impact < gov_min { gov_min = min_with_impact; }
+
+        scan_results.push(VehicleScanOutput {
+            vehicle_label: vdef.label.clone(),
+            max_response: max_with_impact,
+            min_response: min_with_impact,
+            impact_factor: vdef.impact,
+            critical_x: best_x,
+            critical_y: best_y,
+            n_positions_evaluated: n_pos,
+        });
+    }
+
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(InfluenceSurfaceResponse {
+        success: true,
+        span: req.span,
+        width: req.width,
+        scan_results,
+        governing_max_response: gov_max,
+        governing_min_response: gov_min,
+        governing_vehicle: gov_vehicle,
+        performance_ms,
+    }))
+}
+
+// ============================================
+// ENHANCED SPECTRUM DIRECTIONAL COMBINATION
+// ============================================
+
+#[derive(Debug, Deserialize)]
+pub struct SpectrumDirectionalRequest {
+    pub combination_method: String,
+    pub directional_rule: String,
+    pub spectra: Vec<DirectionalSpectrumInput>,
+    pub modal: ModalPropertiesInput,
+    #[serde(default = "default_close_threshold")]
+    pub closely_spaced_threshold: f64,
+    #[serde(default = "wt_default_true")]
+    pub missing_mass_correction: bool,
+    pub code: Option<String>,
+    pub is1893_params: Option<IS1893Params>,
+    pub asce7_params: Option<ASCE7Params>,
+}
+
+fn default_close_threshold() -> f64 { 0.10 }
+fn wt_default_true() -> bool { true }
+
+#[derive(Debug, Deserialize)]
+pub struct DirectionalSpectrumInput {
+    pub direction: String,
+    pub spectrum_ordinates: Vec<(f64, f64)>,
+    #[serde(default = "wt_default_one")]
+    pub scale_factor: f64,
+}
+
+fn wt_default_one() -> f64 { 1.0 }
+
+#[derive(Debug, Deserialize)]
+pub struct ModalPropertiesInput {
+    pub n_modes: usize,
+    pub periods: Vec<f64>,
+    pub damping_ratios: Vec<f64>,
+    pub participation_factors: Vec<[f64; 3]>,
+    pub effective_masses: Vec<[f64; 3]>,
+    pub mode_shapes: Vec<Vec<f64>>,
+    pub total_weight: f64,
+    pub n_dofs: usize,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct IS1893Params {
+    pub zone_factor: f64,
+    pub importance_factor: f64,
+    pub response_reduction: f64,
+    pub soil_type: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ASCE7Params {
+    pub sds: f64,
+    pub sd1: f64,
+    pub tl: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct SpectrumDirectionalResponse {
+    pub success: bool,
+    pub combination_method: String,
+    pub directional_rule: String,
+    pub modes_used: usize,
+    pub closely_spaced_pairs: Vec<CloselySpacedOutput>,
+    pub missing_mass_fractions: [f64; 3],
+    pub node_results: Vec<NodeResultOutput>,
+    pub base_shear_per_direction: Vec<f64>,
+    pub combined_base_shear: f64,
+    pub modal_summary: Vec<ModalSummaryOutput>,
+    pub performance_ms: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CloselySpacedOutput {
+    pub mode_i: usize,
+    pub mode_j: usize,
+    pub freq_i_hz: f64,
+    pub freq_j_hz: f64,
+    pub ratio: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct NodeResultOutput {
+    pub node_id: usize,
+    pub disp_x: f64,
+    pub disp_y: f64,
+    pub disp_z: f64,
+    pub disp_magnitude: f64,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ModalSummaryOutput {
+    pub mode: usize,
+    pub period_s: f64,
+    pub frequency_hz: f64,
+    pub effective_mass_x: f64,
+    pub effective_mass_y: f64,
+    pub sa_x: f64,
+    pub sa_y: f64,
+    pub is_closely_spaced: bool,
+}
+
+/// Interpolate Sa/g from spectrum at a given period
+fn interp_sa(spectrum: &[(f64, f64)], period: f64) -> f64 {
+    if spectrum.is_empty() { return 0.0; }
+    if period <= spectrum[0].0 { return spectrum[0].1; }
+    if period >= spectrum.last().unwrap().0 { return spectrum.last().unwrap().1; }
+    for i in 0..spectrum.len() - 1 {
+        let (t0, sa0) = spectrum[i];
+        let (t1, sa1) = spectrum[i + 1];
+        if period >= t0 && period <= t1 {
+            let frac = (period - t0) / (t1 - t0).max(1e-12);
+            return sa0 + frac * (sa1 - sa0);
+        }
+    }
+    spectrum.last().unwrap().1
+}
+
+/// CQC correlation coefficient (Der Kiureghian)
+fn cqc_rho(t_i: f64, t_j: f64, xi_i: f64, xi_j: f64) -> f64 {
+    if t_i < 1e-12 || t_j < 1e-12 { return if (t_i - t_j).abs() < 1e-12 { 1.0 } else { 0.0 }; }
+    let r = t_i / t_j;
+    let xi_prod = (xi_i * xi_j).sqrt();
+    let num = 8.0 * xi_prod * (xi_i + r * xi_j) * r.powf(1.5);
+    let den = (1.0 - r * r).powi(2)
+        + 4.0 * xi_i * xi_j * r * (1.0 + r * r)
+        + 4.0 * (xi_i * xi_i + xi_j * xi_j) * r * r;
+    if den.abs() < 1e-30 { 1.0 } else { num / den }
+}
+
+/// IS 1893 spectrum generation
+fn gen_is1893_spectrum(z: f64, i_f: f64, r: f64, soil: &str, xi: f64) -> Vec<(f64, f64)> {
+    let scale = z * i_f / (2.0 * r);
+    let df = (10.0 / (5.0 + 100.0 * xi)).sqrt().max(0.8);
+    let (tb, tc) = match soil { "I" => (0.10, 0.40), "III" => (0.10, 0.67), _ => (0.10, 0.55) };
+    (0..=100).map(|i| {
+        let t = i as f64 * 4.0 / 100.0;
+        let sa = if t < tb { 1.0 + (2.5 * df - 1.0) * t / tb }
+        else if t <= tc { 2.5 * df }
+        else { 2.5 * df * tc / t };
+        (t, sa * scale)
+    }).collect()
+}
+
+/// ASCE 7 spectrum generation
+fn gen_asce7_spectrum(sds: f64, sd1: f64, tl: f64) -> Vec<(f64, f64)> {
+    let t0 = 0.2 * sd1 / sds;
+    let ts = sd1 / sds;
+    (0..=100).map(|i| {
+        let t = i as f64 * 6.0 / 100.0;
+        let sa = if t < t0 { sds * (0.4 + 0.6 * t / t0) }
+        else if t <= ts { sds }
+        else if t <= tl { sd1 / t }
+        else { sd1 * tl / (t * t) };
+        (t, sa)
+    }).collect()
+}
+
+pub async fn spectrum_directional_analysis(
+    State(_state): State<Arc<AppState>>,
+    Json(req): Json<SpectrumDirectionalRequest>,
+) -> ApiResult<Json<SpectrumDirectionalResponse>> {
+    use std::f64::consts::PI;
+    let start = std::time::Instant::now();
+    let gravity = 9.81_f64;
+    let mp = &req.modal;
+    let n_modes = mp.n_modes;
+    let n_dofs = mp.n_dofs;
+
+    // Resolve combination method string
+    let method_str = req.combination_method.to_uppercase();
+
+    // Build spectra (from code or direct input)
+    let spectra: Vec<(String, Vec<(f64,f64)>, f64)> = if let Some(ref code) = req.code {
+        let soil_str = req.is1893_params.as_ref().map(|p| p.soil_type.as_str()).unwrap_or("II");
+        let xi = mp.damping_ratios.first().copied().unwrap_or(0.05);
+        let ordinates = match code.to_lowercase().as_str() {
+            "is1893" => {
+                let p = req.is1893_params.as_ref()
+                    .ok_or_else(|| ApiError::AnalysisFailed("IS 1893 params required".into()))?;
+                gen_is1893_spectrum(p.zone_factor, p.importance_factor, p.response_reduction, soil_str, xi)
+            }
+            "asce7" => {
+                let p = req.asce7_params.as_ref()
+                    .ok_or_else(|| ApiError::AnalysisFailed("ASCE 7 params required".into()))?;
+                gen_asce7_spectrum(p.sds, p.sd1, p.tl)
+            }
+            _ => return Err(ApiError::AnalysisFailed(format!("Unknown code: {}", code))),
+        };
+        req.spectra.iter().map(|s| (s.direction.clone(), ordinates.clone(), s.scale_factor)).collect()
+    } else {
+        req.spectra.iter().map(|s| (s.direction.clone(), s.spectrum_ordinates.clone(), s.scale_factor)).collect()
+    };
+
+    let n_dirs = spectra.len().min(3);
+
+    // 1. Detect closely-spaced modes
+    let mut closely_spaced: Vec<CloselySpacedOutput> = Vec::new();
+    for i in 0..n_modes {
+        let fi = 1.0 / mp.periods[i].max(1e-12);
+        for j in (i+1)..n_modes {
+            let fj = 1.0 / mp.periods[j].max(1e-12);
+            let (fl, fh) = if fi < fj { (fi, fj) } else { (fj, fi) };
+            let ratio = (fh - fl) / fl;
+            if ratio <= req.closely_spaced_threshold {
+                closely_spaced.push(CloselySpacedOutput {
+                    mode_i: i, mode_j: j, freq_i_hz: fi, freq_j_hz: fj, ratio,
+                });
+            }
+        }
+    }
+    // If closely-spaced detected and user chose SRSS → upgrade to CQC
+    let use_cqc = method_str == "CQC" || method_str == "CQC_GROUPED"
+        || (!closely_spaced.is_empty() && method_str == "SRSS");
+    let effective_method = if use_cqc { "CQC" } else { &method_str };
+
+    // 2. Per-direction combined DOF responses
+    let mut per_dir: Vec<Vec<f64>> = Vec::new();
+    let mut base_shears: Vec<f64> = Vec::new();
+
+    for dir_idx in 0..n_dirs {
+        let (_, ref ord, sf) = spectra[dir_idx];
+        // modal responses per DOF
+        let mut modal_dof: Vec<Vec<f64>> = Vec::with_capacity(n_modes);
+        for i in 0..n_modes {
+            let t = mp.periods[i];
+            let omega = 2.0 * PI / t.max(1e-12);
+            let sa = interp_sa(ord, t) * gravity * sf;
+            let gamma = mp.participation_factors[i][dir_idx];
+            let mut dof_resp = vec![0.0; n_dofs];
+            if i < mp.mode_shapes.len() {
+                for (d, &phi) in mp.mode_shapes[i].iter().enumerate() {
+                    if d < n_dofs {
+                        dof_resp[d] = gamma * phi * sa / (omega * omega);
+                    }
+                }
+            }
+            modal_dof.push(dof_resp);
+        }
+        // Combine modes per DOF
+        let mut combined_dir = vec![0.0_f64; n_dofs];
+        for dof in 0..n_dofs {
+            let modal_vals: Vec<f64> = (0..n_modes).map(|m| modal_dof[m][dof]).collect();
+            combined_dir[dof] = match effective_method {
+                "SRSS" => modal_vals.iter().map(|r| r*r).sum::<f64>().sqrt(),
+                "ABS" => modal_vals.iter().map(|r| r.abs()).sum(),
+                _ => { // CQC
+                    let mut s = 0.0_f64;
+                    for ii in 0..n_modes {
+                        for jj in 0..n_modes {
+                            let rho = cqc_rho(
+                                mp.periods[ii], mp.periods[jj],
+                                mp.damping_ratios[ii], mp.damping_ratios[jj],
+                            );
+                            s += modal_vals[ii] * rho * modal_vals[jj];
+                        }
+                    }
+                    s.abs().sqrt()
+                }
+            };
+        }
+        let bs: f64 = combined_dir.iter().sum::<f64>().abs();
+        base_shears.push(bs);
+        per_dir.push(combined_dir);
+    }
+
+    // 3. Directional combination
+    let dir_rule = req.directional_rule.to_lowercase();
+    let mut combined = vec![0.0_f64; n_dofs];
+    match dir_rule.as_str() {
+        "single" => {
+            if !per_dir.is_empty() { combined = per_dir[0].clone(); }
+        }
+        "srss" => {
+            for dof in 0..n_dofs {
+                combined[dof] = per_dir.iter().map(|d| d[dof] * d[dof]).sum::<f64>().sqrt();
+            }
+        }
+        _ => { // 100_30 or 100_30_30
+            let factors: Vec<Vec<f64>> = if n_dirs >= 3 {
+                vec![vec![1.0,0.3,0.3], vec![0.3,1.0,0.3], vec![0.3,0.3,1.0]]
+            } else if n_dirs == 2 {
+                vec![vec![1.0,0.3], vec![0.3,1.0]]
+            } else { vec![vec![1.0]] };
+            for combo in &factors {
+                for dof in 0..n_dofs {
+                    let mut val = 0.0_f64;
+                    for (d, &f) in combo.iter().enumerate() {
+                        if d < n_dirs { val += f * per_dir[d][dof]; }
+                    }
+                    combined[dof] = combined[dof].max(val.abs());
+                }
+            }
+        }
+    }
+
+    // 4. Missing mass correction
+    let total_mass = mp.total_weight / gravity;
+    let mut mm = [0.0_f64; 3];
+    for dir in 0..3 {
+        let included: f64 = mp.effective_masses.iter().map(|em| em[dir]).sum();
+        mm[dir] = 1.0 - (included / total_mass).min(1.0);
+    }
+    if req.missing_mass_correction {
+        for dir in 0..n_dirs {
+            if mm[dir] > 0.01 {
+                let zpa = interp_sa(&spectra[dir].1, 0.01) * gravity * spectra[dir].2;
+                let r_missing = mm[dir] * zpa * total_mass;
+                for dof in 0..n_dofs.min(combined.len()) {
+                    combined[dof] = (combined[dof].powi(2) + r_missing.powi(2)).sqrt();
+                }
+            }
+        }
+    }
+
+    // 5. Node results (3 DOFs per node)
+    let n_nodes = n_dofs / 3;
+    let node_results: Vec<NodeResultOutput> = (0..n_nodes).map(|node| {
+        let dx = *combined.get(node * 3).unwrap_or(&0.0);
+        let dy = *combined.get(node * 3 + 1).unwrap_or(&0.0);
+        let dz = *combined.get(node * 3 + 2).unwrap_or(&0.0);
+        NodeResultOutput {
+            node_id: node, disp_x: dx, disp_y: dy, disp_z: dz,
+            disp_magnitude: (dx*dx + dy*dy + dz*dz).sqrt(),
+        }
+    }).collect();
+
+    // Combined base shear
+    let combined_bs = match dir_rule.as_str() {
+        "single" => base_shears.first().copied().unwrap_or(0.0),
+        "srss" => base_shears.iter().map(|b| b*b).sum::<f64>().sqrt(),
+        _ => {
+            let combos: Vec<Vec<f64>> = if base_shears.len() >= 2 {
+                vec![vec![1.0, 0.3], vec![0.3, 1.0]]
+            } else { vec![vec![1.0]] };
+            combos.iter().map(|c| {
+                c.iter().enumerate().map(|(i, f)| f * base_shears.get(i).unwrap_or(&0.0)).sum::<f64>()
+            }).fold(0.0_f64, f64::max)
+        }
+    };
+
+    // 6. Modal summary
+    let cs_modes: std::collections::HashSet<usize> = closely_spaced.iter()
+        .flat_map(|p| vec![p.mode_i, p.mode_j]).collect();
+    let modal_summary: Vec<ModalSummaryOutput> = (0..n_modes).map(|i| {
+        let t = mp.periods[i];
+        let sa_x = if n_dirs > 0 { interp_sa(&spectra[0].1, t) * spectra[0].2 } else { 0.0 };
+        let sa_y = if n_dirs > 1 { interp_sa(&spectra[1].1, t) * spectra[1].2 } else { 0.0 };
+        ModalSummaryOutput {
+            mode: i + 1, period_s: t, frequency_hz: 1.0 / t.max(1e-12),
+            effective_mass_x: mp.effective_masses[i][0],
+            effective_mass_y: mp.effective_masses[i][1],
+            sa_x, sa_y, is_closely_spaced: cs_modes.contains(&i),
+        }
+    }).collect();
+
+    let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(Json(SpectrumDirectionalResponse {
+        success: true,
+        combination_method: effective_method.to_string(),
+        directional_rule: dir_rule,
+        modes_used: n_modes,
+        closely_spaced_pairs: closely_spaced,
+        missing_mass_fractions: mm,
+        node_results,
+        base_shear_per_direction: base_shears,
+        combined_base_shear: combined_bs,
+        modal_summary,
+        performance_ms,
+    }))
+}

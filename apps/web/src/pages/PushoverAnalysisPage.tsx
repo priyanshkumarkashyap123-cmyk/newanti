@@ -18,7 +18,7 @@ import {
   Info
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Input, Select } from '../components/ui/FormInputs';
+import { Checkbox, Input, Select } from '../components/ui/FormInputs';
 import { Alert } from '../components/ui/alert';
 
 type LoadPattern = 'uniform' | 'triangular' | 'first-mode' | 'adaptive';
@@ -271,30 +271,18 @@ export const PushoverAnalysisPage: React.FC = () => {
             <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-purple-400 mb-4">Nonlinearity Options</h3>
               <div className="space-y-3">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={input.includeGeometricNonlinearity}
-                    onChange={(e) => updateInput('includeGeometricNonlinearity', e.target.checked)}
-                    className="w-5 h-5 bg-slate-100 dark:bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
-                  />
-                  <div>
-                    <span className="text-slate-900 dark:text-white font-medium">Geometric Nonlinearity (P-Δ)</span>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Include large displacement effects</p>
-                  </div>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={input.includeMaterialNonlinearity}
-                    onChange={(e) => updateInput('includeMaterialNonlinearity', e.target.checked)}
-                    className="w-5 h-5 bg-slate-100 dark:bg-slate-800 border-slate-600 rounded text-purple-600 focus:ring-purple-500 focus:ring-offset-slate-900"
-                  />
-                  <div>
-                    <span className="text-slate-900 dark:text-white font-medium">Material Nonlinearity</span>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Include yielding and plasticity</p>
-                  </div>
-                </label>
+                <Checkbox
+                  label="Geometric Nonlinearity (P-Δ)"
+                  description="Include large displacement effects"
+                  checked={input.includeGeometricNonlinearity}
+                  onChange={(checked) => updateInput('includeGeometricNonlinearity', checked)}
+                />
+                <Checkbox
+                  label="Material Nonlinearity"
+                  description="Include yielding and plasticity"
+                  checked={input.includeMaterialNonlinearity}
+                  onChange={(checked) => updateInput('includeMaterialNonlinearity', checked)}
+                />
               </div>
             </div>
 

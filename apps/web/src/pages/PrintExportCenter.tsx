@@ -633,7 +633,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-800 to-slate-50 dark:to-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header */}
       <header className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-300 dark:border-slate-700/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -660,7 +660,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
               <button type="button"
                 onClick={startExport}
                 disabled={isExporting || selectedItems.length === 0}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-lg transition-colors disabled:opacity-50 font-medium"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-xl shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 {isExporting ? (
                   <>
@@ -682,7 +682,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Progress Bar */}
         {isExporting && (
-          <div className="mb-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-300 dark:border-slate-700/50">
+          <div className="mb-6 bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center justify-between mb-2">
               <span className="text-slate-900 dark:text-white font-medium">
                 Generating export...
@@ -701,7 +701,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-slate-100 dark:bg-slate-800/50 rounded-xl p-1 border border-slate-300 dark:border-slate-700/50 w-fit">
+        <div className="flex gap-1 mb-6 bg-white dark:bg-slate-900 rounded-xl p-1 border border-slate-200 dark:border-slate-700 w-fit shadow-sm">
           {[
             { id: "print", label: "Print Preview", icon: Printer },
             { id: "export", label: "Export Options", icon: Download },
@@ -726,7 +726,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
           {/* Left Panel - Item Selection */}
           <div className="space-y-4">
             {/* Summary */}
-            <div className="bg-gradient-to-br from-orange-900/30 to-red-900/30 rounded-xl p-4 border border-orange-500/30">
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 rounded-xl p-4 border border-orange-200 dark:border-orange-500/30">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-slate-700 dark:text-slate-300">Selected Items</span>
                 <span className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -742,7 +742,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             </div>
 
             {/* Items by Category */}
-            <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                 <h3 className="text-slate-900 dark:text-white font-semibold">Export Items</h3>
                 <div className="flex gap-2">
@@ -752,7 +752,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         prev.map((i) => ({ ...i, selected: true })),
                       )
                     }
-                    className="text-xs text-blue-400 hover:text-blue-300"
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
                   >
                     Select All
                   </button>
@@ -762,7 +762,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         prev.map((i) => ({ ...i, selected: false })),
                       )
                     }
-                    className="text-xs text-slate-600 hover:text-slate-700 dark:text-slate-300"
+                    className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                   >
                     Clear
                   </button>
@@ -812,8 +812,8 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                             <button type="button"
                               key={item.id}
                               onClick={() => toggleItem(item.id)}
-                              className={`w-full flex items-center gap-3 p-2 hover:bg-slate-200 dark:hover:bg-slate-700/30 ${
-                                item.selected ? "bg-slate-700/20" : ""
+                              className={`w-full flex items-center gap-3 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                                item.selected ? "bg-orange-50 dark:bg-orange-900/10" : ""
                               }`}
                             >
                               <div
@@ -855,7 +855,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             {activeTab === "print" && (
               <>
                 {/* Print Preview */}
-                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                   <div className="p-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
                     <h3 className="text-slate-900 dark:text-white font-semibold">Print Preview</h3>
                     <div className="flex items-center gap-2">
@@ -1025,7 +1025,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                 </div>
 
                 {/* Page Settings */}
-                <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
+                <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                     <Settings className="w-5 h-5 text-orange-400" />
                     Page Settings
@@ -1044,7 +1044,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                             size: e.target.value as PageSize,
                           }))
                         }
-                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                       >
                         <option value="A4">A4 (210 × 297 mm)</option>
                         <option value="A3">A3 (297 × 420 mm)</option>
@@ -1067,7 +1067,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                             orientation: e.target.value as Orientation,
                           }))
                         }
-                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                       >
                         <option value="portrait">Portrait</option>
                         <option value="landscape">Landscape</option>
@@ -1090,7 +1090,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                                 : parseInt(e.target.value),
                           }))
                         }
-                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                       >
                         <option value="fit">Fit to Page</option>
                         <option value="actual">Actual Size</option>
@@ -1117,7 +1117,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                             },
                           }))
                         }
-                        className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                       />
                     </div>
                   </div>
@@ -1142,7 +1142,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                               [option.key]: !(prev as any)[option.key],
                             }))
                           }
-                          className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700 border-slate-600"
+                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
                         />
                         <span className="text-slate-900 dark:text-white text-sm">
                           {option.label}
@@ -1155,7 +1155,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             )}
 
             {activeTab === "export" && (
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
+              <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Download className="w-5 h-5 text-orange-400" />
                   Export Format
@@ -1171,7 +1171,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                       className={`p-4 rounded-xl border transition-all ${
                         selectedFormat === format.id
                           ? "bg-orange-600/20 border-orange-500"
-                          : "bg-slate-700/30 border-slate-300 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                            : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                       }`}
                     >
                       <format.icon
@@ -1186,7 +1186,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                 </div>
 
                 {/* Format-specific options */}
-                <div className="mt-6 p-4 bg-slate-700/30 rounded-lg">
+                <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
                   <h4 className="text-slate-900 dark:text-white font-medium mb-3">
                     {exportFormats.find((f) => f.id === selectedFormat)?.name}{" "}
                     Options
@@ -1224,7 +1224,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         <label className="block text-slate-700 dark:text-slate-300 text-sm mb-1">
                           Quality
                         </label>
-                        <select className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm">
+                        <select className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm">
                           <option>High (Print Quality)</option>
                           <option>Medium (Screen Quality)</option>
                           <option>Low (Web Quality)</option>
@@ -1239,7 +1239,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                         <label className="block text-slate-700 dark:text-slate-300 text-sm mb-1">
                           AutoCAD Version
                         </label>
-                        <select className="w-full px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white text-sm">
+                        <select className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm">
                           <option>AutoCAD 2024</option>
                           <option>AutoCAD 2021</option>
                           <option>AutoCAD 2018</option>
@@ -1304,7 +1304,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
             )}
 
             {activeTab === "templates" && (
-              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
+              <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Layers className="w-5 h-5 text-orange-400" />
                   Export Templates
@@ -1314,7 +1314,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   {templates.map((template) => (
                     <div
                       key={template.id}
-                      className="p-4 bg-slate-700/30 rounded-lg border border-slate-300 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
+                      className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-slate-900 dark:text-white font-medium">
@@ -1342,7 +1342,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                   ))}
                 </div>
 
-                <button type="button" className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-500 transition-colors">
+                <button type="button" className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-600 transition-colors">
                   <Plus className="w-4 h-4" />
                   Create New Template
                 </button>
@@ -1351,19 +1351,19 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
 
             {/* Quick Actions */}
             <div className="flex flex-wrap gap-3">
-              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Printer className="w-4 h-4" />
                 Print
               </button>
-              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Eye className="w-4 h-4" />
                 Full Preview
               </button>
-              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <Book className="w-4 h-4" />
                 Table of Contents
               </button>
-              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 text-slate-900 dark:text-white rounded-lg transition-colors">
+              <button type="button" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg transition-colors">
                 <RefreshCw className="w-4 h-4" />
                 Regenerate
               </button>

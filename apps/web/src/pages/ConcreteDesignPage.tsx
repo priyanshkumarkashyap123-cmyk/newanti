@@ -27,7 +27,7 @@ import {
   TrendingDown
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Input, Select } from '../components/ui/FormInputs';
+import { Input, Select, Switch } from '../components/ui/FormInputs';
 import { Alert } from '../components/ui/alert';
 
 // REAL API Client - connects to Python backend at :8081
@@ -731,15 +731,11 @@ export const ConcreteDesignPage: React.FC = () => {
             <Scissors className="w-4 h-4" />
             Section-Wise Design (Economical)
           </h3>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={beamInput.enableSectionWise}
-              onChange={(e) => setBeamInput({...beamInput, enableSectionWise: e.target.checked})}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-          </label>
+          <Switch
+            checked={beamInput.enableSectionWise}
+            onChange={(checked) => setBeamInput({ ...beamInput, enableSectionWise: checked })}
+            size="md"
+          />
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
           Checks demand ≤ capacity at every section along the beam. Enables bar curtailment for 15-30% steel savings while maintaining safety at all cross-sections.
@@ -884,15 +880,11 @@ export const ConcreteDesignPage: React.FC = () => {
             <TrendingDown className="w-4 h-4" />
             Section-Wise Column Check
           </h3>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={columnInput.enableSectionWise}
-              onChange={(e) => setColumnInput({...columnInput, enableSectionWise: e.target.checked})}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-          </label>
+          <Switch
+            checked={columnInput.enableSectionWise}
+            onChange={(checked) => setColumnInput({ ...columnInput, enableSectionWise: checked })}
+            size="md"
+          />
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
           Checks interaction ratio at multiple heights along the column with P-delta moment amplification per IS 456 Cl. 39.7.1.

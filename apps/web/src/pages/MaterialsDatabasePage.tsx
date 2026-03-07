@@ -13,6 +13,8 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useModelStore } from '../store/model';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/FormInputs';
 
 // Types
 interface Material {
@@ -358,7 +360,7 @@ const MaterialsDatabasePage: React.FC = () => {
             onClick={() => setSelectedType(cat.type)}
             className={`p-3 rounded-lg border-2 text-center transition-all ${selectedType === cat.type
                 ? 'border-cyan-500 bg-cyan-900/30'
-                : 'border-slate-600 bg-slate-700 hover:border-slate-500'
+                : 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-600'
               }`}
           >
             <span className="text-2xl">{cat.icon}</span>
@@ -369,29 +371,28 @@ const MaterialsDatabasePage: React.FC = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
-        <input
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+        <Input
           type="text"
           placeholder="Search materials by name, grade, or standard..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400"
         />
       </div>
 
       {/* Materials Grid */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
             {filteredMaterials.length} Materials Found
           </h3>
           {selectedMaterials.length > 0 && (
-            <button type="button"
+            <Button type="button"
               onClick={() => setActiveTab('compare')}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-colors"
+              variant="premium"
             >
               Compare ({selectedMaterials.length})
-            </button>
+            </Button>
           )}
         </div>
 
@@ -401,7 +402,7 @@ const MaterialsDatabasePage: React.FC = () => {
               key={material.id}
               className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${selectedMaterials.includes(material.id)
                   ? 'border-cyan-500 bg-cyan-900/20'
-                  : 'border-slate-600 bg-slate-700 hover:border-slate-500'
+                  : 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-600'
                 }`}
               onClick={() => toggleMaterialSelection(material.id)}
             >
@@ -497,7 +498,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
   const renderCustomTab = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <span className="text-2xl">✏️</span>
           Define Custom Material
@@ -756,7 +757,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
   const renderImportTab = () => (
     <div className="space-y-6">
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <span className="text-2xl">📥</span>
           Import Materials
@@ -768,7 +769,7 @@ const MaterialsDatabasePage: React.FC = () => {
             { format: 'STAAD.Pro', icon: '🏢', ext: '.mat' },
             { format: 'JSON', icon: '📄', ext: '.json' },
           ].map((fmt, idx) => (
-            <div key={idx} className="p-4 bg-slate-700 rounded-lg text-center hover:bg-slate-600 transition-colors cursor-pointer">
+            <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
               <span className="text-4xl">{fmt.icon}</span>
               <p className="text-slate-900 dark:text-white font-medium mt-2">{fmt.format}</p>
               <p className="text-slate-600 dark:text-slate-400 text-sm">{fmt.ext}</p>
@@ -807,7 +808,7 @@ const MaterialsDatabasePage: React.FC = () => {
           }}
         />
         <div
-          className="border-2 border-dashed border-slate-600 rounded-lg p-12 text-center hover:border-cyan-500 transition-colors cursor-pointer"
+          className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-12 text-center hover:border-cyan-500 transition-colors cursor-pointer bg-slate-50 dark:bg-slate-800/50"
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="text-5xl mb-4">📁</div>
@@ -817,7 +818,7 @@ const MaterialsDatabasePage: React.FC = () => {
       </div>
 
       {/* Export */}
-      <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
           <span className="text-2xl">📤</span>
           Export Material Library
@@ -835,7 +836,7 @@ const MaterialsDatabasePage: React.FC = () => {
               URL.revokeObjectURL(url);
               showToast(`Exported ${materials.length} materials to JSON`);
             }}
-            className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600"
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
           >
             📄 Export to JSON
           </button>
@@ -854,7 +855,7 @@ const MaterialsDatabasePage: React.FC = () => {
               URL.revokeObjectURL(url);
               showToast(`Exported ${materials.length} materials to CSV`);
             }}
-            className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600"
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
           >
             📗 Export to CSV
           </button>
@@ -864,7 +865,7 @@ const MaterialsDatabasePage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -893,7 +894,7 @@ const MaterialsDatabasePage: React.FC = () => {
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${activeTab === tab.id
                   ? 'bg-cyan-600 text-white'
-                  : 'bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-600'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
             >
               <span>{tab.icon}</span>
@@ -910,7 +911,7 @@ const MaterialsDatabasePage: React.FC = () => {
 
         {/* Model Status Bar */}
         {memberCount > 0 && (
-          <div className="mt-6 p-4 bg-blue-900/30 border border-blue-600/50 rounded-lg flex items-center justify-between">
+          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-600/50 rounded-lg flex items-center justify-between">
             <div className="text-blue-300 text-sm">
               <span className="font-medium">Model loaded:</span> {memberCount} member(s)
               {selectedCount > 0 && <span className="ml-2 text-cyan-400">• {selectedCount} selected</span>}
@@ -933,13 +934,13 @@ const MaterialsDatabasePage: React.FC = () => {
         )}
 
         {/* Standards Footer */}
-        <div className="mt-8 p-6 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-300 dark:border-slate-700">
+        <div className="mt-8 p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 text-center">
             📜 Supported Standards
           </h3>
           <div className="flex flex-wrap justify-center gap-4">
             {['IS 456', 'IS 800', 'IS 1786', 'IS 2062', 'IS 883', 'IS 1905', 'ASTM A36', 'ASTM A572', 'ASTM A615', 'EN 1992', 'EN 1993'].map((std, idx) => (
-              <span key={idx} className="px-3 py-1 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-sm">
+              <span key={idx} className="px-3 py-1 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-full text-sm">
                 {std}
               </span>
             ))}

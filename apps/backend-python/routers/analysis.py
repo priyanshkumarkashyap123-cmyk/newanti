@@ -1874,3 +1874,129 @@ async def mass_source(req: MassSourceRequest):
     """Mass Source Definition for seismic analysis – proxy to Rust solver."""
     payload = req.model_dump(mode="json")
     return await _proxy_to_rust("mass-source", payload)
+
+
+# ============================================================================
+# Dynamic & Advanced Loading Engines
+# ============================================================================
+
+# ── 5. Wind Tunnel / CFD Pressure Profile ──
+
+class WindTunnelTapInput(BaseModel):
+    tap_id: str
+    x: float
+    y: float
+    z: float
+    face: str
+    tributary_area: float
+    normal: List[float]
+
+
+class CpSeriesInput(BaseModel):
+    wind_direction_deg: float
+    q_ref: float
+    sampling_rate: float
+    cp_values: List[float]
+
+
+class TapNodeMappingInput(BaseModel):
+    tap_id: str
+    node_id: str
+    tributary_area: float
+    normal: List[float]
+
+
+class WindTunnelRequest(BaseModel):
+    building_id: str
+    geometric_scale: float
+    velocity_scale: float
+    reference_height: float = 10.0
+    taps: List[WindTunnelTapInput]
+    cp_data: Dict[str, List[CpSeriesInput]]
+    mappings: List[TapNodeMappingInput]
+    q_design: float
+    peak_factor: float = 3.5
+    compute_psd: bool = False
+
+
+@router.post("/analysis/wind-tunnel")
+async def wind_tunnel(req: WindTunnelRequest):
+    """Wind Tunnel / CFD Pressure Profile Analysis – proxy to Rust solver."""
+    payload = req.model_dump(mode="json")
+    return await _proxy_to_rust("wind-tunnel", payload)
+
+
+# ── 6. Influence Surface (2-D Bridge Deck) ──
+
+class InfluenceSurfaceRequest(BaseModel):
+    span: float
+    width: float
+    thickness: float
+    elastic_modulus: float = 30000.0
+    poisson_ratio: float = 0.2
+    output_x: float
+    output_y: float
+    grid_nx: int = 20
+    grid_ny: int = 20
+    scan_step_x: float = 0.5
+    scan_step_y: float = 0.5
+    vehicles: List[str]
+    response_type: str = "deflection"
+
+
+@router.post("/analysis/influence-surface")
+async def influence_surface(req: InfluenceSurfaceRequest):
+    """2-D Influence Surface Analysis for bridge decks – proxy to Rust solver."""
+    payload = req.model_dump(mode="json")
+    return await _proxy_to_rust("influence-surface", payload)
+
+
+# ── 7. Enhanced Spectrum Directional Combination ──
+
+class DirectionalSpectrumInput(BaseModel):
+    direction: str
+    spectrum_ordinates: List[List[float]]
+    scale_factor: float = 1.0
+
+
+class ModalPropertiesInput(BaseModel):
+    n_modes: int
+    periods: List[float]
+    damping_ratios: List[float]
+    participation_factors: List[List[float]]
+    effective_masses: List[List[float]]
+    mode_shapes: List[List[float]]
+    total_weight: float
+    n_dofs: int
+
+
+class IS1893ParamsInput(BaseModel):
+    zone_factor: float
+    importance_factor: float
+    response_reduction: float
+    soil_type: str = "II"
+
+
+class ASCE7ParamsInput(BaseModel):
+    sds: float
+    sd1: float
+    tl: float
+
+
+class SpectrumDirectionalRequest(BaseModel):
+    combination_method: str = "CQC"
+    directional_rule: str = "100_30"
+    spectra: List[DirectionalSpectrumInput]
+    modal: ModalPropertiesInput
+    closely_spaced_threshold: float = 0.10
+    missing_mass_correction: bool = True
+    code: Optional[str] = None
+    is1893_params: Optional[IS1893ParamsInput] = None
+    asce7_params: Optional[ASCE7ParamsInput] = None
+
+
+@router.post("/analysis/spectrum-directional")
+async def spectrum_directional(req: SpectrumDirectionalRequest):
+    """Enhanced Response Spectrum with directional combination – proxy to Rust solver."""
+    payload = req.model_dump(mode="json")
+    return await _proxy_to_rust("spectrum-directional", payload)
