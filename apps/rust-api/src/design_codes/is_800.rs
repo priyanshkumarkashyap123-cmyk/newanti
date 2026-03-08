@@ -15,6 +15,7 @@ pub const GAMMA_M0: f64 = 1.10;  // Yielding / instability (public export)
 const GAMMA_M1: f64 = 1.25;  // Ultimate stress / fracture
 const GAMMA_MB: f64 = 1.25;  // Bolts (bearing type)
 const GAMMA_MW: f64 = 1.25;  // Welds — shop
+const GAMMA_MW_FIELD: f64 = 1.5;  // Welds — field (IS 800 Cl. 10.5.7.1.1)
 const GAMMA_MF: f64 = 1.10;  // HSFG bolt slipping
 
 // ── Bolt Grades ──
@@ -206,15 +207,19 @@ pub struct WeldResult {
 /// Throat thickness tt = 0.7 × weld size
 /// Design strength fw = fuw / (√3 × γmw)
 /// Effective length = max(L − 2s, 0)
+/// 
+/// weld_type: "shop" (γmw=1.25) or "field" (γmw=1.5)
 pub fn design_fillet_weld(
     weld_size: f64,
     weld_length: f64,
     weld_fu: f64,
     load_kn: f64,
+    weld_type: &str,
 ) -> WeldResult {
+    let gamma_mw = if weld_type == "field" { GAMMA_MW_FIELD } else { GAMMA_MW };
     let tt = 0.7 * weld_size;
     let eff_length = (weld_length - 2.0 * weld_size).max(0.0);
-    let fw = weld_fu / (3.0_f64.sqrt() * GAMMA_MW);
+    let fw = weld_fu / (3.0_f64.sqrt() * gamma_mw);
     let capacity = tt * eff_length * fw / 1000.0;
     let utilization = if capacity > 0.0 { load_kn / capacity } else { 999.0 };
 
@@ -416,7 +421,7 @@ mod tests {
 
     #[test]
     fn test_fillet_weld() {
-        let r = design_fillet_weld(6.0, 150.0, 410.0, 100.0);
+        let r = design_fillet_weld(6.0, 150.0, 410.0, 100.0, "shop");
         assert!(r.passed);
         assert!(r.utilization < 1.0);
     }

@@ -186,11 +186,15 @@ fn test_catenary_heavier_cable_greater_sag() {
     let cable_light = CableElement::new(node_a, node_b, mat_light);
     let cable_heavy = CableElement::new(node_a, node_b, mat_heavy);
     
-    let (sag_light, _, _) = cable_light.calculate_catenary_sag(100.0);
-    let (sag_heavy, _, _) = cable_heavy.calculate_catenary_sag(100.0);
+    let (sag_light, tension_light, _) = cable_light.calculate_catenary_sag(100.0);
+    let (sag_heavy, tension_heavy, _) = cable_heavy.calculate_catenary_sag(100.0);
     
-    // Heavier cable = greater sag
-    assert!(sag_heavy > sag_light);
+    // Same geometry → same sag (catenary shape depends on L/s_target ratio)
+    assert!((sag_heavy - sag_light).abs() < 1e-6, "Same geometry → same sag");
+    
+    // Heavier cable requires higher horizontal tension to maintain same profile
+    assert!(tension_heavy > tension_light,
+        "Steel tension {tension_heavy:.1} should exceed CFRP tension {tension_light:.1}");
 }
 
 // ============================================================================

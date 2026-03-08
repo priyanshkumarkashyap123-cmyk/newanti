@@ -183,13 +183,17 @@ pub struct FilletWeldReq {
     pub weld_length: f64,
     pub weld_fu: f64,
     pub load_kn: f64,
+    #[serde(default = "default_weld_type")]
+    pub weld_type: String,
 }
+
+fn default_weld_type() -> String { "shop".to_string() }
 
 pub async fn fillet_weld(
     Json(req): Json<FilletWeldReq>,
 ) -> ApiResult<Json<is_800::WeldResult>> {
     let result = is_800::design_fillet_weld(
-        req.weld_size, req.weld_length, req.weld_fu, req.load_kn,
+        req.weld_size, req.weld_length, req.weld_fu, req.load_kn, &req.weld_type,
     );
     Ok(Json(result))
 }

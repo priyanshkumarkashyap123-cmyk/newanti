@@ -129,6 +129,96 @@ pub fn check_maximum_steel(fck_mpa: f64, fyk_mpa: f64, b_mm: f64, d_mm: f64) -> 
     rho_max * b_mm * d_mm
 }
 
+// ── Shear Design (EN 1992-1-1 Cl. 6.2) ──
+
+/// Shear capacity result per Eurocode 2
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EC2ShearCapacity {
+    pub vrd_c_kn: f64,        // Concrete shear resistance
+    pub vrd_s_kn: f64,        // Stirrup shear resistance
+    pub vrd_max_kn: f64,      // Maximum shear resistance
+    pub ved_kn: f64,          // Design shear force
+    pub stirrup_spacing_mm: f64,
+    pub asw_s: f64,           // Stirrup area per unit length (mm²/mm)
+    pub utilization: f64,
+    pub passed: bool,
+}
+
+/// Calculate concrete shear resistance VRd,c per EN 1992-1-1 Cl. 6.2.2
+/// VRd,c = [0.18k(100ρ₁fck)^(1/3)] bw d / γc
+pub fn calculate_shear_capacity_concrete(
+    bw_mm: f64,
+    d_mm: f64,
+    fck_mpa: f64,
+    rho_l: f64,
+) -> f64 {
+    let k = (1.0 + (200.0 / d_mm).sqrt()).min(2.0);
+    let crdc = 0.18 / 1.5; // γc = 1.5
+    let v_min = 0.035 * k.powf(1.5) * fck_mpa.sqrt();
+    
+    let vrd_c = crdc * k * (100.0 * rho_l * fck_mpa).powf(1.0/3.0) * bw_mm * d_mm / 1000.0; // kN
+    let vrd_c_min = v_min * bw_mm * d_mm / 1000.0;
+    
+    vrd_c.max(vrd_c_min)
+}
+
+/// Design shear reinforcement per EN 1992-1-1 Cl. 6.2.3
+/// VRd,s = (Asw/s) z fyd cot(θ)
+pub fn design_shear_reinforcement(
+    ved_kn: f64,
+    vrd_c_kn: f64,
+    bw_mm: f64,
+    d_mm: f64,
+    fck_mpa: f64,
+    fyk_mpa: f64,
+) -> EC2ShearCapacity {
+    let z = 0.9 * d_mm; // Lever arm
+    let fyd = fyk_mpa / 1.15;
+    let theta = 21.8_f64.to_radians(); // θ = 21.8° per EC2 (cot θ = 2.5)
+    let cot_theta = 2.5;
+    
+    // Maximum shear resistance (crushing)
+    let alpha_cw = 1.0; // No axial force
+    let v1 = 0.6 * (1.0 - fck_mpa / 250.0);
+    let vrd_max = alpha_cw * bw_mm * z * v1 * fck_mpa / (cot_theta + theta.tan()) / 1000.0;
+    
+    let (asw_s, spacing_mm, vrd_s_kn) = if ved_kn <= vrd_c_kn {
+        // Minimum stirrups per Cl. 9.2.2
+        let asw_s_min = 0.08 * fck_mpa.sqrt() / fyk_mpa * bw_mm;
+        let asw = 2.0 * 50.3; // 2-leg 8mm stirrups = 100.6 mm²
+        let s_min = asw / asw_s_min;
+        (asw_s_min, s_min.min(300.0), 0.0)
+    } else {
+        // Required Asw/s = VEd / (z fyd cot θ)
+        let asw_s_req = ved_kn * 1000.0 / (z * fyd * cot_theta);
+        
+        // Use 2-leg 8mm stirrups
+        let asw = 2.0 * 50.3;
+        let spacing = asw / asw_s_req;
+        
+        // Maximum spacing per Cl. 9.2.2
+        let s_max = 0.75 * d_mm;
+        let spacing_final = spacing.min(s_max).max(75.0);
+        
+        let vrd_s = (asw / spacing_final) * z * fyd * cot_theta / 1000.0;
+        (asw / spacing_final, spacing_final, vrd_s)
+    };
+    
+    let vrd_total = vrd_c_kn + vrd_s_kn;
+    let utilization = ved_kn / vrd_total.min(vrd_max).max(0.001);
+    
+    EC2ShearCapacity {
+        vrd_c_kn,
+        vrd_s_kn,
+        vrd_max_kn: vrd_max,
+        ved_kn,
+        stirrup_spacing_mm: spacing_mm,
+        asw_s,
+        utilization,
+        passed: utilization <= 1.0 && ved_kn <= vrd_max,
+    }
+}
+
 /// Database of common European reinforced concrete sections
 pub fn ec2_sections() -> Vec<EC2Section> {
     vec![

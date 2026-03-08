@@ -150,7 +150,36 @@ pub fn calculate_bending_capacity(
 pub fn is_adequate(capacity: &EC3Capacity) -> bool {
     capacity.utilization_ratio <= 1.0
 }
+// ── Shear Design (EN 1993-1-1 Cl. 6.2.6) ──
 
+/// Shear capacity result per Eurocode 3
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EC3ShearCapacity {
+    pub vpl_rd_kn: f64,       // Plastic shear resistance
+    pub ved_kn: f64,          // Design shear force
+    pub utilization: f64,
+    pub passed: bool,
+}
+
+/// Calculate shear capacity per EN 1993-1-1 Cl. 6.2.6
+/// Vpl,Rd = Av (fy / √3) / γM0
+/// where Av is shear area (typically hw * tw for I-sections)
+pub fn calculate_shear_capacity(
+    av_mm2: f64,
+    fy_mpa: f64,
+    ved_kn: f64,
+) -> EC3ShearCapacity {
+    let gamma_m0 = 1.0;
+    let vpl_rd = av_mm2 * (fy_mpa / 3.0_f64.sqrt()) / gamma_m0 / 1000.0; // kN
+    let utilization = ved_kn / vpl_rd.max(0.001);
+    
+    EC3ShearCapacity {
+        vpl_rd_kn: vpl_rd,
+        ved_kn,
+        utilization,
+        passed: utilization <= 1.0,
+    }
+}
 /// Classify section per Eurocode 3 Table 5.2
 pub fn classify_section(
     depth_mm: f64,

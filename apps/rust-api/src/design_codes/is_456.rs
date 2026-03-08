@@ -734,7 +734,8 @@ mod tests {
         
         assert!(result.xu_lim_mm > 0.0);
         assert!(result.z_lim_mm > 0.0);
-        assert!(result.mu_lim_knm > 50.0 && result.mu_lim_knm < 150.0);
+        assert!(result.mu_lim_knm > 100.0 && result.mu_lim_knm < 200.0,
+            "250×450 M25 Fe415 Mu_lim should be ~175 kN·m, got {}", result.mu_lim_knm);
         assert_eq!(result.xu_lim_mm / 450.0, xu_max_ratio(415.0));
     }
 
@@ -876,7 +877,7 @@ pub fn design_rc_beam_lsd(
 }
 
 #[cfg(test)]
-mod tests {
+mod lsd_tests {
     use super::*;
 
     #[test]
