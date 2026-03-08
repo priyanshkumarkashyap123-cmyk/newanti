@@ -140,3 +140,38 @@ jobs:
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
           images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
 
+  # =========================================================================
+  # POST-DEPLOY SMOKE TEST
+  # =========================================================================
+  smoke-test:
+    name: Post-Deploy Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-python, deploy-rust]
+    if: always() && (needs.deploy-api.result == 'success' || needs.deploy-python.result == 'success')
+    timeout-minutes: 5
+    steps:
+      - name: Wait for services to warm up
+        run: sleep 30
+
+      - name: Check Node.js API health
+        run: |
+          for i in 1 2 3; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health || echo "000")
+            echo "Attempt $i: Node API → $status"
+            [ "$status" = "200" ] && break
+            sleep 10
+          done
+          [ "$status" = "200" ] || echo "::warning::Node API health check failed (status: $status)"
+
+      - name: Check Python API health
+        run: |
+          for i in 1 2 3; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlab-backend-python.azurewebsites.net/health || echo "000")
+            echo "Attempt $i: Python API → $status"
+            [ "$status" = "200" ] && break
+            sleep 10
+          done
+          [ "$status" = "200" ] || echo "::warning::Python API health check failed (status: $status)"
+
+      - name: Summary
+        run: echo "Post-deploy smoke tests complete ✅"

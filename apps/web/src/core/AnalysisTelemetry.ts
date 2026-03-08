@@ -167,7 +167,7 @@ export interface AnalysisTelemetryPayload {
  * Strips all identifying info — only geometry + properties.
  */
 export function buildStructuralGraph(
-  nodes: Map<string, { id: string; x: number; y: number; z: number; restraints?: Record<string, boolean> }>,
+  nodes: Map<string, { id: string; x: number; y: number; z: number; restraints?: Record<string, boolean> | { fx: boolean; fy: boolean; fz: boolean; mx: boolean; my: boolean; mz: boolean } }>,
   members: Map<string, {
     id: string; startNodeId: string; endNodeId: string;
     E?: number; A?: number; Iy?: number; Iz?: number; J?: number; G?: number;

@@ -112,6 +112,6 @@ export {
   packForWasm,
   unpackResults,
   benchmarkPacking,
-  type WasmInputBuffers,
-  type WasmResultBuffers,
+  type PackedBuffers as WasmInputBuffers,
+  type UnpackedResults as WasmResultBuffers,
 } from './WasmBufferBridge';

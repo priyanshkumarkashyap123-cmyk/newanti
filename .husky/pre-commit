@@ -1,1 +1,1 @@
-pnpm run type-check
+cd apps/web && pnpm tsc --noEmit

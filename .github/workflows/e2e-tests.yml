@@ -1,15 +1,10 @@
 name: E2E Tests & Bundle Analysis
 
-# AUTO-TRIGGERS DISABLED — GitHub Actions minutes exhausted.
+# Re-enabled on weekly schedule + manual trigger to conserve Actions minutes.
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [main]
-  #   paths:
-  #     - 'apps/web/**'
-  #     - 'apps/api/**'
-  # schedule:
-  #   - cron: '0 2 * * 0'
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly Sunday 2 AM UTC
 
 env:
   CI: true

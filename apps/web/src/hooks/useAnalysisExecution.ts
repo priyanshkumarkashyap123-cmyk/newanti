@@ -1174,20 +1174,14 @@ export function useAnalysisExecution(
         // ── AI Telemetry (fire-and-forget, opt-out, non-blocking) ──
         try {
           const graph = buildStructuralGraph(nodes, members, loads);
+          const nodeIdToIdx = new Map<string, number>();
+          let telIdx = 0;
+          for (const [id] of nodes) nodeIdToIdx.set(id, telIdx++);
           sendAnalysisTelemetry(graph, {
-            maxDisplacement: Math.max(
-              ...Array.from(displacementsMap.values()).map(d =>
-                Math.sqrt((d.dx ?? 0) ** 2 + (d.dy ?? 0) ** 2 + (d.dz ?? 0) ** 2)
-              ),
-              0
-            ),
+            displacements: displacementsMap as Map<string, Record<string, number>>,
             conditionNumber: result.conditionNumber,
-            solverType: (result.stats?.solver as string) ?? 'wasm',
-            timeMs: endTime - startTime,
-          }, {
-            solver: (result.stats?.solver as string) ?? 'wasm',
-            modelType: nodes.size > 0 && members.size > 0 ? 'frame' : 'other',
-          }).catch(() => { /* telemetry failure is non-critical */ });
+          }, endTime - startTime, async () => null, nodeIdToIdx)
+            .catch(() => { /* telemetry failure is non-critical */ });
         } catch { /* telemetry errors must never break analysis */ }
       } else {
         setAnalysisStage("error");

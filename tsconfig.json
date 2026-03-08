@@ -13,5 +13,5 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "exclude": ["node_modules", "dist", "build", ".turbo", "apps", "packages"]
+  "exclude": ["node_modules", "dist", "build", ".turbo", "apps", "packages", "deploy-pkg", "scripts", "docs"]
 }

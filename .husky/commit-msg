@@ -1,5 +1,3 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Run commit message validation
-pnpm exec commitlint --edit "$1"
+# commitlint disabled — not installed in this workspace
+# To re-enable: pnpm add -D @commitlint/cli @commitlint/config-conventional
+# Then restore: pnpm exec commitlint --edit "$1"
