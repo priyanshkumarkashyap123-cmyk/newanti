@@ -8,13 +8,26 @@
 
 import { env } from "./env.js";
 
-/** Hardcoded origins that are always allowed */
-export const DEFAULT_ORIGINS = [
-  "http://localhost:5173",
-  "http://localhost:3000",
+const isProduction = env.NODE_ENV === "production";
+
+/** Production origins — always allowed */
+const PRODUCTION_ORIGINS = [
   "https://beamlabultimate.tech",
   "https://www.beamlabultimate.tech",
   "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
+] as const;
+
+/** Development-only origins — excluded in production */
+const DEV_ORIGINS = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:3001",
+] as const;
+
+/** Hardcoded origins based on environment */
+export const DEFAULT_ORIGINS = [
+  ...PRODUCTION_ORIGINS,
+  ...(isProduction ? [] : DEV_ORIGINS),
 ] as const;
 
 /** Normalize an origin string (trim, lowercase, strip trailing slashes) */
@@ -28,9 +41,13 @@ export function getAllowedOrigins(): string[] {
     .map((s) => s.trim())
     .filter(Boolean);
 
+  const base = isProduction
+    ? [env.FRONTEND_URL].filter(Boolean)
+    : [env.FRONTEND_URL || "http://localhost:5173"];
+
   return Array.from(
     new Set([
-      env.FRONTEND_URL || "http://localhost:5173",
+      ...base,
       ...DEFAULT_ORIGINS,
       ...configuredOrigins,
     ]),

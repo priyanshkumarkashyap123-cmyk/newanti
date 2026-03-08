@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:20.18-alpine AS builder
 
 # Install pnpm (matches workspace package manager)
 RUN corepack enable && corepack prepare pnpm@10.25.0 --activate

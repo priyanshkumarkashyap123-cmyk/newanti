@@ -452,7 +452,9 @@ impl FSDEngine {
         }
         
         // If no adequate section, return heaviest
-        self.section_database.last().unwrap().name.clone()
+        self.section_database.last()
+            .map(|s| s.name.clone())
+            .unwrap_or_else(|| "ISMB 600".to_string())
     }
     
     /// Downsize section — find next lighter section

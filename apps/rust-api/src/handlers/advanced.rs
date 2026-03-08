@@ -2216,7 +2216,8 @@ pub struct ModalSummaryOutput {
 fn interp_sa(spectrum: &[(f64, f64)], period: f64) -> f64 {
     if spectrum.is_empty() { return 0.0; }
     if period <= spectrum[0].0 { return spectrum[0].1; }
-    if period >= spectrum.last().unwrap().0 { return spectrum.last().unwrap().1; }
+    let last = spectrum[spectrum.len() - 1];
+    if period >= last.0 { return last.1; }
     for i in 0..spectrum.len() - 1 {
         let (t0, sa0) = spectrum[i];
         let (t1, sa1) = spectrum[i + 1];
@@ -2225,7 +2226,7 @@ fn interp_sa(spectrum: &[(f64, f64)], period: f64) -> f64 {
             return sa0 + frac * (sa1 - sa0);
         }
     }
-    spectrum.last().unwrap().1
+    last.1
 }
 
 /// CQC correlation coefficient (Der Kiureghian)
@@ -2614,8 +2615,8 @@ pub async fn auto_design_optimization(
     // Sort by weight for MinWeight, by depth for MinDepth
     let mut sorted_cat: Vec<usize> = (0..catalogue.len()).collect();
     match strategy {
-        "MinDepth" => sorted_cat.sort_by(|a, b| catalogue[*a].depth.partial_cmp(&catalogue[*b].depth).unwrap()),
-        _ => sorted_cat.sort_by(|a, b| catalogue[*a].w.partial_cmp(&catalogue[*b].w).unwrap()),
+        "MinDepth" => sorted_cat.sort_by(|a, b| catalogue[*a].depth.partial_cmp(&catalogue[*b].depth).unwrap_or(std::cmp::Ordering::Equal)),
+        _ => sorted_cat.sort_by(|a, b| catalogue[*a].w.partial_cmp(&catalogue[*b].w).unwrap_or(std::cmp::Ordering::Equal)),
     }
 
     // D/C ratio computation (AISC H1-1)
@@ -2688,7 +2689,7 @@ pub async fn auto_design_optimization(
             }
             if !found {
                 // Use largest section
-                let si = *sorted_cat.last().unwrap();
+                let si = sorted_cat.last().copied().unwrap_or(0);
                 let sec = &catalogue[si];
                 let (df, ds, da, di, dd) = compute_dc(sec, member.moment_demand_knm, member.shear_demand_kn, p_kn, lb, defl_lim, member.length_mm);
                 best_idx = si;
@@ -3399,7 +3400,7 @@ pub async fn rebar_detailing_analysis(
                 sorted.sort_by(|a, b| {
                     let da = (a.x_mm - mid).abs();
                     let db_val = (b.x_mm - mid).abs();
-                    da.partial_cmp(&db_val).unwrap()
+                    da.partial_cmp(&db_val).unwrap_or(std::cmp::Ordering::Equal)
                 });
 
                 let mut theo_x = None;

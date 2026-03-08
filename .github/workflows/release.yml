@@ -10,6 +10,10 @@ on:
   #     - 'docs/**'
   workflow_dispatch:
 
+concurrency:
+  group: release-production
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write

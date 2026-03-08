@@ -107,11 +107,11 @@ async fn main() -> anyhow::Result<()> {
     // We must explicitly list allowed headers and methods for CORS security
     let cors = CorsLayer::new()
         .allow_origin([
-            "http://localhost:5173".parse().unwrap(),
-            "http://localhost:3000".parse().unwrap(),
-            "https://beamlabultimate.tech".parse().unwrap(),
-            "https://www.beamlabultimate.tech".parse().unwrap(),
-            "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net".parse().unwrap(),
+            "http://localhost:5173".parse().expect("valid origin"),
+            "http://localhost:3000".parse().expect("valid origin"),
+            "https://beamlabultimate.tech".parse().expect("valid origin"),
+            "https://www.beamlabultimate.tech".parse().expect("valid origin"),
+            "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net".parse().expect("valid origin"),
         ])
         .allow_methods([
             http::Method::GET,

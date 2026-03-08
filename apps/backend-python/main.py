@@ -109,6 +109,17 @@ def get_env(key: str, default: str = "") -> str:
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     """Startup/shutdown lifecycle for FastAPI."""
+    # ── Module validation ──
+    missing_critical = []
+    if not HAS_MODELS:
+        missing_critical.append("models")
+    if not HAS_FACTORY:
+        missing_critical.append("factory")
+    if not HAS_SECURITY_MW:
+        logger.warning("Security middleware not loaded — running without auth/rate-limiting")
+    if missing_critical:
+        logger.error("Critical modules failed to load: %s — API will have reduced functionality", missing_critical)
+
     # ── Startup ──
     try:
         from analysis.worker_pool import get_worker_pool
@@ -211,8 +222,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allow_origins,  # Use the curated allow list
     allow_credentials=True,  # Allow credentials with specific origins
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Request-ID", "X-API-Key", "sentry-trace", "baggage"],
     expose_headers=["X-Request-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
 

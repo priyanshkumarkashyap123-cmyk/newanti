@@ -431,9 +431,10 @@ impl PDeltaSolver {
             let incremental_forces = forces * load_factor;
             
             let result = self.analyze(k_elastic, &incremental_forces, member_geometry)?;
+            let converged = result.converged;
             results.push(result);
             
-            if !results.last().unwrap().converged {
+            if !converged {
                 return Err(format!("Load step {} failed to converge", step));
             }
         }

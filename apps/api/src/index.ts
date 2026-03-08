@@ -596,3 +596,13 @@ function gracefulShutdown(signal: string) {
 
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
+// Catch unhandled promise rejections & uncaught exceptions so the process
+// doesn't crash silently without any diagnostic output.
+process.on("unhandledRejection", (reason) => {
+  logger.error({ err: reason }, "Unhandled promise rejection");
+});
+process.on("uncaughtException", (err) => {
+  logger.fatal({ err }, "Uncaught exception — shutting down");
+  gracefulShutdown("uncaughtException");
+});

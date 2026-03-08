@@ -10,6 +10,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: deploy-frontend-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
@@ -59,10 +63,11 @@ jobs:
       
       - name: Verify WASM packages exist
         run: |
-          echo "Checking backend-rust pkg..."
-          ls -la apps/backend-rust/pkg/
-          echo "Checking solver-wasm pkg..."
-          ls -la packages/solver-wasm/pkg/
+          echo "Checking backend-rust WASM..."
+          test -f apps/backend-rust/pkg/beamlab_bg.wasm || { echo "::error::Missing beamlab_bg.wasm"; exit 1; }
+          echo "Checking solver-wasm WASM..."
+          test -f packages/solver-wasm/pkg/solver_wasm_bg.wasm || { echo "::error::Missing solver_wasm_bg.wasm"; exit 1; }
+          echo "WASM artifacts verified ✅"
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
