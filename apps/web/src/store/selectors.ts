@@ -1,94 +1,115 @@
 /**
  * Memoized selectors for model store
- * Use these instead of accessing state directly to minimize re-renders
- * 
+ * Use these instead of accessing state directly to minimize re-renders.
+ *
+ * Guidelines:
+ *   - Primitive / boolean selectors do NOT need useShallow (Object.is is fine).
+ *   - Object / array / Map selectors MUST use useShallow to avoid spurious renders.
+ *   - Action selectors are stable refs and do NOT need useShallow.
+ *   - Prefer these named selectors over inline useModelStore((s) => …) in components.
+ *
  * @see bottleneck_report.md - Component #1 React State Cascade fix
  */
 
-import { useModelStore, MemberLoad } from './model';
+import { useModelStore } from './model';
+import type { MemberLoad, AnalysisResults } from './modelTypes';
 import { useShallow } from 'zustand/shallow';
 
 const REFERENCE_LOAD = 100; // 100 kN reference for scaling
 
-/**
- * Select a single member load by ID
- * Only re-renders when THAT SPECIFIC load changes
- */
-export const useMemberLoadById = (id: string): MemberLoad | undefined => {
-    return useModelStore(
-        useShallow((state) => state.memberLoads.find(l => l.id === id))
-    );
-};
+// ─── Geometry ──────────────────────────────────────────────────────
 
-/**
- * Select member load count (for conditional rendering)
- * Only re-renders when COUNT changes, not content
- */
-export const useMemberLoadCount = (): number => {
-    return useModelStore((state) => state.memberLoads.length);
-};
+export const useNodes = () => useModelStore((s) => s.nodes);
+export const useMembers = () => useModelStore((s) => s.members);
+export const usePlates = () => useModelStore((s) => s.plates);
+export const useNodeCount = () => useModelStore((s) => s.nodes.size);
+export const useMemberCount = () => useModelStore((s) => s.members.size);
+export const usePlateCount = () => useModelStore((s) => s.plates.size);
 
-/**
- * Select all member load IDs (for iteration without full objects)
- */
-export const useMemberLoadIds = (): string[] => {
-    return useModelStore(
-        useShallow((state) => state.memberLoads.map(l => l.id))
-    );
-};
+/** Geometry data bundle — for components that need both nodes & members */
+export const useGeometry = () =>
+  useModelStore(useShallow((s) => ({ nodes: s.nodes, members: s.members, plates: s.plates })));
 
-/**
- * Select max load magnitude (for scaling)
- * Optimized to only recalculate when needed
- */
-export const useMaxLoadMagnitude = (): number => {
-    return useModelStore((state) => {
-        let maxMag = REFERENCE_LOAD;
-        for (const ml of state.memberLoads) {
-            const w1 = Math.abs(ml.w1 ?? 0);
-            const w2 = Math.abs(ml.w2 ?? ml.w1 ?? 0);
-            const P = Math.abs(ml.P ?? 0);
-            maxMag = Math.max(maxMag, w1, w2, P);
-        }
-        return maxMag;
-    });
-};
+// ─── Selection ─────────────────────────────────────────────────────
 
-/**
- * Select nodes map (for geometry calculations)
- * Uses shallow comparison to prevent unnecessary re-renders
- */
-export const useNodes = () => {
-    return useModelStore(useShallow((state) => state.nodes));
-};
+export const useSelectedIds = () => useModelStore((s) => s.selectedIds);
+export const useSelectionCount = () => useModelStore((s) => s.selectedIds.size);
+export const useHasSelection = () => useModelStore((s) => s.selectedIds.size > 0);
+export const useErrorElementIds = () => useModelStore((s) => s.errorElementIds);
+export const useActiveTool = () => useModelStore((s) => s.activeTool);
 
-/**
- * Select members map (for geometry calculations)
- * Uses shallow comparison to prevent unnecessary re-renders
- */
-export const useMembers = () => {
-    return useModelStore(useShallow((state) => state.members));
-};
+// ─── Loads ─────────────────────────────────────────────────────────
 
-/**
- * Select analysis results with shallow comparison
- */
-export const useAnalysisResults = () => {
-    return useModelStore(useShallow((state) => state.analysisResults));
-};
+export const useLoads = () => useModelStore((s) => s.loads);
+export const useMemberLoads = () => useModelStore((s) => s.memberLoads);
+export const useFloorLoads = () => useModelStore((s) => s.floorLoads);
+export const useLoadCases = () => useModelStore((s) => s.loadCases);
+export const useLoadCombinations = () => useModelStore((s) => s.loadCombinations);
+export const useActiveLoadCaseId = () => useModelStore((s) => s.activeLoadCaseId);
 
-/**
- * Select diagram visibility flags as a single object
- * Reduces number of subscriptions
- */
-export const useDiagramVisibility = () => {
-    return useModelStore(
-        useShallow((state) => ({
-            showSFD: state.showSFD,
-            showBMD: state.showBMD,
-            showAFD: state.showAFD,
-            showStressOverlay: state.showStressOverlay,
-            showDeflectedShape: state.showDeflectedShape,
-        }))
-    );
-};
+export const useMemberLoadById = (id: string): MemberLoad | undefined =>
+  useModelStore(useShallow((s) => s.memberLoads.find((l) => l.id === id)));
+
+export const useMemberLoadCount = (): number =>
+  useModelStore((s) => s.memberLoads.length);
+
+export const useMemberLoadIds = (): string[] =>
+  useModelStore(useShallow((s) => s.memberLoads.map((l) => l.id)));
+
+export const useMaxLoadMagnitude = (): number =>
+  useModelStore((s) => {
+    let maxMag = REFERENCE_LOAD;
+    for (const ml of s.memberLoads) {
+      const w1 = Math.abs(ml.w1 ?? 0);
+      const w2 = Math.abs(ml.w2 ?? ml.w1 ?? 0);
+      const P = Math.abs(ml.P ?? 0);
+      maxMag = Math.max(maxMag, w1, w2, P);
+    }
+    return maxMag;
+  });
+
+// ─── Analysis ──────────────────────────────────────────────────────
+
+export const useAnalysisResults = (): AnalysisResults | null =>
+  useModelStore((s) => s.analysisResults);
+export const useHasResults = () => useModelStore((s) => s.analysisResults !== null);
+export const useIsAnalyzing = () => useModelStore((s) => s.isAnalyzing);
+
+// ─── View / Diagrams ───────────────────────────────────────────────
+
+export const useDisplacementScale = () => useModelStore((s) => s.displacementScale);
+export const useDiagramScale = () => useModelStore((s) => s.diagramScale);
+export const useShowResults = () => useModelStore((s) => s.showResults);
+
+export const useDiagramVisibility = () =>
+  useModelStore(
+    useShallow((s) => ({
+      showSFD: s.showSFD,
+      showBMD: s.showBMD,
+      showAFD: s.showAFD,
+      showBMDMy: s.showBMDMy,
+      showShearZ: s.showShearZ,
+      showStressOverlay: s.showStressOverlay,
+      showDeflectedShape: s.showDeflectedShape,
+    })),
+  );
+
+// ─── Modal / Dynamics ──────────────────────────────────────────────
+
+export const useModalResults = () => useModelStore((s) => s.modalResults);
+export const useActiveModeIndex = () => useModelStore((s) => s.activeModeIndex);
+export const useModeAmplitude = () => useModelStore((s) => s.modeAmplitude);
+export const useIsAnimating = () => useModelStore((s) => s.isAnimating);
+
+// ─── Project / Settings ────────────────────────────────────────────
+
+export const useProjectInfo = () => useModelStore(useShallow((s) => s.projectInfo));
+export const useSettings = () => useModelStore(useShallow((s) => s.settings));
+
+// ─── Stable Action Refs (never cause re-renders) ──────────────────
+
+export const useSetTool = () => useModelStore((s) => s.setTool);
+export const useSelect = () => useModelStore((s) => s.select);
+export const useClearSelection = () => useModelStore((s) => s.clearSelection);
+export const useSetAnalysisResults = () => useModelStore((s) => s.setAnalysisResults);
+export const useSetIsAnalyzing = () => useModelStore((s) => s.setIsAnalyzing);

@@ -238,13 +238,12 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
     }, [geometry, material]);
     
     // ============================================
-    // PROGRESSIVE INSTANCE BUILDING
+    // PROGRESSIVE INSTANCE BUILDING (positions only — no color dep)
     // ============================================
     
     useEffect(() => {
         if (!meshRef.current) return;
         if (!members || !nodes || members.size === 0 || nodes.size === 0) {
-            // No members to render
             setIsInitialized(true);
             return;
         }
@@ -253,27 +252,20 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
         const memberArray = Array.from(members.entries());
         const nodeMap = nodes;
         
-        // Limit to effective count
         const toRender = Math.min(memberArray.length, effectiveCount);
         mesh.count = toRender;
         
-        // Build index map for raycasting
         const indexMap = new Map<number, string>();
         
-        // Use chunked processing to avoid blocking
         let currentIndex = 0;
-        const colorArray: Float32Array | null = config.enablePerInstanceColor 
-            ? new Float32Array(toRender * 3) 
-            : null;
         
         const processChunk = () => {
             const startTime = performance.now();
-            const maxTime = 16; // Target 60fps (16ms per frame)
+            const maxTime = 16;
             
             while (currentIndex < toRender && (performance.now() - startTime) < maxTime) {
                 const [id, member] = memberArray[currentIndex];
                 
-                // Defensive check for member validity
                 if (!member || !member.startNodeId || !member.endNodeId) {
                     currentIndex++;
                     continue;
@@ -282,7 +274,6 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
                 const startNode = nodeMap.get(member.startNodeId);
                 const endNode = nodeMap.get(member.endNodeId);
                 
-                // Additional validation for node values
                 if (!startNode || !endNode ||
                     typeof startNode.x !== 'number' || 
                     typeof startNode.y !== 'number' || 
@@ -294,7 +285,6 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
                     continue;
                 }
                 
-                // Calculate and set matrix using pooled objects
                 const matrix = calculateMemberMatrixPooled(
                     startNode.x, startNode.y, startNode.z,
                     endNode.x, endNode.y, endNode.z,
@@ -302,37 +292,12 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
                 );
                 mesh.setMatrixAt(currentIndex, matrix);
                 
-                // Set color if enabled
-                if (colorArray && config.enablePerInstanceColor) {
-                    const isSelected = selectedIds.has(id);
-                    const isError = errorElementIds.has(id);
-                    const color = isSelected ? COLORS.memberSelected : isError ? COLORS.memberError : COLORS.memberDefault;
-                    colorArray[currentIndex * 3 + 0] = color.r;
-                    colorArray[currentIndex * 3 + 1] = color.g;
-                    colorArray[currentIndex * 3 + 2] = color.b;
-                }
-                
                 indexMap.set(currentIndex, id);
                 currentIndex++;
             }
             
-            // Update the mesh
             mesh.instanceMatrix.needsUpdate = true;
             
-            if (colorArray && config.enablePerInstanceColor) {
-                if (!mesh.geometry.attributes.instanceColor) {
-                    mesh.geometry.setAttribute(
-                        'instanceColor',
-                        new THREE.InstancedBufferAttribute(colorArray, 3)
-                    );
-                } else {
-                    const attr = mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute;
-                    attr.array = colorArray;
-                    attr.needsUpdate = true;
-                }
-            }
-            
-            // Continue if more to process
             if (currentIndex < toRender) {
                 rafId = requestAnimationFrame(processChunk);
             } else {
@@ -341,14 +306,48 @@ export const UltraLightMembersRenderer: React.FC = React.memo(() => {
             }
         };
         
-        // Start processing
         let rafId = requestAnimationFrame(processChunk);
         
         return () => {
             cancelAnimationFrame(rafId);
             setIsInitialized(false);
         };
-    }, [members, nodes, effectiveCount, config, selectedIds, errorElementIds]);
+    }, [members, nodes, effectiveCount, config.memberRadius]);
+    
+    // ============================================
+    // INSTANCE COLORS (separate — selection changes only update colors)
+    // ============================================
+    
+    useEffect(() => {
+        if (!meshRef.current || !config.enablePerInstanceColor) return;
+        if (!members || members.size === 0) return;
+
+        const mesh = meshRef.current;
+        const memberArray = Array.from(members.keys());
+        const toRender = Math.min(memberArray.length, effectiveCount);
+        const colorArray = new Float32Array(toRender * 3);
+
+        for (let i = 0; i < toRender; i++) {
+            const id = memberArray[i];
+            const isSelected = selectedIds.has(id);
+            const isError = errorElementIds.has(id);
+            const color = isSelected ? COLORS.memberSelected : isError ? COLORS.memberError : COLORS.memberDefault;
+            colorArray[i * 3 + 0] = color.r;
+            colorArray[i * 3 + 1] = color.g;
+            colorArray[i * 3 + 2] = color.b;
+        }
+
+        if (!mesh.geometry.attributes.instanceColor) {
+            mesh.geometry.setAttribute(
+                'instanceColor',
+                new THREE.InstancedBufferAttribute(colorArray, 3)
+            );
+        } else {
+            const attr = mesh.geometry.attributes.instanceColor as THREE.InstancedBufferAttribute;
+            attr.array = colorArray;
+            attr.needsUpdate = true;
+        }
+    }, [members, effectiveCount, config.enablePerInstanceColor, selectedIds, errorElementIds]);
     
     // ============================================
     // HOVER HANDLING (only for smaller models)

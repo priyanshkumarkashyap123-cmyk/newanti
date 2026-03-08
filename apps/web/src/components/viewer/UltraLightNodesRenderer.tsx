@@ -218,7 +218,7 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
   }, [geometry, material]);
 
   // ============================================
-  // PROGRESSIVE INSTANCE BUILDING
+  // PROGRESSIVE INSTANCE BUILDING (positions only — no color dep)
   // ============================================
 
   useEffect(() => {
@@ -228,13 +228,9 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
     const toRender = Math.min(visibleNodes.length, effectiveCount);
     mesh.count = toRender;
 
-    // Build index map for raycasting
     const indexMap = new Map<number, string>();
 
     let currentIndex = 0;
-    const colorArray: Float32Array | null = config.enablePerInstanceColor
-      ? new Float32Array(toRender * 3)
-      : null;
 
     const processChunk = () => {
       const startTime = performance.now();
@@ -246,49 +242,14 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
       ) {
         const [id, node] = visibleNodes[currentIndex];
 
-        // Set position matrix
         pool.tempMatrix.setPosition(node.x, node.y, node.z);
         mesh.setMatrixAt(currentIndex, pool.tempMatrix);
-
-        // Set color if enabled
-        if (colorArray && config.enablePerInstanceColor) {
-          const isSelected = selectedIds.has(id);
-          const hasSupportNode = hasSupport(node);
-
-          let color = COLORS.nodeDefault;
-          if (isSelected) {
-            color = COLORS.nodeSelected;
-          } else if (errorElementIds.has(id)) {
-            color = COLORS.nodeError;
-          } else if (hasSupportNode) {
-            color = COLORS.nodeSupport;
-          }
-
-          colorArray[currentIndex * 3 + 0] = color.r;
-          colorArray[currentIndex * 3 + 1] = color.g;
-          colorArray[currentIndex * 3 + 2] = color.b;
-        }
 
         indexMap.set(currentIndex, id);
         currentIndex++;
       }
 
-      // Update the mesh
       mesh.instanceMatrix.needsUpdate = true;
-
-      if (colorArray && config.enablePerInstanceColor) {
-        if (!mesh.geometry.attributes.instanceColor) {
-          mesh.geometry.setAttribute(
-            "instanceColor",
-            new THREE.InstancedBufferAttribute(colorArray, 3),
-          );
-        } else {
-          const attr = mesh.geometry.attributes
-            .instanceColor as THREE.InstancedBufferAttribute;
-          attr.array = colorArray;
-          attr.needsUpdate = true;
-        }
-      }
 
       if (currentIndex < toRender) {
         rafId = requestAnimationFrame(processChunk);
@@ -304,7 +265,49 @@ export const UltraLightNodesRenderer: React.FC = React.memo(() => {
       cancelAnimationFrame(rafId);
       setIsInitialized(false);
     };
-  }, [visibleNodes, effectiveCount, config, selectedIds, errorElementIds]);
+  }, [visibleNodes, effectiveCount]);
+
+  // ============================================
+  // INSTANCE COLORS (separate from positions — selection changes only update colors)
+  // ============================================
+
+  useEffect(() => {
+    if (!meshRef.current || !config.enablePerInstanceColor) return;
+
+    const mesh = meshRef.current;
+    const toRender = Math.min(visibleNodes.length, effectiveCount);
+    const colorArray = new Float32Array(toRender * 3);
+
+    for (let i = 0; i < toRender; i++) {
+      const [id, node] = visibleNodes[i];
+      const isSelected = selectedIds.has(id);
+
+      let color = COLORS.nodeDefault;
+      if (isSelected) {
+        color = COLORS.nodeSelected;
+      } else if (errorElementIds.has(id)) {
+        color = COLORS.nodeError;
+      } else if (hasSupport(node)) {
+        color = COLORS.nodeSupport;
+      }
+
+      colorArray[i * 3 + 0] = color.r;
+      colorArray[i * 3 + 1] = color.g;
+      colorArray[i * 3 + 2] = color.b;
+    }
+
+    if (!mesh.geometry.attributes.instanceColor) {
+      mesh.geometry.setAttribute(
+        "instanceColor",
+        new THREE.InstancedBufferAttribute(colorArray, 3),
+      );
+    } else {
+      const attr = mesh.geometry.attributes
+        .instanceColor as THREE.InstancedBufferAttribute;
+      attr.array = colorArray;
+      attr.needsUpdate = true;
+    }
+  }, [visibleNodes, effectiveCount, config.enablePerInstanceColor, selectedIds, errorElementIds]);
 
   // ============================================
   // HOVER HANDLING

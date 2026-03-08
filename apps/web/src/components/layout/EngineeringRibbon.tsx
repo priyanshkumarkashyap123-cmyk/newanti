@@ -208,7 +208,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const activeTool = useModelStore((s) => s.activeTool);
   const setTool = useModelStore((s) => s.setTool);
   const isAnalyzing = useModelStore((s) => s.isAnalyzing);
-  const analysisResults = useModelStore((s) => s.analysisResults);
+  const hasResults = useModelStore((s) => s.analysisResults !== null);
   const openModal = useUIStore((s) => s.openModal);
   const setCategory = useUIStore((s) => s.setCategory);
   const { undo, redo } = useModelStoreTemporal.getState();
@@ -544,7 +544,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           label="Deformed"
           onClick={() => document.dispatchEvent(new CustomEvent("toggle-deformed"))}
           tooltip="View Deformed Shape"
-          isActive={!!analysisResults}
+          isActive={hasResults}
         />
         <StackedButtons>
           <MiniButton icon={BarChart3} label="SFD" onClick={() => document.dispatchEvent(new CustomEvent("toggle-sfd"))} />
@@ -578,7 +578,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         />
       </ToolGroup>
     </>
-  ), [isAnalyzing, openModal, analysisResults]);
+  ), [isAnalyzing, openModal, hasResults]);
 
   const activeTab = RIBBON_TABS.find(t => t.id === activeCategory);
   const activeColor = activeTab?.color || "blue";

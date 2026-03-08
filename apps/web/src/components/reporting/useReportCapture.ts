@@ -5,7 +5,8 @@
 
 import { useCallback, useRef } from 'react';
 // html2canvas is dynamically imported on first use to keep it out of the main bundle (~204 KB)
-import { ReportGenerator, type ProjectData, type NodeDisplacementRow, type MemberForceRow, type ReactionRow } from '../../services/ReportGenerator';
+// ReportGenerator also dynamically imported — carries jsPDF (~300 KB)
+import type { ProjectData, NodeDisplacementRow, MemberForceRow, ReactionRow } from '../../services/ReportGenerator';
 import { useModelStore } from '../../store/model';
 import { logger } from '../../lib/logging/logger';
 
@@ -213,7 +214,8 @@ export function useReportCapture() {
         try {
             logger.info('Starting report generation');
 
-            // 1. Create report generator
+            // 1. Create report generator (dynamically imported to keep jsPDF out of main bundle)
+            const { ReportGenerator } = await import('../../services/ReportGenerator');
             const report = new ReportGenerator();
 
             // 2. Add header and project info

@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { useModelStore, useModelStoreTemporal } from '../store/model';
 import useStructuralSolver from '../hooks/useStructuralSolver';
-import { ReportGenerator } from '../utils/ReportGenerator';
 import { useIsSignedIn } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { PlateCreationDialog } from './dialogs/PlateCreationDialog';
@@ -249,6 +248,7 @@ export const Toolbar: FC = () => {
         }
 
         const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+        const { ReportGenerator } = await import('../utils/ReportGenerator');
         const screenshot = ReportGenerator.captureCanvas(canvas);
 
         const report = await ReportGenerator.create({
