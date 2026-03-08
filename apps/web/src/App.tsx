@@ -529,7 +529,9 @@ function App() {
                   <RequireAuth>
                     <MobileGuard>
                       <SectionErrorBoundary section="3D Editor">
-                        <ModernModeler />
+                        <Suspense fallback={<DesignPageSkeleton />}>
+                          <ModernModeler />
+                        </Suspense>
                       </SectionErrorBoundary>
                     </MobileGuard>
                   </RequireAuth>

@@ -6,6 +6,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Play, AlertTriangle, Box, ArrowLeft } from 'lucide-react';
+import { useToast } from '../components/ui/ToastSystem';
+import { FieldLabel } from '../components/ui/FieldLabel';
 import { useModelStore } from '../store/model';
 import { useShallow } from 'zustand/react/shallow';
 import { 
@@ -27,6 +29,7 @@ export function SteelDesignPage() {
     const [analyzing, setAnalyzing] = useState(false);
     const [results, setResults] = useState<SteelDesignResults[]>([]);
     const [error, setError] = useState<string>('');
+    const toast = useToast();
 
     useEffect(() => { document.title = 'Steel Design | BeamLab'; }, []);
 
@@ -45,6 +48,20 @@ export function SteelDesignPage() {
     const handleRunDesign = async () => {
         if (members.length === 0) {
             setError('No members in model');
+            return;
+        }
+
+        // Validate design parameters
+        if (params.Lb <= 0 || params.Lx <= 0 || params.Ly <= 0) {
+            setError('Unbraced and effective lengths must be positive');
+            return;
+        }
+        if ((params.Kx ?? 1) <= 0 || (params.Kx ?? 1) > 2.5 || (params.Ky ?? 1) <= 0 || (params.Ky ?? 1) > 2.5) {
+            setError('Effective length factors (K) must be between 0 and 2.5');
+            return;
+        }
+        if ((params.Cb ?? 1) < 1.0 || (params.Cb ?? 1) > 3.0) {
+            setError('Moment gradient factor (Cb) must be between 1.0 and 3.0 (AISC 360 Eq. F1-1)');
             return;
         }
 
@@ -129,6 +146,14 @@ export function SteelDesignPage() {
             const apiResults = await designSteelMembers(designChecks, designCode);
             
             setResults(apiResults);
+
+            // Success toast
+            const allPassed = apiResults.every(r => r.overallStatus === 'PASS');
+            toast.success(
+              allPassed
+                ? `All ${apiResults.length} member(s) passed design checks`
+                : `Design complete — ${apiResults.filter(r => r.overallStatus === 'FAIL').length} member(s) need attention`
+            );
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Design check failed');
         } finally {
@@ -191,7 +216,7 @@ export function SteelDesignPage() {
 
                     <div>
                         <label htmlFor="steel-unbraced-length" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Unbraced Length (mm):
+                            <FieldLabel field="Lb" label="Unbraced Length (mm):" />
                         </label>
                         <input
                             id="steel-unbraced-length"
@@ -204,7 +229,7 @@ export function SteelDesignPage() {
 
                     <div>
                         <label htmlFor="steel-kx" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Kx (Effective Length Factor):
+                            <FieldLabel field="Kx" label="Kx (Effective Length Factor):" />
                         </label>
                         <input
                             id="steel-kx"
@@ -218,7 +243,7 @@ export function SteelDesignPage() {
 
                     <div>
                         <label htmlFor="steel-ky" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Ky (Effective Length Factor):
+                            <FieldLabel field="Ky" label="Ky (Effective Length Factor):" />
                         </label>
                         <input
                             id="steel-ky"
@@ -232,7 +257,7 @@ export function SteelDesignPage() {
 
                     <div>
                         <label htmlFor="steel-cb" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Cb (LTB Modifier):
+                            <FieldLabel field="Cb" label="Cb (LTB Modifier):" />
                         </label>
                         <input
                             id="steel-cb"

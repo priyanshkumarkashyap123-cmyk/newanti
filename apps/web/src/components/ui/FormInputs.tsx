@@ -29,7 +29,7 @@ import { cn } from '../../lib/utils';
 // ============================================================================
 
 interface BaseInputProps {
-  label?: string;
+  label?: React.ReactNode;
   error?: string;
   helperText?: string;
   required?: boolean;

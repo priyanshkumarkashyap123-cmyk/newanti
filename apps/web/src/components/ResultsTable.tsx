@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from 'react';
+import { FC, useState, useMemo, memo } from 'react';
 import {
     useReactTable,
     getCoreRowModel,
@@ -71,7 +71,7 @@ const exportToCSV = (data: any[], filename: string) => {
     URL.revokeObjectURL(link.href);
 };
 
-export const ResultsTable: FC = () => {
+export const ResultsTable: FC = memo(() => {
     const analysisResults = useModelStore((state) => state.analysisResults);
     const select = useModelStore((state) => state.select);
     const nodes = useModelStore((state) => state.nodes);
@@ -355,6 +355,7 @@ export const ResultsTable: FC = () => {
             </div>
         </div>
     );
-};
+});
+ResultsTable.displayName = 'ResultsTable';
 
 export default ResultsTable;

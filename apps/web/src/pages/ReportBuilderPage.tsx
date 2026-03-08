@@ -2,6 +2,8 @@ import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { ReportBuilder, type ReportConfig } from '@/modules/reports/EngineeringReportGenerator';
 import { FileText, Download, Eye, Settings, Plus, Trash2, GripVertical, Zap } from 'lucide-react';
 import { useModelStore } from '@/store/model';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
+import { useToast } from '@/components/ui/ToastSystem';
 
 interface ReportSection {
   id: string;
@@ -11,6 +13,8 @@ interface ReportSection {
 }
 
 export default function ReportBuilderPage() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const nodes = useModelStore(s => s.nodes);
   const members = useModelStore(s => s.members);
   const analysisResults = useModelStore(s => s.analysisResults);
@@ -66,9 +70,18 @@ export default function ReportBuilderPage() {
     setNewSection({ title: '', content: '' });
   }, [newSection]);
 
-  const removeSection = useCallback((id: string) => {
-    setSections(prev => prev.filter(s => s.id !== id));
-  }, []);
+  const removeSection = useCallback(async (id: string) => {
+    const section = sections.find(s => s.id === id);
+    const confirmed = await confirm({
+      title: 'Remove Section?',
+      message: `Are you sure you want to remove "${section?.title || 'this section'}"? This cannot be undone.`,
+      confirmText: 'Remove',
+      variant: 'danger'
+    });
+    if (confirmed) {
+      setSections(prev => prev.filter(s => s.id !== id));
+    }
+  }, [confirm, sections]);
 
   const updateSection = useCallback((id: string, updates: Partial<ReportSection>) => {
     setSections(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
@@ -199,6 +212,7 @@ export default function ReportBuilderPage() {
     a.href = url;
     a.download = `${config.projectNumber || 'report'}_structural_report.${ext}`;
     a.click();
+    toast.success(`Report downloaded as ${ext.toUpperCase()}`);
   }, [config, sections]);
 
   return (

@@ -28,6 +28,8 @@ import { Alert } from '../components/ui/alert';
 // REAL API Client
 import { designFoundation, FootingRequest, FootingResult } from '../api/design';
 import { getErrorMessage } from '../lib/errorHandling';
+import { useToast } from '../components/ui/ToastSystem';
+import { FieldLabel } from '../components/ui/FieldLabel';
 
 type FoundationType = 'isolated' | 'combined' | 'strap' | 'mat' | 'pile-cap';
 
@@ -86,22 +88,32 @@ export const FoundationDesignPage: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
-
+  const toast = useToast();
   useEffect(() => { document.title = 'Foundation Design | BeamLab'; }, []);
 
   // Input validation
   const validateInputs = useCallback((): string | null => {
+    // Material validation (IS 456 Table 2, Cl. 5.6)
+    if (input.fck < 15 || input.fck > 100) {
+      return 'fck must be between 15 and 100 MPa (IS 456 Table 2)';
+    }
+    if (input.fy < 250 || input.fy > 600) {
+      return 'fy must be between 250 and 600 MPa (IS 456 Cl. 5.6)';
+    }
     if (input.axialLoad <= 0) {
       return 'Axial load must be positive';
     }
     if (input.footingLength <= 0 || input.footingWidth <= 0) {
       return 'Footing dimensions must be positive';
     }
-    if (input.footingDepth <= 0) {
-      return 'Footing depth must be positive';
+    if (input.footingDepth < 150) {
+      return 'Minimum footing depth is 150 mm (IS 456 Cl. 34.1.2)';
     }
     if (input.bearingCapacity <= 0) {
       return 'Soil bearing capacity must be positive';
+    }
+    if (input.cover < 50 || input.cover > 100) {
+      return 'Foundation cover must be between 50 and 100 mm (IS 456 Cl. 26.4.2)';
     }
     if (input.columnWidth <= 0 || input.columnDepth <= 0) {
       return 'Column dimensions must be positive';
@@ -400,6 +412,19 @@ export const FoundationDesignPage: React.FC = () => {
     }
   };
 
+  // Show success toast when results arrive
+  React.useEffect(() => {
+    if (results && !error) {
+      const allPassed = results.checks?.every((c: { passed: boolean }) => c.passed) ?? true;
+      toast.success(
+        allPassed
+          ? 'Foundation design passed all checks'
+          : 'Foundation design complete — review failed checks'
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results]);
+
   const updateInput = (key: keyof FoundationInput, value: any) => {
     setInput(prev => ({ ...prev, [key]: value }));
   };
@@ -475,7 +500,7 @@ export const FoundationDesignPage: React.FC = () => {
               <h3 className="text-sm font-semibold text-amber-400 mb-4">Column Loads</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <Input
-                  label="Axial Load P (kN)"
+                  label={<FieldLabel field="axialLoad" label="Axial Load P (kN)" />}
                   type="number"
                   value={input.axialLoad}
                   onChange={(e) => updateInput('axialLoad', Number(e.target.value))}
@@ -543,7 +568,7 @@ export const FoundationDesignPage: React.FC = () => {
                   onChange={(e) => updateInput('footingWidth', Number(e.target.value))}
                 />
                 <Input
-                  label="Footing Depth D (mm)"
+                  label={<FieldLabel field="footingDepth" label="Footing Depth D (mm)" />}
                   type="number"
                   value={input.footingDepth}
                   onChange={(e) => updateInput('footingDepth', Number(e.target.value))}
@@ -564,7 +589,7 @@ export const FoundationDesignPage: React.FC = () => {
                 <h3 className="text-sm font-semibold text-emerald-400 mb-4">Soil Properties</h3>
                 <div className="space-y-4">
                   <Input
-                    label="Bearing Capacity (kN/m²)"
+                    label={<FieldLabel field="bearingCapacity" label="Bearing Capacity (kN/m²)" />}
                     type="number"
                     value={input.bearingCapacity}
                     onChange={(e) => updateInput('bearingCapacity', Number(e.target.value))}
@@ -731,9 +756,16 @@ export const FoundationDesignPage: React.FC = () => {
                 <div className="flex flex-col items-center justify-center py-12 text-center h-full">
                   <Layers className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                     Configure the foundation parameters and run analysis to see design results
                   </p>
+                  <Button
+                    onClick={handleAnalyze}
+                    disabled={analyzing}
+                    className="gap-2"
+                  >
+                    <Play className="w-4 h-4" /> Run Design Check
+                  </Button>
                 </div>
               </div>
             )}

@@ -9,7 +9,7 @@
  * - Educational tooltips for engineering concepts
  */
 
-import React, { FC, useState, useEffect, useMemo } from 'react';
+import React, { FC, useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     CheckCircle,
@@ -475,7 +475,7 @@ interface ResultsSummaryProps {
     onHighlight?: (memberId?: string, nodeId?: string) => void;
 }
 
-export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHighlight }) => {
+export const ResultsSummary: FC<ResultsSummaryProps> = memo(({ interpretation, onHighlight }) => {
     const [showFindings, setShowFindings] = useState(true);
     const [showRecommendations, setShowRecommendations] = useState(true);
     const [filterType, setFilterType] = useState<Finding['type'] | 'all'>('all');
@@ -657,7 +657,8 @@ export const ResultsSummary: FC<ResultsSummaryProps> = ({ interpretation, onHigh
             )}
         </div>
     );
-};
+});
+ResultsSummary.displayName = 'ResultsSummary';
 
 // ============================================
 // QUICK ACTIONS BAR

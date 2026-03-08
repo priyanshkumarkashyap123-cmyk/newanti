@@ -8,7 +8,7 @@
  * - Supports beam, column, and slab design
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { 
   Calculator, 
   FileText, 
@@ -37,6 +37,9 @@ import {
   designSlabIS456
 } from '../api/design';
 import { getErrorMessage } from '../lib/errorHandling';
+import { useToast } from '../components/ui/ToastSystem';
+import { FieldLabel } from '../components/ui/FieldLabel';
+import { ClauseReference } from '../components/ui/ClauseReference';
 
 type DesignCode = 'IS456' | 'ACI318';
 type MemberType = 'beam' | 'column' | 'slab';
@@ -122,6 +125,15 @@ export const ConcreteDesignPage: React.FC = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string>('');
+  const toast = useToast();
+  const abortRef = useRef<AbortController | null>(null);
+
+  const handleCancel = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setAnalyzing(false);
+    toast.info('Design calculation cancelled');
+  }, [toast]);
 
   // Beam input state
   const [beamInput, setBeamInput] = useState<BeamInput>({
@@ -182,15 +194,31 @@ export const ConcreteDesignPage: React.FC = () => {
 
   // Input validation before API call
   const validateInputs = useCallback((): string | null => {
+    // Common material validation (IS 456 Table 2: fck 15–80 MPa; IS 456 Cl. 5.6: fy 250–500 MPa)
+    const fck = memberType === 'beam' ? beamInput.fck : memberType === 'column' ? columnInput.fck : slabInput.fck;
+    const fy = memberType === 'beam' ? beamInput.fy : memberType === 'column' ? columnInput.fy : slabInput.fy;
+    if (fck < 15 || fck > 100) {
+      return 'fck must be between 15 and 100 MPa (IS 456 Table 2)';
+    }
+    if (fy < 250 || fy > 600) {
+      return 'fy must be between 250 and 600 MPa (IS 456 Cl. 5.6)';
+    }
+
     if (memberType === 'beam') {
       if (beamInput.width <= 0 || beamInput.depth <= 0) {
         return 'Beam width and depth must be positive';
+      }
+      if (beamInput.span < 500 || beamInput.span > 30000) {
+        return 'Beam span must be between 500 and 30000 mm';
       }
       if (beamInput.effectiveDepth >= beamInput.depth) {
         return 'Effective depth must be less than total depth';
       }
       if (beamInput.effectiveDepth <= 0) {
         return 'Effective depth must be positive';
+      }
+      if (beamInput.cover < 15 || beamInput.cover > 75) {
+        return 'Clear cover must be between 15 and 75 mm (IS 456 Cl. 26.4)';
       }
       // Allow signed moments (positive=sagging, negative=hogging)
       if (Math.abs(beamInput.Vu) < 0.001) {
@@ -200,15 +228,24 @@ export const ConcreteDesignPage: React.FC = () => {
       if (columnInput.width <= 0 || columnInput.depth <= 0) {
         return 'Column width and depth must be positive';
       }
+      if (columnInput.width < 200) {
+        return 'Minimum column width is 200 mm (IS 456 Cl. 25.1.1)';
+      }
       if (columnInput.effectiveLength <= 0) {
         return 'Effective length must be positive';
+      }
+      if (columnInput.cover < 25 || columnInput.cover > 75) {
+        return 'Column cover must be between 25 and 75 mm (IS 456 Cl. 26.4.2)';
       }
     } else if (memberType === 'slab') {
       if (slabInput.lx <= 0 || slabInput.ly <= 0) {
         return 'Slab spans must be positive';
       }
-      if (slabInput.thickness <= 0) {
-        return 'Slab thickness must be positive';
+      if (slabInput.thickness < 75 || slabInput.thickness > 500) {
+        return 'Slab thickness must be between 75 and 500 mm';
+      }
+      if (slabInput.cover < 15 || slabInput.cover > 50) {
+        return 'Slab cover must be between 15 and 50 mm (IS 456 Cl. 26.4)';
       }
     }
     return null;
@@ -221,6 +258,11 @@ export const ConcreteDesignPage: React.FC = () => {
       setError(validationError);
       return;
     }
+
+    // Cancel any in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     setAnalyzing(true);
     setError('');
@@ -403,6 +445,9 @@ export const ConcreteDesignPage: React.FC = () => {
       }
 
     } catch (err: unknown) {
+      // If the request was cancelled, bail out silently
+      if (controller.signal.aborted) return;
+
       console.warn('Backend unavailable, using client-side IS 456 calculations:', getErrorMessage(err));
       
       // ── CLIENT-SIDE FALLBACK: IS 456:2000 ──
@@ -589,12 +634,26 @@ export const ConcreteDesignPage: React.FC = () => {
           });
         }
       } catch (calcErr: unknown) {
+        if (controller.signal.aborted) return;
         setError('Client-side calculation error: ' + getErrorMessage(calcErr, 'Unknown error'));
       }
     } finally {
       setAnalyzing(false);
     }
   };
+
+  // Show success toast when results arrive
+  React.useEffect(() => {
+    if (results && !error) {
+      const allPassed = results.checks?.every((c: { passed: boolean }) => c.passed) ?? true;
+      toast.success(
+        allPassed
+          ? `${memberType.charAt(0).toUpperCase() + memberType.slice(1)} design passed all checks`
+          : `${memberType.charAt(0).toUpperCase() + memberType.slice(1)} design complete — review failed checks`
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results]);
 
   const renderBeamForm = () => (
     <div className="space-y-6">
@@ -606,7 +665,7 @@ export const ConcreteDesignPage: React.FC = () => {
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <Input
-            label="Span (mm)"
+            label={<FieldLabel field="span" label="Span (mm)" />}
             type="number"
             value={beamInput.span}
             onChange={(e) => setBeamInput({...beamInput, span: Number(e.target.value)})}
@@ -624,13 +683,13 @@ export const ConcreteDesignPage: React.FC = () => {
             onChange={(e) => setBeamInput({...beamInput, depth: Number(e.target.value)})}
           />
           <Input
-            label="Effective Depth d (mm)"
+            label={<FieldLabel field="effectiveDepth" label="Effective Depth d (mm)" />}
             type="number"
             value={beamInput.effectiveDepth}
             onChange={(e) => setBeamInput({...beamInput, effectiveDepth: Number(e.target.value)})}
           />
           <Input
-            label="Clear Cover (mm)"
+            label={<FieldLabel field="cover" label="Clear Cover (mm)" />}
             type="number"
             value={beamInput.cover}
             onChange={(e) => setBeamInput({...beamInput, cover: Number(e.target.value)})}
@@ -655,7 +714,7 @@ export const ConcreteDesignPage: React.FC = () => {
             onChange={(val) => setBeamInput({...beamInput, fck: Number(val)})}
           />
           <Select
-            label="Steel Grade fy (MPa)"
+            label={<FieldLabel field="fy" label="Steel Grade fy (MPa)" />}
             options={[
               { value: '415', label: 'Fe 415 / Grade 60' },
               { value: '500', label: 'Fe 500 / Grade 75' },
@@ -686,7 +745,7 @@ export const ConcreteDesignPage: React.FC = () => {
           <div className="col-span-2 md:col-span-1" />
           <div>
             <Input
-              label="Ultimate Moment Mu (kN·m) [+Sag/-Hog]"
+              label={<FieldLabel field="Mu" label="Ultimate Moment Mu (kN·m) [+Sag/-Hog]" />}
               type="number"
               value={beamInput.Mu}
               onChange={(e) => setBeamInput({...beamInput, Mu: Number(e.target.value)})}
@@ -695,13 +754,13 @@ export const ConcreteDesignPage: React.FC = () => {
             />
           </div>
           <Input
-            label="Ultimate Shear Vu (kN) [Signed]"
+            label={<FieldLabel field="Vu" label="Ultimate Shear Vu (kN) [Signed]" />}
             type="number"
             value={beamInput.Vu}
             onChange={(e) => setBeamInput({...beamInput, Vu: Number(e.target.value)})}
           />
           <Input
-            label="Torsion Tu (kN·m)"
+            label={<FieldLabel field="Tu" label="Torsion Tu (kN·m)" />}
             type="number"
             value={beamInput.Tu}
             onChange={(e) => setBeamInput({...beamInput, Tu: Number(e.target.value)})}
@@ -1126,7 +1185,12 @@ export const ConcreteDesignPage: React.FC = () => {
                       <AlertCircle className="w-4 h-4 text-red-400" />
                     )}
                     <span className="text-slate-700 dark:text-slate-300">{check.description}</span>
-                    <span className="text-slate-600 dark:text-slate-400 text-xs ml-auto">{check.clause}</span>
+                    {check.clause ? (
+                      <ClauseReference
+                        clauseKey={`IS456_${check.clause.replace('Cl. ', '')}`}
+                        label={check.clause}
+                      />
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -1392,24 +1456,35 @@ export const ConcreteDesignPage: React.FC = () => {
               {memberType === 'slab' && renderSlabForm()}
 
               {/* Analyze Button */}
-              <Button
-                onClick={handleAnalyze}
-                disabled={analyzing}
-                className="w-full mt-6"
-                size="lg"
-              >
-                {analyzing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5" />
-                    Run Design Analysis
-                  </>
+              <div className="flex gap-2 mt-6">
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={analyzing}
+                  className="flex-1"
+                  size="lg"
+                >
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5" />
+                      Run Design Analysis
+                    </>
+                  )}
+                </Button>
+                {analyzing && (
+                  <Button
+                    onClick={handleCancel}
+                    variant="outline"
+                    size="lg"
+                  >
+                    Cancel
+                  </Button>
                 )}
-              </Button>
+              </div>
 
               {error && (
                 <Alert variant="destructive" className="mt-4 flex items-start gap-3">
@@ -1432,9 +1507,16 @@ export const ConcreteDesignPage: React.FC = () => {
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Calculator className="w-16 h-16 text-slate-500 mb-4" />
                   <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-400 mb-2">No Results Yet</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                     Configure the member properties and run analysis to see results
                   </p>
+                  <Button
+                    onClick={handleAnalyze}
+                    disabled={analyzing}
+                    className="gap-2"
+                  >
+                    <Play className="w-4 h-4" /> Run Design Check
+                  </Button>
                 </div>
               </div>
             )}
