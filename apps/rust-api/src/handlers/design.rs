@@ -784,3 +784,87 @@ pub async fn crack_width(
             },
         }
     }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn batch_design_processes_flexural_capacity_successfully() {
+        let input = DesignCheckInput {
+            id: "beam-1".to_string(),
+            check: DesignCheckType::FlexuralCapacity {
+                req: FlexuralCapacityReq {
+                    b: 300.0,
+                    d: 450.0,
+                    fck: 30.0,
+                    fy: 500.0,
+                    ast: 2010.0,
+                    asc: 0.0,
+                    d_prime: 0.0,
+                },
+            },
+        };
+
+        let result = process_design_check(&input);
+
+        assert!(result.success);
+        assert_eq!(result.design_id, "beam-1");
+        assert_eq!(result.check_type, "flexural_capacity");
+        assert!(result.result.is_some());
+        assert!(result.error.is_none());
+    }
+
+    #[test]
+    fn batch_design_reports_invalid_zone_as_failure() {
+        let input = DesignCheckInput {
+            id: "seismic-err-1".to_string(),
+            check: DesignCheckType::BaseShear {
+                req: BaseShearReq {
+                    zone: "INVALID".to_string(),
+                    soil: "medium".to_string(),
+                    importance: 1.0,
+                    response_reduction: 5.0,
+                    period: 0.5,
+                    seismic_weight_kn: 10000.0,
+                },
+            },
+        };
+
+        let result = process_design_check(&input);
+
+        assert!(!result.success);
+        assert_eq!(result.design_id, "seismic-err-1");
+        assert_eq!(result.check_type, "base_shear");
+        assert!(result.result.is_none());
+        assert!(result.error.is_some());
+    }
+
+    #[test]
+    fn batch_request_deserializes_snake_case_check_type() {
+        let payload = serde_json::json!({
+            "checks": [
+                {
+                    "id": "service-1",
+                    "type": "deflection",
+                    "req": {
+                        "material": "concrete",
+                        "span_mm": 5000.0,
+                        "actual_deflection_mm": 12.0,
+                        "member_type": "beam",
+                        "load_type": "live",
+                        "support_condition": "simply_supported"
+                    }
+                }
+            ]
+        });
+
+        let req: BatchDesignRequest = serde_json::from_value(payload).expect("payload should deserialize");
+        assert_eq!(req.checks.len(), 1);
+        assert_eq!(req.checks[0].id, "service-1");
+        match req.checks[0].check {
+            DesignCheckType::Deflection { .. } => {}
+            _ => panic!("expected deflection check type"),
+        }
+    }
+}
