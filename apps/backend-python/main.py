@@ -167,17 +167,15 @@ logger.info(
 # ============================================
 
 # Build allowed origins list
-allow_origins = [
-    # Production
+_PRODUCTION_ORIGINS = [
     "https://beamlabultimate.tech",
-    "https://beamlabultimate.tech/",
     "https://www.beamlabultimate.tech",
-    "https://www.beamlabultimate.tech/",
     "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net",
-    "https://brave-mushroom-0eae8ec00.4.azurestaticapps.net/",
     "https://beamlab-backend-python.azurewebsites.net",
     "https://beamlab-backend-node.azurewebsites.net",
-    # Local development
+]
+
+_DEV_ORIGINS = [
     "http://localhost:3001",
     "http://localhost:5173",
     "http://localhost:8000",
@@ -186,6 +184,11 @@ allow_origins = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8081",
 ]
+
+IS_PRODUCTION = os.getenv("ENVIRONMENT", "development") == "production"
+allow_origins = list(_PRODUCTION_ORIGINS)
+if not IS_PRODUCTION:
+    allow_origins.extend(_DEV_ORIGINS)
 
 # Add origins from environment variables
 if ALLOWED_ORIGINS_ENV:
