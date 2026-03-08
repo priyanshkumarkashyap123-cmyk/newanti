@@ -432,7 +432,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-100/50 dark:bg-slate-800/50">
-        <Sliders size={18} className="text-cyan-400" />
+        <Sliders size={18} className="text-blue-400" />
         <h3 className="font-semibold text-slate-700 dark:text-slate-200">Results Display</h3>
 
         {analysisResults ? (
@@ -492,7 +492,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                   className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all
                                               ${
                                                 settings.showDiagram === opt.id
-                                                  ? "border-cyan-500/50 bg-cyan-900/20 text-cyan-300"
+                                                  ? "border-blue-500/50 bg-blue-900/20 text-blue-300"
                                                   : "border-slate-600 bg-slate-100/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 hover:border-slate-500"
                                               }`}
                   style={
@@ -620,7 +620,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                 className={`flex items-start gap-2 p-2 rounded-lg cursor-pointer transition-colors
                                           ${
                                             settings.colorMode === mode.id
-                                              ? "bg-cyan-900/20 border border-cyan-500/30"
+                                              ? "bg-blue-900/20 border border-blue-500/30"
                                               : "hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
                                           }`}
               >
@@ -631,7 +631,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                   onChange={() =>
                     updateSettings({ colorMode: mode.id as ColorMode })
                   }
-                  className="mt-1 accent-cyan-500"
+                  className="mt-1 accent-blue-500"
                 />
                 <div>
                   <div className="text-sm text-slate-700 dark:text-slate-200">{mode.label}</div>
@@ -658,7 +658,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                   })
                 }
                 className={`w-12 h-6 rounded-full transition-colors ${
-                  settings.animateDeflection ? "bg-cyan-600" : "bg-slate-600"
+                  settings.animateDeflection ? "bg-blue-600" : "bg-slate-600"
                 }`}
               >
                 <div
@@ -704,7 +704,7 @@ export const ResultsControlPanel: FC<ResultsControlPanelProps> = React.memo(({
                 onChange={(e) =>
                   updateSettings({ showOriginalShape: e.target.checked })
                 }
-                className="accent-cyan-500"
+                className="accent-blue-500"
               />
               Show original (undeformed) shape
             </label>

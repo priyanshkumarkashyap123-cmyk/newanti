@@ -132,3 +132,19 @@ tmp/
 venv/
 yarn-debug.log*
 yarn-error.log*
+
+# Copilot safety backups
+.copilot-safety-backup*/
+copilot-sync-log*.txt
+sync-copilot-chat.sh
+view_chat_history.py
+
+# One-off fix/audit scripts (not part of the application)
+fix_*.py
+audit_*.py
+remove_*.py
+restore_*.py
+
+# Duplicate/backup files (macOS/tooling artifacts)
+*\ 2.*
+*\ 2/

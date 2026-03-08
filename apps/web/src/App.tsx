@@ -306,6 +306,8 @@ import { useUserRegistration } from './hooks/useUserRegistration';
 import { useDeviceSession } from './hooks/useDeviceSession';
 import { useGlobalErrorHandler } from './hooks/useGlobalErrorHandler';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
+import { useEffect } from 'react';
+import { initializeIntegration } from './core/StoreIntegration';
 
 // ============================================
 // CONDITIONAL LAYOUT — wraps authenticated pages in AppShell
@@ -386,6 +388,12 @@ function App() {
 
   // Capture unhandled errors & promise rejections globally
   useGlobalErrorHandler();
+
+  // Initialize StructuralBufferPool ↔ Zustand sync + CommandHistory
+  // This wires up the SoA TypedArray layer for zero-copy WASM/Worker transfer
+  useEffect(() => {
+    initializeIntegration();
+  }, []);
 
   return (
     <ErrorBoundary>

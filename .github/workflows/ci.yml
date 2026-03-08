@@ -113,6 +113,13 @@ jobs:
       with:
         targets: wasm32-unknown-unknown
 
+    - name: Cache Rust/WASM build artifacts
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: |
+          apps/backend-rust
+          packages/solver-wasm
+
     - name: Install wasm-pack
       run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 

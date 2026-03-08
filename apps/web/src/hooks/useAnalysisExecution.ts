@@ -15,6 +15,7 @@ import { validateStructure, type ValidationResult, type ValidationError } from "
 import { distributeFloorLoads } from "../services/floorLoadDistributor";
 import type { ValidationResults } from "../components/ValidationErrorDisplay";
 import type { MemberStress } from "../components/StressVisualization";
+import { buildStructuralGraph, sendAnalysisTelemetry } from "../core/AnalysisTelemetry";
 
 /** Result from stress calculation endpoint */
 type StressResult = MemberStress;
@@ -1169,6 +1170,25 @@ export function useAnalysisExecution(
         setShowResultsDock(true);
         showNotification("success", "Analysis completed successfully!");
         calculateStresses(memberForcesStoreMap, members);
+
+        // ── AI Telemetry (fire-and-forget, opt-out, non-blocking) ──
+        try {
+          const graph = buildStructuralGraph(nodes, members, loads);
+          sendAnalysisTelemetry(graph, {
+            maxDisplacement: Math.max(
+              ...Array.from(displacementsMap.values()).map(d =>
+                Math.sqrt((d.dx ?? 0) ** 2 + (d.dy ?? 0) ** 2 + (d.dz ?? 0) ** 2)
+              ),
+              0
+            ),
+            conditionNumber: result.conditionNumber,
+            solverType: (result.stats?.solver as string) ?? 'wasm',
+            timeMs: endTime - startTime,
+          }, {
+            solver: (result.stats?.solver as string) ?? 'wasm',
+            modelType: nodes.size > 0 && members.size > 0 ? 'frame' : 'other',
+          }).catch(() => { /* telemetry failure is non-critical */ });
+        } catch { /* telemetry errors must never break analysis */ }
       } else {
         setAnalysisStage("error");
         setAnalysisError(result.error || "Analysis failed");

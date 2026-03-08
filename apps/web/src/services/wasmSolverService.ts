@@ -298,6 +298,38 @@ export async function initSolver(): Promise<void> {
 // ============================================
 
 /**
+ * TypedArray Buffer Bridge — fast path for large models.
+ *
+ * When the Rust WASM solver exposes a `solve_3d_frame_from_buffers` entry
+ * that accepts flat Float64Array/Int32Array instead of serde JsValue,
+ * this eliminates serde deserialization overhead.
+ *
+ * Current status: infrastructure ready, activate when Rust endpoint available.
+ * The packing/unpacking utilities are in core/WasmBufferBridge.ts.
+ */
+import { packForWasm, unpackResults } from '../core/WasmBufferBridge';
+import { getBufferPool } from '../core/StructuralBufferPool';
+
+/**
+ * Threshold for switching to the TypedArray fast path.
+ * Below this, serde overhead is negligible.
+ */
+const BUFFER_BRIDGE_THRESHOLD = 5000; // nodes
+
+/**
+ * Check whether the buffer bridge fast path should and can be used.
+ */
+export function shouldUseBufferBridge(nodeCount: number): boolean {
+  // Fast path requires: (1) large model, (2) buffer pool synced, (3) Rust endpoint available
+  if (nodeCount < BUFFER_BRIDGE_THRESHOLD) return false;
+  const pool = getBufferPool();
+  if (pool.nodeCount === 0) return false;
+  // Check if the Rust endpoint exists (will be: solve_3d_frame_from_buffers)
+  // Currently returns false until the Rust side is built
+  return typeof (globalThis as Record<string, unknown>).__beamlab_buffer_solver === 'function';
+}
+
+/**
  * Analyze a structure using the Direct Stiffness Method.
  *
  * Supports:

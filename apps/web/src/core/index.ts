@@ -14,6 +14,14 @@
  *   3. CommandHistory — Delta-based undo/redo storing only "Node N5 moved by
  *      dx:2" instead of full state snapshots.  200 undo steps = ~20 KB vs 500 MB.
  *
+ *   4. BinaryModelSerializer — Compact .beamlab binary format (5-10× smaller
+ *      than JSON) for model persistence & file exchange.
+ *
+ *   5. AnalysisTelemetry — Graph normalization pipeline feeding AI/PINN training
+ *      with anonymized structural analysis data.
+ *
+ *   6. WasmBufferBridge — Zero-copy TypedArray packing for WASM solver fast path.
+ *
  * @module core
  */
 
@@ -77,3 +85,33 @@ export {
   teardownIntegration,
   reinitializeIntegration,
 } from './StoreIntegration';
+
+// ─── Binary Model Serializer ────────────────────────────────────────
+export {
+  serializeModel,
+  deserializeModel,
+  estimateBinarySize,
+  compressionStats,
+  BEAMLAB_FILE,
+  type SerializableModel,
+  type DeserializedModel,
+} from './BinaryModelSerializer';
+
+// ─── Analysis Telemetry (AI/PINN Pipeline) ──────────────────────────
+export {
+  buildStructuralGraph,
+  sendAnalysisTelemetry,
+  type StructuralGraph,
+  type GraphVertex,
+  type GraphEdge,
+  type AnalysisTelemetryPayload,
+} from './AnalysisTelemetry';
+
+// ─── WASM TypedArray Buffer Bridge ──────────────────────────────────
+export {
+  packForWasm,
+  unpackResults,
+  benchmarkPacking,
+  type WasmInputBuffers,
+  type WasmResultBuffers,
+} from './WasmBufferBridge';
