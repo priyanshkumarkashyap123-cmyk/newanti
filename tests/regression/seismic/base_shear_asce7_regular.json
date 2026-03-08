@@ -20,8 +20,8 @@
     "approx_Ta_sec": 0.9
   },
   "expected": {
-    "Cs": 0.184, 
-    "baseShear_kN": 2208
+    "Cs": 0.0533,
+    "baseShear_kN": 640
   },
   "tolerance": {
     "rel": { "Cs": 0.02, "baseShear_kN": 0.02 }

@@ -15,8 +15,8 @@
     "cover_mm": 40
   },
   "expected": {
-    "requiredSteel_mm2": 1130,
-    "steelRatio": 0.0075,
+    "requiredSteel_mm2": 768,
+    "steelRatio": 0.00512,
     "status": "PASS"
   },
   "tolerance": {

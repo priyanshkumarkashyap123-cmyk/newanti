@@ -295,6 +295,15 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
         category: 'tools',
         badge: 'New',
       },
+      {
+        id: 'room-planner',
+        label: 'Room Planner',
+        path: '/room-planner',
+        description: 'Interactive room layout with furniture validation',
+        icon: <Home className="w-4 h-4" />,
+        category: 'tools',
+        badge: 'New',
+      },
     ],
   },
   {

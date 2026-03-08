@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * COMPOSITE DESIGN ENGINE - PHASE 3 STUB
+ * COMPOSITE DESIGN ENGINE — AISC 360 Chapter I / EN 1994
  * ============================================================================
  * 
  * Composite steel-concrete design per:
@@ -8,7 +8,7 @@
  * - EN 1994 (Eurocode 4)
  * - IS 11384
  * 
- * STATUS: STUB - Core structure and interfaces ready for full implementation
+ * STATUS: IMPLEMENTED — Stud capacity, PNA, composite beam/column design
  * 
  * @version 0.1.0
  */
@@ -113,7 +113,7 @@ export interface CompositeColumnResult {
 }
 
 // ============================================================================
-// STUB IMPLEMENTATIONS
+// DESIGN IMPLEMENTATIONS
 // ============================================================================
 
 export function designCompositeBeam(

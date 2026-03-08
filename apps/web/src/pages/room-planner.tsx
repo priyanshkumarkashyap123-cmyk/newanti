@@ -10,13 +10,19 @@ import React, { useState } from 'react';
 import InteractiveRoomPlanner from '@/components/room-planner/InteractiveRoomPlanner';
 import FurniturePalette from '@/components/room-planner/FurniturePalette';
 import ValidationPanel from '@/components/room-planner/ValidationPanel';
-import type { CanvasState, FurnitureCategory, ValidationResult } from '@/lib/room-planner/types';
+import type {
+  CanvasState,
+  FurnitureCategory,
+  FurnitureType,
+  ValidationResult,
+} from '@/lib/room-planner/types';
 
 export default function RoomPlannerPage() {
   const [state, setState] = useState<CanvasState | null>(null);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [selectedFurnitureCategory, setSelectedFurnitureCategory] =
     useState<FurnitureCategory>('seating');
+  const [pendingFurnitureType, setPendingFurnitureType] = useState<FurnitureType | null>(null);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
   const handleStateChange = (newState: CanvasState) => {
@@ -27,9 +33,12 @@ export default function RoomPlannerPage() {
     setValidationResult(result);
   };
 
-  const handleFurnitureSelect = (type: string) => {
-    console.log('Selected furniture:', type);
-    // This will be implemented with drag-and-drop
+  const handleFurnitureSelect = (type: FurnitureType) => {
+    setPendingFurnitureType(type);
+  };
+
+  const clearPendingFurniture = () => {
+    setPendingFurnitureType(null);
   };
 
   const handleExportJSON = () => {
@@ -60,6 +69,7 @@ export default function RoomPlannerPage() {
         <FurniturePalette
           onFurnitureSelect={handleFurnitureSelect}
           selectedCategory={selectedFurnitureCategory}
+          selectedFurnitureType={pendingFurnitureType}
           onCategoryChange={setSelectedFurnitureCategory}
         />
       </div>
@@ -74,6 +84,21 @@ export default function RoomPlannerPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            {pendingFurnitureType && (
+              <div className="px-3 py-2 rounded bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs flex items-center gap-2">
+                <span>
+                  Placing: <strong>{pendingFurnitureType.replace(/_/g, ' ')}</strong>
+                </span>
+                <button
+                  onClick={clearPendingFurniture}
+                  className="px-2 py-0.5 rounded bg-amber-600/30 hover:bg-amber-600/50"
+                  title="Cancel placement"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
             {/* Info */}
             {state && (
               <div className="text-sm">
@@ -130,7 +155,11 @@ export default function RoomPlannerPage() {
 
             {/* Help */}
             <button
-              onClick={() => alert('Keyboard Shortcuts:\n\nDelete: Remove selected\nG: Toggle grid\n+/-: Zoom\nDouble-click: Rotate')}
+              onClick={() =>
+                alert(
+                  'Keyboard Shortcuts:\n\nDelete: Remove selected\nG: Toggle grid\n+/-: Zoom\nDouble-click: Rotate\nEsc: Cancel pending placement'
+                )
+              }
               className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
             >
               ?
@@ -145,6 +174,9 @@ export default function RoomPlannerPage() {
             <InteractiveRoomPlanner
               onStateChange={handleStateChange}
               onValidationChange={handleValidationChange}
+              pendingFurnitureType={pendingFurnitureType}
+              onFurniturePlaced={() => setPendingFurnitureType(null)}
+              onPlacementCancel={clearPendingFurniture}
             />
           </div>
 

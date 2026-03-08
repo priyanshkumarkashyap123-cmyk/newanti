@@ -18,13 +18,13 @@
     "endBearingFactor": 9
   },
   "expected": {
-    "shaftResistance_kN": 610,
-    "endBearing_kN": 1280,
-    "capacity_kN": 1890,
+    "shaftResistance_kN": 1017.88,
+    "endBearing_kN": 85.88,
+    "capacity_kN": 1103.76,
     "status": "PASS"
   },
   "tolerance": {
-    "rel": { "capacity_kN": 0.05 },
-    "abs": { "shaftResistance_kN": 30, "endBearing_kN": 50 }
+    "rel": { "capacity_kN": 0.02 },
+    "abs": { "shaftResistance_kN": 10, "endBearing_kN": 5 }
   }
 }

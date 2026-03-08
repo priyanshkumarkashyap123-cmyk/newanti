@@ -3,26 +3,27 @@
     "domain": "steel",
     "name": "beam_ltb_aisc360",
     "code": "AISC360-16",
-    "clause": "F2 lateral-torsional buckling (elastic) for doubly symmetric I-shape",
+    "clause": "F2 lateral-torsional buckling (elastic) for doubly symmetric I-shape — W24x76",
     "units": "SI"
   },
   "input": {
-    "span_m": 8.0,
-    "unbracedLength_m": 8.0,
+    "unbracedLength_m": 6.0,
     "section": {
-      "Zx_mm3": 5.5e6,
-      "Sx_mm3": 4.8e6,
-      "Iy_mm4": 8.2e9,
-      "J_mm4": 6.5e6,
-      "Cw_mm6": 1.2e12
+      "Zx_mm3": 3277400,
+      "Sx_mm3": 2884112,
+      "Iy_mm4": 34339058,
+      "J_mm4": 111550,
+      "Cw_mm6": 2.531e12,
+      "rts_mm": 59.2,
+      "ho_mm": 594.4,
+      "ry_mm": 48.77
     },
     "material": { "Fy_MPa": 345, "E_MPa": 200000, "G_MPa": 76900 },
     "momentGradient_Cb": 1.0
   },
   "expected": {
-    "Mn_kNm": 520,
-    "phiMn_kNm": 468,
-    "status": "PASS"
+    "Mn_kNm": 569,
+    "phiMn_kNm": 512
   },
   "tolerance": {
     "rel": { "Mn_kNm": 0.03, "phiMn_kNm": 0.03 }

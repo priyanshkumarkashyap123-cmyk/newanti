@@ -10,18 +10,30 @@ import React, { useRef, useEffect, useState } from 'react';
 import { CanvasRenderer, type RenderOptions } from '@/lib/room-planner/renderer';
 import { CanvasInteractionManager, type InteractionEvent } from '@/lib/room-planner/interaction';
 import { ValidationEngine } from '@/lib/room-planner/validation';
-import type { CanvasState, CanvasToolMode, Room, FurnitureItem, ValidationResult } from '@/lib/room-planner/types';
+import {
+  FURNITURE_DIMENSIONS,
+  type CanvasState,
+  type CanvasToolMode,
+  type FurnitureType,
+  type ValidationResult,
+} from '@/lib/room-planner/types';
 
 interface InteractiveRoomPlannerProps {
   onStateChange?: (state: CanvasState) => void;
   onValidationChange?: (result: ValidationResult) => void;
   initialState?: CanvasState;
+  pendingFurnitureType?: FurnitureType | null;
+  onFurniturePlaced?: () => void;
+  onPlacementCancel?: () => void;
 }
 
 export const InteractiveRoomPlanner: React.FC<InteractiveRoomPlannerProps> = ({
   onStateChange,
   onValidationChange,
   initialState,
+  pendingFurnitureType,
+  onFurniturePlaced,
+  onPlacementCancel,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,8 +137,56 @@ export const InteractiveRoomPlanner: React.FC<InteractiveRoomPlannerProps> = ({
     onStateChange?.(newState);
   };
 
+  const placeFurnitureAtCanvasPoint = (
+    furnitureType: FurnitureType,
+    canvasX: number,
+    canvasY: number
+  ) => {
+    const scale = (state.zoom / 100) * 0.1;
+    const worldX = (canvasX - state.panX) / scale;
+    const worldY = (canvasY - state.panY) / scale;
+    const dims = FURNITURE_DIMENSIONS[furnitureType];
+
+    const x = state.snapToGrid
+      ? Math.round(worldX / state.gridSpacing) * state.gridSpacing
+      : worldX;
+    const y = state.snapToGrid
+      ? Math.round(worldY / state.gridSpacing) * state.gridSpacing
+      : worldY;
+
+    const nextState: CanvasState = {
+      ...state,
+      furniture: [
+        ...state.furniture,
+        {
+          id: `furniture_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          type: furnitureType,
+          x,
+          y,
+          width: dims.width,
+          depth: dims.depth,
+          height: dims.height,
+          rotation: 0,
+          color: '#8B5E3C',
+          label: furnitureType.replace(/_/g, ' '),
+        },
+      ],
+    };
+
+    handleStateChange(nextState);
+    onFurniturePlaced?.();
+  };
+
   // Canvas event handlers
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (pendingFurnitureType && canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const canvasX = e.clientX - rect.left;
+      const canvasY = e.clientY - rect.top;
+      placeFurnitureAtCanvasPoint(pendingFurnitureType, canvasX, canvasY);
+      return;
+    }
+
     interactionRef.current?.handleMouseDown(e.nativeEvent, canvasRef.current!);
   };
 
@@ -142,9 +202,29 @@ export const InteractiveRoomPlanner: React.FC<InteractiveRoomPlannerProps> = ({
     interactionRef.current?.handleDoubleClick(e.nativeEvent, canvasRef.current!);
   };
 
+  const handleCanvasDragOver = (e: React.DragEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleCanvasDrop = (e: React.DragEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const droppedType = e.dataTransfer.getData('furnitureType') as FurnitureType | '';
+    if (!droppedType || !(droppedType in FURNITURE_DIMENSIONS)) return;
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const canvasX = e.clientX - rect.left;
+    const canvasY = e.clientY - rect.top;
+    placeFurnitureAtCanvasPoint(droppedType as FurnitureType, canvasX, canvasY);
+  };
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && pendingFurnitureType) {
+        onPlacementCancel?.();
+      }
       if (e.key === 'Delete' || e.key === 'Backspace') {
         interactionRef.current?.deleteSelected();
       }
@@ -167,7 +247,7 @@ export const InteractiveRoomPlanner: React.FC<InteractiveRoomPlannerProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [pendingFurnitureType, onPlacementCancel]);
 
   // Handle window resize
   useEffect(() => {
@@ -201,9 +281,17 @@ export const InteractiveRoomPlanner: React.FC<InteractiveRoomPlannerProps> = ({
         onMouseMove={handleCanvasMouseMove}
         onMouseUp={handleCanvasMouseUp}
         onDoubleClick={handleCanvasDoubleClick}
-        className="w-full h-full cursor-crosshair bg-white"
+        onDragOver={handleCanvasDragOver}
+        onDrop={handleCanvasDrop}
+        className={`w-full h-full bg-white ${pendingFurnitureType ? 'cursor-copy' : 'cursor-crosshair'}`}
         style={{ display: 'block' }}
       />
+
+      {pendingFurnitureType && (
+        <div className="absolute top-20 left-4 bg-amber-100 text-amber-900 border border-amber-300 rounded-md px-3 py-2 text-xs shadow">
+          Click canvas to place <strong>{pendingFurnitureType.replace(/_/g, ' ')}</strong> or press <strong>Esc</strong>.
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="absolute top-4 left-4 bg-white rounded-lg shadow-md p-3 flex gap-2">

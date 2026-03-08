@@ -235,6 +235,10 @@ const ROUTE_BREADCRUMBS: Record<string, BreadcrumbItem[]> = {
     { label: 'Dashboard', path: '/stream' },
     { label: 'Space Planning', path: '/space-planning', current: true },
   ],
+  '/room-planner': [
+    { label: 'Dashboard', path: '/stream' },
+    { label: 'Room Planner', path: '/room-planner', current: true },
+  ],
 
   // AI
   '/ai-dashboard': [

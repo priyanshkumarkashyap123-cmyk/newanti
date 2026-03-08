@@ -217,6 +217,7 @@ const Visualization3DEngine = lazy(() => import('./pages/Visualization3DEngine')
 const ResultAnimationViewer = lazy(() => import('./pages/ResultAnimationViewer'));
 const DigitalTwinDashboard = lazy(() => import('./pages/DigitalTwinDashboard'));
 const SpacePlanningPage = lazy(() => import('./pages/SpacePlanningPage'));
+const RoomPlannerPage = lazy(() => import('./pages/room-planner'));
 const LearningCenter = lazy(() => import('./pages/LearningCenter'));
 const SitemapPage = lazy(() => import('./pages/SitemapPage'));
 
@@ -969,6 +970,14 @@ function App() {
                 element={
                   <RequireAuth>
                     <SpacePlanningPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/room-planner"
+                element={
+                  <RequireAuth>
+                    <RoomPlannerPage />
                   </RequireAuth>
                 }
               />

@@ -13,6 +13,7 @@ import { FURNITURE_DIMENSIONS, type FurnitureCategory, type FurnitureType } from
 interface FurniturePaletteProps {
   onFurnitureSelect: (type: FurnitureType) => void;
   selectedCategory?: FurnitureCategory;
+  selectedFurnitureType?: FurnitureType | null;
   onCategoryChange?: (category: FurnitureCategory) => void;
 }
 
@@ -30,6 +31,7 @@ const CATEGORIES: { value: FurnitureCategory; label: string }[] = [
 export const FurniturePalette: React.FC<FurniturePaletteProps> = ({
   onFurnitureSelect,
   selectedCategory = 'seating',
+  selectedFurnitureType,
   onCategoryChange,
 }) => {
   const [expanded, setExpanded] = useState(true);
@@ -114,7 +116,7 @@ export const FurniturePalette: React.FC<FurniturePaletteProps> = ({
                   onDragEnd={() => setDragSource(null)}
                   onClick={() => onFurnitureSelect(type)}
                   className={`p-3 rounded-lg border-2 cursor-move transition-all ${
-                    dragSource === type
+                    dragSource === type || selectedFurnitureType === type
                       ? 'border-blue-500 bg-blue-50 shadow-lg'
                       : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
                   }`}

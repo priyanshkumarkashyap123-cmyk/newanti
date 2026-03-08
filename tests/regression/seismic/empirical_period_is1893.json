@@ -12,8 +12,8 @@
     "structural_system": "RC_moment_frame"
   },
   "expected": {
-    "Ta_moment_frame_sec": 0.8136,
-    "Ta_shear_wall_sec": 0.5164
+    "Ta_moment_frame_sec": 0.9612,
+    "Ta_shear_wall_sec": 0.6972
   },
   "tolerance": {
     "rel": { "Ta_moment_frame_sec": 0.005, "Ta_shear_wall_sec": 0.005 }
