@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, memo } from 'react';
+import { Input, Select } from '../components/ui/FormInputs';
 import {
   Wind,
   Weight,
@@ -382,27 +383,27 @@ export const LoadCombinationPage: React.FC = () => {
                     <div key={loadCase.id} className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg flex items-center gap-3">
                       <Icon className="w-5 h-5 text-amber-400 flex-shrink-0" />
                       
-                      <input
-                        type="text"
-                        value={loadCase.name}
-                        onChange={(e) => updateLoadCase(loadCase.id, { name: e.target.value })}
-                        className="flex-1 px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                        placeholder="Load case name"
-                      />
+                      <div className="flex-1">
+                        <Input
+                          value={loadCase.name}
+                          onChange={(e) => updateLoadCase(loadCase.id, { name: e.target.value })}
+                          placeholder="Load case name"
+                        />
+                      </div>
                       
-                      <select
+                      <Select
                         value={loadCase.type}
-                        onChange={(e) => updateLoadCase(loadCase.id, { type: e.target.value as LoadType })}
-                        className="px-3 py-2 bg-slate-200 dark:bg-slate-700 border border-slate-600 rounded text-slate-900 dark:text-white text-sm focus:border-amber-500 focus:outline-none"
-                      >
-                        <option value="dead">Dead</option>
-                        <option value="live">Live</option>
-                        <option value="seismic">Seismic</option>
-                        <option value="wind">Wind</option>
-                        <option value="snow">Snow</option>
-                        <option value="temperature">Temperature</option>
-                        <option value="earth">Earth</option>
-                      </select>
+                        onChange={(v) => updateLoadCase(loadCase.id, { type: v as LoadType })}
+                        options={[
+                          { value: 'dead', label: 'Dead' },
+                          { value: 'live', label: 'Live' },
+                          { value: 'seismic', label: 'Seismic' },
+                          { value: 'wind', label: 'Wind' },
+                          { value: 'snow', label: 'Snow' },
+                          { value: 'temperature', label: 'Temperature' },
+                          { value: 'earth', label: 'Earth' },
+                        ]}
+                      />
 
                       <button type="button"
                         onClick={() => removeLoadCase(loadCase.id)}

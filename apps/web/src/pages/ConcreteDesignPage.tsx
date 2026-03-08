@@ -1108,7 +1108,15 @@ export const ConcreteDesignPage: React.FC = () => {
               </div>
               <div>
                 <span className="text-slate-600 dark:text-slate-400">Utilization:</span>
-                <span className="ml-2 font-semibold text-slate-900 dark:text-white">{(results.utilization * 100).toFixed(1)}%</span>
+                <span className={`ml-2 font-semibold ${results.utilization > 1 ? 'text-red-500' : results.utilization > 0.8 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                  {(results.utilization * 100).toFixed(1)}%
+                </span>
+                <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${results.utilization > 1 ? 'bg-red-500' : results.utilization > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                    style={{ width: `${Math.min(results.utilization * 100, 100)}%` }}
+                  />
+                </div>
               </div>
               {results.momentType && (
                 <div>

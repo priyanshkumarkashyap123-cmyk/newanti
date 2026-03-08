@@ -33,7 +33,10 @@ USER app
 # Expose port
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+# Health check: allow 180s (3min) for Azure cold-start to complete
+# before considering container unhealthy (up from 20s). Retry up to 12 times
+# to accommodate slow deployments (90s total with 30s intervals).
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=12 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Start with Gunicorn (production)

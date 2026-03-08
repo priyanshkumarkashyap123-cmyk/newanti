@@ -421,6 +421,222 @@ pub fn calculate_accidental_eccentricity(building_dimension_perp_m: f64) -> f64 
     0.05 * building_dimension_perp_m.abs()
 }
 
+// ── Capacity Design Checks (IS 1893 Cl. 7.2, 7.10) ──
+
+/// Check for soft storey / weak storey condition per IS 1893 Cl. 7.10.3
+///
+/// A storey is considered "soft" if its lateral stiffness is less than 70% of
+/// that in the storey above, or less than 80% of the average stiffness of
+/// the three storeys above.
+///
+/// **Strength-based check**: Storey shear strength should not be < 80% of storey above
+///
+/// **Reference**: IS 1893:2016 Cl. 7.10.3
+///
+/// # Arguments
+/// * `storey_stiffness_kn_per_m` - Lateral stiffness of current storey (kN/m)
+/// * `storey_above_stiffness_kn_per_m` - Lateral stiffness of storey above (kN/m)
+/// * `storey_shear_capacity_kn` - Shear capacity of current storey (kN)
+/// * `storey_above_shear_capacity_kn` - Shear capacity of storey above (kN)
+///
+/// # Returns
+/// SoftStoreyResult with pass/fail and diagnostic messages
+pub fn check_soft_storey(
+    storey_stiffness_kn_per_m: f64,
+    storey_above_stiffness_kn_per_m: f64,
+    storey_shear_capacity_kn: f64,
+    storey_above_shear_capacity_kn: f64,
+) -> SoftStoreyResult {
+    // Stiffness-based check: k_i ≥ 0.70 × k_(i+1)
+    let stiffness_ratio = storey_stiffness_kn_per_m / storey_above_stiffness_kn_per_m;
+    let stiffness_check_passed = stiffness_ratio >= 0.70;
+
+    // Strength-based check: V_i ≥ 0.80 × V_(i+1)
+    let strength_ratio = storey_shear_capacity_kn / storey_above_shear_capacity_kn;
+    let strength_check_passed = strength_ratio >= 0.80;
+
+    let passed = stiffness_check_passed && strength_check_passed;
+
+    let mut messages = Vec::new();
+    if !stiffness_check_passed {
+        messages.push(format!(
+            "⚠️ Soft storey: Stiffness ratio {:.2} < 0.70 (IS 1893 Cl. 7.10.3)",
+            stiffness_ratio
+        ));
+    }
+    if !strength_check_passed {
+        messages.push(format!(
+            "⚠️ Weak storey: Strength ratio {:.2} < 0.80 (IS 1893 Cl. 7.10.3)",
+            strength_ratio
+        ));
+    }
+    if passed {
+        messages.push("✓ No soft/weak storey condition detected".to_string());
+    }
+
+    SoftStoreyResult {
+        stiffness_ratio,
+        strength_ratio,
+        stiffness_check_passed,
+        strength_check_passed,
+        passed,
+        messages,
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SoftStoreyResult {
+    pub stiffness_ratio: f64,
+    pub strength_ratio: f64,
+    pub stiffness_check_passed: bool,
+    pub strength_check_passed: bool,
+    pub passed: bool,
+    pub messages: Vec<String>,
+}
+
+/// Check column-beam strength hierarchy for capacity design per IS 1893 Cl. 7.2.3
+///
+/// **Strong-column-weak-beam principle**: At a beam-column joint, the sum of moment
+/// capacities of columns should exceed the sum of moment capacities of beams.
+///
+/// ΣM_c ≥ 1.2 × ΣM_b (for Special RC Moment Frames)
+///
+/// This ensures plastic hinges form in beams (ductile, repairable) rather than
+/// columns (non-ductile, collapse risk).
+///
+/// **Reference**: IS 1893:2016 Cl. 7.2.3, IS 13920:2016 Cl. 7.3.3
+///
+/// # Arguments
+/// * `sum_column_moment_knm` - Sum of moment capacities of columns at joint (kN·m)
+/// * `sum_beam_moment_knm` - Sum of moment capacities of beams at joint (kN·m)
+/// * `frame_type` - Frame type ("SMRF", "OMRF", "IMRF")
+///
+/// # Returns
+/// CapacityDesignResult with pass/fail and messages
+pub fn check_column_beam_capacity_hierarchy(
+    sum_column_moment_knm: f64,
+    sum_beam_moment_knm: f64,
+    frame_type: &str,
+) -> CapacityDesignResult {
+    // Factor depends on frame type
+    // SMRF (Special Moment Resisting Frame): 1.2 per IS 13920
+    // OMRF (Ordinary Moment Resisting Frame): 1.1
+    // IMRF (Intermediate Moment Resisting Frame): 1.1
+    let factor = match frame_type {
+        "SMRF" | "special" => 1.2,
+        "OMRF" | "ordinary" => 1.1,
+        "IMRF" | "intermediate" => 1.1,
+        _ => 1.2, // Default to most conservative
+    };
+
+    let required_column_moment = factor * sum_beam_moment_knm;
+    let passed = sum_column_moment_knm >= required_column_moment;
+    let capacity_ratio = sum_column_moment_knm / required_column_moment;
+
+    let message = if passed {
+        format!(
+            "✓ Strong-column-weak-beam: ΣM_c = {:.2} kN·m ≥ {} × ΣM_b = {:.2} kN·m (ratio: {:.2})",
+            sum_column_moment_knm, factor, required_column_moment, capacity_ratio
+        )
+    } else {
+        format!(
+            "✗ Strong-column-weak-beam VIOLATION: ΣM_c = {:.2} kN·m < {} × ΣM_b = {:.2} kN·m (shortfall: {:.2} kN·m)",
+            sum_column_moment_knm, factor, required_column_moment,
+            required_column_moment - sum_column_moment_knm
+        )
+    };
+
+    CapacityDesignResult {
+        sum_column_moment_knm,
+        sum_beam_moment_knm,
+        required_factor: factor,
+        required_column_moment_knm: required_column_moment,
+        capacity_ratio,
+        passed,
+        message,
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CapacityDesignResult {
+    pub sum_column_moment_knm: f64,
+    pub sum_beam_moment_knm: f64,
+    pub required_factor: f64,
+    pub required_column_moment_knm: f64,
+    pub capacity_ratio: f64,
+    pub passed: bool,
+    pub message: String,
+}
+
+/// Check P-Delta effects per IS 1893 Cl. 7.11.2
+///
+/// P-Δ effects should be considered when stability coefficient θ_i > 0.10
+///
+/// θ_i = (P_i × Δ_i) / (V_i × h_i)
+///
+/// where:
+/// - P_i = total gravity load at storey i
+/// - Δ_i = interstory drift
+/// - V_i = seismic storey shear
+/// - h_i = storey height
+///
+/// **Reference**: IS 1893:2016 Cl. 7.11.2
+///
+/// # Arguments
+/// * `gravity_load_kn` - Total gravity load above storey (kN)
+/// * `interstory_drift_mm` - Interstory drift (mm)
+/// * `storey_shear_kn` - Seismic storey shear (kN)
+/// * `storey_height_mm` - Storey height (mm)
+///
+/// # Returns
+/// P-Delta check result
+pub fn check_p_delta_effects(
+    gravity_load_kn: f64,
+    interstory_drift_mm: f64,
+    storey_shear_kn: f64,
+    storey_height_mm: f64,
+) -> PDeltaResult {
+    let drift_m = interstory_drift_mm / 1000.0;
+    let height_m = storey_height_mm / 1000.0;
+
+    let theta = (gravity_load_kn * drift_m) / (storey_shear_kn * height_m);
+    let requires_p_delta = theta > 0.10;
+
+    let message = if requires_p_delta {
+        format!(
+            "⚠️ P-Δ effects SIGNIFICANT: θ = {:.3} > 0.10 — must include in analysis (IS 1893 Cl. 7.11.2)",
+            theta
+        )
+    } else {
+        format!(
+            "✓ P-Δ effects negligible: θ = {:.3} ≤ 0.10",
+            theta
+        )
+    };
+
+    PDeltaResult {
+        stability_coefficient: theta,
+        requires_p_delta_analysis: requires_p_delta,
+        gravity_load_kn,
+        interstory_drift_mm,
+        storey_shear_kn,
+        storey_height_mm,
+        message,
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PDeltaResult {
+    pub stability_coefficient: f64,
+    pub requires_p_delta_analysis: bool,
+    pub gravity_load_kn: f64,
+    pub interstory_drift_mm: f64,
+    pub storey_shear_kn: f64,
+    pub storey_height_mm: f64,
+    pub message: String,
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;

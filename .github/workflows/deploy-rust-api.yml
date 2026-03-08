@@ -1,13 +1,12 @@
 name: Deploy Rust API to Azure
 
-# AUTO-TRIGGERS DISABLED — GitHub Actions minutes exhausted.
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - 'apps/rust-api/**'
-  #     - '.github/workflows/deploy-rust-api.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/rust-api/**'
+      - '.github/workflows/deploy-rust-api.yml'
   workflow_dispatch:
 
 concurrency:

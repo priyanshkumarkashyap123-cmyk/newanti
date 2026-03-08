@@ -26,9 +26,14 @@ export interface FootingDesignInput {
   momentY?: number;         // kN·m (about Y-axis)
   
   // Soil Properties
-  bearingCapacity: number;  // kN/m² - safe bearing capacity
+  bearingCapacity: number;  // kN/m² - safe bearing capacity (used if frictionAngle not given)
   soilDensity: number;      // kN/m³
   foundationDepth: number;  // mm - depth below ground
+  frictionAngle?: number;   // degrees — soil friction angle φ (triggers Meyerhof computation)
+  cohesion?: number;        // kN/m² — soil cohesion c
+  elasticModulus?: number;  // kN/m² — soil elastic modulus E_s (for settlement)
+  poissonRatio?: number;    // Poisson's ratio μ (default 0.3)
+  horizontalLoad?: number;  // kN — horizontal load for inclination factors per IS 6403
   
   // Materials
   fck: number;              // MPa
@@ -156,21 +161,68 @@ export class FootingDesignEngine {
     const warnings: string[] = [];
     
     const { columnWidth, columnDepth, axialLoad, momentX = 0, momentY = 0, bearingCapacity, soilDensity, foundationDepth, fck, fy, footingType, minCover } = input;
+    const phi = input.frictionAngle;
+    const cohesion = input.cohesion ?? 0;
+    const Es = input.elasticModulus;
+    const mu_soil = input.poissonRatio ?? 0.3;
+    const H_load = input.horizontalLoad ?? 0;
     
     const Cx = columnWidth;
     const Cy = columnDepth;
     const P = axialLoad;
     const Mx = momentX;
     const My = momentY;
-    const qa = bearingCapacity;
     const gamma_s = soilDensity;
     const Df = foundationDepth / 1000; // m
     
     // ----- STEP 1: Determine Footing Size -----
-    // Net allowable bearing (deduct self-weight and overburden)
     const gamma_c = 25; // kN/m³
     const assumedFootingDepth = 0.5; // m (initial assumption)
     const selfWeightAllowance = 0.1 * P; // 10% of column load for footing self-weight
+    
+    // Determine bearing capacity: Meyerhof if φ given, else user-provided qa
+    let qa: number;
+    let bearingStepValues: Record<string, string> = {};
+    
+    if (phi !== undefined && phi > 0) {
+      // Meyerhof's general bearing capacity: q_ult = c·Nc·sc·dc·ic + q·Nq·sq·dq·iq + 0.5·γ·B·Nγ·sγ·dγ·iγ
+      // First pass: assume B to get factors, then iterate
+      let B_est = Math.sqrt((P + selfWeightAllowance) / bearingCapacity) * 1000; // initial guess mm
+      B_est = Math.ceil(B_est / 100) * 100;
+      const L_est = footingType === 'isolated_square' ? B_est : B_est * Cx / Cy;
+      const B_m = B_est / 1000;
+      const L_m = L_est / 1000;
+      
+      const { Nc, Nq, Ngamma } = getMeyerhofFactors(phi);
+      const { dc, dq, dgamma } = getDepthFactors(Df, B_m);
+      const { sc, sq, sgamma } = getShapeFactors(L_m, B_m, Nq, Nc);
+      const { ic, iq, igamma } = getInclinationFactors(H_load, P, B_m, L_m, cohesion);
+      
+      const q_surcharge = gamma_s * Df; // kN/m²
+      const q_ult = cohesion * Nc * sc * dc * ic
+        + q_surcharge * Nq * sq * dq * iq
+        + 0.5 * gamma_s * B_m * Ngamma * sgamma * dgamma * igamma;
+      
+      const FOS = 2.5; // Factor of safety per IS 6403:2016
+      qa = q_ult / FOS;
+      
+      bearingStepValues = {
+        'φ (friction angle)': `${phi}°`,
+        'c (cohesion)': `${cohesion} kN/m²`,
+        'Nc / Nq / Nγ': `${Nc.toFixed(2)} / ${Nq.toFixed(2)} / ${Ngamma.toFixed(2)}`,
+        'Shape (sc/sq/sγ)': `${sc.toFixed(3)} / ${sq.toFixed(3)} / ${sgamma.toFixed(3)}`,
+        'Depth (dc/dq/dγ)': `${dc.toFixed(3)} / ${dq.toFixed(3)} / ${dgamma.toFixed(3)}`,
+        'Incl. (ic/iq/iγ)': `${ic.toFixed(3)} / ${iq.toFixed(3)} / ${igamma.toFixed(3)}`,
+        'q_ult (Meyerhof)': `${q_ult.toFixed(2)} kN/m²`,
+        'FOS': `${FOS}`,
+        'Safe Bearing (q_a)': `${qa.toFixed(2)} kN/m²`,
+      };
+    } else {
+      qa = bearingCapacity;
+      bearingStepValues = {
+        'Safe Bearing (q_a)': `${qa} kN/m² (user-provided)`,
+      };
+    }
     
     const qn = qa - gamma_s * Df - gamma_c * assumedFootingDepth;
     
@@ -183,10 +235,9 @@ export class FootingDesignEngine {
     
     if (footingType === 'isolated_square') {
       const side = Math.sqrt(A_req) * 1000;
-      L = Math.ceil(side / 100) * 100; // Round up to nearest 100mm
+      L = Math.ceil(side / 100) * 100;
       B = L;
     } else {
-      // Rectangular - use column aspect ratio
       const ratio = Cx / Cy;
       B = Math.sqrt(A_req / ratio) * 1000;
       L = ratio * B;
@@ -195,18 +246,18 @@ export class FootingDesignEngine {
     }
     
     steps.push({
-      title: 'Step 1: Footing Size',
-      description: 'Determine plan dimensions based on bearing capacity',
-      formula: 'A_req = (P + self weight) / q_net',
+      title: 'Step 1: Footing Size & Bearing Capacity',
+      description: phi ? 'Meyerhof bearing capacity with depth/shape/inclination factors (IS 6403:2016)' : 'User-provided safe bearing capacity',
+      formula: phi ? 'q_ult = c·Nc·sc·dc·ic + q̄·Nq·sq·dq·iq + 0.5·γ·B·Nγ·sγ·dγ·iγ' : 'A_req = (P + self weight) / q_net',
       values: {
         'Service Load (P)': `${P.toFixed(2)} kN`,
-        'Safe Bearing (q_a)': `${qa} kN/m²`,
+        ...bearingStepValues,
         'Net Bearing (q_n)': `${qn.toFixed(2)} kN/m²`,
         'Required Area': `${A_req.toFixed(3)} m²`,
         'Footing Size': `${L} × ${B} mm`,
         'Provided Area': `${(L * B / 1e6).toFixed(3)} m²`,
       },
-      reference: 'IS 456:2000 & Foundation Engineering',
+      reference: phi ? 'IS 6403:2016 & Meyerhof (1963)' : 'IS 456:2000 & Foundation Engineering',
     });
     
     // ----- STEP 2: Base Pressure Distribution -----
@@ -424,6 +475,33 @@ export class FootingDesignEngine {
     
     if (availableLength < Ld) {
       warnings.push('Development length not available. Provide bent-up bars or hooks.');
+    }
+    
+    // ----- STEP 8: Settlement Estimation (Elastic) -----
+    let settlementMm: number | undefined;
+    if (Es) {
+      const qNet_service = P / A - gamma_s * Df; // kN/m²
+      settlementMm = estimateSettlement(qNet_service, B / 1000, L / 1000, Es, mu_soil);
+      const allowableSettlement = 25; // mm per IS 1904 for isolated footings on sand
+      
+      steps.push({
+        title: 'Step 8: Settlement Estimation',
+        description: 'Elastic settlement per Bowles (5th ed.) — Se = q·B·(1−μ²)·Iw / Es',
+        formula: 'Se = q_net × B × (1 − μ²) × Iw / E_s',
+        values: {
+          'Net contact pressure': `${qNet_service.toFixed(2)} kN/m²`,
+          'E_s': `${Es} kN/m²`,
+          'μ (Poisson)': `${mu_soil}`,
+          'Estimated Settlement': `${settlementMm.toFixed(2)} mm`,
+          'Allowable (IS 1904)': `${allowableSettlement} mm`,
+          'Status': settlementMm <= allowableSettlement ? 'OK' : 'EXCEEDS LIMIT',
+        },
+        reference: 'IS 1904:1986 & Bowles (5th ed.)',
+      });
+      
+      if (settlementMm > allowableSettlement) {
+        warnings.push(`Estimated settlement ${settlementMm.toFixed(1)} mm exceeds allowable ${allowableSettlement} mm.`);
+      }
     }
     
     // ----- DETERMINE OVERALL ADEQUACY -----

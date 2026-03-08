@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { ReportBuilder, type ReportConfig } from '@/modules/reports/EngineeringReportGenerator';
 import { FileText, Download, Eye, Settings, Plus, Trash2, GripVertical, Zap } from 'lucide-react';
+import { Input, TextArea, Switch } from '@/components/ui/FormInputs';
 import { useModelStore } from '@/store/model';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/ToastSystem';
@@ -254,65 +255,49 @@ export default function ReportBuilderPage() {
               <h2 className="font-semibold">Report Settings</h2>
             </div>
             <div className="space-y-3">
-              <div>
-                <label className="text-xs text-slate-600 dark:text-slate-400">Project Name</label>
-                <input 
-                  value={config.projectName || ''} 
-                  onChange={e => setConfig(prev => ({ ...prev, projectName: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-slate-600 dark:text-slate-400">Project Number</label>
-                <input 
-                  value={config.projectNumber || ''} 
-                  onChange={e => setConfig(prev => ({ ...prev, projectNumber: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-slate-600 dark:text-slate-400">Client</label>
-                <input 
-                  value={config.client || ''} 
-                  onChange={e => setConfig(prev => ({ ...prev, client: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-slate-600 dark:text-slate-400">Engineer</label>
-                <input 
-                  value={config.engineer || ''} 
-                  onChange={e => setConfig(prev => ({ ...prev, engineer: e.target.value }))}
-                  className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
-                />
-              </div>
+              <Input
+                label="Project Name"
+                value={config.projectName || ''}
+                onChange={e => setConfig(prev => ({ ...prev, projectName: e.target.value }))}
+              />
+              <Input
+                label="Project Number"
+                value={config.projectNumber || ''}
+                onChange={e => setConfig(prev => ({ ...prev, projectNumber: e.target.value }))}
+              />
+              <Input
+                label="Client"
+                value={config.client || ''}
+                onChange={e => setConfig(prev => ({ ...prev, client: e.target.value }))}
+              />
+              <Input
+                label="Engineer"
+                value={config.engineer || ''}
+                onChange={e => setConfig(prev => ({ ...prev, engineer: e.target.value }))}
+              />
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Revision</label>
-                  <input 
-                    value={config.revision || ''} 
-                    onChange={e => setConfig(prev => ({ ...prev, revision: e.target.value }))}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400">Date</label>
-                  <input 
-                    type="date"
-                    value={config.date || ''} 
-                    onChange={e => setConfig(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
-                  />
-                </div>
+                <Input
+                  label="Revision"
+                  value={config.revision || ''}
+                  onChange={e => setConfig(prev => ({ ...prev, revision: e.target.value }))}
+                />
+                <Input
+                  label="Date"
+                  type="date"
+                  value={config.date || ''}
+                  onChange={e => setConfig(prev => ({ ...prev, date: e.target.value }))}
+                />
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span>Cover Page</span>
-                <input type="checkbox" checked={config.includeCoverPage} onChange={e => setConfig(prev => ({ ...prev, includeCoverPage: e.target.checked }))} />
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span>Table of Contents</span>
-                <input type="checkbox" checked={config.includeTableOfContents} onChange={e => setConfig(prev => ({ ...prev, includeTableOfContents: e.target.checked }))} />
-              </div>
+              <Switch
+                label="Cover Page"
+                checked={!!config.includeCoverPage}
+                onChange={v => setConfig(prev => ({ ...prev, includeCoverPage: v }))}
+              />
+              <Switch
+                label="Table of Contents"
+                checked={!!config.includeTableOfContents}
+                onChange={v => setConfig(prev => ({ ...prev, includeTableOfContents: v }))}
+              />
             </div>
           </div>
 
@@ -358,18 +343,16 @@ export default function ReportBuilderPage() {
 
                 <div className="border-t border-slate-300 dark:border-slate-700 pt-4 space-y-2">
                   <h3 className="text-sm font-medium flex items-center gap-2"><Plus className="w-4 h-4" /> Add Section</h3>
-                  <input 
+                  <Input
                     placeholder="Section Title"
                     value={newSection.title}
                     onChange={e => setNewSection(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm"
                   />
-                  <textarea 
+                  <TextArea
                     placeholder="Section Content"
                     value={newSection.content}
                     onChange={e => setNewSection(prev => ({ ...prev, content: e.target.value }))}
                     rows={2}
-                    className="w-full px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm resize-none"
                   />
                   <button type="button" onClick={addSection} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm transition-colors">
                     Add Section

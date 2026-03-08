@@ -7,6 +7,7 @@
  */
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Select } from '../components/ui/FormInputs';
 import {
   Ruler,
   Download,
@@ -466,20 +467,17 @@ export const BarBendingSchedulePage: React.FC = () => {
                 <FormField label="Project Name" value={projectName} onChange={setProjectName} type="text" />
                 <FormField label="Drawing Ref" value={drawingRef} onChange={setDrawingRef} type="text" />
                 <FormField label="Prepared By" value={preparedBy} onChange={setPreparedBy} type="text" />
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-slate-600 dark:text-slate-400 font-medium">Bar Grade</label>
-                  <select
-                    value={barGrade}
-                    onChange={e => setBarGrade(e.target.value as BarGrade)}
-                    className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white
-                               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
-                  >
-                    <option value="Fe250">Fe 250 (Mild Steel)</option>
-                    <option value="Fe415">Fe 415</option>
-                    <option value="Fe500">Fe 500</option>
-                    <option value="Fe550">Fe 550</option>
-                  </select>
-                </div>
+                <Select
+                  label="Bar Grade"
+                  value={barGrade}
+                  onChange={(v) => setBarGrade(v as BarGrade)}
+                  options={[
+                    { value: 'Fe250', label: 'Fe 250 (Mild Steel)' },
+                    { value: 'Fe415', label: 'Fe 415' },
+                    { value: 'Fe500', label: 'Fe 500' },
+                    { value: 'Fe550', label: 'Fe 550' },
+                  ]}
+                />
                 <FormField label="Clear Cover" unit="mm" value={cover} onChange={v => setCover(Number(v))} />
                 <FormField label="Wastage Factor" unit="%" value={wastageFactor} onChange={v => setWastageFactor(Number(v))} step={0.5} />
               </div>

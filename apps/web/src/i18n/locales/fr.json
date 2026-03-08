@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "saving": "Sauvegarde...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "error": "Erreur",
+    "success": "Succès",
+    "warning": "Avertissement",
+    "info": "Information"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue sur BeamLab",
+    "recentProjects": "Projets Récents",
+    "createNew": "Créer un Nouveau Projet",
+    "openProject": "Ouvrir un Projet"
+  },
+  "analysis": {
+    "title": "Analyse Structurelle",
+    "run": "Exécuter l'Analyse",
+    "results": "Résultats",
+    "forces": "Forces de Membre",
+    "displacements": "Déplacements",
+    "reactions": "Réactions d'Appui",
+    "utilization": "Utilisation",
+    "maxDisplacement": "Déplacement Maximum: {value} mm",
+    "loadCase": "Cas de Charge",
+    "loadCombination": "Combinaison de Charge"
+  },
+  "design": {
+    "title": "Conception",
+    "code": "Code de Conception",
+    "member": "Membre",
+    "section": "Section",
+    "capacity": "Capacité",
+    "demand": "Demande",
+    "ratio": "Rapport Demande/Capacité",
+    "passed": "Réussi",
+    "failed": "Échoué",
+    "steelDesign": "Conception Acier",
+    "concreteDesign": "Conception Béton",
+    "reinforcement": "Armature"
+  },
+  "boq": {
+    "title": "Bordereau de Quantités",
+    "description": "Description",
+    "quantity": "Quantité",
+    "unit": "Unité",
+    "rate": "Tarif",
+    "amount": "Montant",
+    "total": "Total",
+    "subtotal": "Sous-total",
+    "generate": "Générer le Bordereau",
+    "export": "Exporter le Bordereau",
+    "materialTakeoff": "Métré des Matériaux",
+    "steelQuantity": "Quantité d'Acier",
+    "concreteVolume": "Volume de Béton",
+    "reinforcementWeight": "Poids d'Armature"
+  },
+  "reports": {
+    "title": "Rapports",
+    "generate": "Générer un Rapport",
+    "download": "Télécharger le Rapport",
+    "analysisReport": "Rapport d'Analyse",
+    "designReport": "Rapport de Conception",
+    "calculationSheet": "Feuille de Calcul",
+    "professional": "Rapport Professionnel",
+    "peReady": "Rapport PE Prêt",
+    "projectDetails": "Détails du Projet",
+    "engineerName": "Nom de l'Ingénieur",
+    "projectNumber": "Numéro de Projet",
+    "date": "Date"
+  },
+  "model": {
+    "nodes": "Nœuds",
+    "members": "Membres",
+    "loads": "Charges",
+    "supports": "Appuis",
+    "addNode": "Ajouter un Nœud",
+    "addMember": "Ajouter un Membre",
+    "addLoad": "Ajouter une Charge",
+    "coordinates": "Coordonnées",
+    "restraints": "Contraintes"
+  },
+  "units": {
+    "force": "Force",
+    "moment": "Moment",
+    "length": "Longueur",
+    "area": "Surface",
+    "stress": "Contrainte",
+    "kN": "kN",
+    "kNm": "kN·m",
+    "mm": "mm",
+    "m": "m",
+    "mm2": "mm²",
+    "MPa": "MPa",
+    "kg": "kg",
+    "tons": "tonnes"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "invalidNumber": "Veuillez saisir un nombre valide",
+    "mustBePositive": "La valeur doit être positive",
+    "modelUnstable": "Le modèle est instable",
+    "noSupports": "Aucun appui défini",
+    "noMembers": "Aucun membre défini"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": "Langue",
+    "theme": "Thème",
+    "units": "Unités",
+    "preferences": "Préférences",
+    "account": "Compte"
+  }
+}

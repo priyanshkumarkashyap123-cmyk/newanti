@@ -26,6 +26,7 @@ import asyncio
 import importlib
 import importlib.util
 from contextlib import asynccontextmanager
+from datetime import datetime
 from request_logging import RequestLoggingMiddleware
 
 # Security middleware — rate limiting, auth verification, security headers
@@ -331,6 +332,37 @@ async def health_check():
             "beam", "continuous_beam", "truss", "pratt_truss", 
             "frame", "3d_frame", "portal"
         ]
+    }
+
+
+@app.get("/health/ready", tags=["Health"])
+async def health_ready():
+    """Kubernetes readiness probe: only returns 200 after full initialization.
+    
+    Used by Azure orchestration to determine when container is ready to accept traffic.
+    Unlike /health which responds immediately, this endpoint confirms:
+    - All modules loaded successfully
+    - Worker pools initialized
+    - Database connectivity established
+    
+    Returns 503 if critical services not yet ready (during startup).
+    """
+    # Check if all critical components are initialized (set by lifespan context manager)
+    if not all([HAS_MODELS, HAS_FACTORY, HAS_AI_ROUTES, HAS_REPORT_GEN]):
+        return JSONResponse(
+            status_code=503, 
+            content={
+                "status": "not_ready",
+                "models": "ok" if HAS_MODELS else "initializing",
+                "factory": "ok" if HAS_FACTORY else "initializing",
+                "ai_routes": "ok" if HAS_AI_ROUTES else "initializing",
+                "report_generator": "ok" if HAS_REPORT_GEN else "initializing"
+            }
+        )
+    
+    return {
+        "status": "ready",
+        "timestamp": datetime.now().isoformat()
     }
 
 

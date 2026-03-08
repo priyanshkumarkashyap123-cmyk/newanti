@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "info": "Información"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "welcome": "Bienvenido a BeamLab",
+    "recentProjects": "Proyectos Recientes",
+    "createNew": "Crear Nuevo Proyecto",
+    "openProject": "Abrir Proyecto"
+  },
+  "analysis": {
+    "title": "Análisis Estructural",
+    "run": "Ejecutar Análisis",
+    "results": "Resultados",
+    "forces": "Fuerzas de Miembro",
+    "displacements": "Desplazamientos",
+    "reactions": "Reacciones de Apoyo",
+    "utilization": "Utilización",
+    "maxDisplacement": "Desplazamiento Máximo: {value} mm",
+    "loadCase": "Caso de Carga",
+    "loadCombination": "Combinación de Carga"
+  },
+  "design": {
+    "title": "Diseño",
+    "code": "Código de Diseño",
+    "member": "Miembro",
+    "section": "Sección",
+    "capacity": "Capacidad",
+    "demand": "Demanda",
+    "ratio": "Relación Demanda/Capacidad",
+    "passed": "Aprobado",
+    "failed": "Fallado",
+    "steelDesign": "Diseño de Acero",
+    "concreteDesign": "Diseño de Hormigón",
+    "reinforcement": "Refuerzo"
+  },
+  "boq": {
+    "title": "Presupuesto de Cantidades",
+    "description": "Descripción",
+    "quantity": "Cantidad",
+    "unit": "Unidad",
+    "rate": "Tarifa",
+    "amount": "Monto",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "generate": "Generar Presupuesto",
+    "export": "Exportar Presupuesto",
+    "materialTakeoff": "Medición de Materiales",
+    "steelQuantity": "Cantidad de Acero",
+    "concreteVolume": "Volumen de Hormigón",
+    "reinforcementWeight": "Peso del Refuerzo"
+  },
+  "reports": {
+    "title": "Informes",
+    "generate": "Generar Informe",
+    "download": "Descargar Informe",
+    "analysisReport": "Informe de Análisis",
+    "designReport": "Informe de Diseño",
+    "calculationSheet": "Hoja de Cálculo",
+    "professional": "Informe Profesional",
+    "peReady": "Informe PE Listo",
+    "projectDetails": "Detalles del Proyecto",
+    "engineerName": "Nombre del Ingeniero",
+    "projectNumber": "Número de Proyecto",
+    "date": "Fecha"
+  },
+  "model": {
+    "nodes": "Nodos",
+    "members": "Miembros",
+    "loads": "Cargas",
+    "supports": "Apoyos",
+    "addNode": "Agregar Nodo",
+    "addMember": "Agregar Miembro",
+    "addLoad": "Agregar Carga",
+    "coordinates": "Coordenadas",
+    "restraints": "Restricciones"
+  },
+  "units": {
+    "force": "Fuerza",
+    "moment": "Momento",
+    "length": "Longitud",
+    "area": "Área",
+    "stress": "Esfuerzo",
+    "kN": "kN",
+    "kNm": "kN·m",
+    "mm": "mm",
+    "m": "m",
+    "mm2": "mm²",
+    "MPa": "MPa",
+    "kg": "kg",
+    "tons": "toneladas"
+  },
+  "validation": {
+    "required": "Este campo es obligatorio",
+    "invalidNumber": "Por favor ingrese un número válido",
+    "mustBePositive": "El valor debe ser positivo",
+    "modelUnstable": "El modelo es inestable",
+    "noSupports": "No hay apoyos definidos",
+    "noMembers": "No hay miembros definidos"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma",
+    "theme": "Tema",
+    "units": "Unidades",
+    "preferences": "Preferencias",
+    "account": "Cuenta"
+  }
+}

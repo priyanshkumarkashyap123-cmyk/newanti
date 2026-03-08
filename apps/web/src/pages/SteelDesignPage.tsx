@@ -5,9 +5,10 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Play, AlertTriangle, Box, ArrowLeft } from 'lucide-react';
+import { Loader2, Play, AlertTriangle, Box, ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
 import { useToast } from '../components/ui/ToastSystem';
 import { FieldLabel } from '../components/ui/FieldLabel';
+import { Select, NumberInput } from '../components/ui/FormInputs';
 import { useModelStore } from '../store/model';
 import { useShallow } from 'zustand/react/shallow';
 import { 
@@ -181,91 +182,68 @@ export function SteelDesignPage() {
                 
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5">
                     <div>
-                        <label htmlFor="steel-design-code" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Design Code:
-                        </label>
-                        <select
-                            id="steel-design-code"
+                        <Select
+                            label="Design Code"
                             value={designCode}
-                            onChange={(e) => setDesignCode(e.target.value as 'AISC360' | 'IS800')}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
-                        >
-                            <option value="AISC360">AISC 360-16 (USA)</option>
-                            <option value="IS800">IS 800:2007 (India)</option>
-                        </select>
+                            onChange={(v) => setDesignCode(v as 'AISC360' | 'IS800')}
+                            options={[
+                                { value: 'AISC360', label: 'AISC 360-16 (USA)' },
+                                { value: 'IS800', label: 'IS 800:2007 (India)' }
+                            ]}
+                        />
                     </div>
 
                     <div>
-                        <label htmlFor="steel-member" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            Member:
-                        </label>
-                        <select
-                            id="steel-member"
+                        <Select
+                            label="Member"
                             value={selectedMember}
-                            onChange={(e) => setSelectedMember(e.target.value)}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
-                        >
-                            <option value="">All Members</option>
-                            {members.map(m => (
-                                <option key={m.id} value={m.id}>
-                                    {m.id} ({m.sectionId})
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(v) => setSelectedMember(v)}
+                            options={[
+                                { value: '', label: 'All Members' },
+                                ...members.map(m => ({ value: m.id, label: `${m.id} (${m.sectionId})` }))
+                            ]}
+                        />
                     </div>
 
                     <div>
-                        <label htmlFor="steel-unbraced-length" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <FieldLabel field="Lb" label="Unbraced Length (mm):" />
-                        </label>
-                        <input
-                            id="steel-unbraced-length"
-                            type="number"
+                        <NumberInput
+                            label={<FieldLabel field="Lb" label="Unbraced Length (mm)" />}
                             value={params.Lb}
-                            onChange={(e) => setParams({ ...params, Lb: parseFloat(e.target.value) || 3000 })}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
+                            onChange={(v) => setParams({ ...params, Lb: v })}
+                            min={1}
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="steel-kx" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <FieldLabel field="Kx" label="Kx (Effective Length Factor):" />
-                        </label>
-                        <input
-                            id="steel-kx"
-                            type="number"
-                            step="0.1"
-                            value={params.Kx}
-                            onChange={(e) => setParams({ ...params, Kx: parseFloat(e.target.value) || 1.0 })}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
+                        <NumberInput
+                            label={<FieldLabel field="Kx" label="Kx — Effective Length Factor" />}
+                            value={params.Kx ?? 1.0}
+                            onChange={(v) => setParams({ ...params, Kx: v })}
+                            step={0.1}
+                            min={0.1}
+                            max={2.5}
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="steel-ky" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <FieldLabel field="Ky" label="Ky (Effective Length Factor):" />
-                        </label>
-                        <input
-                            id="steel-ky"
-                            type="number"
-                            step="0.1"
-                            value={params.Ky}
-                            onChange={(e) => setParams({ ...params, Ky: parseFloat(e.target.value) || 1.0 })}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
+                        <NumberInput
+                            label={<FieldLabel field="Ky" label="Ky — Effective Length Factor" />}
+                            value={params.Ky ?? 1.0}
+                            onChange={(v) => setParams({ ...params, Ky: v })}
+                            step={0.1}
+                            min={0.1}
+                            max={2.5}
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="steel-cb" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                            <FieldLabel field="Cb" label="Cb (LTB Modifier):" />
-                        </label>
-                        <input
-                            id="steel-cb"
-                            type="number"
-                            step="0.1"
-                            value={params.Cb}
-                            onChange={(e) => setParams({ ...params, Cb: parseFloat(e.target.value) || 1.0 })}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
+                        <NumberInput
+                            label={<FieldLabel field="Cb" label="Cb — LTB Modifier" />}
+                            value={params.Cb ?? 1.0}
+                            onChange={(v) => setParams({ ...params, Cb: v })}
+                            step={0.1}
+                            min={1.0}
+                            max={3.0}
                         />
                     </div>
                 </div>
@@ -315,14 +293,6 @@ export function SteelDesignPage() {
                             </thead>
                             <tbody>
                                 {results.map((result, idx) => {
-                                    const statusColor = 
-                                        result.overallStatus === 'PASS' ? '#4caf50' :
-                                        result.overallStatus === 'WARNING' ? '#ff9800' : '#f44336';
-                                    
-                                    const statusIcon = 
-                                        result.overallStatus === 'PASS' ? '✓' :
-                                        result.overallStatus === 'WARNING' ? '⚠️' : '✗';
-
                                     return (
                                         <tr key={idx} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                             <td className="p-3">{result.memberId}</td>
@@ -330,16 +300,32 @@ export function SteelDesignPage() {
                                                 {result.section.name}
                                             </td>
                                             <td className="p-3 text-center">
-                                                <span className="py-1 px-3 rounded text-xs" style={{ 
-                                                    background: statusColor, 
-                                                }}>
-                                                    {statusIcon} {result.overallStatus}
-                                                </span>
+                                                {result.overallStatus === 'PASS' && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
+                                                        <CheckCircle2 size={12}/> PASS
+                                                    </span>
+                                                )}
+                                                {result.overallStatus === 'WARNING' && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+                                                        <AlertTriangle size={12}/> WARN
+                                                    </span>
+                                                )}
+                                                {result.overallStatus === 'FAIL' && (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400">
+                                                        <XCircle size={12}/> FAIL
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="p-3 text-right font-bold">
                                                 <span className={result.criticalRatio > 1.0 ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}>
                                                 {(result.criticalRatio * 100).toFixed(1)}%
                                                 </span>
+                                                <div className="mt-1 h-1.5 w-20 ml-auto rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all ${result.criticalRatio > 1.0 ? 'bg-red-500' : result.criticalRatio > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                                        style={{ width: `${Math.min(result.criticalRatio * 100, 100)}%` }}
+                                                    />
+                                                </div>
                                             </td>
                                             <td className="p-3 text-sm">
                                                 {result.governingCheck || 'N/A'}

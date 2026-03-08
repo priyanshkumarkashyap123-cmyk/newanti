@@ -683,13 +683,23 @@ export const FoundationDesignPage: React.FC = () => {
                   <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-slate-600 dark:text-slate-400">Safety Status:</span>
-                      <span className={`font-bold ${results.passed ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {results.passed ? 'SAFE' : 'UNSAFE'}
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${results.passed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'}`}>
+                        {results.passed ? '✓ SAFE' : '✗ UNSAFE'}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Utilization:</span>
-                      <span className="font-semibold text-slate-900 dark:text-white">{(results.utilization * 100).toFixed(1)}%</span>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">Utilization:</span>
+                        <span className={`font-semibold ${results.utilization > 1 ? 'text-red-500' : results.utilization > 0.8 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                          {(results.utilization * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-300 dark:bg-slate-600 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${results.utilization > 1 ? 'bg-red-500' : results.utilization > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${Math.min(results.utilization * 100, 100)}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
 

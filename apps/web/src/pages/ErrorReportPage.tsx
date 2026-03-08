@@ -6,7 +6,7 @@
  * Last audit: 2026-03-01
  */
 
-import { FC, useState, useMemo } from 'react';
+import { FC, useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -548,6 +548,7 @@ const AuditSectionCard: FC<{ section: AuditSection; defaultOpen?: boolean }> = (
 // ────────────────────────────────────────────────────────────────────────────
 
 const ErrorReportPage: FC = () => {
+  useEffect(() => { document.title = 'Error Report | BeamLab'; }, []);
   const [filter, setFilter] = useState<Severity | 'all'>('all');
 
   const filteredSections = useMemo(

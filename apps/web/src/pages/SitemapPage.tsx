@@ -3,7 +3,7 @@
  * Helps users discover all features and pages in the application
  */
 
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ExternalLink, Home, BarChart3, Building2, Zap, FileText, Users, BookOpen, Cog, Search } from 'lucide-react';
@@ -259,6 +259,7 @@ const SectionCard: FC<{ section: PageSection; index: number }> = ({ section, ind
 };
 
 export const SitemapPage: FC<SitemapPageProps> = () => {
+  useEffect(() => { document.title = 'Sitemap | BeamLab'; }, []);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredSections = searchQuery

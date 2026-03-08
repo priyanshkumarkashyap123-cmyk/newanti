@@ -426,8 +426,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
           <Link to="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20">
               <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "20px" }}
+                className="material-symbols-outlined text-xl"
               >
                 architecture
               </span>
@@ -717,8 +716,7 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
                     className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${module.bgColor} group-hover:scale-105 transition-transform duration-300`}
                   >
                     <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "24px" }}
+                      className="material-symbols-outlined text-2xl"
                     >
                       {module.icon}
                     </span>

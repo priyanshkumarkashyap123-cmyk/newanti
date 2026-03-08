@@ -24,6 +24,9 @@ pub mod is_800;
 pub mod is_1893;
 pub mod is_875;
 pub mod serviceability;
+pub mod ductile_detailing;
+pub mod base_plate;
+pub mod composite_beam;
 
 // International Design Codes
 pub mod aisc_360;

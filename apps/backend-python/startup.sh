@@ -26,5 +26,4 @@ gunicorn -w "$WORKERS" \
     --max-requests-jitter "$MAX_REQUESTS_JITTER" \
     --access-logfile - \
     --error-logfile - \
-    --log-level info \
-    --preload
+    --log-level info

@@ -51,3 +51,10 @@ export {
     type TracedReportSummary,
     type LoadCaseInfo
 } from './ClauseTracedReportGenerator';
+
+// Calculation Sheet PDF Exporter — renders traced calcs as A4 PDF sheets
+export {
+    CalculationSheetExporter,
+    downloadPdf,
+    type CalcSheetProject
+} from './CalculationSheetExporter';

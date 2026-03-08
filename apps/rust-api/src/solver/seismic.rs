@@ -156,6 +156,18 @@ pub struct ResponseSpectrumConfig {
     
     /// Consider vertical earthquake
     pub include_vertical: bool,
+    
+    /// ASCE 7 site-specific mapped spectral acceleration S_S (short period, g)
+    #[serde(default)]
+    pub asce7_ss: Option<f64>,
+    
+    /// ASCE 7 site-specific mapped spectral acceleration S_1 (1-second, g)
+    #[serde(default)]
+    pub asce7_s1: Option<f64>,
+    
+    /// EC8 ground type (A–E), determines soil factor and corner periods
+    #[serde(default)]
+    pub ec8_ground_type: Option<String>,
 }
 
 impl Default for ResponseSpectrumConfig {
@@ -169,6 +181,9 @@ impl Default for ResponseSpectrumConfig {
             damping_ratio: 0.05,
             combination_method: CombinationMethod::CQC,
             include_vertical: false,
+            asce7_ss: None,
+            asce7_s1: None,
+            ec8_ground_type: None,
         }
     }
 }
@@ -244,12 +259,22 @@ impl ResponseSpectrumSolver {
         }
     }
 
-    /// Generate ASCE 7-16 design response spectrum
+    /// Generate ASCE 7-22 design response spectrum
+    /// Uses site-specific S_S and S_1 if provided, else defaults
     fn generate_asce7_spectrum(&self, periods: &[f64]) -> Vec<f64> {
-        // Simplified - would need S_S, S_1, F_a, F_v from site-specific data
-        // For demonstration, using typical values
-        let s_ds = 0.4; // Design spectral acceleration (short period)
-        let s_d1 = 0.24; // Design spectral acceleration (1 second)
+        // Site coefficients Fa, Fv depend on site class and mapped S_S, S_1
+        // Table 11.4-1 / 11.4-2 simplified for common cases
+        let ss = self.config.asce7_ss.unwrap_or(0.4);
+        let s1 = self.config.asce7_s1.unwrap_or(0.24);
+        
+        let (fa, fv) = match self.config.soil_type {
+            SoilType::TypeI =>  (1.0, 1.0),   // Site Class B (rock)
+            SoilType::TypeII => (1.2, 1.7),   // Site Class D (stiff soil) — typical default
+            SoilType::TypeIII => (1.2, 2.4),  // Site Class E (soft soil)
+        };
+        
+        let s_ds = (2.0 / 3.0) * ss * fa;
+        let s_d1 = (2.0 / 3.0) * s1 * fv;
         
         let t_0 = 0.2 * (s_d1 / s_ds);
         let t_s = s_d1 / s_ds;
@@ -265,17 +290,25 @@ impl ResponseSpectrumSolver {
         }).collect()
     }
 
-    /// Generate Eurocode 8 design response spectrum
+    /// Generate Eurocode 8 design response spectrum (Type 1)
+    /// Supports ground types A–E per EC8 Table 3.2
     fn generate_ec8_spectrum(&self, periods: &[f64]) -> Vec<f64> {
-        // Simplified EC8 Type 1 spectrum
-        let ag = self.config.zone.factor(); // Peak ground acceleration
-        let s = 1.0; // Soil factor (simplified)
+        let ag = self.config.zone.factor();
         let eta = (10.0 / (5.0 + self.config.damping_ratio * 100.0)).sqrt().max(0.55);
         
-        let (t_b, t_c, t_d) = (0.15, 0.50, 2.0); // Type 1 spectrum
+        // Ground type parameters per EC8 Table 3.2 (Type 1 spectrum)
+        let ground = self.config.ec8_ground_type.as_deref().unwrap_or("B");
+        let (s, t_b, t_c, t_d) = match ground {
+            "A" => (1.0,  0.15, 0.40, 2.0),
+            "B" => (1.2,  0.15, 0.50, 2.0),
+            "C" => (1.15, 0.20, 0.60, 2.0),
+            "D" => (1.35, 0.20, 0.80, 2.0),
+            "E" => (1.40, 0.15, 0.50, 2.0),
+            _   => (1.2,  0.15, 0.50, 2.0), // Default to B
+        };
 
         periods.iter().map(|&t| {
-            let se = if t <= t_b {
+            if t <= t_b {
                 ag * s * (1.0 + t / t_b * (eta * 2.5 - 1.0))
             } else if t <= t_c {
                 ag * s * eta * 2.5
@@ -283,8 +316,7 @@ impl ResponseSpectrumSolver {
                 ag * s * eta * 2.5 * (t_c / t)
             } else {
                 ag * s * eta * 2.5 * (t_c * t_d / (t * t))
-            };
-            se
+            }
         }).collect()
     }
 
@@ -309,6 +341,14 @@ impl ResponseSpectrumSolver {
         
         if n_modes == 0 {
             return Err("No modes provided".to_string());
+        }
+        
+        if modal_masses.iter().any(|&m| m <= 0.0) {
+            return Err("Modal masses must be positive".to_string());
+        }
+        
+        if frequencies.iter().any(|&f| f <= 0.0) {
+            return Err("Frequencies must be positive".to_string());
         }
 
         // Convert frequencies to periods: T = 2π/ω
@@ -564,6 +604,9 @@ mod tests {
             damping_ratio: 0.05,
             combination_method: CombinationMethod::SRSS,
             include_vertical: false,
+            asce7_ss: None,
+            asce7_s1: None,
+            ec8_ground_type: None,
         };
 
         let solver = ResponseSpectrumSolver::new(config);

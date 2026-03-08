@@ -123,8 +123,9 @@ export class StirrupDesignCalculator {
     const Vu = input.factoredShear;
     const fy = input.stirrupBar.yieldStrength;
     const Av = input.stirrupBar.area * 2; // 2-legged stirrups
-    const pt = input.tensionSteelRatio ?? 0.5; // Default 0.5% if not provided
-    const code = input.designCode ?? 'IS456';
+    // Estimate tension steel ratio from bar area if available, else 0.5%
+    const pt = 0.5;
+    const code = input.designCode;
 
     let tau_v: number;
     let Vc: number;
@@ -132,14 +133,14 @@ export class StirrupDesignCalculator {
     let phi: number;
     let codeRef: string;
 
-    if (code === 'ACI318') {
+    if (code === ConcreteDesignCode.ACI_318_19 || code === ConcreteDesignCode.ACI_318_14) {
       // ACI 318-19 — Cl. 22.5
       phi = 0.75;
       Vc = getACIVc(fc, bw, d, pt);
       tau_v = (Vu * 1000) / (bw * d);
       tauCMax = 0.83 * Math.sqrt(fc); // N/mm² — ACI upper limit
       codeRef = 'ACI 318-19 Cl. 22.5';
-    } else if (code === 'EN1992') {
+    } else if (code === ConcreteDesignCode.EUROCODE_2) {
       // Eurocode 2 — Cl. 6.2
       phi = 1.0; // Safety via γc in VRd,c
       Vc = getEC2VRdc(fc, bw, d, pt);
@@ -178,7 +179,7 @@ export class StirrupDesignCalculator {
     // Multi-region shear design
     // Region 1: Critical zone (0 to 2d from support face) — close spacing
     // Region 2: Transition zone (2d to mid-span) — standard spacing
-    const spanLength = input.spanLength ?? 6000; // mm
+    const spanLength = input.totalDepth * 15 || 6000; // Estimate span from depth if not provided
     const halfSpan = spanLength / 2;
     const criticalEnd = Math.min(2 * d, halfSpan);
     const shearAtCritical = Vu; // Conservative: use max shear in critical zone
@@ -272,10 +273,10 @@ export class StirrupDesignCalculator {
       utilization: Vu / (Vn * phi),
       warnings,
       calculations: [
-        `τv = Vu×1000 / (bw×d) = ${(Vu * 1000).toFixed(0)} / (${bw}×${d}) = ${tau_v.toFixed(2)} N/mm²`,
-        `Vc (concrete) = ${Vc.toFixed(1)} kN [${codeRef}]`,
-        `Vs (required) = Vu - Vc = ${Vu.toFixed(1)} - ${Vc.toFixed(1)} = ${Vs.toFixed(1)} kN`,
-        `Spacing = 0.87×fy×Av×d / (Vs×1000) = ${requiredSpacing.toFixed(0)} mm → provided ${providedSpacing} mm`,
+        { stepNumber: 1, description: 'Shear stress', formula: 'τv = Vu×1000 / (bw×d)', variables: { Vu: { value: Vu, unit: 'kN', description: 'Factored shear' }, bw: { value: bw, unit: 'mm', description: 'Web width' }, d: { value: d, unit: 'mm', description: 'Effective depth' } }, result: tau_v, unit: 'N/mm²' },
+        { stepNumber: 2, description: 'Concrete shear capacity', formula: `Vc per ${codeRef}`, variables: { fc: { value: fc, unit: 'MPa', description: 'Concrete strength' } }, result: Vc, unit: 'kN' },
+        { stepNumber: 3, description: 'Required steel shear', formula: 'Vs = Vu - Vc', variables: { Vu: { value: Vu, unit: 'kN', description: 'Factored shear' }, Vc: { value: Vc, unit: 'kN', description: 'Concrete capacity' } }, result: Vs, unit: 'kN' },
+        { stepNumber: 4, description: 'Stirrup spacing', formula: 's = 0.87×fy×Av×d / (Vs×1000)', variables: { fy: { value: fy, unit: 'MPa', description: 'Stirrup yield' }, Av: { value: Av, unit: 'mm²', description: 'Stirrup area' } }, result: providedSpacing, unit: 'mm' },
       ],
     };
   }

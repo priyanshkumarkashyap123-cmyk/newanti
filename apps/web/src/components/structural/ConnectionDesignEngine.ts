@@ -315,6 +315,55 @@ function getButtWeldStrength(
 }
 
 // ============================================================================
+// PRYING FORCE (IS 800 Cl. 10.4.7 / AISC Part 9)
+// ============================================================================
+
+/**
+ * Prying force on bolts in tension — T-stub model per IS 800:2007 Cl. 10.4.7
+ * Returns the additional prying force Q per bolt (kN)
+ * 
+ * Parameters:
+ *   Te — external tension per bolt (kN)
+ *   p — bolt pitch (mm)
+ *   g — gauge (bolt line spacing from plate edge / 2) (mm)
+ *   tf — flange/plate thickness (mm)
+ *   fy — yield stress of plate (MPa)
+ *   bolt_diameter — bolt dia (mm)
+ *   Tdb — design bolt tension capacity (kN)
+ */
+function calculatePryingForce(
+  Te: number,
+  p: number,
+  g: number,
+  tf: number,
+  fy: number,
+  bolt_diameter: number,
+  Tdb: number
+): { Q: number; beta: number; le: number } {
+  // Effective length of T-stub
+  const le = Math.min(p, 2 * g); // effective bolt spacing
+
+  // Geometric parameters (IS 800 Cl. 10.4.7)
+  const be = g; // distance from bolt centre to plate edge / prying edge
+  const n_ = Math.min(be, 1.1 * tf * Math.sqrt(fy / 250)); // effective edge distance
+  const m_ = (g - bolt_diameter / 2 - 0.8 * tf * Math.sqrt(2)) / 2; // lever arm (approx)
+  const m_eff = Math.max(m_, 10); // guard
+
+  // Prying ratio β = Q/Te
+  // From bolt-plate interaction: β = (le × tf⁴ × fy) / (27 × m_eff³ × Te) approximation
+  // Standard formula: Q = Te × β
+  // β approach per SCI P398 / IS 800 App. G:
+  // β = (4 × n_ × Te × 1000) / (le × tf² × fy) − 1
+  // Clamped: 0 ≤ β ≤ (Te / Tdb) such that total T = Te + Q ≤ Tdb
+
+  const beta_raw = (4 * n_ * Te * 1000) / (le * tf * tf * fy) - 1;
+  const beta = Math.max(0, Math.min(beta_raw, 1.0)); // clamp
+  const Q = Te * beta;
+
+  return { Q, beta, le };
+}
+
+// ============================================================================
 // BOLTED CONNECTION DESIGN
 // ============================================================================
 
@@ -420,12 +469,48 @@ export function calculateBoltedConnectionIS800(inputs: BoltedConnectionInputs): 
   const shearCapacity = num_bolts * (connection_type === 'friction' ? Vsf : Vdb);
   const tensionCapacity = num_bolts * Tdb;
   
-  // Check combined shear and tension
+  // Prying force calculation (IS 800 Cl. 10.4.7) when bolts are in tension
+  let pryingForcePerBolt = 0;
+  let totalTensionPerBolt = tension_force / num_bolts;
+  let pryingBeta = 0;
+  
+  if (tension_force > 0) {
+    const g_prying = gauge || 2 * edge_distance; // gauge or estimate
+    const { Q, beta } = calculatePryingForce(
+      tension_force / num_bolts,
+      pitch,
+      g_prying / 2,
+      plate_thickness,
+      plate_fy,
+      bolt_diameter,
+      Tdb
+    );
+    pryingForcePerBolt = Q;
+    pryingBeta = beta;
+    totalTensionPerBolt = tension_force / num_bolts + Q;
+    
+    steps.push({
+      title: 'Prying Force (T-stub model)',
+      description: 'Additional tension in bolts due to plate flexibility',
+      formula: 'Q = Te × β, β from IS 800 Cl. 10.4.7',
+      values: {
+        'External Tension/bolt (Te)': `${(tension_force / num_bolts).toFixed(2)} kN`,
+        'Prying Ratio β': pryingBeta.toFixed(3),
+        'Prying Force/bolt (Q)': `${pryingForcePerBolt.toFixed(2)} kN`,
+        'Total Tension/bolt (Te+Q)': `${totalTensionPerBolt.toFixed(2)} kN`,
+        'Bolt Tension Capacity (Tdb)': `${Tdb.toFixed(2)} kN`,
+        'Status': totalTensionPerBolt <= Tdb ? 'OK' : 'INCREASE PLATE THICKNESS OR BOLT SIZE',
+      },
+      reference: 'IS 800:2007 Cl. 10.4.7',
+    });
+  }
+  
+  // Check combined shear and tension (with prying)
   let combinedRatio = 0;
   if (tension_force > 0) {
-    const Vsf_reduced = Vsf * (1 - tension_force / (num_bolts * Tdb)); // For friction
+    const Vsf_reduced = Vsf * (1 - totalTensionPerBolt * num_bolts / tensionCapacity); // For friction
     const V_ratio = shear_force / shearCapacity;
-    const T_ratio = tension_force / tensionCapacity;
+    const T_ratio = (totalTensionPerBolt * num_bolts) / tensionCapacity;
     combinedRatio = Math.pow(V_ratio, 2) + Math.pow(T_ratio, 2);
   }
   
@@ -496,6 +581,14 @@ export function calculateBoltedConnectionIS800(inputs: BoltedConnectionInputs): 
   });
   
   if (tension_force > 0) {
+    codeChecks.push({
+      clause: '10.4.7',
+      description: 'Bolt tension incl. prying',
+      required: `Te + Q ≤ ${Tdb.toFixed(2)} kN/bolt`,
+      provided: `${totalTensionPerBolt.toFixed(2)} kN/bolt`,
+      status: totalTensionPerBolt <= Tdb ? 'PASS' : 'FAIL',
+    });
+    
     codeChecks.push({
       clause: '10.3.6',
       description: 'Combined shear and tension',

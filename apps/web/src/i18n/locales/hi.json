@@ -1,0 +1,123 @@
+{
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "saving": "सहेजा जा रहा है...",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "close": "बंद करें",
+    "confirm": "पुष्टि करें",
+    "yes": "हां",
+    "no": "नहीं",
+    "error": "त्रुटि",
+    "success": "सफलता",
+    "warning": "चेतावनी",
+    "info": "जानकारी"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "welcome": "BeamLab में आपका स्वागत है",
+    "recentProjects": "हाल की परियोजनाएं",
+    "createNew": "नई परियोजना बनाएं",
+    "openProject": "परियोजना खोलें"
+  },
+  "analysis": {
+    "title": "संरचनात्मक विश्लेषण",
+    "run": "विश्लेषण चलाएं",
+    "results": "परिणाम",
+    "forces": "सदस्य बल",
+    "displacements": "विस्थापन",
+    "reactions": "समर्थन प्रतिक्रियाएं",
+    "utilization": "उपयोग",
+    "maxDisplacement": "अधिकतम विस्थापन: {value} mm",
+    "loadCase": "भार स्थिति",
+    "loadCombination": "भार संयोजन"
+  },
+  "design": {
+    "title": "डिज़ाइन",
+    "code": "डिज़ाइन कोड",
+    "member": "सदस्य",
+    "section": "अनुभाग",
+    "capacity": "क्षमता",
+    "demand": "मांग",
+    "ratio": "मांग/क्षमता अनुपात",
+    "passed": "उत्तीर्ण",
+    "failed": "असफल",
+    "steelDesign": "इस्पात डिज़ाइन",
+    "concreteDesign": "कंक्रीट डिज़ाइन",
+    "reinforcement": "सुदृढ़ीकरण"
+  },
+  "boq": {
+    "title": "मात्रा विवरण",
+    "description": "विवरण",
+    "quantity": "मात्रा",
+    "unit": "इकाई",
+    "rate": "दर",
+    "amount": "राशि",
+    "total": "कुल",
+    "subtotal": "उप-योग",
+    "generate": "BOQ उत्पन्न करें",
+    "export": "BOQ निर्यात करें",
+    "materialTakeoff": "सामग्री गणना",
+    "steelQuantity": "इस्पात मात्रा",
+    "concreteVolume": "कंक्रीट आयतन",
+    "reinforcementWeight": "सुदृढ़ीकरण वजन"
+  },
+  "reports": {
+    "title": "रिपोर्ट",
+    "generate": "रिपोर्ट उत्पन्न करें",
+    "download": "रिपोर्ट डाउनलोड करें",
+    "analysisReport": "विश्लेषण रिपोर्ट",
+    "designReport": "डिज़ाइन रिपोर्ट",
+    "calculationSheet": "गणना पत्र",
+    "professional": "व्यावसायिक रिपोर्ट",
+    "peReady": "PE-तैयार रिपोर्ट",
+    "projectDetails": "परियोजना विवरण",
+    "engineerName": "इंजीनियर का नाम",
+    "projectNumber": "परियोजना संख्या",
+    "date": "तारीख"
+  },
+  "model": {
+    "nodes": "नोड्स",
+    "members": "सदस्य",
+    "loads": "भार",
+    "supports": "समर्थन",
+    "addNode": "नोड जोड़ें",
+    "addMember": "सदस्य जोड़ें",
+    "addLoad": "भार जोड़ें",
+    "coordinates": "निर्देशांक",
+    "restraints": "प्रतिबंध"
+  },
+  "units": {
+    "force": "बल",
+    "moment": "आघूर्ण",
+    "length": "लंबाई",
+    "area": "क्षेत्रफल",
+    "stress": "प्रतिबल",
+    "kN": "kN",
+    "kNm": "kN·m",
+    "mm": "mm",
+    "m": "m",
+    "mm2": "mm²",
+    "MPa": "MPa",
+    "kg": "kg",
+    "tons": "टन"
+  },
+  "validation": {
+    "required": "यह फ़ील्ड आवश्यक है",
+    "invalidNumber": "कृपया एक मान्य संख्या दर्ज करें",
+    "mustBePositive": "मान धनात्मक होना चाहिए",
+    "modelUnstable": "मॉडल अस्थिर है",
+    "noSupports": "कोई समर्थन परिभाषित नहीं",
+    "noMembers": "कोई सदस्य परिभाषित नहीं"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "language": "भाषा",
+    "theme": "थीम",
+    "units": "इकाइयां",
+    "preferences": "प्राथमिकताएं",
+    "account": "खाता"
+  }
+}

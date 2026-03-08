@@ -11,6 +11,9 @@
  * - Multi-language support
  */
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 // Types and Interfaces
 export interface ReportConfig {
   title: string;
@@ -1160,27 +1163,213 @@ export class PDFReportGenerator {
   }
   
   /**
-   * Render sections to PDF format
+   * Render sections to PDF using jsPDF + jspdf-autotable
    */
   private async renderToPDF(): Promise<Uint8Array> {
-    // This would integrate with a PDF library like pdf-lib or jsPDF
-    // For now, return a placeholder that represents the generated content
-    
-    const pdfContent = {
-      metadata: {
-        title: this.config.title,
-        author: this.config.engineerName,
-        company: this.config.companyName,
-        created: this.config.date.toISOString(),
-        revision: this.config.revision,
-      },
-      sections: this.sections,
-      pageCount: this.estimatePageCount(),
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentW = pageW - 2 * margin;
+    let y = margin;
+
+    const HEADER_COLOR: [number, number, number] = [0, 51, 102]; // #003366
+    const TEXT_COLOR: [number, number, number] = [33, 33, 33];
+
+    // ---- Helper: add page header/footer ----
+    const addHeaderFooter = (pageNum: number, totalPages: number) => {
+      // Header line
+      doc.setDrawColor(...HEADER_COLOR);
+      doc.setLineWidth(0.5);
+      doc.line(margin, 12, pageW - margin, 12);
+      doc.setFontSize(7);
+      doc.setTextColor(120, 120, 120);
+      doc.text(this.config.companyName, margin, 10);
+      doc.text(this.config.projectNumber, pageW - margin, 10, { align: 'right' });
+      // Footer
+      doc.line(margin, pageH - 12, pageW - margin, pageH - 12);
+      doc.text(`Rev ${this.config.revision}`, margin, pageH - 8);
+      doc.text(`Page ${pageNum} of ${totalPages}`, pageW - margin, pageH - 8, { align: 'right' });
+      doc.text(this.config.date.toLocaleDateString(), pageW / 2, pageH - 8, { align: 'center' });
     };
-    
-    // Convert to bytes (placeholder - actual implementation would use PDF library)
-    const jsonString = JSON.stringify(pdfContent, null, 2);
-    return new TextEncoder().encode(jsonString);
+
+    // ---- Helper: check Y and add new page if needed ----
+    const ensureSpace = (needed: number) => {
+      if (y + needed > pageH - 25) {
+        doc.addPage();
+        y = margin + 5;
+      }
+    };
+
+    // ---- Cover Page ----
+    doc.setFillColor(...HEADER_COLOR);
+    doc.rect(0, 0, pageW, 80, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.text(this.config.title, pageW / 2, 35, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text(this.config.projectName, pageW / 2, 50, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text(`Project No: ${this.config.projectNumber}`, pageW / 2, 65, { align: 'center' });
+
+    // Cover details
+    doc.setTextColor(...TEXT_COLOR);
+    doc.setFontSize(11);
+    y = 100;
+    const coverLines = [
+      ['Client:', this.config.clientName],
+      ['Company:', this.config.companyName],
+      ['Engineer:', this.config.engineerName],
+      ['Reviewer:', this.config.reviewerName ?? '—'],
+      ['Date:', this.config.date.toLocaleDateString()],
+      ['Revision:', this.config.revision],
+      ['Design Code:', this.config.designCode],
+    ];
+    coverLines.forEach(([label, value]) => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(label, margin + 20, y);
+      doc.setFont('helvetica', 'normal');
+      doc.text(value, margin + 65, y);
+      y += 8;
+    });
+
+    // ---- Content Sections ----
+    for (const section of this.sections) {
+      if (section.pageBreakBefore || section.id === 'toc') {
+        doc.addPage();
+        y = margin + 5;
+      }
+
+      ensureSpace(20);
+
+      // Section heading
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...HEADER_COLOR);
+      doc.text(`${section.numbering}  ${section.title}`, margin, y);
+      y += 3;
+      doc.setDrawColor(...HEADER_COLOR);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y, margin + contentW, y);
+      y += 8;
+      doc.setTextColor(...TEXT_COLOR);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+
+      // Render content based on type
+      const content = section.content;
+
+      if (content.type === 'text') {
+        for (const para of content.paragraphs) {
+          ensureSpace(12);
+          const lines = doc.splitTextToSize(para, contentW);
+          doc.text(lines, margin, y);
+          y += lines.length * 4.5 + 3;
+        }
+      } else if (content.type === 'table') {
+        ensureSpace(20);
+        autoTable(doc, {
+          head: [content.headers],
+          body: content.rows.map(r => r.map(String)),
+          startY: y,
+          margin: { left: margin, right: margin },
+          headStyles: { fillColor: HEADER_COLOR, fontSize: 8, fontStyle: 'bold' },
+          bodyStyles: { fontSize: 8 },
+          alternateRowStyles: { fillColor: [245, 245, 245] },
+          didDrawPage: () => { y = margin + 5; },
+        });
+        y = (doc as any).lastAutoTable?.finalY ?? y + 10;
+        if (content.caption) {
+          y += 2;
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'italic');
+          doc.text(content.caption, margin, y);
+          doc.setFont('helvetica', 'normal');
+          y += 6;
+        }
+      } else if (content.type === 'calculation') {
+        // Reference header
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Ref: ${content.reference}${content.clause ? ` — ${content.clause}` : ''}`, margin, y);
+        doc.setFont('helvetica', 'normal');
+        y += 6;
+
+        // Render as table with calculation steps
+        const calcRows = content.steps.map(step => [
+          step.description,
+          step.formula,
+          step.substitution ?? '',
+          step.result,
+          step.unit,
+          step.check ?? '—',
+        ]);
+
+        autoTable(doc, {
+          head: [['Description', 'Formula', 'Substitution', 'Result', 'Unit', 'Check']],
+          body: calcRows,
+          startY: y,
+          margin: { left: margin, right: margin },
+          headStyles: { fillColor: HEADER_COLOR, fontSize: 7, fontStyle: 'bold' },
+          bodyStyles: { fontSize: 7 },
+          columnStyles: {
+            1: { fontStyle: 'italic', cellWidth: 35 },
+            5: { fontStyle: 'bold', halign: 'center' },
+          },
+          didParseCell: (data: any) => {
+            if (data.column.index === 5 && data.section === 'body') {
+              if (data.cell.raw === 'OK') data.cell.styles.textColor = [0, 128, 0];
+              if (data.cell.raw === 'FAIL') data.cell.styles.textColor = [200, 0, 0];
+            }
+          },
+          didDrawPage: () => { y = margin + 5; },
+        });
+        y = (doc as any).lastAutoTable?.finalY ?? y + 10;
+        y += 5;
+      } else if (content.type === 'figure' && content.imageData) {
+        ensureSpace(80);
+        try {
+          const imgW = Math.min(content.width ?? 150, contentW);
+          const imgH = content.height ?? 80;
+          doc.addImage(content.imageData, 'PNG', margin, y, imgW, imgH);
+          y += imgH + 3;
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'italic');
+          doc.text(content.caption, margin + imgW / 2, y, { align: 'center' });
+          doc.setFont('helvetica', 'normal');
+          y += 6;
+        } catch {
+          // Skip if image data invalid
+          y += 5;
+        }
+      }
+
+      y += 5; // Section spacing
+    }
+
+    // ---- Add page numbers to all pages ----
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      addHeaderFooter(i, totalPages);
+    }
+
+    // ---- Digital signature block on last page ----
+    if (this.config.digitalSignature) {
+      doc.setPage(totalPages);
+      const sigY = pageH - 40;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Digitally Signed', margin, sigY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Engineer: ${this.config.engineerName}`, margin, sigY + 5);
+      doc.text(`License: ${this.config.digitalSignature.licenseNumber}`, margin, sigY + 10);
+      doc.text(`Date: ${this.config.digitalSignature.timestamp.toISOString()}`, margin, sigY + 15);
+    }
+
+    // Return PDF binary
+    const pdfBytes = doc.output('arraybuffer');
+    return new Uint8Array(pdfBytes);
   }
   
   private estimatePageCount(): number {

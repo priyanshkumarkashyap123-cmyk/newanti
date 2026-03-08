@@ -593,6 +593,9 @@ pub async fn seismic_analysis(
         damping_ratio: req.damping_ratio,
         combination_method,
         include_vertical: false,
+        asce7_ss: None,
+        asce7_s1: None,
+        ec8_ground_type: None,
     };
 
     let solver = ResponseSpectrumSolver::new(config);

@@ -4,8 +4,10 @@
 //! Generates HTML/Markdown reports suitable for PDF conversion.
 //!
 //! ## Endpoints
-//! - POST /api/reports/analysis - Analysis summary report
-//! - POST /api/reports/design - Design calculation report
+//! - POST /api/reports/analysis - Analysis summary report (HTML)
+//! - POST /api/reports/design - Design calculation report (HTML)
+//! - POST /api/reports/analysis/pdf - Analysis report (PDF)
+//! - POST /api/reports/design/pdf - Design calculation report (PDF)
 //! - POST /api/reports/full - Comprehensive project report
 
 use axum::{extract::Json, http::StatusCode};
