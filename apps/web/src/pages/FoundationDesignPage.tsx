@@ -18,7 +18,8 @@ import {
   Plus,
   Play,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input, Select } from '../components/ui/FormInputs';
@@ -616,7 +617,7 @@ export const FoundationDesignPage: React.FC = () => {
             >
               {analyzing ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-slate-200 dark:border-white border-t-transparent rounded-full animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Analyzing Foundation...
                 </>
               ) : (

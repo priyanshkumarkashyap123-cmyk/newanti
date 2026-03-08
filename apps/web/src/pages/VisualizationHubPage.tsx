@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import { DiagramGenerator } from '@/modules/visualization/StructuralVisualizationEngine';
 import { BarChart3, Move, Maximize2, Grid3X3, Play, Pause, RotateCcw, Download } from 'lucide-react';
 import { useModelStore } from '@/store/model';
+import { colors } from '@/styles/theme';
 
 type DiagramType = 'bmd' | 'sfd' | 'deflection' | 'axial';
 
@@ -117,11 +118,11 @@ export default function VisualizationHubPage() {
     const actualSpan = diagramData.length > 0 ? Math.max(diagramData[diagramData.length - 1].x, span) : span;
     
     // Clear
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = colors.neutral[900];
     ctx.fillRect(0, 0, width, height);
     
     // Grid
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = colors.neutral[700];
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= 10; i++) {
       const y = padding + (i / 10) * (height - 2 * padding);
@@ -132,7 +133,7 @@ export default function VisualizationHubPage() {
     }
     
     // Axis
-    ctx.strokeStyle = '#64748b';
+    ctx.strokeStyle = colors.neutral[500];
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(padding, height / 2);
@@ -140,7 +141,7 @@ export default function VisualizationHubPage() {
     ctx.stroke();
     
     // Draw beam
-    ctx.strokeStyle = '#94a3b8';
+    ctx.strokeStyle = colors.neutral[400];
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(padding, height / 2);
@@ -148,7 +149,7 @@ export default function VisualizationHubPage() {
     ctx.stroke();
     
     // Supports
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = colors.primary[500];
     ctx.beginPath();
     ctx.moveTo(padding, height / 2);
     ctx.lineTo(padding - 10, height / 2 + 15);
@@ -168,15 +169,15 @@ export default function VisualizationHubPage() {
     const safeSpan = Math.max(1e-9, actualSpan);
     const scaleFactor = ((height / 2 - padding) * 0.8) / maxAbsValue * scale;
     
-    const colors: Record<DiagramType, string> = {
-      bmd: '#22c55e',
-      sfd: '#f97316',
-      deflection: '#8b5cf6',
-      axial: '#ef4444'
+    const diagramColors: Record<DiagramType, string> = {
+      bmd: colors.success[500],
+      sfd: colors.warning[500],
+      deflection: colors.accent[500],
+      axial: colors.error[500]
     };
     
-    ctx.fillStyle = colors[diagramType] + '40';
-    ctx.strokeStyle = colors[diagramType];
+    ctx.fillStyle = diagramColors[diagramType] + '40';
+    ctx.strokeStyle = diagramColors[diagramType];
     ctx.lineWidth = 2;
     
     const visiblePoints = Math.floor(diagramData.length * animationProgress);
@@ -210,7 +211,7 @@ export default function VisualizationHubPage() {
     ctx.stroke();
     
     // Labels
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = colors.neutral[200];
     ctx.font = '12px monospace';
     ctx.fillText('0', padding - 5, height / 2 + 30);
     ctx.fillText(`${actualSpan.toFixed(1)}m`, width - padding - 10, height / 2 + 30);

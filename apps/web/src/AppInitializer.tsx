@@ -343,7 +343,7 @@ async function loadUserPreferences() {
 
 const LoadingScreen = () => (
   <div
-    className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-[#0a0a0f] to-[#1a1a2f] text-white"
+    className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-slate-950 to-slate-900 text-white"
   >
     <div
       className="w-[60px] h-[60px] border-[3px] border-gray-700 border-t-blue-500 rounded-full animate-spin"
@@ -360,7 +360,7 @@ const ErrorScreen = ({
   onRetry: () => void;
 }) => (
   <div
-    className="flex flex-col items-center justify-center h-screen bg-[#0a0a0f] text-white text-center p-10"
+    className="flex flex-col items-center justify-center h-screen bg-slate-950 text-white text-center p-10"
   >
     <div className="text-5xl mb-4">⚠️</div>
     <h1 className="mb-4 text-red-500">Initialization Error</h1>

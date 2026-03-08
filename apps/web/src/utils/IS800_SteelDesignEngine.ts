@@ -1,3 +1,4 @@
+import { colors } from '@/styles/theme';
 /**
  * IS800_SteelDesignEngine - IS 800:2007 Steel Design Checks
  * Comprehensive member design verification as per Indian Standards
@@ -454,10 +455,10 @@ export class IS800_SteelDesignEngine {
      * Get utilization color based on ratio
      */
     static getUtilizationColor(ratio: number): string {
-        if (ratio < 0.5) return '#00ff00';      // Green - Safe
-        if (ratio < 0.9) return '#ffff00';      // Yellow - Warning
-        if (ratio <= 1.0) return '#ff8800';     // Orange - Critical
-        return '#ff0000';                        // Red - Failed
+        if (ratio < 0.5) return colors.success[500];      // Green - Safe
+        if (ratio < 0.9) return colors.warning[400];      // Yellow - Warning
+        if (ratio <= 1.0) return colors.warning[500];     // Orange - Critical
+        return colors.error[500];                         // Red - Failed
     }
 
     /**

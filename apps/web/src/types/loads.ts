@@ -4,6 +4,7 @@
  * Matches backend load_engine.py structure
  * Supports: Nodal, Member (UDL/UVL/Point/Trapezoidal), Floor, Temperature, Prestress
  */
+import { colors } from '@/styles/theme';
 
 // ============================================
 // ENUMERATIONS
@@ -385,24 +386,24 @@ export interface SolverLoadData {
 // ============================================
 
 export function createDefaultLoadCase(type: LoadCaseType): LoadCase {
-    const colors: Record<LoadCaseType, string> = {
-        DEAD: '#6b7280',      // Gray
-        LIVE: '#3b82f6',      // Blue
-        WIND: '#06b6d4',      // Cyan
-        SEISMIC: '#ef4444',   // Red
-        TEMPERATURE: '#f97316', // Orange
-        PRESTRESS: '#8b5cf6', // Purple
-        IMPOSED: '#10b981',   // Green
-        SNOW: '#e0f2fe',      // Light blue
-        RAIN: '#0ea5e9',      // Sky
-        CONSTRUCTION: '#eab308' // Yellow
+    const loadColors: Record<LoadCaseType, string> = {
+        DEAD: colors.neutral[500],      // Gray
+        LIVE: colors.primary[500],      // Blue
+        WIND: '#06b6d4',                // Cyan (no direct theme token)
+        SEISMIC: colors.error[500],     // Red
+        TEMPERATURE: colors.warning[500], // Orange
+        PRESTRESS: colors.accent[500],  // Purple
+        IMPOSED: colors.success[500],   // Green
+        SNOW: colors.primary[100],      // Light blue
+        RAIN: '#0ea5e9',                // Sky (no direct theme token)
+        CONSTRUCTION: colors.warning[400] // Yellow
     };
     
     return {
         name: type,
         description: `${type} Load Case`,
         type: type,
-        color: colors[type],
+        color: loadColors[type],
         nodalLoads: [],
         memberLoads: [],
         floorLoads: [],

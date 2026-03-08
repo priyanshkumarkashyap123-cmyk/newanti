@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { ClerkLoaded, ClerkLoading, SignUp } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
+import { colors } from '@/styles/theme';
 import { Rocket, Shield, Zap } from 'lucide-react';
 import { Logo } from '../components/branding';
 
@@ -151,9 +152,9 @@ export const SignUpPage = () => {
                                         showOptionalFields: false
                                     },
                                     variables: {
-                                        colorPrimary: '#3b82f6',
-                                        colorText: isDark ? '#f8fafc' : '#0f172a',
-                                        colorBackground: isDark ? '#0f172a' : '#f8fafc',
+                                        colorPrimary: colors.primary[500],
+                                        colorText: isDark ? colors.neutral[50] : colors.neutral[900],
+                                        colorBackground: isDark ? colors.neutral[900] : colors.neutral[50],
                                         fontFamily: 'Inter, sans-serif',
                                         borderRadius: '0.5rem'
                                     }

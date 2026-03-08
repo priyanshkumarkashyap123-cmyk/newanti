@@ -44,6 +44,7 @@ import {
 import { Link } from 'react-router-dom';
 import { AdvancedAnalysisService, TimeHistoryRequest } from '../services/AdvancedAnalysisService';
 import { getErrorMessage } from '../lib/errorHandling';
+import { colors } from '@/styles/theme';
 
 // Types for Time History Analysis
 type IntegrationMethod = 'newmark' | 'hht-alpha' | 'wilson-theta' | 'central-difference';
@@ -374,9 +375,9 @@ export const TimeHistoryAnalysisPage: React.FC = () => {
         </div>
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-32">
           {/* Grid lines */}
-          <line x1="0" y1={height/2} x2={width} y2={height/2} stroke="#475569" strokeDasharray="4,4" />
-          <line x1="0" y1={height/4} x2={width} y2={height/4} stroke="#334155" strokeDasharray="2,2" />
-          <line x1="0" y1={3*height/4} x2={width} y2={3*height/4} stroke="#334155" strokeDasharray="2,2" />
+          <line x1="0" y1={height/2} x2={width} y2={height/2} stroke={colors.neutral[600]} strokeDasharray="4,4" />
+          <line x1="0" y1={height/4} x2={width} y2={height/4} stroke={colors.neutral[700]} strokeDasharray="2,2" />
+          <line x1="0" y1={3*height/4} x2={width} y2={3*height/4} stroke={colors.neutral[700]} strokeDasharray="2,2" />
           
           {/* Response curve */}
           <polyline
