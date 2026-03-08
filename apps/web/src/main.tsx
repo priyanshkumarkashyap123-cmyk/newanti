@@ -88,6 +88,16 @@ const initializeApp = async () => {
       logger.warn('GPU quality detection failed, using defaults');
     });
 
+    // Track Core Web Vitals (LCP, FID, CLS, FCP, TTFB)
+    try {
+      const { trackWebVitals } = await import('./lib/performance');
+      trackWebVitals((metric) => {
+        logger.info(`[WebVitals] ${metric.name}: ${metric.value.toFixed(1)}ms (${metric.rating})`);
+      });
+    } catch {
+      logger.warn('Web Vitals tracking unavailable');
+    }
+
     logger.info('Importing App component');
     const { default: App } = await import('./App');
     logger.info('App imported successfully');

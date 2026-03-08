@@ -8,15 +8,17 @@
  * - Request/response caching
  * - Request deduplication
  * - Timeout handling
- * - Error normalization
+ * - Error normalization with user-friendly messages
  * - Request interceptors
  * - Response interceptors
  * - Abort controller support
+ * - Correlation ID tracking
  * 
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import { API_CONFIG } from '../../config/env';
+import { getUserFriendlyError } from './errorMessages';
 
 function createRequestId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {

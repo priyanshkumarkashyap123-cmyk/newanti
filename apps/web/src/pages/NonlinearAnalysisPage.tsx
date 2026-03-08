@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useCallback, useEffect, memo } from 'react';
+import { NumberInput, Select, Checkbox } from '../components/ui/FormInputs';
 import {
   TrendingUp,
   AlertTriangle,
@@ -469,47 +470,39 @@ export const NonlinearAnalysisPage: React.FC = () => {
               {/* Parameters */}
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Load Steps</label>
-                  <input
-                    type="number"
-                    min="1"
+                  <NumberInput
+                    label="Load Steps"
                     value={input.loadSteps}
-                    onChange={(e) => updateInput('loadSteps', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(v) => updateInput('loadSteps', v)}
+                    min={1}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Max Iterations</label>
-                  <input
-                    type="number"
-                    min="5"
+                  <NumberInput
+                    label="Max Iterations"
                     value={input.maxIterationsPerStep}
-                    onChange={(e) => updateInput('maxIterationsPerStep', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(v) => updateInput('maxIterationsPerStep', v)}
+                    min={5}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-slate-600 dark:text-slate-400 block mb-1">Tolerance</label>
-                  <select
-                    value={input.convergenceTolerance}
-                    onChange={(e) => updateInput('convergenceTolerance', parseFloat(e.target.value))}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={1e-4}>1e-4 (Coarse)</option>
-                    <option value={1e-6}>1e-6 (Normal)</option>
-                    <option value={1e-8}>1e-8 (Fine)</option>
-                  </select>
+                  <Select
+                    label="Tolerance"
+                    value={String(input.convergenceTolerance)}
+                    onChange={(v) => updateInput('convergenceTolerance', parseFloat(v))}
+                    options={[
+                      { value: String(1e-4), label: '1e-4 (Coarse)' },
+                      { value: String(1e-6), label: '1e-6 (Normal)' },
+                      { value: String(1e-8), label: '1e-8 (Fine)' },
+                    ]}
+                  />
                 </div>
-                <div className="flex items-end">
-                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer pb-2">
-                    <input
-                      type="checkbox"
-                      checked={input.useAdaptiveStepping}
-                      onChange={(e) => updateInput('useAdaptiveStepping', e.target.checked)}
-                      className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700 border-slate-600"
-                    />
-                    Adaptive stepping
-                  </label>
+                <div className="flex items-end pb-1">
+                  <Checkbox
+                    label="Adaptive stepping"
+                    checked={input.useAdaptiveStepping}
+                    onChange={(v) => updateInput('useAdaptiveStepping', v)}
+                  />
                 </div>
               </div>
             </div>

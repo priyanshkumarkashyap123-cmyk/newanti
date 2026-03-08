@@ -1130,7 +1130,7 @@ export interface IUsageLog extends Document {
     clerkId: string;
     email: string;
     action: string;
-    category: 'auth' | 'analysis' | 'project' | 'export' | 'report' | 'ai' | 'billing' | 'admin' | 'system';
+    category: 'auth' | 'analysis' | 'design' | 'project' | 'export' | 'report' | 'ai' | 'billing' | 'admin' | 'system';
     // Request context
     ipAddress?: string;
     userAgent?: string;
@@ -1171,7 +1171,7 @@ const UsageLogSchema = new Schema<IUsageLog>({
     },
     category: {
         type: String,
-        enum: ['auth', 'analysis', 'project', 'export', 'report', 'ai', 'billing', 'admin', 'system'],
+        enum: ['auth', 'analysis', 'design', 'project', 'export', 'report', 'ai', 'billing', 'admin', 'system'],
         required: true,
         index: true
     },

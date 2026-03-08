@@ -940,7 +940,9 @@ function App() {
                 path="/visualization/3d-engine"
                 element={
                   <RequireAuth>
-                    <Visualization3DEngine />
+                    <SectionErrorBoundary section="3D Visualization">
+                      <Visualization3DEngine />
+                    </SectionErrorBoundary>
                   </RequireAuth>
                 }
               />
@@ -948,7 +950,9 @@ function App() {
                 path="/visualization/result-animation"
                 element={
                   <RequireAuth>
-                    <ResultAnimationViewer />
+                    <SectionErrorBoundary section="Result Animation">
+                      <ResultAnimationViewer />
+                    </SectionErrorBoundary>
                   </RequireAuth>
                 }
               />

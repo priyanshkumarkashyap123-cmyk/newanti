@@ -604,9 +604,6 @@ mod tests {
             damping_ratio: 0.05,
             combination_method: CombinationMethod::SRSS,
             include_vertical: false,
-            asce7_ss: None,
-            asce7_s1: None,
-            ec8_ground_type: None,
         };
 
         let solver = ResponseSpectrumSolver::new(config);

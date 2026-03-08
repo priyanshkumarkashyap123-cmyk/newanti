@@ -6,13 +6,17 @@
 
 use axum::Json;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::design_codes::{is_456, is_800, is_1893, is_875, serviceability};
 use crate::error::{ApiError, ApiResult};
+use axum::extract::State;
+use std::sync::Arc;
+use crate::AppState;
 
 // ── IS 456 ──────────────────────────────────────────────────────────────────
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct FlexuralCapacityReq {
     pub b: f64,
     pub d: f64,
@@ -51,7 +55,7 @@ pub async fn flexural_capacity(
     }))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct ShearDesignReq {
     pub b: f64,
     pub d: f64,
@@ -73,7 +77,7 @@ pub async fn shear_design(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct BiaxialColumnReq {
     pub b: f64,
     pub d: f64,
@@ -103,7 +107,7 @@ pub async fn biaxial_column(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct DeflectionCheckIs456Req {
     pub span_mm: f64,
     pub effective_depth: f64,
@@ -127,7 +131,7 @@ pub async fn deflection_check_is456(
 
 // ── IS 800 ──────────────────────────────────────────────────────────────────
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct BoltBearingReq {
     pub bolt_dia: f64,
     pub grade: String,
@@ -153,7 +157,7 @@ pub async fn bolt_bearing(
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct BoltHsfgReq {
     pub bolt_dia: f64,
     pub grade: String,
@@ -177,7 +181,7 @@ pub async fn bolt_hsfg(
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct FilletWeldReq {
     pub weld_size: f64,
     pub weld_length: f64,
@@ -198,7 +202,7 @@ pub async fn fillet_weld(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct AutoSelectReq {
     pub fy: f64,
     #[serde(default)]
@@ -223,7 +227,7 @@ pub async fn auto_select(
 
 // ── IS 1893 ─────────────────────────────────────────────────────────────────
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct BaseShearReq {
     pub zone: String,
     pub soil: String,
@@ -245,7 +249,7 @@ pub async fn base_shear(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct EqForcesReq {
     pub zone: String,
     pub soil: String,
@@ -272,7 +276,7 @@ pub async fn eq_forces(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct DriftCheckReq {
     pub storey_height_mm: f64,
     pub elastic_drift_mm: f64,
@@ -313,7 +317,7 @@ fn parse_soil(s: &str) -> Result<is_1893::SoilType, ApiError> {
 
 // ── IS 875 ──────────────────────────────────────────────────────────────────
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct WindPerStoreyReq {
     pub vb: f64,
     pub storey_heights: Vec<f64>,
@@ -340,7 +344,7 @@ pub async fn wind_per_storey(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct PressureCoeffReq {
     pub h_by_w: f64,
     pub opening_ratio: f64,
@@ -355,7 +359,7 @@ pub async fn pressure_coefficients(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct LiveLoadReq {
     pub occupancy: String,
 }
@@ -376,7 +380,7 @@ pub async fn live_load(
     }))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct LiveLoadReductionReq {
     pub tributary_area: f64,
     pub num_floors: usize,
@@ -408,7 +412,7 @@ fn parse_terrain(s: &str) -> Result<is_875::TerrainCategory, ApiError> {
 
 // ── Serviceability ──────────────────────────────────────────────────────────
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct DeflectionCheckReq {
     pub material: String,
     pub span_mm: f64,
@@ -434,7 +438,7 @@ pub async fn deflection_check(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct VibrationCheckReq {
     pub frequency_hz: f64,
     #[serde(default = "default_office")]
@@ -451,7 +455,7 @@ pub async fn vibration_check(
     Ok(Json(result))
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct CrackWidthReq {
     pub b: f64,
     pub d: f64,
@@ -474,3 +478,309 @@ pub async fn crack_width(
     );
     Ok(Json(result))
 }
+
+    // ── BATCH PROCESSING ────────────────────────────────────────────────────────
+    // Enterprise feature: Run multiple design checks in parallel for productivity
+
+    #[derive(Debug, Clone, Deserialize)]
+    #[serde(tag = "type", rename_all = "snake_case")]
+    pub enum DesignCheckType {
+        FlexuralCapacity { req: FlexuralCapacityReq },
+        ShearDesign { req: ShearDesignReq },
+        BiaxialColumn { req: BiaxialColumnReq },
+        DeflectionIs456 { req: DeflectionCheckIs456Req },
+        BoltBearing { req: BoltBearingReq },
+        BoltHsfg { req: BoltHsfgReq },
+        FilletWeld { req: FilletWeldReq },
+        AutoSelect { req: AutoSelectReq },
+        BaseShear { req: BaseShearReq },
+        EqForces { req: EqForcesReq },
+        DriftCheck { req: DriftCheckReq },
+        WindPerStorey { req: WindPerStoreyReq },
+        PressureCoefficients { req: PressureCoeffReq },
+        LiveLoad { req: LiveLoadReq },
+        LiveLoadReduction { req: LiveLoadReductionReq },
+        Deflection { req: DeflectionCheckReq },
+        Vibration { req: VibrationCheckReq },
+        CrackWidth { req: CrackWidthReq },
+    }
+
+    #[derive(Debug, Serialize)]
+    pub struct DesignCheckResult {
+        pub success: bool,
+        pub design_id: String,
+        pub check_type: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub result: Option<Value>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub error: Option<String>,
+        pub duration_ms: f64,
+    }
+
+    #[derive(Deserialize)]
+    pub struct BatchDesignRequest {
+        pub checks: Vec<DesignCheckInput>,
+    }
+
+    #[derive(Debug, Clone, Deserialize)]
+    pub struct DesignCheckInput {
+        pub id: String,
+        #[serde(flatten)]
+        pub check: DesignCheckType,
+    }
+
+    #[derive(Serialize)]
+    pub struct BatchDesignResponse {
+        pub success: bool,
+        pub total_checks: usize,
+        pub successful: usize,
+        pub failed: usize,
+        pub total_time_ms: f64,
+        pub results: Vec<DesignCheckResult>,
+    }
+
+    /// POST /api/design/batch - Run multiple design checks in parallel
+    /// 
+    /// Enterprise productivity feature — batch process beam designs, column checks,
+    /// seismic forces, and more. Uses Rayon for CPU-bound parallelism.
+    /// 
+    /// Example:
+    /// ```json
+    /// {
+    ///   "checks": [
+    ///     {
+    ///       "id": "beam-1",
+    ///       "type": "flexural_capacity",
+    ///       "req": { "b": 300, "d": 450, "fck": 30, "fy": 500, "ast": 2010 }
+    ///     },
+    ///     {
+    ///       "id": "column-2",
+    ///       "type": "biaxial_column",
+    ///       "req": { "b": 400, "d": 600, "fck": 30, "fy": 500, "pu_kn": 1500, ... }
+    ///     }
+    ///   ]
+    /// }
+    /// ```
+    pub async fn batch_design(
+        State(_state): State<Arc<AppState>>,
+        Json(input): Json<BatchDesignRequest>,
+    ) -> ApiResult<Json<BatchDesignResponse>> {
+        use rayon::prelude::*;
+
+        if input.checks.is_empty() {
+            return Err(ApiError::BadRequest("No design checks provided".into()));
+        }
+        if input.checks.len() > 500 {
+            return Err(ApiError::BadRequest("Maximum 500 design checks per batch".into()));
+        }
+
+        let start = std::time::Instant::now();
+
+        // Run all design checks in parallel using Rayon
+        let results: Vec<DesignCheckResult> = input.checks
+            .par_iter()
+            .map(|check_input| process_design_check(check_input))
+            .collect();
+
+        let total_time = start.elapsed().as_secs_f64() * 1000.0;
+
+        let successful = results.iter().filter(|r| r.success).count();
+        let failed = results.len() - successful;
+
+        Ok(Json(BatchDesignResponse {
+            success: true,
+            total_checks: input.checks.len(),
+            successful,
+            failed,
+            total_time_ms: total_time,
+            results,
+        }))
+    }
+
+    /// Process a single design check (called in parallel by Rayon)
+    fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
+        let start = std::time::Instant::now();
+
+        let (check_type, result) = match &input.check {
+            DesignCheckType::FlexuralCapacity { req } => {
+                let xu_max = is_456::xu_max_ratio(req.fy) * req.d;
+                let mu = if req.asc > 0.0 && req.d_prime > 0.0 {
+                    is_456::flexural_capacity_doubly(
+                        req.b, req.d, req.d_prime, req.fck, req.fy, req.ast, req.asc,
+                    )
+                } else {
+                    is_456::flexural_capacity_singly(req.b, req.d, req.fck, req.fy, req.ast)
+                };
+                let xu = (0.87 * req.fy * req.ast) / (0.36 * req.fck * req.b);
+                let resp = FlexuralCapacityResp {
+                    mu_knm: mu,
+                    xu_max_mm: xu_max,
+                    section_type: if xu > xu_max { "over-reinforced".into() } else { "under-reinforced".into() },
+                };
+                ("flexural_capacity".to_string(), Ok(serde_json::to_value(&resp).unwrap()))
+            },
+            DesignCheckType::ShearDesign { req } => {
+                let result = is_456::design_shear(
+                    req.vu_kn, req.b, req.d, req.fck, req.fy_stirrup, req.pt, req.asv,
+                );
+                ("shear_design".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::BiaxialColumn { req } => {
+                let result = is_456::check_column_biaxial(
+                    req.b, req.d, req.fck, req.fy,
+                    req.pu_kn, req.mux_knm, req.muy_knm,
+                    req.ast_total, req.d_dash, req.leff_x, req.leff_y,
+                );
+                ("biaxial_column".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::DeflectionIs456 { req } => {
+                let result = is_456::check_deflection(
+                    req.span_mm, req.effective_depth, &req.support,
+                    req.pt, req.pc, req.fy, req.actual_ast, req.required_ast,
+                );
+                ("deflection_is456".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::BoltBearing { req } => {
+                match is_800::design_bolt_bearing(
+                    req.bolt_dia, &req.grade, req.plate_fu, req.plate_thk,
+                    req.n_bolts, req.n_shear_planes, req.edge_dist, req.pitch,
+                ) {
+                    Ok(result) => ("bolt_bearing".to_string(), Ok(serde_json::to_value(&result).unwrap())),
+                    Err(e) => ("bolt_bearing".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::BoltHsfg { req } => {
+                match is_800::design_bolt_hsfg(
+                    req.bolt_dia, &req.grade, req.n_bolts,
+                    req.n_effective_interfaces, req.mu_f, req.kh,
+                ) {
+                    Ok(result) => ("bolt_hsfg".to_string(), Ok(serde_json::to_value(&result).unwrap())),
+                    Err(e) => ("bolt_hsfg".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::FilletWeld { req } => {
+                let result = is_800::design_fillet_weld(
+                    req.weld_size, req.weld_length, req.weld_fu, req.load_kn, &req.weld_type,
+                );
+                ("fillet_weld".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::AutoSelect { req } => {
+                let result = is_800::auto_select_section(
+                    req.fy, req.pu_kn, req.mux_knm, req.muy_knm,
+                    req.vu_kn, req.lx_mm, req.ly_mm,
+                );
+                ("auto_select".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::BaseShear { req } => {
+                match parse_zone(&req.zone) {
+                    Ok(zone) => {
+                        match parse_soil(&req.soil) {
+                            Ok(soil) => {
+                                let result = is_1893::calculate_base_shear(
+                                    req.seismic_weight_kn, req.period,
+                                    zone, soil, req.importance, req.response_reduction,
+                                );
+                                ("base_shear".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                            }
+                            Err(e) => ("base_shear".to_string(), Err(format!("{:?}", e))),
+                        }
+                    }
+                    Err(e) => ("base_shear".to_string(), Err(format!("{:?}", e))),
+                }
+            },
+            DesignCheckType::EqForces { req } => {
+                match (parse_zone(&req.zone), parse_soil(&req.soil)) {
+                    (Ok(zone), Ok(soil)) => {
+                        let result = is_1893::generate_equivalent_lateral_forces(
+                            &req.node_weights, zone, soil,
+                            req.importance, req.response_reduction,
+                            &req.building_type, req.base_dimension, &req.direction,
+                        );
+                        ("eq_forces".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                    }
+                    (Err(e), _) | (_, Err(e)) => ("eq_forces".to_string(), Err(format!("{:?}", e))),
+                }
+            },
+            DesignCheckType::DriftCheck { req } => {
+                let result = is_1893::check_storey_drift(
+                    req.storey_height_mm, req.elastic_drift_mm,
+                    req.response_reduction, req.storey_number,
+                );
+                ("drift_check".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::WindPerStorey { req } => {
+                match parse_terrain(&req.terrain) {
+                    Ok(terrain) => {
+                        let result = is_875::wind_force_per_storey(
+                            req.vb, &req.storey_heights, req.tributary_width,
+                            terrain, req.cf, req.k1, req.k3,
+                        );
+                        ("wind_per_storey".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                    }
+                    Err(e) => ("wind_per_storey".to_string(), Err(format!("{:?}", e))),
+                }
+            },
+            DesignCheckType::PressureCoefficients { req } => {
+                let result = is_875::pressure_coefficients_rectangular(
+                    req.h_by_w, req.opening_ratio,
+                );
+                ("pressure_coefficients".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::LiveLoad { req } => {
+                let ll = is_875::live_load(&req.occupancy);
+                let resp = LiveLoadResp {
+                    occupancy: req.occupancy.clone(),
+                    live_load_kN_m2: ll,
+                };
+                ("live_load".to_string(), Ok(serde_json::to_value(&resp).unwrap()))
+            },
+            DesignCheckType::LiveLoadReduction { req } => {
+                let rf = is_875::live_load_reduction(req.tributary_area, req.num_floors);
+                let resp = LiveLoadReductionResp {
+                    reduction_factor: rf,
+                };
+                ("live_load_reduction".to_string(), Ok(serde_json::to_value(&resp).unwrap()))
+            },
+            DesignCheckType::Deflection { req } => {
+                let result = serviceability::check_deflection(
+                    &req.material, req.span_mm, req.actual_deflection_mm,
+                    &req.member_type, &req.load_type, &req.support_condition,
+                );
+                ("deflection".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::Vibration { req } => {
+                let result = serviceability::check_floor_vibration(
+                    req.frequency_hz, &req.occupancy,
+                );
+                ("vibration".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+            DesignCheckType::CrackWidth { req } => {
+                let result = serviceability::estimate_crack_width(
+                    req.b, req.d, req.big_d, req.cover,
+                    req.bar_dia, req.bar_spacing, req.fs, &req.exposure,
+                );
+                ("crack_width".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+            },
+        };
+
+        let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+        match result {
+            Ok(value) => DesignCheckResult {
+                success: true,
+                design_id: input.id.clone(),
+                check_type,
+                result: Some(value),
+                error: None,
+                duration_ms,
+            },
+            Err(err) => DesignCheckResult {
+                success: false,
+                design_id: input.id.clone(),
+                check_type,
+                result: None,
+                error: Some(err),
+                duration_ms,
+            },
+        }
+    }

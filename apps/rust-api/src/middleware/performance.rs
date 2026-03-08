@@ -8,19 +8,13 @@
 use axum::http::{header, HeaderValue};
 use axum::response::{IntoResponse, Response};
 use std::time::Instant;
-use tower_http::compression::{CompressionLayer, predicate::SizeAbove};
-use tower_http::compression::CompressionLevel;
+use tower_http::compression::CompressionLayer;
 
 /// Add compression middleware with optimal settings
 pub fn compression_layer() -> CompressionLayer {
+    // tower-http 0.5 automatically enables all features that are present in Cargo.toml
+    // (gzip, brotli, deflate) and compresses responses > 1KB by default
     CompressionLayer::new()
-        .gzip(true)
-        .br(true) // Brotli
-        .deflate(true)
-        // Only compress responses > 1KB
-        .compress_when(SizeAbove::new(1024))
-        // Use level 6 (balanced speed/ratio)
-        .quality(CompressionLevel::Precise(6))
 }
 
 /// Response timing wrapper

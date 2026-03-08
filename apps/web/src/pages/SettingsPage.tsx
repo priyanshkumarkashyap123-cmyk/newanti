@@ -177,10 +177,7 @@ const Slider: FC<SliderProps> = ({ label, value, onChange, min, max, labels, val
                     max={max}
                     value={value}
                     onChange={(e) => onChange(Number(e.target.value))}
-                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500"
-                    style={{
-                        background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${value}%, #3f3f46 ${value}%, #3f3f46 100%)`
-                    }}
+                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500" 
                 />
             </div>
             <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-mono uppercase">

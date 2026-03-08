@@ -381,6 +381,237 @@ export type Project = z.infer<typeof project>;
 export type AnalysisSettings = z.infer<typeof analysisSettings>;
 
 // ============================================================================
+// Design Engine Input Schemas
+// ============================================================================
+
+/**
+ * Composite beam input — AISC 360 Chapter I
+ */
+export const compositeBeamInput = z.object({
+  steelSection: z.string().min(1),
+  As: positiveNumber.describe('Steel area (mm²)'),
+  d: positiveNumber.describe('Beam depth (mm)'),
+  tw: positiveNumber.describe('Web thickness (mm)'),
+  bf: positiveNumber.describe('Flange width (mm)'),
+  tf: positiveNumber.describe('Flange thickness (mm)'),
+  Ix: positiveNumber.describe('Moment of inertia (mm⁴)'),
+  Fy: positiveNumber.describe('Yield strength (MPa)'),
+  Fu: positiveNumber.describe('Ultimate strength (MPa)'),
+  slabWidth: positiveNumber.describe('Effective slab width (mm)'),
+  slabThickness: positiveNumber.describe('Slab thickness (mm)'),
+  fc: positiveNumber.describe('Concrete compressive strength (MPa)'),
+  deckType: z.enum(['solid', 'metal_deck']),
+  deckRibHeight: positiveNumber.optional(),
+  deckRibWidth: positiveNumber.optional(),
+  studDiameter: positiveNumber,
+  studHeight: positiveNumber,
+  studFu: positiveNumber,
+  studSpacing: positiveNumber,
+  span: positiveNumber.describe('Span (m)'),
+  unbragedLength: positiveNumber.optional(),
+}).refine(
+  (d) => d.deckType !== 'metal_deck' || (d.deckRibHeight != null && d.deckRibWidth != null),
+  { message: 'Metal deck requires rib height and width' }
+).refine(
+  (d) => d.Fu > d.Fy,
+  { message: 'Fu must exceed Fy' }
+);
+
+/**
+ * Composite column input — AISC 360 I2
+ */
+export const compositeColumnInput = z.object({
+  type: z.enum(['encased', 'filled_rectangular', 'filled_circular']),
+  steelSection: z.string().optional(),
+  tubeDimensions: z.object({
+    width: positiveNumber,
+    depth: positiveNumber.optional(),
+    thickness: positiveNumber,
+  }).optional(),
+  Fy: positiveNumber,
+  fc: positiveNumber,
+  rebarArea: nonNegativeNumber.optional(),
+  rebarFy: positiveNumber.optional(),
+  length: positiveNumber.describe('Column length (m)'),
+  K: positiveNumber.describe('Effective length factor'),
+  Pu: z.number().describe('Axial load (kN)'),
+  Mux: z.number().describe('Moment about X (kN·m)'),
+  Muy: z.number().describe('Moment about Y (kN·m)'),
+}).refine(
+  (d) => d.type === 'encased' ? d.steelSection != null : d.tubeDimensions != null,
+  { message: 'Encased columns need steelSection; filled columns need tubeDimensions' }
+);
+
+/**
+ * Timber member input — NDS 2018 / EN 1995
+ */
+export const timberMemberInput = z.object({
+  type: z.enum(['sawn', 'glulam', 'clt', 'lvl']),
+  species: z.string().optional(),
+  grade: z.string().min(1),
+  width: positiveNumber.describe('Width b (mm)'),
+  depth: positiveNumber.describe('Depth d (mm)'),
+  length: positiveNumber.describe('Length (m)'),
+  cltLayers: z.number().int().positive().optional(),
+  cltLayerThickness: positiveNumber.optional(),
+  lateralSupport: z.enum(['continuous', 'discrete', 'none']),
+  unbragedLength: positiveNumber.optional(),
+  loadDuration: z.enum(['permanent', 'long_term', 'medium_term', 'short_term', 'instantaneous']),
+  moistureCondition: z.enum(['dry', 'wet']),
+  temperature: z.enum(['normal', 'elevated']),
+}).refine(
+  (d) => d.type !== 'clt' || (d.cltLayers != null && d.cltLayerThickness != null),
+  { message: 'CLT requires layers and layer thickness' }
+);
+
+/**
+ * Timber connection input — NDS 2018 / EN 1995
+ */
+export const timberConnectionInput = z.object({
+  type: z.enum(['nailed', 'screwed', 'bolted', 'lag_screwed', 'doweled', 'glued']),
+  fastenerDiameter: positiveNumber.optional(),
+  fastenerLength: positiveNumber.optional(),
+  fastenerCount: z.number().int().positive().optional(),
+  rows: z.number().int().positive().optional(),
+  spacing: positiveNumber.optional(),
+  edgeDistance: positiveNumber.optional(),
+  endDistance: positiveNumber.optional(),
+  mainMemberThickness: positiveNumber,
+  sideMemberThickness: positiveNumber,
+  mainMemberSpecies: z.string().min(1),
+  sideMemberSpecies: z.string().min(1),
+  sideMemberType: z.enum(['wood', 'steel']),
+  loadAngle: z.number().min(0).max(360),
+  loadType: z.enum(['lateral', 'withdrawal']),
+});
+
+/**
+ * Bolted connection input — IS 800:2007
+ */
+export const boltedConnectionInput = z.object({
+  bolt_grade: z.string().min(1),
+  bolt_diameter: positiveNumber.describe('Bolt diameter (mm)'),
+  num_bolts: z.number().int().positive(),
+  bolt_rows: z.number().int().positive(),
+  bolt_columns: z.number().int().positive(),
+  plate_thickness: positiveNumber,
+  plate_fu: positiveNumber,
+  plate_fy: positiveNumber,
+  connection_type: z.enum(['bearing', 'friction', 'combined']),
+  shear_plane: z.enum(['threads_in', 'threads_excluded']),
+  num_shear_planes: z.number().int().positive(),
+  shear_force: nonNegativeNumber,
+  tension_force: nonNegativeNumber.optional(),
+  moment: z.number().optional(),
+  edge_distance: positiveNumber,
+  pitch: positiveNumber,
+  gauge: positiveNumber.optional(),
+  hole_type: z.string().optional(),
+  surface_treatment: z.string().optional(),
+}).refine(
+  (d) => d.num_bolts === d.bolt_rows * d.bolt_columns,
+  { message: 'num_bolts must equal bolt_rows × bolt_columns' }
+).refine(
+  (d) => d.plate_fu > d.plate_fy,
+  { message: 'Plate fu must exceed fy' }
+);
+
+/**
+ * Welded connection input — IS 800:2007
+ */
+export const weldedConnectionInput = z.object({
+  weld_type: z.enum(['fillet', 'butt', 'plug', 'slot']),
+  weld_size: positiveNumber,
+  weld_length: positiveNumber,
+  electrode_grade: z.string().min(1),
+  plate_fu: positiveNumber,
+  plate_thickness: positiveNumber,
+  shear_force: nonNegativeNumber.optional(),
+  tension_force: nonNegativeNumber.optional(),
+  resultant_force: nonNegativeNumber.optional(),
+  weld_position: z.enum(['longitudinal', 'transverse', 'oblique']),
+  inspection_level: z.enum(['visual', 'ut', 'rt']).optional(),
+});
+
+/**
+ * Base plate input — IS 800:2007
+ */
+export const basePlateInput = z.object({
+  column_section: z.string().min(1),
+  column_depth: positiveNumber,
+  column_flange_width: positiveNumber,
+  column_flange_thickness: positiveNumber,
+  column_web_thickness: positiveNumber,
+  fy_column: positiveNumber,
+  fy_plate: positiveNumber,
+  fck: positiveNumber,
+  axial_load: positiveNumber,
+  moment: z.number().optional(),
+  shear: nonNegativeNumber.optional(),
+  plate_length: positiveNumber.optional(),
+  plate_width: positiveNumber.optional(),
+  plate_thickness: positiveNumber.optional(),
+});
+
+/**
+ * Footing design input — IS 456:2000
+ */
+export const footingDesignInput = z.object({
+  columnWidth: positiveNumber,
+  columnDepth: positiveNumber,
+  axialLoad: positiveNumber,
+  momentX: z.number().optional(),
+  momentY: z.number().optional(),
+  bearingCapacity: positiveNumber,
+  soilDensity: positiveNumber,
+  foundationDepth: positiveNumber,
+  frictionAngle: z.number().min(0).max(50).optional(),
+  cohesion: nonNegativeNumber.optional(),
+  elasticModulus: positiveNumber.optional(),
+  poissonRatio: z.number().min(0).max(0.5).optional(),
+  horizontalLoad: nonNegativeNumber.optional(),
+  fck: positiveNumber,
+  fy: positiveNumber,
+  footingType: z.enum(['isolated_square', 'isolated_rectangular', 'combined']),
+  minCover: positiveNumber,
+});
+
+/**
+ * Shear design input — IS 456 / ACI 318 / EN 1992
+ */
+export const shearDesignInput = z.object({
+  factoredShear: positiveNumber,
+  factoredAxial: z.number().optional(),
+  factoredTorsion: nonNegativeNumber.optional(),
+  webWidth: positiveNumber,
+  effectiveDepth: positiveNumber,
+  totalDepth: positiveNumber,
+  concrete: z.object({
+    fck: positiveNumber,
+  }).passthrough(),
+  stirrupBar: z.object({
+    diameter: positiveNumber,
+    fy: positiveNumber,
+  }).passthrough(),
+  designCode: z.enum(['IS456', 'ACI318', 'EN1992']),
+  memberType: z.string().min(1),
+  cover: positiveNumber,
+}).refine(
+  (d) => d.totalDepth > d.effectiveDepth,
+  { message: 'Total depth must exceed effective depth' }
+);
+
+export type CompositeBeamInput = z.infer<typeof compositeBeamInput>;
+export type CompositeColumnInput = z.infer<typeof compositeColumnInput>;
+export type TimberMemberInput = z.infer<typeof timberMemberInput>;
+export type TimberConnectionInput = z.infer<typeof timberConnectionInput>;
+export type BoltedConnectionInput = z.infer<typeof boltedConnectionInput>;
+export type WeldedConnectionInput = z.infer<typeof weldedConnectionInput>;
+export type BasePlateInput = z.infer<typeof basePlateInput>;
+export type FootingDesignInput = z.infer<typeof footingDesignInput>;
+export type ShearDesignInput = z.infer<typeof shearDesignInput>;
+
+// ============================================================================
 // Validation Schema Registry
 // ============================================================================
 
@@ -406,4 +637,15 @@ export const schemas = {
   loadCombination,
   project,
   analysisSettings,
+
+  // Design engine inputs
+  compositeBeamInput,
+  compositeColumnInput,
+  timberMemberInput,
+  timberConnectionInput,
+  boltedConnectionInput,
+  weldedConnectionInput,
+  basePlateInput,
+  footingDesignInput,
+  shearDesignInput,
 };

@@ -81,7 +81,7 @@ pub async fn list_structures(
 /// POST /api/structures - Create a new structure
 pub async fn create_structure(
     State(state): State<Arc<AppState>>,
-    auth_user: Option<Extension<crate::middleware::AuthUser>>,
+    auth_user: Option<Extension<crate::middleware::rate_limit::AuthUser>>,
     Json(req): Json<CreateStructureRequest>,
 ) -> ApiResult<Json<StructureResponse>> {
     let now = chrono::Utc::now();

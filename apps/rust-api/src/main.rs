@@ -215,6 +215,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/design/serviceability/deflection", post(handlers::design::deflection_check))
         .route("/api/design/serviceability/vibration", post(handlers::design::vibration_check))
         .route("/api/design/serviceability/crack-width", post(handlers::design::crack_width))
+            // Batch processing (Phase 6 enterprise feature)
+            .route("/api/design/batch", post(handlers::design::batch_design))
         // Structural Optimization (FSD Engine)
         .route("/api/optimization/fsd", post(handlers::optimization::fsd_optimize))
         .route("/api/optimization/check-member", post(handlers::optimization::check_member_endpoint))
@@ -228,7 +230,7 @@ async fn main() -> anyhow::Result<()> {
         .merge(protected_routes)
         // Global middleware (applied to all routes)
         .layer(axum::middleware::from_fn(middleware::security_headers_middleware))
-        .layer(axum::middleware::from_fn(middleware::rate_limit_middleware))
+        .layer(axum::middleware::from_fn(middleware::rate_limit::rate_limit_middleware))
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
         .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024)) // 10MB limit

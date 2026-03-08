@@ -14,11 +14,11 @@
   },
   "expected": {
     "moment_kNm_max": 45.0,
-    "shear_kN_max": 30.0,
-    "deflection_mm_midspan": 6.0
+    "shear_kN_max": 15.0,
+    "deflection_mm_midspan": 0.844
   },
   "tolerance": {
-    "abs": { "deflection_mm_midspan": 0.05 },
+    "abs": { "deflection_mm_midspan": 0.01 },
     "rel": { "moment_kNm_max": 0.001, "shear_kN_max": 0.001 }
   }
 }
