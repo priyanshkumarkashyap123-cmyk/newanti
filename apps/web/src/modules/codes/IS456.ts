@@ -194,13 +194,23 @@ export const IS456_SPAN_DEPTH_RATIO = {
 export function getModificationFactorTension(
   pt: number,  // Percentage of tension reinforcement
   fs: number,  // Steel stress at service load (N/mm²)
-  fck: number  // Characteristic strength of concrete (N/mm²)
+  _fck: number // Characteristic strength of concrete (N/mm²)
 ): number {
-  // Simplified formula based on IS 456 Fig 4
-  // More accurate values should be interpolated from the chart
-  const ptRequired = pt;
-  const factor = 2 - 0.05 * fs / (0.58 * 415); // Simplified
-  return Math.min(Math.max(factor, 1.0), 2.0);
+  // IS 456 Fig 4 — modification factor for tension reinforcement
+  // Approximation based on digitized curves keyed to steel stress fs
+  // For fs = 0.58×fy, the factor depends on pt%
+  // Conservative linear approximation from Fig 4 data points
+  if (pt <= 0) return 2.0;
+  if (fs <= 145) {
+    // Fe250 service stress range
+    return Math.max(1.0, Math.min(2.0, 2.0 - 0.5 * pt));
+  }
+  if (fs <= 240) {
+    // Fe415 service stress range (~0.58 × 415 ≈ 240)
+    return Math.max(1.0, Math.min(1.6, 1.6 - 0.4 * pt));
+  }
+  // Fe500+ service stress range (~0.58 × 500 ≈ 290)
+  return Math.max(1.0, Math.min(1.4, 1.4 - 0.35 * pt));
 }
 
 /**

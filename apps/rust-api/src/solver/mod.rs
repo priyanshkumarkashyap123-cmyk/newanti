@@ -508,7 +508,13 @@ impl Solver {
             })
             .collect();
 
-        // Calculate reactions at supports
+        // Calculate reactions at supports: R = K*u - F at restrained DOFs
+        // Compute K*u for restrained DOFs using sparse triplets
+        let mut ku_vec: DVector<f64> = DVector::zeros(n_dofs);
+        for ((&r, &c), &v) in row_indices.iter().zip(col_indices.iter()).zip(values.iter()) {
+            ku_vec[r] += v * displacements_vec[c];
+        }
+
         let reactions: Vec<Reaction> = input
             .supports
             .iter()
@@ -516,15 +522,15 @@ impl Solver {
                 let idx = *node_index.get(&support.node_id)?;
                 let base = idx * 6;
                 
-                // Reaction = K * d - F at restrained DOFs
+                // Reaction = K*u - F at restrained DOFs
                 Some(Reaction {
                     node_id: support.node_id.clone(),
-                    fx: if support.fx { -f[base] } else { 0.0 },
-                    fy: if support.fy { -f[base + 1] } else { 0.0 },
-                    fz: if support.fz { -f[base + 2] } else { 0.0 },
-                    mx: if support.mx { -f[base + 3] } else { 0.0 },
-                    my: if support.my { -f[base + 4] } else { 0.0 },
-                    mz: if support.mz { -f[base + 5] } else { 0.0 },
+                    fx: if support.fx { ku_vec[base] - f[base] } else { 0.0 },
+                    fy: if support.fy { ku_vec[base + 1] - f[base + 1] } else { 0.0 },
+                    fz: if support.fz { ku_vec[base + 2] - f[base + 2] } else { 0.0 },
+                    mx: if support.mx { ku_vec[base + 3] - f[base + 3] } else { 0.0 },
+                    my: if support.my { ku_vec[base + 4] - f[base + 4] } else { 0.0 },
+                    mz: if support.mz { ku_vec[base + 5] - f[base + 5] } else { 0.0 },
                 })
             })
             .collect();

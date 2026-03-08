@@ -224,7 +224,8 @@ export class AdvancedSteelDesignEngine {
   private getPartialFactors(code: SteelDesignCode) {
     switch (code) {
       case 'IS800':
-        return { gammaM0: 1.10, gammaM1: 1.10, gammaM2: 1.25 };
+        // IS 800:2007 Table 5, Cl. 5.4.1
+        return { gammaM0: 1.10, gammaM1: 1.25, gammaM2: 1.25 };
       case 'AISC360':
         return { gammaM0: 1.0 / 0.9, gammaM1: 1.0 / 0.9, gammaM2: 1.0 / 0.75 };
       case 'EN1993':
@@ -232,7 +233,7 @@ export class AdvancedSteelDesignEngine {
       case 'AS4100':
         return { gammaM0: 1.0 / 0.9, gammaM1: 1.0 / 0.9, gammaM2: 1.0 / 0.8 };
       default:
-        return { gammaM0: 1.10, gammaM1: 1.10, gammaM2: 1.25 };
+        return { gammaM0: 1.10, gammaM1: 1.25, gammaM2: 1.25 };
     }
   }
 
@@ -416,9 +417,10 @@ export class AdvancedSteelDesignEngine {
     const lambdaX = LeX / section.rx;
     const lambdaY = LeY / section.ry;
 
-    // Non-dimensional slenderness (for Eurocode/IS800)
-    const epsilon = Math.sqrt(250 / steel.fy);
-    const lambdaBar = Math.max(lambdaX, lambdaY) / (93.9 * epsilon);
+    // Non-dimensional slenderness per IS 800 Cl. 7.1.2 / EN 1993 Cl. 6.3.1
+    // λ̄ = λ / λ₁ where λ₁ = π√(E/fy)
+    const lambda1 = Math.PI * Math.sqrt(steel.E / steel.fy);
+    const lambdaBar = Math.max(lambdaX, lambdaY) / lambda1;
 
     // Lateral-torsional buckling slenderness
     let lambdaLTB: number | undefined;
@@ -536,10 +538,11 @@ export class AdvancedSteelDesignEngine {
   private getBucklingReductionFactor(slenderness: { lambdaX: number; lambdaY: number }): number {
     const { steel, code } = this.config;
     const lambda = Math.max(slenderness.lambdaX, slenderness.lambdaY);
-    const epsilon = Math.sqrt(250 / steel.fy);
     
-    // Non-dimensional slenderness
-    const lambdaBar = lambda / (93.9 * epsilon);
+    // Non-dimensional slenderness per IS 800 Cl. 7.1.2 / EN 1993 Cl. 6.3.1
+    // λ̄ = λ / λ₁ where λ₁ = π√(E/fy)
+    const lambda1 = Math.PI * Math.sqrt(steel.E / steel.fy);
+    const lambdaBar = lambda / lambda1;
 
     if (lambdaBar <= 0.2) {
       return 1.0;
@@ -558,11 +561,15 @@ export class AdvancedSteelDesignEngine {
   private getImperfectionFactor(): number {
     const { section, code } = this.config;
     
-    // Simplified: use buckling curve 'b' for rolled I-sections
+    // IS 800:2007 Table 10 / EN 1993 Table 6.1 — buckling curve imperfection factor α
+    // For rolled I-sections: curve 'a' (α=0.21) about strong axis, curve 'b' (α=0.34) about weak axis
+    // Simplified: use curve 'b' for general case (conservative)
     switch (code) {
       case 'IS800':
+        // IS 800 Table 10 — rolled I/H: α = 0.34 (curve b) for tf ≤ 40mm, 0.49 (curve c) for tf > 40mm
+        return section.tf <= 40 ? 0.34 : 0.49;
       case 'EN1993':
-        return 0.34; // Curve 'b'
+        return section.tf <= 40 ? 0.34 : 0.49;
       case 'AISC360':
         return 0.30;
       default:

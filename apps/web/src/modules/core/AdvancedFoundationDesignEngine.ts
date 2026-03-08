@@ -553,7 +553,7 @@ export class AdvancedFoundationDesignEngine {
     
     // Depth factors
     const dc = 1 + 0.2 * (Df / B);
-    const dq = 1 + 0.1 * (Df / B) * Math.tan(Math.PI / 4 + phi * Math.PI / 360);
+    const dq = 1 + 0.1 * (Df / B) * Math.tan(Math.PI / 4 + phi * Math.PI / 180);
     const dg = dq;
     
     // Ultimate bearing capacity (Meyerhof equation)

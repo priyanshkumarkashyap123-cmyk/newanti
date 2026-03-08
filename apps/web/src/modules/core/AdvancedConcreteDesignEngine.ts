@@ -848,11 +848,13 @@ export class AdvancedConcreteDesignEngine {
     const fy = this.rebar.fy;
     switch (this.code) {
       case 'IS456':
-        // IS 456 Annex G
+        // IS 456 Annex G — xu,max/d limits
         if (fy === 250) return 0.53;
         if (fy === 415) return 0.48;
         if (fy === 500) return 0.46;
-        return 0.456;
+        if (fy === 550) return 0.44;
+        if (fy === 600) return 0.42;
+        return 0.48; // Default to Fe415 value
       case 'ACI318':
         return 0.375; // For ductility
       case 'EN1992':
@@ -978,9 +980,9 @@ export class AdvancedConcreteDesignEngine {
     // IS 456 Cl. 26.5.2.1
     const fy = this.rebar.fy;
     if (fy <= 415) {
-      return 0.0012 * 1000 * D; // mm²/m
+      return 0.0012 * 1000 * D; // 0.12% of bD, mm²/m
     }
-    return 0.0012 * 1000 * D;
+    return 0.0015 * 1000 * D; // 0.15% for Fe500/550/600
   }
 
   private designShear(
@@ -1053,18 +1055,51 @@ export class AdvancedConcreteDesignEngine {
   }
 
   private getDesignShearStrength(pt: number, fck: number): number {
-    // IS 456 Table 19 - Design shear strength
+    // IS 456:2000 Table 19 — Design shear strength τc (N/mm²) for M20 concrete
     pt = Math.max(0.15, Math.min(pt, 3.0));
-    
-    const beta = Math.max(1, Math.pow(0.8 * fck / (6.89 * pt), 0.33));
-    const tau_c = 0.85 * Math.sqrt(0.8 * fck) * (Math.sqrt(1 + 5 * beta) - 1) / (6 * beta);
-    
-    return Math.min(tau_c, 0.63 * Math.sqrt(fck));
+
+    const table: { pt: number; tau: number }[] = [
+      { pt: 0.15, tau: 0.28 },
+      { pt: 0.25, tau: 0.36 },
+      { pt: 0.50, tau: 0.48 },
+      { pt: 0.75, tau: 0.56 },
+      { pt: 1.00, tau: 0.62 },
+      { pt: 1.25, tau: 0.67 },
+      { pt: 1.50, tau: 0.72 },
+      { pt: 1.75, tau: 0.75 },
+      { pt: 2.00, tau: 0.79 },
+      { pt: 2.25, tau: 0.81 },
+      { pt: 2.50, tau: 0.82 },
+      { pt: 2.75, tau: 0.82 },
+      { pt: 3.00, tau: 0.82 },
+    ];
+
+    // Linear interpolation for M20
+    let tau_c_M20 = table[0].tau;
+    for (let i = 0; i < table.length - 1; i++) {
+      if (pt >= table[i].pt && pt <= table[i + 1].pt) {
+        const ratio = (pt - table[i].pt) / (table[i + 1].pt - table[i].pt);
+        tau_c_M20 = table[i].tau + ratio * (table[i + 1].tau - table[i].tau);
+        break;
+      }
+    }
+    if (pt >= table[table.length - 1].pt) {
+      tau_c_M20 = table[table.length - 1].tau;
+    }
+
+    // Grade factor per IS 456 Table 19 footnote: τc = τc,M20 × √(fck/20), capped at M40
+    const gradeFactor = Math.min(Math.sqrt(fck / 20), Math.sqrt(40 / 20));
+    return tau_c_M20 * gradeFactor;
   }
 
   private getMaxShearStrength(fck: number): number {
-    // IS 456 Table 20
-    return 0.63 * Math.sqrt(fck);
+    // IS 456:2000 Table 20 — Maximum shear stress τc,max (N/mm²)
+    if (fck <= 15) return 2.5;
+    if (fck <= 20) return 2.8;
+    if (fck <= 25) return 3.1;
+    if (fck <= 30) return 3.5;
+    if (fck <= 35) return 3.7;
+    return 4.0; // M40 and above
   }
 
   private calculateMomentCapacity(section: BeamSection, Ast: number, Asc?: number): number {
