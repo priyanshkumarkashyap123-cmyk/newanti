@@ -36,7 +36,6 @@ onnect-timeout
 # Turbo
 **/build/
 **/dist/
-!apps/api/dist/
 **/target/
 *.PublishSettings
 *.credentials
@@ -148,3 +147,7 @@ restore_*.py
 # Duplicate/backup files (macOS/tooling artifacts)
 *\ 2.*
 *\ 2/
+
+# Temp/test artifacts
+.commit-msg.txt
+test_erfinv_*
