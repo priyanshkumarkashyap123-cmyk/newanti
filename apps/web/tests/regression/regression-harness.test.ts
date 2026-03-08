@@ -238,7 +238,7 @@ async function getEngine() {
  */
 async function runStructuralFromFixture(input: Record<string, any>): Promise<Record<string, any>> {
   // ---- Parametric closed-form fixture ----
-  if (input.span_m !== undefined && input.load_kN !== undefined) {
+  if (input.span_m !== undefined && (input.load_kN !== undefined || input.udl_kN_per_m !== undefined || input.load_kN_each !== undefined)) {
     return runClosedFormBeam(input);
   }
 
@@ -294,7 +294,6 @@ async function runStructuralFromFixture(input: Record<string, any>): Promise<Rec
 /** Closed-form beam solver for parametric fixtures (span_m, load_kN, section) */
 async function runClosedFormBeam(input: Record<string, any>): Promise<Record<string, any>> {
   const L = input.span_m as number;           // m
-  const P = input.load_kN as number;          // kN
   const E = input.section?.E_MPa as number;   // MPa
   const I_mm4 = input.section?.I_mm4 as number; // mm⁴
   const support = input.support as string;
@@ -304,6 +303,35 @@ async function runClosedFormBeam(input: Record<string, any>): Promise<Record<str
   const I_m4 = I_mm4 / 1e12;      // mm⁴ → m⁴
   const EI = E_kNm2 * I_m4;       // kN·m²
 
+  // UDL case: w in kN/m
+  if (input.udl_kN_per_m !== undefined) {
+    const w = input.udl_kN_per_m as number;
+    if (support === 'simply_supported') {
+      return {
+        moment_kNm_max: w * L * L / 8,
+        shear_kN_max: w * L / 2,
+        deflection_mm_midspan: (5 * w * L * L * L * L) / (384 * EI) * 1000,
+      };
+    }
+    throw new Error(`Unsupported UDL support type: ${support}`);
+  }
+
+  // Two equal point loads at L/3
+  if (input.load_kN_each !== undefined) {
+    const P = input.load_kN_each as number;
+    if (support === 'simply_supported') {
+      const a = L / 3;
+      return {
+        moment_kNm_max: P * a,  // PL/3
+        shear_kN_max: P,        // reaction = P
+        deflection_mm_midspan: (23 * P * L * L * L) / (648 * EI) * 1000,
+      };
+    }
+    throw new Error(`Unsupported two-point-load support type: ${support}`);
+  }
+
+  const P = input.load_kN as number;          // kN
+
   if (support === 'simply_supported') {
     return {
       moment_kNm_max: P * L / 4,
@@ -311,6 +339,24 @@ async function runClosedFormBeam(input: Record<string, any>): Promise<Record<str
       deflection_mm_midspan: (P * L * L * L) / (48 * EI) * 1000, // m → mm
     };
   }
+
+  if (support === 'cantilever') {
+    return {
+      moment_kNm_max: P * L,
+      shear_kN_max: P,
+      deflection_mm_tip: (P * L * L * L) / (3 * EI) * 1000,
+    };
+  }
+
+  if (support === 'fixed_fixed') {
+    return {
+      moment_kNm_support: P * L / 8,
+      moment_kNm_midspan: P * L / 8,
+      shear_kN_max: P / 2,
+      deflection_mm_midspan: (P * L * L * L) / (192 * EI) * 1000,
+    };
+  }
+
   throw new Error(`Unsupported support type: ${support}`);
 }
 

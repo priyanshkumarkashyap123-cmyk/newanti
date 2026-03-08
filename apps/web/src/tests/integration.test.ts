@@ -80,7 +80,7 @@ describe('Frontend-Backend Integration Enhancements', () => {
 
     it('should identify authentication errors', () => {
       expect(requiresAuth('HTTP_401', 401)).toBe(true);
-      expect(requiresAuth('NETWORK_ERROR')).toBe(false);
+      expect(requiresAuth('NETWORK_ERROR', 0)).toBe(false);
     });
 
     it('should have error codes defined', () => {

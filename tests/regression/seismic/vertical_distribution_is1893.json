@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "domain": "seismic",
+    "name": "vertical_distribution_is1893",
+    "code": "IS1893:2016",
+    "clause": "Cl. 7.6.3 — Distribution of base shear along height",
+    "units": "SI"
+  },
+  "input": {
+    "base_shear_kN": 500.0,
+    "storey_heights_m": [3.0, 6.0, 9.0],
+    "storey_weights_kN": [1000.0, 1000.0, 500.0]
+  },
+  "expected": {
+    "lateral_forces_kN": [52.63, 210.53, 236.84],
+    "sum_kN": 500.0
+  },
+  "tolerance": {
+    "abs": { "sum_kN": 0.01 },
+    "rel": { "lateral_forces_kN": 0.005 }
+  }
+}

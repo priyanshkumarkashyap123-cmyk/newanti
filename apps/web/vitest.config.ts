@@ -10,6 +10,7 @@ export default defineConfig({
         include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}', 'tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
         exclude: [
             'dist',
+            'tests/e2e/**',
         ],
         testTimeout: 15000,
         hookTimeout: 15000,

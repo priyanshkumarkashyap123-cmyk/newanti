@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "domain": "structural",
+    "name": "ss_beam_udl",
+    "code": "closed_form",
+    "clause": "Elastic beam theory — simply supported, UDL",
+    "units": "SI"
+  },
+  "input": {
+    "span_m": 10.0,
+    "udl_kN_per_m": 15.0,
+    "section": { "E_MPa": 200000, "I_mm4": 3.0e9 },
+    "support": "simply_supported"
+  },
+  "expected": {
+    "moment_kNm_max": 187.5,
+    "shear_kN_max": 75.0,
+    "deflection_mm_midspan": 3.255
+  },
+  "tolerance": {
+    "abs": { "deflection_mm_midspan": 0.005 },
+    "rel": { "moment_kNm_max": 0.001, "shear_kN_max": 0.001 }
+  }
+}

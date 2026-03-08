@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "domain": "concrete",
+    "name": "development_length_is456",
+    "code": "IS456:2000",
+    "clause": "Cl. 26.2.1 — Development length of bars",
+    "units": "SI"
+  },
+  "input": {
+    "bar_diameter_mm": 16,
+    "fy_MPa": 500,
+    "fck_MPa": 25,
+    "bar_type": "deformed"
+  },
+  "expected": {
+    "tau_bd_MPa": 1.4,
+    "tau_bd_deformed_MPa": 2.24,
+    "sigma_s_MPa": 435.0,
+    "Ld_mm": 776.8
+  },
+  "tolerance": {
+    "rel": { "Ld_mm": 0.005, "tau_bd_deformed_MPa": 0.001 }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "domain": "structural",
+    "name": "cantilever_tip_point_load",
+    "code": "closed_form",
+    "clause": "Elastic beam theory — cantilever",
+    "units": "SI"
+  },
+  "input": {
+    "span_m": 3.0,
+    "load_kN": 20.0,
+    "section": { "E_MPa": 200000, "I_mm4": 5.0e7 },
+    "support": "cantilever"
+  },
+  "expected": {
+    "moment_kNm_max": 60.0,
+    "shear_kN_max": 20.0,
+    "deflection_mm_tip": 18.0
+  },
+  "tolerance": {
+    "abs": { "deflection_mm_tip": 0.01 },
+    "rel": { "moment_kNm_max": 0.001, "shear_kN_max": 0.001 }
+  }
+}

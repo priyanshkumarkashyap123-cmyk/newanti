@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "domain": "structural",
+    "name": "fixed_fixed_central_point_load",
+    "code": "closed_form",
+    "clause": "Elastic beam theory — fixed-fixed, central point load",
+    "units": "SI"
+  },
+  "input": {
+    "span_m": 6.0,
+    "load_kN": 50.0,
+    "section": { "E_MPa": 200000, "I_mm4": 1.0e9 },
+    "support": "fixed_fixed"
+  },
+  "expected": {
+    "moment_kNm_support": 37.5,
+    "moment_kNm_midspan": 37.5,
+    "shear_kN_max": 25.0,
+    "deflection_mm_midspan": 0.28125
+  },
+  "tolerance": {
+    "abs": { "deflection_mm_midspan": 0.001 },
+    "rel": { "moment_kNm_support": 0.001, "moment_kNm_midspan": 0.001, "shear_kN_max": 0.001 }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "domain": "seismic",
+    "name": "empirical_period_is1893",
+    "code": "IS1893:2016",
+    "clause": "Cl. 7.6.2 — Approximate fundamental natural period",
+    "units": "SI"
+  },
+  "input": {
+    "building_height_m": 30.0,
+    "base_dimension_m": 15.0,
+    "structural_system": "RC_moment_frame"
+  },
+  "expected": {
+    "Ta_moment_frame_sec": 0.8136,
+    "Ta_shear_wall_sec": 0.5164
+  },
+  "tolerance": {
+    "rel": { "Ta_moment_frame_sec": 0.005, "Ta_shear_wall_sec": 0.005 }
+  }
+}

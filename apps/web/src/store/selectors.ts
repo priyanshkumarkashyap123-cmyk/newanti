@@ -113,3 +113,32 @@ export const useSelect = () => useModelStore((s) => s.select);
 export const useClearSelection = () => useModelStore((s) => s.clearSelection);
 export const useSetAnalysisResults = () => useModelStore((s) => s.setAnalysisResults);
 export const useSetIsAnalyzing = () => useModelStore((s) => s.setIsAnalyzing);
+
+// Geometry mutations
+export const useAddNode = () => useModelStore((s) => s.addNode);
+export const useAddNodes = () => useModelStore((s) => s.addNodes);
+export const useAddMember = () => useModelStore((s) => s.addMember);
+export const useAddMembers = () => useModelStore((s) => s.addMembers);
+export const useAddPlate = () => useModelStore((s) => s.addPlate);
+export const useUpdateNode = () => useModelStore((s) => s.updateNode);
+export const useUpdateNodePosition = () => useModelStore((s) => s.updateNodePosition);
+export const useSetNodeRestraints = () => useModelStore((s) => s.setNodeRestraints);
+export const useUpdateMember = () => useModelStore((s) => s.updateMember);
+export const useSplitMemberById = () => useModelStore((s) => s.splitMemberById);
+
+// Load mutations
+export const useAddLoad = () => useModelStore((s) => s.addLoad);
+export const useAddMemberLoad = () => useModelStore((s) => s.addMemberLoad);
+
+// Selection helpers
+export const useSelectAll = () => useModelStore((s) => s.selectAll);
+export const useSelectMultiple = () => useModelStore((s) => s.selectMultiple);
+export const useSelectByProperty = () => useModelStore((s) => s.selectByProperty);
+export const useSelectByCoordinate = () => useModelStore((s) => s.selectByCoordinate);
+export const useSelectParallel = () => useModelStore((s) => s.selectParallel);
+
+// Model structure
+export const useClearModel = () => useModelStore((s) => s.clearModel);
+export const useLoadStructure = () => useModelStore((s) => s.loadStructure);
+export const useSetProjectInfo = () => useModelStore((s) => s.setProjectInfo);
+export const useSetErrorElementIds = () => useModelStore((s) => s.setErrorElementIds);

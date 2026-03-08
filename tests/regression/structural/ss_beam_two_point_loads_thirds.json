@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "domain": "structural",
+    "name": "ss_beam_two_point_loads_thirds",
+    "code": "closed_form",
+    "clause": "Elastic beam theory — SS beam, two equal point loads at L/3",
+    "units": "SI"
+  },
+  "input": {
+    "span_m": 9.0,
+    "load_kN_each": 30.0,
+    "load_positions": ["L/3", "2L/3"],
+    "section": { "E_MPa": 200000, "I_mm4": 1.5e9 },
+    "support": "simply_supported"
+  },
+  "expected": {
+    "moment_kNm_max": 90.0,
+    "shear_kN_max": 30.0,
+    "deflection_mm_midspan": 2.588
+  },
+  "tolerance": {
+    "abs": { "deflection_mm_midspan": 0.005 },
+    "rel": { "moment_kNm_max": 0.001, "shear_kN_max": 0.001 }
+  }
+}

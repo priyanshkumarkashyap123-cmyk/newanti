@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "domain": "seismic",
+    "name": "design_spectrum_is1893_medium_soil",
+    "code": "IS1893:2016",
+    "clause": "Cl. 6.4.2 — Design horizontal seismic coefficient (Type II soil)",
+    "units": "SI"
+  },
+  "input": {
+    "zone_factor_Z": 0.24,
+    "importance_factor_I": 1.5,
+    "response_reduction_R": 5.0,
+    "soil_type": "medium",
+    "period_T_sec": 0.5,
+    "seismic_weight_kN": 8000.0
+  },
+  "expected": {
+    "Sa_over_g": 2.5,
+    "Ah": 0.09,
+    "base_shear_kN": 720.0
+  },
+  "tolerance": {
+    "rel": { "Sa_over_g": 0.001, "Ah": 0.001, "base_shear_kN": 0.001 }
+  }
+}

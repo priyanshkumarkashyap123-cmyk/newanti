@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "domain": "concrete",
+    "name": "column_axial_capacity_is456",
+    "code": "IS456:2000",
+    "clause": "Cl. 39.3 — Short column under axial load",
+    "units": "SI"
+  },
+  "input": {
+    "b_mm": 400,
+    "D_mm": 400,
+    "fck_MPa": 25,
+    "fy_MPa": 415,
+    "bars": { "count": 4, "diameter_mm": 25 },
+    "Asc_mm2": 1963.5
+  },
+  "expected": {
+    "Pu_kN": 2126.3,
+    "Ac_mm2": 158036.5
+  },
+  "tolerance": {
+    "rel": { "Pu_kN": 0.005, "Ac_mm2": 0.001 }
+  }
+}

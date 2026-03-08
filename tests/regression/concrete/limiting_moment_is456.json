@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "domain": "concrete",
+    "name": "limiting_moment_is456",
+    "code": "IS456:2000",
+    "clause": "Cl. 38.1 — Limiting moment of resistance",
+    "units": "SI"
+  },
+  "input": {
+    "b_mm": 300,
+    "d_mm": 500,
+    "fck_MPa": 25,
+    "fy_MPa": 500
+  },
+  "expected": {
+    "xu_max_over_d": 0.46,
+    "xu_max_mm": 230.0,
+    "Mu_lim_kNm": 250.51
+  },
+  "tolerance": {
+    "rel": { "xu_max_over_d": 0.001, "xu_max_mm": 0.001, "Mu_lim_kNm": 0.005 }
+  }
+}
