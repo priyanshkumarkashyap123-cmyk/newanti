@@ -1273,10 +1273,13 @@ const CollaborationHub: React.FC = () => {
               desc: "Link expires after 30 days",
             },
           ].map((setting, idx) => (
-            <label
+            <button
               key={idx}
+              role="switch"
+              aria-checked={!!accessSettings[setting.key]}
+              aria-label={`${setting.name}: ${accessSettings[setting.key] ? 'Enabled' : 'Disabled'}`}
               onClick={() => handleToggleAccess(setting.key)}
-              className="flex items-center justify-between p-4 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+              className="flex items-center justify-between p-4 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors text-left"
             >
               <div>
                 <p className="text-slate-900 dark:text-white font-medium">
@@ -1287,13 +1290,14 @@ const CollaborationHub: React.FC = () => {
                 </p>
               </div>
               <div
+                aria-hidden="true"
                 className={`relative w-12 h-6 rounded-full transition-colors ${accessSettings[setting.key] ? "bg-green-600" : "bg-slate-300 dark:bg-slate-500"}`}
               >
                 <div
                   className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${accessSettings[setting.key] ? "right-1" : "left-1"}`}
                 />
               </div>
-            </label>
+            </button>
           ))}
         </div>
       </div>

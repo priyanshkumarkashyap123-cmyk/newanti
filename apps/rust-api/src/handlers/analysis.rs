@@ -373,8 +373,8 @@ pub async fn time_history_analysis(
     let n_steps = force_history.len();
 
     // Initial conditions
-    let u0 = req.initial_displacement.as_ref().map(|v| DVector::from_vec(v.clone()));
-    let v0 = req.initial_velocity.as_ref().map(|v| DVector::from_vec(v.clone()));
+    let u0 = req.initial_displacement.as_ref().map(|v| DVector::<f64>::from_vec(v.clone()));
+    let v0 = req.initial_velocity.as_ref().map(|v| DVector::<f64>::from_vec(v.clone()));
 
     // Parse integration method
     let integration = match req.integration_method.to_lowercase().as_str() {
@@ -599,7 +599,7 @@ pub async fn seismic_analysis(
 
     // Convert mode shapes to DMatrix
     let n_dof = req.mode_shapes[0].len();
-    let mut mode_shapes_matrix = DMatrix::zeros(n_dof, n_modes);
+    let mut mode_shapes_matrix: DMatrix<f64> = DMatrix::zeros(n_dof, n_modes);
     for (mode_idx, mode_shape) in req.mode_shapes.iter().enumerate() {
         for (dof_idx, &value) in mode_shape.iter().enumerate() {
             mode_shapes_matrix[(dof_idx, mode_idx)] = value;

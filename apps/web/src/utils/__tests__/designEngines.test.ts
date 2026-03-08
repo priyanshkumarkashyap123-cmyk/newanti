@@ -31,7 +31,7 @@ describe('AdvancedSteelDesignEngine — IS 800 Safety Factors', () => {
     memberType: 'beam',
     steel: STEEL_GRADES['E250A'],
     section: {
-      type: 'I_section',
+      type: 'I_SECTION',
       name: 'ISMB 300',
       D: 300, B: 140, tf: 12.4, tw: 7.5, r: 14,
       A: 5626, Ix: 8603e3, Iy: 453.9e3,
@@ -39,15 +39,17 @@ describe('AdvancedSteelDesignEngine — IS 800 Safety Factors', () => {
       rx: 123.7, ry: 28.4, J: 95.3e3, Cw: 122e9,
     },
     loads: {
-      axialForce: 0,
-      momentX: 50,
-      momentY: 0,
-      shearX: 30,
-      shearY: 0,
+      Pu: 0,
+      Mux: 50,
+      Muy: 0,
+      Vux: 30,
+      Vuy: 0,
     },
     bracing: {
       Lx: 5000, Ly: 5000, Lb: 5000,
       Kx: 1.0, Ky: 1.0,
+      lateralBracing: 'none',
+      endRestraint: 'pinned_pinned',
     },
   });
 

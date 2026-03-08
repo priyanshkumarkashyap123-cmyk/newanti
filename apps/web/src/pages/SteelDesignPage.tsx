@@ -156,10 +156,11 @@ export function SteelDesignPage() {
                 
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5">
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label htmlFor="steel-design-code" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Design Code:
                         </label>
                         <select
+                            id="steel-design-code"
                             value={designCode}
                             onChange={(e) => setDesignCode(e.target.value as 'AISC360' | 'IS800')}
                             className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
@@ -170,10 +171,11 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label htmlFor="steel-member" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Member:
                         </label>
                         <select
+                            id="steel-member"
                             value={selectedMember}
                             onChange={(e) => setSelectedMember(e.target.value)}
                             className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-colors"
@@ -188,10 +190,11 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label htmlFor="steel-unbraced-length" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Unbraced Length (mm):
                         </label>
                         <input
+                            id="steel-unbraced-length"
                             type="number"
                             value={params.Lb}
                             onChange={(e) => setParams({ ...params, Lb: parseFloat(e.target.value) || 3000 })}
@@ -200,10 +203,11 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label htmlFor="steel-kx" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Kx (Effective Length Factor):
                         </label>
                         <input
+                            id="steel-kx"
                             type="number"
                             step="0.1"
                             value={params.Kx}
@@ -213,10 +217,11 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label htmlFor="steel-ky" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Ky (Effective Length Factor):
                         </label>
                         <input
+                            id="steel-ky"
                             type="number"
                             step="0.1"
                             value={params.Ky}
@@ -226,10 +231,11 @@ export function SteelDesignPage() {
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <label htmlFor="steel-cb" className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                             Cb (LTB Modifier):
                         </label>
                         <input
+                            id="steel-cb"
                             type="number"
                             step="0.1"
                             value={params.Cb}

@@ -388,24 +388,24 @@ impl TimeHistorySolver {
         // Initialize state vectors
         let mut u = initial_displacement
             .cloned()
-            .unwrap_or_else(|| DVector::zeros(n_dof));
+            .unwrap_or_else(|| DVector::<f64>::zeros(n_dof));
         
         let mut v = initial_velocity
             .cloned()
-            .unwrap_or_else(|| DVector::zeros(n_dof));
+            .unwrap_or_else(|| DVector::<f64>::zeros(n_dof));
         
-        let mut a = DVector::zeros(n_dof);
+        let mut a: DVector<f64> = DVector::zeros(n_dof);
         
         // Assemble damping matrix
         let damping = match self.config.damping {
-            DampingModel::None => DMatrix::zeros(n_dof, n_dof),
+            DampingModel::None => DMatrix::<f64>::zeros(n_dof, n_dof),
             DampingModel::Rayleigh { alpha, beta } => {
                 alpha * mass + beta * stiffness
             }
             DampingModel::Modal { .. } => {
                 // Modal damping requires modal decomposition
                 // For simplicity, use proportional damping
-                DMatrix::zeros(n_dof, n_dof)
+                DMatrix::<f64>::zeros(n_dof, n_dof)
             }
         };
         
