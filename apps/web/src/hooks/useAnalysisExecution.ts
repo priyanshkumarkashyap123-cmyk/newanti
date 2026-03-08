@@ -309,7 +309,7 @@ export function useAnalysisExecution(
 
       const membersArray = Array.from(members.values()).map((m) => {
         const E = m.E ?? 200e6;
-        const G = m.G ?? E / 2.6;
+        const G = m.G ?? E / (2 * (1 + 0.3)); // G = E/(2(1+ν)), ν=0.3 for steel
         const I = m.I ?? 1e-4;
         const Iy = m.Iy ?? I;
         const Iz = m.Iz ?? I;

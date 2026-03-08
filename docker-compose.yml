@@ -66,13 +66,16 @@ services:
       - NODE_API_URL=http://api-node:3001
       - RUST_API_URL=http://rust-api:8080
       - ENABLE_RUST_BACKEND=true
-      - ANALYSIS_WORKERS=4
+      - ANALYSIS_WORKERS=6
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:?INTERNAL_SERVICE_SECRET is required (min 16 chars)}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - MAX_REQUEST_BODY_MB=10
-      - GUNICORN_WORKERS=4
-      - GUNICORN_MAX_REQUESTS=5000
+      - GUNICORN_WORKERS=5
+      - GUNICORN_MAX_REQUESTS=10000
       - GUNICORN_MAX_REQUESTS_JITTER=500
+      - RATE_LIMIT_GENERAL=500
+      - RATE_LIMIT_ANALYSIS=100
+      - RATE_LIMIT_AI=100
       - ENVIRONMENT=production
     restart: unless-stopped
     networks:
@@ -110,6 +113,10 @@ services:
       - MONGODB_URI=mongodb://${MONGO_USERNAME:-beamlab_admin}:${MONGO_PASSWORD:?MONGO_PASSWORD is required}@mongo:27017/beamlab?authSource=admin
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - RUST_LOG=info
+      - MONGO_MAX_POOL_SIZE=100
+      - MONGO_MIN_POOL_SIZE=20
+      - MONGO_MAX_IDLE_SECONDS=60
+      - MONGO_WAIT_QUEUE_TIMEOUT_SECONDS=15
     depends_on:
       mongo:
         condition: service_healthy
@@ -146,6 +153,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
+      # Cap V8 old-space to 768 MB (< 1 GB container limit) to prevent OOM kills
+      - NODE_OPTIONS=--max-old-space-size=768
       - PYTHON_API_URL=http://backend-python:8000
       - RUST_API_URL=http://rust-api:8080
       - FRONTEND_URL=http://localhost:5173
@@ -153,6 +162,13 @@ services:
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
       - MONGODB_URI=mongodb://${MONGO_USERNAME:-beamlab_admin}:${MONGO_PASSWORD:?MONGO_PASSWORD is required}@mongo:27017/beamlab?authSource=admin
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:?INTERNAL_SERVICE_SECRET is required}
+      - RATE_LIMIT_WINDOW_MS=60000
+      - RATE_LIMIT_GENERAL_MAX=500
+      - RATE_LIMIT_ANALYSIS_MAX=100
+      - RATE_LIMIT_BILLING_MAX=10
+      - RATE_LIMIT_CRUD_MAX=120
+      - RATE_LIMIT_AUTH_MAX=20
+      - RATE_LIMIT_AI_MAX=60
     depends_on:
       backend-python:
         condition: service_healthy

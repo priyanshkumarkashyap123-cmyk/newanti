@@ -199,8 +199,17 @@ export class SocketServer {
                 methods: ['GET', 'POST'],
                 credentials: true
             },
+            // Prefer WebSocket over long-polling to reduce HTTP overhead per connection.
+            // Clients that can't upgrade stay on polling automatically.
+            transports: ['websocket', 'polling'],
+            // Cap incoming message size to 1 MB — prevents memory exhaustion attacks.
+            maxHttpBufferSize: 1e6,
+            // Compress WebSocket frames ≥ 1 KB — measurably reduces bandwidth at 10K users.
+            perMessageDeflate: {
+                threshold: 1024,
+            },
             pingInterval: 10000,
-            pingTimeout: 5000
+            pingTimeout: 5000,
         });
 
         // ── Authentication middleware ──

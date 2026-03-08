@@ -176,8 +176,9 @@ export class MatrixUtils {
         G?: number,
         J?: number
     ): Matrix {
-        // Default shear modulus for steel (G ≈ E/2.6, ν=0.3)
-        const shearModulus = G ?? E / 2.6;
+        // Default shear modulus for steel: G = E/(2(1+ν)), ν=0.3 for steel
+        const poissonRatio = 0.3;
+        const shearModulus = G ?? E / (2 * (1 + poissonRatio));
         // Default torsional constant — conservative for open sections (I-beams/channels)
         // J = Iy + Iz is ONLY valid for circular sections.
         // For open sections, J ≈ Σbt³/3 which is 100–1000× smaller.

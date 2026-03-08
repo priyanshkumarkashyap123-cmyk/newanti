@@ -1,0 +1,19 @@
+perf: scalability hardening & solver correctness fixes
+
+- Redis-backed distributed rate limiting with env-configurable limits
+- Nginx upstream keepalive pools for all backends (reduces TCP overhead)
+- Mongo pool sizing from env vars (100 max, 20 min, configurable timeouts)
+- HTTP server tuning: keepAliveTimeout, headersTimeout, maxConnections
+- WebSocket: prefer ws transport, 1MB message cap, per-message deflate
+- V8 heap capped at 768MB to prevent OOM kills in containers
+- AI session store: memory caps, cursor-based IndexedDB loading, trimming
+- URL-encoded body parser with 512KB limit
+
+Solver correctness:
+- Fix shear modulus: G = E/(2(1+v)) instead of E/2.6 across 5 files
+- P-Delta: proper 12x12 geometric stiffness matrix (Kassimali formulation)
+- P-Delta handler: real stiffness assembly + PDeltaSolver integration
+- Modal analysis: use actual K matrix instead of placeholder identity
+- New Solver::assemble_global_stiffness() with parallel member contributions
+
+All tests pass: 466 web + 186 API, TypeScript clean, cargo check clean

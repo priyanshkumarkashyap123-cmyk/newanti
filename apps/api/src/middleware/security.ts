@@ -12,8 +12,64 @@ import { Request, Response, NextFunction, RequestHandler } from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { randomUUID } from "crypto";
+import { createClient, type RedisClientType } from "redis";
 import { isTrustedOrigin } from "../config/cors.js";
 import logger from "../utils/logger.js";
+
+function envInt(name: string, fallback: number): number {
+  const value = process.env[name];
+  if (!value) return fallback;
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+const RATE_LIMIT_WINDOW_MS = envInt("RATE_LIMIT_WINDOW_MS", 60_000);
+const RATE_LIMIT_GENERAL_MAX = envInt("RATE_LIMIT_GENERAL_MAX", 500);
+const RATE_LIMIT_ANALYSIS_MAX = envInt("RATE_LIMIT_ANALYSIS_MAX", 100);
+const RATE_LIMIT_BILLING_MAX = envInt("RATE_LIMIT_BILLING_MAX", 10);
+const RATE_LIMIT_CRUD_MAX = envInt("RATE_LIMIT_CRUD_MAX", 120);
+const RATE_LIMIT_AUTH_MAX = envInt("RATE_LIMIT_AUTH_MAX", 20);
+const RATE_LIMIT_AI_MAX = envInt("RATE_LIMIT_AI_MAX", 60);
+const RATE_LIMIT_DISTRIBUTED = process.env["RATE_LIMIT_DISTRIBUTED"] === "true";
+const REDIS_URL = process.env["REDIS_URL"] || "redis://redis:6379";
+
+let redisClient: RedisClientType | null = null;
+let redisInitPromise: Promise<RedisClientType | null> | null = null;
+
+async function getRedisClient(): Promise<RedisClientType | null> {
+  if (!RATE_LIMIT_DISTRIBUTED) return null;
+  if (redisClient?.isOpen) return redisClient;
+  if (redisInitPromise) return redisInitPromise;
+
+  redisInitPromise = (async () => {
+    try {
+      const client = createClient({
+        url: REDIS_URL,
+        socket: {
+          reconnectStrategy: (retries) => Math.min(retries * 100, 2_000),
+        },
+      });
+
+      client.on("error", (err) => {
+        logger.warn({ err }, "Redis rate-limit client error; falling back to local limits");
+      });
+
+      await client.connect();
+      redisClient = client;
+      logger.info("Redis distributed rate limiting enabled");
+      return client;
+    } catch (err) {
+      logger.warn({ err }, "Failed to initialize Redis rate limiter; using local limits");
+      redisClient = null;
+      return null;
+    } finally {
+      redisInitPromise = null;
+    }
+  })();
+
+  return redisInitPromise;
+}
 
 // ============================================
 // HTTP SECURITY HEADERS (Helmet)
@@ -127,38 +183,83 @@ function createRateLimit(
 
 // General API: 200 req/min per IP (supports 10K+ concurrent users)
 export const generalRateLimit: RequestHandler = createRateLimit(
-  60_000, 200,
+  RATE_LIMIT_WINDOW_MS, RATE_LIMIT_GENERAL_MAX,
   "Too many requests. Please try again later.",
-  { skipPaths: ["/health"], skipMethods: ["OPTIONS"] },
+  {
+    skipPaths: ["/health"],
+    skipMethods: ["OPTIONS"],
+  },
 );
+
+// Distributed general limiter (Redis) for multi-replica consistency.
+// Falls back to in-memory limiter chain if Redis is unavailable.
+export const distributedGeneralRateLimit: RequestHandler = async (req, res, next) => {
+  if (!RATE_LIMIT_DISTRIBUTED) return next();
+  if (req.method === "OPTIONS" || req.path.startsWith("/health")) return next();
+
+  const client = await getRedisClient();
+  if (!client) return next();
+
+  const ip = req.ip || req.socket?.remoteAddress || "unknown";
+  const key = `rl:general:${ip}`;
+  const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+
+  try {
+    const current = await client.incr(key);
+    if (current === 1) {
+      await client.expire(key, windowSeconds);
+    }
+
+    const ttl = await client.ttl(key);
+    const resetSeconds = ttl > 0 ? ttl : windowSeconds;
+    const remaining = Math.max(RATE_LIMIT_GENERAL_MAX - current, 0);
+
+    res.setHeader("X-RateLimit-Limit", String(RATE_LIMIT_GENERAL_MAX));
+    res.setHeader("X-RateLimit-Remaining", String(remaining));
+    res.setHeader("X-RateLimit-Reset", String(resetSeconds));
+
+    if (current > RATE_LIMIT_GENERAL_MAX) {
+      return res.status(429).json({
+        success: false,
+        error: "Too many requests. Please try again later.",
+        retryAfter: resetSeconds,
+      });
+    }
+
+    return next();
+  } catch (err) {
+    logger.warn({ err }, "Distributed rate limiter check failed; using local limits");
+    return next();
+  }
+};
 
 // Analysis API: 20 req/min (expensive compute - still generous for real users)
 export const analysisRateLimit: RequestHandler = createRateLimit(
-  60_000, 20,
+  RATE_LIMIT_WINDOW_MS, RATE_LIMIT_ANALYSIS_MAX,
   "Analysis rate limit exceeded. Please wait before running more analyses.",
 );
 
 // Billing API: 5 req/min (prevent payment abuse)
 export const billingRateLimit: RequestHandler = createRateLimit(
-  60_000, 5,
+  RATE_LIMIT_WINDOW_MS, RATE_LIMIT_BILLING_MAX,
   "Billing rate limit exceeded. Please try again later.",
 );
 
 // CRUD endpoints: 60 req/min
 export const crudRateLimit: RequestHandler = createRateLimit(
-  60_000, 60,
+  RATE_LIMIT_WINDOW_MS, RATE_LIMIT_CRUD_MAX,
   "Request rate limit exceeded. Please slow down.",
 );
 
 // Auth endpoints: 10 req/min (brute force protection)
 export const authRateLimit: RequestHandler = createRateLimit(
-  60_000, 10,
+  RATE_LIMIT_WINDOW_MS, RATE_LIMIT_AUTH_MAX,
   "Too many authentication attempts. Please try again later.",
 );
 
 // AI endpoints: 20 req/min per user
 export const aiRateLimit: RequestHandler = createRateLimit(
-  60_000, 20,
+  RATE_LIMIT_WINDOW_MS, RATE_LIMIT_AI_MAX,
   "AI rate limit exceeded. Please wait before sending more requests.",
   {
     keyGenerator: (req) => {

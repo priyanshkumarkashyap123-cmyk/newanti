@@ -1286,7 +1286,7 @@ export async function validateSolverConsistency(): Promise<ConsistencyReport> {
         Iy: I,
         Iz: I,
         J: 2 * I,
-        G: E / 2.6,
+        G: E / (2 * (1 + 0.3)), // G = E/(2(1+ν)), ν=0.3 for steel
       },
     ],
     [], // No nodal loads

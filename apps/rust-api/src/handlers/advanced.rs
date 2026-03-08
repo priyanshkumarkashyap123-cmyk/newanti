@@ -14,7 +14,7 @@ use std::sync::Arc;
 
 use crate::cache::AnalysisCache;
 use crate::error::{ApiError, ApiResult};
-use crate::solver::{AnalysisInput, Solver};
+use crate::solver::{AnalysisInput, Solver, MemberGeometry, PDeltaConfig, PDeltaSolver};
 use crate::AppState;
 
 // ============================================
@@ -68,56 +68,93 @@ pub async fn pdelta_analysis(
     let start = std::time::Instant::now();
     let solver = Solver::new();
 
-    // First-order analysis
-    let first_order = solver.analyze(&req.input)
-        .map_err(|e| ApiError::AnalysisFailed(e))?;
+    // Assemble stiffness matrix
+    let k_elastic = solver.assemble_global_stiffness(&req.input)
+        .map_err(|e| ApiError::AnalysisFailed(format!("Failed to assemble stiffness: {}", e)))?;
 
-    // Iterative P-Delta
-    let mut prev_displacements = first_order.displacements.clone();
-    let mut converged = false;
-    let mut iterations = 0;
-    let mut tolerance = f64::MAX;
+    let n_dof = req.input.nodes.len() * 6;
 
-    for iter in 0..req.max_iterations {
-        iterations = iter + 1;
-        
-        // In real implementation, would modify geometry and re-solve
-        // For now, apply simple amplification factor
-        let drift = prev_displacements.iter()
-            .map(|d| (d.dx * d.dx + d.dy * d.dy + d.dz * d.dz).sqrt())
-            .fold(0.0, f64::max);
-
-        // Check convergence
-        if drift < req.tolerance {
-            converged = true;
-            tolerance = drift;
-            break;
+    // Build force vector from loads
+    let mut forces = DVector::zeros(n_dof);
+    let node_index: std::collections::HashMap<String, usize> = req.input.nodes
+        .iter()
+        .enumerate()
+        .map(|(i, n)| (n.id.clone(), i))
+        .collect();
+    
+    for load in &req.input.loads {
+        if let Some(&idx) = node_index.get(&load.node_id) {
+            forces[idx * 6] = load.fx;
+            forces[idx * 6 + 1] = load.fy;
+            forces[idx * 6 + 2] = load.fz;
+            forces[idx * 6 + 3] = load.mx;
+            forces[idx * 6 + 4] = load.my;
+            forces[idx * 6 + 5] = load.mz;
         }
-
-        tolerance = drift;
     }
 
-    // Calculate amplification
-    let first_order_max = first_order.max_displacement;
-    let final_max = prev_displacements.iter()
-        .map(|d| (d.dx * d.dx + d.dy * d.dy + d.dz * d.dz).sqrt())
-        .fold(0.0, f64::max);
-    let amplification = if first_order_max > 1e-10 { final_max / first_order_max } else { 1.0 };
+    // Build member geometry data
+    let member_geometry: Vec<MemberGeometry> = req.input.members
+        .iter()
+        .filter_map(|member| {
+            let start_idx = *node_index.get(&member.start_node_id)?;
+            let end_idx = *node_index.get(&member.end_node_id)?;
+            let start_node = &req.input.nodes[start_idx];
+            let end_node = &req.input.nodes[end_idx];
+            
+            Some(MemberGeometry {
+                node_i: [start_node.x, start_node.y, start_node.z],
+                node_j: [end_node.x, end_node.y, end_node.z],
+                node_i_dof: start_idx * 6,
+                node_j_dof: end_idx * 6,
+                area: member.a,
+                elastic_modulus: member.e,
+                moment_of_inertia: member.i,
+            })
+        })
+        .collect();
+
+    // Create P-Delta configuration
+    let pdelta_config = PDeltaConfig {
+        max_iterations: req.max_iterations,
+        displacement_tolerance: req.tolerance,
+        ..PDeltaConfig::default()
+    };
+
+    // Run P-Delta analysis
+    let pdelta_solver = PDeltaSolver::new(pdelta_config);
+    let pdelta_result = pdelta_solver.analyze(&k_elastic, &forces, &member_geometry)
+        .map_err(|e| ApiError::AnalysisFailed(format!("P-Delta analysis failed: {}", e)))?;
 
     let performance_ms = start.elapsed().as_secs_f64() * 1000.0;
 
+    // Convert displacements from DOF array to per-node results
+    let displacements: Vec<DisplacementResult> = req.input.nodes
+        .iter()
+        .enumerate()
+        .map(|(i, node)| {
+            let base = i * 6;
+            DisplacementResult {
+                node_id: node.id.clone(),
+                dx: if base < pdelta_result.displacements.len() { pdelta_result.displacements[base] } else { 0.0 },
+                dy: if base + 1 < pdelta_result.displacements.len() { pdelta_result.displacements[base + 1] } else { 0.0 },
+                dz: if base + 2 < pdelta_result.displacements.len() { pdelta_result.displacements[base + 2] } else { 0.0 },
+            }
+        })
+        .collect();
+
+    // Get final tolerance from last convergence history entry
+    let final_tolerance = pdelta_result.convergence_history.last()
+        .map(|c| c.displacement_norm)
+        .unwrap_or(0.0);
+
     let response = PDeltaResponse {
         success: true,
-        converged,
-        iterations,
-        final_tolerance: tolerance,
-        displacements: prev_displacements.iter().map(|d| DisplacementResult {
-            node_id: d.node_id.clone(),
-            dx: d.dx,
-            dy: d.dy,
-            dz: d.dz,
-        }).collect(),
-        amplification_factor: amplification,
+        converged: pdelta_result.converged,
+        iterations: pdelta_result.iterations,
+        final_tolerance,
+        displacements,
+        amplification_factor: pdelta_result.amplification_factor,
         performance_ms,
     };
     state.analysis_cache.insert(cache_key, &response).await;
@@ -286,13 +323,10 @@ pub async fn modal_analysis(
 
     // Get stiffness matrix from solver
     let solver = Solver::new();
-    let analysis_result = solver.analyze(&req.input)
-        .map_err(|e| ApiError::AnalysisFailed(format!("Failed to build stiffness: {}", e)))?;
+    let stiffness = solver.assemble_global_stiffness(&req.input)
+        .map_err(|e| ApiError::AnalysisFailed(format!("Failed to build stiffness matrix: {}", e)))?;
     
-    // Build stiffness matrix (get from solver internal state)
-    // For now, rebuild it from the input (in production, solver would expose K matrix)
     let n_dof = req.input.nodes.len() * 6;
-    let stiffness = DMatrix::identity(n_dof, n_dof) * 1e6; // Placeholder - would use actual K from solver
     
     // Build mass matrix from node masses
     let mut mass = DMatrix::zeros(n_dof, n_dof);

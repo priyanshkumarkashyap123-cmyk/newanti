@@ -255,7 +255,10 @@ export function computeFrame3DStiffnessOpt(
 ): Float64Array {
   // Fallbacks
   if (!J || J === 0) J = Math.max(Math.min(Iy, Iz) / 500, (Iy + Iz) * 1e-4);
-  if (!G || G === 0) G = E / 2.6; // ν = 0.3
+  if (!G || G === 0) {
+    const poissonRatio = 0.3; // Steel
+    G = E / (2 * (1 + poissonRatio)); // G = E/(2(1+ν))
+  }
 
   // Build local stiffness into static buffer
   const kL = buildLocalStiffness12(

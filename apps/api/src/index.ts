@@ -39,6 +39,7 @@ import {
 } from "./middleware/authMiddleware.js";
 import {
   securityHeaders,
+  distributedGeneralRateLimit,
   generalRateLimit,
   analysisRateLimit,
   crudRateLimit,
@@ -232,6 +233,7 @@ app.use(express.json({
     }
   },
 }));
+app.use(express.urlencoded({ extended: true, limit: "512kb" })); // Form bodies capped to prevent memory spikes
 app.use(cookieParser()); // Parse cookies for CSRF double-submit pattern
 
 // XSS sanitization — strip dangerous HTML/JS from all incoming strings
@@ -243,7 +245,11 @@ app.use(csrfCookieMiddleware);
 app.use(csrfValidationMiddleware);
 
 // General rate limiting (after CORS so rate-limited responses still have CORS headers)
-app.use(generalRateLimit);
+if (process.env["RATE_LIMIT_DISTRIBUTED"] === "true") {
+  app.use(distributedGeneralRateLimit);
+} else {
+  app.use(generalRateLimit);
+}
 
 // ============================================
 // PUBLIC ENDPOINTS (before auth middleware so they always work)
@@ -493,6 +499,16 @@ app.get(
 
 // Error handler (must be last middleware — BEFORE listen)
 app.use(secureErrorHandler);
+
+// ── HTTP server tuning for 10K+ concurrent users ──────────────────────────
+// keepAliveTimeout > 60s so Azure / Nginx load balancers don't kill idle
+// connections before Node does — prevents ECONNRESET under load.
+httpServer.keepAliveTimeout = 65_000;
+// headersTimeout must be > keepAliveTimeout to avoid race conditions.
+httpServer.headersTimeout = 66_000;
+// Limit maximum simultaneous TCP connections.  Node's default is unlimited;
+// capping at 20K lets the OS queue excess connections gracefully.
+httpServer.maxConnections = 20_000;
 
 // Start server immediately to satisfy startup probes
 logger.info("Starting HTTP server...");

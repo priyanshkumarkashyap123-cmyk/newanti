@@ -575,6 +575,80 @@ impl Solver {
         })
     }
 
+    /// Assemble global stiffness matrix without solving
+    /// This is used by modal analysis and other advanced analyses that need K
+    pub fn assemble_global_stiffness(&self, input: &AnalysisInput) -> Result<DMatrix<f64>, String> {
+        let n_nodes = input.nodes.len();
+        let n_dofs = n_nodes * self.dofs_per_node;
+
+        // Build node index map
+        let node_index: HashMap<String, usize> = input
+            .nodes
+            .iter()
+            .enumerate()
+            .map(|(i, n)| (n.id.clone(), i))
+            .collect();
+
+        // Parallel assembly of member stiffness matrices
+        let member_contributions: Vec<_> = input
+            .members
+            .par_iter()
+            .filter_map(|member| {
+                let start_idx = node_index.get(&member.start_node_id)?;
+                let end_idx = node_index.get(&member.end_node_id)?;
+                
+                let start_node = &input.nodes[*start_idx];
+                let end_node = &input.nodes[*end_idx];
+                
+                // Calculate member properties
+                let dx = end_node.x - start_node.x;
+                let dy = end_node.y - start_node.y;
+                let dz = end_node.z - start_node.z;
+                let length = (dx * dx + dy * dy + dz * dz).sqrt();
+                
+                if length < 1e-10 {
+                    return None;
+                }
+
+                // Get local stiffness matrix
+                let k_local = self.member_stiffness_matrix(
+                    member.e,
+                    member.a,
+                    member.i,
+                    member.j.max(member.i * 0.5),
+                    member.i,
+                    length,
+                );
+
+                // Get transformation matrix
+                let t = self.transformation_matrix(dx, dy, dz, length);
+
+                // Transform to global
+                let t_transpose = t.transpose();
+                let k_global = &t_transpose * &k_local * &t;
+
+                // DOF indices
+                let dofs_start: Vec<usize> = (0..6).map(|i| start_idx * 6 + i).collect();
+                let dofs_end: Vec<usize> = (0..6).map(|i| end_idx * 6 + i).collect();
+                let all_dofs: Vec<usize> = dofs_start.iter().chain(dofs_end.iter()).copied().collect();
+
+                Some((all_dofs, k_global))
+            })
+            .collect();
+
+        // Assemble into dense global matrix
+        let mut k_global = DMatrix::zeros(n_dofs, n_dofs);
+        for (dofs, k) in member_contributions {
+            for (i, &row) in dofs.iter().enumerate() {
+                for (j, &col) in dofs.iter().enumerate() {
+                    k_global[(row, col)] += k[(i, j)];
+                }
+            }
+        }
+
+        Ok(k_global)
+    }
+
     /// 12x12 local stiffness matrix for 3D beam element
     fn member_stiffness_matrix(
         &self,

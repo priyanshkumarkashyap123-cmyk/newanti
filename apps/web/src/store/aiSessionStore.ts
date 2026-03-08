@@ -129,6 +129,9 @@ function generateSummary(messages: AIMessage[]): string {
 const DB_NAME = 'beamlab-ai-sessions';
 const DB_VERSION = 1;
 const STORE_NAME = 'sessions';
+const MAX_SESSIONS_IN_MEMORY = 100;
+const MAX_MESSAGES_PER_SESSION_IN_MEMORY = 100;
+const STARTUP_DB_SESSION_LIMIT = 100;
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -160,14 +163,50 @@ async function saveSessionToDB(session: AISession): Promise<void> {
   }
 }
 
-async function loadAllSessionsFromDB(): Promise<AISession[]> {
+function trimSessionForMemory(session: AISession): AISession {
+  return {
+    ...session,
+    messages: session.messages.slice(-MAX_MESSAGES_PER_SESSION_IN_MEMORY).map(m => ({
+      ...m,
+      metadata: m.metadata
+        ? {
+            ...m.metadata,
+            modelSnapshot: undefined,
+          }
+        : undefined,
+    })),
+    modelSnapshotOnCreate: undefined,
+  };
+}
+
+function applyMemoryLimits(sessions: AISession[]): AISession[] {
+  return sessions
+    .map(trimSessionForMemory)
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, MAX_SESSIONS_IN_MEMORY);
+}
+
+async function loadRecentSessionsFromDB(limit: number): Promise<AISession[]> {
   try {
     const db = await openDB();
     const tx = db.transaction(STORE_NAME, 'readonly');
     const store = tx.objectStore(STORE_NAME);
-    const request = store.getAll();
+    const index = store.index('updatedAt');
+
     return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result || []);
+      const sessions: AISession[] = [];
+      const request = index.openCursor(null, 'prev');
+
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (!cursor || sessions.length >= limit) {
+          resolve(sessions);
+          return;
+        }
+
+        sessions.push(cursor.value as AISession);
+        cursor.continue();
+      };
       request.onerror = () => reject(request.error);
     });
   } catch (e) {
@@ -209,7 +248,7 @@ export const useAISessionStore = create<AISessionState>()(
         };
 
         set(state => ({
-          sessions: [session, ...state.sessions],
+          sessions: applyMemoryLimits([session, ...state.sessions]),
           activeSessionId: id,
         }));
 
@@ -248,7 +287,7 @@ export const useAISessionStore = create<AISessionState>()(
             }
             return s;
           });
-          return { sessions };
+          return { sessions: applyMemoryLimits(sessions) };
         });
       },
 
@@ -262,9 +301,9 @@ export const useAISessionStore = create<AISessionState>()(
 
       renameSession: (sessionId, name) => {
         set(state => ({
-          sessions: state.sessions.map(s =>
+          sessions: applyMemoryLimits(state.sessions.map(s =>
             s.id === sessionId ? { ...s, name, updatedAt: new Date().toISOString() } : s
-          ),
+          )),
         }));
       },
 
@@ -337,7 +376,7 @@ export const useAISessionStore = create<AISessionState>()(
 
       tagSession: (sessionId, tag) => {
         set(state => ({
-          sessions: state.sessions.map(s => {
+          sessions: applyMemoryLimits(state.sessions.map(s => {
             if (s.id === sessionId) {
               const tags = s.tags.includes(tag)
                 ? s.tags.filter(t => t !== tag) // toggle off
@@ -345,7 +384,7 @@ export const useAISessionStore = create<AISessionState>()(
               return { ...s, tags };
             }
             return s;
-          }),
+          })),
         }));
       },
 
@@ -459,7 +498,7 @@ export const useAISessionStore = create<AISessionState>()(
 
             if (newSessions.length > 0) {
               set(state => ({
-                sessions: [...newSessions, ...state.sessions],
+                sessions: applyMemoryLimits([...newSessions, ...state.sessions]),
               }));
             }
 
@@ -479,7 +518,7 @@ export const useAISessionStore = create<AISessionState>()(
       partialize: (state) => ({
         // Only persist sessions metadata + last 50 sessions to localStorage
         // Full data goes to IndexedDB
-        sessions: state.sessions.slice(0, 50).map(s => ({
+        sessions: applyMemoryLimits(state.sessions).slice(0, 50).map(s => ({
           ...s,
           // Limit messages in localStorage to last 20 per session for space
           messages: s.messages.slice(-20),
@@ -491,19 +530,15 @@ export const useAISessionStore = create<AISessionState>()(
 );
 
 // Load full sessions from IndexedDB on startup
-loadAllSessionsFromDB().then(dbSessions => {
+loadRecentSessionsFromDB(STARTUP_DB_SESSION_LIMIT).then(dbSessions => {
   if (dbSessions.length > 0) {
     const currentSessions = useAISessionStore.getState().sessions;
     // Merge: prefer IndexedDB data (has full messages)
     const merged = new Map<string, AISession>();
     currentSessions.forEach(s => merged.set(s.id, s));
     dbSessions.forEach(s => merged.set(s.id, s)); // IndexedDB overwrites
-    
-    const allSessions = Array.from(merged.values())
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      .slice(0, 200);
-    
-    useAISessionStore.setState({ sessions: allSessions });
+
+    useAISessionStore.setState({ sessions: applyMemoryLimits(Array.from(merged.values())) });
   }
 });
 

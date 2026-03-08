@@ -688,7 +688,79 @@ pub fn design_bending_doubly(
         mu_ratio: mu_knm / mu_provided,
     }
 }
+// ── Tests ──
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_table_19_tc_interpolation() {
+        // Test M20 concrete at 1.0% steel
+        let tc = table_19_tc(20.0, 1.0);
+        assert!((tc - 0.62).abs() < 0.05, "M20 @ 1.0% should be ~0.62 N/mm²");
+        
+        // Test M30 concrete scaling
+        let tc_m30 = table_19_tc(30.0, 1.0);
+        assert!(tc_m30 > tc, "M30 should have higher τc than M20");
+        assert!(tc_m30 < 0.63 * (30.0_f64).sqrt(), "Must stay below Table 20 max");
+    }
+
+    #[test]
+    fn test_xu_max_ratio() {
+        let xu_250 = xu_max_ratio(250.0);
+        let xu_415 = xu_max_ratio(415.0);
+        let xu_500 = xu_max_ratio(500.0);
+        
+        assert_eq!(xu_250, 0.53);
+        assert_eq!(xu_415, 0.48);
+        assert_eq!(xu_500, 0.46);
+        assert!(xu_250 > xu_500, "Lower grade steel allows deeper NA");
+    }
+
+    #[test]
+    fn test_flexural_capacity_singly() {
+        // 300mm × 500mm beam, d=450mm, M25, Fe415, Ast=1256mm² (4×20Ø)
+        let ast = 4.0 * 314.0;
+        let mu = flexural_capacity_singly(300.0, 450.0, 25.0, 415.0, ast);
+        
+        // Expected: ~170-190 kN·m for this section
+        assert!(mu > 150.0 && mu < 200.0, "Mu should be 150-200 kN·m, got {}", mu);
+    }
+
+    #[test]
+    fn test_limiting_moment() {
+        let result = limiting_moment(250.0, 450.0, 25.0, 415.0);
+        
+        assert!(result.xu_lim_mm > 0.0);
+        assert!(result.z_lim_mm > 0.0);
+        assert!(result.mu_lim_knm > 50.0 && result.mu_lim_knm < 150.0);
+        assert_eq!(result.xu_lim_mm / 450.0, xu_max_ratio(415.0));
+    }
+
+    #[test]
+    fn test_shear_stirrup_design() {
+        // Design stirrups for Vus = 80 kN, b=300mm, d=450mm, Fe415
+        let (dia, spacing, asv) = design_stirrup_spacing(80.0, 300.0, 450.0, 415.0);
+        
+        assert!(dia >= 6.0 && dia <= 12.0, "Stirrup dia should be 6-12mm");
+        assert!(spacing >= 75.0, "Min spacing 75mm per Cl. 26.5.1.5");
+        assert!(spacing <= 0.75 * 450.0, "Max spacing 0.75d per Cl. 40.4");
+        assert!(asv > 0.0);
+    }
+
+    #[test]
+    fn test_design_bending_singly() {
+        let result = design_bending_singly(120.0, 300.0, 450.0, 25.0, 415.0);
+        
+        assert_eq!(result.design_type, "singly_reinforced");
+        assert!(result.ast_required_mm2 > 600.0);
+        assert!(result.xu_mm > 0.0 && result.xu_mm < 450.0);
+        assert!(result.mu_provided_knm >= 120.0);
+        assert!(result.pt_percent > 0.4 && result.pt_percent < 4.0);
+        assert!(result.main_rebar.area_provided_mm2 >= result.ast_required_mm2);
+    }
+}
 // ── Complete LSD Beam Design ──
 
 /// Complete LSD design output matching Python LimitStateDesignBeam

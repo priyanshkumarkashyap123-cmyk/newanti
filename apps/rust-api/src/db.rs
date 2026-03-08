@@ -19,17 +19,39 @@ impl Database {
     /// Connect to MongoDB with connection timeout
     pub async fn connect(uri: &str) -> Result<Self> {
         use std::time::Duration;
+
+        fn env_u32(name: &str, fallback: u32) -> u32 {
+            std::env::var(name)
+                .ok()
+                .and_then(|v| v.parse::<u32>().ok())
+                .filter(|v| *v > 0)
+                .unwrap_or(fallback)
+        }
+
+        fn env_u64(name: &str, fallback: u64) -> u64 {
+            std::env::var(name)
+                .ok()
+                .and_then(|v| v.parse::<u64>().ok())
+                .filter(|v| *v > 0)
+                .unwrap_or(fallback)
+        }
+
+        let mongo_max_pool = env_u32("MONGO_MAX_POOL_SIZE", 100);
+        let mongo_min_pool = env_u32("MONGO_MIN_POOL_SIZE", 20).min(mongo_max_pool);
+        let mongo_max_idle_sec = env_u64("MONGO_MAX_IDLE_SECONDS", 60);
+        let mongo_connect_timeout_sec = env_u64("MONGO_CONNECT_TIMEOUT_SECONDS", 30);
+        let mongo_select_timeout_sec = env_u64("MONGO_SERVER_SELECTION_TIMEOUT_SECONDS", 30);
         
         let mut client_options = ClientOptions::parse(uri)
             .await
             .context("Failed to parse MongoDB URI")?;
         
         client_options.app_name = Some("BeamLab-Rust-API".to_string());
-        client_options.max_pool_size = Some(20);
-        client_options.min_pool_size = Some(5);
-        client_options.max_idle_time = Some(Duration::from_secs(30));
-        client_options.connect_timeout = Some(Duration::from_secs(30));
-        client_options.server_selection_timeout = Some(Duration::from_secs(30));
+        client_options.max_pool_size = Some(mongo_max_pool);
+        client_options.min_pool_size = Some(mongo_min_pool);
+        client_options.max_idle_time = Some(Duration::from_secs(mongo_max_idle_sec));
+        client_options.connect_timeout = Some(Duration::from_secs(mongo_connect_timeout_sec));
+        client_options.server_selection_timeout = Some(Duration::from_secs(mongo_select_timeout_sec));
         
         let client = Client::with_options(client_options)
             .context("Failed to create MongoDB client")?;

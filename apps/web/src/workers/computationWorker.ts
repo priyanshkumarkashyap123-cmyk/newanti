@@ -361,9 +361,10 @@ function computeElementStiffness(
   ke[0][0] = EA_L; // Axial
   ke[1][1] = 12 * EI_L3; // Shear Y
   ke[2][2] = 12 * EI_L3; // Shear Z
-  // Torsion stiffness: GJ/L where G = E/(2(1+ν)), ν ≈ 0.3 → G ≈ E/2.6
+  // Torsion stiffness: GJ/L where G = E/(2(1+ν)), ν ≈ 0.3 for steel
   // Use J (torsional constant) if available, otherwise approximate for solid rectangular: J ≈ a*b³/3
-  const G = E / 2.6; // Shear modulus (assuming ν = 0.3)
+  const poissonRatio = 0.3;
+  const G = E / (2 * (1 + poissonRatio)); // Shear modulus
   const J_approx = A > 0 ? (A * A) / (4 * Math.PI * I) * 1e-2 : 1e-5; // Approximate J from A and I
   ke[3][3] = (G * Math.max(J_approx, 1e-8)) / L; // Torsion: GJ/L
   ke[4][4] = 4 * EI_L2; // Moment Y

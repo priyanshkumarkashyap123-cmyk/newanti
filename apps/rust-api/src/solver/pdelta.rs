@@ -19,7 +19,7 @@
 //! - Slender columns under high axial load
 //! - Stability analysis (buckling)
 
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, Vector3, Matrix3};
 use serde::{Deserialize, Serialize};
 use std::f64;
 
@@ -370,44 +370,151 @@ impl PDeltaSolver {
         let mut k_g = DMatrix::zeros(n_dof, n_dof);
         
         for (member, &axial_force) in member_geometry.iter().zip(axial_forces.iter()) {
-            // Geometric stiffness coefficient
+            // Member length
             let L = member.length();
-            let k_geom = axial_force / L;
             
             // Direction cosines
             let (cx, cy, cz) = member.direction_cosines();
             
-            // 6×6 geometric stiffness matrix for member
-            // K_G = (P/L) * [[I - cc^T, -(I - cc^T)], [-(I - cc^T), I - cc^T]]
+            // Geometric stiffness coefficients (Kassimali, Matrix Analysis of Structures)
+            // 12×12 geometric stiffness matrix including rotational terms
+            let P = axial_force;
+            let c1 = P / L;
+            let c2 = P / 10.0;
+            let c3 = P * L / 30.0;
+            let c4 = 6.0 * P / (5.0 * L);
+            let c5 = P / 10.0;
+            let c6 = 2.0 * P * L / 15.0;
+            let c7 = -P * L / 30.0;
             
-            // Only assemble if DOFs are within bounds
-            if member.node_i_dof + 2 >= n_dof || member.node_j_dof + 2 >= n_dof {
+            // Build local 12×12 geometric stiffness matrix
+            // DOF order: [dx1, dy1, dz1, rx1, ry1, rz1, dx2, dy2, dz2, rx2, ry2, rz2]
+            let mut kg_local = DMatrix::zeros(12, 12);
+            
+            // Lateral y-direction (bending about z-axis)
+            // dy1 row (DOF 1)
+            kg_local[(1, 1)] = c4;
+            kg_local[(1, 5)] = c5;
+            kg_local[(1, 7)] = -c4;
+            kg_local[(1, 11)] = c5;
+            
+            // rz1 row (DOF 5)
+            kg_local[(5, 1)] = c5;
+            kg_local[(5, 5)] = c6;
+            kg_local[(5, 7)] = -c5;
+            kg_local[(5, 11)] = c7;
+            
+            // dy2 row (DOF 7)
+            kg_local[(7, 1)] = -c4;
+            kg_local[(7, 5)] = -c5;
+            kg_local[(7, 7)] = c4;
+            kg_local[(7, 11)] = -c5;
+            
+            // rz2 row (DOF 11)
+            kg_local[(11, 1)] = c5;
+            kg_local[(11, 5)] = c7;
+            kg_local[(11, 7)] = -c5;
+            kg_local[(11, 11)] = c6;
+            
+            // Lateral z-direction (bending about y-axis)
+            // dz1 row (DOF 2)
+            kg_local[(2, 2)] = c4;
+            kg_local[(2, 4)] = -c5;
+            kg_local[(2, 8)] = -c4;
+            kg_local[(2, 10)] = -c5;
+            
+            // ry1 row (DOF 4)
+            kg_local[(4, 2)] = -c5;
+            kg_local[(4, 4)] = c6;
+            kg_local[(4, 8)] = c5;
+            kg_local[(4, 10)] = c7;
+            
+            // dz2 row (DOF 8)
+            kg_local[(8, 2)] = -c4;
+            kg_local[(8, 4)] = c5;
+            kg_local[(8, 8)] = c4;
+            kg_local[(8, 10)] = c5;
+            
+            // ry2 row (DOF 10)
+            kg_local[(10, 2)] = -c5;
+            kg_local[(10, 4)] = c7;
+            kg_local[(10, 8)] = c5;
+            kg_local[(10, 10)] = c6;
+            
+            // Transform to global coordinates
+            // Build 12×12 transformation matrix
+            let mut T = DMatrix::zeros(12, 12);
+            
+            // Local coordinate system
+            let local_x = Vector3::new(cx, cy, cz);
+            
+            // Reference vector for constructing local y and z
+            let ref_vec = if cy.abs() > 0.999 {
+                Vector3::new(1.0, 0.0, 0.0) // Nearly vertical
+            } else {
+                Vector3::new(0.0, 1.0, 0.0) // Use global Y
+            };
+            
+            let local_z = local_x.cross(&ref_vec).normalize();
+            let local_y = local_z.cross(&local_x);
+            
+            // Build 3×3 rotation matrix
+            let R = nalgebra::Matrix3::from_columns(&[local_x, local_y, local_z]);
+            
+            // Populate 12×12 transformation matrix with 3×3 blocks
+            for i in 0..3 {
+                for j in 0..3 {
+                    T[(i, j)] = R[(i, j)];
+                    T[(i + 3, j + 3)] = R[(i, j)];
+                    T[(i + 6, j + 6)] = R[(i, j)];
+                    T[(i + 9, j + 9)] = R[(i, j)];
+                }
+            }
+            
+            // Transform: Kg_global = T^T * Kg_local * T
+            let kg_global = T.transpose() * kg_local * T;
+            
+            // Assemble into global stiffness matrix
+            let dof_i = member.node_i_dof;
+            let dof_j = member.node_j_dof;
+            
+            // Check bounds (each node has 6 DOFs)
+            if dof_i + 5 >= n_dof || dof_j + 5 >= n_dof {
                 continue;
             }
             
-            for i in 0..3 {
-                for j in 0..3 {
-                    let c = [cx, cy, cz];
-                    let delta_ij = if i == j { 1.0 } else { 0.0 };
-                    let term = k_geom * (delta_ij - c[i] * c[j]);
-                    
-                    let i_dof_a = member.node_i_dof + i;
-                    let j_dof_a = member.node_i_dof + j;
-                    let i_dof_b = member.node_j_dof + i;
-                    let j_dof_b = member.node_j_dof + j;
-                    
-                    // Check bounds before assignment
-                    if i_dof_a < n_dof && j_dof_a < n_dof {
-                        k_g[(i_dof_a, j_dof_a)] += term;
+            // Node i DOFs (0-5 of local matrix)
+            for i in 0..6 {
+                for j in 0..6 {
+                    if dof_i + i < n_dof && dof_i + j < n_dof {
+                        k_g[(dof_i + i, dof_i + j)] += kg_global[(i, j)];
                     }
-                    if i_dof_a < n_dof && j_dof_b < n_dof {
-                        k_g[(i_dof_a, j_dof_b)] -= term;
+                }
+            }
+            
+            // Node i to Node j coupling (0-5 and 6-11 of local matrix)
+            for i in 0..6 {
+                for j in 0..6 {
+                    if dof_i + i < n_dof && dof_j + j < n_dof {
+                        k_g[(dof_i + i, dof_j + j)] += kg_global[(i, j + 6)];
                     }
-                    if i_dof_b < n_dof && j_dof_a < n_dof {
-                        k_g[(i_dof_b, j_dof_a)] -= term;
+                }
+            }
+            
+            // Node j to Node i coupling (6-11 and 0-5 of local matrix)
+            for i in 0..6 {
+                for j in 0..6 {
+                    if dof_j + i < n_dof && dof_i + j < n_dof {
+                        k_g[(dof_j + i, dof_i + j)] += kg_global[(i + 6, j)];
                     }
-                    if i_dof_b < n_dof && j_dof_b < n_dof {
-                        k_g[(i_dof_b, j_dof_b)] += term;
+                }
+            }
+            
+            // Node j DOFs (6-11 of local matrix)
+            for i in 0..6 {
+                for j in 0..6 {
+                    if dof_j + i < n_dof && dof_j + j < n_dof {
+                        k_g[(dof_j + i, dof_j + j)] += kg_global[(i + 6, j + 6)];
                     }
                 }
             }

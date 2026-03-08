@@ -157,6 +157,94 @@ pub fn check_balanced_steel(section: &ACISection) -> f64 {
     rho_bal
 }
 
+// ── Shear Design (ACI 318-19 Cl. 22.5) ──
+
+/// Shear capacity result per ACI 318-19
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ACIShearCapacity {
+    pub vc_kn: f64,           // Concrete shear strength (φVc)
+    pub vs_kn: f64,           // Stirrup shear strength (φVs)
+    pub vn_kn: f64,           // Nominal shear strength (φVn = φVc + φVs)
+    pub vu_kn: f64,           // Factored shear demand
+    pub phi: f64,             // Strength reduction factor (0.75 for shear)
+    pub stirrup_spacing_mm: f64,
+    pub av_mm2: f64,          // Area of stirrup legs
+    pub utilization: f64,
+    pub passed: bool,
+}
+
+/// Calculate concrete shear strength Vc per ACI 318-19 Cl. 22.5.5.1
+/// Vc = 2λ√fc' bw d (in psi units, convert to N/mm²)
+/// φVc where φ = 0.75 for shear
+pub fn calculate_shear_capacity_concrete(
+    bw_mm: f64,
+    d_mm: f64,
+    fc_prime_mpa: f64,
+    lambda: f64,
+) -> f64 {
+    // Vc = 2λ√fc' bw d (ACI uses psi, so fc' in psi = fc'_MPa * 145)
+    // Simplified: Vc = 0.17λ√fc'(MPa) bw d (in N)
+    let vc_n = 0.17 * lambda * fc_prime_mpa.sqrt() * bw_mm * d_mm; // N
+    let phi = 0.75; // ACI 318-19 Table 21.2.1(a) for shear
+    phi * vc_n / 1000.0 // kN
+}
+
+/// Design shear stirrups per ACI 318-19 Cl. 22.5.10
+/// Vs = (Av * fyt * d) / s
+/// Solve for s: s = (Av * fyt * d) / Vs_req
+pub fn design_shear_stirrups(
+    vu_kn: f64,
+    vc_kn: f64,
+    bw_mm: f64,
+    d_mm: f64,
+    fyt_mpa: f64,
+    fc_prime_mpa: f64,
+) -> ACIShearCapacity {
+    let phi = 0.75;
+    
+    // Required stirrup contribution: Vs = (Vu/φ) - Vc/φ
+    let vs_req_kn = (vu_kn / phi) - (vc_kn / phi);
+    
+    let (av_mm2, spacing_mm, vs_kn) = if vs_req_kn <= 0.0 {
+        // No stirrups required
+        (0.0, 0.0, 0.0)
+    } else {
+        // Use 2-leg 10mm stirrups (Av = 2 × 78.5 = 157 mm²)
+        let av = 2.0 * 78.5; // 2-leg #3 stirrups
+        
+        // Calculate required spacing: s = Av·fyt·d / Vs_req
+        let s_req = av * fyt_mpa * d_mm / (vs_req_kn * 1000.0);
+        
+        // Maximum spacing per ACI 318-19 Cl. 9.7.6.2
+        let s_max = if vs_req_kn > 0.33 * fc_prime_mpa.sqrt() * bw_mm * d_mm / 1000.0 {
+            d_mm / 4.0  // If Vs > (√fc'/3)bwd, use d/4
+        } else {
+            d_mm / 2.0  // Otherwise use d/2
+        };
+        let s_max = s_max.min(600.0); // Also limit to 600mm per ACI
+        
+        let spacing = s_req.min(s_max).max(75.0); // Min 75mm clear
+        let vs = av * fyt_mpa * d_mm / spacing / 1000.0; // kN
+        
+        (av, spacing, phi * vs)
+    };
+    
+    let vn_kn = vc_kn + vs_kn;
+    let utilization = vu_kn / vn_kn.max(0.001);
+    
+    ACIShearCapacity {
+        vc_kn,
+        vs_kn,
+        vn_kn,
+        vu_kn,
+        phi,
+        stirrup_spacing_mm: spacing_mm,
+        av_mm2,
+        utilization,
+        passed: utilization <= 1.0,
+    }
+}
+
 /// Database of common reinforced concrete sections
 pub fn aci_sections() -> Vec<ACISection> {
     vec![

@@ -207,6 +207,9 @@ importers:
       query-string:
         specifier: ^9.3.1
         version: 9.3.1
+      redis:
+        specifier: ^5.11.0
+        version: 5.11.0
       socket.io:
         specifier: ^4.8.1
         version: 4.8.3
@@ -1380,6 +1383,7 @@ packages:
   '@clerk/clerk-react@5.59.4':
     resolution: {integrity: sha512-CNr9n7uJT4cRx+cc3fzWr4l4x47+3S5j32HPOP5oUGeIF8O0QHHaoIQ8BHc3lnr4zJJpZxAyrLfwYPv3krtYIw==}
     engines: {node: '>=18.17.0'}
+    deprecated: 'This package is no longer supported. Please use @clerk/react instead. See the upgrade guide for more info: https://clerk.com/docs/guides/development/upgrading/upgrade-guides/core-3'
     peerDependencies:
       react: ^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0
       react-dom: ^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0
@@ -3152,6 +3156,39 @@ packages:
         optional: true
       react-native:
         optional: true
+
+  '@redis/bloom@5.11.0':
+    resolution: {integrity: sha512-KYiVilAhAFN3057afUb/tfYJpsEyTkQB+tQcn5gVVA7DgcNOAj8lLxe4j8ov8BF6I9C1Fe/kwlbuAICcTMX8Lw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.11.0
+
+  '@redis/client@5.11.0':
+    resolution: {integrity: sha512-GHoprlNQD51Xq2Ztd94HHV94MdFZQ3CVrpA04Fz8MVoHM0B7SlbmPEVIjwTbcv58z8QyjnrOuikS0rWF03k5dQ==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@node-rs/xxhash': ^1.1.0
+    peerDependenciesMeta:
+      '@node-rs/xxhash':
+        optional: true
+
+  '@redis/json@5.11.0':
+    resolution: {integrity: sha512-1iAy9kAtcD0quB21RbPTbUqqy+T2Uu2JxucwE+B4A+VaDbIRvpZR6DMqV8Iqaws2YxJYB3GC5JVNzPYio2ErUg==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.11.0
+
+  '@redis/search@5.11.0':
+    resolution: {integrity: sha512-g1l7f3Rnyk/xI99oGHIgWHSKFl45Re5YTIcO8j/JE8olz389yUFyz2+A6nqVy/Zi031VgPDWscbbgOk8hlhZ3g==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.11.0
+
+  '@redis/time-series@5.11.0':
+    resolution: {integrity: sha512-TWFeOcU4xkj0DkndnOyhtxvX1KWD+78UHT3XX3x3XRBUGWeQrKo3jqzDsZwxbggUgf9yLJr/akFHXru66X5UQA==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.11.0
 
   '@reduxjs/toolkit@2.11.2':
     resolution: {integrity: sha512-Kd6kAHTA6/nUpp8mySPqj3en3dm0tdMIgbttnQ1xFMVpufoj+ADi8pXLBsd4xzTRHQa7t/Jv8W5UnCuW4kuWMQ==}
@@ -4987,6 +5024,10 @@ packages:
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+
+  cluster-key-slot@1.1.2:
+    resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
+    engines: {node: '>=0.10.0'}
 
   codepage@1.15.0:
     resolution: {integrity: sha512-3g6NUTPd/YtuuGrhMnOMRjFc+LJw/bnMp3+0r/Wcz3IXUuCosKRJvMphm5+Q+bvTVGcJJuRvVLuYba+WojaFaA==}
@@ -7638,6 +7679,10 @@ packages:
   redent@3.0.0:
     resolution: {integrity: sha512-6tDA8g98We0zd0GvVeMT9arEOnTw9qM03L9cJXaCjrip1OO764RDBLBfrB4cwzNGDj5OA5ioymC9GkizgWJDUg==}
     engines: {node: '>=8'}
+
+  redis@5.11.0:
+    resolution: {integrity: sha512-YwXjATVDT+AuxcyfOwZn046aml9jMlQPvU1VXIlLDVAExe0u93aTfPYSeRgG4p9Q/Jlkj+LXJ1XEoFV+j2JKcQ==}
+    engines: {node: '>= 18'}
 
   redux-thunk@3.1.0:
     resolution: {integrity: sha512-NW2r5T6ksUKXCabzhL9z+h206HQw/NJkcLm1GPImRQ8IzfXwRGqjVhKJGauHirT0DAuyy6hjdnMZaRoAcy0Klw==}
@@ -12033,6 +12078,26 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
+  '@redis/bloom@5.11.0(@redis/client@5.11.0)':
+    dependencies:
+      '@redis/client': 5.11.0
+
+  '@redis/client@5.11.0':
+    dependencies:
+      cluster-key-slot: 1.1.2
+
+  '@redis/json@5.11.0(@redis/client@5.11.0)':
+    dependencies:
+      '@redis/client': 5.11.0
+
+  '@redis/search@5.11.0(@redis/client@5.11.0)':
+    dependencies:
+      '@redis/client': 5.11.0
+
+  '@redis/time-series@5.11.0(@redis/client@5.11.0)':
+    dependencies:
+      '@redis/client': 5.11.0
+
   '@reduxjs/toolkit@2.11.2(react-redux@9.2.0(@types/react@18.3.27)(react@18.3.1)(redux@5.0.1))(react@18.3.1)':
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -14479,6 +14544,8 @@ snapshots:
   clone@1.0.4: {}
 
   clsx@2.1.1: {}
+
+  cluster-key-slot@1.1.2: {}
 
   codepage@1.15.0: {}
 
@@ -17384,6 +17451,16 @@ snapshots:
     dependencies:
       indent-string: 4.0.0
       strip-indent: 3.0.0
+
+  redis@5.11.0:
+    dependencies:
+      '@redis/bloom': 5.11.0(@redis/client@5.11.0)
+      '@redis/client': 5.11.0
+      '@redis/json': 5.11.0(@redis/client@5.11.0)
+      '@redis/search': 5.11.0(@redis/client@5.11.0)
+      '@redis/time-series': 5.11.0(@redis/client@5.11.0)
+    transitivePeerDependencies:
+      - '@node-rs/xxhash'
 
   redux-thunk@3.1.0(redux@5.0.1):
     dependencies:
