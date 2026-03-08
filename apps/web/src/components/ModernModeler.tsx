@@ -627,7 +627,11 @@ export const ModernModeler: FC = () => {
       }
     };
     const onToggleGridSnap = () => {
+      useUIStore.getState().toggleSnap();
       showNotification("info", "Grid snap toggled");
+    };
+    const onToggleGrid = () => {
+      useUIStore.getState().toggleGrid();
     };
 
     document.addEventListener("toggle-sfd", onToggleSFD);
@@ -639,6 +643,7 @@ export const ModernModeler: FC = () => {
     document.addEventListener("trigger-pdf-report", onTriggerPdfReport);
     document.addEventListener("trigger-csv-export", onTriggerCsvExport);
     document.addEventListener("toggle-grid-snap", onToggleGridSnap);
+    document.addEventListener("toggle-grid", onToggleGrid);
 
     return () => {
       document.removeEventListener("toggle-sfd", onToggleSFD);
@@ -650,6 +655,7 @@ export const ModernModeler: FC = () => {
       document.removeEventListener("trigger-pdf-report", onTriggerPdfReport);
       document.removeEventListener("trigger-csv-export", onTriggerCsvExport);
       document.removeEventListener("toggle-grid-snap", onToggleGridSnap);
+      document.removeEventListener("toggle-grid", onToggleGrid);
     };
   }, []);
 
