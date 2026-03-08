@@ -31,6 +31,13 @@ import {
   Minus,
   RotateCw,
 } from 'lucide-react';
+import {
+  SteelDesignEngine,
+  type SteelDesignCode,
+  type SteelDesignResult,
+  type MemberType as EngineMemberType,
+  IS_SECTIONS,
+} from '@/modules/design/SteelDesignEngine';
 
 // Types
 type MemberType = 'beam' | 'column' | 'tension' | 'strut';
@@ -166,89 +173,167 @@ export default function SteelMemberDesigner() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
+  // Map UI code to engine code
+  const getEngineCode = (code: DesignCode): SteelDesignCode => {
+    switch (code) {
+      case 'IS800': return 'IS800';
+      case 'AISC360': return 'AISC360';
+      case 'EN1993': return 'EC3';
+      case 'AS4100': return 'EC3'; // AS4100 uses similar approach to EC3
+      default: return 'IS800';
+    }
+  };
+
+  // Map UI steel grade to engine grade key
+  const getEngineGradeKey = (code: DesignCode, fy: number): string => {
+    switch (code) {
+      case 'AISC360': {
+        if (fy <= 250) return 'A36';
+        if (fy <= 345) return 'A992';
+        return 'A572-50';
+      }
+      case 'EN1993':
+      case 'AS4100': {
+        if (fy <= 235) return 'S235';
+        if (fy <= 275) return 'S275';
+        if (fy <= 355) return 'S355';
+        return 'S460';
+      }
+      default: {
+        if (fy <= 250) return 'E250';
+        if (fy <= 300) return 'E300';
+        if (fy <= 350) return 'E350';
+        if (fy <= 410) return 'E410';
+        return 'E450';
+      }
+    }
+  };
+
   // Run design calculation
   const runDesign = useCallback(async () => {
     setIsCalculating(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
-    const sect = selectedSection;
-    const gamma_m0 = formData.safetyFactor;
-    const fy = formData.fy;
-    const fu = formData.fu;
+    try {
+      const sect = selectedSection;
+      const engineCode = getEngineCode(formData.code);
+      const gradeKey = getEngineGradeKey(formData.code, formData.fy);
+      const engine = new SteelDesignEngine(engineCode, gradeKey);
 
-    // Section classification
-    const epsilonFlange = Math.sqrt(250 / fy);
-    const flangeRatio = (sect.width / 2) / sect.tf;
-    const webRatio = (sect.depth - 2 * sect.tf) / sect.tw;
-    
-    const flangeClass = flangeRatio <= 9.4 * epsilonFlange ? 'Plastic' :
-                      flangeRatio <= 10.5 * epsilonFlange ? 'Compact' :
-                      flangeRatio <= 15.7 * epsilonFlange ? 'Semi-compact' : 'Slender';
-    
-    const webClass = webRatio <= 84 * epsilonFlange ? 'Plastic' :
-                   webRatio <= 105 * epsilonFlange ? 'Compact' :
-                   webRatio <= 126 * epsilonFlange ? 'Semi-compact' : 'Slender';
+      // Map component section to engine section format
+      const engineSection = IS_SECTIONS[
+        sect.name.replace(/\s+/g, '')
+      ] || {
+        name: sect.name,
+        type: 'I' as const,
+        A: sect.area,
+        Ix: sect.Ixx * 1e4,   // cm⁴ → mm⁴
+        Iy: sect.Iyy * 1e4,
+        Zx: sect.Zxx * 1e3,   // cm³ → mm³
+        Zy: sect.Zyy * 1e3,
+        Zpx: sect.Zxx * 1.12e3,
+        Zpy: sect.Zyy * 1.5e3,
+        rx: sect.rxx,
+        ry: sect.ryy,
+        J: 100e3,
+        Cw: 100e9,
+        D: sect.depth,
+        B: sect.width,
+        tf: sect.tf,
+        tw: sect.tw,
+      };
 
-    // Moment capacity (assuming plastic/compact section)
-    const Zpx = sect.Zxx * 1.12; // Approximate plastic modulus
-    const Md = (Zpx * fy / gamma_m0) / 1000; // kN-m
+      const geometry = {
+        length: formData.length,
+        Lx: formData.effectiveLength,
+        Ly: formData.effectiveLength,
+        Lb: formData.effectiveLength,
+        endConditions: {
+          x: 'pinned-pinned' as const,
+          y: 'pinned-pinned' as const,
+        },
+      };
 
-    // Shear capacity
-    const Av = sect.depth * sect.tw; // Shear area for I-section
-    const Vd = (Av * (fy / Math.sqrt(3))) / (gamma_m0 * 1000); // kN
+      const forces = {
+        Pu: formData.axialForce,
+        Pc: formData.axialForce,
+        Mux: formData.momentX,
+        Muy: formData.momentY,
+        Vux: formData.shearX,
+        Vuy: formData.shearY,
+      };
 
-    // Axial capacity (compression)
-    const slendernessX = (formData.effectiveLength / sect.rxx);
-    const slendernessY = (formData.effectiveLength / sect.ryy);
-    const slenderness = Math.max(slendernessX, slendernessY);
-    const lambda_nondim = slenderness * Math.sqrt(fy / (Math.PI * Math.PI * 200000));
-    
-    // Buckling reduction factor (IS 800 method)
-    const alpha = 0.34; // Imperfection factor for rolled sections
-    const phi = 0.5 * (1 + alpha * (lambda_nondim - 0.2) + lambda_nondim * lambda_nondim);
-    const chi = 1 / (phi + Math.sqrt(phi * phi - lambda_nondim * lambda_nondim));
-    const Pd = (chi * sect.area * fy / gamma_m0) / 1000; // kN
+      // Choose design method based on member type
+      let engineResult: SteelDesignResult;
+      const hasMoment = formData.momentX > 0 || formData.momentY > 0;
+      const hasAxial = formData.axialForce > 0;
 
-    // Interaction check
-    const P_ratio = formData.axialForce / Pd;
-    const M_ratio = formData.momentX / Md;
-    const V_ratio = formData.shearX / Vd;
-    const interactionRatio = P_ratio + M_ratio + 0.5 * V_ratio;
+      if (formData.memberType === 'tension') {
+        engineResult = engine.designTensionMember(engineSection, geometry, { Pt: formData.axialForce }, 'welded');
+      } else if (formData.memberType === 'column' || (formData.memberType === 'strut' && !hasMoment)) {
+        engineResult = engine.designCompressionMember(engineSection, geometry, forces);
+      } else if (formData.memberType === 'beam' && !hasAxial) {
+        engineResult = engine.designBeam(engineSection, geometry, forces);
+      } else {
+        engineResult = engine.designBeamColumn(engineSection, geometry, forces);
+      }
 
-    const designResult = {
-      status: interactionRatio <= 1.0 ? 'safe' : 'unsafe',
-      section: sect,
-      classification: {
-        flange: flangeClass,
-        web: webClass,
-        overall: flangeClass === 'Slender' || webClass === 'Slender' ? 'Slender' : 
-                 flangeClass === 'Semi-compact' || webClass === 'Semi-compact' ? 'Semi-compact' :
-                 flangeClass === 'Compact' || webClass === 'Compact' ? 'Compact' : 'Plastic',
-      },
-      slenderness: {
-        x: slendernessX.toFixed(1),
-        y: slendernessY.toFixed(1),
-        governing: slenderness.toFixed(1),
-        nonDimensional: lambda_nondim.toFixed(2),
-      },
-      capacity: {
-        moment: { design: Md.toFixed(1), applied: formData.momentX, utilization: (M_ratio * 100).toFixed(1) },
-        shear: { design: Vd.toFixed(1), applied: formData.shearX, utilization: (V_ratio * 100).toFixed(1) },
-        axial: { design: Pd.toFixed(1), applied: formData.axialForce, utilization: (P_ratio * 100).toFixed(1) },
-      },
-      interaction: {
-        ratio: (interactionRatio * 100).toFixed(1),
-        status: interactionRatio <= 1.0 ? 'OK' : 'FAIL',
-      },
-      deflection: {
-        maxAllowed: (formData.length / 300).toFixed(1),
-        calculated: ((5 * formData.momentX * formData.length * formData.length) / (384 * 200000 * sect.Ixx / 1e4) * 1000).toFixed(2),
-        status: 'OK',
-      },
-    };
+      // Map engine result to component display format
+      const sectionClassLabels = { 1: 'Plastic', 2: 'Compact', 3: 'Semi-compact', 4: 'Slender' } as const;
+      const classLabel = sectionClassLabels[engineResult.sectionClass];
 
-    setResult(designResult);
-    setActiveTab('results');
+      const slendernessX = formData.effectiveLength / sect.rxx;
+      const slendernessY = formData.effectiveLength / sect.ryy;
+      const slenderness = Math.max(slendernessX, slendernessY);
+      const E = formData.code === 'EN1993' || formData.code === 'AS4100' ? 210000 : 200000;
+      const lambda_nondim = slenderness * Math.sqrt(formData.fy / (Math.PI * Math.PI * E));
+
+      const Md_kNm = engineResult.capacities.momentCapacityX || 0;
+      const Vd_kN = engineResult.capacities.shearCapacityX || 0;
+      const Pd_kN = engineResult.capacities.compressionCapacity || engineResult.capacities.tensionCapacity || 0;
+
+      const M_ratio = Md_kNm > 0 ? formData.momentX / Md_kNm : 0;
+      const V_ratio = Vd_kN > 0 ? formData.shearX / Vd_kN : 0;
+      const P_ratio = Pd_kN > 0 ? formData.axialForce / Pd_kN : 0;
+
+      const designResult = {
+        status: engineResult.status === 'PASS' ? 'safe' : 'unsafe',
+        engineResult,
+        section: sect,
+        classification: {
+          flange: classLabel,
+          web: classLabel,
+          overall: classLabel,
+        },
+        slenderness: {
+          x: slendernessX.toFixed(1),
+          y: slendernessY.toFixed(1),
+          governing: slenderness.toFixed(1),
+          nonDimensional: lambda_nondim.toFixed(2),
+        },
+        capacity: {
+          moment: { design: Md_kNm.toFixed(1), applied: formData.momentX, utilization: (M_ratio * 100).toFixed(1) },
+          shear: { design: Vd_kN.toFixed(1), applied: formData.shearX, utilization: (V_ratio * 100).toFixed(1) },
+          axial: { design: Pd_kN.toFixed(1), applied: formData.axialForce, utilization: (P_ratio * 100).toFixed(1) },
+        },
+        interaction: {
+          ratio: (engineResult.utilizationRatios.overall * 100).toFixed(1),
+          status: engineResult.status === 'PASS' ? 'OK' : 'FAIL',
+        },
+        deflection: {
+          maxAllowed: (formData.length / 300).toFixed(1),
+          calculated: ((5 * formData.momentX * formData.length * formData.length) / (384 * E * sect.Ixx / 1e4) * 1000).toFixed(2),
+          status: 'OK',
+        },
+        checks: engineResult.checks,
+        codeUsed: formData.code,
+      };
+
+      setResult(designResult);
+      setActiveTab('results');
+    } catch (error) {
+      console.error('Steel design calculation failed:', error);
+    }
     setIsCalculating(false);
   }, [formData, selectedSection]);
 
@@ -301,6 +386,26 @@ export default function SteelMemberDesigner() {
             >
               {/* Input Form */}
               <div className="lg:col-span-2 space-y-4">
+                {/* Design Code Selection */}
+                <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Design Code</h3>
+                  <div className="grid grid-cols-4 gap-2">
+                    {(['IS800', 'AISC360', 'EN1993', 'AS4100'] as DesignCode[]).map((code) => (
+                      <button type="button"
+                        key={code}
+                        onClick={() => handleChange('code', code)}
+                        className={`py-3 rounded-lg text-sm font-medium transition-all ${
+                          formData.code === code
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
+                            : 'bg-slate-200/50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 hover:bg-slate-600/50'
+                        }`}
+                      >
+                        {code}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Member Type */}
                 <div className="bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 p-6">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Member Type</h3>

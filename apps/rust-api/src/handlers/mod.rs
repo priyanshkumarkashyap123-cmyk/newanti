@@ -10,3 +10,4 @@ pub mod metrics;
 pub mod openapi;
 pub mod templates;
 pub mod optimization;
+pub mod report;

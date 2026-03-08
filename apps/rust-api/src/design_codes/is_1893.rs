@@ -336,6 +336,91 @@ pub fn generate_equivalent_lateral_forces(
     }
 }
 
+// ── Torsion Provisions (Cl. 7.9) ──
+
+/// Torsion analysis result per IS 1893:2016 Cl. 7.9
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TorsionResult {
+    pub static_eccentricity_m: f64,
+    pub accidental_eccentricity_m: f64,
+    pub design_eccentricity_m: f64,
+    pub torsional_moment_knm: f64,
+    pub direction: String,
+    pub message: String,
+}
+
+/// Calculate design eccentricity per IS 1893 Cl. 7.9.2
+///
+/// Design eccentricity = Static ecc + Accidental ecc
+/// Accidental ecc = 0.05 × building dimension perpendicular to earthquake direction
+///
+/// # Arguments
+/// * `static_ecc_m` - Static eccentricity between CM and CR (m)
+/// * `building_dimension_perp_m` - Building dimension perpendicular to EQ direction (m)
+/// * `floor_shear_kn` - Lateral force at the floor (kN)
+///
+/// # Returns
+/// Design eccentricity (m)
+pub fn calculate_design_eccentricity(
+    static_ecc_m: f64,
+    building_dimension_perp_m: f64,
+) -> f64 {
+    let accidental_ecc = 0.05 * building_dimension_perp_m.abs();
+    static_ecc_m.abs() + accidental_ecc
+}
+
+/// Calculate torsional moment per IS 1893 Cl. 7.9.1
+///
+/// Mt = Fi × edi
+/// where:
+/// - Fi = lateral force at floor i
+/// - edi = design eccentricity at floor i
+///
+/// # Arguments
+/// * `floor_shear_kn` - Lateral shear force at the floor (kN)
+/// * `static_ecc_m` - Static eccentricity between CM and CR (m)
+/// * `building_dimension_perp_m` - Building dimension perpendicular to EQ direction (m)
+/// * `direction` - Direction of analysis ("X" or "Y")
+///
+/// # Returns
+/// Torsion analysis result
+pub fn calculate_torsional_moment(
+    floor_shear_kn: f64,
+    static_ecc_m: f64,
+    building_dimension_perp_m: f64,
+    direction: &str,
+) -> TorsionResult {
+    let accidental_ecc = 0.05 * building_dimension_perp_m.abs();
+    let design_ecc = static_ecc_m.abs() + accidental_ecc;
+    let mt = floor_shear_kn * design_ecc;
+
+    TorsionResult {
+        static_eccentricity_m: static_ecc_m,
+        accidental_eccentricity_m: accidental_ecc,
+        design_eccentricity_m: design_ecc,
+        torsional_moment_knm: mt,
+        direction: direction.to_string(),
+        message: format!(
+            "Torsion in {} direction: Mt = {:.2} kN·m (Fi = {:.2} kN × edi = {:.3} m)",
+            direction, mt, floor_shear_kn, design_ecc
+        ),
+    }
+}
+
+/// Calculate accidental eccentricity per IS 1893 Cl. 7.9.2
+///
+/// eai = ±0.05 × Li
+/// where Li = floor dimension perpendicular to the direction of force
+///
+/// # Arguments
+/// * `building_dimension_perp_m` - Building dimension perpendicular to EQ direction (m)
+///
+/// # Returns
+/// Accidental eccentricity (m) — always positive, sign applied in analysis
+pub fn calculate_accidental_eccentricity(building_dimension_perp_m: f64) -> f64 {
+    0.05 * building_dimension_perp_m.abs()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -373,5 +458,26 @@ mod tests {
         let r = check_storey_drift(3500.0, 3.5, 5.0, 2);
         assert!(r.drift_ratio > 0.004, "Should fail at 0.005");
         assert!(!r.passed);
+    }
+
+    #[test]
+    fn test_accidental_eccentricity() {
+        // Building 20m × 30m, EQ in X direction
+        let ecc_acc = calculate_accidental_eccentricity(30.0);
+        assert_eq!(ecc_acc, 1.5, "Accidental ecc should be 0.05 × 30m = 1.5m");
+    }
+
+    #[test]
+    fn test_torsional_moment() {
+        // Floor shear 500 kN, static ecc 2m, building width 25m
+        let result = calculate_torsional_moment(500.0, 2.0, 25.0, "X");
+        
+        // Accidental ecc = 0.05 × 25 = 1.25 m
+        // Design ecc = 2.0 + 1.25 = 3.25 m
+        // Mt = 500 × 3.25 = 1625 kN·m
+        assert_eq!(result.accidental_eccentricity_m, 1.25);
+        assert_eq!(result.design_eccentricity_m, 3.25);
+        assert_eq!(result.torsional_moment_knm, 1625.0);
+        assert_eq!(result.direction, "X");
     }
 }

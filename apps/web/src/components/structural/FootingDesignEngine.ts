@@ -66,10 +66,89 @@ export interface FootingDesignResult extends CalculationResult {
 // FOOTING DESIGN CALCULATOR
 // ============================================================================
 
+// IS 456 Table 19 — Design shear strength τc (N/mm²)
+const TABLE_19_PT = [0.15, 0.25, 0.50, 0.75, 1.00, 1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00];
+const TABLE_19_DATA: Record<number, number[]> = {
+  15: [0.28, 0.35, 0.46, 0.54, 0.60, 0.64, 0.68, 0.71, 0.71, 0.71, 0.71, 0.71, 0.71],
+  20: [0.28, 0.36, 0.48, 0.56, 0.62, 0.67, 0.72, 0.75, 0.79, 0.81, 0.82, 0.82, 0.82],
+  25: [0.29, 0.36, 0.49, 0.57, 0.64, 0.70, 0.74, 0.78, 0.82, 0.85, 0.88, 0.90, 0.92],
+  30: [0.29, 0.37, 0.50, 0.59, 0.66, 0.71, 0.76, 0.80, 0.84, 0.88, 0.91, 0.94, 0.96],
+  35: [0.29, 0.37, 0.50, 0.59, 0.67, 0.73, 0.78, 0.82, 0.86, 0.90, 0.93, 0.96, 0.99],
+  40: [0.30, 0.38, 0.51, 0.60, 0.68, 0.74, 0.79, 0.84, 0.88, 0.92, 0.95, 0.98, 1.01],
+};
+
+function lerpVal(x: number, x0: number, x1: number, y0: number, y1: number): number {
+  if (x1 === x0) return y0;
+  return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+}
+
+/** IS 456 Table 19 interpolated τc */
+function getTauC_IS456(pt: number, fck: number): number {
+  const ptClamped = Math.max(0.15, Math.min(pt, 3.0));
+  const fcks = [15, 20, 25, 30, 35, 40];
+  const fckLow = fcks.reduce((p, c) => c <= fck ? c : p, 15);
+  const fckHigh = fcks.find(g => g >= fck) ?? 40;
+  let ptIdx = 0;
+  for (let i = 0; i < TABLE_19_PT.length - 1; i++) {
+    if (ptClamped >= TABLE_19_PT[i] && ptClamped <= TABLE_19_PT[i + 1]) { ptIdx = i; break; }
+    if (i === TABLE_19_PT.length - 2) ptIdx = i;
+  }
+  const p0 = TABLE_19_PT[ptIdx], p1 = TABLE_19_PT[ptIdx + 1];
+  const tL = lerpVal(ptClamped, p0, p1, TABLE_19_DATA[fckLow][ptIdx], TABLE_19_DATA[fckLow][ptIdx + 1]);
+  if (fckLow === fckHigh) return tL;
+  const tH = lerpVal(ptClamped, p0, p1, TABLE_19_DATA[fckHigh][ptIdx], TABLE_19_DATA[fckHigh][ptIdx + 1]);
+  return lerpVal(fck, fckLow, fckHigh, tL, tH);
+}
+
+/** Meyerhof bearing capacity factors — φ in degrees */
+function getMeyerhofFactors(phi: number): { Nc: number; Nq: number; Ngamma: number } {
+  const phiRad = phi * Math.PI / 180;
+  const Nq = Math.exp(Math.PI * Math.tan(phiRad)) * Math.pow(Math.tan(Math.PI / 4 + phiRad / 2), 2);
+  const Nc = (Nq - 1) / Math.tan(phiRad + 1e-10);
+  const Ngamma = 2 * (Nq + 1) * Math.tan(phiRad);
+  return { Nc, Nq, Ngamma };
+}
+
+/** Depth correction factors (Meyerhof 1963) */
+function getDepthFactors(Df_m: number, B_m: number): { dc: number; dq: number; dgamma: number } {
+  const ratio = Df_m / B_m;
+  const dc = 1 + 0.4 * ratio;
+  const dq = 1 + 2 * Math.tan(Math.PI / 4) * Math.pow(1 - Math.sin(Math.PI / 4), 2) * ratio;
+  const dgamma = 1;
+  return { dc, dq, dgamma };
+}
+
+/** Shape correction factors for rectangular footings */
+function getShapeFactors(L_m: number, B_m: number, Nq: number, Nc: number): { sc: number; sq: number; sgamma: number } {
+  const sc = 1 + (B_m / L_m) * (Nq / Nc);
+  const sq = 1 + (B_m / L_m) * Math.tan(Math.PI / 6); // For φ ~ 30
+  const sgamma = 1 - 0.4 * B_m / L_m;
+  return { sc, sq, sgamma };
+}
+
+/** Inclination factors for inclined loading per IS 6403:2016 */
+function getInclinationFactors(H: number, V: number, B_m: number, L_m: number, c: number): { ic: number; iq: number; igamma: number } {
+  if (H <= 0) return { ic: 1, iq: 1, igamma: 1 };
+  const theta = Math.atan2(H, V);
+  const thetaDeg = theta * 180 / Math.PI;
+  const ic = Math.pow(1 - thetaDeg / 90, 2);
+  const iq = ic;
+  const igamma = Math.pow(1 - thetaDeg / (c > 0 ? 90 : Math.atan2(V, B_m * L_m * c + 1e-6) * 180 / Math.PI), 2);
+  return { ic, iq, igamma: Math.max(igamma, 0) };
+}
+
+/** Elastic settlement estimation (Bowles, 5th ed.): Se = q·B·(1-μ²)·Iw / E_s */
+function estimateSettlement(qNet_kPa: number, B_m: number, L_m: number, Es_kPa: number, mu: number): number {
+  // Iw (influence factor) for center of flexible footing
+  const m_ = L_m / B_m;
+  const Iw = Math.log(m_ + Math.sqrt(m_ * m_ + 1)) / Math.PI + m_ * Math.log(1 + Math.sqrt(m_ * m_ + 1)) / (Math.PI * m_);
+  return qNet_kPa * B_m * (1 - mu * mu) * Iw * 1000 / Es_kPa; // mm
+}
+
 export class FootingDesignEngine {
   
   /**
-   * Design isolated footing
+   * Design isolated footing per IS 456:2000
    */
   calculate(input: FootingDesignInput): FootingDesignResult {
     const steps: CalculationStep[] = [];
@@ -189,45 +268,28 @@ export class FootingDesignEngine {
       reference: 'IS 456:2000 Cl. 36.4',
     });
     
-    // ----- STEP 4: Depth for One-Way Shear -----
-    // Critical section at d from column face
-    // Projection beyond column face
+    // ----- STEP 4: Depth for One-Way Shear (IS 456 Table 19) -----
     const projectionL = (L - Cx) / 2; // mm
     const projectionB = (B - Cy) / 2; // mm
-    
-    // One-way shear check (longer projection governs)
     const maxProjection = Math.max(projectionL, projectionB);
     
-    // Assume depth and iterate
+    // Iteratively determine depth using IS 456 Table 19
+    const pt_assumed = 0.25; // Initial assumption 0.25%
     let D = 500; // Initial assumption (mm)
-    let d = D - minCover - 8; // Effective depth
+    let d = D - minCover - 8; // Effective depth assuming 8mm stirrup
+    let tau_c_design = getTauC_IS456(pt_assumed, fck);
     
-    // Shear at d from column face
-    const shearLength = maxProjection - d; // mm
-    
-    // Allowable shear stress (IS 456 Table 19)
-    const pt_assumed = 0.25; // Assume 0.25% steel
-    const tau_c = 0.36 * Math.pow(fck, 0.5) * Math.pow(pt_assumed, 1/3); // Simplified
-    const tau_c_design = Math.min(tau_c, 0.4); // Conservative
-    
-    // Required depth for one-way shear
-    // Vu = qu × B × (projection - d) = tau_c × B × d
-    // d² + d × (projection) = qu × B × projection / (tau_c × B)
-    // Simplified: d = qu × shearLength / tau_c
-    
-    // Iterate to find d
-    for (let i = 0; i < 5; i++) {
-      const Vu_oneway = qu_net * (B / 1000) * Math.max(0, (maxProjection - d) / 1000); // kN
+    for (let i = 0; i < 10; i++) {
+      const Vu_oneway = qu_net * (B / 1000) * Math.max(0, (maxProjection - d) / 1000);
       const tau_v = (Vu_oneway * 1000) / (B * d);
       if (tau_v <= tau_c_design) break;
       d = Vu_oneway * 1000 / (B * tau_c_design);
       D = d + minCover + 8;
     }
     
-    D = Math.ceil(D / 50) * 50; // Round up to 50mm
+    D = Math.ceil(D / 50) * 50;
     d = D - minCover - 8;
     
-    // Final one-way shear check
     const Vu_oneway_final = qu_net * (B / 1000) * Math.max(0, (maxProjection - d) / 1000);
     const tau_v_oneway = (Vu_oneway_final * 1000) / (B * d);
     const oneWayOk = tau_v_oneway <= tau_c_design;
