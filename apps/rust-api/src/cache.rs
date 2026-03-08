@@ -32,6 +32,16 @@ impl AnalysisCache {
         Self::new(256, 600)
     }
 
+    /// Design code cache: 512 entries, 1-hour TTL (design codes are deterministic)
+    pub fn default_design() -> Self {
+        Self::new(512, 3600)
+    }
+
+    /// Heavy computation cache: 128 entries, 30-minute TTL (modal analysis, P-Delta)
+    pub fn default_heavy() -> Self {
+        Self::new(128, 1800)
+    }
+
     /// Compute a SHA-256 cache key from any serializable input
     pub fn cache_key<T: Serialize>(prefix: &str, input: &T) -> String {
         let json = serde_json::to_vec(input).unwrap_or_default();
@@ -63,4 +73,19 @@ impl AnalysisCache {
     pub fn invalidate_all(&self) {
         self.inner.invalidate_all();
     }
+
+    /// Get cache statistics
+    pub fn stats(&self) -> CacheStats {
+        CacheStats {
+            entry_count: self.entry_count(),
+            weighted_size: self.inner.weighted_size(),
+        }
+    }
+}
+
+/// Cache statistics
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct CacheStats {
+    pub entry_count: u64,
+    pub weighted_size: u64,
 }

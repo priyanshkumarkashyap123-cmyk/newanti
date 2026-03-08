@@ -217,6 +217,25 @@ export default defineConfig({
             "@radix-ui/react-scroll-area",
           ],
           "state-vendor": ["zustand"],
+          // Phase 5: Split calculation engines into lazy-loaded chunks
+          "structural-engines": [
+            "./src/components/structural/BeamDesignEngine",
+            "./src/components/structural/ColumnDesignEngine",
+            "./src/components/structural/SlabDesignEngine",
+            "./src/components/structural/FootingDesignEngine",
+            "./src/components/structural/ConnectionDesignEngine",
+          ],
+          "steel-engines": [
+            "./src/components/structural/SteelBeamDesignEngine",
+            "./src/components/structural/SteelColumnDesignEngine",
+            "./src/components/structural/BasePlateDesignEngine",
+            "./src/components/structural/CompositeBeamDesignEngine",
+          ],
+          "seismic-engines": [
+            "./src/components/structural/SeismicAnalysisEngine",
+            "./src/components/structural/ResponseSpectrumEngine",
+            "./src/components/structural/ModalAnalysisEngine",
+          ],
           // lucide-react, mathjs, jspdf, xlsx, monaco removed from manual chunks
           // to enable tree-shaking and let them code-split into lazy routes
         },
