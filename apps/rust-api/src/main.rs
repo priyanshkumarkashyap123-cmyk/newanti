@@ -298,7 +298,29 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("⚡ High-performance structural analysis ready");
     tracing::info!("🔧 Endpoints: /api/analyze, /api/advanced/*, /api/structures/*");
 
-    axum::serve(listener, app).await?;
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
 
+    tracing::info!("Rust API shut down gracefully");
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c().await.expect("failed to listen for ctrl+c");
+    };
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to listen for SIGTERM")
+            .recv()
+            .await;
+    };
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+    tokio::select! {
+        _ = ctrl_c => tracing::info!("Received SIGINT"),
+        _ = terminate => tracing::info!("Received SIGTERM"),
+    }
 }

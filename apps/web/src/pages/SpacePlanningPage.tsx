@@ -236,7 +236,7 @@ export function SpacePlanningPage() {
       saveLearningProgress(progressState);
 
       // Show milestone notification (could use toast here)
-      console.log('Milestones unlocked:', unlockResult.unlockedMilestones);
+      if (import.meta.env.DEV) console.log('Milestones unlocked:', unlockResult.unlockedMilestones);
     }
   }, [templateId]);
 
@@ -265,7 +265,7 @@ export function SpacePlanningPage() {
             setConstraintReport(report);
             setSolverPlacements(placements);
           } catch (apiErr) {
-            console.warn('Multi-candidate solver failed, falling back to single:', apiErr);
+            if (import.meta.env.DEV) console.warn('Multi-candidate solver failed, falling back to single:', apiErr);
             // Fall through to single mode
           }
         }
@@ -281,7 +281,7 @@ export function SpacePlanningPage() {
             setSolverBackendState('online');
             setSolverBackendMessage('Backend solver connected.');
           } catch (apiErr) {
-            console.warn('Optimization service unavailable, using client-side engine:', apiErr);
+            if (import.meta.env.DEV) console.warn('Optimization service unavailable, using client-side engine:', apiErr);
             setSolverBackendState('offline');
             const diag = parseSolverError(apiErr);
             setSolverBackendMessage(diag);
@@ -340,7 +340,7 @@ export function SpacePlanningPage() {
           handleTemplateCompletion();
         }
       } catch (err) {
-        console.error('Plan generation failed:', err);
+        if (import.meta.env.DEV) console.error('Plan generation failed:', err);
         setSolverError('Plan generation failed. Please check your configuration and try again.');
       } finally {
         setIsGenerating(false);
@@ -493,7 +493,7 @@ export function SpacePlanningPage() {
           handleTemplateCompletion();
         }
       } catch (err) {
-        console.error('Variant generation failed:', err);
+        if (import.meta.env.DEV) console.error('Variant generation failed:', err);
         setSolverError(
           `Variant generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`
         );

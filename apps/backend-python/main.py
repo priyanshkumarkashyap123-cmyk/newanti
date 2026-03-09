@@ -52,6 +52,9 @@ try:
     from security_middleware import RateLimitMiddleware, AuthMiddleware, SecurityHeadersMiddleware
     HAS_SECURITY_MW = True
 except ImportError as e:
+    IS_PRODUCTION = os.getenv("ENVIRONMENT", "development").lower() == "production"
+    if IS_PRODUCTION:
+        raise RuntimeError(f"FATAL: security_middleware must load in production: {e}") from e
     logger.warning("Could not import security_middleware: %s", e)
     HAS_SECURITY_MW = False
 

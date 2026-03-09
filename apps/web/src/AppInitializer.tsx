@@ -333,7 +333,7 @@ async function loadUserPreferences() {
       }
     }
   } catch (e) {
-    console.warn("[BeamLab] Failed to load preferences:", e);
+    if (import.meta.env.DEV) console.warn("[BeamLab] Failed to load preferences:", e);
   }
 }
 
@@ -386,8 +386,8 @@ declare global {
   }
 }
 
-// Expose beamlab globally for debugging
-if (typeof window !== "undefined") {
+// Expose beamlab globally for debugging (dev only)
+if (typeof window !== "undefined" && import.meta.env.DEV) {
   window.beamlab = beamlab;
 }
 
