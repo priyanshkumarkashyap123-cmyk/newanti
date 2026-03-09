@@ -1,6 +1,8 @@
 /**
  * SteelDesignEngine - AISC 360-16 Steel Design Checks
- * Comprehensive member design verification
+ * STATUS: DEPRECATED — Prefer utils/IS800_SteelDesignEngine.ts (IS 800)
+ * or components/structural/SteelDesignEngine.ts (beam LTB).
+ * Retained for Optimizer.ts backward compatibility.
  */
 
 // ============================================

@@ -2,6 +2,14 @@
  * ============================================================================
  * IS 800:2007 - GENERAL CONSTRUCTION IN STEEL
  * ============================================================================
+ * CANONICAL REFERENCE MODULE — IS 800 constants, partial safety factors,
+ * buckling curves, classification limits, and utility functions.
+ * 
+ * Other IS 800 engines should import constants from here where possible.
+ * 
+ * Related engines:
+ *  - components/structural/SteelDesignEngine.ts — Beam LTB (production)
+ *  - utils/IS800_SteelDesignEngine.ts — Member checks / FSD optimizer
  * 
  * Complete implementation of IS 800:2007 for Structural Steel Design
  * Limit State Method (LSM)

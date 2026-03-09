@@ -106,4 +106,27 @@ function buildDevFallback(): z.infer<typeof envSchema> {
 
 export const env = result.success ? result.data : buildDevFallback();
 
+// ============================================
+// PRODUCTION LOCALHOST GUARD
+// ============================================
+if (env.NODE_ENV === "production") {
+  const localhostFields = (
+    ["FRONTEND_URL", "PYTHON_API_URL", "RUST_API_URL", "MONGODB_URI"] as const
+  ).filter((k) => /localhost|127\.0\.0\.1/i.test(env[k]));
+
+  if (localhostFields.length > 0) {
+    logger.error(
+      `FATAL: localhost URLs detected in PRODUCTION for: ${localhostFields.join(", ")}. ` +
+        "Set the correct production URLs via environment variables.",
+    );
+    process.exit(1);
+  }
+
+  if (!env.SENTRY_DSN) {
+    logger.warn(
+      "Sentry DSN is not configured — error monitoring is disabled in production.",
+    );
+  }
+}
+
 export type Env = z.infer<typeof envSchema>;

@@ -2,6 +2,12 @@
  * ============================================================================
  * ADVANCED STEEL DESIGN ENGINE V3.0
  * ============================================================================
+ * STATUS: EXPERIMENTAL — Not wired to production UI. Zero production callers.
+ * 
+ * Canonical IS 800 engines:
+ *  - components/structural/SteelDesignEngine.ts — Beam LTB design (primary)
+ *  - utils/IS800_SteelDesignEngine.ts — Member checks for FSD optimizer
+ *  - modules/codes/IS800.ts — Reference constants & utility functions
  * 
  * Comprehensive steel member design with multi-code compliance:
  * - IS 800:2007 (India)

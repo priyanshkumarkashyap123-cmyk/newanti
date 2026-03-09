@@ -47,7 +47,7 @@ impl Config {
         let frontend_url = std::env::var("FRONTEND_URL")
             .unwrap_or_else(|_| "http://localhost:5173".into());
 
-        Ok(Config {
+        let config = Config {
             port,
             mongodb_uri,
             jwt_secret,
@@ -56,7 +56,32 @@ impl Config {
             max_nodes: 100_000,      // Support 100k nodes
             max_members: 500_000,    // Support 500k members
             analysis_timeout_secs: 300, // 5 minute timeout
-        })
+        };
+
+        // Reject localhost URLs in production
+        if config.is_production() {
+            fn has_localhost(s: &str) -> bool {
+                let lower = s.to_lowercase();
+                lower.contains("localhost") || lower.contains("127.0.0.1")
+            }
+            let checks = [
+                ("MONGODB_URI", &config.mongodb_uri),
+                ("FRONTEND_URL", &config.frontend_url),
+            ];
+            let bad: Vec<&str> = checks
+                .iter()
+                .filter(|(_, v)| has_localhost(v))
+                .map(|(k, _)| *k)
+                .collect();
+            if !bad.is_empty() {
+                anyhow::bail!(
+                    "FATAL: localhost URLs in PRODUCTION for: {}. Set correct production URLs.",
+                    bad.join(", ")
+                );
+            }
+        }
+
+        Ok(config)
     }
 
     pub fn is_production(&self) -> bool {

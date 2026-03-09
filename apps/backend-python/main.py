@@ -216,6 +216,27 @@ _DEV_ORIGINS = [
 ]
 
 IS_PRODUCTION = os.getenv("ENVIRONMENT", "development") == "production"
+
+# ── Production localhost guard ──
+if IS_PRODUCTION:
+    _localhost_vars = {
+        name: val
+        for name, val in [
+            ("FRONTEND_URL", FRONTEND_URL),
+            ("NODE_API_URL", NODE_API_URL),
+            ("RUST_API_URL", RUST_API_URL),
+        ]
+        if "localhost" in val.lower() or "127.0.0.1" in val
+    }
+    if _localhost_vars:
+        logger.error(
+            "FATAL: localhost URLs detected in PRODUCTION for: %s. "
+            "Set the correct production URLs via environment variables.",
+            ", ".join(_localhost_vars.keys()),
+        )
+        import sys
+        sys.exit(1)
+
 allow_origins = list(_PRODUCTION_ORIGINS)
 if not IS_PRODUCTION:
     allow_origins.extend(_DEV_ORIGINS)

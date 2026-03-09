@@ -19,6 +19,10 @@
  */
 
 // xlsx loaded on-demand (~300KB) — only fetched when user triggers export
+// NOTE: xlsx has known CVEs (CVE-2024-22363, CVE-2023-30533) in the
+// *parsing* path. BeamLab only uses the write/export path (`aoa_to_sheet`,
+// `book_new`, `write`) so these are not exploitable here. Never pass
+// untrusted user-uploaded files to xlsx.utils.read/xlsx.readFile.
 let _xlsxPromise: Promise<typeof import('xlsx')> | null = null;
 function getXLSX() {
   if (!_xlsxPromise) _xlsxPromise = import('xlsx');

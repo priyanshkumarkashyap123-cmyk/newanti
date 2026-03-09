@@ -2,6 +2,14 @@
  * ============================================================================
  * COMPREHENSIVE STEEL DESIGN ENGINE
  * ============================================================================
+ * STATUS: NON-CANONICAL — Use canonical engines for new features.
+ * 
+ * Canonical IS 800 engines:
+ *  - components/structural/SteelDesignEngine.ts — Beam LTB design (primary)
+ *  - utils/IS800_SteelDesignEngine.ts — Member checks for FSD optimizer
+ *  - modules/codes/IS800.ts — Reference constants & utility functions
+ * 
+ * This module is a multi-code wrapper used by SteelMemberDesigner.tsx.
  * 
  * Complete steel member design capabilities:
  * - IS 800:2007 (Indian Standard - LSM)
@@ -186,8 +194,8 @@ export class SteelDesignEngine {
     
     switch (code) {
       case 'IS800':
-        this.gamma_m0 = 1.10;
-        this.gamma_m1 = 1.10;
+        this.gamma_m0 = 1.10;  // IS 800 Table 5 — yielding/instability
+        this.gamma_m1 = 1.25;  // IS 800 Table 5 — ultimate stress/fracture
         break;
       case 'AISC360':
         this.gamma_m0 = 1 / 0.9;  // φ = 0.9 for yielding
