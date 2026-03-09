@@ -352,6 +352,89 @@ export async function loadProjectFromIndexedDB(): Promise<boolean> {
 }
 
 // ============================================
+// CLOUD SYNC (optional, for signed-in users)
+// ============================================
+
+const CLOUD_SYNC_DELAY_MS = 30_000; // 30 seconds after last change
+let cloudSyncTimer: ReturnType<typeof setTimeout> | null = null;
+let activeCloudProjectId: string | null = null;
+
+/**
+ * Save the current project to the backend API.
+ * Requires authentication — silently no-ops if not signed in.
+ */
+export async function syncProjectToCloud(): Promise<boolean> {
+  try {
+    // Dynamic import to avoid circular deps with auth
+    const { API_CONFIG } = await import('../config/env');
+    const token = localStorage.getItem('beamlab_last_token');
+    if (!token) return false; // Not signed in — skip cloud sync
+
+    const state = useModelStore.getState();
+    const projectData: SavedProjectData = {
+      projectInfo: state.projectInfo,
+      nodes: Array.from(state.nodes.entries()),
+      members: Array.from(state.members.entries()),
+      loads: state.loads || [],
+      memberLoads: state.memberLoads || [],
+      loadCases: state.loadCases || [],
+      loadCombinations: state.loadCombinations || [],
+      plates: Array.from(state.plates.entries()),
+      floorLoads: state.floorLoads || [],
+      savedAt: new Date().toISOString(),
+    };
+
+    const url = activeCloudProjectId
+      ? `${API_CONFIG.baseUrl}/api/projects/${activeCloudProjectId}`
+      : `${API_CONFIG.baseUrl}/api/projects`;
+    const method = activeCloudProjectId ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: state.projectInfo.name || 'Untitled Project',
+        description: state.projectInfo.description || '',
+        data: projectData,
+      }),
+    });
+
+    if (!res.ok) return false;
+
+    const body = await res.json();
+    if (!activeCloudProjectId && body.project?._id) {
+      activeCloudProjectId = body.project._id;
+    }
+
+    logger.info('Project synced to cloud');
+    return true;
+  } catch {
+    return false; // Network error — will retry on next change
+  }
+}
+
+/**
+ * Set the active cloud project ID (e.g., when loading a project from the cloud).
+ */
+export function setCloudProjectId(id: string | null): void {
+  activeCloudProjectId = id;
+}
+
+/**
+ * Initialize debounced cloud sync alongside local auto-save.
+ * Only activates for signed-in users.
+ */
+function scheduleCloudSync(): void {
+  if (cloudSyncTimer) clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(() => {
+    syncProjectToCloud().catch(() => { /* silent */ });
+  }, CLOUD_SYNC_DELAY_MS);
+}
+
+// ============================================
 // AUTO-SAVE (debounced subscription)
 // ============================================
 
@@ -389,6 +472,9 @@ export function initAutoSave(): void {
           // Silently fail — user can still manually save
         }
       }, AUTO_SAVE_DELAY_MS);
+
+      // Schedule cloud sync (longer debounce, no-ops if not signed in)
+      scheduleCloudSync();
     }
   );
 }
