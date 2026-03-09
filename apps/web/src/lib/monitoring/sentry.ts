@@ -28,7 +28,7 @@ const VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
  */
 export function initSentry(): void {
   if (!SENTRY_DSN) {
-    console.log('[Sentry] DSN not configured, skipping initialization');
+    if (import.meta.env.DEV) console.log('[Sentry] DSN not configured, skipping initialization');
     return;
   }
 
@@ -101,7 +101,7 @@ export function initSentry(): void {
     },
   });
 
-  console.log(`[Sentry] Initialized for ${ENVIRONMENT} environment`);
+  if (import.meta.env.DEV) console.log(`[Sentry] Initialized for ${ENVIRONMENT} environment`);
 }
 
 // ============================================================================

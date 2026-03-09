@@ -338,7 +338,7 @@ export const ConnectionDesignPage: React.FC = () => {
         warnings: dcr > 0.9 ? ['Utilization above 90% - consider increasing bolt size or count'] : [],
       });
     } catch (error) {
-      console.error('Analysis error:', error);
+      if (import.meta.env.DEV) console.error('Analysis error:', error);
     } finally {
       setIsAnalyzing(false);
     }
@@ -503,7 +503,7 @@ export const ConnectionDesignPage: React.FC = () => {
                 {analysisResult ? (
                   <ConnectionAnalysisResultsPanel
                     result={analysisResult}
-                    onExportReport={() => console.log('Export report')}
+                    onExportReport={() => { /* TODO: implement PDF export */ }}
                   />
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center">
@@ -554,7 +554,7 @@ export const ConnectionDesignPage: React.FC = () => {
           <div className="h-full overflow-auto p-6 bg-muted/30">
             <ConnectionAnalysisResultsPanel
               result={analysisResult}
-              onExportReport={() => console.log('Export report')}
+              onExportReport={() => { /* TODO: implement PDF export */ }}
               showDetailedCalcs={true}
             />
           </div>

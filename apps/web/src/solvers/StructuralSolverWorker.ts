@@ -487,8 +487,10 @@ function getGlobalDOFIndex(node_id: number, local_dof: number, dof_per_node: num
 export async function solveStructure(input: StructuralAnalysisInput): Promise<AnalysisResult> {
   const start_time = Date.now();
   
-  console.log(`\n[STRUCTURAL SOLVER] ${input.title || 'Untitled'}`);
-  console.log(`Analysis type: ${input.type} | Nodes: ${input.nodes.length} | Members: ${input.members.length}`);
+  if (import.meta.env.DEV) {
+    console.log(`\n[STRUCTURAL SOLVER] ${input.title || 'Untitled'}`);
+    console.log(`Analysis type: ${input.type} | Nodes: ${input.nodes.length} | Members: ${input.members.length}`);
+  }
   
   const dof_per_node = getDOFPerNode(input.type);
   const total_dof = input.nodes.length * dof_per_node;
@@ -497,10 +499,10 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
   const K_global = zeros(total_dof, total_dof) as number[][];
   
   // Assemble stiffness from all elements
-  console.log(`\n[ASSEMBLY] Creating ${total_dof}×${total_dof} global stiffness matrix`);
+  if (import.meta.env.DEV) console.log(`\n[ASSEMBLY] Creating ${total_dof}×${total_dof} global stiffness matrix`);
   
   for (const member of input.members) {
-    console.log(`  Assembling ${member.type}: ${member.id}`);
+    if (import.meta.env.DEV) console.log(`  Assembling ${member.type}: ${member.id}`);
     
     const K_element = computeElementStiffness(member);
     const n1 = member.nodes[0];
@@ -564,7 +566,7 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
   }
   
   // Solve for displacements
-  console.log(`\n[SOLUTION] Solving system of ${total_dof} equations`);
+  if (import.meta.env.DEV) console.log(`\n[SOLUTION] Solving system of ${total_dof} equations`);
   
   // Remove constrained DOF (reduction method)
   const free_dof = [];
@@ -651,10 +653,12 @@ export async function solveStructure(input: StructuralAnalysisInput): Promise<An
   
   const execution_time = Date.now() - start_time;
   
-  console.log(`\n[RESULTS]`);
-  console.log(`  Execution time: ${execution_time} ms`);
-  console.log(`  Convergence: true`);
-  console.log(`  Member forces computed: ${member_forces.length}`);
+  if (import.meta.env.DEV) {
+    console.log(`\n[RESULTS]`);
+    console.log(`  Execution time: ${execution_time} ms`);
+    console.log(`  Convergence: true`);
+    console.log(`  Member forces computed: ${member_forces.length}`);
+  }
   
   return {
     title: input.title,

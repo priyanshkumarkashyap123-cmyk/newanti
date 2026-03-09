@@ -62,12 +62,12 @@ export function useDeviceSession() {
         try {
             const res = await fetch(`${API_URL}${path}`, opts);
             if (!res.ok) {
-                console.warn(`[DeviceSession] ${method} ${path} failed:`, res.status);
+                if (import.meta.env.DEV) console.warn(`[DeviceSession] ${method} ${path} failed:`, res.status);
                 return null;
             }
             return await res.json();
         } catch (error) {
-            console.error(`[DeviceSession] ${method} ${path} error:`, error);
+            if (import.meta.env.DEV) console.error(`[DeviceSession] ${method} ${path} error:`, error);
             return null;
         }
     }, [getToken, deviceId]);

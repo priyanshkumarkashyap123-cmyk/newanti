@@ -545,7 +545,7 @@ export const useUIStore = create<UIState>()(
                   "Model validation failed. Please check your model.",
               },
             });
-            console.warn(
+            if (import.meta.env.DEV) console.warn(
               "[UIStore] Model validation failed:",
               validation.message,
             );
@@ -569,7 +569,7 @@ export const useUIStore = create<UIState>()(
                   "Please Run Analysis First before accessing Design tools.",
               },
             });
-            console.warn(
+            if (import.meta.env.DEV) console.warn(
               "[UIStore] Cannot switch to DESIGN - no analysis results",
             );
 
@@ -604,7 +604,7 @@ export const useUIStore = create<UIState>()(
         // Validate tool belongs to current category
         const validTools = CATEGORY_TOOLS[category];
         if (!validTools.includes(tool)) {
-          console.warn(
+          if (import.meta.env.DEV) console.warn(
             `[UIStore] Tool "${tool}" is not valid for ${category} category`,
           );
           return;

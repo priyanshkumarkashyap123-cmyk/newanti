@@ -37,7 +37,7 @@ export function useUserRegistration() {
             try {
                 const token = await getToken();
                 if (!token) {
-                    console.warn('[useUserRegistration] No auth token available');
+                    if (import.meta.env.DEV) console.warn('[useUserRegistration] No auth token available');
                     return;
                 }
 
@@ -81,7 +81,7 @@ export function useUserRegistration() {
                 }
             } catch (error) {
                 if ((error as Error).name !== 'AbortError') {
-                    console.error('[useUserRegistration] Error:', error);
+                    if (import.meta.env.DEV) console.error('[useUserRegistration] Error:', error);
                 }
             }
         };

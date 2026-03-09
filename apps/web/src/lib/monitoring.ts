@@ -35,7 +35,7 @@ export function initializeMonitoring(config: MonitoringConfig): void {
   const { sentryDsn, environment, release, tracesSampleRate, enablePerformanceMonitoring } = config;
 
   if (!sentryDsn) {
-    console.warn('Sentry DSN not configured - monitoring disabled');
+    if (import.meta.env.DEV) console.warn('Sentry DSN not configured - monitoring disabled');
     return;
   }
 
@@ -87,7 +87,7 @@ export function initializeMonitoring(config: MonitoringConfig): void {
     },
   });
 
-  console.log(`Monitoring initialized: ${environment}`);
+  if (import.meta.env.DEV) console.log(`Monitoring initialized: ${environment}`);
 }
 
 // ============================================================================

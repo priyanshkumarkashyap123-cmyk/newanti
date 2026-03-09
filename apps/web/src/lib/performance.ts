@@ -97,7 +97,7 @@ export function trackWebVitals(onReport: (metric: { name: string; value: number;
       onReport({ name: 'TTFB', value: ttfb, rating });
     }
   } catch (error) {
-    console.warn('Web Vitals tracking failed:', error);
+    if (import.meta.env.DEV) console.warn('Web Vitals tracking failed:', error);
   }
 }
 
@@ -115,7 +115,7 @@ export function measureRenderTime(componentName: string, fn: () => void): number
   const duration = end - start;
   
   if (duration > 16) { // More than 1 frame at 60fps
-    console.warn(`Slow render: ${componentName} took ${duration.toFixed(2)}ms`);
+    if (import.meta.env.DEV) console.warn(`Slow render: ${componentName} took ${duration.toFixed(2)}ms`);
   }
   
   return duration;
@@ -134,7 +134,7 @@ export function profileComponentRender(
 ) {
   // Log slow renders (>50ms is noticeable)
   if (actualDuration > 50) {
-    console.warn(`Slow ${phase} of ${id}:`, {
+    if (import.meta.env.DEV) console.warn(`Slow ${phase} of ${id}:`, {
       actualMs: actualDuration.toFixed(2),
       baseMs: baseDuration.toFixed(2),
     });
@@ -289,7 +289,7 @@ export function getMemoryUsage(): {
 export function checkMemoryPressure(): void {
   const memory = getMemoryUsage();
   if (memory && memory.percentage > 90) {
-    console.warn('High memory usage detected:', memory);
+    if (import.meta.env.DEV) console.warn('High memory usage detected:', memory);
     
     // Suggest garbage collection (if available)
     if ('gc' in window && typeof (window as any).gc === 'function') {

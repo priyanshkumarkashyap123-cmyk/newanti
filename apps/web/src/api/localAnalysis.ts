@@ -19,7 +19,7 @@ async function loadSolverWasm() {
     wasmModule = await import(/* @vite-ignore */ "solver-wasm");
     return wasmModule;
   } catch (e) {
-    console.error("Failed to load solver-wasm module:", e);
+    if (import.meta.env.DEV) console.error("Failed to load solver-wasm module:", e);
     return null;
   }
 }
@@ -66,7 +66,7 @@ export async function runLocalAnalysis(): Promise<{
       // Call init hook to set panic handler
       wasm.init();
     } catch (e) {
-      console.warn("WASM init failed or already initialized:", e);
+      if (import.meta.env.DEV) console.warn("WASM init failed or already initialized:", e);
     }
 
     // 2. Assemble Sparse Matrix (in JS for now, could be moved to WASM later)
@@ -363,7 +363,7 @@ export async function runLocalAnalysis(): Promise<{
     };
   } catch (error) {
     state.setAnalysisResults(null);
-    console.error("Analysis failed:", error);
+    if (import.meta.env.DEV) console.error("Analysis failed:", error);
     return {
       success: false,
       message: error instanceof Error ? error.message : "Analysis failed",
