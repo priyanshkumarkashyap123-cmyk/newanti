@@ -176,6 +176,14 @@ export class SocketServer {
     private userCounter: number = 0;
     private rateLimiter: SocketRateLimiter;
 
+    /**
+     * Per-room event buffer for reconnection sync.
+     * Stores the last MAX_BUFFER_PER_ROOM events per project room,
+     * each tagged with the project version at the time of broadcast.
+     */
+    private static readonly MAX_BUFFER_PER_ROOM = 100;
+    private eventBuffers: Map<string, Array<{ version: number; event: string; data: unknown }>> = new Map();
+
     constructor(httpServer: HTTPServer) {
         // Per-event rate limits (events per second per socket)
         this.rateLimiter = new SocketRateLimiter({
@@ -236,6 +244,22 @@ export class SocketServer {
 
         this.setupEventHandlers();
         logger.info('Socket.IO server initialized (with auth middleware)');
+    }
+
+    /**
+     * Push an event into the per-room circular buffer.
+     * Oldest entries are evicted when the buffer exceeds MAX_BUFFER_PER_ROOM.
+     */
+    private bufferEvent(projectId: string, version: number, event: string, data: unknown): void {
+        let buf = this.eventBuffers.get(projectId);
+        if (!buf) {
+            buf = [];
+            this.eventBuffers.set(projectId, buf);
+        }
+        buf.push({ version, event, data });
+        if (buf.length > SocketServer.MAX_BUFFER_PER_ROOM) {
+            buf.splice(0, buf.length - SocketServer.MAX_BUFFER_PER_ROOM);
+        }
     }
 
     /**
@@ -342,6 +366,33 @@ export class SocketServer {
                         userName: user.name
                     });
                 }
+            });
+
+            // ========================================
+            // RECONNECTION SYNC
+            // ========================================
+
+            /**
+             * Client sends last known project version on reconnect.
+             * Server replays buffered events since that version.
+             */
+            socket.on('sync', (data: { projectId: string; lastVersion: number }) => {
+                const user = this.users.get(socket.id);
+                if (!user?.projectId || user.projectId !== data.projectId) return;
+
+                const buf = this.eventBuffers.get(data.projectId);
+                if (!buf || buf.length === 0) {
+                    socket.emit('sync_complete', { events: [], currentVersion: this.projects.get(data.projectId)?.version ?? 0 });
+                    return;
+                }
+
+                const missed = buf.filter(e => e.version > data.lastVersion);
+                socket.emit('sync_complete', {
+                    events: missed.map(e => ({ event: e.event, data: e.data, version: e.version })),
+                    currentVersion: this.projects.get(data.projectId)?.version ?? 0,
+                });
+
+                logger.info(`Sync: replayed ${missed.length} events for ${user.name} in project ${data.projectId}`);
             });
 
             // ========================================
@@ -470,6 +521,15 @@ export class SocketServer {
             version: project?.version
         });
 
+        // Buffer for reconnection sync
+        if (project) {
+            this.bufferEvent(user.projectId, project.version, 'server_update', {
+                type: 'node_update',
+                data: { ...data, userId: user.id, userName: user.name },
+                version: project.version,
+            });
+        }
+
         logger.info(`Node ${data.nodeId} updated by ${user.name}`);
     }
 
@@ -512,6 +572,15 @@ export class SocketServer {
             },
             version: project?.version
         });
+
+        // Buffer for reconnection sync
+        if (project) {
+            this.bufferEvent(user.projectId, project.version, 'server_update', {
+                type: 'member_update',
+                data: { ...data, userId: user.id, userName: user.name },
+                version: project.version,
+            });
+        }
 
         logger.info(`Member ${data.memberId} updated by ${user.name}`);
     }
@@ -604,6 +673,7 @@ export class SocketServer {
                     // Clean up empty project entries to prevent unbounded Map growth
                     if (project.users.size === 0) {
                         this.projects.delete(user.projectId);
+                        this.eventBuffers.delete(user.projectId);
                     }
                 }
                 this.broadcastUserLeft(socket, user.projectId, user);
