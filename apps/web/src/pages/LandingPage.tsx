@@ -98,21 +98,43 @@ export const LandingPage: FC = () => {
     let cancelled = false;
 
     const loadShowcaseCards = async () => {
+      const endpoints = [
+        `${API_CONFIG.baseUrl}/api/public/landing-showcase`,
+        `${API_CONFIG.baseUrl}/api/v1/public/landing-showcase`,
+        `/api/public/landing-showcase`,
+      ];
+
       try {
-        const payload = await fetchJson<{ cards: ShowcaseCard[] }>(`${API_CONFIG.baseUrl}/api/public/landing-showcase`, {
-          timeout: 8000,
-          retries: 1,
-        });
+        let payload: { cards: ShowcaseCard[] } | null = null;
+
+        for (const endpoint of endpoints) {
+          try {
+            const response = await fetchJson<{ cards: ShowcaseCard[] }>(endpoint, {
+              timeout: 8000,
+              retries: 1,
+            });
+            if (response?.cards?.length) {
+              payload = response;
+              break;
+            }
+          } catch {
+            // Try the next endpoint candidate
+          }
+        }
+
+        if (!payload?.cards?.length) {
+          throw new Error("Landing showcase API unavailable");
+        }
 
         if (!cancelled) {
-          setShowcaseCards(payload.cards || []);
+          setShowcaseCards(payload.cards);
           setShowcaseUnavailable(false);
         }
       } catch {
         if (!cancelled) {
-          // Fail-fast in production: do not render hardcoded functional mock screenshots.
-          // In development, keep metadata-only static fallback for local UI continuity.
-          setShowcaseCards(import.meta.env.DEV ? mapStaticShowcaseCards() : []);
+          // Always provide static metadata fallback so marketing page remains complete
+          // even during backend rollout lag or transient API failures.
+          setShowcaseCards(mapStaticShowcaseCards());
           setShowcaseUnavailable(true);
         }
       }
