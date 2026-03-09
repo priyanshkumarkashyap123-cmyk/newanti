@@ -34,7 +34,11 @@ import io
 
 @dataclass
 class ReportSettings:
-    """Settings for report customization"""
+    """Settings for report customization
+    
+    Includes profile-based section toggles and granular diagram controls.
+    For backward compatibility, include_diagrams gates all diagram types.
+    """
     # Document settings
     page_size: str = "A4"  # "A4" or "Letter"
     orientation: str = "portrait"  # "portrait" or "landscape"
@@ -56,11 +60,34 @@ class ReportSettings:
     
     # Report sections to include
     include_cover_page: bool = True
+    include_toc: bool = True
     include_input_summary: bool = True
+    include_load_cases: bool = True
+    include_load_combinations: bool = True
+    include_node_displacements: bool = True
+    include_member_forces: bool = True
+    include_reaction_summary: bool = True
     include_analysis_results: bool = True
     include_design_checks: bool = True
     include_diagrams: bool = True
+    include_concrete_design: bool = False
+    include_foundation_design: bool = False
+    include_connection_design: bool = False
     include_appendix: bool = False
+    
+    # Granular diagram controls (only evaluated if include_diagrams=True)
+    include_sfd: bool = True             # Shear Force Diagram (Vy—XY plane)
+    include_bmd: bool = True             # Bending Moment Diagram (Mz—XY plane)
+    include_deflection: bool = True      # Deflected shape
+    include_afd: bool = True             # Axial Force Diagram (Fx)
+    include_bmd_my: bool = False         # Weak-axis moment (My—XZ plane)
+    include_shear_z: bool = False        # Weak-axis shear (Vz—XZ plane)
+    
+    # Load case context
+    selected_load_case_id: Optional[str] = None  # Currently active LC from UI
+    
+    # Metadata minimization (for SFD_BMD_ONLY)
+    minimal_metadata: bool = False
     
     # Styling
     primary_color: tuple = (0, 0.4, 0.8)  # RGB (0-1)

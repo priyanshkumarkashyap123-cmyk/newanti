@@ -173,6 +173,9 @@ interface ModelState {
   setDiagramScale: (scale: number) => void;
   setShowResults: (show: boolean) => void;
 
+  // Report Profile Actions
+  applyDiagramProfile: (profile: 'FULL_REPORT' | 'OPTIMIZATION_SUMMARY' | 'SFD_BMD_ONLY') => void;
+
   // Modal Analysis Actions
   setModalResults: (results: ModalResult | null) => void;
   setActiveModeIndex: (index: number) => void;
@@ -1159,6 +1162,40 @@ export const useModelStore = create<ModelState>()(
         setShowDeflectedShape: (show) => set({ showDeflectedShape: show }),
         setDiagramScale: (scale) => set({ diagramScale: scale }),
         setShowResults: (show) => set({ showResults: show }),
+
+        // Report Profile Actions
+        applyDiagramProfile: (profile) => {
+          // Apply diagram visibility based on report profile preset
+          const profiles: Record<string, Record<string, boolean>> = {
+            'FULL_REPORT': {
+              showSFD: true,
+              showBMD: true,
+              showAFD: true,
+              showBMDMy: true,
+              showShearZ: true,
+              showDeflectedShape: true,
+            },
+            'OPTIMIZATION_SUMMARY': {
+              showSFD: true,
+              showBMD: true,
+              showAFD: false,
+              showBMDMy: false,
+              showShearZ: false,
+              showDeflectedShape: true,
+            },
+            'SFD_BMD_ONLY': {
+              showSFD: true,
+              showBMD: true,
+              showAFD: false,
+              showBMDMy: false,
+              showShearZ: false,
+              showDeflectedShape: false,
+            },
+          };
+          
+          const profileConfig = profiles[profile] || profiles['FULL_REPORT'];
+          set(profileConfig);
+        },
 
         // Modal Analysis Actions
         setModalResults: (results) => set({ modalResults: results }),
