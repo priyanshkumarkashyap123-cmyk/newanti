@@ -44,13 +44,26 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // Initialize tracing (logging) - ensure it flushes to stdout
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            std::env::var("RUST_LOG").unwrap_or_else(|_| "beamlab_api=info,tower_http=info".into()),
-        ))
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    // Initialize tracing (logging) - JSON in production, human-readable in dev
+    let is_prod = std::env::var("RUST_ENV").unwrap_or_default() == "production"
+        || std::env::var("NODE_ENV").unwrap_or_default() == "production";
+
+    let fmt_layer = tracing_subscriber::fmt::layer();
+    let env_filter = tracing_subscriber::EnvFilter::new(
+        std::env::var("RUST_LOG").unwrap_or_else(|_| "beamlab_api=info,tower_http=info".into()),
+    );
+
+    if is_prod {
+        tracing_subscriber::registry()
+            .with(env_filter)
+            .with(fmt_layer.json())
+            .init();
+    } else {
+        tracing_subscriber::registry()
+            .with(env_filter)
+            .with(fmt_layer)
+            .init();
+    }
 
     tracing::info!("========================================");
     tracing::info!("🚀 BeamLab Rust API v2.1.0 starting...");

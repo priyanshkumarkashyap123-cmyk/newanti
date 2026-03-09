@@ -424,6 +424,7 @@ export const requestLoggerWithId = (
       status,
       durationMs: duration,
       ip,
+      ...(res.locals.userId && { userId: res.locals.userId }),
       ...(status >= 400 && { ua: req.get("user-agent")?.slice(0, 100) }),
     };
 
