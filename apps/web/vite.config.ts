@@ -53,6 +53,35 @@ const securityHeaders = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
 };
 
+// ============================================
+// BUILD-TIME ENVIRONMENT VALIDATION
+// ============================================
+// Fail-fast: reject production builds that would ship with localhost URLs.
+function validateBuildEnv() {
+  if (process.env.NODE_ENV !== "production") return;
+
+  const critical: Record<string, string | undefined> = {
+    VITE_API_URL: process.env.VITE_API_URL,
+    VITE_PYTHON_API_URL: process.env.VITE_PYTHON_API_URL,
+    VITE_RUST_API_URL: process.env.VITE_RUST_API_URL,
+  };
+
+  const errors: string[] = [];
+  for (const [key, val] of Object.entries(critical)) {
+    if (val && val.includes("localhost")) {
+      errors.push(`${key} points to localhost ("${val}") — not allowed in production builds.`);
+    }
+  }
+
+  if (errors.length) {
+    throw new Error(
+      `\n❌ Build-time environment validation failed:\n${errors.map((e) => `   • ${e}`).join("\n")}\n` +
+      `Set these variables via CI or .env.production before building.\n`,
+    );
+  }
+}
+validateBuildEnv();
+
 // https://vitejs.dev/config/
 // IMPORTANT: keep PWA disabled by default for production reliability.
 // This prevents stale SW caches from serving outdated app shells/chunks.

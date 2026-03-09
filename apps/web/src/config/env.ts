@@ -212,6 +212,18 @@ export function validateEnvironment(): { valid: boolean; warnings: string[]; err
       );
     }
 
+    if (API_CONFIG.pythonUrl.includes("localhost")) {
+      errors.push(
+        `VITE_PYTHON_API_URL points to localhost in production. Current: ${API_CONFIG.pythonUrl}`,
+      );
+    }
+
+    if (API_CONFIG.rustUrl.includes("localhost")) {
+      errors.push(
+        `VITE_RUST_API_URL points to localhost in production. Current: ${API_CONFIG.rustUrl}`,
+      );
+    }
+
     if (!MONITORING_CONFIG.sentryDsn) {
       warnings.push("VITE_SENTRY_DSN not set — error monitoring is disabled in production.");
     }
