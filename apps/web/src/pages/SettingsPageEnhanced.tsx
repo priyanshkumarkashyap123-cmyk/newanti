@@ -79,8 +79,6 @@ export const SettingsPageEnhanced: FC = () => {
     };
 
     const handleSaveSettings = () => {
-        // Save to localStorage or backend
-// console.log('Settings saved');
         setSaved(true);
         if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
         savedTimerRef.current = setTimeout(() => setSaved(false), 2000);

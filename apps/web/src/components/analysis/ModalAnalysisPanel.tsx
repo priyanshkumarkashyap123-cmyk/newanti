@@ -99,8 +99,6 @@ export const ModalAnalysisPanel: FC<ModalAnalysisPanelProps> = ({ isOpen, onClos
                 mass: 1000,
             }));
 
-// console.log('[ModalAnalysis] Running modal analysis for', nodes3D.length, 'nodes');
-
             // Generate demo modal results based on structure characteristics
             const structureHeight = Math.max(...nodes3D.map(n => n.y), 10);
             const fundamentalPeriod = 0.09 * Math.sqrt(structureHeight);

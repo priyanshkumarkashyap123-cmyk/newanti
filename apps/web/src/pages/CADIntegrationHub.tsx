@@ -222,14 +222,12 @@ const CADIntegrationHub: React.FC = () => {
   ];
 
   const handleImport = () => {
-// console.log('Starting CAD import with settings:', importSettings);
     setStatusMsg({ type: 'info', text: `Importing ${importSettings.format} — Extract: ${importSettings.extractMethod}, Analytical: ${importSettings.convertToAnalytical ? 'Yes' : 'No'}` });
     clearTimeout(statusTimerRef.current);
     statusTimerRef.current = setTimeout(() => setStatusMsg(null), 4000);
   };
 
   const handleExport = () => {
-// console.log('Starting CAD export with settings:', exportSettings);
     setStatusMsg({ type: 'success', text: `Exporting ${exportSettings.format} (${exportSettings.version}) — ${exportSettings.exportType}, Scale: ${exportSettings.scale}` });
     clearTimeout(statusTimerRef.current);
     statusTimerRef.current = setTimeout(() => setStatusMsg(null), 4000);
