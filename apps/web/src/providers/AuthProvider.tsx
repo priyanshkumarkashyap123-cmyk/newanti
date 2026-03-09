@@ -9,7 +9,7 @@
  * - VITE_API_URL: Backend API URL
  */
 
-import React, { createContext, useContext, useCallback, useMemo, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useMemo, ReactNode, useState, useEffect } from 'react';
 import { ClerkProvider, useAuth as useClerkAuth, useUser as useClerkUser, SignIn, SignUp } from '@clerk/clerk-react';
 import { AUTH_CONFIG } from '../config/env';
 import { authLogger } from '../utils/logger';
@@ -114,7 +114,7 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
     // Sign in is handled by Clerk components
     const signIn = useCallback(async (_email: string, _password: string) => {
         // Clerk uses its own UI components for sign in
-        console.warn('Use <SignIn /> component for Clerk authentication');
+        if (import.meta.env.DEV) console.warn('Use <SignIn /> component for Clerk authentication');
         return {
             success: false,
             error: 'Please use the Clerk SignIn component'
@@ -123,7 +123,7 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     const signUp = useCallback(async (_data: SignUpData) => {
         // Clerk uses its own UI components for sign up
-        console.warn('Use <SignUp /> component for Clerk authentication');
+        if (import.meta.env.DEV) console.warn('Use <SignUp /> component for Clerk authentication');
         return {
             success: false,
             error: 'Please use the Clerk SignUp component'
@@ -191,6 +191,69 @@ const ClerkAuthBridge: React.FC<{ children: ReactNode }> = ({ children }) => {
 };
 
 // ============================================
+// CLERK LOAD TIMEOUT & ERROR BOUNDARY
+// ============================================
+
+const CLERK_LOAD_TIMEOUT_MS = 8000;
+
+/** Monitors Clerk SDK load and triggers fallback if it takes too long. */
+const ClerkLoadGuard: React.FC<{ children: ReactNode; onTimeout: () => void }> = ({ children, onTimeout }) => {
+    const { isLoaded } = useClerkAuth();
+
+    useEffect(() => {
+        if (isLoaded) return;
+        const timer = setTimeout(() => {
+            authLogger.warn('Clerk SDK did not load within timeout — switching to read-only fallback');
+            onTimeout();
+        }, CLERK_LOAD_TIMEOUT_MS);
+        return () => clearTimeout(timer);
+    }, [isLoaded, onTimeout]);
+
+    return <>{children}</>;
+};
+
+/** Read-only fallback context when Clerk is unavailable */
+const FALLBACK_AUTH: UnifiedAuthContext = {
+    isLoaded: true,
+    isSignedIn: false,
+    user: null,
+    userId: null,
+    signIn: async () => ({ success: false, error: 'Authentication service unavailable. Please try again later.' }),
+    signUp: async () => ({ success: false, error: 'Authentication service unavailable. Please try again later.' }),
+    signOut: async () => {},
+    forgotPassword: async () => ({ success: false, error: 'Authentication service unavailable.' }),
+    getToken: async () => null,
+    authProvider: 'clerk',
+};
+
+const ClerkUnavailableBanner: React.FC = () => (
+    <div className="bg-amber-500/90 text-white text-center text-sm py-1.5 px-4 sticky top-0 z-[9999]" role="alert">
+        Authentication service is temporarily unavailable. You can still use engineering tools in read-only mode.
+    </div>
+);
+
+/** Class-based error boundary to catch Clerk render errors */
+class ClerkErrorBoundary extends React.Component<
+    { children: ReactNode; fallback: ReactNode },
+    { hasError: boolean }
+> {
+    override state = { hasError: false };
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    override componentDidCatch(error: Error) {
+        authLogger.error('Clerk error boundary caught:', error.message);
+    }
+
+    override render() {
+        if (this.state.hasError) return this.props.fallback;
+        return this.props.children;
+    }
+}
+
+// ============================================
 // MAIN AUTH PROVIDER
 // ============================================
 
@@ -199,17 +262,40 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+    const [clerkFailed, setClerkFailed] = useState(false);
+
+    const handleClerkTimeout = useCallback(() => setClerkFailed(true), []);
+
     if (!CLERK_KEY) {
-        // Render a friendly error instead of crashing the ClerkProvider
         return <MissingClerkKey />;
     }
 
-    return (
-        <ClerkProvider publishableKey={CLERK_KEY}>
-            <ClerkAuthBridge>
+    if (clerkFailed) {
+        return (
+            <AuthContext.Provider value={FALLBACK_AUTH}>
+                <ClerkUnavailableBanner />
                 {children}
-            </ClerkAuthBridge>
-        </ClerkProvider>
+            </AuthContext.Provider>
+        );
+    }
+
+    return (
+        <ClerkErrorBoundary
+            fallback={
+                <AuthContext.Provider value={FALLBACK_AUTH}>
+                    <ClerkUnavailableBanner />
+                    {children}
+                </AuthContext.Provider>
+            }
+        >
+            <ClerkProvider publishableKey={CLERK_KEY}>
+                <ClerkLoadGuard onTimeout={handleClerkTimeout}>
+                    <ClerkAuthBridge>
+                        {children}
+                    </ClerkAuthBridge>
+                </ClerkLoadGuard>
+            </ClerkProvider>
+        </ClerkErrorBoundary>
     );
 };
 
