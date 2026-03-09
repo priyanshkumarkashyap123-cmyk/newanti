@@ -1,7 +1,11 @@
 name: E2E Tests & Bundle Analysis
 
-# Re-enabled on weekly schedule + manual trigger to conserve Actions minutes.
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * 0'  # Weekly Sunday 2 AM UTC
@@ -22,7 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        # PRs: chromium only (fast). Weekly/manual: all browsers.
+        browser: ${{ github.event_name == 'pull_request' && fromJson('["chromium"]') || fromJson('["chromium", "firefox", "webkit"]') }}
     
     steps:
       - name: Checkout

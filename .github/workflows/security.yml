@@ -1,6 +1,14 @@
 name: Security Scanning
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '**/package.json'
+      - '**/requirements.txt'
+      - '**/Cargo.toml'
   workflow_dispatch:
   schedule:
     # Run weekly on Monday at midnight UTC

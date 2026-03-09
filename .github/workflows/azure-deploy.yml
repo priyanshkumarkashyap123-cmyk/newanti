@@ -84,6 +84,19 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
           package: api-app.zip
 
+      - name: Verify Node API health post-deploy
+        run: |
+          echo "Waiting 20s for service warm-up..."
+          sleep 20
+          for i in 1 2 3 4 5; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health || echo "000")
+            echo "Attempt $i: Node API → $status"
+            [ "$status" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::Node API health check failed after deploy — consider rollback"
+          exit 1
+
   # Python deployment - Re-enabled for Advanced Analysis & Templates
   deploy-python:
     runs-on: ubuntu-latest
@@ -109,6 +122,19 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME_PYTHON }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
           package: python-app.zip
+
+      - name: Verify Python API health post-deploy
+        run: |
+          echo "Waiting 20s for service warm-up..."
+          sleep 20
+          for i in 1 2 3 4 5; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlab-backend-python.azurewebsites.net/health || echo "000")
+            echo "Attempt $i: Python API → $status"
+            [ "$status" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::Python API health check failed after deploy — consider rollback"
+          exit 1
 
   # Frontend is deployed via the separate Azure Static Web Apps CI/CD workflow
   # (azure-static-web-apps-brave-mushroom-0eae8ec00.yml) which includes
@@ -176,6 +202,22 @@ jobs:
             sleep 10
           done
           [ "$status" = "200" ] || { echo "::error::Python API health check failed (status: $status)"; exit 1; }
+
+      - name: Check Rust API health
+        run: |
+          for i in 1 2 3; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlab-rust-api.azurewebsites.net/health || echo "000")
+            echo "Attempt $i: Rust API → $status"
+            [ "$status" = "200" ] && break
+            sleep 10
+          done
+          [ "$status" = "200" ] || { echo "::warning::Rust API health check failed (status: $status)"; }
+
+      - name: Check Frontend
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlabultimate.tech || echo "000")
+          echo "Frontend → $status"
+          [ "$status" = "200" ] || { echo "::warning::Frontend health check returned $status"; }
 
       - name: Summary
         run: echo "Post-deploy smoke tests complete ✅"
