@@ -3,7 +3,7 @@
  * ProjectService - Manage User Projects
  */
 
-import { fetchJson, postJson } from '../utils/fetchUtils';
+import { fetchJson, postJson, fetchWithTimeout } from '../utils/fetchUtils';
 import { API_CONFIG } from '../config/env';
 import { logger } from '../lib/logging/logger';
 
@@ -72,25 +72,16 @@ export const ProjectService = {
         token: string
     ): Promise<Project> {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/project`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+            const payload = await postJson<{ project: Project }>(
+                `${API_BASE_URL}/api/project`,
+                project,
+                {
+                    authToken: token,
+                    withCsrf: true,
+                    timeout: 10000,
                 },
-                body: JSON.stringify(project)
-            });
+            );
 
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                // Handle envelope error: { error: { code, message } }
-                const errMsg = typeof err.error === 'object' ? err.error?.message : err.error;
-                throw new Error(errMsg || 'Failed to create project');
-            }
-
-            const data = await response.json();
-            // Unwrap API envelope: { success, data: { project }, requestId, ts }
-            const payload = data?.data ?? data;
             return payload.project;
         } catch (error) {
             logger.error('[ProjectService] createProject failed', { error: error instanceof Error ? error.message : String(error) });
@@ -107,24 +98,14 @@ export const ProjectService = {
         token: string
     ): Promise<Project> {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/project/${id}`, {
+            const payload = await fetchJson<{ project: Project }>(`${API_BASE_URL}/api/project/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(updates)
+                body: JSON.stringify(updates),
+                authToken: token,
+                withCsrf: true,
+                timeout: 10000,
             });
 
-            if (!response.ok) {
-                const err = await response.json().catch(() => ({}));
-                const errMsg = typeof err.error === 'object' ? err.error?.message : err.error;
-                throw new Error(errMsg || 'Failed to update project');
-            }
-
-            const data = await response.json();
-            // Unwrap API envelope: { success, data: { project }, requestId, ts }
-            const payload = data?.data ?? data;
             return payload.project;
         } catch (error) {
             logger.error('[ProjectService] updateProject failed', { error: error instanceof Error ? error.message : String(error) });
@@ -137,15 +118,15 @@ export const ProjectService = {
      */
     async deleteProject(id: string, token: string): Promise<void> {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/project/${id}`, {
+            const response = await fetchWithTimeout<unknown>(`${API_BASE_URL}/api/project/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                authToken: token,
+                withCsrf: true,
+                timeout: 10000,
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete project');
+            if (!response.success) {
+                throw new Error(response.error || 'Failed to delete project');
             }
         } catch (error) {
             logger.error('[ProjectService] deleteProject failed', { error: error instanceof Error ? error.message : String(error) });

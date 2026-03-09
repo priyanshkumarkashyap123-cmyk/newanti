@@ -127,19 +127,40 @@ describe('fetchWithTimeout', () => {
     expect(result.status).toBe(429);
   });
 
-  it('sets Content-Type header to application/json by default', async () => {
+  it('treats success:false envelope as logical failure even with 2xx', async () => {
+    mockFetch.mockResolvedValueOnce(
+      jsonResponse({ success: false, error: { code: 'INVALID', message: 'Invalid payload' } }, 200)
+    );
+
+    const result = await fetchWithTimeout('/api/logical-error');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Invalid payload');
+    expect(result.status).toBe(200);
+  });
+
+  it('sets Content-Type header to application/json by default when body is present', async () => {
     mockFetch.mockResolvedValueOnce(jsonResponse({ ok: true }));
 
-    await fetchWithTimeout('/api/test');
+    await fetchWithTimeout('/api/test', {
+      method: 'POST',
+      body: JSON.stringify({ hello: 'world' }),
+    });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/test',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-        }),
-      })
-    );
+    const callHeaders = mockFetch.mock.calls[0][1].headers as Headers;
+    expect(callHeaders.get('Content-Type')).toBe('application/json');
+  });
+
+  it('adds Authorization header when authToken is provided', async () => {
+    mockFetch.mockResolvedValueOnce(jsonResponse({ ok: true }));
+
+    await fetchWithTimeout('/api/secure', {
+      method: 'GET',
+      authToken: 'token-123',
+    });
+
+    const callHeaders = mockFetch.mock.calls[0][1].headers as Headers;
+    expect(callHeaders.get('Authorization')).toBe('Bearer token-123');
   });
 
   it('allows custom headers to override defaults', async () => {
@@ -149,8 +170,8 @@ describe('fetchWithTimeout', () => {
       headers: { 'Content-Type': 'text/plain', 'X-Custom': 'yes' },
     });
 
-    const callHeaders = mockFetch.mock.calls[0][1].headers;
-    expect(callHeaders['Content-Type']).toBe('text/plain');
-    expect(callHeaders['X-Custom']).toBe('yes');
+    const callHeaders = mockFetch.mock.calls[0][1].headers as Headers;
+    expect(callHeaders.get('Content-Type')).toBe('text/plain');
+    expect(callHeaders.get('X-Custom')).toBe('yes');
   });
 });

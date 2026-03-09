@@ -13,6 +13,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - idb types may not be available during build
 import { openDB } from 'idb';
+import { API_CONFIG } from '../config/env';
+import { useAuthStore } from '../store/authStore';
+import { addCsrfHeader } from './security';
+import { useModelStore } from '../store/model';
 
 // Using loose types for idb since exact types are complex
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -191,6 +195,33 @@ class OfflineDatabase {
   }
 }
 
+function buildCurrentProjectUpdatePayload(): { projectId: string; body: { data: Record<string, unknown> } } {
+  const state = useModelStore.getState();
+  const cloudId = state.projectInfo?.cloudId;
+
+  if (!cloudId) {
+    throw new Error('Project is not linked to cloud. Save project to cloud before syncing offline changes.');
+  }
+
+  const projectData = {
+    projectInfo: state.projectInfo,
+    nodes: Array.from(state.nodes.entries()),
+    members: Array.from(state.members.entries()),
+    loads: state.loads || [],
+    memberLoads: state.memberLoads || [],
+    loadCases: state.loadCases || [],
+    loadCombinations: state.loadCombinations || [],
+    plates: Array.from(state.plates.entries()),
+    floorLoads: state.floorLoads || [],
+    savedAt: new Date().toISOString(),
+  };
+
+  return {
+    projectId: cloudId,
+    body: { data: projectData as unknown as Record<string, unknown> },
+  };
+}
+
 // ============================================================================
 // Sync Manager
 // ============================================================================
@@ -343,13 +374,61 @@ export class SyncManager {
     status: 'success' | 'conflict';
     remoteData?: unknown;
   }> {
-    // This is a placeholder - implement actual API calls here
-    // Example:
-    // const response = await fetch(`/api/${item.entity}`, {
-    //   method: item.type === 'create' ? 'POST' : item.type === 'update' ? 'PUT' : 'DELETE',
-    //   body: JSON.stringify(item.data),
-    // });
-    
+    // Offline queue is operation-level, but backend sync contract is currently
+    // project-level (PUT /api/project/:id). We persist the full latest project
+    // snapshot to avoid placeholder endpoints and keep contracts real.
+    const request = buildCurrentProjectUpdatePayload();
+    const authToken = useAuthStore.getState().getAccessToken() || localStorage.getItem('beamlab_last_token');
+
+    if (!authToken) {
+      throw new Error('Cannot sync while unauthenticated');
+    }
+
+    const headers = new Headers({
+      'Authorization': `Bearer ${authToken}`,
+      'Content-Type': 'application/json',
+    });
+    addCsrfHeader(headers);
+
+    const response = await fetch(`${API_CONFIG.baseUrl}/api/project/${request.projectId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(request.body),
+    });
+
+    let payload: unknown = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
+    }
+
+    if (response.status === 409) {
+      const envelope = payload as { data?: unknown; error?: unknown; message?: string } | null;
+      return {
+        status: 'conflict',
+        remoteData: envelope?.data,
+      };
+    }
+
+    if (!response.ok) {
+      const envelope = payload as { error?: { message?: string } | string; message?: string } | null;
+      const message =
+        typeof envelope?.error === 'object'
+          ? envelope.error?.message
+          : (typeof envelope?.error === 'string' ? envelope.error : envelope?.message);
+      throw new Error(message || `Sync request failed (${response.status})`);
+    }
+
+    const envelope = payload as { success?: boolean; data?: unknown; error?: unknown } | null;
+    if (envelope && envelope.success === false) {
+      const message =
+        typeof envelope.error === 'object'
+          ? (envelope.error as { message?: string }).message
+          : (typeof envelope.error === 'string' ? envelope.error : 'Sync failed');
+      throw new Error(message || 'Sync failed');
+    }
+
     return { status: 'success' };
   }
 

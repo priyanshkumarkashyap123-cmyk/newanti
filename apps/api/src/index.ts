@@ -15,9 +15,9 @@ import analysisRouter from "./routes/analysis/index.js";
 import designRouter from "./routes/design/index.js";
 import advancedRouter from "./routes/advanced/index.js";
 import interopRouter from "./routes/interop/index.js";
-import layoutRouter from "./routes/layout/index.js";
 import templateRouter from "./routes/templates/index.js";
 import jobsRouter from "./routes/jobs/index.js";
+import publicLandingRoutes from "./routes/publicLandingRoutes.js";
 import authRouter from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
@@ -39,7 +39,6 @@ import {
 } from "./middleware/authMiddleware.js";
 import {
   securityHeaders,
-  distributedGeneralRateLimit,
   generalRateLimit,
   analysisRateLimit,
   crudRateLimit,
@@ -77,13 +76,13 @@ if (process.env.SENTRY_DSN) {
   });
 }
 
-logger.info("Starting BeamLab API...");
-logger.info(`NODE_ENV: ${process.env.NODE_ENV || "not set"}`);
-logger.info(`PORT env: ${process.env.PORT || "not set"}`);
+console.log("[STARTUP] Starting BeamLab API...");
+console.log("[STARTUP] NODE_ENV:", process.env.NODE_ENV || "not set");
+console.log("[STARTUP] PORT env:", process.env.PORT || "not set");
 
 const app = express();
 const PORT = process.env["PORT"] ?? 3001;
-logger.info(`Effective PORT: ${PORT}`);
+console.log("[STARTUP] Effective PORT:", PORT);
 
 const openApiSpec = {
   openapi: "3.0.3",
@@ -225,7 +224,7 @@ app.use(attachResponseHelpers);
 // Save raw body buffer for webhook signature verification (PhonePe, Stripe, etc.)
 // The `verify` callback runs BEFORE json parsing, giving us the original bytes.
 app.use(express.json({
-  limit: "2mb",
+  limit: "5mb",
   verify: (req, _res, buf) => {
     // Only save raw body for webhook routes to avoid unnecessary memory usage
     if (req.url?.includes('/webhook')) {
@@ -233,7 +232,6 @@ app.use(express.json({
     }
   },
 }));
-app.use(express.urlencoded({ extended: true, limit: "512kb" })); // Form bodies capped to prevent memory spikes
 app.use(cookieParser()); // Parse cookies for CSRF double-submit pattern
 
 // XSS sanitization — strip dangerous HTML/JS from all incoming strings
@@ -245,11 +243,7 @@ app.use(csrfCookieMiddleware);
 app.use(csrfValidationMiddleware);
 
 // General rate limiting (after CORS so rate-limited responses still have CORS headers)
-if (process.env["RATE_LIMIT_DISTRIBUTED"] === "true") {
-  app.use(distributedGeneralRateLimit);
-} else {
-  app.use(generalRateLimit);
-}
+app.use(generalRateLimit);
 
 // ============================================
 // PUBLIC ENDPOINTS (before auth middleware so they always work)
@@ -257,7 +251,19 @@ if (process.env["RATE_LIMIT_DISTRIBUTED"] === "true") {
 
 // Root health check
 app.get("/", (_req: Request, res: Response) => {
-  res.send("BeamLab Ultimate API Running");
+  const frontendUrl = process.env["FRONTEND_URL"] || "http://localhost:5173";
+  res.status(200).json({
+    status: "ok",
+    service: "BeamLab Ultimate API",
+    message:
+      "You are on the API server. Open the frontend URL below to see website/UI changes.",
+    frontendUrl,
+    usefulLinks: {
+      health: "/health",
+      apiDocs: "/api/docs",
+      versionedApiDocs: "/api/v1/docs",
+    },
+  });
 });
 
 // Health check (public — must be before auth middleware)
@@ -304,6 +310,10 @@ app.get("/health", async (_req: Request, res: Response) => {
 app.get("/api/health", (_req: Request, res: Response) => {
   res.redirect("/health");
 });
+
+// Public marketing data endpoints (no auth required)
+app.use("/api/public", publicLandingRoutes);
+app.use("/api/v1/public", publicLandingRoutes);
 
 // Initialize authentication middleware based on provider
 // USE_CLERK=true -> Clerk, otherwise -> in-house JWT
@@ -418,10 +428,6 @@ app.use("/api/advanced", authRequired, analysisRateLimit, advancedRouter);
 app.use("/api/v1/interop", authRequired, analysisRateLimit, interopRouter);
 app.use("/api/interop", authRequired, analysisRateLimit, interopRouter);
 
-// Space Planning Layout API (proxied to Python optimizer — auth required)
-app.use("/api/v1/layout", authRequired, analysisRateLimit, layoutRouter);
-app.use("/api/layout", authRequired, analysisRateLimit, layoutRouter);
-
 // Template generation API (auth required)
 app.use("/api/v1/templates", authRequired, analysisRateLimit, templateRouter);
 app.use("/api/templates", authRequired, analysisRateLimit, templateRouter);
@@ -500,21 +506,11 @@ app.get(
 // Error handler (must be last middleware — BEFORE listen)
 app.use(secureErrorHandler);
 
-// ── HTTP server tuning for 10K+ concurrent users ──────────────────────────
-// keepAliveTimeout > 60s so Azure / Nginx load balancers don't kill idle
-// connections before Node does — prevents ECONNRESET under load.
-httpServer.keepAliveTimeout = 65_000;
-// headersTimeout must be > keepAliveTimeout to avoid race conditions.
-httpServer.headersTimeout = 66_000;
-// Limit maximum simultaneous TCP connections.  Node's default is unlimited;
-// capping at 20K lets the OS queue excess connections gracefully.
-httpServer.maxConnections = 20_000;
-
 // Start server immediately to satisfy startup probes
-logger.info("Starting HTTP server...");
-logger.info(`Port to listen on: ${PORT}`);
+console.log("[STARTUP] About to call httpServer.listen()...");
+console.log("[STARTUP] Port to listen on:", PORT);
 httpServer.listen(PORT, () => {
-  logger.info("Server listening successfully");
+  console.log("[STARTUP] ✅ Server listening successfully!");
   logger.info(`BeamLab Ultimate API running on http://localhost:${PORT}`);
   logger.info(`WebSocket server ready for real-time collaboration`);
   logger.info(`Security middleware active: helmet, rate limiting, logging`);
@@ -612,13 +608,3 @@ function gracefulShutdown(signal: string) {
 
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
-
-// Catch unhandled promise rejections & uncaught exceptions so the process
-// doesn't crash silently without any diagnostic output.
-process.on("unhandledRejection", (reason) => {
-  logger.error({ err: reason }, "Unhandled promise rejection");
-});
-process.on("uncaughtException", (err) => {
-  logger.fatal({ err }, "Uncaught exception — shutting down");
-  gracefulShutdown("uncaughtException");
-});

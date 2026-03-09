@@ -2,10 +2,14 @@
  * Robust fetch utility with timeouts and error handling
  */
 
+import { addCsrfHeader } from '../lib/security';
+
 export interface FetchOptions extends RequestInit {
     timeout?: number; // milliseconds
     retries?: number;
     retryDelay?: number;
+    authToken?: string;
+    withCsrf?: boolean;
 }
 
 export interface FetchResponse<T> {
@@ -26,6 +30,8 @@ export async function fetchWithTimeout<T>(
         timeout = 15000, // 15 seconds default
         retries = 2,
         retryDelay = 1000,
+        authToken,
+        withCsrf = false,
         ...fetchOptions
     } = options;
 
@@ -36,14 +42,22 @@ export async function fetchWithTimeout<T>(
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+            const headers = new Headers(fetchOptions.headers as HeadersInit | undefined);
+            if (!headers.has('Content-Type') && fetchOptions.body !== undefined) {
+                headers.set('Content-Type', 'application/json');
+            }
+            if (authToken) {
+                headers.set('Authorization', `Bearer ${authToken}`);
+            }
+            if (withCsrf) {
+                addCsrfHeader(headers);
+            }
+
             try {
                 const response = await fetch(url, {
                     ...fetchOptions,
                     signal: controller.signal,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...fetchOptions.headers,
-                    },
+                    headers,
                 });
 
                 clearTimeout(timeoutId);
@@ -67,6 +81,15 @@ export async function fetchWithTimeout<T>(
 
                     // Handle both old string errors and new envelope { error: { code, message } }
                     let errorMsg: string;
+                    if (typeof errorData?.success === 'boolean' && errorData?.success === false) {
+                        if (typeof errorData?.error === 'object' && errorData.error?.message) {
+                            errorMsg = errorData.error.message;
+                        } else if (typeof errorData?.error === 'string') {
+                            errorMsg = errorData.error;
+                        } else {
+                            errorMsg = errorData?.message || `Request failed with status ${response.status}`;
+                        }
+                    } else
                     if (typeof errorData?.error === 'object' && errorData.error?.message) {
                         errorMsg = errorData.error.message;
                     } else if (typeof errorData?.error === 'string') {
@@ -88,8 +111,22 @@ export async function fetchWithTimeout<T>(
 
                 if (contentType?.includes('application/json')) {
                     const raw = await response.json();
+
+                    // Handle envelope-level logical failures even with 2xx status
+                    if (raw && typeof raw === 'object' && raw.success === false) {
+                        const envelopeError =
+                            typeof raw.error === 'object' && raw.error?.message
+                                ? raw.error.message
+                                : (raw.error || raw.message || 'Request failed');
+                        return {
+                            success: false,
+                            error: envelopeError,
+                            status: response.status,
+                        };
+                    }
+
                     // Auto-unwrap API envelope: { success, data, requestId, ts }
-                    if (raw && typeof raw === 'object' && 'requestId' in raw && 'success' in raw && 'data' in raw) {
+                    if (raw && typeof raw === 'object' && 'success' in raw && raw.success === true && 'data' in raw) {
                         data = raw.data as T;
                     } else {
                         data = raw as T;
@@ -148,7 +185,7 @@ export async function fetchJson<T>(
  */
 export async function postJson<T>(
     url: string,
-    data: any,
+    data: unknown,
     options?: FetchOptions
 ): Promise<T> {
     return fetchJson<T>(url, {

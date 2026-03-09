@@ -10,6 +10,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion, Variants } from "framer-motion";
 import { UserButton } from "@clerk/clerk-react";
 import { useAuth, isUsingClerk } from "../providers/AuthProvider";
+import { SEO } from "../components/SEO";
 import {
   CheckCircle,
   Menu,
@@ -45,6 +46,8 @@ import {
   CTABanner,
   PerformanceMetrics,
 } from "../components/marketing/FeatureShowcase";
+import { API_CONFIG } from "../config/env";
+import { fetchJson } from "../utils/fetchUtils";
 
 // Animation variants
 const fadeInUp: Variants = {
@@ -69,6 +72,20 @@ export const LandingPage: FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [showcaseCards, setShowcaseCards] = useState<ShowcaseCard[]>([]);
+  const [showcaseUnavailable, setShowcaseUnavailable] = useState(false);
+
+  const mapStaticShowcaseCards = useCallback((): ShowcaseCard[] => {
+    return SCREENSHOT_CARDS.map((card, idx) => ({
+      id: `static-${idx}`,
+      title: card.title,
+      description: card.description,
+      category: card.category,
+      windowTitle: card.windowTitle,
+      bgGradient: card.bgGradient,
+      highlights: [card.category, "Live Analysis", "Design Checks", "Reports"],
+    }));
+  }, []);
 
   useEffect(() => {
     document.title = 'BeamLab – Professional Structural Analysis Platform';
@@ -76,6 +93,37 @@ export const LandingPage: FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadShowcaseCards = async () => {
+      try {
+        const payload = await fetchJson<{ cards: ShowcaseCard[] }>(`${API_CONFIG.baseUrl}/api/public/landing-showcase`, {
+          timeout: 8000,
+          retries: 1,
+        });
+
+        if (!cancelled) {
+          setShowcaseCards(payload.cards || []);
+          setShowcaseUnavailable(false);
+        }
+      } catch {
+        if (!cancelled) {
+          // Fail-fast in production: do not render hardcoded functional mock screenshots.
+          // In development, keep metadata-only static fallback for local UI continuity.
+          setShowcaseCards(import.meta.env.DEV ? mapStaticShowcaseCards() : []);
+          setShowcaseUnavailable(true);
+        }
+      }
+    };
+
+    loadShowcaseCards();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mapStaticShowcaseCards]);
   const { isSignedIn, isLoaded, signOut } = useAuth();
   const isClerkEnabled = isUsingClerk();
 
@@ -136,6 +184,34 @@ export const LandingPage: FC = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-500/30">
+      <SEO
+        title="Structural Engineering Platform"
+        description="Professional structural engineering platform. Design beams, columns, slabs, foundations, and steel connections per IS 456, IS 800, ACI 318, AISC 360, and Eurocode."
+        path="/"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'SoftwareApplication',
+          name: 'BeamLab',
+          applicationCategory: 'EngineeringApplication',
+          operatingSystem: 'Web',
+          url: 'https://beamlab.app',
+          description: 'Professional structural engineering platform for beam, column, slab, foundation, and steel connection design per IS 456, IS 800, ACI 318, AISC 360, and Eurocode.',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+          },
+          featureList: [
+            'RC Beam & Column Design (IS 456, ACI 318)',
+            'Steel Member Design (IS 800, AISC 360)',
+            'Composite Beam Design (AISC 360 Ch I, EN 1994)',
+            'Timber Design (NDS 2018, EN 1995)',
+            'Foundation Design',
+            'Structural Analysis (Direct Stiffness Method)',
+            'Load Combination Generator (IS 875, ASCE 7)',
+          ],
+        }}
+      />
       {/* Skip to main content - Accessibility */}
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -747,20 +823,31 @@ export const LandingPage: FC = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              {SCREENSHOT_CARDS.map((card, idx) => (
+              {showcaseCards.map((card, idx) => (
                 <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
                   className="group rounded-2xl overflow-hidden border border-slate-200/60 dark:border-white/[0.06] bg-slate-50 dark:bg-slate-900/50 hover:shadow-xl transition-all duration-300">
-                  {/* Mock screenshot area */}
+                  {/* Backend-driven showcase area */}
                   <div className={`aspect-[16/10] ${card.bgGradient} relative overflow-hidden`}>
                     {/* Window chrome */}
                     <div className="flex items-center gap-2 px-3 py-2 bg-black/20">
                       <div className="flex gap-1"><div className="w-2.5 h-2.5 rounded-full bg-red-500/70" /><div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" /><div className="w-2.5 h-2.5 rounded-full bg-green-500/70" /></div>
                       <span className="text-[10px] text-white/50 font-mono ml-2">{card.windowTitle}</span>
                     </div>
-                    {/* Screenshot content placeholder */}
-                    <div className="absolute inset-0 mt-8 p-4">
-                      {card.mockContent}
+                    <div className="absolute inset-0 mt-8 p-4 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        {card.highlights.slice(0, 4).map((highlight, highlightIdx) => (
+                          <div
+                            key={`${card.id}-highlight-${highlightIdx}`}
+                            className="inline-flex mr-2 mb-2 items-center rounded-full px-2.5 py-1 text-[10px] font-semibold bg-white/10 text-white/90 border border-white/20"
+                          >
+                            {highlight}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="rounded-md border border-white/20 bg-black/25 p-3 text-[11px] text-white/85">
+                        Live showcase metadata served by backend.
+                      </div>
                     </div>
                   </div>
                   <div className="p-5">
@@ -771,6 +858,12 @@ export const LandingPage: FC = () => {
                 </motion.div>
               ))}
             </div>
+
+            {showcaseUnavailable && (
+              <div className="mt-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+                Live showcase data is temporarily unavailable. Please retry shortly.
+              </div>
+            )}
 
             <div className="text-center mt-12">
               <Button onClick={() => navigate('/demo')} variant="premium" size="lg" className="group">
@@ -1345,6 +1438,16 @@ const SCREENSHOT_CARDS = [
     ),
   },
 ];
+
+interface ShowcaseCard {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  windowTitle: string;
+  bgGradient: string;
+  highlights: string[];
+}
 
 // Reviews Data
 const REVIEWS = [

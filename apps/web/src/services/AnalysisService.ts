@@ -12,6 +12,7 @@ import { analysisLogger } from "../utils/logger";
 import { API_CONFIG } from "../config/env";
 import { getOptimalDofPerNode } from "../utils/structureDimensionality";
 import { WorkerPool } from "./WorkerPool";
+import { fetchJson, fetchWithTimeout } from "../utils/fetchUtils";
 
 // ============================================
 // TYPES
@@ -685,40 +686,17 @@ class AnalysisService {
       }
 
       try {
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        // Create abort controller for fetch with 10s timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
         try {
-          const response = await fetch(
+          const data = await fetchJson<{ job?: any }>(
             `${CONFIG.API_BASE_URL}/api/analyze/job/${jobId}`,
             {
-              signal: controller.signal,
-              headers,
+              method: "GET",
+              authToken: token || undefined,
+              timeout: 10000,
+              retries: 0,
               cache: "no-store",
             },
           );
-
-          clearTimeout(timeoutId);
-
-          if (!response.ok) {
-            // Log but don't crash on temporary errors
-            if (response.status >= 500) {
-              analysisLogger.warn(
-                `Server error fetching job status: ${response.status}`,
-              );
-            } else if (response.status === 404) {
-              return { success: false, error: "Job not found" };
-            }
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          const data = await response.json();
           const job = data.job;
 
           if (!job) {
@@ -750,17 +728,12 @@ class AnalysisService {
           pollInterval = CONFIG.POLL_INTERVAL;
           pollCount = 0;
         } catch (fetchError) {
-          clearTimeout(timeoutId);
-
-          if (
-            fetchError instanceof TypeError &&
-            fetchError.message.includes("Failed to fetch")
-          ) {
+          if (fetchError instanceof Error && fetchError.message.toLowerCase().includes("job not found")) {
+            return { success: false, error: "Job not found" };
+          }
+          if (fetchError instanceof TypeError && fetchError.message.includes("Failed to fetch")) {
             analysisLogger.warn("Network error, will retry...");
-          } else if (
-            fetchError instanceof DOMException &&
-            fetchError.name === "AbortError"
-          ) {
+          } else if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
             analysisLogger.warn("Fetch timeout, retrying...");
           } else {
             analysisLogger.error("Poll fetch error:", fetchError);
@@ -794,28 +767,16 @@ class AnalysisService {
     token?: string | null,
   ): Promise<{ valid: boolean; errors: string[] }> {
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(
+      return await fetchJson<{ valid: boolean; errors: string[] }>(
         `${CONFIG.API_BASE_URL}/api/analyze/validate`,
         {
           method: "POST",
-          headers,
           body: JSON.stringify(model),
+          authToken: token || undefined,
+          timeout: 10000,
+          retries: 0,
         },
       );
-
-      if (response.ok) {
-        return await response.json();
-      }
-
-      // Fallback to local validation
-      return this.validateModelLocal(model);
     } catch {
       // Fallback to local validation if server unavailable
       return this.validateModelLocal(model);
@@ -836,34 +797,19 @@ class AnalysisService {
   ): Promise<AnalysisResult> {
     // Non-linear always runs on cloud due to complexity
     try {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
       // Route to Rust backend P-Delta solver (20x faster than Python)
       const API_URL = API_CONFIG.baseUrl;
-      const response = await fetch(`${API_URL}/api/advanced/pdelta`, {
+      return await fetchJson<AnalysisResult>(`${API_URL}/api/advanced/pdelta`, {
         method: "POST",
-        headers,
         body: JSON.stringify({
           input: model,
           max_iterations: settings?.iterations || 10,
           tolerance: settings?.tolerance || 1e-6,
         }),
+        authToken: token || undefined,
+        timeout: 120000,
+        retries: 0,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        return {
-          success: false,
-          error: error.detail || "Non-linear analysis failed",
-        };
-      }
-
-      return await response.json();
     } catch (error) {
       analysisLogger.error("Non-linear analysis error:", error);
       return {
