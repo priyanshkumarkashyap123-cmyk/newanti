@@ -6,6 +6,7 @@
  */
 
 import { API_CONFIG } from '../config/env';
+import { fetchWithTimeout, type FetchOptions } from '../utils/fetchUtils';
 
 const API_BASE = API_CONFIG.baseUrl;
 
@@ -82,25 +83,20 @@ class AuthService {
     // ========================================
     async signIn(credentials: SignInRequest): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/signin`, {
+            const response = await fetchWithTimeout<AuthResponse>(`${this.baseUrl}/signin`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify(credentials),
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Sign in failed',
-                    errors: data.errors
+                    message: response.error || 'Sign in failed'
                 };
             }
 
+            const data = response.data;
             return {
                 success: true,
                 user: data.user,
@@ -120,25 +116,20 @@ class AuthService {
     // ========================================
     async signUp(data: SignUpRequest): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/signup`, {
+            const response = await fetchWithTimeout<AuthResponse>(`${this.baseUrl}/signup`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify(data),
                 credentials: 'include'
             });
 
-            const result = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: result.message || 'Sign up failed',
-                    errors: result.errors
+                    message: response.error || 'Sign up failed'
                 };
             }
 
+            const result = response.data;
             return {
                 success: true,
                 user: result.user,
@@ -158,16 +149,13 @@ class AuthService {
     // ========================================
     async signOut(accessToken: string, refreshToken: string): Promise<boolean> {
         try {
-            await fetch(`${this.baseUrl}/signout`, {
+            const response = await fetchWithTimeout(`${this.baseUrl}/signout`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
+                authToken: accessToken,
                 body: JSON.stringify({ refreshToken }),
                 credentials: 'include'
             });
-            return true;
+            return response.success;
         } catch {
             return false;
         }
@@ -178,24 +166,20 @@ class AuthService {
     // ========================================
     async refreshToken(refreshToken: string): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/refresh`, {
+            const response = await fetchWithTimeout<AuthResponse>(`${this.baseUrl}/refresh`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ refreshToken }),
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Token refresh failed'
+                    message: response.error || 'Token refresh failed'
                 };
             }
 
+            const data = response.data;
             return {
                 success: true,
                 accessToken: data.accessToken,
@@ -214,25 +198,21 @@ class AuthService {
     // ========================================
     async getCurrentUser(accessToken: string): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/me`, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                },
+            const response = await fetchWithTimeout<any>(`${this.baseUrl}/me`, {
+                authToken: accessToken,
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Failed to get user'
+                    message: response.error || 'Failed to get user'
                 };
             }
 
             return {
                 success: true,
-                user: data
+                user: response.data
             };
         } catch (error) {
             return {
@@ -247,22 +227,17 @@ class AuthService {
     // ========================================
     async verifyEmail(accessToken: string, code: string): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/verify-email`, {
+            const response = await fetchWithTimeout<{ success: boolean; message?: string }>(`${this.baseUrl}/verify-email`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
+                authToken: accessToken,
                 body: JSON.stringify({ code }),
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Verification failed'
+                    message: response.error || 'Verification failed'
                 };
             }
 
@@ -280,20 +255,16 @@ class AuthService {
     // ========================================
     async resendVerificationEmail(accessToken: string): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/resend-verification`, {
+            const response = await fetchWithTimeout<{ success: boolean; message?: string }>(`${this.baseUrl}/resend-verification`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                },
+                authToken: accessToken,
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Failed to resend'
+                    message: response.error || 'Failed to resend'
                 };
             }
 
@@ -311,24 +282,19 @@ class AuthService {
     // ========================================
     async forgotPassword(request: PasswordResetRequest): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/forgot-password`, {
+            const response = await fetchWithTimeout<{ success: boolean; message?: string }>(`${this.baseUrl}/forgot-password`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify(request)
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Request failed'
+                    message: response.error || 'Request failed'
                 };
             }
 
-            return { success: true, message: data.message };
+            return { success: true, message: response.data.message };
         } catch (error) {
             return {
                 success: false,
@@ -342,25 +308,19 @@ class AuthService {
     // ========================================
     async resetPassword(request: PasswordResetConfirm): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/reset-password`, {
+            const response = await fetchWithTimeout<{ success: boolean; message?: string }>(`${this.baseUrl}/reset-password`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify(request)
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Reset failed',
-                    errors: data.errors
+                    message: response.error || 'Reset failed'
                 };
             }
 
-            return { success: true, message: data.message };
+            return { success: true, message: response.data.message };
         } catch (error) {
             return {
                 success: false,
@@ -378,27 +338,21 @@ class AuthService {
         newPassword: string
     ): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/change-password`, {
+            const response = await fetchWithTimeout<{ success: boolean; message?: string }>(`${this.baseUrl}/change-password`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
+                authToken: accessToken,
                 body: JSON.stringify({ currentPassword, newPassword }),
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Change failed',
-                    errors: data.errors
+                    message: response.error || 'Change failed'
                 };
             }
 
-            return { success: true, message: data.message };
+            return { success: true, message: response.data.message };
         } catch (error) {
             return {
                 success: false,
@@ -415,27 +369,21 @@ class AuthService {
         updates: ProfileUpdateRequest
     ): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/profile`, {
+            const response = await fetchWithTimeout<any>(`${this.baseUrl}/profile`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
+                authToken: accessToken,
                 body: JSON.stringify(updates),
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Update failed',
-                    errors: data.errors
+                    message: response.error || 'Update failed'
                 };
             }
 
-            return { success: true, user: data };
+            return { success: true, user: response.data };
         } catch (error) {
             return {
                 success: false,
@@ -449,22 +397,17 @@ class AuthService {
     // ========================================
     async deleteAccount(accessToken: string, password: string): Promise<AuthResponse> {
         try {
-            const response = await fetch(`${this.baseUrl}/delete-account`, {
+            const response = await fetchWithTimeout<{ success: boolean; message?: string }>(`${this.baseUrl}/delete-account`, {
                 method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
-                },
+                authToken: accessToken,
                 body: JSON.stringify({ password }),
                 credentials: 'include'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
+            if (!response.success || !response.data) {
                 return {
                     success: false,
-                    message: data.message || 'Deletion failed'
+                    message: response.error || 'Deletion failed'
                 };
             }
 
@@ -482,9 +425,8 @@ class AuthService {
     // ========================================
     async checkEmail(email: string): Promise<{ available: boolean }> {
         try {
-            const response = await fetch(`${this.baseUrl}/check-email?email=${encodeURIComponent(email)}`);
-            const data = await response.json();
-            return { available: data.available ?? false };
+            const response = await fetchWithTimeout<{ available: boolean }>(`${this.baseUrl}/check-email?email=${encodeURIComponent(email)}`, {});
+            return { available: response.data?.available ?? false };
         } catch {
             return { available: false };
         }

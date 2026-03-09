@@ -9,6 +9,7 @@
  */
 
 import { API_CONFIG } from '../config/env';
+import { fetchWithTimeout } from '../utils/fetchUtils';
 
 const API_BASE = API_CONFIG.pythonUrl;
 
@@ -60,14 +61,12 @@ class DatabaseServiceClass {
      */
     async saveAudit(record: AuditRecord): Promise<string | null> {
         try {
-            const response = await fetch(`${API_BASE}/db/audit`, {
+            const response = await fetchWithTimeout<{ id: string }>(`${API_BASE}/db/audit`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(record)
             });
-            if (response.ok) {
-                const result = await response.json();
-                return result.id;
+            if (response.success && response.data?.id) {
+                return response.data.id;
             }
             return null;
         } catch (e) {
@@ -83,9 +82,9 @@ class DatabaseServiceClass {
      */
     async getAuditTrail(projectId: string, limit: number = 100): Promise<AuditRecord[]> {
         try {
-            const response = await fetch(`${API_BASE}/db/audit/${projectId}?limit=${limit}`);
-            if (response.ok) {
-                return await response.json();
+            const response = await fetchWithTimeout<AuditRecord[]>(`${API_BASE}/db/audit/${projectId}?limit=${limit}`, {});
+            if (response.success && response.data) {
+                return response.data;
             }
             return this.getFromLocalStorage('audit', projectId);
         } catch (e) {
@@ -98,14 +97,12 @@ class DatabaseServiceClass {
      */
     async saveFeedback(record: FeedbackRecord): Promise<string | null> {
         try {
-            const response = await fetch(`${API_BASE}/db/feedback`, {
+            const response = await fetchWithTimeout<{ id: string }>(`${API_BASE}/db/feedback`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(record)
             });
-            if (response.ok) {
-                const result = await response.json();
-                return result.id;
+            if (response.success && response.data?.id) {
+                return response.data.id;
             }
             return null;
         } catch (e) {
@@ -124,9 +121,13 @@ class DatabaseServiceClass {
         corrections: number;
     }> {
         try {
-            const response = await fetch(`${API_BASE}/db/feedback/summary/${feature}`);
-            if (response.ok) {
-                return await response.json();
+            const response = await fetchWithTimeout<{
+                avgRating: number;
+                totalCount: number;
+                corrections: number;
+            }>(`${API_BASE}/db/feedback/summary/${feature}`, {});
+            if (response.success && response.data) {
+                return response.data;
             }
         } catch (e) {
             // Fallback
@@ -139,9 +140,8 @@ class DatabaseServiceClass {
      */
     async saveLearningData(data: LearningData): Promise<void> {
         try {
-            await fetch(`${API_BASE}/db/learning`, {
+            await fetchWithTimeout(`${API_BASE}/db/learning`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } catch (e) {
@@ -154,9 +154,9 @@ class DatabaseServiceClass {
      */
     async exportLearningData(feature: string): Promise<LearningData[]> {
         try {
-            const response = await fetch(`${API_BASE}/db/learning/export/${feature}`);
-            if (response.ok) {
-                return await response.json();
+            const response = await fetchWithTimeout<LearningData[]>(`${API_BASE}/db/learning/export/${feature}`, {});
+            if (response.success && response.data) {
+                return response.data;
             }
         } catch (e) {
             console.error('[DB] Failed to export learning data');

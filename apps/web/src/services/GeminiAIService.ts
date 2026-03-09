@@ -19,6 +19,7 @@ import { codeCompliance, IS800Checker, SteelSection, SteelMaterial, MemberForces
 import { connectionDesign, ConnectionDesign, ConnectionForces } from './ConnectionDesignService';
 import { API_CONFIG } from '../config/env';
 import { apiLogger } from '../lib/logging/logger';
+import { fetchWithTimeout } from '../utils/fetchUtils';
 
 // ============================================
 // TYPES
@@ -932,32 +933,30 @@ Provide detailed reasoning with formulas shown.`;
 
     const message = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
 
-    const response = await fetch(`${apiBaseUrl}/api/ai/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Include auth token if available
-        ...(typeof window !== 'undefined' && window.localStorage?.getItem('auth_token')
-          ? { Authorization: `Bearer ${window.localStorage.getItem('auth_token')}` }
-          : {}),
-      },
-      body: JSON.stringify({
-        message,
-        context: systemPrompt || undefined,
-      }),
-    });
+    const authToken = typeof window !== 'undefined' && window.localStorage?.getItem('auth_token') || undefined;
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `AI proxy returned ${response.status}`);
+    const response = await fetchWithTimeout<{ success: boolean; response?: string; error?: string }>(
+      `${apiBaseUrl}/api/ai/chat`,
+      {
+        method: 'POST',
+        authToken,
+        body: JSON.stringify({
+          message,
+          context: systemPrompt || undefined,
+        }),
+      }
+    );
+
+    if (!response.success || !response.data) {
+      throw new Error(response.error || `AI proxy request failed`);
     }
 
-    const data = await response.json();
+    const data = response.data;
     if (!data.success) {
       throw new Error(data.error || 'AI proxy request failed');
     }
 
-    return data.response;
+    return data.response || '';
   }
 
   async callGemini(prompt: string, systemPrompt?: string): Promise<string> {
@@ -997,19 +996,18 @@ Provide detailed reasoning with formulas shown.`;
 
     try {
       if (import.meta.env.DEV) apiLogger.info('Sending request');
-      const response = await fetch(url, {
+      const response = await fetchWithTimeout<any>(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!response.success || !response.data) {
+        const error = response.data || {};
         apiLogger.error('API error', { error });
-        throw new Error(error.error?.message || 'Gemini API request failed');
+        throw new Error(error.error?.message || response.error || 'Gemini API request failed');
       }
 
-      const data = await response.json();
+      const data = response.data;
       const result = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated';
       if (import.meta.env.DEV) apiLogger.info('Response received', { preview: result.substring(0, 100) });
       return result;
