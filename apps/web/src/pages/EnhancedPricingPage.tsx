@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { usePhonePePayment } from '../components/PhonePePayment';
 import { useAuth } from '../providers/AuthProvider';
+import { SEO } from '../components/SEO';
 import { useSubscription } from '../hooks/useSubscription';
 import {
   Check,
@@ -540,6 +541,11 @@ export const EnhancedPricingPage: FC = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
+      <SEO
+        title="Pricing"
+        description="BeamLab pricing plans for structural engineers. Free, Pro, and Enterprise tiers with full-featured design tools for IS 456, IS 800, ACI 318, and Eurocode."
+        path="/pricing"
+      />
       {/* Navigation */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-white dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

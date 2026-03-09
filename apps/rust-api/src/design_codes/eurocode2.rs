@@ -317,4 +317,73 @@ mod tests {
         // z = 460 - 0.4*200 = 380 mm, bounded to [0.5*460, 0.95*460] = [230, 437]
         assert!(z > 230.0 && z < 437.0);
     }
+
+    #[test]
+    fn test_ec2_is_adequate() {
+        let section = EC2Section {
+            name: "300x500".into(),
+            bwidth_mm: 300.0,
+            depth_mm: 500.0,
+            effective_depth_mm: 460.0,
+            as_mm2: 1005.3,
+            fyk_mpa: 500.0,
+            fck_mpa: 30.0,
+            cover_mm: 30.0,
+        };
+        let params = EC2DesignParams {
+            applied_moment_kNm: 100.0,
+            include_compression_steel: false,
+            as_prime_mm2: 0.0,
+            fyk_prime_mpa: 0.0,
+        };
+        let cap = calculate_bending_capacity(&section, &params);
+        assert!(is_adequate(&cap));
+    }
+
+    #[test]
+    fn test_ec2_maximum_steel() {
+        let as_max = check_maximum_steel(30.0, 500.0, 300.0, 460.0);
+        // ρ_max = 0.04, As_max = 0.04 * 300 * 460 = 5520 mm²
+        assert!((as_max - 5520.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_ec2_shear_capacity_concrete() {
+        // 300x500 beam, d=460mm, C30, ρ=0.02
+        let vrd_c = calculate_shear_capacity_concrete(300.0, 460.0, 30.0, 0.02);
+        // VRd,c should be in the range 80-150 kN for this beam size
+        assert!(vrd_c > 50.0 && vrd_c < 200.0);
+        // Must be positive
+        assert!(vrd_c > 0.0);
+    }
+
+    #[test]
+    fn test_ec2_shear_reinforcement_minimum() {
+        // VEd < VRd,c → minimum stirrups only
+        let vrd_c = calculate_shear_capacity_concrete(300.0, 460.0, 30.0, 0.02);
+        let result = design_shear_reinforcement(20.0, vrd_c, 300.0, 460.0, 30.0, 500.0);
+        assert!(result.passed);
+        assert!(result.stirrup_spacing_mm > 0.0);
+        assert!(result.stirrup_spacing_mm <= 300.0); // max min-stirrup spacing
+    }
+
+    #[test]
+    fn test_ec2_shear_reinforcement_required() {
+        // VEd > VRd,c → full shear design
+        let result = design_shear_reinforcement(200.0, 80.0, 300.0, 460.0, 30.0, 500.0);
+        assert!(result.stirrup_spacing_mm > 0.0);
+        // Closer spacing for higher shear
+        assert!(result.asw_s > 0.0);
+    }
+
+    #[test]
+    fn test_ec2_section_database() {
+        let sections = ec2_sections();
+        assert!(sections.len() >= 2);
+        for s in &sections {
+            assert!(s.bwidth_mm > 0.0);
+            assert!(s.effective_depth_mm > 0.0);
+            assert!(s.fck_mpa > 0.0);
+        }
+    }
 }

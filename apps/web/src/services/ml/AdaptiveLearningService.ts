@@ -125,7 +125,7 @@ class AdaptiveLearningServiceClass {
         const profile = this.getCurrentProfile();
         // Decrease frequency of AI suggestion
         // Increase frequency of user correction
-        console.log(`[AdaptiveLearning] Recorded correction: ${context}`);
+
     }
 
     /**

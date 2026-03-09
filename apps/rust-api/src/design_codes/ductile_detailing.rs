@@ -354,39 +354,121 @@ fn check_joint_shear_is(params: &DuctileDetailingParams) -> JointCheck {
     }
 }
 
-/// ACI 318 ductile detailing checks
+/// ACI 318-19 Ch. 18 ductile detailing checks (Special Moment Frames)
 fn check_aci_detailing(params: &DuctileDetailingParams) -> Result<DuctileDetailingResult, String> {
-    // ACI 318-19 Ch. 18: Similar logic but with ACI provisions
-    // Key differences:
-    // - Confinement: s ≤ min(4", least column dimension/4)
-    // - Hoop area: Ash ≥ 0.3 * (Ag/Ach - 1) * (fc'/fyh) or ≥ 0.09 * (fc'/fyh)
-    
     let mut messages = Vec::new();
-    messages.push("ACI 318 detailing: Refer to Chapter 18 (SMF provisions)".to_string());
 
-    // Placeholder implementation
-    Ok(DuctileDetailingResult {
-        passed: true,
-        confinement_check: ConfinementCheck {
-            required_spacing_mm: 0.0,
-            provided_spacing_mm: 0.0,
+    // 1. Confinement reinforcement per ACI 318-19 § 18.7 (columns), § 18.6 (beams)
+    let confinement = match params.member_type {
+        MemberType::Column => {
+            // ACI 318-19 § 18.7.5.3: Spacing s ≤ min(b/4, 6*db_long, so)
+            // so = 4 + (14 - hx)/3, bounded [4", 6"] → in mm: [102, 152]
+            let b_core = params.width_mm - 2.0 * params.cover_mm;
+            let d_core = params.depth_mm - 2.0 * params.cover_mm;
+            let spacing_1 = params.width_mm.min(params.depth_mm) / 4.0;
+            let spacing_2 = 6.0 * params.long_bar_dia_mm;
+            // so formula: hx ~ width/2 for simplicity
+            let hx_mm = params.width_mm / 2.0;
+            let so_mm = (102.0 + (356.0 - hx_mm) / 3.0).clamp(102.0, 152.0);
+            let required_spacing = spacing_1.min(spacing_2).min(so_mm);
+
+            // ACI 318-19 § 18.7.5.4: Ash ≥ max(0.3*s*bc*(Ag/Ach - 1)*(fc'/fyt), 0.09*s*bc*(fc'/fyt))
+            let ag = params.width_mm * params.depth_mm;
+            let ach = b_core * d_core;
+            let ratio = (ag / ach - 1.0).max(0.0);
+            let ash_1 = 0.3 * required_spacing * b_core * ratio * (params.fck_mpa / params.fy_mpa);
+            let ash_2 = 0.09 * required_spacing * b_core * (params.fck_mpa / params.fy_mpa);
+            let ash_required = ash_1.max(ash_2);
+
+            let tie_area = std::f64::consts::PI * params.tie_dia_mm.powi(2) / 4.0;
+            let ash_provided = 2.0 * tie_area;
+
+            ConfinementCheck {
+                required_spacing_mm: required_spacing,
+                provided_spacing_mm: required_spacing,
+                required_area_mm2: ash_required,
+                provided_area_mm2: ash_provided,
+                passed: ash_provided >= ash_required,
+                clause: "ACI 318-19 § 18.7.5.3, 18.7.5.4".to_string(),
+            }
+        }
+        MemberType::Beam => {
+            // ACI 318-19 § 18.6.4.4: Hoop spacing ≤ min(d/4, 8*db, 24*db_hoop, 300 mm)
+            let d_eff = params.depth_mm - params.cover_mm - params.long_bar_dia_mm / 2.0;
+            let s1 = d_eff / 4.0;
+            let s2 = 8.0 * params.long_bar_dia_mm;
+            let s3 = 24.0 * params.tie_dia_mm;
+            let s4 = 300.0;
+            let required_spacing = s1.min(s2).min(s3).min(s4);
+
+            ConfinementCheck {
+                required_spacing_mm: required_spacing,
+                provided_spacing_mm: required_spacing,
+                required_area_mm2: 0.0,
+                provided_area_mm2: 0.0,
+                passed: true,
+                clause: "ACI 318-19 § 18.6.4.4".to_string(),
+            }
+        }
+        _ => ConfinementCheck {
+            required_spacing_mm: 150.0,
+            provided_spacing_mm: 150.0,
             required_area_mm2: 0.0,
             provided_area_mm2: 0.0,
             passed: true,
-            clause: "ACI 318 § 18.7, 18.8".to_string(),
+            clause: "ACI 318-19 § 18.8".to_string(),
         },
-        spacing_check: SpacingCheck {
-            min_spacing_mm: 0.0,
-            max_spacing_mm: 0.0,
-            provided_spacing_mm: 0.0,
-            passed: true,
-            remarks: "ACI 318 § 18.6".to_string(),
-        },
-        splice_check: SpliceCheck {
-            splice_prohibited_zone_mm: 0.0,
-            recommended_locations: vec!["ACI 318 § 18.8.6".to_string()],
-            passed: true,
-        },
+    };
+
+    // 2. Bar spacing (same logic, ACI references)
+    let available_width = params.width_mm - 2.0 * params.cover_mm - 2.0 * params.tie_dia_mm;
+    let num_spaces = (params.num_long_bars - 1) as f64;
+    let provided_spacing = if num_spaces > 0.0 {
+        (available_width - params.num_long_bars as f64 * params.long_bar_dia_mm) / num_spaces
+    } else {
+        available_width
+    };
+    let min_spacing = params.long_bar_dia_mm.max(25.0);
+    let spacing = SpacingCheck {
+        min_spacing_mm: min_spacing,
+        max_spacing_mm: 300.0,
+        provided_spacing_mm: provided_spacing,
+        passed: provided_spacing >= min_spacing,
+        remarks: format!("ACI 318-19 § 25.2.1 — spacing {:.0} mm", provided_spacing),
+    };
+
+    // 3. Splice restrictions (ACI 318-19 § 18.6.3.3, § 18.7.4.3)
+    let splice_zone = match params.member_type {
+        MemberType::Column => 1.5 * params.depth_mm,
+        MemberType::Beam => 2.0 * params.depth_mm,
+        _ => params.depth_mm,
+    };
+    let splice = SpliceCheck {
+        splice_prohibited_zone_mm: splice_zone,
+        recommended_locations: vec![
+            "ACI 318-19 § 18.6.3.3: Lap splices not within 2h from beam face".to_string(),
+            "ACI 318-19 § 18.7.4.3: Column splices in center half of length".to_string(),
+        ],
+        passed: true,
+    };
+
+    if !confinement.passed {
+        messages.push(format!(
+            "⚠️ Confinement: Ash {:.0} mm² < required {:.0} mm² ({})",
+            confinement.provided_area_mm2, confinement.required_area_mm2, confinement.clause
+        ));
+    }
+    if !spacing.passed {
+        messages.push(format!("⚠️ Bar spacing: {}", spacing.remarks));
+    }
+
+    let passed = confinement.passed && spacing.passed && splice.passed;
+
+    Ok(DuctileDetailingResult {
+        passed,
+        confinement_check: confinement,
+        spacing_check: spacing,
+        splice_check: splice,
         joint_check: None,
         messages,
     })

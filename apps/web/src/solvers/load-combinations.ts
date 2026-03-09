@@ -93,6 +93,22 @@ export interface MemberEnvelopeResult {
   maxDeflectionZ?: number;
 }
 
+/** Station-wise envelope across all load combinations (for section-wise design) */
+export interface StationEnvelope {
+  /** Station distance from start (m) */
+  x: number;
+  /** Station ratio (0.0 – 1.0) */
+  x_ratio: number;
+  /** Governing moment at this station (kN·m, signed: + sagging, − hogging) */
+  mu_knm: number;
+  /** Governing shear at this station (kN, absolute) */
+  vu_kn: number;
+  /** Name of the combo governing moment at this station */
+  governing_combo_m: string;
+  /** Name of the combo governing shear at this station */
+  governing_combo_v: string;
+}
+
 /** Complete envelope result */
 export interface EnvelopeResult {
   /** Per-member envelope */

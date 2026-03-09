@@ -230,3 +230,46 @@ export const CablePatternDialog = lazy(() =>
     default: m.CablePatternDialog,
   })),
 );
+
+// ── Phase 4 – New workspace dialogs ──
+
+// Loading tab dialogs
+export const MomentLoadDialog = lazy(() => import("../dialogs/MomentLoadDialog"));
+export const SupportDisplacementDialog = lazy(() => import("../dialogs/SupportDisplacementDialog"));
+export const TrapezoidalLoadDialog = lazy(() => import("../dialogs/TrapezoidalLoadDialog"));
+export const PointLoadDialog = lazy(() => import("../dialogs/PointLoadDialog"));
+export const PressureLoadDialog = lazy(() => import("../dialogs/PressureLoadDialog"));
+export const PrestressLoadDialog = lazy(() => import("../dialogs/PrestressLoadDialog"));
+
+// Codal generator dialogs
+export const EN1998SeismicDialog = lazy(() => import("../dialogs/EN1998SeismicDialog"));
+export const IS875LiveLoadDialog = lazy(() => import("../dialogs/IS875LiveLoadDialog"));
+
+// Nonlinear analysis dialog
+export const NonlinearAnalysisDialog = lazy(() => import("../dialogs/NonlinearAnalysisDialog"));
+
+// Coming Soon stubs
+export const RCDetailingDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.RCDetailingDialog })),
+);
+export const SteelDetailingDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.SteelDetailingDialog })),
+);
+export const SectionOptimizationDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.SectionOptimizationDialog })),
+);
+export const DesignHubDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.DesignHubDialog })),
+);
+export const GeotechnicalDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.GeotechnicalDialog })),
+);
+export const HydraulicsDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.HydraulicsDialog })),
+);
+export const TransportDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.TransportDialog })),
+);
+export const ConstructionMgmtDialog = lazy(() =>
+  import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.ConstructionMgmtDialog })),
+);

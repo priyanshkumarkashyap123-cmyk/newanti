@@ -9,6 +9,7 @@
  */
 
 import { Link } from "react-router-dom";
+import { SEO } from '../components/SEO';
 import {
   Shield,
   ChevronRight,
@@ -99,6 +100,11 @@ export const PrivacyPolicyPageNew = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
+      <SEO
+        title="Privacy Policy"
+        description="BeamLab privacy policy — how we collect, use, and protect your data. Compliant with Indian IT Act 2000 and IT Rules 2021."
+        path="/privacy-policy"
+      />
       <PageHeader
         showAuth={true}
         navLinks={navLinks}

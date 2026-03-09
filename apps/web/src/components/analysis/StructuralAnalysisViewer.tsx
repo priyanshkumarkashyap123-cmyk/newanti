@@ -58,8 +58,14 @@ import {
   Printer,
   Lock,
   Unlock,
-  Crosshair
+  Crosshair,
+  Ruler
 } from 'lucide-react';
+import {
+  designSectionWiseFromAnalysis,
+  type FromAnalysisRequest,
+  type FromAnalysisResult,
+} from '@/api/design';
 
 // ============================================================================
 // TYPES
@@ -167,6 +173,11 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
   const [showSettings, setShowSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'structure' | 'results' | 'table'>('structure');
   
+  // Section-wise design state
+  const [designResult, setDesignResult] = useState<FromAnalysisResult | null>(null);
+  const [isDesigning, setIsDesigning] = useState(false);
+  const [designError, setDesignError] = useState<string | null>(null);
+  
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -234,6 +245,68 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
     setZoom(1);
     setPan({ x: 0, y: 0 });
   }, []);
+
+  // Design selected member section-wise via Rust API
+  const handleDesignMember = useCallback(async (memberId: number) => {
+    const member = members.find(m => m.id === memberId);
+    if (!member?.forces) return;
+
+    const startNode = nodes.find(n => n.id === member.startNode);
+    const endNode = nodes.find(n => n.id === member.endNode);
+    if (!startNode || !endNode) return;
+
+    const dx = endNode.x - startNode.x;
+    const dy = endNode.y - startNode.y;
+    const lengthMm = Math.sqrt(dx * dx + dy * dy);
+
+    setIsDesigning(true);
+    setDesignError(null);
+    setDesignResult(null);
+
+    try {
+      // Convert viewer forces (kN·m / kN) → API forces (N·mm / N)
+      const f = member.forces;
+      const request: FromAnalysisRequest = {
+        material: 'rc',
+        member_forces: [{
+          member_id: String(memberId),
+          start_node: String(member.startNode),
+          end_node: String(member.endNode),
+          length: lengthMm,
+          // [fx, fy, fz, mx, my, mz] — fy = shear (N), mz = moment (N·mm)
+          forces_start: [
+            (f.axial ?? 0) * 1000, // kN → N
+            f.startShear * 1000,    // kN → N
+            0,
+            0,
+            0,
+            f.startMoment * 1e6,   // kN·m → N·mm
+          ],
+          forces_end: [
+            -(f.axial ?? 0) * 1000,
+            f.endShear * 1000,
+            0,
+            0,
+            0,
+            f.endMoment * 1e6,
+          ],
+        }],
+        // Default RC parameters — user can override later
+        b: 300,
+        d: 500,
+        cover: 40,
+        fck: 25,
+        fy: 500,
+      };
+
+      const result = await designSectionWiseFromAnalysis(request);
+      setDesignResult(result);
+    } catch (err) {
+      setDesignError(err instanceof Error ? err.message : 'Design failed');
+    } finally {
+      setIsDesigning(false);
+    }
+  }, [members, nodes]);
 
   // Render support symbol
   const renderSupport = useCallback((node: AnalysisNode) => {
@@ -1032,6 +1105,48 @@ export const StructuralAnalysisViewer: React.FC<Props> = ({
                                   <p className="text-blue-600">V₁: {member.forces.startShear.toFixed(2)} kN</p>
                                   <p className="text-blue-600">V₂: {member.forces.endShear.toFixed(2)} kN</p>
                                 </div>
+                                <button
+                                  onClick={() => handleDesignMember(selectedElement.id)}
+                                  disabled={isDesigning}
+                                  className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-xs font-medium rounded-lg transition-colors"
+                                >
+                                  <Ruler className="w-3 h-3" />
+                                  {isDesigning ? 'Designing…' : 'Design Member'}
+                                </button>
+                                {designError && (
+                                  <p className="mt-2 text-xs text-red-500">{designError}</p>
+                                )}
+                                {designResult && (
+                                  <div className="mt-2 pt-2 border-t text-xs space-y-1">
+                                    <p className="font-medium text-slate-700 dark:text-slate-200">
+                                      Section-Wise Design ({designResult.demands_extracted} stations)
+                                    </p>
+                                    {designResult.material === 'rc' && (
+                                      <>
+                                        <p className={designResult.result.is_safe_everywhere ? 'text-green-600' : 'text-red-600'}>
+                                          {designResult.result.is_safe_everywhere ? '✓ Safe everywhere' : '✗ Inadequate at some stations'}
+                                        </p>
+                                        <p className="text-slate-500">
+                                          Economy: {(designResult.result.economy_ratio * 100).toFixed(0)}%
+                                        </p>
+                                        <p className="text-slate-500">
+                                          Critical UR(M): {(designResult.result.critical_section.utilization_M * 100).toFixed(0)}%
+                                          @ {designResult.result.critical_section.location}
+                                        </p>
+                                      </>
+                                    )}
+                                    {designResult.material === 'steel' && (
+                                      <>
+                                        <p className={designResult.result.passed ? 'text-green-600' : 'text-red-600'}>
+                                          {designResult.result.passed ? '✓ Safe everywhere' : '✗ Inadequate at some stations'}
+                                        </p>
+                                        <p className="text-slate-500">
+                                          Max UR: {(designResult.result.utilization * 100).toFixed(0)}%
+                                        </p>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
                               </>
                             )}
                           </>

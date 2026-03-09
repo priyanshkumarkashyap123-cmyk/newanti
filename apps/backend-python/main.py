@@ -17,6 +17,7 @@ except Exception as e:
     logger.warning("dotenv not available or failed: %s", e)
 
 from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -27,6 +28,23 @@ import importlib
 import importlib.util
 from contextlib import asynccontextmanager
 from datetime import datetime
+
+# ── Sentry Error Monitoring ──────────────────────────────────────────────────
+try:
+    import sentry_sdk
+    _sentry_dsn = os.getenv("SENTRY_DSN", "")
+    if _sentry_dsn:
+        sentry_sdk.init(
+            dsn=_sentry_dsn,
+            environment=os.getenv("ENVIRONMENT", "development"),
+            traces_sample_rate=0.2,
+            send_default_pii=False,
+        )
+        logger.info("Sentry initialized for Python backend")
+    else:
+        logger.info("SENTRY_DSN not set — Sentry disabled")
+except ImportError:
+    logger.info("sentry-sdk not installed — Sentry disabled")
 from request_logging import RequestLoggingMiddleware
 
 # Security middleware — rate limiting, auth verification, security headers
@@ -245,7 +263,7 @@ if HAS_SECURITY_MW:
 # Prevent memory exhaustion from oversized payloads.
 # Default: 10 MB. Analysis endpoints that genuinely need larger
 # payloads should use streaming or chunked uploads instead.
-MAX_BODY_SIZE_BYTES = int(os.getenv("MAX_REQUEST_BODY_MB", "10")) * 1024 * 1024
+MAX_BODY_SIZE_BYTES = int(os.getenv("MAX_REQUEST_BODY_MB", "5")) * 1024 * 1024
 
 class BodySizeLimitMiddleware(BaseHTTPMiddleware):
     """Reject requests with Content-Length exceeding the configured limit."""
@@ -257,7 +275,7 @@ class BodySizeLimitMiddleware(BaseHTTPMiddleware):
                 if int(content_length) > MAX_BODY_SIZE_BYTES:
                     return JSONResponse(
                         status_code=413,
-                        content={"success": False, "error": f"Request body too large (max {MAX_BODY_SIZE_BYTES // (1024*1024)} MB)"},
+                        content={"success": False, "error": f"Request body too large (max {MAX_BODY_SIZE_BYTES // (1024*1024)} MB)", "code": 413},
                     )
             except (ValueError, TypeError):
                 pass  # Non-numeric Content-Length — let downstream handle it
@@ -274,32 +292,35 @@ IS_PRODUCTION = os.getenv("ENVIRONMENT", "development").lower() in ("production"
 
 from starlette.requests import Request
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Return Pydantic validation errors in the shared { success, error, code } format."""
+    messages = [f"{e.get('loc', ['?'])[-1]}: {e.get('msg', 'invalid')}" for e in exc.errors()]
+    return JSONResponse(
+        status_code=422,
+        content={"success": False, "error": "; ".join(messages), "code": 422},
+    )
+
 @app.exception_handler(HTTPException)
 async def sanitized_http_exception_handler(request: Request, exc: HTTPException):
-    """Strip internal error details from 500 responses in production."""
+    """Return errors in the shared { success, error, code } format used by Node/Rust APIs."""
+    error_message = exc.detail
     if IS_PRODUCTION and exc.status_code >= 500:
         logger.error("Internal error on %s %s: %s", request.method, request.url.path, exc.detail)
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={"detail": "Internal server error. Please try again later."},
-        )
+        error_message = "Internal server error. Please try again later."
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": exc.detail},
+        content={"success": False, "error": error_message, "code": exc.status_code},
     )
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     """Catch-all for unhandled exceptions — never leak stack traces."""
     logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
-    if IS_PRODUCTION:
-        return JSONResponse(
-            status_code=500,
-            content={"detail": "Internal server error. Please try again later."},
-        )
+    error_message = "Internal server error. Please try again later." if IS_PRODUCTION else str(exc)
     return JSONResponse(
         status_code=500,
-        content={"detail": str(exc)},
+        content={"success": False, "error": error_message, "code": 500},
     )
 
 

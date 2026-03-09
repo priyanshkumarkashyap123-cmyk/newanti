@@ -270,7 +270,6 @@ export class HistoryManager<TState> {
       const data = localStorage.getItem(this.persistKey);
       if (data) {
         // Note: Commands are not persisted, only metadata
-        console.log('[History] Found persisted history metadata');
       }
     } catch {
       // Invalid data

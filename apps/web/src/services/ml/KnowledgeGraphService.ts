@@ -278,7 +278,7 @@ class KnowledgeGraphServiceClass {
             weight: 1.0
         });
 
-        console.log(`[KnowledgeGraph] Learned: ${problem.substring(0, 30)}...`);
+
     }
 
     /**

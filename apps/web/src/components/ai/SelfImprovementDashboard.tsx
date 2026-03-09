@@ -16,6 +16,16 @@ export const SelfImprovementDashboard: React.FC = () => {
     const [knowledgeStats, setKnowledgeStats] = useState<any>(null);
     const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
 
+    const downloadJson = (data: unknown, filename: string) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
     const loadData = async () => {
         const report = await selfImprovement.generateReport(7);
         queueMicrotask(() => {
@@ -211,8 +221,7 @@ export const SelfImprovementDashboard: React.FC = () => {
                     <button type="button"
                         onClick={async () => {
                             const report = await selfImprovement.generateReport(30);
-// console.log('Improvement Report:', report);
-                            alert(`Report generated with ${report.recommendations.length} recommendations`);
+                            downloadJson(report, `ai-self-improvement-report-${Date.now()}.json`);
                         }}
                         className="flex-1 py-2 bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-600 font-medium text-sm"
                     >

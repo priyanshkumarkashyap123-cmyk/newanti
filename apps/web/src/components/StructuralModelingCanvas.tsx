@@ -166,11 +166,9 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
         case CursorMode.SELECT: {
           // Select first non-empty result
           if (intersections.nodes.length > 0) {
-            console.log('Node clicked');
             setSelectedNodeIds(new Set());
             setSelectedMemberIds(new Set());
           } else if (intersections.members.length > 0) {
-            console.log('Member clicked');
             setSelectedNodeIds(new Set());
             setSelectedMemberIds(new Set());
           } else {
@@ -227,7 +225,6 @@ const ModelingCanvasInner: React.FC<StructuralModelingCanvasProps> = ({
 
           const state = stateMachineRef.current.getState();
           if (!state.selectedNodeId) {
-            console.log('First node selected');
             // Store first node ID from intersection
             // For now, we'd need to track node IDs in the geometry
             stateMachineRef.current.setSelectedNode('temp');

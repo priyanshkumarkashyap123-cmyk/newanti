@@ -175,7 +175,6 @@ export class CloudRenderingClient {
     });
 
     this.dataChannel.onopen = () => {
-      console.log('Input channel opened');
       this.flushInputQueue();
     };
 

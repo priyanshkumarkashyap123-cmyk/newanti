@@ -1,7 +1,12 @@
 import { colors } from '@/styles/theme';
 /**
- * IS800_SteelDesignEngine - IS 800:2007 Steel Design Checks
- * Comprehensive member design verification as per Indian Standards
+ * IS800_SteelDesignEngine - IS 800:2007 Steel Member Design Checks
+ * CANONICAL for: tension, compression, flexure, shear, and combined member checks.
+ * Used by: Optimizer (FSD section optimization)
+ *
+ * Related IS 800 engines (non-overlapping responsibilities):
+ *  - components/structural/SteelDesignEngine.ts  — Beam design with full LTB (Mcr, χ_LT)
+ *  - components/structural/ConnectionDesignEngine.ts — Bolted/welded connection design
  */
 
 // ============================================

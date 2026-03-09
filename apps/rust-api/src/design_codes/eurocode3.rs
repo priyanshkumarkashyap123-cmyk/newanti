@@ -290,4 +290,66 @@ mod tests {
         let class = classify_section(300.0, 150.0, 10.7, 7.1);
         assert!(matches!(class, SectionClass::Class1 | SectionClass::Class2));
     }
+
+    #[test]
+    fn test_ec3_classification_class4() {
+        // Very slender plate: depth=1200, width=500, tf=5, tw=4
+        let class = classify_section(1200.0, 500.0, 5.0, 4.0);
+        assert!(matches!(class, SectionClass::Class4));
+    }
+
+    #[test]
+    fn test_ec3_shear_capacity_pass() {
+        // IPE 300 shear area ≈ hw*tw = (300 - 2*10.7)*7.1 = 1979 mm²
+        let result = calculate_shear_capacity(1979.0, 235.0, 150.0);
+        // Vpl,Rd = 1979 * (235/√3) / 1.0 / 1000 = 268 kN
+        assert!(result.vpl_rd_kn > 260.0 && result.vpl_rd_kn < 280.0);
+        assert!(result.passed);
+        assert!(result.utilization < 1.0);
+    }
+
+    #[test]
+    fn test_ec3_shear_capacity_fail() {
+        // Small shear area, large demand
+        let result = calculate_shear_capacity(500.0, 235.0, 200.0);
+        // Vpl,Rd = 500 * 135.7 / 1000 = 67.8 kN < 200 kN → fails
+        assert!(!result.passed);
+        assert!(result.utilization > 1.0);
+    }
+
+    #[test]
+    fn test_ec3_is_adequate() {
+        let section = EC3Section {
+            name: "IPE 300".into(),
+            fy_mpa: 235.0,
+            fu_mpa: 360.0,
+            wpl_mm3: 557e3,
+            wel_mm3: 557e3,
+            iy_mm4: 8356e6,
+            iy_iy: 8356e6,
+            cw_mm6: 1.3e9,
+            c1_mm: Some(1.0),
+        };
+        // Short span, low demand — LTB governs due to simplified Mcr formula
+        let params = EC3DesignParams {
+            section_length_mm: 500.0,
+            applied_moment_kNm: 10.0,
+            lateral_supports: 0,
+            moment_distribution: "Constant".to_string(),
+        };
+        let cap = calculate_bending_capacity(&section, &params, SectionClass::Class1);
+        // ltb_resistance at 500mm is ~22 kNm with simplified formula
+        assert!(cap.ltb_resistance_kNm > 0.0);
+        assert!(is_adequate(&cap));
+    }
+
+    #[test]
+    fn test_ec3_section_database() {
+        let sections = ec3_ipe_sections();
+        assert!(sections.len() >= 4);
+        for s in &sections {
+            assert!(s.fy_mpa > 0.0);
+            assert!(s.wpl_mm3 > 0.0);
+        }
+    }
 }

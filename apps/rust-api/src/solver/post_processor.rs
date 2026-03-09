@@ -477,6 +477,128 @@ pub struct ForceTableRow {
     pub moment_z: f64,
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Design Demand Extraction (Analysis → Section-Wise Design Pipeline)
+// ═══════════════════════════════════════════════════════════════════════════
+
+use crate::design_codes::section_wise::{MomentType, SectionDemand, SectionLocation};
+
+/// Extract section-wise design demands from a `MemberDiagram`.
+///
+/// Converts 21-station SFD/BMD data into `Vec<SectionDemand>` suitable
+/// for `RCSectionWiseDesigner` or `SteelSectionWiseDesigner`.
+///
+/// - Uses `moment_z` for bending moments (strong-axis bending)
+/// - Uses `shear_y` for shear forces (transverse shear)
+/// - Signs preserved: positive moment = sagging, negative = hogging
+/// - Shear absolute values stored in `vu_kn`
+///
+/// **Units:** Input moments/shears from the solver are in N·mm / N.
+/// Convert to kN·m / kN by dividing by 1e6 / 1e3 respectively.
+pub fn extract_design_demands(diagram: &MemberDiagram) -> Vec<SectionDemand> {
+    let n = diagram.moment_z.len();
+    let l = diagram.member_length;
+
+    (0..n)
+        .map(|i| {
+            let mz = &diagram.moment_z[i];
+            let vy = &diagram.shear_y[i];
+
+            // Solver outputs in N·mm and N → convert to kN·m and kN
+            let mu_knm = mz.value / 1e6;
+            let vu_kn = vy.value.abs() / 1e3;
+
+            let moment_type = if mu_knm >= 0.0 {
+                MomentType::Sagging
+            } else {
+                MomentType::Hogging
+            };
+
+            SectionDemand {
+                location: SectionLocation {
+                    x_mm: mz.distance,
+                    x_ratio: mz.position,
+                    label: format!("{:.1}L", mz.position),
+                },
+                mu_knm,
+                vu_kn,
+                moment_type,
+            }
+        })
+        .collect()
+}
+
+/// Extract design demands from multiple diagrams (e.g., load combination envelope).
+///
+/// For each station takes the **worst-case envelope**:
+/// - Moment: max |Mu| across all diagrams, preserving sign of the governing case
+/// - Shear: max |Vu| across all diagrams
+///
+/// All diagrams must be for the same member and have the same number of stations.
+pub fn extract_envelope_demands(diagrams: &[MemberDiagram]) -> Result<Vec<SectionDemand>, String> {
+    if diagrams.is_empty() {
+        return Err("No diagrams provided for envelope extraction".into());
+    }
+
+    let n = diagrams[0].moment_z.len();
+    let l = diagrams[0].member_length;
+
+    // Verify all diagrams have same station count
+    for d in diagrams {
+        if d.moment_z.len() != n {
+            return Err(format!(
+                "Station count mismatch: expected {}, got {} for member {}",
+                n,
+                d.moment_z.len(),
+                d.member_id
+            ));
+        }
+    }
+
+    let demands: Vec<SectionDemand> = (0..n)
+        .map(|i| {
+            // Find governing moment (max absolute, preserve sign)
+            let mut gov_mu_nmm = diagrams[0].moment_z[i].value;
+            for d in &diagrams[1..] {
+                if d.moment_z[i].value.abs() > gov_mu_nmm.abs() {
+                    gov_mu_nmm = d.moment_z[i].value;
+                }
+            }
+
+            // Find governing shear (max absolute)
+            let gov_vu_n = diagrams
+                .iter()
+                .map(|d| d.shear_y[i].value.abs())
+                .fold(0.0_f64, f64::max);
+
+            let mu_knm = gov_mu_nmm / 1e6;
+            let vu_kn = gov_vu_n / 1e3;
+
+            let position = diagrams[0].moment_z[i].position;
+            let distance = diagrams[0].moment_z[i].distance;
+
+            let moment_type = if mu_knm >= 0.0 {
+                MomentType::Sagging
+            } else {
+                MomentType::Hogging
+            };
+
+            SectionDemand {
+                location: SectionLocation {
+                    x_mm: distance,
+                    x_ratio: position,
+                    label: format!("{:.1}L", position),
+                },
+                mu_knm,
+                vu_kn,
+                moment_type,
+            }
+        })
+        .collect();
+
+    Ok(demands)
+}
+
 impl Default for PostProcessor {
     fn default() -> Self {
         Self::new()
@@ -550,5 +672,99 @@ mod tests {
         let stress = pp.member_stress(&diagram, &section);
         assert!(stress.max_von_mises > 0.0);
         assert!(stress.utilization > 0.0);
+    }
+
+    #[test]
+    fn test_extract_design_demands_from_diagram() {
+        let pp = PostProcessor::new();
+
+        // Simply-supported beam with UDL: w=10 N/mm, L=6000 mm
+        // R = wL/2 = 30000 N, M_max = wL²/8 = 45e6 N·mm = 45 kN·m
+        let w = 10.0; // N/mm
+        let l = 6000.0;
+        let r = w * l / 2.0;
+        let m_fixed = w * l * l / 12.0;
+
+        let forces = MemberEndForces {
+            member_id: "B1".into(),
+            start_node: "N1".into(),
+            end_node: "N2".into(),
+            length: l,
+            forces_start: [0.0, r, 0.0, 0.0, 0.0, 0.0],
+            forces_end: [0.0, -r, 0.0, 0.0, 0.0, 0.0],
+            displacements_start: [0.0; 6],
+            displacements_end: [0.0; 6],
+        };
+
+        let dist_load = MemberDistLoad {
+            member_id: "B1".into(),
+            wy: w,
+            wz: 0.0,
+        };
+
+        let diagram = pp.member_diagram(&forces, Some(&dist_load));
+        let demands = extract_design_demands(&diagram);
+
+        assert_eq!(demands.len(), 21);
+
+        // Midspan (station 10) should have max moment ≈ 45 kN·m
+        let mid = &demands[10];
+        assert!(
+            (mid.mu_knm - 45.0).abs() < 1.0,
+            "Midspan Mu = {}, expected ~45 kN·m",
+            mid.mu_knm
+        );
+
+        // Midspan shear ≈ 0
+        assert!(mid.vu_kn < 1.0, "Midspan Vu = {}, expected ~0", mid.vu_kn);
+
+        // Support shear ≈ 30 kN
+        assert!(
+            (demands[0].vu_kn - 30.0).abs() < 1.0,
+            "Support Vu = {}, expected ~30 kN",
+            demands[0].vu_kn
+        );
+    }
+
+    #[test]
+    fn test_extract_envelope_demands() {
+        let pp = PostProcessor::new();
+        let l = 4000.0;
+
+        // Two load cases with different reactions
+        let make_diagram = |fy: f64, wy: f64| {
+            let forces = MemberEndForces {
+                member_id: "B1".into(),
+                start_node: "N1".into(),
+                end_node: "N2".into(),
+                length: l,
+                forces_start: [0.0, fy, 0.0, 0.0, 0.0, 0.0],
+                forces_end: [0.0, -fy, 0.0, 0.0, 0.0, 0.0],
+                displacements_start: [0.0; 6],
+                displacements_end: [0.0; 6],
+            };
+            let dl = MemberDistLoad {
+                member_id: "B1".into(),
+                wy,
+                wz: 0.0,
+            };
+            pp.member_diagram(&forces, Some(&dl))
+        };
+
+        // LC1: w=5 N/mm, R=10000 N
+        let d1 = make_diagram(5.0 * l / 2.0, 5.0);
+        // LC2: w=15 N/mm, R=30000 N (governs)
+        let d2 = make_diagram(15.0 * l / 2.0, 15.0);
+
+        let envelope = extract_envelope_demands(&[d1, d2]).unwrap();
+        assert_eq!(envelope.len(), 21);
+
+        // Midspan moment from LC2 should govern: wL²/8 = 15×4000²/8 = 30e6 N·mm = 30 kN·m
+        let mid = &envelope[10];
+        assert!(
+            mid.mu_knm.abs() > 20.0,
+            "Envelope Mu = {}, should be governed by heavier case",
+            mid.mu_knm
+        );
     }
 }

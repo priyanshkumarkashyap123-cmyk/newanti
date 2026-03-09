@@ -313,6 +313,14 @@ interface UIState {
   viewMode: '2D' | '3D'; // Default view mode
   setViewMode: (mode: '2D' | '3D') => void;
 
+  // Display units & preset selectors
+  unitSystem: 'kN_m' | 'kN_mm' | 'N_mm' | 'kip_ft' | 'lb_in';
+  setUnitSystem: (u: UIState['unitSystem']) => void;
+  designCodePreset: string | null; // e.g. 'IS800', 'AISC360' — consumed by design dialogs to pre-select tab
+  setDesignCodePreset: (p: string | null) => void;
+  designTabPreset: string | null;  // e.g. 'beam', 'column', 'slab' — consumed by concrete design dialog
+  setDesignTabPreset: (p: string | null) => void;
+
   // Onboarding coordination — only one overlay at a time
   activeOverlay: 'none' | 'onboarding' | 'tour' | 'quickstart';
   setActiveOverlay: (overlay: UIState['activeOverlay']) => void;
@@ -492,6 +500,14 @@ export const useUIStore = create<UIState>()(
       setRenderMode3D: (val) => set({ renderMode3D: val }),
       viewMode: '3D' as '2D' | '3D', // Default to 3D for immediate visual feedback
       setViewMode: (mode) => set({ viewMode: mode }),
+
+      // Display units & preset selectors
+      unitSystem: 'kN_m' as UIState['unitSystem'],
+      setUnitSystem: (u) => set({ unitSystem: u }),
+      designCodePreset: null as string | null,
+      setDesignCodePreset: (p) => set({ designCodePreset: p }),
+      designTabPreset: null as string | null,
+      setDesignTabPreset: (p) => set({ designTabPreset: p }),
 
       // ========================================
       // SET CATEGORY - THE "ONE-BY-ONE" LOGIC

@@ -2,7 +2,7 @@
  * StatusBar — Industry-standard status bar (STAAD Pro / ETABS style).
  * Extracted from ModernModeler.tsx.
  */
-import { FC, useState, useEffect, useMemo, memo } from "react";
+import { FC, useState, useEffect, useMemo, useRef, useCallback, memo } from "react";
 import { useModelStore } from "../../store/model";
 import { useUIStore } from "../../store/uiStore";
 import { useShallow } from "zustand/react/shallow";
@@ -10,6 +10,140 @@ import { useModelCounts, useDebouncedModelSelect } from "../../hooks/useDebounce
 import { CoordinateInputBar } from "../ui/CoordinateInputBar";
 import { API_CONFIG } from "../../config/env";
 import { useHealthCheck, type HealthStatus } from "../../lib/health-check";
+
+// ============================================
+// UNIT SYSTEM OPTIONS
+// ============================================
+
+const UNIT_OPTIONS: { id: NonNullable<ReturnType<typeof useUIStore.getState>['unitSystem']>; label: string }[] = [
+  { id: 'kN_m',  label: 'kN, m' },
+  { id: 'kN_mm', label: 'kN, mm' },
+  { id: 'N_mm',  label: 'N, mm' },
+  { id: 'kip_ft', label: 'kip, ft' },
+  { id: 'lb_in', label: 'lb, in' },
+];
+
+// ============================================
+// POPOVER HOOK — click-outside closes
+// ============================================
+
+function usePopover() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return { open, setOpen, ref };
+}
+
+// ============================================
+// LOAD CASE POPOVER
+// ============================================
+
+const LoadCasePopover: FC = memo(() => {
+  const { open, setOpen, ref } = usePopover();
+  const loadCases = useModelStore((s) => s.loadCases);
+  const activeLoadCaseId = useModelStore((s) => s.activeLoadCaseId);
+  const setActiveLoadCase = useModelStore((s) => s.setActiveLoadCase);
+
+  const activeName = useMemo(() => {
+    if (!activeLoadCaseId) return loadCases.length > 0 ? loadCases[0]?.name ?? 'DL+LL' : 'DL+LL';
+    return loadCases.find((lc) => lc.id === activeLoadCaseId)?.name ?? 'DL+LL';
+  }, [loadCases, activeLoadCaseId]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 hover:text-blue-400 transition-colors cursor-pointer"
+        title="Click to change load case"
+      >
+        <span className="text-slate-500 dark:text-slate-500">LC:</span>
+        <span className="text-cyan-400 font-mono">{activeName}</span>
+      </button>
+      {open && (
+        <div className="absolute bottom-full mb-1 left-0 min-w-[160px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 z-50 max-h-48 overflow-y-auto">
+          {loadCases.length === 0 ? (
+            <div className="px-3 py-2 text-[11px] text-slate-400 italic">No load cases defined</div>
+          ) : (
+            loadCases.map((lc) => (
+              <button
+                type="button"
+                key={lc.id}
+                onClick={() => { setActiveLoadCase(lc.id); setOpen(false); }}
+                className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
+                  lc.id === activeLoadCaseId
+                    ? 'bg-blue-500/10 text-blue-400 font-medium'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                {lc.name}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+});
+LoadCasePopover.displayName = 'LoadCasePopover';
+
+// ============================================
+// UNITS POPOVER
+// ============================================
+
+const UnitsPopover: FC = memo(() => {
+  const { open, setOpen, ref } = usePopover();
+  const unitSystem = useUIStore((s) => s.unitSystem);
+  const setUnitSystem = useUIStore((s) => s.setUnitSystem);
+
+  const activeLabel = UNIT_OPTIONS.find((u) => u.id === unitSystem)?.label ?? 'kN, m';
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 hover:text-blue-400 transition-colors cursor-pointer"
+        title="Click to change units"
+      >
+        <span className="text-slate-500 dark:text-slate-500">Units:</span>
+        <span className="text-slate-500 dark:text-slate-400">{activeLabel}</span>
+      </button>
+      {open && (
+        <div className="absolute bottom-full mb-1 left-0 min-w-[120px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 z-50">
+          {UNIT_OPTIONS.map((u) => (
+            <button
+              type="button"
+              key={u.id}
+              onClick={() => { setUnitSystem(u.id); setOpen(false); }}
+              className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
+                u.id === unitSystem
+                  ? 'bg-blue-500/10 text-blue-400 font-medium'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              {u.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+UnitsPopover.displayName = 'UnitsPopover';
+
+// ============================================
+// MAIN STATUS BAR
+// ============================================
 
 export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => void }> =
   memo(({ isAnalyzing, onOpenDiagnostics }) => {
@@ -166,18 +300,12 @@ export const StatusBar: FC<{ isAnalyzing: boolean; onOpenDiagnostics?: () => voi
           <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Active Load Case — Figma §6.1 */}
-          <span className="cursor-pointer hover:text-blue-400 transition-colors" title="Click to change load case">
-            <span className="text-slate-500 dark:text-slate-500">LC:</span>{" "}
-            <span className="text-cyan-400 font-mono">DL+LL</span>
-          </span>
+          <LoadCasePopover />
 
           <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 
           {/* Units — Figma §6.1 */}
-          <span className="cursor-pointer hover:text-blue-400 transition-colors" title="Click to change units">
-            <span className="text-slate-500 dark:text-slate-500">Units:</span>{" "}
-            <span className="text-slate-500 dark:text-slate-400">kN, m</span>
-          </span>
+          <UnitsPopover />
 
           <span className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
 

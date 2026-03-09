@@ -211,6 +211,8 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const hasResults = useModelStore((s) => s.analysisResults !== null);
   const openModal = useUIStore((s) => s.openModal);
   const setCategory = useUIStore((s) => s.setCategory);
+  const setDesignCodePreset = useUIStore((s) => s.setDesignCodePreset);
+  const setDesignTabPreset = useUIStore((s) => s.setDesignTabPreset);
   const { undo, redo } = useModelStoreTemporal.getState();
 
   const renderGeometryTab = useMemo(() => (
@@ -701,8 +703,8 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 size="large"
               />
               <StackedButtons>
-                <MiniButton icon={Settings} label="IS 800" onClick={() => openModal("steelDesignIS800")} />
-                <MiniButton icon={Settings} label="AISC 360" onClick={() => openModal("steelDesignAISC360")} />
+                <MiniButton icon={Settings} label="IS 800" onClick={() => { setDesignCodePreset('IS800'); openModal('steelDesign'); }} />
+                <MiniButton icon={Settings} label="AISC 360" onClick={() => { setDesignCodePreset('AISC360'); openModal('steelDesign'); }} />
               </StackedButtons>
             </ToolGroup>
             <ToolGroup label="RC Design">
@@ -714,12 +716,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 size="large"
               />
               <StackedButtons>
-                <MiniButton icon={Ruler} label="Beam Design" onClick={() => openModal("rcBeamDesign")} />
-                <MiniButton icon={Columns} label="Column Design" onClick={() => openModal("rcColumnDesign")} />
+                <MiniButton icon={Ruler} label="Beam Design" onClick={() => { setDesignTabPreset('beam'); openModal('concreteDesign'); }} />
+                <MiniButton icon={Columns} label="Column Design" onClick={() => { setDesignTabPreset('column'); openModal('concreteDesign'); }} />
               </StackedButtons>
               <StackedButtons>
-                <MiniButton icon={SquareStack} label="Slab Design" onClick={() => openModal("rcSlabDesign")} />
-                <MiniButton icon={Landmark} label="Footing Design" onClick={() => openModal("rcFootingDesign")} />
+                <MiniButton icon={SquareStack} label="Slab Design" onClick={() => { setDesignTabPreset('slab'); openModal('concreteDesign'); }} />
+                <MiniButton icon={Landmark} label="Footing Design" onClick={() => openModal('foundationDesign')} />
               </StackedButtons>
             </ToolGroup>
             <ToolGroup label="Connection">

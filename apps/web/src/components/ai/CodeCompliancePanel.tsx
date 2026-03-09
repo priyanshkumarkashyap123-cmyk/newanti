@@ -187,6 +187,16 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
     const [report, setReport] = useState<ComplianceReport | null>(null);
     const [loading, setLoading] = useState(false);
 
+    const downloadText = (content: string, filename: string, mimeType = 'text/plain;charset=utf-8') => {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
     const runCheck = useCallback(() => {
         if (!member || !forces) return;
 
@@ -325,8 +335,7 @@ export const CodeCompliancePanel: React.FC<CompliancePanelProps> = ({
                             <button type="button"
                                 onClick={() => {
                                     const summary = codeCompliance.generateSummary([report]);
-// console.log(summary);
-                                    alert('Report generated - check console');
+                                    downloadText(summary, `code-compliance-summary-${Date.now()}.txt`);
                                 }}
                                 className="flex-1 py-2 bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-600 font-medium"
                             >

@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::design_codes::{is_456, is_800, is_1893, is_875, serviceability};
+use crate::design_codes::{composite_beam, base_plate, ductile_detailing, aisc_360, eurocode3, eurocode2, aci_318, nds_2018};
 use crate::error::{ApiError, ApiResult};
 use axum::extract::State;
 use std::sync::Arc;
@@ -479,6 +480,404 @@ pub async fn crack_width(
     Ok(Json(result))
 }
 
+// ── SECTION-WISE BEAM DESIGN ────────────────────────────────────────────────
+// Designs beams by checking capacity ≥ demand at every station along the span
+
+use crate::design_codes::section_wise;
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SectionWiseRCReq {
+    /// Beam width (mm)
+    pub b: f64,
+    /// Effective depth (mm)
+    pub d: f64,
+    /// Clear cover (mm)
+    #[serde(default = "default_cover")]
+    pub cover: f64,
+    /// Concrete grade fck (N/mm²)
+    pub fck: f64,
+    /// Steel grade fy (N/mm²)
+    pub fy: f64,
+    /// Beam span (mm)
+    pub span: f64,
+    /// Factored UDL (kN/m) — used when section_forces is absent
+    #[serde(default)]
+    pub w_factored: f64,
+    /// Support condition: "simple", "fixed_fixed", "propped", "cantilever"
+    #[serde(default = "default_support")]
+    pub support_condition: String,
+    /// Number of stations (default 11)
+    #[serde(default = "default_n_sections")]
+    pub n_sections: usize,
+    /// Custom force array: [(x_mm, Mu_knm, Vu_kn), ...]
+    /// Overrides w_factored + support_condition when present
+    #[serde(default)]
+    pub section_forces: Vec<[f64; 3]>,
+}
+
+fn default_cover() -> f64 { 50.0 }
+fn default_support() -> String { "simple".to_string() }
+fn default_n_sections() -> usize { 11 }
+
+/// POST /api/design/section-wise/rc — Section-wise RC beam design per IS 456:2000
+///
+/// Checks capacity ≥ demand at every station along the beam span.
+/// Returns section checks, curtailment schedule, rebar zones, and economy ratio.
+///
+/// Two input modes:
+/// 1. **Auto-generated demands:** Provide `w_factored` + `support_condition` → generates
+///    Mu(x), Vu(x) envelope automatically.
+/// 2. **Custom forces:** Provide `section_forces` array → interpolates at n_sections stations.
+pub async fn section_wise_rc(
+    Json(req): Json<SectionWiseRCReq>,
+) -> ApiResult<Json<section_wise::SectionWiseResult>> {
+    // Generate demands
+    let n = if req.n_sections < 3 { 11 } else { req.n_sections };
+
+    let demands = if !req.section_forces.is_empty() {
+        let forces: Vec<(f64, f64, f64)> = req
+            .section_forces
+            .iter()
+            .map(|f| (f[0], f[1], f[2]))
+            .collect();
+        section_wise::generate_demands_from_forces(req.span, &forces, n)
+    } else if req.w_factored > 0.0 {
+        let condition = match req.support_condition.as_str() {
+            "fixed_fixed" => section_wise::SupportCondition::FixedFixed,
+            "propped" => section_wise::SupportCondition::Propped,
+            "cantilever" => section_wise::SupportCondition::Cantilever,
+            _ => section_wise::SupportCondition::Simple,
+        };
+        if condition == section_wise::SupportCondition::Simple {
+            section_wise::generate_simply_supported_demands(req.span, req.w_factored, n)
+        } else {
+            section_wise::generate_continuous_beam_demands(req.span, req.w_factored, &condition, n)
+        }
+    } else {
+        return Err(ApiError::BadRequest(
+            "Provide either w_factored (kN/m) or section_forces array".into(),
+        ));
+    };
+
+    let designer = section_wise::RCSectionWiseDesigner::new(req.fck, req.fy);
+    match designer.design_member_sectionwise(req.b, req.d, req.cover, req.span, &demands) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+// ── SECTION-WISE STEEL BEAM DESIGN ──────────────────────────────────────────
+// IS 800:2007 / AISC 360-22 section-wise steel beam design
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SectionWiseSteelReq {
+    /// Yield strength fy (N/mm²)
+    pub fy: f64,
+    /// Design code: "is800" or "aisc360"
+    #[serde(default = "default_steel_code")]
+    pub design_code: String,
+    /// ISMB section name from database (e.g. "ISMB300") — used when section is absent
+    #[serde(default)]
+    pub section_name: String,
+    /// Custom section properties — overrides section_name when present
+    #[serde(default)]
+    pub section: Option<section_wise::SteelSectionInput>,
+    /// Laterally unbraced length (mm)
+    pub unbraced_length: f64,
+    /// Beam span (mm)
+    pub span: f64,
+    /// True for hot-rolled sections (αLT = 0.21), false for welded (αLT = 0.49)
+    #[serde(default = "default_rolled")]
+    pub is_rolled: bool,
+    /// Factored UDL (kN/m) — used when section_forces is absent
+    #[serde(default)]
+    pub w_factored: f64,
+    /// Support condition: "simple", "fixed_fixed", "propped", "cantilever"
+    #[serde(default = "default_support")]
+    pub support_condition: String,
+    /// Number of stations (default 11)
+    #[serde(default = "default_n_sections")]
+    pub n_sections: usize,
+    /// Custom force array: [[x_mm, Mu_knm, Vu_kn], ...]
+    #[serde(default)]
+    pub section_forces: Vec<[f64; 3]>,
+}
+
+fn default_steel_code() -> String { "is800".to_string() }
+fn default_rolled() -> bool { true }
+
+/// POST /api/design/section-wise/steel — Section-wise steel beam design
+///
+/// Checks capacity ≥ demand at every station along the steel beam span.
+/// Supports IS 800:2007 (Cl. 8.2, 8.4, 9.2) and AISC 360-22 (Chapter F, G).
+///
+/// Returns section checks with LTB, high-shear interaction, stiffener zones.
+pub async fn section_wise_steel(
+    Json(req): Json<SectionWiseSteelReq>,
+) -> ApiResult<Json<section_wise::SteelSectionWiseResult>> {
+    // Resolve section
+    let section = if let Some(custom) = req.section {
+        custom
+    } else if !req.section_name.is_empty() {
+        section_wise::lookup_ismb(&req.section_name).ok_or_else(|| {
+            ApiError::BadRequest(format!(
+                "Unknown ISMB section: '{}'. Use one of: ISMB100–ISMB600.",
+                req.section_name
+            ))
+        })?
+    } else {
+        return Err(ApiError::BadRequest(
+            "Provide either section_name (e.g. 'ISMB300') or custom section properties".into(),
+        ));
+    };
+
+    // Resolve design code
+    let code = match req.design_code.to_lowercase().as_str() {
+        "aisc360" | "aisc" => section_wise::SteelDesignCode::Aisc360,
+        _ => section_wise::SteelDesignCode::Is800,
+    };
+
+    // Generate demands
+    let n = if req.n_sections < 3 { 11 } else { req.n_sections };
+    let demands = if !req.section_forces.is_empty() {
+        let forces: Vec<(f64, f64, f64)> = req.section_forces.iter().map(|f| (f[0], f[1], f[2])).collect();
+        section_wise::generate_demands_from_forces(req.span, &forces, n)
+    } else if req.w_factored > 0.0 {
+        let condition = match req.support_condition.as_str() {
+            "fixed_fixed" => section_wise::SupportCondition::FixedFixed,
+            "propped" => section_wise::SupportCondition::Propped,
+            "cantilever" => section_wise::SupportCondition::Cantilever,
+            _ => section_wise::SupportCondition::Simple,
+        };
+        if condition == section_wise::SupportCondition::Simple {
+            section_wise::generate_simply_supported_demands(req.span, req.w_factored, n)
+        } else {
+            section_wise::generate_continuous_beam_demands(req.span, req.w_factored, &condition, n)
+        }
+    } else {
+        return Err(ApiError::BadRequest(
+            "Provide either w_factored (kN/m) or section_forces array".into(),
+        ));
+    };
+
+    let designer = section_wise::SteelSectionWiseDesigner::new(req.fy, code);
+    match designer.design_member_sectionwise(&section, &demands, req.unbraced_length, req.is_rolled) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+// ── SECTION-WISE DESIGN FROM ANALYSIS ──────────────────────────────────────
+// Auto-extraction pipeline: analysis member forces → section-wise design
+
+use crate::solver::post_processor::{
+    self, extract_design_demands, extract_envelope_demands, MemberDistLoad, MemberEndForces,
+    PostProcessor,
+};
+
+/// Member end forces input (matches Rust solver output format)
+#[derive(Debug, Clone, Deserialize)]
+pub struct MemberForcesInput {
+    pub member_id: String,
+    pub start_node: String,
+    pub end_node: String,
+    /// Member length (mm)
+    pub length: f64,
+    /// [fx, fy, fz, mx, my, mz] at start — in N and N·mm
+    pub forces_start: [f64; 6],
+    /// [fx, fy, fz, mx, my, mz] at end — in N and N·mm
+    pub forces_end: [f64; 6],
+    /// [dx, dy, dz, rx, ry, rz] at start
+    #[serde(default)]
+    pub displacements_start: [f64; 6],
+    /// [dx, dy, dz, rx, ry, rz] at end
+    #[serde(default)]
+    pub displacements_end: [f64; 6],
+    /// Distributed load wy (N/mm in local Y) — optional
+    #[serde(default)]
+    pub dist_load_wy: f64,
+    /// Distributed load wz (N/mm in local Z) — optional
+    #[serde(default)]
+    pub dist_load_wz: f64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct FromAnalysisReq {
+    /// "rc" or "steel"
+    pub material: String,
+    /// Member forces from one or more load combinations.
+    /// If multiple, envelope (max |M|, max |V| per station) is used.
+    pub member_forces: Vec<MemberForcesInput>,
+    // ── RC-specific (material = "rc") ──
+    /// Beam width (mm)
+    #[serde(default)]
+    pub b: f64,
+    /// Effective depth (mm)
+    #[serde(default)]
+    pub d: f64,
+    /// Clear cover (mm)
+    #[serde(default = "default_cover")]
+    pub cover: f64,
+    /// Concrete grade fck (N/mm²)
+    #[serde(default)]
+    pub fck: f64,
+    /// Reinforcement yield strength fy (N/mm²)
+    #[serde(default)]
+    pub fy: f64,
+    // ── Steel-specific (material = "steel") ──
+    /// ISMB section name or custom section
+    #[serde(default)]
+    pub section_name: String,
+    /// Custom steel section (overrides section_name)
+    #[serde(default)]
+    pub section: Option<section_wise::SteelSectionInput>,
+    /// Yield strength for steel (N/mm²)
+    #[serde(default)]
+    pub steel_fy: f64,
+    /// Design code: "is800" or "aisc360"
+    #[serde(default = "default_steel_code")]
+    pub design_code: String,
+    /// Unbraced length (mm) — for LTB
+    #[serde(default)]
+    pub unbraced_length: f64,
+    /// Hot-rolled flag
+    #[serde(default = "default_rolled")]
+    pub is_rolled: bool,
+}
+
+/// Combined design result — either RC or Steel
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "material", rename_all = "snake_case")]
+pub enum FromAnalysisResult {
+    Rc {
+        demands_extracted: usize,
+        member_id: String,
+        span_mm: f64,
+        result: section_wise::SectionWiseResult,
+    },
+    Steel {
+        demands_extracted: usize,
+        member_id: String,
+        span_mm: f64,
+        result: section_wise::SteelSectionWiseResult,
+    },
+}
+
+/// POST /api/design/section-wise/from-analysis
+///
+/// Auto-extraction pipeline: takes raw member end forces from structural analysis,
+/// runs them through the post-processor to generate SFD/BMD at 21 stations,
+/// extracts design demands, and runs the section-wise designer.
+///
+/// Supports load combination envelope when multiple `member_forces` entries provided.
+pub async fn section_wise_from_analysis(
+    Json(req): Json<FromAnalysisReq>,
+) -> ApiResult<Json<FromAnalysisResult>> {
+    if req.member_forces.is_empty() {
+        return Err(ApiError::BadRequest("member_forces array is empty".into()));
+    }
+
+    let pp = PostProcessor::new();
+
+    // Build diagrams from member end forces
+    let diagrams: Vec<_> = req
+        .member_forces
+        .iter()
+        .map(|mf| {
+            let end_forces = MemberEndForces {
+                member_id: mf.member_id.clone(),
+                start_node: mf.start_node.clone(),
+                end_node: mf.end_node.clone(),
+                length: mf.length,
+                forces_start: mf.forces_start,
+                forces_end: mf.forces_end,
+                displacements_start: mf.displacements_start,
+                displacements_end: mf.displacements_end,
+            };
+            let dist_load = if mf.dist_load_wy.abs() > f64::EPSILON || mf.dist_load_wz.abs() > f64::EPSILON {
+                Some(MemberDistLoad {
+                    member_id: mf.member_id.clone(),
+                    wy: mf.dist_load_wy,
+                    wz: mf.dist_load_wz,
+                })
+            } else {
+                None
+            };
+            pp.member_diagram(&end_forces, dist_load.as_ref())
+        })
+        .collect();
+
+    let member_id = diagrams[0].member_id.clone();
+    let span_mm = diagrams[0].member_length;
+
+    // Extract demands (envelope if multiple combos)
+    let demands = if diagrams.len() == 1 {
+        extract_design_demands(&diagrams[0])
+    } else {
+        extract_envelope_demands(&diagrams).map_err(ApiError::BadRequest)?
+    };
+
+    let demands_count = demands.len();
+
+    match req.material.to_lowercase().as_str() {
+        "rc" | "concrete" => {
+            if req.b <= 0.0 || req.d <= 0.0 {
+                return Err(ApiError::BadRequest("RC design requires b > 0 and d > 0".into()));
+            }
+            if req.fck <= 0.0 || req.fy <= 0.0 {
+                return Err(ApiError::BadRequest("RC design requires fck > 0 and fy > 0".into()));
+            }
+
+            let designer = section_wise::RCSectionWiseDesigner::new(req.fck, req.fy);
+            match designer.design_member_sectionwise(req.b, req.d, req.cover, span_mm, &demands) {
+                Ok(result) => Ok(Json(FromAnalysisResult::Rc {
+                    demands_extracted: demands_count,
+                    member_id,
+                    span_mm,
+                    result,
+                })),
+                Err(e) => Err(ApiError::BadRequest(e)),
+            }
+        }
+        "steel" => {
+            let section = if let Some(custom) = req.section {
+                custom
+            } else if !req.section_name.is_empty() {
+                section_wise::lookup_ismb(&req.section_name).ok_or_else(|| {
+                    ApiError::BadRequest(format!("Unknown ISMB section: '{}'", req.section_name))
+                })?
+            } else {
+                return Err(ApiError::BadRequest(
+                    "Steel design requires section_name or custom section".into(),
+                ));
+            };
+
+            let fy = if req.steel_fy > 0.0 { req.steel_fy } else { 250.0 };
+            let unbraced = if req.unbraced_length > 0.0 { req.unbraced_length } else { span_mm };
+
+            let code = match req.design_code.to_lowercase().as_str() {
+                "aisc360" | "aisc" => section_wise::SteelDesignCode::Aisc360,
+                _ => section_wise::SteelDesignCode::Is800,
+            };
+
+            let designer = section_wise::SteelSectionWiseDesigner::new(fy, code);
+            match designer.design_member_sectionwise(&section, &demands, unbraced, req.is_rolled) {
+                Ok(result) => Ok(Json(FromAnalysisResult::Steel {
+                    demands_extracted: demands_count,
+                    member_id,
+                    span_mm,
+                    result,
+                })),
+                Err(e) => Err(ApiError::BadRequest(e)),
+            }
+        }
+        _ => Err(ApiError::BadRequest(format!(
+            "Unknown material '{}'. Use 'rc' or 'steel'.",
+            req.material
+        ))),
+    }
+}
+
     // ── BATCH PROCESSING ────────────────────────────────────────────────────────
     // Enterprise feature: Run multiple design checks in parallel for productivity
 
@@ -597,9 +996,92 @@ pub async fn crack_width(
         }))
     }
 
+    /// Serialize a result to JSON Value, returning Err(String) on serialization failure.
+    fn to_json<T: Serialize>(val: &T) -> Result<Value, String> {
+        serde_json::to_value(val).map_err(|e| format!("serialization error: {e}"))
+    }
+
+    /// Validate physical bounds on design check inputs.
+    /// Returns Ok(()) if valid, Err(message) describing the first violation.
+    fn validate_design_input(check: &DesignCheckType) -> Result<(), String> {
+        match check {
+            DesignCheckType::FlexuralCapacity { req } => {
+                if req.b <= 0.0 { return Err("b must be > 0".into()); }
+                if req.d <= 0.0 { return Err("d must be > 0".into()); }
+                if req.fck < 15.0 || req.fck > 100.0 { return Err("fck must be 15–100 MPa".into()); }
+                if req.fy < 250.0 || req.fy > 600.0 { return Err("fy must be 250–600 MPa".into()); }
+                if req.ast < 0.0 { return Err("ast must be ≥ 0".into()); }
+            }
+            DesignCheckType::ShearDesign { req } => {
+                if req.b <= 0.0 { return Err("b must be > 0".into()); }
+                if req.d <= 0.0 { return Err("d must be > 0".into()); }
+                if req.fck < 15.0 || req.fck > 100.0 { return Err("fck must be 15–100 MPa".into()); }
+            }
+            DesignCheckType::BiaxialColumn { req } => {
+                if req.b <= 0.0 || req.d <= 0.0 { return Err("b and d must be > 0".into()); }
+                if req.fck < 15.0 || req.fck > 100.0 { return Err("fck must be 15–100 MPa".into()); }
+                if req.fy < 250.0 || req.fy > 600.0 { return Err("fy must be 250–600 MPa".into()); }
+            }
+            DesignCheckType::DeflectionIs456 { req } => {
+                if req.span_mm <= 0.0 { return Err("span_mm must be > 0".into()); }
+                if req.effective_depth <= 0.0 { return Err("effective_depth must be > 0".into()); }
+            }
+            DesignCheckType::BoltBearing { req } => {
+                if req.bolt_dia <= 0.0 { return Err("bolt_dia must be > 0".into()); }
+                if req.plate_thk <= 0.0 { return Err("plate_thk must be > 0".into()); }
+                if req.n_bolts == 0 { return Err("n_bolts must be > 0".into()); }
+            }
+            DesignCheckType::BoltHsfg { req } => {
+                if req.bolt_dia <= 0.0 { return Err("bolt_dia must be > 0".into()); }
+                if req.n_bolts == 0 { return Err("n_bolts must be > 0".into()); }
+            }
+            DesignCheckType::FilletWeld { req } => {
+                if req.weld_size <= 0.0 { return Err("weld_size must be > 0".into()); }
+                if req.weld_length <= 0.0 { return Err("weld_length must be > 0".into()); }
+            }
+            DesignCheckType::BaseShear { req } => {
+                if req.seismic_weight_kn <= 0.0 { return Err("seismic_weight_kn must be > 0".into()); }
+                if req.period <= 0.0 { return Err("period must be > 0".into()); }
+                if req.response_reduction <= 0.0 { return Err("response_reduction must be > 0".into()); }
+            }
+            DesignCheckType::DriftCheck { req } => {
+                if req.storey_height_mm <= 0.0 { return Err("storey_height_mm must be > 0".into()); }
+            }
+            DesignCheckType::WindPerStorey { req } => {
+                if req.vb <= 0.0 { return Err("vb (basic wind speed) must be > 0".into()); }
+                if req.tributary_width <= 0.0 { return Err("tributary_width must be > 0".into()); }
+            }
+            DesignCheckType::Deflection { req } => {
+                if req.span_mm <= 0.0 { return Err("span_mm must be > 0".into()); }
+            }
+            DesignCheckType::CrackWidth { req } => {
+                if req.b <= 0.0 || req.d <= 0.0 { return Err("b and d must be > 0".into()); }
+                if req.bar_dia <= 0.0 { return Err("bar_dia must be > 0".into()); }
+                if req.bar_spacing <= 0.0 { return Err("bar_spacing must be > 0".into()); }
+            }
+            // Remaining checks: EqForces, PressureCoefficients, LiveLoad,
+            // LiveLoadReduction, Vibration, AutoSelect — no strict bounds needed
+            _ => {}
+        }
+        Ok(())
+    }
+
     /// Process a single design check (called in parallel by Rayon)
     fn process_design_check(input: &DesignCheckInput) -> DesignCheckResult {
         let start = std::time::Instant::now();
+
+        // Validate physical bounds before running the calculation
+        if let Err(msg) = validate_design_input(&input.check) {
+            let duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+            return DesignCheckResult {
+                success: false,
+                design_id: input.id.clone(),
+                check_type: "validation_error".to_string(),
+                result: None,
+                error: Some(msg),
+                duration_ms,
+            };
+        }
 
         let (check_type, result) = match &input.check {
             DesignCheckType::FlexuralCapacity { req } => {
@@ -617,13 +1099,13 @@ pub async fn crack_width(
                     xu_max_mm: xu_max,
                     section_type: if xu > xu_max { "over-reinforced".into() } else { "under-reinforced".into() },
                 };
-                ("flexural_capacity".to_string(), Ok(serde_json::to_value(&resp).unwrap()))
+                ("flexural_capacity".to_string(), to_json(&resp))
             },
             DesignCheckType::ShearDesign { req } => {
                 let result = is_456::design_shear(
                     req.vu_kn, req.b, req.d, req.fck, req.fy_stirrup, req.pt, req.asv,
                 );
-                ("shear_design".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("shear_design".to_string(), to_json(&result))
             },
             DesignCheckType::BiaxialColumn { req } => {
                 let result = is_456::check_column_biaxial(
@@ -631,21 +1113,21 @@ pub async fn crack_width(
                     req.pu_kn, req.mux_knm, req.muy_knm,
                     req.ast_total, req.d_dash, req.leff_x, req.leff_y,
                 );
-                ("biaxial_column".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("biaxial_column".to_string(), to_json(&result))
             },
             DesignCheckType::DeflectionIs456 { req } => {
                 let result = is_456::check_deflection(
                     req.span_mm, req.effective_depth, &req.support,
                     req.pt, req.pc, req.fy, req.actual_ast, req.required_ast,
                 );
-                ("deflection_is456".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("deflection_is456".to_string(), to_json(&result))
             },
             DesignCheckType::BoltBearing { req } => {
                 match is_800::design_bolt_bearing(
                     req.bolt_dia, &req.grade, req.plate_fu, req.plate_thk,
                     req.n_bolts, req.n_shear_planes, req.edge_dist, req.pitch,
                 ) {
-                    Ok(result) => ("bolt_bearing".to_string(), Ok(serde_json::to_value(&result).unwrap())),
+                    Ok(result) => ("bolt_bearing".to_string(), to_json(&result)),
                     Err(e) => ("bolt_bearing".to_string(), Err(e)),
                 }
             },
@@ -654,7 +1136,7 @@ pub async fn crack_width(
                     req.bolt_dia, &req.grade, req.n_bolts,
                     req.n_effective_interfaces, req.mu_f, req.kh,
                 ) {
-                    Ok(result) => ("bolt_hsfg".to_string(), Ok(serde_json::to_value(&result).unwrap())),
+                    Ok(result) => ("bolt_hsfg".to_string(), to_json(&result)),
                     Err(e) => ("bolt_hsfg".to_string(), Err(e)),
                 }
             },
@@ -662,14 +1144,14 @@ pub async fn crack_width(
                 let result = is_800::design_fillet_weld(
                     req.weld_size, req.weld_length, req.weld_fu, req.load_kn, &req.weld_type,
                 );
-                ("fillet_weld".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("fillet_weld".to_string(), to_json(&result))
             },
             DesignCheckType::AutoSelect { req } => {
                 let result = is_800::auto_select_section(
                     req.fy, req.pu_kn, req.mux_knm, req.muy_knm,
                     req.vu_kn, req.lx_mm, req.ly_mm,
                 );
-                ("auto_select".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("auto_select".to_string(), to_json(&result))
             },
             DesignCheckType::BaseShear { req } => {
                 match parse_zone(&req.zone) {
@@ -680,7 +1162,7 @@ pub async fn crack_width(
                                     req.seismic_weight_kn, req.period,
                                     zone, soil, req.importance, req.response_reduction,
                                 );
-                                ("base_shear".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                                ("base_shear".to_string(), to_json(&result))
                             }
                             Err(e) => ("base_shear".to_string(), Err(format!("{:?}", e))),
                         }
@@ -696,7 +1178,7 @@ pub async fn crack_width(
                             req.importance, req.response_reduction,
                             &req.building_type, req.base_dimension, &req.direction,
                         );
-                        ("eq_forces".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                        ("eq_forces".to_string(), to_json(&result))
                     }
                     (Err(e), _) | (_, Err(e)) => ("eq_forces".to_string(), Err(format!("{:?}", e))),
                 }
@@ -706,7 +1188,7 @@ pub async fn crack_width(
                     req.storey_height_mm, req.elastic_drift_mm,
                     req.response_reduction, req.storey_number,
                 );
-                ("drift_check".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("drift_check".to_string(), to_json(&result))
             },
             DesignCheckType::WindPerStorey { req } => {
                 match parse_terrain(&req.terrain) {
@@ -715,7 +1197,7 @@ pub async fn crack_width(
                             req.vb, &req.storey_heights, req.tributary_width,
                             terrain, req.cf, req.k1, req.k3,
                         );
-                        ("wind_per_storey".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                        ("wind_per_storey".to_string(), to_json(&result))
                     }
                     Err(e) => ("wind_per_storey".to_string(), Err(format!("{:?}", e))),
                 }
@@ -724,7 +1206,7 @@ pub async fn crack_width(
                 let result = is_875::pressure_coefficients_rectangular(
                     req.h_by_w, req.opening_ratio,
                 );
-                ("pressure_coefficients".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("pressure_coefficients".to_string(), to_json(&result))
             },
             DesignCheckType::LiveLoad { req } => {
                 let ll = is_875::live_load(&req.occupancy);
@@ -732,34 +1214,34 @@ pub async fn crack_width(
                     occupancy: req.occupancy.clone(),
                     live_load_kN_m2: ll,
                 };
-                ("live_load".to_string(), Ok(serde_json::to_value(&resp).unwrap()))
+                ("live_load".to_string(), to_json(&resp))
             },
             DesignCheckType::LiveLoadReduction { req } => {
                 let rf = is_875::live_load_reduction(req.tributary_area, req.num_floors);
                 let resp = LiveLoadReductionResp {
                     reduction_factor: rf,
                 };
-                ("live_load_reduction".to_string(), Ok(serde_json::to_value(&resp).unwrap()))
+                ("live_load_reduction".to_string(), to_json(&resp))
             },
             DesignCheckType::Deflection { req } => {
                 let result = serviceability::check_deflection(
                     &req.material, req.span_mm, req.actual_deflection_mm,
                     &req.member_type, &req.load_type, &req.support_condition,
                 );
-                ("deflection".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("deflection".to_string(), to_json(&result))
             },
             DesignCheckType::Vibration { req } => {
                 let result = serviceability::check_floor_vibration(
                     req.frequency_hz, &req.occupancy,
                 );
-                ("vibration".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("vibration".to_string(), to_json(&result))
             },
             DesignCheckType::CrackWidth { req } => {
                 let result = serviceability::estimate_crack_width(
                     req.b, req.d, req.big_d, req.cover,
                     req.bar_dia, req.bar_spacing, req.fs, &req.exposure,
                 );
-                ("crack_width".to_string(), Ok(serde_json::to_value(&result).unwrap()))
+                ("crack_width".to_string(), to_json(&result))
             },
         };
 
@@ -784,6 +1266,183 @@ pub async fn crack_width(
             },
         }
     }
+
+// ── Composite Beam Design ───────────────────────────────────────────────────
+
+pub async fn composite_beam_design(
+    Json(req): Json<composite_beam::CompositeBeamParams>,
+) -> ApiResult<Json<composite_beam::CompositeBeamResult>> {
+    composite_beam::design_composite_beam(&req)
+        .map(Json)
+        .map_err(|e| ApiError::BadRequest(e))
+}
+
+// ── Base Plate Design ───────────────────────────────────────────────────────
+
+pub async fn base_plate_design(
+    Json(req): Json<base_plate::BasePlateParams>,
+) -> ApiResult<Json<base_plate::BasePlateResult>> {
+    base_plate::design_base_plate(&req)
+        .map(Json)
+        .map_err(|e| ApiError::BadRequest(e))
+}
+
+// ── Ductile Detailing ───────────────────────────────────────────────────────
+
+pub async fn ductile_detailing_check(
+    Json(req): Json<ductile_detailing::DuctileDetailingParams>,
+) -> ApiResult<Json<ductile_detailing::DuctileDetailingResult>> {
+    ductile_detailing::check_ductile_detailing(&req)
+        .map(Json)
+        .map_err(|e| ApiError::BadRequest(e))
+}
+
+// ── AISC 360 Bending ───────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AiscBendingReq {
+    pub section: aisc_360::AiscSection,
+    pub params: aisc_360::AiscDesignParams,
+}
+
+pub async fn aisc_bending(
+    Json(req): Json<AiscBendingReq>,
+) -> ApiResult<Json<aisc_360::AiscCapacity>> {
+    let cap = aisc_360::calculate_bending_capacity(&req.section, &req.params);
+    Ok(Json(cap))
+}
+
+pub async fn aisc_sections(
+) -> ApiResult<Json<Vec<aisc_360::AiscSection>>> {
+    Ok(Json(aisc_360::aisc_w_sections()))
+}
+
+// ── Eurocode 3 ──────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC3BendingReq {
+    pub section: eurocode3::EC3Section,
+    pub params: eurocode3::EC3DesignParams,
+    #[serde(default = "default_ec3_class")]
+    pub section_class: String,
+}
+
+fn default_ec3_class() -> String { "Class1".to_string() }
+
+fn parse_ec3_class(s: &str) -> eurocode3::SectionClass {
+    match s {
+        "Class2" => eurocode3::SectionClass::Class2,
+        "Class3" => eurocode3::SectionClass::Class3,
+        "Class4" => eurocode3::SectionClass::Class4,
+        _ => eurocode3::SectionClass::Class1,
+    }
+}
+
+pub async fn ec3_bending(
+    Json(req): Json<EC3BendingReq>,
+) -> ApiResult<Json<eurocode3::EC3Capacity>> {
+    let class = parse_ec3_class(&req.section_class);
+    let cap = eurocode3::calculate_bending_capacity(&req.section, &req.params, class);
+    Ok(Json(cap))
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC3ShearReq {
+    pub av_mm2: f64,
+    pub fy_mpa: f64,
+    pub ved_kn: f64,
+}
+
+pub async fn ec3_shear(
+    Json(req): Json<EC3ShearReq>,
+) -> ApiResult<Json<eurocode3::EC3ShearCapacity>> {
+    Ok(Json(eurocode3::calculate_shear_capacity(req.av_mm2, req.fy_mpa, req.ved_kn)))
+}
+
+pub async fn ec3_sections(
+) -> ApiResult<Json<Vec<eurocode3::EC3Section>>> {
+    Ok(Json(eurocode3::ec3_ipe_sections()))
+}
+
+// ── Eurocode 2 ──────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC2BendingReq {
+    pub section: eurocode2::EC2Section,
+    pub params: eurocode2::EC2DesignParams,
+}
+
+pub async fn ec2_bending(
+    Json(req): Json<EC2BendingReq>,
+) -> ApiResult<Json<eurocode2::EC2Capacity>> {
+    let cap = eurocode2::calculate_bending_capacity(&req.section, &req.params);
+    Ok(Json(cap))
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC2ShearReq {
+    pub ved_kn: f64,
+    pub b_mm: f64,
+    pub d_mm: f64,
+    pub fck_mpa: f64,
+    pub fyk_mpa: f64,
+    pub rho_l: f64,
+}
+
+pub async fn ec2_shear(
+    Json(req): Json<EC2ShearReq>,
+) -> ApiResult<Json<eurocode2::EC2ShearCapacity>> {
+    let vrd_c = eurocode2::calculate_shear_capacity_concrete(req.b_mm, req.d_mm, req.fck_mpa, req.rho_l);
+    let result = eurocode2::design_shear_reinforcement(req.ved_kn, vrd_c, req.b_mm, req.d_mm, req.fck_mpa, req.fyk_mpa);
+    Ok(Json(result))
+}
+
+// ── ACI 318 ─────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AciBendingReq {
+    pub section: aci_318::ACISection,
+    pub params: aci_318::ACIDesignParams,
+}
+
+pub async fn aci_bending(
+    Json(req): Json<AciBendingReq>,
+) -> ApiResult<Json<aci_318::ACICapacity>> {
+    let cap = aci_318::calculate_bending_capacity(&req.section, &req.params);
+    Ok(Json(cap))
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AciShearReq {
+    pub b_mm: f64,
+    pub d_mm: f64,
+    pub fc_mpa: f64,
+    pub vu_kn: f64,
+    pub fyt_mpa: f64,
+}
+
+pub async fn aci_shear(
+    Json(req): Json<AciShearReq>,
+) -> ApiResult<Json<aci_318::ACIShearCapacity>> {
+    let vc = aci_318::calculate_shear_capacity_concrete(req.b_mm, req.d_mm, req.fc_mpa, 1.0);
+    let result = aci_318::design_shear_stirrups(req.vu_kn, vc, req.b_mm, req.d_mm, req.fyt_mpa, req.fc_mpa);
+    Ok(Json(result))
+}
+
+// ── NDS 2018 (Timber) ───────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct NdsBendingReq {
+    pub section: nds_2018::NDSSection,
+    pub params: nds_2018::NDSDesignParams,
+}
+
+pub async fn nds_bending(
+    Json(req): Json<NdsBendingReq>,
+) -> ApiResult<Json<nds_2018::NDSCapacity>> {
+    let cap = nds_2018::calculate_adjusted_bending_value(&req.section, &req.params);
+    Ok(Json(cap))
+}
 
 #[cfg(test)]
 mod tests {

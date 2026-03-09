@@ -33,6 +33,19 @@ import {
     exportSTAAD,
     exportAllCSV
 } from '../../services/ExportService';
+import {
+    dxfExport,
+    type DXFNode,
+    type DXFMember,
+    type DXFExportOptions,
+} from '../../services/export/DXFExportService';
+import {
+    ifcExport,
+    type IFCNode,
+    type IFCMember,
+    type IFCProject,
+    type IFCSectionProfile,
+} from '../../services/export/IFCExportService';
 
 // ============================================
 // TYPES
@@ -156,6 +169,99 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
     const [copied, setCopied] = useState(false);
     const [exporting, setExporting] = useState<string | null>(null);
 
+    const buildDXFData = useCallback((): { nodes: DXFNode[]; members: DXFMember[]; options: DXFExportOptions } => {
+        const nodes: DXFNode[] = exportData.nodes.map((n) => ({
+            id: n.id,
+            x: n.x,
+            y: n.y,
+            z: n.z,
+        }));
+
+        const nodeById = new Map(nodes.map((n) => [n.id, n]));
+
+        const members: DXFMember[] = exportData.members.map((m) => {
+            const start = nodeById.get(m.startNodeId);
+            const end = nodeById.get(m.endNodeId);
+            const dy = Math.abs((end?.y ?? 0) - (start?.y ?? 0));
+            const dx = Math.abs((end?.x ?? 0) - (start?.x ?? 0));
+            const dz = Math.abs((end?.z ?? 0) - (start?.z ?? 0));
+            const isColumn = dy > dx && dy > dz;
+
+            return {
+                id: m.id,
+                startNode: m.startNodeId,
+                endNode: m.endNodeId,
+                section: 'AUTO',
+                type: isColumn ? 'column' : 'beam',
+            };
+        });
+
+        const options: DXFExportOptions = {
+            viewType: 'plan',
+            includeLabels: true,
+            includeDimensions: true,
+            includeGrid: true,
+            scale: 1,
+        };
+
+        return { nodes, members, options };
+    }, [exportData]);
+
+    const buildIFCData = useCallback((): {
+        project: IFCProject;
+        nodes: IFCNode[];
+        members: IFCMember[];
+        sections: Map<string, IFCSectionProfile>;
+    } => {
+        const project: IFCProject = {
+            name: exportData.projectName,
+            description: 'BeamLab exported structural model',
+            author: exportData.engineer,
+            organization: exportData.client,
+        };
+
+        const nodes: IFCNode[] = exportData.nodes.map((n) => ({
+            id: n.id,
+            x: n.x,
+            y: n.y,
+            z: n.z,
+        }));
+
+        const nodeById = new Map(nodes.map((n) => [n.id, n]));
+
+        const members: IFCMember[] = exportData.members.map((m) => {
+            const start = nodeById.get(m.startNodeId);
+            const end = nodeById.get(m.endNodeId);
+            const dy = Math.abs((end?.y ?? 0) - (start?.y ?? 0));
+            const dx = Math.abs((end?.x ?? 0) - (start?.x ?? 0));
+            const dz = Math.abs((end?.z ?? 0) - (start?.z ?? 0));
+            const inferredType: IFCMember['type'] = dy > dx && dy > dz ? 'column' : 'beam';
+            const sectionName = 'AUTO_RECT_300x600';
+
+            return {
+                id: m.id,
+                name: `Member_${m.id}`,
+                startNode: m.startNodeId,
+                endNode: m.endNodeId,
+                type: inferredType,
+                section: sectionName,
+                material: 'Steel',
+            };
+        });
+
+        const sections = new Map<string, IFCSectionProfile>();
+        sections.set('AUTO_RECT_300x600', {
+            name: 'AUTO_RECT_300x600',
+            type: 'Rectangle',
+            dimensions: {
+                width: 0.3,
+                height: 0.6,
+            },
+        });
+
+        return { project, nodes, members, sections };
+    }, [exportData]);
+
     const handleExport = useCallback(async (option: ExportOption) => {
         setExporting(option.id);
         onExportStart?.();
@@ -186,13 +292,19 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                     setIsOpen(false);
                     return; // Exit early as no blob is downloaded
                 case 'dxf':
-                    // DXF export – placeholder until CAD service is wired
-                    blob = new Blob([`DXF export placeholder for ${exportData.projectName}`], { type: 'application/dxf' });
+                    {
+                        const { nodes, members, options } = buildDXFData();
+                        const dxfContent = dxfExport.exportToDXF(nodes, members, options);
+                        blob = new Blob([dxfContent], { type: 'application/dxf' });
+                    }
                     extension = 'dxf';
                     break;
                 case 'ifc':
-                    // IFC export – placeholder until BIM service is wired
-                    blob = new Blob([`IFC export placeholder for ${exportData.projectName}`], { type: 'application/x-step' });
+                    {
+                        const { project, nodes, members, sections } = buildIFCData();
+                        const ifcContent = ifcExport.exportToIFC(project, nodes, members, sections);
+                        blob = new Blob([ifcContent], { type: 'application/x-step' });
+                    }
                     extension = 'ifc';
                     break;
                 case 'image':
@@ -226,7 +338,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
             setExporting(null);
             setIsOpen(false);
         }
-    }, [exportData, onExportStart, onExportComplete]);
+    }, [buildDXFData, buildIFCData, exportData, onExportStart, onExportComplete]);
 
     const handleCopyToClipboard = useCallback(async () => {
         try {

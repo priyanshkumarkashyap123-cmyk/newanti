@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, FileText, Shield } from 'lucide-react';
 import { useState, useEffect, memo } from 'react';
 import { PageHeader, type NavLink } from '../components/layout';
+import { SEO } from '../components/SEO';
 
 interface Section {
     id: string;
@@ -49,6 +50,11 @@ export const TermsOfServicePage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+            <SEO
+                title="Terms of Service"
+                description="BeamLab terms of service — usage terms, licensing, liability limitations, and dispute resolution."
+                path="/terms-of-service"
+            />
             <PageHeader
                 showAuth={true}
                 navLinks={navLinks}

@@ -72,6 +72,12 @@ vi.mock('../../components/branding', () => ({
     Logo: (props: any) => React.createElement('div', { 'data-testid': 'logo', ...props }, 'BeamLab'),
 }));
 
+// Mock react-helmet-async to avoid HelmetProvider requirement in tests
+vi.mock('react-helmet-async', () => ({
+    Helmet: ({ children }: any) => React.createElement(React.Fragment, null, children),
+    HelmetProvider: ({ children }: any) => React.createElement(React.Fragment, null, children),
+}));
+
 // Mock marketing components
 vi.mock('../../components/marketing/FeatureShowcase', () => ({
     CompetitiveAdvantage: () => React.createElement('div', { 'data-testid': 'competitive-advantage' }),

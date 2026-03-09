@@ -234,7 +234,7 @@ export const ToolboxPage: FC = () => {
                         <nav className="hidden md:flex items-center gap-8">
                             <Link to="/tools" className="text-blue-400 font-medium">Tools</Link>
                             <Link to="/pricing" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Pricing</Link>
-                            <Link to="/docs" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Docs</Link>
+                            <Link to="/help" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Docs</Link>
                         </nav>
 
                         <div className="flex items-center gap-3">

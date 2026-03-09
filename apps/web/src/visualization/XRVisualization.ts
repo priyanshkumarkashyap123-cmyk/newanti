@@ -888,7 +888,7 @@ export class XRStructuralViewer {
           if (intersection) {
             const result = this.measurementTool.addPoint(intersection.point);
             if (result) {
-              console.log('Measurement:', result.displayString);
+              // Measurement result available via result.displayString
             }
           }
           break;

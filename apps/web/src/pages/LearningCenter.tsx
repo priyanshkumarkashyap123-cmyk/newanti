@@ -13,6 +13,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SEO } from '../components/SEO';
 import {
   ChevronRight,
   Play,
@@ -340,6 +341,11 @@ export function LearningCenter() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-950 dark:to-black">
+      <SEO
+        title="Learning Center"
+        description="Learn structural engineering with BeamLab's progressive learning paths — fundamentals, intermediate, advanced, and expert tracks with tutorials and projects."
+        path="/learning"
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">

@@ -2,7 +2,13 @@
  * ============================================================================
  * STEEL CONNECTION DESIGN ENGINE - IS 800:2007
  * ============================================================================
- * 
+ * CANONICAL for: Bolted connections, welded connections, and base plate design.
+ * Used by: structural calculation pipeline (via structural/index.ts)
+ *
+ * Related IS 800 engines (non-overlapping responsibilities):
+ *  - utils/IS800_SteelDesignEngine.ts — Member-level checks (tension/compression/combined)
+ *  - structural/SteelDesignEngine.ts — Beam flexural design with LTB
+ *
  * Complete steel connection design including:
  * - Bolted connections (bearing, friction grip)
  * - Welded connections (fillet, butt)

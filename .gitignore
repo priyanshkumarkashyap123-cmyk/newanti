@@ -151,3 +151,5 @@ restore_*.py
 # Temp/test artifacts
 .commit-msg.txt
 test_erfinv_*
+# Persisted data (PrismaClient file-backed stub)
+apps/api/data/

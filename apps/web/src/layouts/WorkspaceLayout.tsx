@@ -104,7 +104,6 @@ export const WorkspaceLayout: FC<WorkspaceLayoutProps> = ({ children }) => {
     // Handlers
     const handleToolSelect = (toolId: string) => {
         setActiveTool(toolId);
-        console.log('Tool selected:', toolId);
     };
 
     const handleGoHome = () => {

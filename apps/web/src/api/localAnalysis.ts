@@ -107,9 +107,6 @@ export async function runLocalAnalysis(): Promise<{
     const { entries, forces, dof, nodeMapping } =
       SparseMatrixAssembler.assemble(assemblerInput);
     const assemblyTime = performance.now() - startTime;
-    console.log(
-      `Matrix assembled in ${assemblyTime.toFixed(2)}ms. DOF: ${dof}, Non-zeros: ${entries.length}`,
-    );
 
     // 3. Prepare Input for Solver
     const input = {
@@ -131,10 +128,6 @@ export async function runLocalAnalysis(): Promise<{
     if (!result.success) {
       throw new Error(result.error || "Unknown solver error");
     }
-
-    console.log(
-      `Solver finished in ${result.solve_time_ms.toFixed(2)}ms (wasm time) / ${solverTotalTime.toFixed(2)}ms (total)`,
-    );
 
     // 5. Map Results back to Model
     // Result.displacements is a flat array [dof]

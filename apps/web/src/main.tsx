@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { AuthProvider } from './providers/AuthProvider';
 import { SubscriptionProvider } from './hooks/useSubscription';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -135,6 +136,7 @@ const initializeApp = async () => {
         }}
       >
         <BrowserRouter>
+          <HelmetProvider>
           <AuthProvider>
             <SubscriptionProvider>
               <AppProvider>
@@ -144,6 +146,7 @@ const initializeApp = async () => {
               </AppProvider>
             </SubscriptionProvider>
           </AuthProvider>
+          </HelmetProvider>
         </BrowserRouter>
       </ErrorBoundary>,
     );

@@ -404,7 +404,6 @@ export async function initWasmAnalysis(): Promise<boolean> {
       
       wasmModule = wasm as unknown as WasmModule;
       wasmReady = true;
-      console.log('[AdvancedAnalysis] WASM initialized successfully');
       return true;
     } catch (error) {
       console.error('[AdvancedAnalysis] WASM initialization failed:', error);

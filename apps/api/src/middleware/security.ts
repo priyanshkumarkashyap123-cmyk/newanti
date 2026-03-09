@@ -12,7 +12,7 @@ import { Request, Response, NextFunction, RequestHandler } from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { randomUUID } from "crypto";
-import { createClient, type RedisClientType } from "redis";
+import { createClient } from "redis";
 import { isTrustedOrigin } from "../config/cors.js";
 import logger from "../utils/logger.js";
 
@@ -34,10 +34,25 @@ const RATE_LIMIT_AI_MAX = envInt("RATE_LIMIT_AI_MAX", 60);
 const RATE_LIMIT_DISTRIBUTED = process.env["RATE_LIMIT_DISTRIBUTED"] === "true";
 const REDIS_URL = process.env["REDIS_URL"] || "redis://redis:6379";
 
-let redisClient: RedisClientType | null = null;
-let redisInitPromise: Promise<RedisClientType | null> | null = null;
+type AppRedisClient = ReturnType<typeof createClient>;
 
-async function getRedisClient(): Promise<RedisClientType | null> {
+let redisClient: AppRedisClient | null = null;
+let redisInitPromise: Promise<AppRedisClient | null> | null = null;
+
+export async function closeDistributedRateLimiter(): Promise<void> {
+  if (!redisClient) return;
+  try {
+    if (redisClient.isOpen) {
+      await redisClient.quit();
+    }
+  } catch (err) {
+    logger.warn({ err }, "Failed to close Redis rate-limit client cleanly");
+  } finally {
+    redisClient = null;
+  }
+}
+
+async function getRedisClient(): Promise<AppRedisClient | null> {
   if (!RATE_LIMIT_DISTRIBUTED) return null;
   if (redisClient?.isOpen) return redisClient;
   if (redisInitPromise) return redisInitPromise;
@@ -181,8 +196,69 @@ function createRateLimit(
   }) as unknown as RequestHandler;
 }
 
-// General API: 200 req/min per IP (supports 10K+ concurrent users)
-export const generalRateLimit: RequestHandler = createRateLimit(
+function createHybridRateLimit(
+  localLimiter: RequestHandler,
+  options: {
+    bucket: string;
+    max: number;
+    errorMessage: string;
+    skipPaths?: string[];
+    skipMethods?: string[];
+    keyGenerator?: (req: Request) => string;
+  },
+): RequestHandler {
+  return async (req, res, next) => {
+    if (!RATE_LIMIT_DISTRIBUTED) {
+      return localLimiter(req, res, next);
+    }
+
+    if (options.skipPaths?.some((p) => req.path.startsWith(p))) {
+      return next();
+    }
+    if (options.skipMethods?.includes(req.method)) {
+      return next();
+    }
+
+    const client = await getRedisClient();
+    if (!client) {
+      return localLimiter(req, res, next);
+    }
+
+    const identity = options.keyGenerator?.(req) ?? (req.ip || req.socket?.remoteAddress || "unknown");
+    const key = `rl:${options.bucket}:${identity}`;
+    const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+
+    try {
+      const current = await client.incr(key);
+      if (current === 1) {
+        await client.expire(key, windowSeconds);
+      }
+
+      const ttl = await client.ttl(key);
+      const resetSeconds = ttl > 0 ? ttl : windowSeconds;
+      const remaining = Math.max(options.max - current, 0);
+
+      res.setHeader("X-RateLimit-Limit", String(options.max));
+      res.setHeader("X-RateLimit-Remaining", String(remaining));
+      res.setHeader("X-RateLimit-Reset", String(resetSeconds));
+
+      if (current > options.max) {
+        return res.status(429).json({
+          success: false,
+          error: options.errorMessage,
+          retryAfter: resetSeconds,
+        });
+      }
+
+      return next();
+    } catch (err) {
+      logger.warn({ err }, `Distributed ${options.bucket} rate limit failed; using local limiter`);
+      return localLimiter(req, res, next);
+    }
+  };
+}
+
+const localGeneralRateLimit: RequestHandler = createRateLimit(
   RATE_LIMIT_WINDOW_MS, RATE_LIMIT_GENERAL_MAX,
   "Too many requests. Please try again later.",
   {
@@ -190,75 +266,60 @@ export const generalRateLimit: RequestHandler = createRateLimit(
     skipMethods: ["OPTIONS"],
   },
 );
-
-// Distributed general limiter (Redis) for multi-replica consistency.
-// Falls back to in-memory limiter chain if Redis is unavailable.
-export const distributedGeneralRateLimit: RequestHandler = async (req, res, next) => {
-  if (!RATE_LIMIT_DISTRIBUTED) return next();
-  if (req.method === "OPTIONS" || req.path.startsWith("/health")) return next();
-
-  const client = await getRedisClient();
-  if (!client) return next();
-
-  const ip = req.ip || req.socket?.remoteAddress || "unknown";
-  const key = `rl:general:${ip}`;
-  const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
-
-  try {
-    const current = await client.incr(key);
-    if (current === 1) {
-      await client.expire(key, windowSeconds);
-    }
-
-    const ttl = await client.ttl(key);
-    const resetSeconds = ttl > 0 ? ttl : windowSeconds;
-    const remaining = Math.max(RATE_LIMIT_GENERAL_MAX - current, 0);
-
-    res.setHeader("X-RateLimit-Limit", String(RATE_LIMIT_GENERAL_MAX));
-    res.setHeader("X-RateLimit-Remaining", String(remaining));
-    res.setHeader("X-RateLimit-Reset", String(resetSeconds));
-
-    if (current > RATE_LIMIT_GENERAL_MAX) {
-      return res.status(429).json({
-        success: false,
-        error: "Too many requests. Please try again later.",
-        retryAfter: resetSeconds,
-      });
-    }
-
-    return next();
-  } catch (err) {
-    logger.warn({ err }, "Distributed rate limiter check failed; using local limits");
-    return next();
-  }
-};
+export const generalRateLimit: RequestHandler = createHybridRateLimit(localGeneralRateLimit, {
+  bucket: "general",
+  max: RATE_LIMIT_GENERAL_MAX,
+  errorMessage: "Too many requests. Please try again later.",
+  skipPaths: ["/health"],
+  skipMethods: ["OPTIONS"],
+});
 
 // Analysis API: 20 req/min (expensive compute - still generous for real users)
-export const analysisRateLimit: RequestHandler = createRateLimit(
+const localAnalysisRateLimit: RequestHandler = createRateLimit(
   RATE_LIMIT_WINDOW_MS, RATE_LIMIT_ANALYSIS_MAX,
   "Analysis rate limit exceeded. Please wait before running more analyses.",
 );
+export const analysisRateLimit: RequestHandler = createHybridRateLimit(localAnalysisRateLimit, {
+  bucket: "analysis",
+  max: RATE_LIMIT_ANALYSIS_MAX,
+  errorMessage: "Analysis rate limit exceeded. Please wait before running more analyses.",
+});
 
 // Billing API: 5 req/min (prevent payment abuse)
-export const billingRateLimit: RequestHandler = createRateLimit(
+const localBillingRateLimit: RequestHandler = createRateLimit(
   RATE_LIMIT_WINDOW_MS, RATE_LIMIT_BILLING_MAX,
   "Billing rate limit exceeded. Please try again later.",
 );
+export const billingRateLimit: RequestHandler = createHybridRateLimit(localBillingRateLimit, {
+  bucket: "billing",
+  max: RATE_LIMIT_BILLING_MAX,
+  errorMessage: "Billing rate limit exceeded. Please try again later.",
+});
 
 // CRUD endpoints: 60 req/min
-export const crudRateLimit: RequestHandler = createRateLimit(
+const localCrudRateLimit: RequestHandler = createRateLimit(
   RATE_LIMIT_WINDOW_MS, RATE_LIMIT_CRUD_MAX,
   "Request rate limit exceeded. Please slow down.",
 );
+export const crudRateLimit: RequestHandler = createHybridRateLimit(localCrudRateLimit, {
+  bucket: "crud",
+  max: RATE_LIMIT_CRUD_MAX,
+  errorMessage: "Request rate limit exceeded. Please slow down.",
+});
 
 // Auth endpoints: 10 req/min (brute force protection)
-export const authRateLimit: RequestHandler = createRateLimit(
+const localAuthRateLimit: RequestHandler = createRateLimit(
   RATE_LIMIT_WINDOW_MS, RATE_LIMIT_AUTH_MAX,
   "Too many authentication attempts. Please try again later.",
 );
+export const authRateLimit: RequestHandler = createHybridRateLimit(localAuthRateLimit, {
+  bucket: "auth",
+  max: RATE_LIMIT_AUTH_MAX,
+  errorMessage: "Too many authentication attempts. Please try again later.",
+});
 
 // AI endpoints: 20 req/min per user
-export const aiRateLimit: RequestHandler = createRateLimit(
+const localAiRateLimit: RequestHandler = createRateLimit(
   RATE_LIMIT_WINDOW_MS, RATE_LIMIT_AI_MAX,
   "AI rate limit exceeded. Please wait before sending more requests.",
   {
@@ -272,6 +333,19 @@ export const aiRateLimit: RequestHandler = createRateLimit(
     },
   },
 );
+export const aiRateLimit: RequestHandler = createHybridRateLimit(localAiRateLimit, {
+  bucket: "ai",
+  max: RATE_LIMIT_AI_MAX,
+  errorMessage: "AI rate limit exceeded. Please wait before sending more requests.",
+  keyGenerator: (req) => {
+    const authFn = (req as unknown as Record<string, unknown>).auth;
+    const userId =
+      (typeof authFn === "function"
+        ? (authFn() as Record<string, unknown>)?.userId
+        : undefined) || req.ip;
+    return `ai:${userId}`;
+  },
+});
 
 // ============================================
 // REQUEST LOGGING — Structured JSON

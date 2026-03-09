@@ -109,5 +109,5 @@ export function createSampleStructure(): void {
         fy: -50 // 50 kN vertical
     });
 
-    console.log('✅ Sample portal frame created with 4 nodes, 3 members, and loads');
+
 }

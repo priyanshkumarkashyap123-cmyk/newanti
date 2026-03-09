@@ -62,9 +62,6 @@ export async function initUltraSolver(): Promise<boolean> {
     const wasm = await import('./solver_wasm.js');
     wasmModule = wasm;
     isInitialized = true;
-    console.log('🚀 BeamLab Ultra Solver initialized');
-    console.log('   Max DOF: 600,000 (100,000 nodes)');
-    console.log('   Solvers: AMG-PCG, Domain Decomposition');
     return true;
   } catch (error) {
     console.error('Failed to initialize WASM solver:', error);
@@ -311,7 +308,6 @@ export async function warmupSolver(): Promise<void> {
   const forces = [1, 2, 3];
   
   await solveUltraCoo(rows, cols, values, forces, 3);
-  console.log('✅ Solver warmed up');
 }
 
 // Auto-initialize when module loads

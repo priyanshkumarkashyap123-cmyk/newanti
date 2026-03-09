@@ -58,6 +58,23 @@ import {
   LoadCombinationsDialog,
   IS1893SeismicLoadDialog,
   SectionBrowserDialog,
+  MomentLoadDialog,
+  SupportDisplacementDialog,
+  TrapezoidalLoadDialog,
+  PointLoadDialog,
+  PressureLoadDialog,
+  PrestressLoadDialog,
+  EN1998SeismicDialog,
+  IS875LiveLoadDialog,
+  NonlinearAnalysisDialog,
+  RCDetailingDialog,
+  SteelDetailingDialog,
+  SectionOptimizationDialog,
+  DesignHubDialog,
+  GeotechnicalDialog,
+  HydraulicsDialog,
+  TransportDialog,
+  ConstructionMgmtDialog,
 } from './lazyDialogs';
 
 // ---- Types ----
@@ -179,6 +196,25 @@ export const ModalPortal: React.FC = memo(function ModalPortal() {
       <ConditionalModal modalKey="loadCombinationsDialog" component={LoadCombinationsDialog} />
       <ConditionalModal modalKey="is1893SeismicDialog" component={IS1893SeismicLoadDialog} />
       <ConditionalModal modalKey="sectionBrowserDialog" component={SectionBrowserDialog} />
+
+      {/* ── New workspace dialogs (Phase 4) ── */}
+      <ConditionalModal modalKey="momentLoadDialog" component={MomentLoadDialog} />
+      <ConditionalModal modalKey="supportDisplacement" component={SupportDisplacementDialog} />
+      <ConditionalModal modalKey="trapezoidalLoadDialog" component={TrapezoidalLoadDialog} />
+      <ConditionalModal modalKey="pointLoadDialog" component={PointLoadDialog} />
+      <ConditionalModal modalKey="pressureLoad" component={PressureLoadDialog} />
+      <ConditionalModal modalKey="prestressLoad" component={PrestressLoadDialog} />
+      <ConditionalModal modalKey="en1998SeismicDialog" component={EN1998SeismicDialog} />
+      <ConditionalModal modalKey="is875LiveLoad" component={IS875LiveLoadDialog} />
+      <ConditionalModal modalKey="nonlinearAnalysis" component={NonlinearAnalysisDialog} />
+      <ConditionalModal modalKey="rcDetailing" component={RCDetailingDialog} />
+      <ConditionalModal modalKey="steelDetailing" component={SteelDetailingDialog} />
+      <ConditionalModal modalKey="sectionOptimization" component={SectionOptimizationDialog} />
+      <ConditionalModal modalKey="designHub" component={DesignHubDialog} />
+      <ConditionalModal modalKey="geotechnicalDesign" component={GeotechnicalDialog} />
+      <ConditionalModal modalKey="hydraulicsDesign" component={HydraulicsDialog} />
+      <ConditionalModal modalKey="transportDesign" component={TransportDialog} />
+      <ConditionalModal modalKey="constructionMgmt" component={ConstructionMgmtDialog} />
 
       {/* ── Always-present (no visibility props, manages own state) ── */}
       <Suspense fallback={null}>

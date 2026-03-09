@@ -87,6 +87,9 @@ moka = { version = "0.12", features = ["future"] }
 # Hashing for cache keys
 sha2 = "0.10"
 
+# Error monitoring
+sentry = { version = "0.34", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "rustls"] }
+
 [dev-dependencies]
 tokio-test = "0.4"
 

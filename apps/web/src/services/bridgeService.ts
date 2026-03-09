@@ -10,6 +10,7 @@
 
 import { API_CONFIG } from "../config/env";
 import { logger } from '../lib/logging/logger';
+import { fetchJson, postJson, fetchWithTimeout } from '../utils/fetchUtils';
 
 // Use Rust API directly for templates (100x faster)
 const RUST_API = API_CONFIG.rustUrl;
@@ -132,11 +133,10 @@ export const Bridge = {
    */
   async checkConnection(): Promise<boolean> {
     try {
-      const response = await fetch(`${PYTHON_API}/health`, {
-        method: "GET",
-        signal: AbortSignal.timeout(3000),
+      const response = await fetchWithTimeout<{ status: string }>(`${PYTHON_API}/health`, {
+        timeout: 3000,
       });
-      return response.ok;
+      return response.success;
     } catch (e) {
       logger.warn('Bridge: Python server offline');
       return false;
@@ -177,39 +177,33 @@ export const Bridge = {
 
       const url = `${RUST_API}/api/templates/${templateTypeMap[type]}?${queryParams.toString()}`;
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetchWithTimeout<{ success: boolean; nodes: Record<string, unknown>[]; members: Record<string, unknown>[]; metadata?: Record<string, string> }>(url, {});
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        logger.error('Bridge: Template fetch failed', { error: errorData });
+      if (!response.success || !response.data) {
+        logger.error('Bridge: Template fetch failed');
         return {
           success: false,
-          error: errorData.detail || `HTTP ${response.status}`,
+          error: response.error || 'Template fetch failed',
         };
       }
 
-      const data = await response.json();
+      const data = response.data;
 
       // Convert Rust response to Bridge format
       const bridgeResponse: BridgeResponse = {
         success: data.success,
         model: {
-          nodes: data.nodes.map((n: Record<string, unknown>) => ({
-            id: n.id,
-            x: n.x,
-            y: n.y,
-            z: n.z,
+          nodes: data.nodes.map((n: Record<string, unknown>): BridgeNode => ({
+            id: String(n.id),
+            x: Number(n.x),
+            y: Number(n.y),
+            z: Number(n.z),
             support: "NONE",
           })),
-          members: data.members.map((m: Record<string, unknown>) => ({
-            id: m.id,
-            start_node: m.startNodeId || m.start_node_id,
-            end_node: m.endNodeId || m.end_node_id,
+          members: data.members.map((m: Record<string, unknown>): BridgeMember => ({
+            id: String(m.id),
+            start_node: String(m.startNodeId || m.start_node_id),
+            end_node: String(m.endNodeId || m.end_node_id),
             section_profile: "ISMB300",
           })),
           metadata: data.metadata,
@@ -240,23 +234,19 @@ export const Bridge = {
    */
   async generateFromPrompt(userText: string): Promise<BridgeResponse | null> {
     try {
-      const response = await fetch(`${PYTHON_API}/generate/ai`, {
+      const response = await fetchWithTimeout<BridgeResponse>(`${PYTHON_API}/generate/ai`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ prompt: userText }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+      if (!response.success || !response.data) {
         return {
           success: false,
-          error: errorData.detail || `HTTP ${response.status}`,
+          error: response.error || 'AI generation failed',
         };
       }
 
-      const data: BridgeResponse = await response.json();
+      const data = response.data;
 
       logger.info('Bridge: AI generated model', {
         nodeCount: data.model?.nodes.length,
@@ -284,19 +274,17 @@ export const Bridge = {
     support_count: number;
   } | null> {
     try {
-      const response = await fetch(`${PYTHON_API}/validate`, {
+      const response = await fetchWithTimeout<{
+        valid: boolean;
+        issues: string[];
+        node_count: number;
+        member_count: number;
+        support_count: number;
+      }>(`${PYTHON_API}/validate`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(model),
       });
-
-      if (!response.ok) {
-        return null;
-      }
-
-      return await response.json();
+      return response.success ? response.data ?? null : null;
     } catch (e) {
       logger.error('Bridge: Validation failed', { error: e });
       return null;
@@ -375,14 +363,11 @@ export const Bridge = {
    */
   async listProjects(): Promise<ProjectListItem[]> {
     try {
-      const response = await fetch(`${NODE_API}/api/project`, {
-        method: "GET",
-      });
-      if (!response.ok) return [];
-      const raw = await response.json();
-      // Unwrap API envelope: { success, data: { projects }, requestId, ts }
-      const payload = raw?.data ?? raw;
-      return payload.projects || (Array.isArray(payload) ? payload : []);
+      const response = await fetchWithTimeout<{ projects: ProjectListItem[] } | ProjectListItem[]>(`${NODE_API}/api/project`, {});
+      if (!response.success || !response.data) return [];
+      const result = response.data;
+      // Handle both envelope and direct array response
+      return Array.isArray(result) ? result : result.projects || [];
     } catch (e) {
       logger.error('Bridge: Failed to list projects', { error: e });
       return [];
@@ -394,16 +379,15 @@ export const Bridge = {
    */
   async saveProject(data: Record<string, unknown>): Promise<{ id: string; status: string } | null> {
     try {
-      const response = await fetch(`${NODE_API}/api/project`, {
+      const response = await fetchWithTimeout<{ project: { id: string; status: string } } | { id: string; status: string }>(`${NODE_API}/api/project`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        withCsrf: true,
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const raw = await response.json();
-      // Unwrap API envelope
-      const payload = raw?.data ?? raw;
-      return payload.project || payload;
+      if (!response.success || !response.data) return null;
+      const result = response.data;
+      // Handle both envelope and direct response
+      return 'project' in result ? result.project : result;
     } catch (e) {
       logger.error('Bridge: Failed to save project', { error: e });
       return null;
@@ -415,14 +399,11 @@ export const Bridge = {
    */
   async loadProject(id: string): Promise<ProjectData | null> {
     try {
-      const response = await fetch(`${NODE_API}/api/project/${id}`, {
-        method: "GET",
-      });
-      if (!response.ok) return null;
-      const raw = await response.json();
-      // Unwrap API envelope
-      const payload = raw?.data ?? raw;
-      return payload.project || payload;
+      const response = await fetchWithTimeout<{ project: ProjectData } | ProjectData>(`${NODE_API}/api/project/${id}`, {});
+      if (!response.success || !response.data) return null;
+      const result = response.data;
+      // Handle both envelope and direct response
+      return ('project' in result ? result.project : result) as ProjectData;
     } catch (e) {
       logger.error('Bridge: Failed to load project', { error: e });
       return null;
@@ -434,10 +415,11 @@ export const Bridge = {
    */
   async deleteProject(id: string): Promise<boolean> {
     try {
-      const response = await fetch(`${NODE_API}/api/project/${id}`, {
+      const response = await fetchWithTimeout(`${NODE_API}/api/project/${id}`, {
         method: "DELETE",
+        withCsrf: true,
       });
-      return response.ok;
+      return response.success;
     } catch (e) {
       return false;
     }
@@ -452,12 +434,11 @@ export const Bridge = {
    */
   async trainPINN(config: Record<string, unknown>): Promise<PINNTrainResult | null> {
     try {
-      const response = await fetch(`${PYTHON_API}/pinn/train`, {
+      const response = await fetchWithTimeout<PINNTrainResult>(`${PYTHON_API}/pinn/train`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config),
       });
-      return await response.json();
+      return response.success ? response.data ?? null : null;
     } catch (e) {
       logger.error('Bridge: PINN training failed', { error: e });
       return null;
@@ -469,10 +450,8 @@ export const Bridge = {
    */
   async getPINNStatus(jobId: string): Promise<PINNStatusResult | null> {
     try {
-      const response = await fetch(`${PYTHON_API}/pinn/status/${jobId}`, {
-        method: "GET",
-      });
-      return await response.json();
+      const response = await fetchWithTimeout<PINNStatusResult>(`${PYTHON_API}/pinn/status/${jobId}`, {});
+      return response.success ? response.data ?? null : null;
     } catch (e) {
       return null;
     }
@@ -483,12 +462,11 @@ export const Bridge = {
    */
   async predictPINN(modelId: string, points = 100): Promise<Record<string, unknown> | null> {
     try {
-      const response = await fetch(`${PYTHON_API}/pinn/predict`, {
+      const response = await fetchWithTimeout<Record<string, unknown>>(`${PYTHON_API}/pinn/predict`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model_id: modelId, num_points: points }),
       });
-      return await response.json();
+      return response.success ? response.data ?? null : null;
     } catch (e) {
       return null;
     }

@@ -84,6 +84,8 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
   const [outputMemberForces, setOutputMemberForces] = useState(true);
   const [outputBaseShear, setOutputBaseShear] = useState(true);
   const [outputInterval, setOutputInterval] = useState(1); // Every nth step
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [runMessage, setRunMessage] = useState<string | null>(null);
 
   // Computed Rayleigh alpha/beta from frequencies
   useMemo(() => {
@@ -131,18 +133,69 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
     setRecords(prev => prev.map(r => r.id === id ? { ...r, scaleFactor: scale } : r));
   };
 
-  const handleRun = useCallback(() => {
-    // In production, this would dispatch to the Rust backend time_history.rs
-    // For now, log the configuration
-    console.log('Time History Analysis Config:', {
-      records: records.map(r => ({ name: r.name, direction: r.direction, scaleFactor: r.scaleFactor })),
+  const handleRun = useCallback(async () => {
+    const payload = {
+      records: records.map(r => ({
+        name: r.name,
+        direction: r.direction,
+        scaleFactor: r.scaleFactor,
+        dt: r.dt,
+        nPoints: r.nPoints,
+        duration: r.duration,
+        data: r.data,
+      })),
       integration: { method: integrationMethod, beta: newmarkBeta, gamma: newmarkGamma, theta: wilsonTheta },
       damping: { model: dampingModel, ratio: dampingRatio, alpha: rayleighAlpha, beta: rayleighBeta },
       time: { total: totalTime, step: timeStep },
+      output: {
+        nodeDisplacements: outputNodeDisp,
+        nodeVelocities: outputNodeVel,
+        nodeAccelerations: outputNodeAccel,
+        memberForces: outputMemberForces,
+        baseShear: outputBaseShear,
+        interval: outputInterval,
+      },
       numModes,
-    });
-    alert('Time History Analysis configuration prepared. Connect to Rust backend endpoint /api/analysis/time-history for execution.');
-  }, [records, integrationMethod, dampingModel, dampingRatio, newmarkBeta, newmarkGamma, wilsonTheta, totalTime, timeStep, numModes, rayleighAlpha, rayleighBeta]);
+    };
+
+    setIsSubmitting(true);
+    setRunMessage(null);
+
+    try {
+      const response = await fetch('/api/analysis/time-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        setRunMessage('Time history analysis submitted successfully.');
+        return;
+      }
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `time-history-config-${Date.now()}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      setRunMessage('Backend unavailable. Exported analysis config JSON for manual run.');
+    } catch {
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `time-history-config-${Date.now()}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      setRunMessage('Could not reach backend. Exported analysis config JSON for manual run.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [records, integrationMethod, dampingModel, dampingRatio, newmarkBeta, newmarkGamma, wilsonTheta, totalTime, timeStep, outputNodeDisp, outputNodeVel, outputNodeAccel, outputMemberForces, outputBaseShear, outputInterval, numModes, rayleighAlpha, rayleighBeta]);
 
   const totalDuration = Math.max(...records.map(r => r.duration), totalTime);
 
@@ -445,10 +498,13 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
         </div>
 
         <DialogFooter>
+          {runMessage && (
+            <div className="mr-auto text-xs text-slate-500 dark:text-slate-400">{runMessage}</div>
+          )}
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleRun} disabled={records.length === 0} className="bg-rose-600 hover:bg-rose-500 text-white">
+          <Button onClick={handleRun} disabled={records.length === 0 || isSubmitting} className="bg-rose-600 hover:bg-rose-500 text-white">
             <Play className="w-4 h-4 mr-1" />
-            Run Time History Analysis
+            {isSubmitting ? 'Submitting…' : 'Run Time History Analysis'}
           </Button>
         </DialogFooter>
       </DialogContent>

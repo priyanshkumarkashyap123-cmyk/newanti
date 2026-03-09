@@ -10,6 +10,7 @@
 
 import { API_CONFIG } from '../config/env';
 import { createLogger } from '../utils/logger';
+import { fetchJson, postJson, fetchWithTimeout } from '../utils/fetchUtils';
 
 const log = createLogger('BillingService');
 const API_URL = API_CONFIG.baseUrl;
@@ -84,16 +85,11 @@ class BillingServiceClient {
    */
   async getPlans(): Promise<BillingPlan[]> {
     try {
-      const response = await fetch(`${API_URL}/api/billing/plans`, {
-        method: 'GET',
-        headers: this.getHeaders(),
+      const result = await fetchJson<{ plans: BillingPlan[] }>(`${API_URL}/api/billing/plans`, {
+        authToken: this.token ?? undefined,
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data?.plans) {
-          return result.data.plans;
-        }
+      if (result?.plans) {
+        return result.plans;
       }
     } catch (err) {
       log.warn('Failed to fetch plans from API, using defaults', err);
@@ -138,19 +134,13 @@ class BillingServiceClient {
    * Get current subscription status for the authenticated user.
    */
   async getStatus(): Promise<BillingStatus> {
-    const response = await fetch(`${API_URL}/api/billing/status`, {
-      method: 'GET',
-      headers: this.getHeaders(),
-      credentials: 'include',
+    const result = await fetchJson<BillingStatus>(`${API_URL}/api/billing/status`, {
+      authToken: this.token ?? undefined,
     });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error((err as { message?: string }).message || 'Failed to fetch billing status');
+    if (!result) {
+      throw new Error('Failed to fetch billing status');
     }
-
-    const result = await response.json();
-    return result.data as BillingStatus;
+    return result;
   }
 
   /**
@@ -163,46 +153,44 @@ class BillingServiceClient {
     planType: PlanType,
     idempotencyKey?: string,
   ): Promise<OrderResponse> {
-    const headers = this.getHeaders();
+    const extraHeaders: Record<string, string> = {};
     if (idempotencyKey) {
-      headers['X-Idempotency-Key'] = idempotencyKey;
+      extraHeaders['X-Idempotency-Key'] = idempotencyKey;
     }
 
-    const response = await fetch(`${API_URL}/api/billing/create-order`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ email, planType }),
-    });
+    const result = await postJson<OrderResponse>(
+      `${API_URL}/api/billing/create-order`,
+      { email, planType },
+      {
+        authToken: this.token ?? undefined,
+        withCsrf: true,
+        headers: extraHeaders,
+      }
+    );
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(
-        (err as { message?: string }).message || 'Failed to create payment order',
-      );
+    if (!result) {
+      throw new Error('Failed to create payment order');
     }
-
-    const result = await response.json();
-    return result.data as OrderResponse;
+    return result;
   }
 
   /**
    * Verify a completed PhonePe payment and activate the subscription.
    */
   async verifyPayment(params: VerifyPaymentParams): Promise<{ success: boolean; message: string }> {
-    const response = await fetch(`${API_URL}/api/billing/verify-payment`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(params),
-    });
+    const result = await postJson<{ success: boolean; message: string }>(
+      `${API_URL}/api/billing/verify-payment`,
+      params,
+      {
+        authToken: this.token ?? undefined,
+        withCsrf: true,
+      }
+    );
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(
-        (err as { message?: string }).message || 'Payment verification failed',
-      );
+    if (!result) {
+      throw new Error('Payment verification failed');
     }
-
-    return response.json();
+    return result;
   }
 
   /**

@@ -147,6 +147,16 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
 
     const [showDetails, setShowDetails] = useState(false);
 
+    const downloadText = (content: string, filename: string, mimeType = 'text/markdown;charset=utf-8') => {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+    };
+
     const runValidation = useCallback(async () => {
         if (!analysisResults || !beamConfig) return;
 
@@ -317,8 +327,7 @@ export const ValidationDashboard: React.FC<DashboardProps> = ({
                             <button type="button"
                                 onClick={() => {
                                     const report = auditTrail.generateReportMarkdown('Engineer', 'License');
-// console.log(report);
-                                    alert('Validation report logged to audit trail');
+                                    downloadText(report, `validation-audit-report-${Date.now()}.md`);
                                 }}
                                 className="flex-1 py-2 bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-600 font-medium"
                             >

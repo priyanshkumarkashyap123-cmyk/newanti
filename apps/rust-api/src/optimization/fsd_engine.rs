@@ -20,6 +20,10 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::design_codes::is_800::{design_shear, ismb_database, IsmbSection, GAMMA_M0};
+use crate::design_codes::section_wise::{
+    self, MomentType, SectionDemand, SectionLocation, SteelDesignCode,
+    SteelSectionWiseDesigner,
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS
@@ -534,9 +538,22 @@ pub fn check_member(
     fy: f64,
 ) -> DesignCheck {
     let section_db = ismb_database();
-    let section = section_db.iter()
+    let section = match section_db.iter()
         .find(|s| s.name == section_name)
-        .unwrap_or_else(|| panic!("Section {} not in database", section_name));
+    {
+        Some(s) => s,
+        None => return DesignCheck {
+            member_id: forces.member_id.clone(),
+            load_combo: forces.load_combo.clone(),
+            section_name: section_name.to_string(),
+            utilization_ratio: f64::INFINITY,
+            flexure_ur: 0.0,
+            shear_ur: 0.0,
+            compression_ur: 0.0,
+            passed: false,
+            governing_check: format!("Section '{}' not in database", section_name),
+        },
+    };
     
     // ═══════════════════════════════════════════════════════════════════════
     // FLEXURE CHECK
@@ -621,6 +638,181 @@ pub fn check_member(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MULTI-STATION SECTION-WISE FSD CHECK
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Design check result using section-wise analysis (21-station UR)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SectionWiseDesignCheck {
+    pub member_id: String,
+    pub section_name: String,
+    /// Max UR across all 21 stations (governs sizing)
+    pub max_utilization: f64,
+    /// Min UR across all stations (for economy ratio)
+    pub min_utilization: f64,
+    /// Governing station index (0–20)
+    pub governing_station: usize,
+    /// UR at midspan (station 10)
+    pub midspan_ur: f64,
+    /// Average UR at supports (stations 0 + 20) / 2
+    pub support_ur: f64,
+    pub passed: bool,
+    pub economy_ratio: f64,
+}
+
+/// Check member using multi-station section-wise design (IS 800)
+///
+/// Instead of single-point UR, this runs the full 21-station SteelSectionWiseDesigner,
+/// returning the max UR across all stations. This is the correct metric for FSD.
+pub fn check_member_section_wise(
+    demands: &[SectionDemand],
+    section_name: &str,
+    fy: f64,
+    unbraced_length: f64,
+    is_rolled: bool,
+    member_id: &str,
+) -> Result<SectionWiseDesignCheck, String> {
+    let section_input = section_wise::lookup_ismb(section_name)
+        .ok_or_else(|| format!("Unknown section: {}", section_name))?;
+
+    let designer = SteelSectionWiseDesigner::new(fy, SteelDesignCode::Is800);
+    let result = designer.design_member_sectionwise(
+        &section_input,
+        demands,
+        unbraced_length,
+        is_rolled,
+    )?;
+
+    let checks = &result.section_checks;
+
+    let midspan_ur = if checks.len() > 10 {
+        checks[10].utilization_m.max(checks[10].utilization_v)
+    } else {
+        result.utilization
+    };
+
+    let n = checks.len();
+    let support_ur = if n > 1 {
+        let start_ur = checks[0].utilization_m.max(checks[0].utilization_v);
+        let end_ur = checks[n - 1].utilization_m.max(checks[n - 1].utilization_v);
+        (start_ur + end_ur) / 2.0
+    } else {
+        result.utilization
+    };
+
+    let max_ur = result.utilization;
+    let min_ur = checks.iter()
+        .map(|c| c.utilization_m.max(c.utilization_v))
+        .fold(f64::INFINITY, f64::min);
+
+    let governing_station = checks.iter()
+        .enumerate()
+        .max_by(|a, b| {
+            let ua = a.1.utilization_m.max(a.1.utilization_v);
+            let ub = b.1.utilization_m.max(b.1.utilization_v);
+            ua.partial_cmp(&ub).unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .map(|(i, _)| i)
+        .unwrap_or(0);
+
+    let economy = if min_ur > 1e-6 { max_ur / min_ur } else { f64::INFINITY };
+
+    Ok(SectionWiseDesignCheck {
+        member_id: member_id.to_string(),
+        section_name: section_name.to_string(),
+        max_utilization: max_ur,
+        min_utilization: min_ur,
+        governing_station,
+        midspan_ur,
+        support_ur,
+        passed: result.passed,
+        economy_ratio: economy,
+    })
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HAUNCH HEURISTIC
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Haunch recommendation for steel beams
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HaunchRecommendation {
+    pub member_id: String,
+    pub recommended: bool,
+    /// "none", "both_ends", "left_end", "right_end"
+    pub haunch_location: String,
+    /// Suggested haunch depth increase as fraction of beam depth (e.g. 0.5 = 50% deeper)
+    pub depth_increase_ratio: f64,
+    /// Estimated weight saving vs upsizing the whole member (%)
+    pub estimated_saving_pct: f64,
+    pub reason: String,
+}
+
+/// Evaluate whether a haunch is economical for a beam.
+///
+/// Heuristic: If supports have UR >> midspan UR (typical in continuous beams),
+/// a haunch at supports is more efficient than upsizing the entire member.
+/// Threshold: support_ur / midspan_ur > 1.5 and midspan UR < 0.7 × max_ur
+pub fn evaluate_haunch(
+    sw_check: &SectionWiseDesignCheck,
+    member_id: &str,
+) -> HaunchRecommendation {
+    let ratio = if sw_check.midspan_ur > 1e-6 {
+        sw_check.support_ur / sw_check.midspan_ur
+    } else {
+        0.0
+    };
+
+    if ratio > 1.5 && sw_check.midspan_ur < 0.7 * sw_check.max_utilization {
+        // Supports are governing — haunch is efficient
+        let excess_ur = sw_check.support_ur - sw_check.midspan_ur;
+        let depth_increase = (excess_ur * 0.5).min(0.8).max(0.2);
+        // Rough saving estimate: haunch typically at ~15% of span each end = 30% of member
+        // Weight increase from haunch ≈ depth_increase × 30% vs upsizing 100%
+        let saving = ((1.0 - depth_increase * 0.3) * 100.0).max(10.0).min(40.0);
+
+        HaunchRecommendation {
+            member_id: member_id.to_string(),
+            recommended: true,
+            haunch_location: "both_ends".to_string(),
+            depth_increase_ratio: (depth_increase * 100.0).round() / 100.0,
+            estimated_saving_pct: saving.round(),
+            reason: format!(
+                "Support UR ({:.0}%) >> Midspan UR ({:.0}%): haunch more efficient than upsizing whole member",
+                sw_check.support_ur * 100.0,
+                sw_check.midspan_ur * 100.0,
+            ),
+        }
+    } else {
+        HaunchRecommendation {
+            member_id: member_id.to_string(),
+            recommended: false,
+            haunch_location: "none".to_string(),
+            depth_increase_ratio: 0.0,
+            estimated_saving_pct: 0.0,
+            reason: "Uniform section adequate — no significant UR gradient along span".to_string(),
+        }
+    }
+}
+
+/// Before/after comparison for FSD with section-wise checking
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FSDSectionWiseComparison {
+    /// Single-point UR (traditional)
+    pub single_point_max_ur: f64,
+    /// Multi-station max UR (section-wise)
+    pub section_wise_max_ur: f64,
+    /// Whether section-wise check is more conservative (usually yes)
+    pub section_wise_more_conservative: bool,
+    /// Haunch recommendations per member
+    pub haunch_recommendations: Vec<HaunchRecommendation>,
+    /// Number of members where haunch is suggested
+    pub haunch_count: usize,
+    /// Estimated total weight saving if haunches are used (%)
+    pub haunch_saving_pct: f64,
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -697,5 +889,74 @@ mod tests {
         // Total ≈ 454 kg
         // Allow wider range due to section database variations
         assert!(weight > 350.0 && weight < 600.0, "Weight was {}", weight);
+    }
+
+    #[test]
+    fn test_check_member_section_wise() {
+        // Simply-supported beam ISMB300 with parabolic moment demand
+        let demands: Vec<SectionDemand> = (0..=20)
+            .map(|i| {
+                let x = i as f64 / 20.0;
+                let mu = 4.0 * 80.0 * x * (1.0 - x); // Peak 80 kN·m at midspan
+                let vu = 40.0 * (1.0 - 2.0 * x).abs(); // Linear shear, peak 40 kN at supports
+                SectionDemand {
+                    location: SectionLocation {
+                        x_mm: x * 6000.0,
+                        x_ratio: x,
+                        label: format!("{:.1}L", x),
+                    },
+                    mu_knm: mu,
+                    vu_kn: vu,
+                    moment_type: if mu >= 0.0 { MomentType::Sagging } else { MomentType::Hogging },
+                }
+            })
+            .collect();
+
+        let result = check_member_section_wise(
+            &demands, "ISMB300", 250.0, 2000.0, true, "B1",
+        );
+        assert!(result.is_ok());
+        let check = result.unwrap();
+        assert!(check.max_utilization > 0.0);
+        assert!(check.midspan_ur > check.support_ur);
+        assert!(check.passed);
+    }
+
+    #[test]
+    fn test_haunch_not_recommended_for_simple_beam() {
+        let sw = SectionWiseDesignCheck {
+            member_id: "B1".into(),
+            section_name: "ISMB300".into(),
+            max_utilization: 0.75,
+            min_utilization: 0.05,
+            governing_station: 10,
+            midspan_ur: 0.75,
+            support_ur: 0.10,
+            passed: true,
+            economy_ratio: 15.0,
+        };
+        let haunch = evaluate_haunch(&sw, "B1");
+        assert!(!haunch.recommended);
+    }
+
+    #[test]
+    fn test_haunch_recommended_for_continuous_beam() {
+        // Continuous beam pattern: high support UR, low midspan UR
+        let sw = SectionWiseDesignCheck {
+            member_id: "B2".into(),
+            section_name: "ISMB300".into(),
+            max_utilization: 0.95,
+            min_utilization: 0.15,
+            governing_station: 0,
+            midspan_ur: 0.35,
+            support_ur: 0.95,
+            passed: true,
+            economy_ratio: 6.3,
+        };
+        let haunch = evaluate_haunch(&sw, "B2");
+        assert!(haunch.recommended);
+        assert_eq!(haunch.haunch_location, "both_ends");
+        assert!(haunch.depth_increase_ratio > 0.0);
+        assert!(haunch.estimated_saving_pct > 0.0);
     }
 }

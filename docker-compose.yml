@@ -146,10 +146,21 @@ services:
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
       - MONGODB_URI=mongodb://${MONGO_USERNAME:-beamlab_admin}:${MONGO_PASSWORD:?MONGO_PASSWORD is required}@mongo:27017/beamlab?authSource=admin
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:?INTERNAL_SERVICE_SECRET is required}
+      - RATE_LIMIT_DISTRIBUTED=true
+      - REDIS_URL=redis://redis:6379
+      - RATE_LIMIT_WINDOW_MS=60000
+      - RATE_LIMIT_GENERAL_MAX=500
+      - RATE_LIMIT_ANALYSIS_MAX=100
+      - RATE_LIMIT_BILLING_MAX=10
+      - RATE_LIMIT_CRUD_MAX=120
+      - RATE_LIMIT_AUTH_MAX=20
+      - RATE_LIMIT_AI_MAX=60
     depends_on:
       backend-python:
         condition: service_healthy
       rust-api:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -202,6 +213,30 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    restart: unless-stopped
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     logging:
       driver: json-file
       options:

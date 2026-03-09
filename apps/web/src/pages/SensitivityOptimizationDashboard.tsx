@@ -52,6 +52,7 @@ import {
 import { useModelStore, type Member, type Node as ModelNode, type MemberForceData } from '../store/model';
 import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties } from '../data/SteelSectionDatabase';
 import { STEEL_GRADES } from '../api/design';
+import { FSDComparisonPanel } from '../components/design/section-wise';
 
 // Types
 type ObjectiveType =
@@ -993,6 +994,15 @@ const SensitivityOptimizationDashboard: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Section-Wise Optimization Comparison */}
+              <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-5 border border-slate-300 dark:border-slate-700/50">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Ruler className="w-5 h-5 text-green-400" />
+                  Section-Wise UR Comparison
+                </h3>
+                <FSDComparisonPanel members={[]} />
               </div>
             </div>
           </div>

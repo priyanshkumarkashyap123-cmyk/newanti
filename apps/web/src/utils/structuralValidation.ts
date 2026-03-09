@@ -269,10 +269,6 @@ export function validateStructure(
   const is3D = uniqueZ.length > 1; // More than one distinct Z coordinate = 3D structure
   const structureType = is3D ? "3D" : "2D";
 
-  console.log(
-    `[Structural Validation] Auto-detected structure type: ${structureType} (${uniqueZ.length} Z-planes)`,
-  );
-
   // Run comprehensive determinacy analysis
   const determinacy = analyzeDeterminacy(
     nodesArray,
@@ -297,9 +293,7 @@ export function validateStructure(
     });
   });
 
-  // Log determinacy analysis for debugging
-  console.log("[Structural Validation] Determinacy Analysis:");
-  console.log(getDeterminacyDescription(determinacy));
+  // Determinacy analysis completed
 
   return {
     valid:

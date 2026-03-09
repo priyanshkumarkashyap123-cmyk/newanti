@@ -43,7 +43,6 @@ export class AIArchitect {
      */
     static generateModel(prompt: string): ModelData | null {
         const intent = this.parsePrompt(prompt);
-        console.log('AI Intent:', intent);
 
         if (intent.type === 'bridge') {
             // Default Params

@@ -257,7 +257,6 @@ export async function queueBackgroundSync(tag: string, data?: any): Promise<void
     }
     
     await (registration as any).sync.register(tag);
-    console.log('Background sync queued:', tag);
   } else {
     console.warn('Background sync not supported');
   }
@@ -274,7 +273,6 @@ export async function clearAllCaches(): Promise<void> {
   if ('caches' in window) {
     const cacheNames = await caches.keys();
     await Promise.all(cacheNames.map(name => caches.delete(name)));
-    console.log('All caches cleared');
   }
 }
 

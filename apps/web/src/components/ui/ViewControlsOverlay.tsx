@@ -12,7 +12,6 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  Grid3X3,
   Box,
   Axis3D,
   Camera,
@@ -97,8 +96,6 @@ CompactBtn.displayName = 'CompactBtn';
 
 export const ViewControlsOverlay: FC = memo(() => {
   // Store bindings
-  const showGrid = useUIStore((s) => s.showGrid);
-  const toggleGrid = useUIStore((s) => s.toggleGrid);
   const renderMode3D = useUIStore((s) => s.renderMode3D);
   const setRenderMode3D = useUIStore((s) => s.setRenderMode3D);
 
@@ -173,7 +170,6 @@ export const ViewControlsOverlay: FC = memo(() => {
 
       {/* Display Toggles */}
       <div className="bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-200/30 dark:border-slate-700/30 p-1.5 shadow-lg flex flex-col gap-0.5">
-        <CompactBtn icon={Grid3X3} label="Toggle Grid (G)" onClick={toggleGrid} isActive={showGrid} />
         <CompactBtn icon={Axis3D} label="Toggle Axes" onClick={handleToggleAxes} isActive={showAxes} />
         <CompactBtn icon={Box} label="3D Render Mode" onClick={handleToggle3D} isActive={renderMode3D} />
         <CompactBtn icon={Camera} label="Screenshot (PNG)" onClick={handleScreenshot} />

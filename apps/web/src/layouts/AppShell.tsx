@@ -34,6 +34,7 @@ import { BreadcrumbNavigation } from '../components/navigation/BreadcrumbNavigat
 import { FeatureNavigation } from '../components/navigation/FeatureNavigation';
 import { useAuth } from '../providers/AuthProvider';
 import { Dialog, DialogContent } from '../components/ui/dialog';
+import { getRouteTitle, getSearchItems } from '../config/appRouteMeta';
 
 // Lazy-load onboarding — only needed on first visit
 const OnboardingFlow = lazy(() =>
@@ -41,42 +42,6 @@ const OnboardingFlow = lazy(() =>
     default: m.OnboardingFlow,
   })),
 );
-
-// ============================================
-// QUICK SEARCH DATA
-// ============================================
-
-const SEARCH_ITEMS: Array<{
-  type: 'page' | 'action' | 'help';
-  label: string;
-  path: string;
-  shortcut?: string;
-}> = [
-  { type: 'page', label: 'Dashboard', path: '/stream' },
-  { type: 'page', label: '3D Modeler', path: '/app' },
-  { type: 'page', label: 'Steel Design', path: '/design/steel' },
-  { type: 'page', label: 'RC Design', path: '/design/concrete' },
-  { type: 'page', label: 'Foundation Design', path: '/design/foundation' },
-  { type: 'page', label: 'Connection Design', path: '/design/connections' },
-  { type: 'page', label: 'Design Hub', path: '/design-hub' },
-  { type: 'page', label: 'Modal Analysis', path: '/analysis/modal' },
-  { type: 'page', label: 'Seismic Analysis', path: '/analysis/seismic' },
-  { type: 'page', label: 'Pushover Analysis', path: '/analysis/pushover' },
-  { type: 'page', label: 'Time History', path: '/analysis/time-history' },
-  { type: 'page', label: 'Section Database', path: '/tools/section-database' },
-  { type: 'page', label: 'Load Combinations', path: '/tools/load-combinations' },
-  { type: 'page', label: 'Bar Bending Schedule', path: '/tools/bar-bending' },
-  { type: 'page', label: 'Reports', path: '/reports' },
-  { type: 'page', label: 'Space Planning', path: '/space-planning' },
-  { type: 'page', label: 'Room Planner', path: '/room-planner' },
-  { type: 'page', label: 'BIM Integration', path: '/bim' },
-  { type: 'page', label: 'Materials Database', path: '/materials/database' },
-  { type: 'page', label: 'Settings', path: '/settings' },
-  { type: 'action', label: 'Open Workspace', path: '/app', shortcut: '⌘⇧W' },
-  { type: 'action', label: 'Create New Project', path: '/stream', shortcut: '⌘N' },
-  { type: 'help', label: 'Learning Center', path: '/learning' },
-  { type: 'help', label: 'Help Center', path: '/help' },
-];
 
 // ============================================
 // SIDEBAR LOCAL STORAGE KEY
@@ -150,11 +115,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
   }, [location.pathname]);
 
   // Filter search results
-  const filteredSearch = searchQuery
-    ? SEARCH_ITEMS.filter((s) =>
-        s.label.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    : SEARCH_ITEMS;
+  const filteredSearch = getSearchItems(searchQuery);
 
   // Handle onboarding completion
   const handleOnboardingComplete = useCallback(() => {
@@ -166,61 +127,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
 
   // Page title from route
   const getPageTitle = (): string => {
-    const titles: Record<string, string> = {
-      '/stream': 'Dashboard',
-      '/design/steel': 'Steel Design',
-      '/design/concrete': 'RC Design',
-      '/design/foundation': 'Foundation Design',
-      '/design/connections': 'Connection Design',
-      '/design/detailing': 'RC Detailing',
-      '/design-center': 'Design Center',
-      '/design-hub': 'Post-Analysis Hub',
-      '/analysis/modal': 'Modal Analysis',
-      '/analysis/time-history': 'Time History Analysis',
-      '/analysis/seismic': 'Seismic Analysis',
-      '/analysis/buckling': 'Buckling Analysis',
-      '/analysis/pushover': 'Pushover Analysis',
-      '/analysis/pdelta': 'P-Delta Analysis',
-      '/analysis/cable': 'Cable Analysis',
-      '/analysis/nonlinear': 'Nonlinear Analysis',
-      '/analysis/dynamic': 'Dynamic Analysis',
-      '/analysis/plate-shell': 'Plate & Shell FEM',
-      '/analysis/sensitivity-optimization': 'Optimization',
-      '/tools/load-combinations': 'Load Combinations',
-      '/tools/section-database': 'Section Database',
-      '/tools/bar-bending': 'Bar Bending Schedule',
-      '/tools/advanced-meshing': 'Advanced Meshing',
-      '/tools/print-export': 'Print & Export',
-      '/reports': 'Reports',
-      '/reports/builder': 'Report Builder',
-      '/reports/professional': 'Professional Reports',
-      '/bim': 'BIM Integration',
-      '/bim/export-enhanced': 'BIM Export',
-      '/quantity': 'Quantity Survey',
-      '/visualization': 'Visualization Hub',
-      '/visualization/3d-engine': '3D Engine',
-      '/visualization/result-animation': 'Result Animation',
-      '/cad/integration': 'CAD Integration',
-      '/collaboration': 'Collaboration Hub',
-      '/integrations/api-dashboard': 'API Dashboard',
-      '/materials/database': 'Materials Database',
-      '/compliance/checker': 'Code Compliance',
-      '/connections/database': 'Connection Database',
-      '/performance/monitor': 'Performance Monitor',
-      '/cloud-storage': 'Cloud Storage',
-      '/digital-twin': 'Digital Twin',
-      '/space-planning': 'Space Planning',
-      '/room-planner': 'Room Planner',
-      '/ai-dashboard': 'AI Dashboard',
-      '/ai-power': 'AI Power',
-      '/settings': 'Settings',
-      '/settings-enhanced': 'Enhanced Settings',
-      '/settings/advanced': 'Advanced Settings',
-      '/civil/hydraulics': 'Hydraulics',
-      '/civil/transportation': 'Transportation',
-      '/civil/construction': 'Construction',
-    };
-    return titles[location.pathname] || 'BeamLab';
+    return getRouteTitle(location.pathname);
   };
 
   // Set document title

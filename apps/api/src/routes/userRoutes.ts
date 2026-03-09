@@ -15,8 +15,8 @@ import { logger } from '../utils/logger.js';
 
 // Check which auth mode is active
 const USE_CLERK = process.env['USE_CLERK'] === 'true';
-// TODO(payment): Set to false after payment gateway integration is live
-const TEMP_UNLOCK_ALL = true;
+// Set TEMP_UNLOCK_ALL=true via env var ONLY for local testing; defaults to false (production-safe)
+const TEMP_UNLOCK_ALL = process.env['TEMP_UNLOCK_ALL'] === 'true';
 
 const router: Router = Router();
 

@@ -463,4 +463,86 @@ mod tests {
         // IS 800: b_eff = min(L/4, spacing) = min(2500, 4000) = 2500 mm
         assert_eq!(b_eff, 2500.0);
     }
+
+    #[test]
+    fn test_composite_beam_aisc_code() {
+        let params = CompositeBeamParams {
+            steel_depth_mm: 400.0,
+            steel_width_mm: 180.0,
+            steel_area_mm2: 8400.0,
+            steel_i_mm4: 2.15e8,
+            steel_zp_mm3: 1200e3,
+            fy_steel_mpa: 345.0,
+            slab_thickness_mm: 125.0,
+            fck_mpa: 25.0,
+            span_mm: 9000.0,
+            beam_spacing_mm: 3000.0,
+            moment_positive_knm: 300.0,
+            moment_negative_knm: -100.0,
+            connector_type: ConnectorType::ShearStud,
+            connector_dia_or_height_mm: 19.0,
+            code: CompositeCode::AISC360,
+        };
+
+        let result = design_composite_beam(&params).unwrap();
+
+        // AISC: b_eff = min(L/8, spacing/2) = min(1125, 1500) = 1125 mm
+        assert!(result.effective_width_mm > 0.0);
+        assert!(result.plastic_moment_capacity_knm > 0.0);
+        assert!(result.shear_connector_design.degree_of_interaction >= 0.0);
+    }
+
+    #[test]
+    fn test_composite_beam_deflection() {
+        let params = CompositeBeamParams {
+            steel_depth_mm: 400.0,
+            steel_width_mm: 180.0,
+            steel_area_mm2: 8400.0,
+            steel_i_mm4: 2.15e8,
+            steel_zp_mm3: 1200e3,
+            fy_steel_mpa: 250.0,
+            slab_thickness_mm: 150.0,
+            fck_mpa: 30.0,
+            span_mm: 8000.0,
+            beam_spacing_mm: 3000.0,
+            moment_positive_knm: 150.0,
+            moment_negative_knm: -80.0,
+            connector_type: ConnectorType::ShearStud,
+            connector_dia_or_height_mm: 19.0,
+            code: CompositeCode::IS800,
+        };
+
+        let result = design_composite_beam(&params).unwrap();
+
+        // Deflection check should exist and have positive values
+        assert!(result.deflection_check.deflection_mm >= 0.0);
+        assert!(result.deflection_check.allowable_mm > 0.0);
+    }
+
+    #[test]
+    fn test_connector_count_positive() {
+        let params = CompositeBeamParams {
+            steel_depth_mm: 400.0,
+            steel_width_mm: 180.0,
+            steel_area_mm2: 8400.0,
+            steel_i_mm4: 2.15e8,
+            steel_zp_mm3: 1200e3,
+            fy_steel_mpa: 250.0,
+            slab_thickness_mm: 150.0,
+            fck_mpa: 30.0,
+            span_mm: 8000.0,
+            beam_spacing_mm: 3000.0,
+            moment_positive_knm: 250.0,
+            moment_negative_knm: -150.0,
+            connector_type: ConnectorType::ShearStud,
+            connector_dia_or_height_mm: 19.0,
+            code: CompositeCode::IS800,
+        };
+
+        let result = design_composite_beam(&params).unwrap();
+
+        assert!(result.shear_connector_design.num_connectors > 0);
+        assert!(result.shear_connector_design.required_spacing_mm > 0.0);
+        assert!(result.shear_connector_design.connector_capacity_kn > 0.0);
+    }
 }

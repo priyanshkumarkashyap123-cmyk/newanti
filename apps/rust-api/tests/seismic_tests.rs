@@ -29,6 +29,9 @@ fn test_seismic_config_custom() {
         damping_ratio: 0.02,
         combination_method: CombinationMethod::CQC,
         include_vertical: true,
+        asce7_ss: None,
+        asce7_s1: None,
+        ec8_ground_type: None,
     };
 
     assert_eq!(config.zone.factor(), 0.36);
@@ -79,6 +82,9 @@ fn test_is1893_spectrum_zone3_medium_soil() {
         damping_ratio: 0.05,
         combination_method: CombinationMethod::SRSS,
         include_vertical: false,
+        asce7_ss: None,
+        asce7_s1: None,
+        ec8_ground_type: None,
     };
 
     let solver = ResponseSpectrumSolver::new(config);
@@ -167,6 +173,9 @@ fn test_asce7_spectrum_generation() {
         damping_ratio: 0.05,
         combination_method: CombinationMethod::SRSS,
         include_vertical: false,
+        asce7_ss: None,
+        asce7_s1: None,
+        ec8_ground_type: None,
     };
 
     let solver = ResponseSpectrumSolver::new(config);
@@ -483,6 +492,9 @@ fn test_is1893_5story_building_mumbai() {
         damping_ratio: 0.05,
         combination_method: CombinationMethod::SRSS,
         include_vertical: false,
+        asce7_ss: None,
+        asce7_s1: None,
+        ec8_ground_type: None,
     };
 
     let solver = ResponseSpectrumSolver::new(config);

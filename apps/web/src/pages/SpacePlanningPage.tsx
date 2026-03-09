@@ -143,6 +143,33 @@ export function SpacePlanningPage() {
   const [showVariants, setShowVariants] = useState(false);
   const [isGeneratingVariants, setIsGeneratingVariants] = useState(false);
 
+  const triggerDownload = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportVariant = useCallback(
+    (variant: VariantResponse) => {
+      const payload = {
+        export_type: 'space_planning_variant',
+        exported_at: new Date().toISOString(),
+        variant,
+        recommendation: layoutVariantsResult?.recommendation ?? null,
+        selected_floor: selectedFloor,
+        wizard_config: lastWizardConfig,
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const safeName = variant.strategy_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      triggerDownload(blob, `space-plan-variant-${safeName || variant.variant_id}.json`);
+    },
+    [layoutVariantsResult, selectedFloor, lastWizardConfig],
+  );
+
   const parseSolverError = (err: unknown): string => {
     if (err && typeof err === 'object') {
       const anyErr = err as Record<string, unknown>;
@@ -1048,10 +1075,7 @@ export function SpacePlanningPage() {
                               (v) => v.variant_id === selectedVariantId
                             )!
                           }
-                          onExport={(variant) => {
-                            console.log('Export variant:', variant.strategy_name);
-                            // TODO: Wire to export flow
-                          }}
+                          onExport={handleExportVariant}
                         />
                       )}
                     </div>

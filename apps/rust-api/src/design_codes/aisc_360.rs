@@ -213,4 +213,89 @@ mod tests {
         assert!(capacity.lp_mm < capacity.lr_mm);
         assert!(capacity.lp_mm > 0.0);
     }
+
+    #[test]
+    fn test_is_adequate_pass() {
+        let section = AiscSection {
+            name: "W12x120".into(),
+            fy_mpa: 250.0,
+            zx_mm3: 1150e3,
+            sx_mm3: 1070e3,
+            iy_mm4: 4270e6,
+            ry_mm: 51.0,
+            cw_mm6: 8.0e9,
+            j_mm4: 47e6,
+        };
+        // Low demand → should pass
+        let params = AiscDesignParams {
+            unbraced_length_mm: 1000.0,
+            cb: 1.0,
+            applied_moment_kNm: 100.0,
+        };
+        let cap = calculate_bending_capacity(&section, &params);
+        assert!(is_adequate(&cap));
+    }
+
+    #[test]
+    fn test_is_adequate_fail() {
+        let section = AiscSection {
+            name: "W12x72".into(),
+            fy_mpa: 250.0,
+            zx_mm3: 688e3,
+            sx_mm3: 645e3,
+            iy_mm4: 2530e6,
+            ry_mm: 50.0,
+            cw_mm6: 3.0e9,
+            j_mm4: 18e6,
+        };
+        // Very high demand → should fail
+        let params = AiscDesignParams {
+            unbraced_length_mm: 8000.0,
+            cb: 1.0,
+            applied_moment_kNm: 500.0,
+        };
+        let cap = calculate_bending_capacity(&section, &params);
+        assert!(!is_adequate(&cap));
+    }
+
+    #[test]
+    fn test_section_database_not_empty() {
+        let sections = aisc_w_sections();
+        assert!(sections.len() >= 5);
+        // Every section should have positive properties
+        for s in &sections {
+            assert!(s.fy_mpa > 0.0);
+            assert!(s.zx_mm3 > 0.0);
+            assert!(s.ry_mm > 0.0);
+        }
+    }
+
+    #[test]
+    fn test_aisc_cb_effect() {
+        // Higher Cb should increase capacity for same section/length
+        let section = AiscSection {
+            name: "W14x120".into(),
+            fy_mpa: 250.0,
+            zx_mm3: 1380e3,
+            sx_mm3: 1280e3,
+            iy_mm4: 5600e6,
+            ry_mm: 61.0,
+            cw_mm6: 15.0e9,
+            j_mm4: 64e6,
+        };
+        let params1 = AiscDesignParams {
+            unbraced_length_mm: 5000.0,
+            cb: 1.0,
+            applied_moment_kNm: 200.0,
+        };
+        let params2 = AiscDesignParams {
+            unbraced_length_mm: 5000.0,
+            cb: 1.5,
+            applied_moment_kNm: 200.0,
+        };
+        let cap1 = calculate_bending_capacity(&section, &params1);
+        let cap2 = calculate_bending_capacity(&section, &params2);
+        // Higher Cb → lower utilization (same demand, higher capacity)
+        assert!(cap2.utilization_ratio <= cap1.utilization_ratio);
+    }
 }

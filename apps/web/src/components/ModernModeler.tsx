@@ -1104,7 +1104,7 @@ export const ModernModeler: FC = () => {
               <ViewControlsOverlay />
 
               {/* Status Bar Overlay */}
-              <div className="absolute bottom-0 w-full z-10">
+              <div className="absolute bottom-0 w-full z-[15]">
                 <StatusBar
                   isAnalyzing={isAnalyzing}
                   onOpenDiagnostics={() => setDiagnosticsOpen(true)}
@@ -1388,7 +1388,7 @@ export const ModernModeler: FC = () => {
           {/* AI Architect */}
           <AutonomousAIAgent />
           {showAIArchitect && (
-            <div className="fixed right-0 top-0 bottom-0 w-[380px] z-40 shadow-2xl">
+            <div className="fixed right-0 top-0 bottom-0 w-[380px] z-[45] shadow-2xl">
               <AIArchitectPanel />
               <button type="button"
                 onClick={() => setShowAIArchitect(false)}

@@ -40,6 +40,7 @@ import { getErrorMessage } from '../lib/errorHandling';
 import { useToast } from '../components/ui/ToastSystem';
 import { FieldLabel } from '../components/ui/FieldLabel';
 import { ClauseReference } from '../components/ui/ClauseReference';
+import { SectionWiseResultsPanel } from '../components/design/section-wise';
 
 type DesignCode = 'IS456' | 'ACI318';
 type MemberType = 'beam' | 'column' | 'slab';
@@ -1207,143 +1208,12 @@ export const ConcreteDesignPage: React.FC = () => {
 
           {/* Section-Wise Design Results */}
           {results.sectionWise && results.designApproach === 'section_wise' && (
-            <div className="space-y-4 border-t border-indigo-300 dark:border-indigo-700 pt-4 mt-4">
-              {/* Section-Wise Header */}
-              <div className={`p-4 rounded-lg ${results.sectionWise.is_safe_everywhere 
-                ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-300 dark:border-emerald-700' 
-                : 'bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700'}`}>
-                <h3 className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-2">
-                  <Scissors className="w-4 h-4" />
-                  Section-Wise Design Results
-                </h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-slate-600 dark:text-slate-400">All Sections:</span>
-                    <span className={`ml-2 font-bold ${results.sectionWise.is_safe_everywhere ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {results.sectionWise.is_safe_everywhere ? 'SAFE' : 'UNSAFE'}
-                    </span>
-                  </div>
-                  {results.sectionWise.economy_ratio && (
-                    <div>
-                      <span className="text-slate-600 dark:text-slate-400">Economy Ratio:</span>
-                      <span className="ml-2 font-bold text-indigo-500">
-                        {results.sectionWise.economy_ratio.toFixed(2)}x
-                      </span>
-                      <span className="text-xs text-slate-500 ml-1">
-                        ({((1 - 1/results.sectionWise.economy_ratio) * 100).toFixed(0)}% steel savings)
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{results.sectionWise.summary}</p>
-              </div>
-
-              {/* Section Checks Table */}
-              {results.sectionWise.section_checks && (
-                <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg overflow-x-auto">
-                  <h3 className="text-sm font-semibold text-blue-400 mb-2">Section-by-Section Verification</h3>
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="text-slate-500 border-b border-slate-300 dark:border-slate-600">
-                        <th className="py-1 text-left">Location</th>
-                        <th className="py-1 text-right">x/L</th>
-                        <th className="py-1 text-right">Mu,cap</th>
-                        <th className="py-1 text-right">Util(M)</th>
-                        <th className="py-1 text-right">Util(V)</th>
-                        <th className="py-1 text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.sectionWise.section_checks.map((sec: any, idx: number) => (
-                        <tr key={idx} className={`border-b border-slate-200 dark:border-slate-700 ${
-                          sec.status !== 'PASS' ? 'bg-red-50 dark:bg-red-900/10' : ''
-                        }`}>
-                          <td className="py-1 text-slate-700 dark:text-slate-300">{sec.location}</td>
-                          <td className="py-1 text-right text-slate-600 dark:text-slate-400">{sec.x_ratio?.toFixed(2)}</td>
-                          <td className="py-1 text-right text-slate-600 dark:text-slate-400">{sec.Mu_capacity?.toFixed(1)}</td>
-                          <td className="py-1 text-right font-mono">
-                            <span className={sec.utilization_M > 1 ? 'text-red-500' : sec.utilization_M > 0.8 ? 'text-amber-500' : 'text-emerald-500'}>
-                              {(sec.utilization_M * 100).toFixed(1)}%
-                            </span>
-                          </td>
-                          <td className="py-1 text-right font-mono">
-                            <span className={sec.utilization_V > 1 ? 'text-red-500' : sec.utilization_V > 0.8 ? 'text-amber-500' : 'text-emerald-500'}>
-                              {(sec.utilization_V * 100).toFixed(1)}%
-                            </span>
-                          </td>
-                          <td className="py-1 text-center">
-                            {sec.status === 'PASS' ? (
-                              <CheckCircle2 className="w-3 h-3 text-emerald-400 inline" />
-                            ) : (
-                              <AlertCircle className="w-3 h-3 text-red-400 inline" />
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Rebar Zones / Curtailment Schedule */}
-              {results.sectionWise.rebar_zones && results.sectionWise.rebar_zones.length > 0 && (
-                <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-emerald-400 mb-2 flex items-center gap-2">
-                    <Scissors className="w-4 h-4" />
-                    Reinforcement Schedule (Bar Curtailment)
-                  </h3>
-                  <div className="space-y-2">
-                    {results.sectionWise.rebar_zones.map((zone: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-3 text-xs bg-slate-200 dark:bg-slate-700/50 p-2 rounded">
-                        <div className="w-24 text-slate-500 font-mono">
-                          {zone.x_start?.toFixed(0)} - {zone.x_end?.toFixed(0)} mm
-                        </div>
-                        <div className="flex-1">
-                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">Bottom: {zone.bottom_bars}</span>
-                          {zone.top_bars && zone.top_bars !== 'Nominal' && (
-                            <span className="text-orange-500 ml-3">Top: {zone.top_bars}</span>
-                          )}
-                        </div>
-                        <span className="text-slate-500 text-xs italic">{zone.note}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Curtailment Points */}
-              {results.sectionWise.curtailment_points && results.sectionWise.curtailment_points.length > 0 && (
-                <div className="bg-slate-100 dark:bg-slate-800/50 p-4 rounded-lg">
-                  <h3 className="text-sm font-semibold text-purple-400 mb-2">Curtailment Points & Ld Checks</h3>
-                  <div className="space-y-1">
-                    {results.sectionWise.curtailment_points.map((pt: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs">
-                        {pt.is_valid ? (
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                        ) : (
-                          <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                        )}
-                        <span className="text-slate-700 dark:text-slate-300">
-                          x={pt.x?.toFixed(0)}mm: {pt.description} | Ld={pt.Ld_required?.toFixed(0)}mm
-                        </span>
-                        <span className="text-slate-500 ml-auto">{pt.clause}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Engineering Notes */}
-              {results.sectionWise.engineering_notes && results.sectionWise.engineering_notes.length > 0 && (
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border-l-4 border-indigo-500">
-                  <h4 className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1">Engineering Notes</h4>
-                  <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                    {results.sectionWise.engineering_notes.map((note: string, idx: number) => (
-                      <li key={idx}>• {note}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+            <div className="border-t border-indigo-300 dark:border-indigo-700 pt-4 mt-4">
+              <SectionWiseResultsPanel
+                rcResult={results.sectionWise}
+                spanMm={beamInput.span}
+                depthMm={beamInput.depth}
+              />
             </div>
           )}
 

@@ -58,6 +58,26 @@ async fn main() -> anyhow::Result<()> {
 
     // Load configuration
     dotenvy::dotenv().ok();
+
+    // ── Sentry Error Monitoring ──────────────────────────────────────────
+    let _sentry_guard = match std::env::var("SENTRY_DSN") {
+        Ok(dsn) if !dsn.is_empty() => {
+            let guard = sentry::init((dsn, sentry::ClientOptions {
+                release: Some("beamlab-rust-api@2.1.0".into()),
+                environment: Some(
+                    std::env::var("ENVIRONMENT").unwrap_or_else(|_| "development".into()).into()
+                ),
+                traces_sample_rate: 0.2,
+                ..Default::default()
+            }));
+            tracing::info!("Sentry initialized for Rust backend");
+            Some(guard)
+        }
+        _ => {
+            tracing::info!("SENTRY_DSN not set — Sentry disabled");
+            None
+        }
+    };
     
     tracing::info!("📋 Loading configuration from environment...");
     let config = match Config::from_env() {
@@ -217,6 +237,26 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/design/serviceability/crack-width", post(handlers::design::crack_width))
             // Batch processing (Phase 6 enterprise feature)
             .route("/api/design/batch", post(handlers::design::batch_design))
+        // Section-wise beam design
+        .route("/api/design/section-wise/rc", post(handlers::design::section_wise_rc))
+        .route("/api/design/section-wise/steel", post(handlers::design::section_wise_steel))
+        .route("/api/design/section-wise/from-analysis", post(handlers::design::section_wise_from_analysis))
+        // International design codes
+        .route("/api/design/aisc360/bending", post(handlers::design::aisc_bending))
+        .route("/api/design/ec3/bending", post(handlers::design::ec3_bending))
+        .route("/api/design/ec3/shear", post(handlers::design::ec3_shear))
+        .route("/api/design/ec2/bending", post(handlers::design::ec2_bending))
+        .route("/api/design/ec2/shear", post(handlers::design::ec2_shear))
+        .route("/api/design/aci318/bending", post(handlers::design::aci_bending))
+        .route("/api/design/aci318/shear", post(handlers::design::aci_shear))
+        .route("/api/design/nds2018/bending", post(handlers::design::nds_bending))
+        // Composite & detailing
+        .route("/api/design/composite-beam", post(handlers::design::composite_beam_design))
+        .route("/api/design/base-plate", post(handlers::design::base_plate_design))
+        .route("/api/design/ductile-detailing", post(handlers::design::ductile_detailing_check))
+        // Section databases
+        .route("/api/sections/aisc", get(handlers::design::aisc_sections))
+        .route("/api/sections/ec3", get(handlers::design::ec3_sections))
         // Structural Optimization (FSD Engine)
         .route("/api/optimization/fsd", post(handlers::optimization::fsd_optimize))
         .route("/api/optimization/check-member", post(handlers::optimization::check_member_endpoint))
@@ -233,7 +273,7 @@ async fn main() -> anyhow::Result<()> {
         .layer(axum::middleware::from_fn(middleware::rate_limit::rate_limit_middleware))
         .layer(TraceLayer::new_for_http())
         .layer(CompressionLayer::new())
-        .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024)) // 10MB limit
+        .layer(RequestBodyLimitLayer::new(5 * 1024 * 1024)) // 5MB limit
         .layer(cors)
         .with_state(state);
 

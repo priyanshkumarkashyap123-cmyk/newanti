@@ -151,6 +151,10 @@ const LoadCombinationPage = lazy(() => import('./pages/LoadCombinationPage'));
 const SectionDatabasePage = lazy(() => import('./pages/SectionDatabasePage'));
 const PushoverAnalysisPage = lazy(() => import('./pages/PushoverAnalysisPage'));
 
+// Composite & Timber Design Pages
+const CompositeDesignPage = lazy(() => import('./pages/CompositeDesignPage'));
+const TimberDesignPage = lazy(() => import('./pages/TimberDesignPage'));
+
 // New Feature Pages (Phase 17: BBS Engine + Plate/Shell FEM)
 const BarBendingSchedulePage = lazy(() => import('./pages/BarBendingSchedulePage'));
 const PlateShellAnalysisPage = lazy(() => import('./pages/PlateShellAnalysisPage'));
@@ -309,56 +313,32 @@ import { useGlobalErrorHandler } from './hooks/useGlobalErrorHandler';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { useEffect } from 'react';
 import { initializeIntegration } from './core/StoreIntegration';
+import { isFullScreenRoute, isPublicRoute } from './config/appRouteMeta';
+
+const ROUTE_ALIASES: Array<{ from: string; to: string }> = [
+  { from: '/dashboard', to: '/stream' },
+  { from: '/dashboard-enhanced', to: '/stream' },
+  { from: '/privacy', to: '/privacy-policy' },
+  { from: '/terms', to: '/terms-and-conditions' },
+  { from: '/docs', to: '/help' },
+  { from: '/login', to: '/sign-in' },
+  { from: '/analysis/modal-page', to: '/analysis/modal' },
+  { from: '/analysis/time-history-page', to: '/analysis/time-history' },
+  { from: '/analysis/nonlinear-page', to: '/analysis/nonlinear' },
+];
 
 // ============================================
 // CONDITIONAL LAYOUT — wraps authenticated pages in AppShell
 // ============================================
-const PUBLIC_PATHS = [
-  '/',
-  '/sign-in',
-  '/sign-up',
-  '/pricing',
-  '/pricing-old',
-  '/forgot-password',
-  '/reset-password',
-  '/privacy-policy',
-  '/privacy',
-  '/terms-of-service',
-  '/terms-and-conditions',
-  '/terms',
-  '/refund-cancellation',
-  '/help',
-  '/about',
-  '/contact',
-  '/capabilities',
-  '/civil-engineering',
-  '/account-locked',
-  '/link-expired',
-  '/auth/callback',
-  '/verify-email',
-  '/ui-showcase',
-  '/error-report',
-  '/rust-wasm-demo',
-  '/nafems-benchmarks',
-  '/worker-test',
-  '/learning',
-  '/sitemap',
-];
-
 function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { isSignedIn, isLoaded } = useAuth();
 
-  const isPublicRoute = PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + '/'),
-  );
-  const isFullScreenRoute =
-    pathname === '/app' ||
-    pathname === '/demo' ||
-    pathname.startsWith('/workspace/');
+  const isPublic = isPublicRoute(pathname);
+  const isFullScreen = isFullScreenRoute(pathname);
 
   // Public & full-screen routes render without AppShell
-  if (isPublicRoute || isFullScreenRoute) {
+  if (isPublic || isFullScreen) {
     return <main id="main-content">{children}</main>;
   }
 
@@ -421,10 +401,10 @@ function App() {
                   </RequireAuth>
                 }
               />
-              {/* Legacy Dashboard - redirects to unified */}
-              <Route path="/dashboard" element={<Navigate to="/stream" replace />} />
-              {/* Enhanced Dashboard - redirects to unified */}
-              <Route path="/dashboard-enhanced" element={<Navigate to="/stream" replace />} />
+              {/* Legacy aliases */}
+              {ROUTE_ALIASES.map(({ from, to }) => (
+                <Route key={from} path={from} element={<Navigate to={to} replace />} />
+              ))}
               {/* Capabilities Page */}
               <Route path="/capabilities" element={<Capabilities />} />
               {/* Custom Auth Pages */}
@@ -470,12 +450,10 @@ function App() {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               {/* Privacy Policy - New comprehensive page for Clerk */}
               <Route path="/privacy-policy" element={<PrivacyPolicyPageNew />} />
-              <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
               {/* Terms of Service - New comprehensive page for Clerk */}
               <Route path="/terms-of-service" element={<TermsOfServicePage />} />
               {/* Terms and Conditions - Comprehensive legal T&C (IT Act 2000, Rewa jurisdiction) */}
               <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
-              <Route path="/terms" element={<Navigate to="/terms-and-conditions" replace />} />
               {/* Refund and Cancellation Policy */}
               <Route path="/refund-cancellation" element={<RefundCancellationPage />} />
               {/* Help & Tutorials */}
@@ -632,10 +610,6 @@ function App() {
                   </RequireAuth>
                 }
               />
-              {/* Duplicate analysis routes → redirect to canonical paths */}
-              <Route path="/analysis/modal-page" element={<Navigate to="/analysis/modal" replace />} />
-              <Route path="/analysis/time-history-page" element={<Navigate to="/analysis/time-history" replace />} />
-              <Route path="/analysis/nonlinear-page" element={<Navigate to="/analysis/nonlinear" replace />} />
               <Route
                 path="/analysis/dynamic"
                 element={
@@ -726,6 +700,28 @@ function App() {
                   <RequireAuth>
                     <Suspense fallback={<DesignPageSkeleton />}>
                       <FoundationDesignPage />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
+              {/* Composite Steel-Concrete Beam Design - AISC 360 Ch I / EN 1994 / IS 11384 */}
+              <Route
+                path="/design/composite"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <CompositeDesignPage />
+                    </Suspense>
+                  </RequireAuth>
+                }
+              />
+              {/* Timber Beam Design - NDS 2018 / EN 1995 / IS 883 */}
+              <Route
+                path="/design/timber"
+                element={
+                  <RequireAuth>
+                    <Suspense fallback={<DesignPageSkeleton />}>
+                      <TimberDesignPage />
                     </Suspense>
                   </RequireAuth>
                 }

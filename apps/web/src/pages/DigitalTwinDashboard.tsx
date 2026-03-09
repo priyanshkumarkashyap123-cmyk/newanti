@@ -432,7 +432,7 @@ const DigitalTwinDashboard: React.FC = () => {
       {/* Main grid */}
       <div className="p-6 grid grid-cols-12 gap-5">
         {/* ---- KPI Cards ---- */}
-        <div className="col-span-12 grid grid-cols-4 gap-4">
+        <div className="col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Overall Health */}
           <div className="bg-slate-100 dark:bg-slate-800 rounded-xl p-5 flex items-center gap-4 border border-slate-300 dark:border-slate-700">
             <div className="relative">

@@ -10,6 +10,9 @@
  */
 
 import { logger } from '../utils/logger.js';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ============================================
 // ENUMS
@@ -146,7 +149,7 @@ interface ModelDelegate<T> {
 }
 
 /**
- * Stub PrismaClient for development without actual database
+ * File-backed PrismaClient stub — persists audit & feedback data to JSON
  * Replace with real PrismaClient once database is configured
  */
 export class PrismaClient {
@@ -156,15 +159,52 @@ export class PrismaClient {
 
   private auditStore: AuditEntry[] = [];
   private feedbackStore: FeedbackEntry[] = [];
+  private dataDir: string;
 
   constructor() {
-    // In-memory implementation for development
-    this.auditEntry = this.createDelegate(this.auditStore);
-    this.feedbackEntry = this.createDelegate(this.feedbackStore);
+    // Resolve data directory relative to project root
+    const currentDir = typeof __dirname !== 'undefined'
+      ? __dirname
+      : dirname(fileURLToPath(import.meta.url));
+    this.dataDir = join(currentDir, '..', '..', 'data');
+
+    // Ensure data directory exists
+    if (!existsSync(this.dataDir)) {
+      mkdirSync(this.dataDir, { recursive: true });
+    }
+
+    // Load persisted data
+    this.auditStore = this.loadStore<AuditEntry>('audit.json');
+    this.feedbackStore = this.loadStore<FeedbackEntry>('feedback.json');
+
+    this.auditEntry = this.createDelegate(this.auditStore, 'audit.json');
+    this.feedbackEntry = this.createDelegate(this.feedbackStore, 'feedback.json');
     this.feedback = this.feedbackEntry;  // Alias
   }
 
-  private createDelegate<T extends { id: string }>(store: T[]): ModelDelegate<T> {
+  private loadStore<T>(filename: string): T[] {
+    const filepath = join(this.dataDir, filename);
+    try {
+      if (existsSync(filepath)) {
+        const raw = readFileSync(filepath, 'utf-8');
+        return JSON.parse(raw) as T[];
+      }
+    } catch (err) {
+      logger.warn(`[PrismaStub] Failed to load ${filename}, starting fresh: ${err}`);
+    }
+    return [];
+  }
+
+  private persistStore<T>(store: T[], filename: string): void {
+    const filepath = join(this.dataDir, filename);
+    try {
+      writeFileSync(filepath, JSON.stringify(store, null, 2), 'utf-8');
+    } catch (err) {
+      logger.error(`[PrismaStub] Failed to persist ${filename}: ${err}`);
+    }
+  }
+
+  private createDelegate<T extends { id: string }>(store: T[], filename: string): ModelDelegate<T> {
     return {
       findMany: async (options?: FindManyOptions): Promise<T[]> => {
         let results = [...store];
@@ -203,6 +243,7 @@ export class PrismaClient {
         const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
         const entry = { ...options.data, id } as T;
         store.push(entry);
+        this.persistStore(store, filename);
         return entry;
       },
       
@@ -210,6 +251,7 @@ export class PrismaClient {
         const index = store.findIndex(item => item.id === options.where.id);
         if (index === -1) throw new Error('Record not found');
         store[index] = { ...store[index], ...options.data };
+        this.persistStore(store, filename);
         return store[index];
       },
       
@@ -217,6 +259,7 @@ export class PrismaClient {
         const index = store.findIndex(item => item.id === options.where.id);
         if (index === -1) throw new Error('Record not found');
         const [deleted] = store.splice(index, 1);
+        this.persistStore(store, filename);
         return deleted;
       },
       
@@ -236,6 +279,7 @@ export class PrismaClient {
             count++;
           }
         });
+        this.persistStore(store, filename);
         return { count };
       },
       
@@ -271,7 +315,8 @@ export class PrismaClient {
   }
 
   async $connect(): Promise<void> {
-    logger.info('[PrismaStub] Connected (in-memory mode)');
+    logger.info(`[PrismaStub] Connected (file-backed mode, data dir: ${this.dataDir})`);
+    logger.info(`[PrismaStub] Loaded ${this.auditStore.length} audit entries, ${this.feedbackStore.length} feedback entries`);
   }
 
   async $disconnect(): Promise<void> {

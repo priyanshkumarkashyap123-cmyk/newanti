@@ -215,3 +215,36 @@ test.describe('Golden Path — API Health Contract', () => {
     expect(allowOrigin).toBeTruthy();
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// Page smoke tests — verify all key pages render without errors
+// ─────────────────────────────────────────────────────────────
+
+test.describe('Golden Path — Page Smoke Tests', () => {
+  const pages = [
+    { path: '/', name: 'Landing' },
+    { path: '/help', name: 'Help' },
+    { path: '/composite-beam', name: 'Composite Beam' },
+    { path: '/timber-design', name: 'Timber Design' },
+    { path: '/rc-beam-design', name: 'RC Beam Design' },
+    { path: '/steel-beam-design', name: 'Steel Beam Design' },
+  ];
+
+  for (const { path, name } of pages) {
+    test(`${name} page (${path}) renders without console errors`, async ({ page }) => {
+      const consoleErrors: string[] = [];
+      page.on('console', msg => {
+        if (msg.type() === 'error') consoleErrors.push(msg.text());
+      });
+
+      const response = await page.goto(`${BASE_URL}${path}`);
+      await waitForNetworkIdle(page);
+
+      // Page should load (200 or SPA fallback)
+      expect(response?.status()).toBeLessThan(500);
+
+      // No JS console errors
+      expect(consoleErrors).toHaveLength(0);
+    });
+  }
+});

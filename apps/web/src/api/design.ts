@@ -857,3 +857,133 @@ export async function autoDesignMember(
         };
     }
 }
+
+// ============================================
+// SECTION-WISE FROM ANALYSIS (Rust API)
+// ============================================
+
+const RUST_API = API_CONFIG.rustUrl;
+
+async function rustApiCall<T>(endpoint: string, payload: unknown): Promise<T> {
+    const normalizedBase = RUST_API.endsWith('/') ? RUST_API.slice(0, -1) : RUST_API;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const fullUrl = `${normalizedBase}${normalizedEndpoint}`;
+
+    const { data } = await apiClient.post<T>(fullUrl, payload);
+    return data;
+}
+
+/** Member end forces for a single load combination */
+export interface MemberForcesInput {
+    member_id: string;
+    start_node: string;
+    end_node: string;
+    /** Member length in mm */
+    length: number;
+    /** [fx, fy, fz, mx, my, mz] at start in N / N·mm */
+    forces_start: [number, number, number, number, number, number];
+    /** [fx, fy, fz, mx, my, mz] at end in N / N·mm */
+    forces_end: [number, number, number, number, number, number];
+    displacements_start?: [number, number, number, number, number, number];
+    displacements_end?: [number, number, number, number, number, number];
+    /** Distributed load wy (N/mm, local Y) */
+    dist_load_wy?: number;
+    /** Distributed load wz (N/mm, local Z) */
+    dist_load_wz?: number;
+}
+
+/** Request to design from raw analysis forces (Rust section-wise) */
+export interface FromAnalysisRequest {
+    material: 'rc' | 'steel';
+    /** One entry = single combo; multiple = envelope */
+    member_forces: MemberForcesInput[];
+    // RC-specific
+    b?: number;             // mm
+    d?: number;             // mm
+    cover?: number;         // mm
+    fck?: number;           // MPa
+    fy?: number;            // MPa
+    // Steel-specific
+    section_name?: string;
+    section?: SteelSectionInput;
+    steel_fy?: number;      // MPa
+    design_code?: 'is800' | 'aisc360';
+    unbraced_length?: number; // mm
+    is_rolled?: boolean;
+}
+
+export interface SteelSectionInput {
+    depth: number;
+    width: number;
+    tf: number;
+    tw: number;
+    area: number;
+    iy: number;
+    iz: number;
+    zy: number;
+    zz: number;
+    ry: number;
+    rz: number;
+}
+
+/** Section-wise design result from the Rust API */
+export type FromAnalysisResult =
+    | { material: 'rc'; demands_extracted: number; member_id: string; span_mm: number; result: SectionWiseResult }
+    | { material: 'steel'; demands_extracted: number; member_id: string; span_mm: number; result: SteelSectionWiseResult };
+
+/** Steel section-wise result (matches Rust SteelSectionWiseResult) */
+export interface SteelSectionWiseResult {
+    passed: boolean;
+    utilization: number;
+    message: string;
+    n_sections: number;
+    section_checks: SteelStationCheck[];
+    stiffener_zones: StiffenerZone[];
+    design_code: string;
+    section_name: string;
+    section_class: string;
+    cb: number;
+}
+
+export interface SteelStationCheck {
+    location: { x_mm: number; x_ratio: number; label: string };
+    mu_demand_knm: number;
+    vu_demand_kn: number;
+    mp_knm: number;
+    md_knm: number;
+    utilization_m: number;
+    mcr_knm: number;
+    lambda_lt: number;
+    chi_lt: number;
+    vd_kn: number;
+    utilization_v: number;
+    high_shear: boolean;
+    mdv_knm: number;
+    section_class: string;
+    moment_type: string;
+    passed: boolean;
+    governing_check: string;
+}
+
+export interface StiffenerZone {
+    x_start_mm: number;
+    x_end_mm: number;
+    max_shear_kn: number;
+    shear_capacity_kn: number;
+    reason: string;
+}
+
+/**
+ * Design a member section-wise from raw analysis end-forces.
+ *
+ * Calls the Rust API — auto-extracts SFD/BMD at 21 stations,
+ * computes envelope if multiple load combos, then runs section-wise design.
+ */
+export async function designSectionWiseFromAnalysis(
+    request: FromAnalysisRequest
+): Promise<FromAnalysisResult> {
+    return rustApiCall<FromAnalysisResult>(
+        '/api/design/section-wise/from-analysis',
+        request
+    );
+}

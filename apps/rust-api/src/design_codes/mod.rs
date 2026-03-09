@@ -28,6 +28,9 @@ pub mod ductile_detailing;
 pub mod base_plate;
 pub mod composite_beam;
 
+// Section-Wise Design Engine
+pub mod section_wise;
+
 // International Design Codes
 pub mod aisc_360;
 pub mod eurocode3;

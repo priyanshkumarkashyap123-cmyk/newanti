@@ -12,6 +12,7 @@ import { API_CONFIG } from '../config/env';
 import logger from "../lib/logger";
 import { Button } from "../components/ui/button";
 import { Logo } from '../components/branding';
+import { SEO } from '../components/SEO';
 
 export const ContactPage: FC = () => {
   useEffect(() => { document.title = 'Contact - BeamLab'; }, []);
@@ -47,6 +48,11 @@ export const ContactPage: FC = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+      <SEO
+        title="Contact Us"
+        description="Get in touch with BeamLab for enterprise inquiries, technical support, and partnership opportunities."
+        path="/contact"
+      />
       {/* Header - Dark Theme */}
       <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

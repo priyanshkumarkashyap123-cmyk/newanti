@@ -10,6 +10,7 @@ import { FC, useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
+import { SEO } from '../components/SEO';
 import {
     Sparkles,
     Brain,
@@ -443,6 +444,11 @@ export const Capabilities: FC = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950">
+            <SEO
+                title="Capabilities"
+                description="Explore BeamLab's structural engineering capabilities: RC design, steel design, seismic analysis, 3D modeling, BIM integration, and 27+ calculation engines."
+                path="/capabilities"
+            />
             {/* Navigation Header */}
             <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">

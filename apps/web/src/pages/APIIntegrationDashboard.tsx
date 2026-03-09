@@ -54,8 +54,10 @@ interface IntegrationApp {
 
 const APIIntegrationDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'keys' | 'webhooks' | 'docs' | 'integrations'>('overview');
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+  const [bannerType, setBannerType] = useState<'success' | 'info'>('info');
   
-  const [apiKeys] = useState<APIKey[]>([
+  const [apiKeys, setApiKeys] = useState<APIKey[]>([
     {
       id: '1',
       name: 'Production API',
@@ -91,7 +93,7 @@ const APIIntegrationDashboard: React.FC = () => {
     },
   ]);
 
-  const [webhooks] = useState<Webhook[]>([
+  const [webhooks, setWebhooks] = useState<Webhook[]>([
     {
       id: '1',
       name: 'Analysis Complete',
@@ -152,7 +154,7 @@ const APIIntegrationDashboard: React.FC = () => {
     { method: 'POST', path: '/api/v1/projects/:id/export/dxf', description: 'Export to DXF', category: 'Export', authentication: true },
   ]);
 
-  const [integrations] = useState<IntegrationApp[]>([
+  const [integrations, setIntegrations] = useState<IntegrationApp[]>([
     {
       id: '1',
       name: 'Autodesk Revit',
@@ -228,6 +230,143 @@ const APIIntegrationDashboard: React.FC = () => {
   ]);
 
   useEffect(() => { document.title = 'API Integration | BeamLab'; }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('beamlab_api_integrations');
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved) as IntegrationApp[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setIntegrations(parsed);
+      }
+    } catch {
+      // ignore parse errors and keep defaults
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('beamlab_api_integrations', JSON.stringify(integrations));
+  }, [integrations]);
+
+  const showBanner = (message: string, type: 'success' | 'info' = 'info') => {
+    setBannerType(type);
+    setBannerMessage(message);
+    setTimeout(() => setBannerMessage(null), 3000);
+  };
+
+  const downloadText = (content: string, filename: string, mime = 'text/plain;charset=utf-8') => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const generateApiKey = () => {
+    const suffix = Math.random().toString(36).slice(2, 26);
+    const newKey: APIKey = {
+      id: Date.now().toString(),
+      name: `Generated Key ${apiKeys.length + 1}`,
+      key: `bl_prod_${suffix}`,
+      created: new Date().toISOString().slice(0, 10),
+      lastUsed: 'Never',
+      permissions: ['read', 'analysis'],
+      status: 'active',
+      requestsToday: 0,
+      rateLimit: 5000,
+    };
+
+    setApiKeys((prev) => [newKey, ...prev]);
+    showBanner('New API key generated.', 'success');
+  };
+
+  const copyApiKey = async (key: string) => {
+    await navigator.clipboard.writeText(key);
+    showBanner('API key copied to clipboard.', 'success');
+  };
+
+  const addWebhook = () => {
+    const nowId = Date.now().toString();
+    const hook: Webhook = {
+      id: nowId,
+      name: `Webhook ${webhooks.length + 1}`,
+      url: 'https://example.com/webhooks/beamlab',
+      events: ['analysis.completed'],
+      status: 'active',
+      lastTriggered: 'Never',
+      successRate: 100,
+    };
+
+    setWebhooks((prev) => [hook, ...prev]);
+    showBanner('Webhook added with starter configuration.', 'success');
+  };
+
+  const handleIntegrationAction = (integration: IntegrationApp) => {
+    if (integration.status === 'available') {
+      setIntegrations((prev) =>
+        prev.map((item) => (item.id === integration.id ? { ...item, status: 'connected' } : item)),
+      );
+      showBanner(`${integration.name} connected successfully.`, 'success');
+      return;
+    }
+
+    if (integration.status === 'connected') {
+      localStorage.setItem(
+        `beamlab_integration_config_${integration.id}`,
+        JSON.stringify({ integration: integration.name, configuredAt: new Date().toISOString() }),
+      );
+      showBanner(`${integration.name} configuration opened (saved locally).`, 'info');
+      return;
+    }
+
+    const existing = JSON.parse(localStorage.getItem('beamlab_integration_waitlist') || '[]') as string[];
+    if (!existing.includes(integration.id)) {
+      localStorage.setItem('beamlab_integration_waitlist', JSON.stringify([...existing, integration.id]));
+    }
+    showBanner(`${integration.name} marked for early access notification.`, 'info');
+  };
+
+  const downloadOpenApiSpec = () => {
+    const paths = endpoints.reduce<Record<string, Record<string, { summary: string }>>>((acc, ep) => {
+      if (!acc[ep.path]) acc[ep.path] = {};
+      acc[ep.path][ep.method.toLowerCase()] = { summary: ep.description };
+      return acc;
+    }, {});
+
+    const spec = {
+      openapi: '3.0.3',
+      info: { title: 'BeamLab API', version: '1.0.0' },
+      servers: [{ url: 'https://api.beamlab.app/v1' }],
+      paths,
+    };
+
+    downloadText(JSON.stringify(spec, null, 2), `beamlab-openapi-${Date.now()}.json`, 'application/json');
+    showBanner('OpenAPI specification downloaded.', 'success');
+  };
+
+  const openSwaggerDocs = () => {
+    window.open('/api/docs', '_blank', 'noopener,noreferrer');
+    showBanner('Opened Swagger documentation.', 'info');
+  };
+
+  const downloadPluginInstaller = (plugin: { name: string; version: string; size: string; platform: string }) => {
+    const safe = plugin.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const content = [
+      `BeamLab ${plugin.name}`,
+      `Version: ${plugin.version}`,
+      `Size: ${plugin.size}`,
+      `Platform: ${plugin.platform}`,
+      '',
+      'Installer manifest placeholder for MVP use.',
+      'Replace with signed binary package URL in production.',
+    ].join('\n');
+
+    downloadText(content, `${safe}-installer-${plugin.version}.txt`);
+    showBanner(`${plugin.name} installer manifest downloaded.`, 'success');
+  };
 
   const methodColors: Record<string, string> = {
     GET: 'bg-green-600',
@@ -343,7 +482,7 @@ const APIIntegrationDashboard: React.FC = () => {
             <span className="text-2xl">🔑</span>
             API Keys
           </h3>
-          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" onClick={generateApiKey} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>➕</span>
             Generate New Key
           </button>
@@ -364,7 +503,7 @@ const APIIntegrationDashboard: React.FC = () => {
                       <code className="text-slate-600 dark:text-slate-400 text-sm bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
                         {key.key.slice(0, 20)}...
                       </code>
-                      <button type="button" className="text-cyan-400 text-sm hover:text-cyan-300">Copy</button>
+                      <button type="button" onClick={() => copyApiKey(key.key)} className="text-cyan-400 text-sm hover:text-cyan-300">Copy</button>
                     </div>
                   </div>
                 </div>
@@ -479,7 +618,7 @@ const APIIntegrationDashboard: React.FC = () => {
             <span className="text-2xl">🔗</span>
             Webhooks
           </h3>
-          <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
+          <button type="button" onClick={addWebhook} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors flex items-center gap-2">
             <span>➕</span>
             Add Webhook
           </button>
@@ -576,10 +715,10 @@ const APIIntegrationDashboard: React.FC = () => {
             Base URL: <code className="text-cyan-400 bg-slate-700 px-2 py-1 rounded">https://api.beamlab.app/v1</code>
           </p>
           <div className="flex gap-4">
-            <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
+            <button type="button" onClick={downloadOpenApiSpec} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
               📥 Download OpenAPI Spec
             </button>
-            <button type="button" className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
+            <button type="button" onClick={openSwaggerDocs} className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
               🔗 View in Swagger
             </button>
           </div>
@@ -749,6 +888,12 @@ const results = await response.json();
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto"
       >
+        {bannerMessage && (
+          <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${bannerType === 'success' ? 'bg-green-900/30 text-green-400 border border-green-700/40' : 'bg-cyan-900/30 text-cyan-300 border border-cyan-700/40'}`}>
+            {bannerMessage}
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent mb-2">

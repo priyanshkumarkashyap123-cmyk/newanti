@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
+import { SEO } from '../components/SEO';
 
 // ============================================
 // TYPES & DATA
@@ -184,6 +185,11 @@ export const HelpPage = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
+            <SEO
+                title="Help & Tutorials"
+                description="BeamLab help center with video tutorials, FAQs, and support for structural engineering design tools."
+                path="/help"
+            />
             {/* Header - Dark Theme */}
             <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -272,7 +278,7 @@ export const HelpPage = () => {
                                 Can't find the answer you're looking for? Browse our full documentation or reach out to support.
                             </p>
                             <a
-                                href="/docs"
+                                href="/help"
                                 className="inline-flex items-center text-blue-400 font-bold text-sm hover:text-blue-300 transition-colors"
                             >
                                 Go to Documentation Center
