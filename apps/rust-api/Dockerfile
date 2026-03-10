@@ -23,6 +23,9 @@ RUN cargo build --release && rm -rf src
 # Copy openapi.yaml (needed by handlers)
 COPY openapi.yaml ./
 
+# Copy HTML templates required by report handlers
+COPY templates ./templates
+
 # Copy actual source code
 COPY src ./src
 

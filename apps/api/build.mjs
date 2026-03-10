@@ -13,10 +13,10 @@ async function main() {
     try {
         const result = await build({
             entryPoints: ['./src/index.ts'],
-            outfile: './dist/index.js',
+            outfile: './dist/index.cjs',
             platform: 'node',
             target: 'node20',
-            format: 'esm',
+            format: 'cjs',
             bundle: true,
             sourcemap: true,
             minify: false,
@@ -25,17 +25,6 @@ async function main() {
                 // Native addon that absolutely cannot be bundled
                 '@sentry/profiling-node',
             ],
-            // Banner to handle __dirname / __filename for ESM compatibility
-            banner: {
-                js: `
-import { createRequire as _createRequire } from 'module';
-import { fileURLToPath as _fileURLToPath } from 'url';
-import { dirname as _dirname } from 'path';
-const __filename = _fileURLToPath(import.meta.url);
-const __dirname = _dirname(__filename);
-const require = _createRequire(import.meta.url);
-`.trim(),
-            },
             logLevel: 'info',
         });
         

@@ -11,8 +11,7 @@
 
 import { logger } from '../utils/logger.js';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 // ============================================
 // ENUMS
@@ -165,7 +164,7 @@ export class PrismaClient {
     // Resolve data directory relative to project root
     const currentDir = typeof __dirname !== 'undefined'
       ? __dirname
-      : dirname(fileURLToPath(import.meta.url));
+      : process.cwd();
     this.dataDir = join(currentDir, '..', '..', 'data');
 
     // Ensure data directory exists

@@ -59,13 +59,7 @@ import * as Sentry from "@sentry/node";
 
 // Initialize Sentry (profiling is optional — may not be available in bundled builds)
 if (process.env.SENTRY_DSN) {
-  let integrations: any[] = [];
-  try {
-    const { nodeProfilingIntegration } = await import("@sentry/profiling-node");
-    integrations = [nodeProfilingIntegration()];
-  } catch {
-    logger.info("Sentry profiling not available (optional dependency)");
-  }
+  const integrations: any[] = [];
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     integrations,
