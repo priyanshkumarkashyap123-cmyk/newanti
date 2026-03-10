@@ -587,3 +587,20 @@ if __name__ == "__main__":
     print(f"🔌 Binding to port: {port}")
 
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+# ============================================
+# STARTUP / SHUTDOWN EVENTS FOR MONITORING
+# ============================================
+
+@app.on_event("startup")
+async def startup_event():
+    """Log application startup for monitoring."""
+    logger.info("✓ FastAPI backend started successfully")
+    logger.info(f"  Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    logger.info(f"  Analysis Workers: {os.getenv('ANALYSIS_WORKERS', '4')}")
+    logger.info(f"  Max Request Size: {os.getenv('MAX_REQUEST_BODY_MB', '10')}MB")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Log graceful shutdown for monitoring."""
+    logger.info("⛔ Python API shutting down gracefully")

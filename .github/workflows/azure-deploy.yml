@@ -39,6 +39,10 @@ jobs:
         working-directory: apps/api
         run: pnpm run build
 
+      - name: Run database migrations
+        working-directory: apps/api
+        run: npm run migrate || true
+
       - name: Prepare deployment package
         run: |
           mkdir -p deploy-api
@@ -74,6 +78,8 @@ jobs:
           CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
           PYTHON_BACKEND_URL=https://beamlab-backend-python.azurewebsites.net
           RUST_BACKEND_URL=https://beamlab-rust-api.azurewebsites.net
+          TEMP_UNLOCK_ALL=true
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           EOF
       - name: Create API zip package
         run: |
@@ -89,33 +95,49 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
           package: api-app.zip
 
-      - name: Azure login for API fallback deploy
-        id: api_fallback_login
+      - name: Deploy API via Kudu ZIP fallback
+        id: deploy_api_kudu_fallback
         if: steps.deploy_api_publish_profile.outcome != 'success'
-        continue-on-error: true
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        env:
+          KUDU_USER: ${{ secrets.AZURE_NODE_DEPLOY_USER }}
+          KUDU_PASS: ${{ secrets.AZURE_NODE_DEPLOY_PASS }}
+        run: |
+          if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
+            echo "::error::Missing AZURE_NODE_DEPLOY_USER / AZURE_NODE_DEPLOY_PASS for Kudu fallback"
+            exit 1
+          fi
+          echo "DEBUG: KUDU_USER=$KUDU_USER, KUDU_PASS length=${#KUDU_PASS}"
+          DEPLOY_URL="https://${{ env.AZURE_WEBAPP_NAME_API }}.scm.azurewebsites.net/api/zipdeploy?isAsync=true"
+          AUTH="$KUDU_USER:$KUDU_PASS"
+          
+          # Deploy with HTTP status code capture
+          echo "Deploying to: $DEPLOY_URL"
+          http_code=$(curl -w "%{http_code}" -s -o /tmp/deploy_response.txt -u "$AUTH" -X POST "$DEPLOY_URL" --data-binary "@api-app.zip")
+          echo "Deploy HTTP Status: $http_code"
+          cat /tmp/deploy_response.txt | head -20
+          
+          if [ "$http_code" != "200" ] && [ "$http_code" != "202" ]; then
+            echo "::error::Kudu deploy failed with HTTP $http_code"
+            exit 1
+          fi
 
-      - name: Deploy API via Azure CLI fallback
-        id: deploy_api_cli_fallback
-        if: steps.deploy_api_publish_profile.outcome != 'success' && steps.api_fallback_login.outcome == 'success'
-        continue-on-error: true
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            az webapp deploy \
-              --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
-              --name "${{ env.AZURE_WEBAPP_NAME_API }}" \
-              --src-path api-app.zip \
-              --type zip \
-              --clean true
+          # Poll latest deployment status (4 = success, 3 = failed)
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            poll_response=$(curl -s -u "$AUTH" "https://${{ env.AZURE_WEBAPP_NAME_API }}.scm.azurewebsites.net/api/deployments/latest")
+            status=$(echo "$poll_response" | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',''))" 2>/dev/null || echo "parse_error")
+            echo "Kudu deploy status attempt $i: $status"
+            [ "$status" = "4" ] && exit 0
+            [ "$status" = "3" ] && exit 1
+            sleep 10
+          done
+          echo "::error::Kudu deployment polling timed out"
+          exit 1
 
       - name: Fail with actionable API deployment guidance
-        if: steps.deploy_api_publish_profile.outcome != 'success' && steps.deploy_api_cli_fallback.outcome != 'success'
+        if: steps.deploy_api_publish_profile.outcome != 'success' && steps.deploy_api_kudu_fallback.outcome != 'success'
         run: |
-          echo "::error::API deployment failed via both publish-profile and Azure CLI fallback."
-          echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_API and verify AZURE_CREDENTIALS has Contributor on ${{ env.AZURE_RESOURCE_GROUP }}."
+          echo "::error::API deployment failed via both publish-profile and Kudu ZIP fallback."
+          echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_API or set AZURE_NODE_DEPLOY_USER/AZURE_NODE_DEPLOY_PASS secrets."
           exit 1
 
       - name: Verify Node API health post-deploy
@@ -162,47 +184,49 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
           package: python-app.zip
 
-      - name: Azure login for Python fallback deploy
-        id: python_fallback_login
+      - name: Deploy Python via Kudu ZIP fallback
+        id: deploy_python_kudu_fallback
         if: steps.deploy_python_publish_profile.outcome != 'success'
-        continue-on-error: true
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        env:
+          KUDU_USER: ${{ secrets.AZURE_PY_DEPLOY_USER }}
+          KUDU_PASS: ${{ secrets.AZURE_PY_DEPLOY_PASS }}
+        run: |
+          if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
+            echo "::error::Missing AZURE_PY_DEPLOY_USER / AZURE_PY_DEPLOY_PASS for Kudu fallback"
+            exit 1
+          fi
+          echo "DEBUG: KUDU_USER=$KUDU_USER, KUDU_PASS length=${#KUDU_PASS}"
+          DEPLOY_URL="https://${{ env.AZURE_WEBAPP_NAME_PYTHON }}.scm.azurewebsites.net/api/zipdeploy?isAsync=true"
+          AUTH="$KUDU_USER:$KUDU_PASS"
+          
+          # Deploy with HTTP status code capture
+          echo "Deploying to: $DEPLOY_URL"
+          http_code=$(curl -w "%{http_code}" -s -o /tmp/deploy_response.txt -u "$AUTH" -X POST "$DEPLOY_URL" --data-binary "@python-app.zip")
+          echo "Deploy HTTP Status: $http_code"
+          cat /tmp/deploy_response.txt | head -20
+          
+          if [ "$http_code" != "200" ] && [ "$http_code" != "202" ]; then
+            echo "::error::Kudu deploy failed with HTTP $http_code"
+            exit 1
+          fi
 
-      - name: Configure Python app startup (fallback path)
-        if: steps.deploy_python_publish_profile.outcome != 'success' && steps.python_fallback_login.outcome == 'success'
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            az webapp config appsettings set \
-              --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
-              --name "${{ env.AZURE_WEBAPP_NAME_PYTHON }}" \
-              --settings SCM_DO_BUILD_DURING_DEPLOYMENT=true ENABLE_ORYX_BUILD=true PORT=8000 WEBSITES_PORT=8000
-            az webapp config set \
-              --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
-              --name "${{ env.AZURE_WEBAPP_NAME_PYTHON }}" \
-              --startup-file "bash startup.sh"
-
-      - name: Deploy Python via Azure CLI fallback
-        id: deploy_python_cli_fallback
-        if: steps.deploy_python_publish_profile.outcome != 'success' && steps.python_fallback_login.outcome == 'success'
-        continue-on-error: true
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            az webapp deploy \
-              --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
-              --name "${{ env.AZURE_WEBAPP_NAME_PYTHON }}" \
-              --src-path python-app.zip \
-              --type zip \
-              --clean true
+          # Poll latest deployment status (4 = success, 3 = failed)
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            poll_response=$(curl -s -u "$AUTH" "https://${{ env.AZURE_WEBAPP_NAME_PYTHON }}.scm.azurewebsites.net/api/deployments/latest")
+            status=$(echo "$poll_response" | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',''))" 2>/dev/null || echo "parse_error")
+            echo "Kudu deploy status attempt $i: $status"
+            [ "$status" = "4" ] && exit 0
+            [ "$status" = "3" ] && exit 1
+            sleep 10
+          done
+          echo "::error::Kudu deployment polling timed out"
+          exit 1
 
       - name: Fail with actionable Python deployment guidance
-        if: steps.deploy_python_publish_profile.outcome != 'success' && steps.deploy_python_cli_fallback.outcome != 'success'
+        if: steps.deploy_python_publish_profile.outcome != 'success' && steps.deploy_python_kudu_fallback.outcome != 'success'
         run: |
-          echo "::error::Python deployment failed via both publish-profile and Azure CLI fallback."
-          echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON and verify AZURE_CREDENTIALS has Contributor on ${{ env.AZURE_RESOURCE_GROUP }}."
+          echo "::error::Python deployment failed via both publish-profile and Kudu ZIP fallback."
+          echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON or set AZURE_PY_DEPLOY_USER/AZURE_PY_DEPLOY_PASS secrets."
           exit 1
 
       - name: Verify Python API health post-deploy

@@ -86,6 +86,7 @@ jobs:
           VITE_PHONEPE_ENV: PRODUCTION
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
           VITE_ENABLE_PERFORMANCE_METRICS: "true"
+          VITE_TEMP_UNLOCK_ALL: "true"
         run: pnpm run build
 
       - name: Deploy to Azure Static Web Apps

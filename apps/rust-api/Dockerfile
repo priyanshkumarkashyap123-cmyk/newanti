@@ -1,6 +1,5 @@
 # Build stage - use Rust nightly for edition2024 support
-# Pin to 2025-01 nightly for reproducibility
-FROM rust:nightly-2025-01-15-slim AS builder
+FROM rust:nightly AS builder
 
 WORKDIR /app
 
