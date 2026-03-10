@@ -142,6 +142,7 @@ const PHONEPE_API_BASE = PHONEPE_ENV === "PRODUCTION"
   : "https://api-preprod.phonepe.com/apis/pg-sandbox";
 
 const FRONTEND_URL = env.FRONTEND_URL ?? "http://localhost:5173";
+const BILLING_BYPASS = process.env["TEMP_UNLOCK_ALL"] !== "false";
 
 const isPhonePeConfigured = !!(PHONEPE_MERCHANT_ID && PHONEPE_SALT_KEY);
 
@@ -152,6 +153,10 @@ if (isPhonePeConfigured) {
     hasMerchantId: !!PHONEPE_MERCHANT_ID,
     hasSaltKey: !!PHONEPE_SALT_KEY,
   });
+}
+
+if (BILLING_BYPASS) {
+  log.warn("Billing bypass enabled: payment verification disabled; all users have pro access");
 }
 
 // ============================================
@@ -527,6 +532,19 @@ billingRouter.post(
         return;
       }
 
+      if (BILLING_BYPASS) {
+        res.json({
+          success: true,
+          requestId,
+          data: {
+            bypassed: true,
+            tier: "enterprise",
+            message: "Billing bypass active: payment is not required.",
+          },
+        });
+        return;
+      }
+
       if (!isPhonePeConfigured) {
         res.status(503).json({
           success: false,
@@ -595,6 +613,21 @@ billingRouter.post(
         return;
       }
 
+      if (BILLING_BYPASS) {
+        res.json({
+          success: true,
+          requestId,
+          data: {
+            bypassed: true,
+            tier: "enterprise",
+            amount: 0,
+            currency: "INR",
+            message: "Billing bypass active: payment is not required.",
+          },
+        });
+        return;
+      }
+
       if (!isPhonePeConfigured) {
         res.status(503).json({
           success: false,
@@ -659,6 +692,21 @@ billingRouter.post(
       }
 
       const { merchantTransactionId, planType } = req.body;
+
+      if (BILLING_BYPASS) {
+        res.json({
+          success: true,
+          message: "Billing bypass active. Pro features unlocked.",
+          requestId,
+          data: {
+            tier: "enterprise",
+            bypassed: true,
+            planType: (planType as PlanType) || "monthly",
+            transactionId: merchantTransactionId || "BYPASS",
+          },
+        });
+        return;
+      }
 
       if (!merchantTransactionId) {
         res.status(400).json({
@@ -790,7 +838,27 @@ billingRouter.get(
         res.json({
           success: true,
           requestId,
-          data: { tier: "free", active: false, daysRemaining: null },
+          data: {
+            tier: BILLING_BYPASS ? "enterprise" : "free",
+            active: BILLING_BYPASS,
+            daysRemaining: null,
+            bypassed: BILLING_BYPASS,
+          },
+        });
+        return;
+      }
+
+      if (BILLING_BYPASS) {
+        res.json({
+          success: true,
+          requestId,
+          data: {
+            tier: "enterprise",
+            active: true,
+            daysRemaining: null,
+            cancelAtPeriodEnd: false,
+            bypassed: true,
+          },
         });
         return;
       }
@@ -895,7 +963,8 @@ billingRouter.get("/plans", (_req: Request, res: Response) => {
         },
       ],
       gateway: "phonepe",
-      paymentEnabled: isPhonePeConfigured,
+      paymentEnabled: isPhonePeConfigured && !BILLING_BYPASS,
+      bypassed: BILLING_BYPASS,
     },
   });
 });
@@ -919,6 +988,21 @@ billingRouter.get(
       const { txnId } = req.params;
       if (!txnId) {
         res.status(400).json({ success: false, message: "Missing txnId", requestId });
+        return;
+      }
+
+      if (BILLING_BYPASS) {
+        res.json({
+          success: true,
+          requestId,
+          data: {
+            state: "COMPLETED",
+            transactionId: txnId,
+            amount: 0,
+            responseCode: "BYPASS",
+            bypassed: true,
+          },
+        });
         return;
       }
 

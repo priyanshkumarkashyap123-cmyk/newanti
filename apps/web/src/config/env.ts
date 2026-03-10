@@ -152,7 +152,11 @@ export const PAYMENT_CONFIG = {
   phonePeMerchantId: getEnv("VITE_PHONEPE_MERCHANT_ID"),
   /** PhonePe environment: UAT (sandbox) or PRODUCTION */
   phonePeEnv: getEnv("VITE_PHONEPE_ENV") || "UAT",
-  isPaymentEnabled: Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID),
+  /** Temporary bypass while payment onboarding/KYC is pending */
+  billingBypass: getBoolEnv("VITE_TEMP_UNLOCK_ALL", true),
+  isPaymentEnabled:
+    Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) &&
+    !getBoolEnv("VITE_TEMP_UNLOCK_ALL", true),
 } as const;
 
 // ============================================

@@ -24,7 +24,7 @@
 import { FC, useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import { useSubscription } from "../hooks/useSubscription";
-import { API_CONFIG } from "../config/env";
+import { API_CONFIG, PAYMENT_CONFIG } from "../config/env";
 
 // ============================================
 // TYPES
@@ -540,6 +540,7 @@ export function usePhonePePayment() {
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const { getToken } = useAuth();
   const { refreshSubscription } = useSubscription();
+  const billingBypass = PAYMENT_CONFIG.billingBypass;
   const abortRef = useRef<AbortController | null>(null);
 
   // Cleanup on unmount
@@ -596,6 +597,12 @@ export function usePhonePePayment() {
       planType: PlanType = "monthly",
       _userName?: string,
     ): Promise<boolean> => {
+      if (billingBypass) {
+        await refreshSubscription();
+        setPaymentState("success");
+        return true;
+      }
+
       if (loading) return false;
 
       abortRef.current?.abort();
@@ -634,7 +641,7 @@ export function usePhonePePayment() {
         throw err;
       }
     },
-    [getToken, loading],
+    [billingBypass, getToken, loading, refreshSubscription],
   );
 
   return { openPayment, loading, paymentState };

@@ -35,6 +35,10 @@ export function isMasterUser(email: string | null | undefined): boolean {
  * Get effective tier for a user (master users get 'enterprise')
  */
 export function getEffectiveTier(email: string | null | undefined, actualTier: 'free' | 'pro' | 'enterprise'): 'free' | 'pro' | 'enterprise' {
+    const tempUnlockAll = process.env['TEMP_UNLOCK_ALL'] !== 'false';
+    if (tempUnlockAll) {
+        return 'enterprise';
+    }
     if (isMasterUser(email)) {
         return 'enterprise';
     }

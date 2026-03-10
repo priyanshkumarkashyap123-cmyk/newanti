@@ -15,8 +15,10 @@ import { logger } from '../utils/logger.js';
 
 // Check which auth mode is active
 const USE_CLERK = process.env['USE_CLERK'] === 'true';
-// Set TEMP_UNLOCK_ALL=true via env var ONLY for local testing; defaults to false (production-safe)
-const TEMP_UNLOCK_ALL = process.env['TEMP_UNLOCK_ALL'] === 'true';
+// TEMPORARY BILLING BYPASS:
+// Defaults to true (all users unlocked) while payment gateway onboarding/KYC is pending.
+// Set TEMP_UNLOCK_ALL=false to restore paid-gating behavior.
+const TEMP_UNLOCK_ALL = process.env['TEMP_UNLOCK_ALL'] !== 'false';
 
 const router: Router = Router();
 

@@ -101,6 +101,7 @@ import { usePhonePePayment } from "./PhonePePayment";
 import { useTierAccess } from "../hooks/useTierAccess";
 import { ProjectService, Project } from "../services/ProjectService";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { PAYMENT_CONFIG } from "../config/env";
 
 // Multiplayer
 import {
@@ -126,6 +127,7 @@ export const ModernModeler: FC = () => {
   const { subscription, refreshSubscription } = useSubscription();
   const { openPayment } = usePhonePePayment();
   const { isFree } = useTierAccess();
+  const billingBypass = PAYMENT_CONFIG.billingBypass;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Warn before leaving with unsaved changes
@@ -133,6 +135,18 @@ export const ModernModeler: FC = () => {
 
   // Auto-trigger upgrade if requested via URL
   useEffect(() => {
+    if (billingBypass) {
+      // Remove stale upgrade query param when billing is bypassed
+      if (searchParams.get("upgrade") === "pro") {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.delete("upgrade");
+          return newParams;
+        });
+      }
+      return;
+    }
+
     const upgrade = searchParams.get("upgrade");
     if (upgrade === "pro" && isFree && userId && user?.email) {
       (async () => {
@@ -153,6 +167,7 @@ export const ModernModeler: FC = () => {
       });
     }
   }, [
+    billingBypass,
     searchParams,
     isFree,
     userId,
@@ -164,6 +179,8 @@ export const ModernModeler: FC = () => {
 
   // Listen for manual upgrade trigger from Ribbon
   useEffect(() => {
+    if (billingBypass) return;
+
     const handleUpgradeTrigger = async () => {
       if (userId && user?.email) {
         const success = await openPayment(userId, user.email, "monthly");
@@ -175,7 +192,7 @@ export const ModernModeler: FC = () => {
     document.addEventListener("trigger-upgrade", handleUpgradeTrigger);
     return () =>
       document.removeEventListener("trigger-upgrade", handleUpgradeTrigger);
-  }, [userId, user, openPayment, refreshSubscription]);
+  }, [billingBypass, userId, user, openPayment, refreshSubscription]);
 
   const {
     nodes, members, plates, loads, memberLoads, floorLoads,

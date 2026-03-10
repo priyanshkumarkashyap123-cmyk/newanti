@@ -26,6 +26,7 @@ import {
 } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import { API_CONFIG } from "@/config/env";
+import { PAYMENT_CONFIG } from "@/config/env";
 import { createLogger } from "../utils/logger";
 
 // ============================================
@@ -98,8 +99,8 @@ const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
   },
 };
 
-// TODO(payment): Set to false after payment gateway integration is live
-const TEMP_UNLOCK_ALL = true;
+// TEMPORARY BILLING BYPASS (default true while KYC/payment onboarding is pending)
+const TEMP_UNLOCK_ALL = PAYMENT_CONFIG.billingBypass;
 
 // ============================================
 // CONTEXT
