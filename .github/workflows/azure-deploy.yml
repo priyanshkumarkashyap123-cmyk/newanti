@@ -293,7 +293,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-api, deploy-python, deploy-rust]
     if: always() && (needs.deploy-api.result == 'success' || needs.deploy-python.result == 'success')
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - name: Wait for services to warm up
         run: sleep 60
