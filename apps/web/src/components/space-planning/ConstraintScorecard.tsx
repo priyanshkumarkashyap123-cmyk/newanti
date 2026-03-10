@@ -516,6 +516,57 @@ export const ConstraintScorecard: React.FC<ConstraintScorecardProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* Structural Grid summary */}
+              {report.structuralGrid && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-lg border border-indigo-200 dark:border-indigo-800/30 p-2.5">
+                  <h4 className="text-[10px] font-semibold text-indigo-700 dark:text-indigo-400 uppercase mb-1.5">
+                    Structural Grid
+                  </h4>
+                  <div className="grid grid-cols-3 gap-1 text-center">
+                    <div className="bg-white dark:bg-slate-800 rounded px-2 py-1">
+                      <div className="text-[9px] text-slate-400">Columns</div>
+                      <div className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{report.structuralGrid.total_columns}</div>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 rounded px-2 py-1">
+                      <div className="text-[9px] text-slate-400">Beams</div>
+                      <div className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{report.structuralGrid.total_beams}</div>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 rounded px-2 py-1">
+                      <div className="text-[9px] text-slate-400">Module</div>
+                      <div className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{report.structuralGrid.grid_module_m}m</div>
+                    </div>
+                  </div>
+                  {report.structuralGrid.span_warnings.length > 0 && (
+                    <div className="mt-1.5 space-y-0.5">
+                      {report.structuralGrid.span_warnings.map((w, i) => (
+                        <p key={i} className="text-[9px] text-amber-600 dark:text-amber-400">
+                          {w.room_id}: span {w.max_span_m}m exceeds {w.limit_m}m — {w.action}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SA Convergence */}
+              {report.saConvergence && (
+                <div className="bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-200 dark:border-purple-800/30 p-2.5">
+                  <h4 className="text-[10px] font-semibold text-purple-700 dark:text-purple-400 uppercase mb-1.5">
+                    SA Refinement
+                  </h4>
+                  <div className="grid grid-cols-2 gap-1 text-center">
+                    <div className="bg-white dark:bg-slate-800 rounded px-2 py-1">
+                      <div className="text-[9px] text-slate-400">Improvement</div>
+                      <div className="text-xs font-bold text-green-600">{report.saConvergence.improvement_pct.toFixed(1)}%</div>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 rounded px-2 py-1">
+                      <div className="text-[9px] text-slate-400">Iterations</div>
+                      <div className="text-xs font-bold text-purple-700 dark:text-purple-300">{report.saConvergence.total_iterations}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

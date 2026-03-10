@@ -21,6 +21,7 @@ from layout_solver_v2 import (
     RoomNode,
     RoomType,
     Setbacks,
+    SimulatedAnnealingSolver,
     SiteConfig,
 )
 
@@ -47,6 +48,13 @@ class SiteRequest(BaseModel):
     fsi_limit: float = Field(default=1.5, gt=0)
     setbacks_m: SetbacksRequest = Field(default_factory=SetbacksRequest)
     north_angle_deg: float = Field(default=0.0, ge=0, lt=360)
+    latitude_deg: float = Field(default=28.6, description="Site latitude for solar analysis")
+    num_floors: int = Field(default=1, ge=1, le=20, description="Number of storeys")
+    polygon_vertices: Optional[List[List[float]]] = Field(
+        default=None,
+        description="General polygon site boundary as [[x,y], ...] in metres. "
+                    "If omitted, rectangular dimensions_m is used.",
+    )
 
 
 class GlobalConstraintsRequest(BaseModel):
@@ -111,6 +119,16 @@ class PenaltyWeightsRequest(BaseModel):
     zone_grouping_penalty: float = Field(default=100.0, ge=0)  # NEW: functional zone clustering
 
 
+class SAParamsRequest(BaseModel):
+    """Optional Simulated Annealing refinement parameters."""
+    enabled: bool = Field(default=False, description="Run SA refinement after BSP")
+    initial_temp: float = Field(default=1000.0, gt=0)
+    cooling_rate: float = Field(default=0.995, gt=0, lt=1)
+    min_temp: float = Field(default=0.1, ge=0)
+    max_iterations: int = Field(default=5000, ge=100, le=50000)
+    stagnation_limit: int = Field(default=50, ge=10, le=500)
+
+
 class LayoutV2Request(BaseModel):
     site: SiteRequest
     global_constraints: Optional[GlobalConstraintsRequest] = None
@@ -119,6 +137,10 @@ class LayoutV2Request(BaseModel):
     penalty_weights: Optional[PenaltyWeightsRequest] = None
     max_iterations: int = Field(default=200, ge=1, le=5000)
     random_seed: Optional[int] = None
+    sa_params: Optional[SAParamsRequest] = Field(
+        default=None,
+        description="Simulated Annealing refinement. Warm-starts from BSP result.",
+    )
 
 
 # =====================================================================
@@ -160,6 +182,10 @@ class LayoutV2Response(BaseModel):
     anthropometric_issues: List[str]
     constraints_detail: Dict[str, bool]
     placements: List[PlacementResponse]
+    travel_distances: Optional[Dict[str, Any]] = None
+    acoustic_buffers: Optional[List[Dict[str, Any]]] = None
+    structural_grid: Optional[Dict[str, Any]] = None
+    sa_convergence: Optional[Dict[str, Any]] = None
 
 
 # =====================================================================
@@ -340,6 +366,9 @@ async def optimize_layout_v2(request: LayoutV2Request):
             fsi_limit=request.site.fsi_limit,
             setbacks=Setbacks(front=sb.front, rear=sb.rear, left=left, right=right),
             north_angle_deg=request.site.north_angle_deg,
+            latitude_deg=request.site.latitude_deg,
+            num_floors=request.site.num_floors,
+            polygon_vertices=request.site.polygon_vertices,
         )
 
         # ── Build GlobalConstraints ──
@@ -413,7 +442,7 @@ async def optimize_layout_v2(request: LayoutV2Request):
         else:
             weights = None
 
-        # ── Solve ──
+        # ── Solve (BSP) ──
         solver = LayoutSolverV2(
             site=site_cfg,
             constraints=constraints,
@@ -424,6 +453,31 @@ async def optimize_layout_v2(request: LayoutV2Request):
             random_seed=request.random_seed,
         )
         solver.solve()
+
+        # ── Optional SA refinement ──
+        sa_convergence = None
+        if request.sa_params and request.sa_params.enabled and solver.best_solution:
+            adj_map: Dict = {}
+            for e in edges:
+                adj_map[(e.node_a, e.node_b)] = e.weight
+                adj_map[(e.node_b, e.node_a)] = e.weight
+            sa = SimulatedAnnealingSolver(
+                initial_solution=solver.best_solution,
+                site=site_cfg,
+                constraints=constraints,
+                adjacency_map=adj_map,
+                weights=weights,
+                initial_temp=request.sa_params.initial_temp,
+                cooling_rate=request.sa_params.cooling_rate,
+                min_temp=request.sa_params.min_temp,
+                max_iterations=request.sa_params.max_iterations,
+                stagnation_limit=request.sa_params.stagnation_limit,
+                random_seed=request.random_seed,
+            )
+            refined = sa.solve()
+            solver.best_solution = refined
+            sa_convergence = sa.get_convergence_report()
+
         report = solver.get_full_report()
 
         if "error" in report:
@@ -447,6 +501,10 @@ async def optimize_layout_v2(request: LayoutV2Request):
             anthropometric_issues=report["diagnostics"].get("anthropometric_issues", []),
             constraints_detail=report["constraints_detail"],
             placements=[PlacementResponse(**p) for p in report["placements"]],
+            travel_distances=report.get("travel_distances"),
+            acoustic_buffers=report.get("acoustic_buffers"),
+            structural_grid=report.get("structural_grid"),
+            sa_convergence=sa_convergence,
         )
 
     except HTTPException:

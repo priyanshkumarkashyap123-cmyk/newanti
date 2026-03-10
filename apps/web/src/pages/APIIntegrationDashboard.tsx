@@ -715,10 +715,10 @@ const APIIntegrationDashboard: React.FC = () => {
             Base URL: <code className="text-cyan-400 bg-slate-700 px-2 py-1 rounded">https://api.beamlab.app/v1</code>
           </p>
           <div className="flex gap-4">
-            <button type="button" onClick={downloadOpenApiSpec} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
+            <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
               📥 Download OpenAPI Spec
             </button>
-            <button type="button" onClick={openSwaggerDocs} className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
+            <button type="button" className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
               🔗 View in Swagger
             </button>
           </div>

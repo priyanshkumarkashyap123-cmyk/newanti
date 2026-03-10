@@ -12,6 +12,6 @@ pub use fsd_engine::{
     FSDEngine, FSDConfig, FSDResult,
     Objective, Constraint,
     MemberForces, MemberGeometry, MemberType,
-    DesignCheck, IterationHistory,
+    DesignCheck, IterationHistory, MemberEnvelopeSummary,
     check_member,
 };

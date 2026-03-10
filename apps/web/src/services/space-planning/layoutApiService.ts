@@ -56,6 +56,9 @@ export interface SiteRequest {
   fsi_limit: number;
   setbacks_m: SetbacksRequest;
   north_angle_deg: number;
+  latitude_deg?: number;
+  num_floors?: number;
+  polygon_vertices?: [number, number][];
 }
 
 export interface GlobalConstraintsRequest {
@@ -118,6 +121,15 @@ export interface PenaltyWeightsRequest {
   egress_distance_violation?: number;
 }
 
+export interface SAParamsRequest {
+  enabled: boolean;
+  initial_temp?: number;
+  cooling_rate?: number;
+  min_temp?: number;
+  max_iterations?: number;
+  stagnation_limit?: number;
+}
+
 export interface LayoutV2Request {
   site: SiteRequest;
   global_constraints?: GlobalConstraintsRequest;
@@ -126,6 +138,7 @@ export interface LayoutV2Request {
   penalty_weights?: PenaltyWeightsRequest;
   max_iterations: number;
   random_seed?: number;
+  sa_params?: SAParamsRequest;
 }
 
 // ============================================================================
@@ -272,6 +285,51 @@ export interface ConstraintsDetail {
   [key: string]: boolean;
 }
 
+export interface TravelDistances {
+  entry_xy: [number, number];
+  distances_m: Record<string, number>;
+  corridor_ratio: number;
+  max_travel_m: number;
+}
+
+export interface AcousticBufferReport {
+  buffer_id: string;
+  between: [string, string];
+  width_m: number;
+  area_sqm: number;
+}
+
+export interface StructuralGridReport {
+  columns: { x: number; y: number }[];
+  x_grid_lines: number[];
+  y_grid_lines: number[];
+  beams: {
+    id: string;
+    start: [number, number];
+    end: [number, number];
+    span_m: number;
+    direction: 'X' | 'Y';
+    needs_deep_beam: boolean;
+  }[];
+  span_warnings: {
+    room_id: string;
+    max_span_m: number;
+    limit_m: number;
+    action: string;
+  }[];
+  grid_module_m: number;
+  total_columns: number;
+  total_beams: number;
+}
+
+export interface SAConvergenceReport {
+  initial_penalty: number | null;
+  final_penalty: number;
+  improvement_pct: number;
+  total_iterations: number;
+  final_temperature: number;
+}
+
 export interface LayoutV2Response {
   success: boolean;
   total_penalty: number;
@@ -289,6 +347,10 @@ export interface LayoutV2Response {
   anthropometric_issues: string[];
   constraints_detail: ConstraintsDetail;
   placements: PlacementResponse[];
+  travel_distances?: TravelDistances;
+  acoustic_buffers?: AcousticBufferReport[];
+  structural_grid?: StructuralGridReport;
+  sa_convergence?: SAConvergenceReport;
 }
 
 // ============================================================================
@@ -341,6 +403,10 @@ export interface ConstraintReport {
   anthropometricIssues: string[];
   staircaseReport: StaircaseReport | null;
   constraintsDetail: ConstraintsDetail;
+  travelDistances?: TravelDistances;
+  acousticBuffers?: AcousticBufferReport[];
+  structuralGrid?: StructuralGridReport;
+  saConvergence?: SAConvergenceReport;
 }
 
 /** Full result of a single solver candidate */
@@ -621,6 +687,7 @@ export function wizardConfigToRequest(
       right: constraints.setbacks.right,
     },
     north_angle_deg: orientation.northDirection || 0,
+    num_floors: constraints.maxFloors || 1,
   };
 
   // Build global constraints from site + engineering defaults
@@ -827,6 +894,47 @@ export function buildConstraintReport(response: LayoutV2Response): ConstraintRep
 
   const score = total > 0 ? Math.round((met / total) * 100) : 0;
 
+  // Append new domain reports when present in response
+  if (response.travel_distances) {
+    const td = response.travel_distances;
+    const travelPass = td.max_travel_m <= 22.0;
+    violations.push({
+      domain: 'travel_distance' as ConstraintDomain,
+      label: 'A* Travel Distance',
+      passed: travelPass,
+      severity: travelPass ? 'info' : 'warning',
+      message: travelPass
+        ? `Max travel ${td.max_travel_m.toFixed(1)}m (A*), corridor ratio ${(td.corridor_ratio * 100).toFixed(1)}%`
+        : `Max travel ${td.max_travel_m.toFixed(1)}m exceeds 22m egress limit`,
+      value: td.max_travel_m,
+      limit: 22.0,
+    });
+  }
+
+  if (response.acoustic_buffers && response.acoustic_buffers.length > 0) {
+    violations.push({
+      domain: 'acoustic_buffers' as ConstraintDomain,
+      label: 'Acoustic Buffers',
+      passed: true,
+      severity: 'info',
+      message: `${response.acoustic_buffers.length} acoustic buffer(s) inserted between conflicting zones`,
+    });
+  }
+
+  if (response.structural_grid) {
+    const sg = response.structural_grid;
+    const hasWarnings = sg.span_warnings.length > 0;
+    violations.push({
+      domain: 'structural_grid' as ConstraintDomain,
+      label: 'Structural Grid',
+      passed: !hasWarnings,
+      severity: hasWarnings ? 'warning' : 'info',
+      message: hasWarnings
+        ? `${sg.total_columns} columns, ${sg.total_beams} beams — ${sg.span_warnings.length} span warning(s)`
+        : `${sg.total_columns} columns, ${sg.total_beams} beams on ${sg.grid_module_m}m module`,
+    });
+  }
+
   return {
     score,
     totalPenalty: response.total_penalty,
@@ -845,6 +953,10 @@ export function buildConstraintReport(response: LayoutV2Response): ConstraintRep
     anthropometricIssues: response.anthropometric_issues,
     staircaseReport: response.staircase,
     constraintsDetail: response.constraints_detail,
+    travelDistances: response.travel_distances,
+    acousticBuffers: response.acoustic_buffers,
+    structuralGrid: response.structural_grid,
+    saConvergence: response.sa_convergence,
   };
 }
 

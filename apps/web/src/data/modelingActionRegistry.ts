@@ -34,6 +34,9 @@ import {
   FileText,
   Ruler,
   Target,
+  FileCheck,
+  CheckSquare,
+  Globe,
 } from "lucide-react";
 
 export type SidebarActionHandler = "setTool" | "openModal" | "dispatch" | "storeAction";
@@ -105,12 +108,16 @@ export const MODELING_ACTIONS: SidebarAction[] = [
 
   { id: "design-codes", label: "Select Design Code", icon: Settings, handler: "openModal", target: "designCodes", categories: ["DESIGN"] },
   { id: "design-check", label: "Run Design Check", icon: Ruler, handler: "dispatch", target: "trigger-analysis", categories: ["DESIGN"] },
+  { id: "design-results", label: "View Design Results", icon: Eye, handler: "dispatch", target: "toggle-results-dock", categories: ["DESIGN"] },
   { id: "steel-design", label: "Steel Design", icon: Building2, handler: "openModal", target: "steelDesign", categories: ["DESIGN"] },
   { id: "rc-design", label: "RC Design", icon: Columns, handler: "openModal", target: "concreteDesign", categories: ["DESIGN"] },
   { id: "connection-design", label: "Connection Design", icon: Link2, handler: "openModal", target: "connectionDesign", categories: ["DESIGN"] },
   { id: "foundation-design", label: "Foundation Design", icon: Landmark, handler: "openModal", target: "foundationDesign", categories: ["DESIGN"] },
+  { id: "rc-detailing", label: "RC Detailing", icon: FileText, handler: "openModal", target: "rcDetailing", categories: ["DESIGN"] },
+  { id: "steel-detailing", label: "Steel Detailing", icon: FileText, handler: "openModal", target: "steelDetailing", categories: ["DESIGN"] },
+  { id: "section-optimize", label: "Optimize Sections", icon: Ruler, handler: "openModal", target: "sectionOptimization", categories: ["DESIGN"] },
   { id: "design-hub", label: "Full Design Hub", icon: Ruler, handler: "openModal", target: "designHub", categories: ["DESIGN"] },
-  { id: "pdf-report", label: "Generate Report", icon: FileText, handler: "dispatch", target: "trigger-pdf-report", categories: ["DESIGN"] },
+  { id: "full-report", label: "Generate Report", icon: FileText, handler: "dispatch", target: "trigger-pdf-report", categories: ["DESIGN"] },
 ];
 
 const SIDEBAR_CURATED_ACTION_IDS: Record<SidebarCategory, string[]> = {

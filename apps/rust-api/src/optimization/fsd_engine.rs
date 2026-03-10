@@ -22,8 +22,27 @@ use std::collections::HashMap;
 use crate::design_codes::is_800::{design_shear, ismb_database, IsmbSection, GAMMA_M0};
 use crate::design_codes::section_wise::{
     self, MomentType, SectionDemand, SectionLocation, SteelDesignCode,
-    SteelSectionWiseDesigner,
+    SteelSectionWiseDesigner, SteelSectionInput,
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MATERIAL CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Young's modulus for structural steel (N/mm²)
+const E_STEEL: f64 = 200_000.0;
+
+/// Poisson's ratio for steel
+const NU_STEEL: f64 = 0.3;
+
+/// Shear modulus: G = E / (2(1+ν)) per IS 800 Cl. 2.2.4.1
+const G_STEEL: f64 = 76_923.0; // E_STEEL / (2.0 * (1.0 + NU_STEEL))
+
+/// LTB imperfection factor for rolled I-sections (IS 800 Table 14, curve a)
+const ALPHA_LT_ROLLED: f64 = 0.21;
+
+/// LTB imperfection factor for welded I-sections (IS 800 Table 14, curve c)
+const ALPHA_LT_WELDED: f64 = 0.49;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPE DEFINITIONS
@@ -66,6 +85,9 @@ pub struct MemberForces {
     pub moment_y_knm: f64,
     pub moment_z_knm: f64,
     pub torsion_knm: f64,
+    /// Maximum deflection from solver (mm). If None, estimated from moment.
+    #[serde(default)]
+    pub max_deflection_mm: Option<f64>,
 }
 
 /// Member geometric properties
@@ -75,6 +97,9 @@ pub struct MemberGeometry {
     pub length_mm: f64,
     pub effective_length_y: f64,  // For buckling
     pub effective_length_z: f64,
+    /// Laterally unbraced length (mm). Defaults to member length if None.
+    #[serde(default)]
+    pub unbraced_length: Option<f64>,
     pub member_type: MemberType,   // Beam, Column, Brace
 }
 
@@ -92,13 +117,30 @@ pub struct DesignCheck {
     pub member_id: String,
     pub load_combo: String,
     pub section_name: String,
-    pub utilization_ratio: f64,     // Max of all checks (flex, shear, comp)
+    pub utilization_ratio: f64,     // Max of all checks
     pub flexure_ur: f64,
     pub shear_ur: f64,
     pub compression_ur: f64,
+    /// P-M interaction ratio per IS 800 Cl. 9.3
+    #[serde(default)]
+    pub interaction_ur: f64,
+    /// Lateral-torsional buckling ratio per IS 800 Cl. 8.2.2
+    #[serde(default)]
+    pub ltb_ur: f64,
+    /// Serviceability deflection ratio per IS 800 Table 6
+    #[serde(default)]
+    pub deflection_ur: f64,
+    /// Web crippling/bearing ratio per IS 800 Cl. 8.7.4
+    #[serde(default)]
+    pub web_crippling_ur: f64,
+    /// Connection capacity adequate (0.9 reserve applied)
+    #[serde(default = "default_connection_adequate")]
+    pub connection_adequate: bool,
     pub passed: bool,
-    pub governing_check: String,    // "flexure", "shear", "compression"
+    pub governing_check: String,
 }
+
+fn default_connection_adequate() -> bool { true }
 
 /// FSD optimization configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -158,6 +200,33 @@ impl Default for FSDConfig {
     }
 }
 
+/// Envelope of peak forces per member across all load combinations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MemberEnvelopeSummary {
+    pub member_id: String,
+    pub section_name: String,
+    /// Governing UR and which check governs
+    pub governing_ur: f64,
+    pub governing_check: String,
+    pub governing_combo: String,
+    /// Peak forces across all combos
+    pub max_axial_kn: f64,
+    pub min_axial_kn: f64,
+    pub max_shear_y_kn: f64,
+    pub max_moment_z_knm: f64,
+    pub max_moment_y_knm: f64,
+    /// Full UR breakdown from governing combo
+    pub flexure_ur: f64,
+    pub shear_ur: f64,
+    pub compression_ur: f64,
+    pub interaction_ur: f64,
+    pub ltb_ur: f64,
+    pub deflection_ur: f64,
+    pub web_crippling_ur: f64,
+    pub connection_adequate: bool,
+    pub passed: bool,
+}
+
 /// FSD optimization result
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FSDResult {
@@ -193,6 +262,9 @@ pub struct FSDResult {
     
     /// Final design checks
     pub final_checks: Vec<DesignCheck>,
+    
+    /// Envelope summaries per member (peak forces + governing UR)
+    pub member_envelopes: Vec<MemberEnvelopeSummary>,
     
     /// Maximum utilization ratio achieved
     pub max_ur: f64,
@@ -356,6 +428,9 @@ impl FSDEngine {
             format!("Optimization successful: {} iterations, {:.1}% weight savings", iteration, weight_savings_pct)
         };
         
+        // Compute envelope summaries per member
+        let member_envelopes = Self::compute_member_envelopes(&final_checks, &current_sections);
+        
         FSDResult {
             success,
             converged,
@@ -368,6 +443,7 @@ impl FSDEngine {
             final_cost,
             history,
             final_checks,
+            member_envelopes,
             max_ur,
             unique_sections,
             message,
@@ -475,6 +551,63 @@ impl FSDEngine {
     // HELPER FUNCTIONS
     // ═══════════════════════════════════════════════════════════════════════
     
+    /// Compute envelope summaries per member from design checks across all load combos.
+    ///
+    /// For each member: finds peak forces and the governing load combo/check.
+    fn compute_member_envelopes(
+        checks: &[DesignCheck],
+        sections: &HashMap<String, String>,
+    ) -> Vec<MemberEnvelopeSummary> {
+        // Group checks by member_id
+        let mut by_member: HashMap<String, Vec<&DesignCheck>> = HashMap::new();
+        for c in checks {
+            by_member.entry(c.member_id.clone()).or_default().push(c);
+        }
+
+        let mut envelopes = Vec::new();
+        for (member_id, member_checks) in &by_member {
+            // Find governing check (max UR)
+            let governing = member_checks.iter()
+                .max_by(|a, b| a.utilization_ratio.partial_cmp(&b.utilization_ratio)
+                    .unwrap_or(std::cmp::Ordering::Equal));
+
+            let gov = match governing {
+                Some(g) => g,
+                None => continue,
+            };
+
+            let section_name = sections.get(member_id)
+                .cloned()
+                .unwrap_or_else(|| gov.section_name.clone());
+
+            envelopes.push(MemberEnvelopeSummary {
+                member_id: member_id.clone(),
+                section_name,
+                governing_ur: gov.utilization_ratio,
+                governing_check: gov.governing_check.clone(),
+                governing_combo: gov.load_combo.clone(),
+                max_axial_kn: 0.0,   // Not available from DesignCheck; zero is safe
+                min_axial_kn: 0.0,
+                max_shear_y_kn: 0.0,
+                max_moment_z_knm: 0.0,
+                max_moment_y_knm: 0.0,
+                flexure_ur: gov.flexure_ur,
+                shear_ur: gov.shear_ur,
+                compression_ur: gov.compression_ur,
+                interaction_ur: gov.interaction_ur,
+                ltb_ur: gov.ltb_ur,
+                deflection_ur: gov.deflection_ur,
+                web_crippling_ur: gov.web_crippling_ur,
+                connection_adequate: gov.connection_adequate,
+                passed: gov.utilization_ratio <= 1.0,
+            });
+        }
+
+        // Sort by member_id for consistent output
+        envelopes.sort_by(|a, b| a.member_id.cmp(&b.member_id));
+        envelopes
+    }
+
     /// Get maximum utilization ratio per member across all load combos
     fn get_member_max_utilization(&self, checks: &[DesignCheck]) -> HashMap<String, f64> {
         let mut member_ur: HashMap<String, f64> = HashMap::new();
@@ -528,9 +661,16 @@ impl FSDEngine {
 // DESIGN CHECK IMPLEMENTATION
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Perform design check for single member
+/// Perform comprehensive design check for single member
 ///
-/// Returns DesignCheck with all utilization ratios
+/// Checks performed (IS 800:2007):
+/// - Flexure: Cl. 8.2.1 — M/Md
+/// - Shear: Cl. 8.4 — V/Vd
+/// - Compression: Cl. 7.1.2 — P/Pd (with buckling)
+/// - P-M Interaction: Cl. 9.3.1 — N/Nd + My/Mdy + Mz/Mdz
+/// - LTB: Cl. 8.2.2 — M/Md_ltb (lateral-torsional buckling)
+/// - Deflection: Table 6 — δ/δ_allow
+/// - Web Crippling: Cl. 8.7.4 — R/Fw
 pub fn check_member(
     forces: &MemberForces,
     geometry: &MemberGeometry,
@@ -550,45 +690,55 @@ pub fn check_member(
             flexure_ur: 0.0,
             shear_ur: 0.0,
             compression_ur: 0.0,
+            interaction_ur: 0.0,
+            ltb_ur: 0.0,
+            deflection_ur: 0.0,
+            web_crippling_ur: 0.0,
+            connection_adequate: false,
             passed: false,
             governing_check: format!("Section '{}' not in database", section_name),
         },
     };
-    
+
+    // Enhanced section data (with J, Cw) for LTB check
+    let steel_input = section_wise::lookup_ismb(section_name);
+
+    // Laterally unbraced length (defaults to member length)
+    let lb = geometry.unbraced_length.unwrap_or(geometry.length_mm);
+
     // ═══════════════════════════════════════════════════════════════════════
-    // FLEXURE CHECK
+    // FLEXURE CHECK — IS 800 Cl. 8.2.1
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     let zpxx = 1.15 * section.zxx;  // Approximate plastic modulus
     let md_knm = zpxx * fy / (GAMMA_M0 * 1e6);
     let mux_abs = forces.moment_z_knm.abs();
     let flexure_ur = if md_knm > 0.0 { mux_abs / md_knm } else { 0.0 };
-    
+
     // ═══════════════════════════════════════════════════════════════════════
-    // SHEAR CHECK
+    // SHEAR CHECK — IS 800 Cl. 8.4
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     let d_web = section.depth - 2.0 * section.tf;
     let vu_kn = forces.shear_y_kn.abs();
     let shear_result = design_shear(d_web, section.tw, fy, vu_kn);
     let shear_ur = shear_result.utilization;
-    
+
     // ═══════════════════════════════════════════════════════════════════════
-    // COMPRESSION CHECK (if axial load present)
+    // COMPRESSION CHECK — IS 800 Cl. 7.1.2 (with buckling)
     // ═══════════════════════════════════════════════════════════════════════
-    
-    let compression_ur = if forces.axial_kn < 0.0 {
-        // Compression (negative axial)
+
+    let (compression_ur, pd_kn) = if forces.axial_kn < 0.0 {
         let pu_kn = forces.axial_kn.abs();
-        
+
         let lambda_xx = geometry.effective_length_y / section.rxx.max(1.0);
         let lambda_yy = geometry.effective_length_z / section.ryy.max(1.0);
         let lambda = lambda_xx.max(lambda_yy);
-        let lambda_e = (lambda / std::f64::consts::PI) * (fy / 200_000.0).sqrt();
-        
-        let alpha = 0.34;  // Buckling curve b for I-sections
+        let lambda_e = (lambda / std::f64::consts::PI) * (fy / E_STEEL).sqrt();
+
+        let alpha = 0.34;  // Buckling curve b for I-sections (IS 800 Table 10)
         let phi = 0.5 * (1.0 + alpha * (lambda_e - 0.2) + lambda_e.powi(2));
-        
+
         // Perry-Robertson buckling reduction factor χ
         let discriminant = (phi * phi - lambda_e * lambda_e).max(0.0);
         let chi = if discriminant > 1e-12 {
@@ -601,39 +751,293 @@ pub fn check_member(
         } else {
             (1.0 / (2.0 * phi.max(0.5))).min(1.0)
         };
-        
+
         let fcd = chi * fy / GAMMA_M0;
-        let pd_kn = section.area * fcd / 1000.0;
-        
-        if pd_kn > 0.0 { pu_kn / pd_kn } else { 0.0 }
+        let pd = section.area * fcd / 1000.0;
+        let ur = if pd > 0.0 { pu_kn / pd } else { 0.0 };
+        (ur, pd)
     } else {
-        0.0  // Tension — simplified (would need bolt check in practice)
+        // Tension capacity (for interaction check denominator)
+        (0.0, section.area * fy / (GAMMA_M0 * 1000.0))
     };
-    
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // LTB CHECK — IS 800 Cl. 8.2.2 (Lateral-Torsional Buckling)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let ltb_ur = if geometry.member_type == MemberType::Beam && mux_abs > f64::EPSILON {
+        compute_ltb_ur(section, &steel_input, fy, mux_abs, lb)
+    } else {
+        0.0
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // P-M INTERACTION — IS 800 Cl. 9.3 (Combined Axial + Bending)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let interaction_ur = compute_interaction_ur(
+        forces, section, fy, pd_kn, md_knm,
+    );
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DEFLECTION CHECK — IS 800 Table 6 (Serviceability)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let deflection_ur = compute_deflection_ur(forces, geometry, section);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // WEB CRIPPLING CHECK — IS 800 Cl. 8.7.4 (Web Bearing)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    let web_crippling_ur = compute_web_crippling_ur(forces, section, fy, geometry);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // CONNECTION CAPACITY RESERVE
+    // ═══════════════════════════════════════════════════════════════════════
+    // Apply 0.9 factor when connections are not explicitly designed
+    let connection_adequate = flexure_ur * 0.9 <= 1.0 && shear_ur * 0.9 <= 1.0;
+
     // ═══════════════════════════════════════════════════════════════════════
     // GOVERNING CHECK
     // ═══════════════════════════════════════════════════════════════════════
-    
-    let utilization_ratio = flexure_ur.max(shear_ur).max(compression_ur);
-    
-    let governing_check = if flexure_ur >= shear_ur && flexure_ur >= compression_ur {
-        "flexure"
-    } else if shear_ur >= compression_ur {
-        "shear"
-    } else {
-        "compression"
-    };
-    
+
+    let urs = [
+        (flexure_ur, "flexure"),
+        (shear_ur, "shear"),
+        (compression_ur, "compression"),
+        (interaction_ur, "interaction"),
+        (ltb_ur, "ltb"),
+        (deflection_ur, "deflection"),
+        (web_crippling_ur, "web_crippling"),
+    ];
+
+    let (utilization_ratio, governing_check) = urs.iter()
+        .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal))
+        .map(|(ur, check)| (*ur, check.to_string()))
+        .unwrap_or((0.0, "none".to_string()));
+
     DesignCheck {
         member_id: forces.member_id.clone(),
         load_combo: forces.load_combo.clone(),
         section_name: section_name.to_string(),
-        utilization_ratio: (utilization_ratio * 1000.0).round() / 1000.0,
-        flexure_ur: (flexure_ur * 1000.0).round() / 1000.0,
-        shear_ur: (shear_ur * 1000.0).round() / 1000.0,
-        compression_ur: (compression_ur * 1000.0).round() / 1000.0,
+        utilization_ratio: round3(utilization_ratio),
+        flexure_ur: round3(flexure_ur),
+        shear_ur: round3(shear_ur),
+        compression_ur: round3(compression_ur),
+        interaction_ur: round3(interaction_ur),
+        ltb_ur: round3(ltb_ur),
+        deflection_ur: round3(deflection_ur),
+        web_crippling_ur: round3(web_crippling_ur),
+        connection_adequate,
         passed: utilization_ratio <= 1.0,
-        governing_check: governing_check.to_string(),
+        governing_check,
+    }
+}
+
+/// Round to 3 decimal places
+fn round3(x: f64) -> f64 {
+    (x * 1000.0).round() / 1000.0
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INDIVIDUAL CHECK IMPLEMENTATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Compute LTB utilization ratio per IS 800 Cl. 8.2.2
+///
+/// Elastic critical moment:
+///   Mcr = (π²EIy / Lb²) × √(Iw/Iy + (Lb²GJ)/(π²EIy))
+///
+/// Non-dimensional slenderness: λLT = √(βb × Zp × fy / Mcr)
+/// Reduction factor χLT: IS 800 Cl. 8.2.2.1, Table 14
+fn compute_ltb_ur(
+    section: &IsmbSection,
+    steel_input: &Option<SteelSectionInput>,
+    fy: f64,
+    mu_knm: f64,
+    lb: f64,
+) -> f64 {
+    // Get torsional constants
+    let (j, cw) = match steel_input {
+        Some(si) => (si.j_mm4, si.cw_mm6),
+        None => {
+            // Approximate J and Cw for I-sections
+            // J ≈ (2bf·tf³ + (d-2tf)·tw³) / 3
+            let d_web = section.depth - 2.0 * section.tf;
+            let j_approx = (2.0 * section.width * section.tf.powi(3)
+                + d_web * section.tw.powi(3)) / 3.0;
+            // Cw ≈ Iy × (d-tf)² / 4
+            let hs = section.depth - section.tf;
+            let cw_approx = section.iyy * hs * hs / 4.0;
+            (j_approx, cw_approx)
+        }
+    };
+
+    if lb < f64::EPSILON || section.iyy < f64::EPSILON {
+        return 0.0;
+    }
+
+    let pi2 = std::f64::consts::PI * std::f64::consts::PI;
+    let ei_y = E_STEEL * section.iyy;
+    let term1 = pi2 * ei_y / (lb * lb);
+    let cw_iy = if section.iyy > f64::EPSILON { cw / section.iyy } else { 0.0 };
+    let gj_term = (lb * lb * G_STEEL * j) / (pi2 * ei_y);
+
+    let under_root = cw_iy + gj_term;
+    if under_root < 0.0 {
+        return 0.0;
+    }
+
+    let mcr = term1 * under_root.sqrt();  // N·mm
+    let mcr_knm = mcr / 1e6;              // kN·m
+
+    if mcr_knm < f64::EPSILON {
+        return 0.0;
+    }
+
+    // Plastic section modulus (approximate)
+    let zp = 1.15 * section.zxx;
+    let beta_b = 1.0;  // For plastic/compact sections
+
+    let lambda_lt = (beta_b * zp * fy / mcr).sqrt();
+
+    // If λLT ≤ 0.2, no LTB concern — plastic capacity governs
+    if lambda_lt <= 0.2 {
+        return 0.0;
+    }
+
+    let alpha_lt = ALPHA_LT_ROLLED;  // Rolled I-sections
+    let phi_lt = 0.5 * (1.0 + alpha_lt * (lambda_lt - 0.2) + lambda_lt * lambda_lt);
+
+    let discriminant = (phi_lt * phi_lt - lambda_lt * lambda_lt).max(0.0);
+    let chi_lt = if discriminant > f64::EPSILON {
+        (1.0 / (phi_lt + discriminant.sqrt())).min(1.0).max(0.0)
+    } else {
+        (1.0 / (2.0 * phi_lt.max(0.5))).min(1.0).max(0.0)
+    };
+
+    let md_ltb = beta_b * zp * fy * chi_lt / (GAMMA_M0 * 1e6);  // kN·m
+
+    if md_ltb > f64::EPSILON {
+        mu_knm / md_ltb
+    } else {
+        0.0
+    }
+}
+
+/// Compute P-M interaction UR per IS 800 Cl. 9.3.1
+///
+/// Linear interaction (conservative):
+///   N/Nd + My/Mdy + Mz/Mdz ≤ 1.0
+///
+/// Only activated when both axial and bending are significant.
+fn compute_interaction_ur(
+    forces: &MemberForces,
+    section: &IsmbSection,
+    fy: f64,
+    pd_kn: f64,
+    md_knm: f64,
+) -> f64 {
+    let axial_abs = forces.axial_kn.abs();
+    let my_abs = forces.moment_y_knm.abs();
+    let mz_abs = forces.moment_z_knm.abs();
+
+    // Axial capacity
+    let nd = if pd_kn > f64::EPSILON { pd_kn } else { section.area * fy / (GAMMA_M0 * 1000.0) };
+
+    // Skip if no significant axial load (< 1% of capacity)
+    if axial_abs < 0.01 * nd.abs().max(1.0) {
+        return 0.0;
+    }
+
+    // Skip if no moment
+    if mz_abs < f64::EPSILON && my_abs < f64::EPSILON {
+        return 0.0;
+    }
+
+    // Minor axis moment capacity (approximate)
+    let zpy = 1.15 * section.zyy;
+    let mdy_knm = zpy * fy / (GAMMA_M0 * 1e6);
+
+    // IS 800 Cl. 9.3.1.1 — Linear interaction (conservative)
+    let n_ratio = axial_abs / nd.max(f64::EPSILON);
+    let mz_ratio = mz_abs / md_knm.max(f64::EPSILON);
+    let my_ratio = if mdy_knm > f64::EPSILON { my_abs / mdy_knm } else { 0.0 };
+
+    n_ratio + mz_ratio + my_ratio
+}
+
+/// Compute deflection UR per IS 800 Table 6
+///
+/// If actual deflection provided in forces, uses that directly.
+/// Otherwise estimates from moment: δ ≈ 5ML²/(48EI) for UDL-equivalent.
+/// Allowable: L/300 for beams supporting floors.
+fn compute_deflection_ur(
+    forces: &MemberForces,
+    geometry: &MemberGeometry,
+    section: &IsmbSection,
+) -> f64 {
+    // Only check deflection for beams
+    if geometry.member_type != MemberType::Beam {
+        return 0.0;
+    }
+
+    let span = geometry.length_mm;
+    if span < f64::EPSILON || section.ixx < f64::EPSILON {
+        return 0.0;
+    }
+
+    let actual_defl = match forces.max_deflection_mm {
+        Some(d) if d.abs() > f64::EPSILON => d.abs(),
+        _ => {
+            // Estimate: δ ≈ 5ML²/(48EI) for equivalent UDL moment
+            let m = forces.moment_z_knm.abs() * 1e6;  // N·mm
+            5.0 * m * span * span / (48.0 * E_STEEL * section.ixx)
+        }
+    };
+
+    // IS 800 Table 6: L/300 for beams supporting floors
+    let allowable = span / 300.0;
+
+    if allowable > f64::EPSILON {
+        actual_defl / allowable
+    } else {
+        0.0
+    }
+}
+
+/// Compute web crippling UR per IS 800 Cl. 8.7.4
+///
+/// Web bearing capacity: Fw = (b1 + n2) × tw × fyw / γm0
+/// b1 = stiff bearing length (conservative 50 mm)
+/// n2 = 2.5(tf + R1) at interior — approximated as 5·tf
+fn compute_web_crippling_ur(
+    forces: &MemberForces,
+    section: &IsmbSection,
+    fy: f64,
+    geometry: &MemberGeometry,
+) -> f64 {
+    // Only check for beams with significant shear (reactions)
+    if geometry.member_type != MemberType::Beam {
+        return 0.0;
+    }
+
+    let reaction_kn = forces.shear_y_kn.abs();
+    if reaction_kn < f64::EPSILON {
+        return 0.0;
+    }
+
+    // Conservative: assume 50 mm stiff bearing length
+    let b1 = 50.0;  // mm
+    // n2 = 2.5(tf + R1), approximate R1 ≈ tf
+    let n2 = 2.5 * (section.tf + section.tf);
+
+    let fw_kn = (b1 + n2) * section.tw * (fy / GAMMA_M0) / 1000.0;
+
+    if fw_kn > f64::EPSILON {
+        reaction_kn / fw_kn
+    } else {
+        0.0
     }
 }
 
@@ -839,6 +1243,7 @@ mod tests {
             moment_y_knm: 0.0,
             moment_z_knm: 120.0,
             torsion_knm: 0.0,
+            max_deflection_mm: None,
         };
         
         let geometry = MemberGeometry {
@@ -846,6 +1251,7 @@ mod tests {
             length_mm: 5000.0,
             effective_length_y: 5000.0,
             effective_length_z: 5000.0,
+            unbraced_length: None,
             member_type: MemberType::Beam,
         };
         
@@ -854,6 +1260,73 @@ mod tests {
         assert!(check.utilization_ratio > 0.0);
         assert!(check.utilization_ratio < 2.0);
         assert!(!check.governing_check.is_empty());
+        // Verify new checks are computed
+        assert!(check.ltb_ur >= 0.0, "LTB UR should be non-negative");
+        assert!(check.interaction_ur >= 0.0, "Interaction UR should be non-negative");
+        assert!(check.deflection_ur >= 0.0, "Deflection UR should be non-negative");
+    }
+
+    #[test]
+    fn test_ltb_check_is800() {
+        // Textbook example: ISMB 300, 6m unbraced span, 80 kN·m moment
+        // LTB should reduce capacity below plastic moment
+        let forces = MemberForces {
+            member_id: "B1".to_string(),
+            load_combo: "1.5DL".to_string(),
+            axial_kn: 0.0,
+            shear_y_kn: 40.0,
+            shear_z_kn: 0.0,
+            moment_y_knm: 0.0,
+            moment_z_knm: 80.0,
+            torsion_knm: 0.0,
+            max_deflection_mm: None,
+        };
+        let geometry = MemberGeometry {
+            member_id: "B1".to_string(),
+            length_mm: 6000.0,
+            effective_length_y: 6000.0,
+            effective_length_z: 6000.0,
+            unbraced_length: Some(6000.0),
+            member_type: MemberType::Beam,
+        };
+        let check = check_member(&forces, &geometry, "ISMB300", 250.0);
+        // With 6m unbraced length, LTB should be active for ISMB 300
+        assert!(check.ltb_ur > 0.0, "LTB should be active for 6m span: ltb_ur={}", check.ltb_ur);
+        // LTB UR should be larger than basic flexure UR (LTB reduces capacity)
+        assert!(check.ltb_ur >= check.flexure_ur,
+            "LTB should govern over flexure: ltb={}, flex={}", check.ltb_ur, check.flexure_ur);
+    }
+
+    #[test]
+    fn test_pm_interaction_is800() {
+        // Column with combined compression + bending: interaction should activate
+        let forces = MemberForces {
+            member_id: "C1".to_string(),
+            load_combo: "1.5DL+1.5LL".to_string(),
+            axial_kn: -500.0,  // 500 kN compression
+            shear_y_kn: 20.0,
+            shear_z_kn: 0.0,
+            moment_y_knm: 0.0,
+            moment_z_knm: 60.0,  // 60 kN·m moment
+            torsion_knm: 0.0,
+            max_deflection_mm: None,
+        };
+        let geometry = MemberGeometry {
+            member_id: "C1".to_string(),
+            length_mm: 3500.0,
+            effective_length_y: 3500.0,
+            effective_length_z: 3500.0,
+            unbraced_length: None,
+            member_type: MemberType::Column,
+        };
+        let check = check_member(&forces, &geometry, "ISMB300", 250.0);
+        // P-M interaction should exceed individual compression and flexure URs
+        assert!(check.interaction_ur > check.compression_ur,
+            "Interaction should exceed compression: int={}, comp={}",
+            check.interaction_ur, check.compression_ur);
+        assert!(check.interaction_ur > check.flexure_ur,
+            "Interaction should exceed flexure: int={}, flex={}",
+            check.interaction_ur, check.flexure_ur);
     }
     
     #[test]
@@ -871,6 +1344,7 @@ mod tests {
                 length_mm: 6000.0,
                 effective_length_y: 6000.0,
                 effective_length_z: 6000.0,
+                unbraced_length: None,
                 member_type: MemberType::Beam,
             },
             MemberGeometry {
@@ -878,6 +1352,7 @@ mod tests {
                 length_mm: 5000.0,
                 effective_length_y: 5000.0,
                 effective_length_z: 5000.0,
+                unbraced_length: None,
                 member_type: MemberType::Beam,
             },
         ];

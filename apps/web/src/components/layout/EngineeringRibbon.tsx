@@ -1,4 +1,4 @@
-import { FC, memo, ReactNode, useMemo } from "react";
+import { FC, memo, ReactNode, useCallback, useMemo } from "react";
 import {
   MousePointer2,
   Box,
@@ -61,6 +61,7 @@ import { Link } from "react-router-dom";
 import { useModelStore, useModelStoreTemporal } from "../../store/model";
 import { useUIStore, Category } from "../../store/uiStore";
 import { Tooltip } from "../ui/Tooltip";
+import { MODELING_ACTIONS } from "../../data/modelingActionRegistry";
 
 /* ─── Stable sub-components (extracted to avoid re-mounting every render) ─── */
 
@@ -215,6 +216,30 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const setDesignTabPreset = useUIStore((s) => s.setDesignTabPreset);
   const { undo, redo } = useModelStoreTemporal.getState();
 
+  const executeSharedAction = useCallback((actionId: string) => {
+    const action = MODELING_ACTIONS.find((item) => item.id === actionId);
+    if (!action) return;
+
+    switch (action.handler) {
+      case "setTool":
+        setTool(action.target as any);
+        break;
+      case "openModal":
+        openModal(action.target as any);
+        break;
+      case "dispatch":
+        document.dispatchEvent(new CustomEvent(action.target));
+        break;
+      case "storeAction":
+        if (action.target === "deleteSelection") {
+          useModelStore.getState().deleteSelection();
+        }
+        break;
+      default:
+        break;
+    }
+  }, [openModal, setTool]);
+
   const renderGeometryTab = useMemo(() => (
     <>
       <ToolGroup label="File">
@@ -255,7 +280,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Box}
           label="Node"
-          onClick={() => setTool("node")}
+          onClick={() => executeSharedAction("add-node")}
           isActive={activeTool === "node"}
           tooltip="Create Node — Click to place"
           shortcut="N"
@@ -263,7 +288,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Spline}
           label="Beam"
-          onClick={() => setTool("member")}
+          onClick={() => executeSharedAction("add-beam")}
           isActive={activeTool === "member"}
           tooltip="Create Beam/Column Member"
           shortcut="M"
@@ -287,7 +312,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={MousePointer2}
           label="Select"
-          onClick={() => setTool("select")}
+          onClick={() => executeSharedAction("select")}
           isActive={activeTool === "select"}
           shortcut="V"
         />
@@ -301,20 +326,20 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
 
       <ToolGroup label="Edit">
         <StackedButtons>
-          <MiniButton icon={Copy} label="Copy" onClick={() => document.dispatchEvent(new CustomEvent("trigger-copy"))} shortcut="Ctrl+C" />
-          <MiniButton icon={Move} label="Move" onClick={() => document.dispatchEvent(new CustomEvent("trigger-move"))} />
+          <MiniButton icon={Copy} label="Copy" onClick={() => executeSharedAction("copy")} shortcut="Ctrl+C" />
+          <MiniButton icon={Move} label="Move" onClick={() => executeSharedAction("move")} />
         </StackedButtons>
         <StackedButtons>
-          <MiniButton icon={FlipHorizontal} label="Mirror" onClick={() => openModal("geometryTools")} />
-          <MiniButton icon={RotateCcw} label="Rotate" onClick={() => openModal("geometryTools")} />
+          <MiniButton icon={FlipHorizontal} label="Mirror" onClick={() => executeSharedAction("mirror")} />
+          <MiniButton icon={RotateCcw} label="Rotate" onClick={() => executeSharedAction("rotate")} />
         </StackedButtons>
         <StackedButtons>
-          <MiniButton icon={Scissors} label="Split" onClick={() => document.dispatchEvent(new CustomEvent("trigger-split"))} />
-          <MiniButton icon={Trash2} label="Delete" onClick={() => document.dispatchEvent(new CustomEvent("trigger-delete"))} shortcut="Del" />
+          <MiniButton icon={Scissors} label="Split" onClick={() => executeSharedAction("split")} />
+          <MiniButton icon={Trash2} label="Delete" onClick={() => executeSharedAction("delete")} shortcut="Del" />
         </StackedButtons>
         <StackedButtons>
-          <MiniButton icon={SplitSquareVertical} label="Divide" onClick={() => openModal("divideMember")} />
-          <MiniButton icon={GitMerge} label="Merge" onClick={() => openModal("mergeNodes")} />
+          <MiniButton icon={SplitSquareVertical} label="Divide" onClick={() => executeSharedAction("divide")} />
+          <MiniButton icon={GitMerge} label="Merge" onClick={() => executeSharedAction("merge")} />
         </StackedButtons>
       </ToolGroup>
 
@@ -335,34 +360,34 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Layers}
           label="Library"
-          onClick={() => openModal("sectionBrowserDialog")}
+          onClick={() => executeSharedAction("section-library")}
           tooltip="Section Database — ISMB, ISMC, W-Shapes, Custom (Rust Backend)"
           size="large"
         />
         <StackedButtons>
-          <MiniButton icon={Settings} label="Assign" onClick={() => openModal("sectionAssign")} />
-          <MiniButton icon={Calculator} label="Section Builder" onClick={() => openModal("sectionBuilder")} />
+          <MiniButton icon={Settings} label="Assign" onClick={() => executeSharedAction("assign-section")} />
+          <MiniButton icon={Calculator} label="Section Builder" onClick={() => executeSharedAction("custom-section")} />
         </StackedButtons>
       </ToolGroup>
       <ToolGroup label="Material">
         <ToolButton
           icon={Database}
           label="Material"
-          onClick={() => openModal("materialLibrary")}
+          onClick={() => executeSharedAction("material-library")}
           tooltip="Material Library — Steel, Concrete, Timber, Custom"
         />
         <StackedButtons>
-          <MiniButton icon={Settings} label="Assign" onClick={() => openModal("materialAssign")} />
-          <MiniButton icon={Table2} label="Properties" onClick={() => openModal("materialProperties")} />
+          <MiniButton icon={Settings} label="Assign" onClick={() => executeSharedAction("assign-material")} />
+          <MiniButton icon={Table2} label="Properties" onClick={() => executeSharedAction("material-props")} />
         </StackedButtons>
       </ToolGroup>
       <ToolGroup label="Specifications">
-        <ToolButton icon={Table2} label="Beta Angle" onClick={() => openModal("betaAngle")} tooltip="Member Orientation / Beta Angle" />
-        <ToolButton icon={Link2} label="Releases" onClick={() => openModal("memberReleases")} tooltip="Member End Releases — Pinned, Partial" />
-        <ToolButton icon={Ruler} label="Offsets" onClick={() => openModal("memberOffsets")} tooltip="Member End Offsets" />
+        <ToolButton icon={Table2} label="Beta Angle" onClick={() => executeSharedAction("beta-angle")} tooltip="Member Orientation / Beta Angle" />
+        <ToolButton icon={Link2} label="Releases" onClick={() => executeSharedAction("releases")} tooltip="Member End Releases — Pinned, Partial" />
+        <ToolButton icon={Ruler} label="Offsets" onClick={() => executeSharedAction("offsets")} tooltip="Member End Offsets" />
       </ToolGroup>
     </>
-  ), [openModal]);
+  ), [executeSharedAction]);
 
   const renderLoadingTab = useMemo(() => (
     <>
@@ -370,20 +395,20 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Layers}
           label="Define"
-          onClick={() => openModal("is875Load")}
+          onClick={() => executeSharedAction("define-load")}
           tooltip="Create/Manage Load Cases (DL, LL, WL, EQ)"
           size="large"
         />
         <ToolButton
           icon={Workflow}
           label="Combos"
-          onClick={() => openModal("loadDialog")}
+          onClick={() => executeSharedAction("load-combos")}
           tooltip="Load Combinations — IS 875 / ASCE 7 / EN 1990"
         />
         <ToolButton
           icon={Layers}
           label="Auto Combos"
-          onClick={() => openModal("loadCombinationsDialog")}
+          onClick={() => executeSharedAction("load-combos")}
           tooltip="Auto-generate Load Combinations per Code"
         />
       </ToolGroup>
@@ -391,7 +416,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={ArrowDown}
           label="Force"
-          onClick={() => setTool("load")}
+          onClick={() => executeSharedAction("point-load")}
           isActive={activeTool === "load"}
           tooltip="Apply Nodal Force (Fx, Fy, Fz) — click on node"
           shortcut="L"
@@ -399,7 +424,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={RotateCcw}
           label="Moment"
-          onClick={() => { setTool("load"); openModal("momentLoadDialog"); }}
+          onClick={() => { executeSharedAction("point-load"); openModal("momentLoadDialog"); }}
           tooltip="Apply Nodal Moment (Mx, My, Mz)"
         />
         <ToolButton
@@ -413,7 +438,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Spline}
           label="UDL"
-          onClick={() => setTool("memberLoad")}
+          onClick={() => executeSharedAction("udl")}
           isActive={activeTool === "memberLoad"}
           tooltip="Uniformly Distributed Load — select member first"
           shortcut="U"
@@ -455,13 +480,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Weight}
           label="Self Weight"
-          onClick={() => openModal("deadLoadGenerator")}
+          onClick={() => executeSharedAction("self-weight")}
           tooltip="Auto-generate Dead Load from self-weight"
         />
         <ToolButton
           icon={Wind}
           label="Wind"
-          onClick={() => openModal("windLoadDialog")}
+          onClick={() => executeSharedAction("wind-load")}
           tooltip="Wind Load Generator — IS 875-III / ASCE 7-22 / EN 1991-1-4"
         />
         <StackedButtons>
@@ -475,12 +500,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Thermometer}
           label="Thermal"
-          onClick={() => openModal("temperatureLoad")}
+          onClick={() => executeSharedAction("temperature")}
           tooltip="Temperature Load — Uniform ΔT / Gradient"
         />
       </ToolGroup>
     </>
-  ), [activeTool, setTool, openModal]);
+  ), [activeTool, executeSharedAction, setTool, openModal]);
 
   const renderAnalysisTab = useMemo(() => (
     <>
@@ -488,7 +513,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Play}
           label="RUN ANALYSIS"
-          onClick={() => document.dispatchEvent(new CustomEvent("trigger-analysis"))}
+          onClick={() => executeSharedAction("run-analysis")}
           isActive={isAnalyzing}
           tooltip="Run Linear Static Analysis"
           shortcut="F5"
@@ -499,12 +524,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           <MiniButton
             icon={Activity}
             label="Modal"
-            onClick={() => document.dispatchEvent(new CustomEvent("trigger-modal-analysis"))}
+            onClick={() => executeSharedAction("modal")}
           />
           <MiniButton
             icon={TrendingUp}
             label="P-Delta"
-            onClick={() => openModal("pDeltaAnalysis")}
+            onClick={() => executeSharedAction("pdelta")}
           />
         </StackedButtons>
       </ToolGroup>
@@ -512,7 +537,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Activity}
           label="Buckling"
-          onClick={() => openModal("bucklingAnalysis")}
+          onClick={() => executeSharedAction("buckling")}
           tooltip="Linear Buckling Analysis"
         />
         <ToolButton
@@ -544,33 +569,30 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton
           icon={Eye}
           label="Deformed"
-          onClick={() => document.dispatchEvent(new CustomEvent("toggle-deformed"))}
+          onClick={() => executeSharedAction("deformed-shape")}
           tooltip="View Deformed Shape"
           isActive={hasResults}
         />
         <StackedButtons>
-          <MiniButton icon={BarChart3} label="SFD" onClick={() => document.dispatchEvent(new CustomEvent("toggle-sfd"))} />
-          <MiniButton icon={BarChart3} label="BMD" onClick={() => document.dispatchEvent(new CustomEvent("toggle-bmd"))} />
+          <MiniButton icon={BarChart3} label="SFD" onClick={() => executeSharedAction("sfd")} />
+          <MiniButton icon={BarChart3} label="BMD" onClick={() => executeSharedAction("bmd")} />
         </StackedButtons>
         <StackedButtons>
-          <MiniButton icon={BarChart3} label="AFD" onClick={() => document.dispatchEvent(new CustomEvent("toggle-afd"))} />
-          <MiniButton icon={Activity} label="Deflection" onClick={() => document.dispatchEvent(new CustomEvent("toggle-deflection"))} />
+          <MiniButton icon={BarChart3} label="AFD" onClick={() => executeSharedAction("afd")} />
+          <MiniButton icon={Activity} label="Deflection" onClick={() => executeSharedAction("deflection")} />
         </StackedButtons>
         <ToolButton
           icon={Anchor}
           label="Reactions"
-          onClick={() => document.dispatchEvent(new CustomEvent("toggle-reactions"))}
+          onClick={() => executeSharedAction("reactions")}
           tooltip="View Support Reactions Table"
         />
-        <ToolButton icon={FileText} label="Output" onClick={() => {
-          const s = useModelStore.getState();
-          s.setShowResults(!s.showResults);
-        }} tooltip="Tabular Results Output" />
+        <ToolButton icon={FileText} label="Output" onClick={() => executeSharedAction("view-results")} tooltip="Tabular Results Output" />
       </ToolGroup>
       <ToolGroup label="Export">
         <StackedButtons>
           <MiniButton icon={FileText} label="PDF Report" onClick={() => document.dispatchEvent(new CustomEvent("trigger-pdf-report"))} />
-          <MiniButton icon={FileSpreadsheet} label="CSV Export" onClick={() => document.dispatchEvent(new CustomEvent("trigger-csv-export"))} />
+          <MiniButton icon={FileSpreadsheet} label="CSV Export" onClick={() => executeSharedAction("export-results")} />
         </StackedButtons>
         <ToolButton
           icon={Download}
@@ -580,7 +602,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         />
       </ToolGroup>
     </>
-  ), [isAnalyzing, openModal, hasResults]);
+  ), [isAnalyzing, executeSharedAction, openModal, hasResults]);
 
   const activeTab = RIBBON_TABS.find(t => t.id === activeCategory);
   const activeColor = activeTab?.color || "blue";
@@ -677,20 +699,20 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={FileCheck}
                 label="Design Codes"
-                onClick={() => openModal("designCodes")}
+                onClick={() => executeSharedAction("design-codes")}
                 tooltip="Select Design Code — IS / AISC / Eurocode / BS / AS"
                 size="large"
               />
               <ToolButton
                 icon={CheckSquare}
                 label="D/C Ratios"
-                onClick={() => document.dispatchEvent(new CustomEvent("trigger-analysis"))}
+                onClick={() => executeSharedAction("design-check")}
                 tooltip="Run Analysis & View Demand/Capacity Ratios"
               />
               <ToolButton
                 icon={Eye}
                 label="Results"
-                onClick={() => document.dispatchEvent(new CustomEvent("toggle-results-dock"))}
+                onClick={() => executeSharedAction("design-results")}
                 tooltip="View Design Results Dashboard"
               />
             </ToolGroup>
@@ -698,37 +720,37 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={Building2}
                 label="Steel Studio"
-                onClick={() => openModal("steelDesign")}
+                onClick={() => executeSharedAction("steel-design")}
                 tooltip="Steel Design — IS 800 / AISC 360 / EN 1993"
                 size="large"
               />
               <StackedButtons>
-                <MiniButton icon={Settings} label="IS 800" onClick={() => { setDesignCodePreset('IS800'); openModal('steelDesign'); }} />
-                <MiniButton icon={Settings} label="AISC 360" onClick={() => { setDesignCodePreset('AISC360'); openModal('steelDesign'); }} />
+                <MiniButton icon={Settings} label="IS 800" onClick={() => { setDesignCodePreset('IS800'); executeSharedAction('steel-design'); }} />
+                <MiniButton icon={Settings} label="AISC 360" onClick={() => { setDesignCodePreset('AISC360'); executeSharedAction('steel-design'); }} />
               </StackedButtons>
             </ToolGroup>
             <ToolGroup label="RC Design">
               <ToolButton
                 icon={Columns}
                 label="RC Studio"
-                onClick={() => openModal("concreteDesign")}
+                onClick={() => executeSharedAction("rc-design")}
                 tooltip="Reinforced Concrete Design — IS 456 / ACI 318 / EN 1992"
                 size="large"
               />
               <StackedButtons>
-                <MiniButton icon={Ruler} label="Beam Design" onClick={() => { setDesignTabPreset('beam'); openModal('concreteDesign'); }} />
-                <MiniButton icon={Columns} label="Column Design" onClick={() => { setDesignTabPreset('column'); openModal('concreteDesign'); }} />
+                <MiniButton icon={Ruler} label="Beam Design" onClick={() => { setDesignTabPreset('beam'); executeSharedAction('rc-design'); }} />
+                <MiniButton icon={Columns} label="Column Design" onClick={() => { setDesignTabPreset('column'); executeSharedAction('rc-design'); }} />
               </StackedButtons>
               <StackedButtons>
-                <MiniButton icon={SquareStack} label="Slab Design" onClick={() => { setDesignTabPreset('slab'); openModal('concreteDesign'); }} />
-                <MiniButton icon={Landmark} label="Footing Design" onClick={() => openModal('foundationDesign')} />
+                <MiniButton icon={SquareStack} label="Slab Design" onClick={() => { setDesignTabPreset('slab'); executeSharedAction('rc-design'); }} />
+                <MiniButton icon={Landmark} label="Footing Design" onClick={() => executeSharedAction('foundation-design')} />
               </StackedButtons>
             </ToolGroup>
             <ToolGroup label="Connection">
               <ToolButton
                 icon={Link2}
                 label="Connections"
-                onClick={() => openModal("connectionDesign")}
+                onClick={() => executeSharedAction("connection-design")}
                 tooltip="Connection Design — Bolted / Welded / Base Plate"
               />
             </ToolGroup>
@@ -736,7 +758,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={Landmark}
                 label="Foundation"
-                onClick={() => openModal("foundationDesign")}
+                onClick={() => executeSharedAction("foundation-design")}
                 tooltip="Foundation Design — Isolated / Combined / Pile Cap"
               />
             </ToolGroup>
@@ -744,19 +766,19 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={FileText}
                 label="RC Detailing"
-                onClick={() => openModal("rcDetailing")}
+                onClick={() => executeSharedAction("rc-detailing")}
                 tooltip="RCC Reinforcement Detailing Drawings"
               />
               <ToolButton
                 icon={FileText}
                 label="Steel Detail"
-                onClick={() => openModal("steelDetailing")}
+                onClick={() => executeSharedAction("steel-detailing")}
                 tooltip="Steel Connection Detail Drawings"
               />
               <ToolButton
                 icon={Ruler}
                 label="Optimize"
-                onClick={() => openModal("sectionOptimization")}
+                onClick={() => executeSharedAction("section-optimize")}
                 tooltip="Auto-Optimize Sections for Weight/Cost"
               />
             </ToolGroup>
@@ -764,13 +786,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               <ToolButton
                 icon={FileText}
                 label="Report"
-                onClick={() => document.dispatchEvent(new CustomEvent("trigger-pdf-report"))}
+                onClick={() => executeSharedAction("full-report")}
                 tooltip="Generate Branded PDF Report with Logo, Engineer, Client, Revision"
               />
               <ToolButton
                 icon={Globe}
                 label="Design Hub"
-                onClick={() => openModal("designHub")}
+                onClick={() => executeSharedAction("design-hub")}
                 tooltip="Full Design Hub — All Design Workflows"
               />
             </ToolGroup>

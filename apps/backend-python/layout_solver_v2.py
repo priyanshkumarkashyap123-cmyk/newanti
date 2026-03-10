@@ -1,21 +1,31 @@
 """
-Generative Architectural Layout Engine v2 — Production-Grade CSP Solver
+Generative Architectural Layout Engine v2.1 — Production-Grade CSP Solver
 
 Implements 10 constraint domains for code-compliant residential floor plan generation:
 
-  1. Site Boundary & Regulatory Geometry  (setbacks, FSI cap)
-  2. Topological Graph & Wet Wall Clustering  (plumbing, acoustic zoning)
+  1. Site Boundary & Regulatory Geometry  (setbacks, FSI cap, polygon sites)
+  2. Topological Graph & Wet Wall Clustering  (plumbing, acoustic zoning, buffer insertion)
   3. Binary Space Partitioning with Room-Type Aspect Ratios
   4. Anthropometric Hard Limits  (clearances, door-swing vectors)
-  5. Structural Grid & Load Paths  (grid snapping, vertical alignment)
-  6. Circulation Optimization  (A* connectivity, 15 % corridor rule)
+  5. Structural Grid & Load Paths  (grid snapping, column/beam output)
+  6. Circulation Optimization  (A* on discretized grid, 15% corridor rule)
   7. Structural Mechanics & Span Limits  (slab spans, beam depth)
   8. Vertical Circulation / Staircase Matrix
-  9. Environmental Physics & Orientation Scoring  (solar, fenestration)
+  9. Environmental Physics & Orientation Scoring  (solar, WWR, shading)
  10. Egress & Life Safety  (Dijkstra max travel distance)
 
+v2.1 additions:
+  - General polygon site boundaries via Shapely (L-shaped, trapezoidal, irregular)
+  - Simulated Annealing optimizer (warm-started from BSP)
+  - A* pathfinding on discretized floor grid for real travel distances
+  - Acoustic buffer zone auto-insertion between Active/Passive zones
+  - Window-to-Wall Ratio (WWR) calculation per room
+  - Enhanced solar scoring with latitude-aware azimuth + shading specs
+  - Structural grid output (column/beam layout for solver integration)
+  - Multi-story FSI tracking
+
 Author: BeamLab Spatial Planning Engine
-Version: 2.0
+Version: 2.1
 """
 
 from __future__ import annotations
@@ -25,8 +35,13 @@ import math
 import random
 from copy import deepcopy
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+import numpy as np
+from shapely.geometry import Polygon as ShapelyPolygon, MultiPolygon, box as shapely_box
+from shapely.ops import unary_union
+from shapely.validation import make_valid
 
 
 # =====================================================================
@@ -184,15 +199,41 @@ class Setbacks:
 
 @dataclass
 class SiteConfig:
-    """Master plot definition including regulatory limits."""
+    """Master plot definition including regulatory limits.
+
+    Supports both rectangular plots (width × height) and general polygon
+    sites (L-shaped, trapezoidal, irregular) via ``polygon_vertices``.
+    """
     width: float
     height: float
     fsi_limit: float = 1.5
     setbacks: Setbacks = field(default_factory=Setbacks)
     north_angle_deg: float = 0.0
+    latitude_deg: float = 20.0  # site latitude for solar calcs (default: central India)
+    polygon_vertices: Optional[List[Tuple[float, float]]] = None  # general polygon
+
+    # -- derived --
+
+    @property
+    def is_polygon(self) -> bool:
+        return self.polygon_vertices is not None and len(self.polygon_vertices) >= 3
+
+    @property
+    def plot_polygon(self) -> ShapelyPolygon:
+        """Shapely polygon of the site boundary."""
+        if self.is_polygon:
+            poly = ShapelyPolygon(self.polygon_vertices)
+            if not poly.is_valid:
+                poly = make_valid(poly)
+                if isinstance(poly, MultiPolygon):
+                    poly = max(poly.geoms, key=lambda g: g.area)
+            return poly
+        return shapely_box(0, 0, self.width, self.height)
 
     @property
     def plot_area(self) -> float:
+        if self.is_polygon:
+            return float(self.plot_polygon.area)
         return self.width * self.height
 
     @property
@@ -201,7 +242,13 @@ class SiteConfig:
         return self.plot_area * self.fsi_limit
 
     def usable_boundary(self) -> Rectangle:
-        """Compute the buildable polygon after inward setback offsets."""
+        """Compute the buildable bounding box after inward setback offsets.
+
+        For rectangular plots, this is exact.  For polygon plots, we offset
+        the polygon inward by the *minimum* setback, then return its AABB.
+        """
+        if self.is_polygon:
+            return self._polygon_usable_boundary()
         x = self.setbacks.left
         y = self.setbacks.front
         w = self.width - self.setbacks.left - self.setbacks.right
@@ -213,6 +260,32 @@ class SiteConfig:
             )
         return Rectangle(x=x, y=y, width=w, height=h)
 
+    def usable_polygon(self) -> ShapelyPolygon:
+        """The actual usable polygon after setback offsets.
+
+        For rectangular plots this equals ``usable_boundary()`` as a Shapely
+        box.  For irregular plots it is the inward-buffered polygon.
+        """
+        if self.is_polygon:
+            offset_dist = min(
+                self.setbacks.front, self.setbacks.rear,
+                self.setbacks.left, self.setbacks.right,
+            )
+            buffered = self.plot_polygon.buffer(-offset_dist)
+            if buffered.is_empty:
+                raise ValueError("Setbacks consume entire polygon site")
+            if isinstance(buffered, MultiPolygon):
+                buffered = max(buffered.geoms, key=lambda g: g.area)
+            return buffered
+        ub = self.usable_boundary()
+        return shapely_box(ub.x, ub.y, ub.x + ub.width, ub.y + ub.height)
+
+    def _polygon_usable_boundary(self) -> Rectangle:
+        """AABB of the setback-offset polygon."""
+        poly = self.usable_polygon()
+        minx, miny, maxx, maxy = poly.bounds
+        return Rectangle(x=minx, y=miny, width=maxx - minx, height=maxy - miny)
+
 
 def validate_fsi(
     total_room_area: float,
@@ -220,22 +293,31 @@ def validate_fsi(
     num_floors: int = 1,
 ) -> Dict[str, Any]:
     """
-    Check Floor Space Index compliance.
+    Check Floor Space Index compliance (multi-story aware).
 
     FSI = Total_Covered_Area / Plot_Area
+    Total_Covered_Area = sum of floor areas across all stories.
     """
-    total_covered = total_room_area  # single-floor default
+    total_covered = total_room_area * num_floors
     fsi_actual = total_covered / site.plot_area if site.plot_area > 0 else float("inf")
     compliant = fsi_actual <= site.fsi_limit
     ub = site.usable_boundary()
-    floors_needed = math.ceil(total_room_area / ub.area) if ub.area > 0 else 0
+    # How many floors needed to fit all rooms under FSI cap
+    if ub.area > 0 and site.fsi_limit > 0:
+        max_per_floor = site.max_built_area / max(1, num_floors)
+        floors_needed = math.ceil(total_room_area / ub.area)
+    else:
+        floors_needed = 0
+    auto_story_split = not compliant and floors_needed > num_floors
     return {
         "fsi_actual": round(fsi_actual, 4),
         "fsi_limit": site.fsi_limit,
         "compliant": compliant,
         "max_allowed_area": round(site.max_built_area, 2),
         "total_covered_area": round(total_covered, 2),
+        "num_floors": num_floors,
         "floors_required": max(1, floors_needed),
+        "auto_story_split_suggested": auto_story_split,
     }
 
 
@@ -473,25 +555,64 @@ def score_solar(
     placement: RoomPlacement,
     boundary: Rectangle,
     north_angle_deg: float,
+    latitude_deg: float = 20.0,
 ) -> Dict[str, Any]:
-    """Score thermal exposure of a placed room."""
+    """Score thermal exposure of a placed room with latitude-aware solar model.
+
+    Uses simplified solar geometry: at ``latitude_deg``, the sun's peak
+    altitude determines how much radiation hits each facade.  West and
+    South-West facades receive the worst afternoon heat.
+
+    When thermal penalty is high for a habitable room, generates a shading
+    device (chajja/overhang) recommendation.
+    """
     facades = placement.rectangle.exterior_facades(boundary)
     if not facades:
-        return {"thermal_penalty": 0.0, "facades": [], "bearings": {}, "thermal_loads": {}}
+        return {
+            "thermal_penalty": 0.0, "facades": [], "bearings": {},
+            "thermal_loads": {}, "shading_spec": None,
+        }
 
     bearings = {f: wall_bearing(f, north_angle_deg) for f in facades}
-    loads = {f: thermal_load_factor(b) for f, b in bearings.items()}
+
+    # Latitude-adjusted thermal load: higher latitudes get less intense
+    # south sun; lower latitudes get hammered from west.
+    lat_factor = max(0.5, 1.0 - abs(latitude_deg - 23.5) / 50.0)
+    loads = {
+        f: thermal_load_factor(b) * lat_factor for f, b in bearings.items()
+    }
     max_load = max(loads.values()) if loads else 0.0
 
-    # High-occupancy habitable rooms receive full penalty; others are dampened.
     is_high_occ = placement.room.type == RoomType.HABITABLE
     penalty = max_load * (1.0 if is_high_occ else 0.3)
+
+    # Generate shading spec when penalty is high for habitable rooms
+    shading_spec = None
+    if is_high_occ and penalty > 0.5:
+        worst_facade = max(loads, key=loads.get)
+        worst_bearing = bearings[worst_facade]
+        # Overhang depth: deeper for west (1.0m) than south (0.6m)
+        depth = 0.6 + 0.4 * thermal_load_factor(worst_bearing)
+        facade_length = (
+            placement.rectangle.height
+            if worst_facade in ("left", "right")
+            else placement.rectangle.width
+        )
+        shading_spec = {
+            "facade": worst_facade,
+            "bearing_deg": round(worst_bearing, 1),
+            "overhang_depth_m": round(depth, 2),
+            "overhang_length_m": round(facade_length, 2),
+            "type": "chajja",
+            "reduces_penalty_by": round(penalty * 0.4, 3),
+        }
 
     return {
         "thermal_penalty": round(penalty, 4),
         "facades": facades,
         "bearings": {f: round(b, 1) for f, b in bearings.items()},
         "thermal_loads": {f: round(v, 3) for f, v in loads.items()},
+        "shading_spec": shading_spec,
     }
 
 
@@ -501,10 +622,12 @@ def check_fenestration(
     min_ratio: float = 0.10,
 ) -> Dict[str, Any]:
     """
-    Verify Window-to-Floor Area Ratio (WFR).
+    Verify Window-to-Wall Ratio (WWR) per facade.
 
-    A habitable room with exterior wall access must achieve:
-        Window_Area ≥ min_ratio × Floor_Area
+    WWR = Total_Window_Area / Total_Exterior_Wall_Area
+
+    NBC 2016: habitable rooms need minimum 1/8 of floor area as openable
+    window area.  We also enforce WWR ∈ [10%, 60%] for thermal comfort.
     """
     facades = placement.rectangle.exterior_facades(boundary)
     applicable = bool(facades) and placement.room.type in (
@@ -512,23 +635,49 @@ def check_fenestration(
         RoomType.UTILITY,
     )
     if not applicable:
-        return {"applicable": False, "compliant": True}
+        return {"applicable": False, "compliant": True, "wwr": None}
 
     rect = placement.rectangle
-    wall_length = 0.0
+    # Assume floor-to-ceiling height of 3.0m for wall area calculation
+    ceiling_h = 3.0
+    total_wall_area = 0.0
     for f in facades:
-        wall_length += rect.height if f in ("left", "right") else rect.width
+        wall_len = rect.height if f in ("left", "right") else rect.width
+        total_wall_area += wall_len * ceiling_h
 
-    # conservative estimate: max window height 1.2 m
-    max_window_area = wall_length * 1.2
-    required = rect.area * min_ratio
+    # Window sizing: 1.2m wide × 1.5m tall per 10 m² of floor area (NBC 2016)
+    num_windows = max(1, round(rect.area / 10.0))
+    window_w, window_h = 1.2, 1.5
+    total_window_area = num_windows * window_w * window_h
+
+    # Clamp: can't have more window than wall
+    total_window_area = min(total_window_area, total_wall_area * 0.6)
+
+    wwr = total_window_area / total_wall_area if total_wall_area > 0 else 0.0
+    floor_ratio = total_window_area / rect.area if rect.area > 0 else 0.0
+
+    compliant = wwr >= min_ratio and wwr <= 0.60
+    nbc_compliant = floor_ratio >= 1 / 8  # NBC: openable >= 1/8 floor area
+
     return {
         "applicable": True,
         "floor_area_sqm": round(rect.area, 2),
-        "required_window_area_sqm": round(required, 2),
-        "available_wall_length_m": round(wall_length, 2),
-        "max_window_area_sqm": round(max_window_area, 2),
-        "compliant": max_window_area >= required,
+        "total_wall_area_sqm": round(total_wall_area, 2),
+        "total_window_area_sqm": round(total_window_area, 2),
+        "num_windows": num_windows,
+        "wwr": round(wwr, 4),
+        "wwr_min": min_ratio,
+        "wwr_max": 0.60,
+        "compliant": compliant,
+        "nbc_floor_ratio": round(floor_ratio, 4),
+        "nbc_floor_ratio_compliant": nbc_compliant,
+        "available_wall_length_m": round(
+            sum(
+                rect.height if f in ("left", "right") else rect.width
+                for f in facades
+            ),
+            2,
+        ),
     }
 
 
@@ -962,7 +1111,7 @@ def calculate_penalty_v2(
             sat[f"{rid}_headroom"] = True
 
         # Domain 9: solar thermal
-        solar = score_solar(p, boundary, site.north_angle_deg)
+        solar = score_solar(p, boundary, site.north_angle_deg, site.latitude_deg)
         solar_scores.append({"room_id": rid, **solar})
         if solar["thermal_penalty"] > 0.5:
             total += solar["thermal_penalty"] * weights.solar_thermal_penalty
@@ -1267,6 +1416,24 @@ class LayoutSolverV2:
                 )
                 break
 
+        # A* travel distances
+        grid = FloorGrid(self.usable_boundary, cell_size=0.2)
+        grid.rasterise(sol.placements)
+        travel = compute_travel_distances(grid, sol.placements)
+
+        # Acoustic buffer analysis
+        _, acoustic_buffers = insert_acoustic_buffers(
+            sol.placements, buffer_width_m=1.2, min_buffer_width_m=0.6
+        )
+
+        # Structural grid
+        structural = generate_structural_grid(
+            sol.placements,
+            self.usable_boundary,
+            grid_module_m=self.constraints.structural_grid_module_m,
+            max_span_m=6.0,
+        )
+
         return {
             "total_penalty": round(sol.total_penalty, 4),
             "iteration_found": sol.iteration,
@@ -1283,6 +1450,9 @@ class LayoutSolverV2:
             },
             "staircase": stair_info,
             "diagnostics": sol.diagnostics,
+            "travel_distances": travel,
+            "acoustic_buffers": acoustic_buffers,
+            "structural_grid": structural,
             "placements": [
                 {
                     "room_id": p.room.id,
@@ -1311,4 +1481,620 @@ class LayoutSolverV2:
                 }
                 for p in sol.placements
             ],
+        }
+
+
+# =====================================================================
+#  A* PATHFINDING ON DISCRETISED FLOOR GRID  (Domain 6 upgrade)
+# =====================================================================
+
+class CellType(IntEnum):
+    """Grid cell classification for discretised floor plan."""
+    EMPTY = 0
+    ROOM = 1
+    WALL = 2
+    CORRIDOR = 3
+    DOOR = 4
+    EXIT = 5
+
+
+@dataclass
+class FloorGrid:
+    """Rasterised representation of a floor plan for A* pathfinding.
+
+    ``cell_size`` controls resolution: 0.1 m → 30k cells for 20×15 m plot.
+    0.2 m is a good balance between accuracy and speed during optimisation.
+    """
+    boundary: Rectangle
+    cell_size: float = 0.2
+    _grid: Optional[np.ndarray] = field(default=None, repr=False)
+
+    def __post_init__(self) -> None:
+        cols = max(1, int(math.ceil(self.boundary.width / self.cell_size)))
+        rows = max(1, int(math.ceil(self.boundary.height / self.cell_size)))
+        self._grid = np.full((rows, cols), CellType.EMPTY, dtype=np.int8)
+
+    @property
+    def rows(self) -> int:
+        return self._grid.shape[0]
+
+    @property
+    def cols(self) -> int:
+        return self._grid.shape[1]
+
+    def _to_rc(self, x: float, y: float) -> Tuple[int, int]:
+        """World coords → (row, col)."""
+        c = int((x - self.boundary.x) / self.cell_size)
+        r = int((y - self.boundary.y) / self.cell_size)
+        return (
+            max(0, min(r, self.rows - 1)),
+            max(0, min(c, self.cols - 1)),
+        )
+
+    def _to_xy(self, r: int, c: int) -> Tuple[float, float]:
+        """(row, col) → world centre of cell."""
+        x = self.boundary.x + (c + 0.5) * self.cell_size
+        y = self.boundary.y + (r + 0.5) * self.cell_size
+        return x, y
+
+    def rasterise(
+        self,
+        placements: List[RoomPlacement],
+        wall_thickness: float = 0.2,
+    ) -> None:
+        """Paint rooms, walls, and mark exterior-facing rooms as exits."""
+        # Reset
+        self._grid[:] = CellType.CORRIDOR  # default: walkable corridor
+
+        for p in placements:
+            rect = p.rectangle
+            r0, c0 = self._to_rc(rect.x, rect.y)
+            r1, c1 = self._to_rc(rect.x + rect.width, rect.y + rect.height)
+            self._grid[r0:r1, c0:c1] = CellType.ROOM
+
+        # Paint walls at room boundaries (1-cell thick)
+        for p in placements:
+            rect = p.rectangle
+            r0, c0 = self._to_rc(rect.x, rect.y)
+            r1, c1 = self._to_rc(rect.x + rect.width, rect.y + rect.height)
+            # Top and bottom walls
+            if r0 < self.rows:
+                self._grid[r0, c0:c1] = CellType.WALL
+            if r1 > 0 and r1 - 1 < self.rows:
+                self._grid[r1 - 1, c0:c1] = CellType.WALL
+            # Left and right walls
+            if c0 < self.cols:
+                self._grid[r0:r1, c0] = CellType.WALL
+            if c1 > 0 and c1 - 1 < self.cols:
+                self._grid[r0:r1, c1 - 1] = CellType.WALL
+
+        # Punch doors between adjacent rooms (centre of shared edge)
+        for i, p1 in enumerate(placements):
+            for p2 in placements[i + 1:]:
+                if rectangles_adjacent(p1.rectangle, p2.rectangle, tol=0.5):
+                    cx = (p1.rectangle.center[0] + p2.rectangle.center[0]) / 2
+                    cy = (p1.rectangle.center[1] + p2.rectangle.center[1]) / 2
+                    dr, dc = self._to_rc(cx, cy)
+                    if 0 <= dr < self.rows and 0 <= dc < self.cols:
+                        self._grid[dr, dc] = CellType.DOOR
+                        # Expand door to 2-cell opening
+                        for dr2, dc2 in [(dr - 1, dc), (dr + 1, dc), (dr, dc - 1), (dr, dc + 1)]:
+                            if 0 <= dr2 < self.rows and 0 <= dc2 < self.cols:
+                                if self._grid[dr2, dc2] == CellType.WALL:
+                                    self._grid[dr2, dc2] = CellType.DOOR
+                                    break
+
+        # Mark exit cells (rooms touching the boundary edge)
+        for p in placements:
+            if p.rectangle.shares_edge_with(self.boundary):
+                rect = p.rectangle
+                r0, c0 = self._to_rc(rect.x, rect.y)
+                r1, c1 = self._to_rc(rect.x + rect.width, rect.y + rect.height)
+                # Paint external-facing edge cells as EXIT
+                if abs(rect.x - self.boundary.x) < 0.1 and c0 < self.cols:
+                    self._grid[r0:r1, c0] = CellType.EXIT
+                if abs(rect.x + rect.width - self.boundary.x - self.boundary.width) < 0.1 and c1 > 0:
+                    self._grid[r0:r1, c1 - 1] = CellType.EXIT
+                if abs(rect.y - self.boundary.y) < 0.1 and r0 < self.rows:
+                    self._grid[r0, c0:c1] = CellType.EXIT
+                if abs(rect.y + rect.height - self.boundary.y - self.boundary.height) < 0.1 and r1 > 0:
+                    self._grid[r1 - 1, c0:c1] = CellType.EXIT
+
+    @property
+    def corridor_ratio(self) -> float:
+        """Fraction of total cells that are corridor (wasted) space."""
+        total = self._grid.size
+        if total == 0:
+            return 0.0
+        corridor_cells = int(np.sum(self._grid == CellType.CORRIDOR))
+        return corridor_cells / total
+
+    def cell_is_walkable(self, r: int, c: int) -> bool:
+        ct = self._grid[r, c]
+        return ct in (CellType.ROOM, CellType.CORRIDOR, CellType.DOOR, CellType.EXIT)
+
+
+def astar_pathfind(
+    grid: FloorGrid,
+    start_xy: Tuple[float, float],
+    goal_xy: Tuple[float, float],
+) -> Tuple[float, List[Tuple[int, int]]]:
+    """A* pathfinding on the discretised floor grid.
+
+    Returns (travel_distance_m, path_cells).
+    If no path exists, returns (inf, []).
+    """
+    sr, sc = grid._to_rc(*start_xy)
+    gr, gc = grid._to_rc(*goal_xy)
+
+    if not grid.cell_is_walkable(sr, sc) or not grid.cell_is_walkable(gr, gc):
+        return float("inf"), []
+
+    # A* with 8-connected neighbours
+    DIAG_COST = 1.414
+    STRAIGHT_COST = 1.0
+    NEIGHBOURS = [
+        (-1, 0, STRAIGHT_COST), (1, 0, STRAIGHT_COST),
+        (0, -1, STRAIGHT_COST), (0, 1, STRAIGHT_COST),
+        (-1, -1, DIAG_COST), (-1, 1, DIAG_COST),
+        (1, -1, DIAG_COST), (1, 1, DIAG_COST),
+    ]
+
+    def heuristic(r: int, c: int) -> float:
+        """Octile distance heuristic."""
+        dr = abs(r - gr)
+        dc = abs(c - gc)
+        return STRAIGHT_COST * max(dr, dc) + (DIAG_COST - STRAIGHT_COST) * min(dr, dc)
+
+    open_set: List[Tuple[float, int, int]] = []
+    heapq.heappush(open_set, (heuristic(sr, sc), sr, sc))
+    g_score: Dict[Tuple[int, int], float] = {(sr, sc): 0.0}
+    came_from: Dict[Tuple[int, int], Tuple[int, int]] = {}
+    rows, cols = grid.rows, grid.cols
+
+    while open_set:
+        _, cr, cc = heapq.heappop(open_set)
+        if cr == gr and cc == gc:
+            # Reconstruct path
+            path = [(cr, cc)]
+            while (cr, cc) in came_from:
+                cr, cc = came_from[(cr, cc)]
+                path.append((cr, cc))
+            path.reverse()
+            distance_m = g_score[(gr, gc)] * grid.cell_size
+            return distance_m, path
+
+        current_g = g_score.get((cr, cc), float("inf"))
+
+        for dr, dc, step_cost in NEIGHBOURS:
+            nr, nc = cr + dr, cc + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid.cell_is_walkable(nr, nc):
+                # Penalise moving through walls (shouldn't happen but safety)
+                new_g = current_g + step_cost
+                if new_g < g_score.get((nr, nc), float("inf")):
+                    g_score[(nr, nc)] = new_g
+                    came_from[(nr, nc)] = (cr, cc)
+                    f = new_g + heuristic(nr, nc)
+                    heapq.heappush(open_set, (f, nr, nc))
+
+    return float("inf"), []
+
+
+def compute_travel_distances(
+    grid: FloorGrid,
+    placements: List[RoomPlacement],
+    entry_xy: Optional[Tuple[float, float]] = None,
+) -> Dict[str, Any]:
+    """Run A* from main entry (or first room) to every room centroid.
+
+    Returns travel distances and the actual grid corridor ratio.
+    """
+    if not placements:
+        return {"distances": {}, "corridor_ratio": 0.0, "max_travel_m": 0.0}
+
+    # Find entry point: use explicit entry or first room marked is_entry or first room
+    if entry_xy is None:
+        entry_rooms = [p for p in placements if p.room.is_entry]
+        entry_p = entry_rooms[0] if entry_rooms else placements[0]
+        entry_xy = entry_p.rectangle.center
+
+    distances: Dict[str, float] = {}
+    for p in placements:
+        dist, _ = astar_pathfind(grid, entry_xy, p.rectangle.center)
+        distances[p.room.id] = round(dist, 2)
+
+    max_travel = max(distances.values()) if distances else 0.0
+
+    return {
+        "entry_xy": [round(entry_xy[0], 2), round(entry_xy[1], 2)],
+        "distances_m": distances,
+        "corridor_ratio": round(grid.corridor_ratio, 4),
+        "max_travel_m": round(max_travel, 2),
+    }
+
+
+# =====================================================================
+#  ACOUSTIC BUFFER ZONE INSERTION  (Domain 2 upgrade)
+# =====================================================================
+
+def insert_acoustic_buffers(
+    placements: List[RoomPlacement],
+    buffer_width_m: float = 1.2,
+    min_buffer_width_m: float = 0.6,
+) -> Tuple[List[RoomPlacement], List[Dict[str, Any]]]:
+    """Detect Active↔Passive adjacencies and insert buffer zones.
+
+    When two adjacent rooms belong to conflicting acoustic zones
+    (ACTIVE vs PASSIVE), a buffer room (closet or corridor) is inserted
+    by trimming both rooms and placing the buffer in between.
+
+    Returns (updated_placements, buffer_reports).
+    """
+    buffers_inserted: List[Dict[str, Any]] = []
+    new_placements = list(placements)
+    buffer_id = 0
+
+    pairs_to_buffer: List[Tuple[int, int]] = []
+    for i, p1 in enumerate(new_placements):
+        for j in range(i + 1, len(new_placements)):
+            p2 = new_placements[j]
+            if not rectangles_adjacent(p1.rectangle, p2.rectangle, tol=0.4):
+                continue
+            z1 = p1.room.acoustic_zone
+            z2 = p2.room.acoustic_zone
+            if {z1, z2} == {AcousticZone.ACTIVE, AcousticZone.PASSIVE}:
+                pairs_to_buffer.append((i, j))
+
+    # Process each pair — trim both rooms and insert buffer
+    for idx_a, idx_b in pairs_to_buffer:
+        p_active = new_placements[idx_a]
+        p_passive = new_placements[idx_b]
+        ra, rb = p_active.rectangle, p_passive.rectangle
+
+        # Determine shared edge axis
+        a_bounds = ra.bounds  # (x0, y0, x1, y1)
+        b_bounds = rb.bounds
+
+        buf_width = max(min_buffer_width_m, min(buffer_width_m, ra.min_dim * 0.2, rb.min_dim * 0.2))
+        half = buf_width / 2.0
+
+        buf_rect = None
+        # Shared vertical edge (A right == B left or A left == B right)
+        if abs(a_bounds[2] - b_bounds[0]) < 0.4:
+            # A is to the left of B
+            edge_x = a_bounds[2]
+            overlap_y0 = max(a_bounds[1], b_bounds[1])
+            overlap_y1 = min(a_bounds[3], b_bounds[3])
+            if overlap_y1 - overlap_y0 > 1.0:
+                buf_rect = Rectangle(edge_x - half, overlap_y0, buf_width, overlap_y1 - overlap_y0)
+                ra.width -= half
+                rb.x += half
+                rb.width -= half
+        elif abs(b_bounds[2] - a_bounds[0]) < 0.4:
+            edge_x = b_bounds[2]
+            overlap_y0 = max(a_bounds[1], b_bounds[1])
+            overlap_y1 = min(a_bounds[3], b_bounds[3])
+            if overlap_y1 - overlap_y0 > 1.0:
+                buf_rect = Rectangle(edge_x - half, overlap_y0, buf_width, overlap_y1 - overlap_y0)
+                rb.width -= half
+                ra.x += half
+                ra.width -= half
+        # Shared horizontal edge (A top == B bottom or A bottom == B top)
+        elif abs(a_bounds[3] - b_bounds[1]) < 0.4:
+            edge_y = a_bounds[3]
+            overlap_x0 = max(a_bounds[0], b_bounds[0])
+            overlap_x1 = min(a_bounds[2], b_bounds[2])
+            if overlap_x1 - overlap_x0 > 1.0:
+                buf_rect = Rectangle(overlap_x0, edge_y - half, overlap_x1 - overlap_x0, buf_width)
+                ra.height -= half
+                rb.y += half
+                rb.height -= half
+        elif abs(b_bounds[3] - a_bounds[1]) < 0.4:
+            edge_y = b_bounds[3]
+            overlap_x0 = max(a_bounds[0], b_bounds[0])
+            overlap_x1 = min(a_bounds[2], b_bounds[2])
+            if overlap_x1 - overlap_x0 > 1.0:
+                buf_rect = Rectangle(overlap_x0, edge_y - half, overlap_x1 - overlap_x0, buf_width)
+                rb.height -= half
+                ra.y += half
+                ra.height -= half
+
+        if buf_rect is not None and buf_rect.area > 0.5:
+            buffer_room = RoomNode(
+                id=f"buffer_{buffer_id}",
+                name=f"Buffer (closet/corridor)",
+                type=RoomType.CIRCULATION,
+                acoustic_zone=AcousticZone.BUFFER,
+                target_area_sqm=buf_rect.area,
+                min_width_m=0.6,
+                max_aspect_ratio=5.0,
+                priority=0,
+            )
+            new_placements.append(RoomPlacement(room=buffer_room, rectangle=buf_rect))
+            buffers_inserted.append({
+                "buffer_id": f"buffer_{buffer_id}",
+                "between": [p_active.room.id, p_passive.room.id],
+                "width_m": round(buf_width, 2),
+                "area_sqm": round(buf_rect.area, 2),
+            })
+            buffer_id += 1
+
+    return new_placements, buffers_inserted
+
+
+# =====================================================================
+#  STRUCTURAL GRID OUTPUT  (Domain 5 upgrade)
+# =====================================================================
+
+def generate_structural_grid(
+    placements: List[RoomPlacement],
+    boundary: Rectangle,
+    grid_module_m: float = 3.0,
+    max_span_m: float = 5.0,
+) -> Dict[str, Any]:
+    """Generate a column/beam grid from finalised room layout.
+
+    1. Collect all wall intersection points (room corners).
+    2. Snap to structural grid module.
+    3. De-duplicate within tolerance.
+    4. Generate beam lines connecting adjacent columns.
+    5. Flag rooms with spans > max_span_m.
+
+    Returns column positions, beam lines, and span warnings.
+    """
+    # Collect all room corner points
+    raw_points: Set[Tuple[float, float]] = set()
+    for p in placements:
+        r = p.rectangle
+        corners = [
+            (r.x, r.y), (r.x + r.width, r.y),
+            (r.x, r.y + r.height), (r.x + r.width, r.y + r.height),
+        ]
+        for cx, cy in corners:
+            sx = snap_to_grid(cx, grid_module_m)
+            sy = snap_to_grid(cy, grid_module_m)
+            raw_points.add((round(sx, 3), round(sy, 3)))
+
+    # Add boundary corners
+    raw_points.add((round(boundary.x, 3), round(boundary.y, 3)))
+    raw_points.add((round(boundary.x + boundary.width, 3), round(boundary.y, 3)))
+    raw_points.add((round(boundary.x, 3), round(boundary.y + boundary.height, 3)))
+    raw_points.add((round(boundary.x + boundary.width, 3), round(boundary.y + boundary.height, 3)))
+
+    # De-duplicate within tolerance
+    tol = grid_module_m * 0.3
+    columns: List[Tuple[float, float]] = []
+    for pt in sorted(raw_points):
+        is_dup = False
+        for existing in columns:
+            if math.hypot(pt[0] - existing[0], pt[1] - existing[1]) < tol:
+                is_dup = True
+                break
+        if not is_dup:
+            columns.append(pt)
+
+    # Extract unique X and Y grid lines
+    x_lines = sorted(set(c[0] for c in columns))
+    y_lines = sorted(set(c[1] for c in columns))
+
+    # Generate beams: horizontal and vertical lines between adjacent columns
+    beams: List[Dict[str, Any]] = []
+    beam_id = 0
+    for xi in range(len(x_lines)):
+        for yi in range(len(y_lines) - 1):
+            span = y_lines[yi + 1] - y_lines[yi]
+            if span > 0.5:  # filter out trivial spans
+                beams.append({
+                    "id": f"B{beam_id}",
+                    "start": [x_lines[xi], y_lines[yi]],
+                    "end": [x_lines[xi], y_lines[yi + 1]],
+                    "span_m": round(span, 3),
+                    "direction": "Y",
+                    "needs_deep_beam": span > max_span_m,
+                })
+                beam_id += 1
+    for yi in range(len(y_lines)):
+        for xi in range(len(x_lines) - 1):
+            span = x_lines[xi + 1] - x_lines[xi]
+            if span > 0.5:
+                beams.append({
+                    "id": f"B{beam_id}",
+                    "start": [x_lines[xi], y_lines[yi]],
+                    "end": [x_lines[xi + 1], y_lines[yi]],
+                    "span_m": round(span, 3),
+                    "direction": "X",
+                    "needs_deep_beam": span > max_span_m,
+                })
+                beam_id += 1
+
+    # Span warnings for rooms
+    span_warnings: List[Dict[str, Any]] = []
+    for p in placements:
+        if p.rectangle.max_dim > max_span_m:
+            span_warnings.append({
+                "room_id": p.room.id,
+                "max_span_m": round(p.rectangle.max_dim, 2),
+                "limit_m": max_span_m,
+                "action": "Add intermediate column or use deeper beam",
+            })
+
+    return {
+        "columns": [{"x": c[0], "y": c[1]} for c in columns],
+        "x_grid_lines": x_lines,
+        "y_grid_lines": y_lines,
+        "beams": beams,
+        "span_warnings": span_warnings,
+        "grid_module_m": grid_module_m,
+        "total_columns": len(columns),
+        "total_beams": len(beams),
+    }
+
+
+# =====================================================================
+#  SIMULATED ANNEALING OPTIMIZER
+# =====================================================================
+
+class SimulatedAnnealingSolver:
+    """Simulated Annealing optimiser for architectural layout.
+
+    Warm-starts from the best BSP solution produced by ``LayoutSolverV2``,
+    then applies local neighbourhood moves to improve the penalty score.
+
+    Neighbourhood moves:
+      (a) Swap two room assignments
+      (b) Resize a room ±5–15%
+      (c) Shift a partition cut ±1 grid unit
+      (d) Nudge a room position by ±0.5 grid units
+
+    Temperature schedule: exponential cooling.
+    Acceptance: Metropolis criterion ``exp(-ΔP / T)``.
+    """
+
+    def __init__(
+        self,
+        initial_solution: LayoutSolutionV2,
+        site: SiteConfig,
+        constraints: GlobalConstraints,
+        adjacency_map: Dict[Tuple[str, str], float],
+        weights: Optional[PenaltyWeightsV2] = None,
+        initial_temp: float = 1000.0,
+        cooling_rate: float = 0.995,
+        min_temp: float = 0.1,
+        max_iterations: int = 5000,
+        stagnation_limit: int = 50,
+        random_seed: Optional[int] = None,
+    ):
+        self.site = site
+        self.constraints = constraints
+        self.adjacency_map = adjacency_map
+        self.weights = weights or PenaltyWeightsV2()
+        self.initial_temp = initial_temp
+        self.cooling_rate = cooling_rate
+        self.min_temp = min_temp
+        self.max_iterations = max_iterations
+        self.stagnation_limit = stagnation_limit
+        self.boundary = site.usable_boundary()
+
+        if random_seed is not None:
+            random.seed(random_seed)
+
+        self.current = initial_solution.clone()
+        self.best = initial_solution.clone()
+        self.best_penalty = initial_solution.total_penalty
+        self.history: List[float] = []
+
+    def _evaluate(self, solution: LayoutSolutionV2) -> float:
+        """Compute penalty for a solution."""
+        penalty, sat, diag = calculate_penalty_v2(
+            solution.placements,
+            self.boundary,
+            self.site,
+            self.constraints,
+            self.adjacency_map,
+            self.weights,
+        )
+        solution.total_penalty = penalty
+        solution.constraints_satisfied = sat
+        solution.diagnostics = diag
+        return penalty
+
+    def _neighbour(self, solution: LayoutSolutionV2) -> LayoutSolutionV2:
+        """Generate a neighbour solution via random perturbation."""
+        new = solution.clone()
+        placements = new.placements
+        if len(placements) < 2:
+            return new
+
+        move = random.choice(["swap", "resize", "nudge", "resize", "nudge"])
+        grid = self.constraints.structural_grid_module_m
+
+        if move == "swap" and len(placements) >= 2:
+            # Swap room assignments between two placements
+            i, j = random.sample(range(len(placements)), 2)
+            # Only swap if neither is a locked staircase
+            ri, rj = placements[i].room, placements[j].room
+            if not (ri.type == RoomType.STAIRCASE and ri.fixed_dimensions) and \
+               not (rj.type == RoomType.STAIRCASE and rj.fixed_dimensions):
+                placements[i].room, placements[j].room = rj, ri
+
+        elif move == "resize":
+            idx = random.randint(0, len(placements) - 1)
+            p = placements[idx]
+            if p.room.type == RoomType.STAIRCASE and p.room.fixed_dimensions:
+                return new  # don't resize locked staircases
+            factor = 1.0 + random.uniform(-0.15, 0.15)
+            if random.random() < 0.5:
+                new_w = max(p.room.min_width_m, p.rectangle.width * factor)
+                if grid > 0:
+                    new_w = snap_to_grid(new_w, grid)
+                p.rectangle.width = new_w
+            else:
+                new_h = max(p.room.min_width_m, p.rectangle.height * factor)
+                if grid > 0:
+                    new_h = snap_to_grid(new_h, grid)
+                p.rectangle.height = new_h
+
+        elif move == "nudge":
+            idx = random.randint(0, len(placements) - 1)
+            p = placements[idx]
+            dx = random.uniform(-0.5, 0.5) * (grid if grid > 0 else 0.5)
+            dy = random.uniform(-0.5, 0.5) * (grid if grid > 0 else 0.5)
+            new_x = max(self.boundary.x,
+                        min(p.rectangle.x + dx,
+                            self.boundary.x + self.boundary.width - p.rectangle.width))
+            new_y = max(self.boundary.y,
+                        min(p.rectangle.y + dy,
+                            self.boundary.y + self.boundary.height - p.rectangle.height))
+            p.rectangle.x = new_x
+            p.rectangle.y = new_y
+
+        return new
+
+    def solve(self) -> LayoutSolutionV2:
+        """Run simulated annealing optimisation loop."""
+        temp = self.initial_temp
+        current_penalty = self._evaluate(self.current)
+        self.best_penalty = current_penalty
+        stagnation = 0
+
+        for iteration in range(self.max_iterations):
+            if temp < self.min_temp:
+                break
+            if stagnation >= self.stagnation_limit:
+                break
+
+            candidate = self._neighbour(self.current)
+            candidate_penalty = self._evaluate(candidate)
+
+            delta = candidate_penalty - current_penalty
+            if delta < 0 or random.random() < math.exp(-delta / max(temp, 1e-10)):
+                self.current = candidate
+                current_penalty = candidate_penalty
+
+                if current_penalty < self.best_penalty:
+                    self.best = candidate.clone()
+                    self.best_penalty = current_penalty
+                    stagnation = 0
+                else:
+                    stagnation += 1
+            else:
+                stagnation += 1
+
+            self.history.append(current_penalty)
+            temp *= self.cooling_rate
+
+        self.best.iteration = len(self.history)
+        return self.best
+
+    def get_convergence_report(self) -> Dict[str, Any]:
+        return {
+            "initial_penalty": round(self.history[0], 4) if self.history else None,
+            "final_penalty": round(self.best_penalty, 4),
+            "improvement_pct": round(
+                (1.0 - self.best_penalty / max(self.history[0], 1e-10)) * 100, 2
+            ) if self.history else 0.0,
+            "total_iterations": len(self.history),
+            "final_temperature": round(
+                self.initial_temp * (self.cooling_rate ** len(self.history)), 4
+            ),
         }

@@ -12,6 +12,7 @@ sympy==1.14.0
 matplotlib==3.10.8
 reportlab==4.4.10
 sentry-sdk[fastapi]==2.22.0
+shapely>=2.0.0
 # Test dependencies
 pytest==9.0.2
 httpx==0.28.1
