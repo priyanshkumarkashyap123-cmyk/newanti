@@ -53,7 +53,7 @@ jobs:
             const pkg = require('./apps/api/package.json');
             delete pkg.scripts.build;
             delete pkg.devDependencies;
-            pkg.scripts.start = 'node dist/index.js';
+            pkg.scripts.start = 'node --env-file=.env dist/index.js';
             pkg.main = 'dist/index.js';
             console.log(JSON.stringify(pkg, null, 2));
           " > deploy-api/package.json
@@ -142,13 +142,13 @@ jobs:
 
       - name: Verify Node API health post-deploy
         run: |
-          echo "Waiting 20s for service warm-up..."
-          sleep 20
-          for i in 1 2 3 4 5; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health || echo "000")
+          echo "Waiting 40s for service warm-up..."
+          sleep 40
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            status=$(curl --max-time 10 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health || echo "000")
             echo "Attempt $i: Node API → $status"
             [ "$status" = "200" ] && exit 0
-            sleep 10
+            sleep 15
           done
           echo "::error::Node API health check failed after deploy — consider rollback"
           exit 1
@@ -169,6 +169,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Vendor Python dependencies for Azure runtime
+        working-directory: apps/backend-python
+        run: |
+          mkdir -p .python_packages/lib/site-packages
+          pip install -r requirements.txt --target .python_packages/lib/site-packages
+
       - name: Create zip package
         working-directory: apps/backend-python
         run: |
@@ -231,13 +238,13 @@ jobs:
 
       - name: Verify Python API health post-deploy
         run: |
-          echo "Waiting 20s for service warm-up..."
-          sleep 20
-          for i in 1 2 3 4 5; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" https://beamlab-backend-python.azurewebsites.net/health || echo "000")
+          echo "Waiting 40s for service warm-up..."
+          sleep 40
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            status=$(curl --max-time 10 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-python.azurewebsites.net/health || echo "000")
             echo "Attempt $i: Python API → $status"
             [ "$status" = "200" ] && exit 0
-            sleep 10
+            sleep 15
           done
           echo "::error::Python API health check failed after deploy — consider rollback"
           exit 1
