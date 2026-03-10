@@ -8,7 +8,7 @@
     "dev:watch": "tsx watch --env-file=.env src/index.ts",
     "build": "node build.mjs",
     "build:tsc": "tsc --skipLibCheck --noEmit false",
-    "start": "node dist/index.cjs",
+    "start": "node dist/index.js",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 100",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",

@@ -53,8 +53,9 @@ jobs:
             const pkg = require('./apps/api/package.json');
             delete pkg.scripts.build;
             delete pkg.devDependencies;
-            pkg.scripts.start = 'node --env-file=.env dist/index.cjs';
-            pkg.main = 'dist/index.cjs';
+            pkg.scripts.start = 'node --env-file=.env dist/index.js';
+            pkg.main = 'dist/index.js';
+            pkg.type = 'commonjs';
             console.log(JSON.stringify(pkg, null, 2));
           " > deploy-api/package.json
           cd deploy-api && npm install --omit=dev --ignore-scripts

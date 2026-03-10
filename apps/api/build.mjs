@@ -13,7 +13,7 @@ async function main() {
     try {
         const result = await build({
             entryPoints: ['./src/index.ts'],
-            outfile: './dist/index.cjs',
+            outfile: './dist/index.js',
             platform: 'node',
             target: 'node20',
             format: 'cjs',
