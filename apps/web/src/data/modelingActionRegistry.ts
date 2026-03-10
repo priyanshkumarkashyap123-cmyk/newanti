@@ -105,6 +105,7 @@ export const MODELING_ACTIONS: SidebarAction[] = [
   { id: "buckling", label: "Buckling Analysis", icon: BarChart3, handler: "openModal", target: "bucklingAnalysis", categories: ["ANALYSIS"] },
   { id: "modal", label: "Modal Analysis", icon: BarChart3, handler: "dispatch", target: "trigger-modal-analysis", categories: ["ANALYSIS"] },
   { id: "export-results", label: "Export Results", icon: Download, handler: "dispatch", target: "trigger-export", categories: ["ANALYSIS"] },
+  { id: "open-results-hub", label: "Results Hub", icon: Eye, handler: "dispatch", target: "open-results-hub", categories: ["ANALYSIS", "DESIGN"], quick: true, quickGroup: "analysis" },
 
   { id: "design-codes", label: "Select Design Code", icon: Settings, handler: "openModal", target: "designCodes", categories: ["DESIGN"] },
   { id: "design-check", label: "Run Design Check", icon: Ruler, handler: "dispatch", target: "trigger-analysis", categories: ["DESIGN"] },
@@ -125,8 +126,8 @@ const SIDEBAR_CURATED_ACTION_IDS: Record<SidebarCategory, string[]> = {
   PROPERTIES: ["assign-section", "assign-material", "releases", "offsets"],
   SUPPORTS: ["boundary", "support-tool"],
   LOADING: ["define-load", "point-load", "udl", "load-combos", "self-weight"],
-  ANALYSIS: ["run-analysis", "deformed-shape", "sfd", "bmd", "view-results"],
-  DESIGN: ["steel-design", "rc-design", "foundation-design", "pdf-report", "design-hub"],
+  ANALYSIS: ["run-analysis", "deformed-shape", "sfd", "bmd", "view-results", "open-results-hub"],
+  DESIGN: ["steel-design", "rc-design", "foundation-design", "full-report", "open-results-hub"],
 };
 
 export const getActionsForSidebarCategory = (category: SidebarCategory): SidebarAction[] => {

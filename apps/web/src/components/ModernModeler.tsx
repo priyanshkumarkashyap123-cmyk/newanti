@@ -52,6 +52,7 @@ import { QuickStartModal } from "./QuickStartModal";
 import { ProjectDetailsDialog } from "./ProjectDetailsDialog";
 import { ResultsToolbar } from "./results/ResultsToolbar";
 import { ResultsTableDock } from "./results/ResultsTableDock";
+import { ResultsHub } from "./results/ResultsHub";
 import ModalControls from "./ModalControls";
 import { AutonomousAIAgent, AIArchitectPanel } from "./ai";
 import { LoadInputDialog } from "./ui/LoadInputDialog";
@@ -117,6 +118,13 @@ import { MultiplayerUI } from "./modeler/MultiplayerUI";
 
 // Analysis execution hook (extracted ~1,800 lines)
 import { useAnalysisExecution } from "../hooks/useAnalysisExecution";
+import {
+  buildUnifiedAnalysisResult,
+  buildUnifiedDesignAndDetailing,
+  buildUnifiedReportData,
+  downloadUnifiedReport,
+} from "../services/reports/UnifiedResultsOrchestrator";
+import type { UnifiedDesignResult, UnifiedDetailingResult } from "../data/UnifiedResultsModel";
 
 // ============================================
 // MAIN MODERN MODELER COMPONENT
@@ -195,10 +203,11 @@ export const ModernModeler: FC = () => {
   }, [billingBypass, userId, user, openPayment, refreshSubscription]);
 
   const {
-    nodes, members, plates, loads, memberLoads, floorLoads,
+    projectInfo, nodes, members, plates, loads, memberLoads, floorLoads,
     settings: modelSettings, analysisResults, setAnalysisResults, setIsAnalyzing
   } = useModelStore(
     useShallow((state) => ({
+      projectInfo: state.projectInfo,
       nodes: state.nodes,
       members: state.members,
       plates: state.plates,
@@ -421,12 +430,74 @@ export const ModernModeler: FC = () => {
 
   // Export state
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showResultsHub, setShowResultsHub] = useState(false);
+  const [unifiedDesignResults, setUnifiedDesignResults] = useState<UnifiedDesignResult | undefined>();
+  const [unifiedDetailingResults, setUnifiedDetailingResults] = useState<UnifiedDetailingResult | undefined>();
 
   // Keyboard Shortcuts Overlay state
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Modal Analysis state
   const [showModalAnalysis, setShowModalAnalysis] = useState(false);
+
+  const unifiedAnalysisResults = useMemo(() => {
+    if (!analysisResults?.completed) {
+      return undefined;
+    }
+
+    return buildUnifiedAnalysisResult(analysisResults, nodes, members);
+  }, [analysisResults, nodes, members]);
+
+  const handleRunUnifiedDesignCheck = useCallback(() => {
+    if (!analysisResults?.completed) {
+      showNotification("warning", "Run analysis before starting design checks");
+      return;
+    }
+
+    const { design, detailing } = buildUnifiedDesignAndDetailing(
+      analysisResults,
+      nodes,
+      members,
+      projectInfo,
+    );
+
+    setUnifiedDesignResults(design);
+    setUnifiedDetailingResults(detailing);
+    setShowResultsHub(true);
+    setCategory("DESIGN");
+
+    showNotification(
+      design.failedMembers.length > 0 ? "warning" : "success",
+      `Design check completed for ${design.memberDesigns.size} member(s)`,
+    );
+  }, [analysisResults, members, nodes, projectInfo, setCategory, showNotification]);
+
+  const handleGenerateUnifiedReport = useCallback(async () => {
+    if (!analysisResults?.completed) {
+      showNotification("warning", "Run analysis before generating the full report");
+      return;
+    }
+
+    const reportData = buildUnifiedReportData(
+      projectInfo,
+      analysisResults,
+      nodes,
+      members,
+      unifiedDesignResults,
+      unifiedDetailingResults,
+    );
+
+    await downloadUnifiedReport(reportData);
+    showNotification("success", "Unified PDF report downloaded");
+  }, [
+    analysisResults,
+    members,
+    nodes,
+    projectInfo,
+    showNotification,
+    unifiedDesignResults,
+    unifiedDetailingResults,
+  ]);
 
   // Command Palette state (Cmd+K)
   const commandPalette = useCommandPalette();
@@ -468,17 +539,30 @@ export const ModernModeler: FC = () => {
     const onAnalysis = () => handleRunAnalysis();
     const onModal = () => setShowModalAnalysis(true);
     const onExport = () => setShowExportDialog(true);
+    const onDesignCheck = () => handleRunUnifiedDesignCheck();
+    const onOpenResultsHub = () => {
+      if (!analysisResults?.completed) {
+        showNotification("warning", "Run analysis first to open Results Hub");
+        return;
+      }
+      setShowResultsHub(true);
+      setCategory("ANALYSIS");
+    };
 
     document.addEventListener("trigger-analysis", onAnalysis);
     document.addEventListener("trigger-modal-analysis", onModal);
     document.addEventListener("trigger-export", onExport);
+    document.addEventListener("trigger-design-check", onDesignCheck);
+    document.addEventListener("open-results-hub", onOpenResultsHub);
 
     return () => {
       document.removeEventListener("trigger-analysis", onAnalysis);
       document.removeEventListener("trigger-modal-analysis", onModal);
       document.removeEventListener("trigger-export", onExport);
+      document.removeEventListener("trigger-design-check", onDesignCheck);
+      document.removeEventListener("open-results-hub", onOpenResultsHub);
     };
-  }, [handleRunAnalysis]);
+  }, [analysisResults?.completed, handleRunAnalysis, handleRunUnifiedDesignCheck, setCategory, showNotification]);
 
   // Ribbon Edit & Results Event Listeners — handle trigger-copy/move/split/delete + toggle-deformed/diagrams
   useEffect(() => {
@@ -628,8 +712,8 @@ export const ModernModeler: FC = () => {
     const onTriggerPdfReport = () => {
       const s = useModelStore.getState();
       if (s.analysisResults) {
-        setShowExportDialog(true);
-        showNotification("info", "Opening report export dialog");
+        void handleGenerateUnifiedReport();
+        showNotification("info", "Generating unified report");
       } else {
         showNotification("warning", "Run analysis before generating report");
       }
@@ -674,7 +758,7 @@ export const ModernModeler: FC = () => {
       document.removeEventListener("toggle-grid-snap", onToggleGridSnap);
       document.removeEventListener("toggle-grid", onToggleGrid);
     };
-  }, []);
+  }, [handleGenerateUnifiedReport, showNotification]);
 
   // Close progress modal and show results
   const handleCloseProgressModal = useCallback(() => {
@@ -1154,6 +1238,16 @@ export const ModernModeler: FC = () => {
         {QuickCommandsToolbar}
 
         <Suspense fallback={null}>
+          {showResultsHub && unifiedAnalysisResults && (
+            <ResultsHub
+              analysisResults={unifiedAnalysisResults}
+              designResults={unifiedDesignResults}
+              detailingResults={unifiedDetailingResults}
+              onClose={() => setShowResultsHub(false)}
+              onGenerateReport={handleGenerateUnifiedReport}
+            />
+          )}
+
           <ExportDialog
             isOpen={showExportDialog}
             onClose={() => setShowExportDialog(false)}

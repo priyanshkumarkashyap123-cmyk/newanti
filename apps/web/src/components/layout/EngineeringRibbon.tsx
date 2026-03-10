@@ -48,6 +48,7 @@ import {
   ArrowDown,
   TrendingUp,
   Eye,
+  Maximize2,
   Workflow,
   Search,
   Calculator,
@@ -587,7 +588,12 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           onClick={() => executeSharedAction("reactions")}
           tooltip="View Support Reactions Table"
         />
-        <ToolButton icon={FileText} label="Output" onClick={() => executeSharedAction("view-results")} tooltip="Tabular Results Output" />
+        <ToolButton
+          icon={Maximize2}
+          label="Results Hub"
+          onClick={() => executeSharedAction("open-results-hub")}
+          tooltip="Unified analysis, design, detailing, and report hub"
+        />
       </ToolGroup>
       <ToolGroup label="Export">
         <StackedButtons>
