@@ -13,5 +13,6 @@ pub use fsd_engine::{
     Objective, Constraint,
     MemberForces, MemberGeometry, MemberType,
     DesignCheck, IterationHistory, MemberEnvelopeSummary,
-    check_member,
+    RCDesignCheck,
+    check_member, check_member_rc,
 };

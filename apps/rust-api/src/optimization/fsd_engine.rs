@@ -20,10 +20,12 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::design_codes::is_800::{design_shear, ismb_database, IsmbSection, GAMMA_M0};
+use crate::design_codes::is_456;
 use crate::design_codes::section_wise::{
     self, MomentType, SectionDemand, SectionLocation, SteelDesignCode,
     SteelSectionWiseDesigner, SteelSectionInput,
 };
+use crate::solver::section_database::{SectionDatabase, SectionStandard};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MATERIAL CONSTANTS
@@ -177,6 +179,10 @@ pub struct FSDConfig {
     
     /// Maximum unique sections allowed (constructability)
     pub max_unique_sections: Option<usize>,
+
+    /// Section standard to use (IS, AISC, Eurocode). Defaults to IS.
+    #[serde(default)]
+    pub section_standard: Option<SectionStandard>,
 }
 
 impl Default for FSDConfig {
@@ -196,6 +202,7 @@ impl Default for FSDConfig {
             fy: 250.0,
             group_by_type: true,
             max_unique_sections: Some(8),
+            section_standard: None, // None = IS (default)
         }
     }
 }
@@ -299,8 +306,37 @@ pub struct FSDEngine {
 
 impl FSDEngine {
     /// Create new FSD engine with configuration
+    ///
+    /// Loads section database based on `config.section_standard`:
+    /// - None | Some(IS) → ISMB sections from IS 808
+    /// - Some(AISC) → W-shapes from AISC Manual
+    /// - Some(Eurocode) → IPE / HEA / HEB from EN profiles
     pub fn new(config: FSDConfig) -> Self {
-        let section_database = ismb_database();
+        let section_database = match config.section_standard {
+            None | Some(SectionStandard::IS) => ismb_database(),
+            Some(std) => {
+                let db = SectionDatabase::new();
+                db.by_standard(std)
+                    .into_iter()
+                    .filter(|s| s.shape == crate::solver::section_database::SectionShape::IBeam)
+                    .map(|s| IsmbSection {
+                        name: s.designation.clone(),
+                        depth: s.depth,
+                        width: s.width,
+                        tw: s.tw,
+                        tf: s.tf,
+                        area: s.area,
+                        ixx: s.ix,
+                        iyy: s.iy,
+                        zxx: s.sx,
+                        zyy: s.sy,
+                        rxx: s.rx,
+                        ryy: s.ry,
+                        weight: s.weight_per_m,
+                    })
+                    .collect()
+            }
+        };
         
         Self {
             config,
@@ -1217,6 +1253,163 @@ pub struct FSDSectionWiseComparison {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// RC (REINFORCED CONCRETE) DESIGN CHECK — IS 456:2000
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// RC design check result per member per load combination.
+///
+/// Checks flexure (Cl. 38.1), shear (Cl. 40.1), deflection (Cl. 23.2),
+/// and reinforcement limits (0.85bd/fy ≤ Ast ≤ 0.04bD).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RCDesignCheck {
+    pub member_id: String,
+    pub load_combo: String,
+    /// Governing utilization ratio (max of individual checks)
+    pub utilization_ratio: f64,
+    pub passed: bool,
+    pub governing_check: String,
+
+    // Individual utilization ratios
+    pub flexure_ur: f64,
+    pub shear_ur: f64,
+    pub deflection_ur: f64,
+
+    // Reinforcement output
+    /// Required tension reinforcement (mm²)
+    pub ast_required_mm2: f64,
+    /// Provided tension reinforcement (mm²)
+    pub ast_provided_mm2: f64,
+    /// Bar diameter selected (mm)
+    pub bar_dia_mm: f64,
+    /// Number of bars
+    pub bar_count: usize,
+    /// Stirrup diameter (mm)
+    pub stirrup_dia_mm: f64,
+    /// Stirrup spacing (mm)
+    pub stirrup_spacing_mm: f64,
+    /// Development length required (mm) — IS 456 Cl. 26.2.1
+    pub ld_mm: f64,
+}
+
+/// Perform IS 456 RC design check for a concrete beam member.
+///
+/// # Arguments
+/// * `member_id` — member identifier
+/// * `load_combo` — load combination name
+/// * `mu_knm` — factored bending moment (kN·m, absolute)
+/// * `vu_kn` — factored shear force (kN, absolute)
+/// * `b_mm` — beam width (mm)
+/// * `d_mm` — overall depth D (mm); effective depth = D − cover − dia/2
+/// * `cover_mm` — clear cover (mm), default 30–40
+/// * `span_mm` — member span (mm), for deflection check
+/// * `fck` — characteristic concrete strength (N/mm²)
+/// * `fy` — yield strength of reinforcement (N/mm²)
+/// * `support_type` — "simply_supported", "continuous", or "cantilever"
+pub fn check_member_rc(
+    member_id: &str,
+    load_combo: &str,
+    mu_knm: f64,
+    vu_kn: f64,
+    b_mm: f64,
+    d_mm: f64,
+    cover_mm: f64,
+    span_mm: f64,
+    fck: f64,
+    fy: f64,
+    support_type: &str,
+) -> RCDesignCheck {
+    let mu = mu_knm.abs();
+    let vu = vu_kn.abs();
+
+    // Effective depth
+    // Assume 20mm bar initially for d_eff
+    let d_eff = d_mm - cover_mm - 10.0; // D − cover − bar_dia/2
+
+    // ── 1. Flexure check — IS 456 Cl. 38.1 ──
+    let design_result = is_456::design_rc_beam_lsd(b_mm, d_eff, cover_mm, fck, fy, mu, vu);
+
+    let ast_required = design_result.bending.ast_required_mm2;
+    let ast_provided = design_result.bending.main_rebar.area_provided_mm2;
+
+    // Flexure UR = Mu_demand / Mu_capacity
+    let mu_capacity = is_456::flexural_capacity_singly(b_mm, d_eff, fck, fy, ast_provided);
+    let flexure_ur = if mu_capacity > 0.0 { mu / mu_capacity } else { f64::INFINITY };
+
+    // ── 2. Shear check — IS 456 Cl. 40.1 ──
+    let pt_percent = (ast_provided / (b_mm * d_eff)) * 100.0;
+    // Use 2-legged 8mm stirrups as default Asv for initial check
+    let asv_default = 2.0 * std::f64::consts::PI / 4.0 * 8.0 * 8.0; // ~100.5 mm²
+    let shear_result = is_456::design_shear(vu, b_mm, d_eff, fck, fy, pt_percent, asv_default);
+    // Shear UR = τv / τc_max
+    let shear_ur = if shear_result.tau_c_max > 0.0 {
+        shear_result.tau_v / shear_result.tau_c_max
+    } else {
+        f64::INFINITY
+    };
+
+    // ── 3. Deflection check — IS 456 Cl. 23.2 ──
+    let pc_percent = 0.0; // no compression steel for singly reinforced
+    let defl = is_456::check_deflection(
+        span_mm, d_eff, support_type, pt_percent, pc_percent,
+        fy, ast_provided, ast_required,
+    );
+    // UR = (actual L/d) / (allowable L/d); > 1.0 = fail
+    let actual_l_by_d = span_mm / d_eff;
+    let deflection_ur = if defl.allowable_l_by_d > 0.0 {
+        actual_l_by_d / defl.allowable_l_by_d
+    } else {
+        0.0
+    };
+
+    // ── 4. Reinforcement limits — IS 456 Cl. 26.5.1.1 ──
+    let ast_min = 0.85 * b_mm * d_eff / fy;
+    let ast_max = 0.04 * b_mm * d_mm;
+    let ast_final = ast_provided.max(ast_min);
+
+    // Select rebar configuration
+    let rebar = is_456::select_reinforcement(ast_final, b_mm);
+
+    // Development length
+    let ld = is_456::development_length(rebar.diameter_mm, fy, fck);
+
+    // Stirrup details from shear design
+    let vus_for_stirrups = (shear_result.vus).max(0.0); // vus already in kN
+    let (stirrup_dia, stirrup_spacing, _asv) = is_456::design_stirrup_spacing(
+        vus_for_stirrups, b_mm, d_eff, fy,
+    );
+
+    // ── Governing check ──
+    let checks = [
+        ("Flexure (IS 456 Cl. 38.1)", flexure_ur),
+        ("Shear (IS 456 Cl. 40.1)", shear_ur),
+        ("Deflection (IS 456 Cl. 23.2)", deflection_ur),
+    ];
+    let (governing_name, governing_ur) = checks.iter()
+        .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+        .unwrap();
+
+    let overall_ur = round3(*governing_ur);
+
+    RCDesignCheck {
+        member_id: member_id.to_string(),
+        load_combo: load_combo.to_string(),
+        utilization_ratio: overall_ur,
+        passed: overall_ur <= 1.0 && ast_final <= ast_max,
+        governing_check: governing_name.to_string(),
+        flexure_ur: round3(flexure_ur),
+        shear_ur: round3(shear_ur),
+        deflection_ur: round3(deflection_ur),
+        ast_required_mm2: round3(ast_required),
+        ast_provided_mm2: round3(ast_final),
+        bar_dia_mm: rebar.diameter_mm,
+        bar_count: rebar.count,
+        stirrup_dia_mm: stirrup_dia,
+        stirrup_spacing_mm: stirrup_spacing,
+        ld_mm: round3(ld),
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1433,5 +1626,34 @@ mod tests {
         assert_eq!(haunch.haunch_location, "both_ends");
         assert!(haunch.depth_increase_ratio > 0.0);
         assert!(haunch.estimated_saving_pct > 0.0);
+    }
+
+    #[test]
+    fn test_rc_design_check_is456() {
+        // Example: 300×500mm RC beam, M25/Fe415, span 6m, Mu=100 kN·m, Vu=80 kN
+        let check = check_member_rc(
+            "B1", "1.5(DL+LL)",
+            100.0,   // Mu (kN·m)
+            80.0,    // Vu (kN)
+            300.0,   // b (mm)
+            500.0,   // D overall depth (mm)
+            40.0,    // cover (mm)
+            6000.0,  // span (mm)
+            25.0,    // fck
+            415.0,   // fy
+            "simply_supported",
+        );
+        assert!(check.passed, "RC beam should pass: UR = {}", check.utilization_ratio);
+        assert!(check.utilization_ratio <= 1.0);
+        assert!(check.utilization_ratio > 0.0);
+        assert!(check.flexure_ur > 0.0, "Flexure UR should be positive");
+        assert!(check.ast_required_mm2 > 0.0, "Ast required should be positive");
+        assert!(check.ast_provided_mm2 >= check.ast_required_mm2,
+            "Ast provided {} >= required {}", check.ast_provided_mm2, check.ast_required_mm2);
+        assert!(check.bar_dia_mm > 0.0, "Bar dia should be positive");
+        assert!(check.bar_count >= 2, "At least 2 bars");
+        assert!(check.ld_mm > 0.0, "Development length should be positive");
+        assert!(check.stirrup_spacing_mm > 0.0, "Stirrup spacing should be positive");
+        assert!(!check.governing_check.is_empty());
     }
 }

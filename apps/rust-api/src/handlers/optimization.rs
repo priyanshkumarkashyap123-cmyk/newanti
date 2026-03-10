@@ -48,6 +48,8 @@ pub struct FSDConfigRequest {
     pub fy: f64,
     pub group_by_type: bool,
     pub max_unique_sections: Option<usize>,
+    /// Section standard: "IS", "AISC", or "Eurocode". Defaults to IS.
+    pub section_standard: Option<String>,
 }
 
 impl Default for FSDConfigRequest {
@@ -61,6 +63,7 @@ impl Default for FSDConfigRequest {
             fy: 250.0,
             group_by_type: true,
             max_unique_sections: Some(8),
+            section_standard: None,
         }
     }
 }
@@ -108,6 +111,11 @@ pub async fn fsd_optimize(
         fy: req.config.fy,
         group_by_type: req.config.group_by_type,
         max_unique_sections: req.config.max_unique_sections,
+        section_standard: req.config.section_standard.as_deref().and_then(|s| match s {
+            "AISC" | "aisc" => Some(crate::solver::section_database::SectionStandard::AISC),
+            "Eurocode" | "eurocode" | "EC" | "ec" => Some(crate::solver::section_database::SectionStandard::Eurocode),
+            _ => None, // IS is the default (None)
+        }),
     };
     
     // Create FSD engine
