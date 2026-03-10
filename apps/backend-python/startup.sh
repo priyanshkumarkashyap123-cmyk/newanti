@@ -9,7 +9,7 @@ PORT=${PORT:-8000}
 
 # Calculate optimal workers: 2 * CPU cores + 1 (capped at 8 for memory safety)
 # For 10K concurrent users, uvicorn's async handles most concurrency on each worker
-WORKERS=${GUNICORN_WORKERS:-4}
+WORKERS=${GUNICORN_WORKERS:-2}
 MAX_REQUESTS=${GUNICORN_MAX_REQUESTS:-5000}
 MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-500}
 

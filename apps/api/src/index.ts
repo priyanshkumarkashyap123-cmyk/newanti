@@ -73,6 +73,12 @@ if (process.env.SENTRY_DSN) {
 console.log("[STARTUP] Starting BeamLab API...");
 console.log("[STARTUP] NODE_ENV:", process.env.NODE_ENV || "not set");
 console.log("[STARTUP] PORT env:", process.env.PORT || "not set");
+console.log("[STARTUP] MONGODB_URI:", process.env.MONGODB_URI ? "SET" : "NOT SET");
+console.log("[STARTUP] RUST_API_URL:", process.env.RUST_API_URL || "NOT SET");
+console.log("[STARTUP] PYTHON_API_URL:", process.env.PYTHON_API_URL || "NOT SET");
+console.log("[STARTUP] FRONTEND_URL:", process.env.FRONTEND_URL || "NOT SET");
+console.log("[STARTUP] CLERK_SECRET_KEY:", process.env.CLERK_SECRET_KEY ? "SET" : "NOT SET");
+console.log("[STARTUP] CORS_ALLOWED_ORIGINS:", process.env.CORS_ALLOWED_ORIGINS || "NOT SET");
 
 const app = express();
 const PORT = process.env["PORT"] ?? 3001;
