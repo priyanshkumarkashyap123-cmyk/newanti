@@ -2,8 +2,6 @@ import { FC, useState, useMemo, useCallback } from "react";
 import {
   Box,
   Layers,
-  Database,
-  Settings,
   Anchor,
   Download,
   BarChart3,
@@ -11,141 +9,13 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Check,
-  MousePointer,
-  Plus,
-  Copy,
-  RotateCcw,
-  FlipHorizontal,
-  Scissors,
-  Move,
-  Trash2,
-  Grid3X3,
-  Merge,
-  File,
-  Upload,
-  ArrowDownUp,
-  Crosshair,
-  Maximize2,
-  Square,
   ChevronDown,
   ChevronRight,
-  ArrowRight,
-  Play,
-  Eye,
-  Activity,
-  FileText,
-  Shield,
-  Columns,
-  Building2,
-  Link2,
-  Landmark,
-  Wind,
-  Zap,
 } from "lucide-react";
 import { Category, useUIStore } from "../../store/uiStore";
 import { useShallow } from 'zustand/react/shallow';
 import { useModelStore } from "../../store/model";
-
-// ─── Types ───
-interface SubTool {
-  id: string;
-  label: string;
-  icon: FC<{ className?: string }>;
-  shortcut?: string;
-  /** How this tool connects to the backend */
-  handler: 'setTool' | 'openModal' | 'dispatch' | 'storeAction';
-  /** tool name / modal name / event name / store method */
-  target: string;
-}
-
-// ─── GEOMETRY TOOLS ─── Connected to modelStore.setTool() and CustomEvents
-const GEOMETRY_TOOLS: SubTool[] = [
-  { id: 'select', label: 'Select', icon: MousePointer, shortcut: 'V', handler: 'setTool', target: 'select' },
-  { id: 'select-range', label: 'Box Select', icon: Maximize2, shortcut: 'B', handler: 'setTool', target: 'select_range' },
-  { id: 'add-node', label: 'Add Node', icon: Plus, shortcut: 'N', handler: 'setTool', target: 'node' },
-  { id: 'add-beam', label: 'Add Beam', icon: Box, shortcut: 'M', handler: 'setTool', target: 'member' },
-  { id: 'add-plate', label: 'Add Plate', icon: Square, shortcut: 'P', handler: 'openModal', target: 'plateDialog' },
-  { id: 'copy', label: 'Copy / Duplicate', icon: Copy, shortcut: '⌘C', handler: 'dispatch', target: 'trigger-copy' },
-  { id: 'move', label: 'Move', icon: Move, handler: 'dispatch', target: 'trigger-move' },
-  { id: 'rotate', label: 'Rotate', icon: RotateCcw, handler: 'openModal', target: 'geometryTools' },
-  { id: 'mirror', label: 'Mirror', icon: FlipHorizontal, handler: 'openModal', target: 'geometryTools' },
-  { id: 'split', label: 'Split Member', icon: Scissors, handler: 'dispatch', target: 'trigger-split' },
-  { id: 'divide', label: 'Divide Member', icon: ArrowDownUp, handler: 'openModal', target: 'divideMember' },
-  { id: 'merge', label: 'Merge Nodes', icon: Merge, handler: 'openModal', target: 'mergeNodes' },
-  { id: 'ortho', label: 'Ortho / Grid Snap', icon: Grid3X3, handler: 'dispatch', target: 'toggle-grid-snap' },
-  { id: 'delete', label: 'Delete Selection', icon: Trash2, shortcut: 'Del', handler: 'dispatch', target: 'trigger-delete' },
-];
-
-// ─── PROPERTIES TOOLS ─── Connected to modal dialogs
-const PROPERTIES_TOOLS: SubTool[] = [
-  { id: 'section-library', label: 'Section Database', icon: Database, handler: 'openModal', target: 'sectionBrowserDialog' },
-  { id: 'assign-section', label: 'Assign Section', icon: Layers, handler: 'openModal', target: 'sectionAssign' },
-  { id: 'material-library', label: 'Material Library', icon: Database, handler: 'openModal', target: 'materialLibrary' },
-  { id: 'assign-material', label: 'Assign Material', icon: Layers, handler: 'openModal', target: 'materialAssign' },
-  { id: 'custom-section', label: 'Section Builder', icon: Square, handler: 'openModal', target: 'sectionBuilder' },
-  { id: 'material-props', label: 'Material Properties', icon: Settings, handler: 'openModal', target: 'materialProperties' },
-  { id: 'beta-angle', label: 'Beta Angle', icon: RotateCcw, handler: 'openModal', target: 'betaAngle' },
-  { id: 'releases', label: 'Member Releases', icon: Settings, handler: 'openModal', target: 'memberReleases' },
-  { id: 'offsets', label: 'Member Offsets', icon: Move, handler: 'openModal', target: 'memberOffsets' },
-];
-
-// ─── SUPPORT TOOLS ─── Connected to boundary conditions
-const SUPPORT_TOOLS: SubTool[] = [
-  { id: 'boundary', label: 'Define Supports', icon: Anchor, handler: 'openModal', target: 'boundaryConditionsDialog' },
-  { id: 'support-tool', label: 'Add Support (Click)', icon: Crosshair, handler: 'setTool', target: 'support' },
-];
-
-// ─── LOADING TOOLS ─── Connected to load system
-const LOADING_TOOLS: SubTool[] = [
-  { id: 'define-load', label: 'Define Load Cases', icon: File, handler: 'openModal', target: 'is875Load' },
-  { id: 'load-combos', label: 'Load Combinations', icon: Layers, handler: 'openModal', target: 'loadCombinationsDialog' },
-  { id: 'point-load', label: 'Nodal Force / Moment', icon: ArrowRight, shortcut: 'L', handler: 'setTool', target: 'load' },
-  { id: 'udl', label: 'Member Load (UDL)', icon: ArrowDownUp, shortcut: 'U', handler: 'setTool', target: 'memberLoad' },
-  { id: 'self-weight', label: 'Self Weight', icon: Download, handler: 'openModal', target: 'deadLoadGenerator' },
-  { id: 'wind-load', label: 'Wind Load', icon: Wind, handler: 'openModal', target: 'windLoadDialog' },
-  { id: 'earthquake', label: 'Seismic Load', icon: Zap, handler: 'openModal', target: 'seismicLoadDialog' },
-  { id: 'temperature', label: 'Temperature Load', icon: Activity, handler: 'openModal', target: 'temperatureLoad' },
-  { id: 'floor-load', label: 'Floor / Area Load', icon: Square, handler: 'openModal', target: 'floorSlabDialog' },
-];
-
-// ─── ANALYSIS TOOLS ─── Connected to analysis engine via CustomEvents & store
-const ANALYSIS_TOOLS: SubTool[] = [
-  { id: 'run-analysis', label: 'Run Analysis', icon: Play, shortcut: 'F5', handler: 'dispatch', target: 'trigger-analysis' },
-  { id: 'deformed-shape', label: 'Deformed Shape', icon: Activity, handler: 'dispatch', target: 'toggle-deformed' },
-  { id: 'sfd', label: 'Shear Force Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-sfd' },
-  { id: 'bmd', label: 'Bending Moment Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-bmd' },
-  { id: 'afd', label: 'Axial Force Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-afd' },
-  { id: 'deflection', label: 'Deflection Diagram', icon: BarChart3, handler: 'dispatch', target: 'toggle-deflection' },
-  { id: 'reactions', label: 'Support Reactions', icon: Anchor, handler: 'dispatch', target: 'toggle-reactions' },
-  { id: 'view-results', label: 'Results Table', icon: Eye, handler: 'dispatch', target: 'toggle-results-dock' },
-  { id: 'pdelta', label: 'P-Delta Analysis', icon: BarChart3, handler: 'openModal', target: 'pDeltaAnalysis' },
-  { id: 'buckling', label: 'Buckling Analysis', icon: BarChart3, handler: 'openModal', target: 'bucklingAnalysis' },
-  { id: 'modal', label: 'Modal Analysis', icon: BarChart3, handler: 'dispatch', target: 'trigger-modal-analysis' },
-  { id: 'export-results', label: 'Export Results', icon: Upload, handler: 'dispatch', target: 'trigger-export' },
-];
-
-// ─── DESIGN TOOLS ─── Connected to design dialogs & hub
-const DESIGN_TOOLS: SubTool[] = [
-  { id: 'design-codes', label: 'Select Design Code', icon: Shield, handler: 'openModal', target: 'designCodes' },
-  { id: 'design-check', label: 'Run Design Check', icon: Check, handler: 'dispatch', target: 'trigger-analysis' },
-  { id: 'steel-design', label: 'Steel Design', icon: Building2, handler: 'openModal', target: 'steelDesign' },
-  { id: 'rc-design', label: 'RC Design', icon: Columns, handler: 'openModal', target: 'concreteDesign' },
-  { id: 'connection-design', label: 'Connection Design', icon: Link2, handler: 'openModal', target: 'connectionDesign' },
-  { id: 'foundation-design', label: 'Foundation Design', icon: Landmark, handler: 'openModal', target: 'foundationDesign' },
-  { id: 'design-hub', label: 'Full Design Hub', icon: Ruler, handler: 'openModal', target: 'designHub' },
-  { id: 'pdf-report', label: 'Generate Report', icon: FileText, handler: 'dispatch', target: 'trigger-pdf-report' },
-  { id: 'csv-export', label: 'CSV Export', icon: File, handler: 'dispatch', target: 'trigger-csv-export' },
-];
-
-// ─── Category → tools mapping ───
-const CONTEXT_TOOLS: Record<string, SubTool[]> = {
-  MODELING: GEOMETRY_TOOLS,
-  PROPERTIES: PROPERTIES_TOOLS,
-  SUPPORTS: SUPPORT_TOOLS,
-  LOADING: LOADING_TOOLS,
-  ANALYSIS: ANALYSIS_TOOLS,
-  DESIGN: DESIGN_TOOLS,
-};
+import { getActionsForSidebarCategory, type SidebarAction, type SidebarCategory } from "../../data/modelingActionRegistry";
 
 interface WorkflowSidebarProps {
   activeCategory: Category;
@@ -200,7 +70,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
   };
 
   // ─── THE CORE FIX: Route every tool to its proper backend ───
-  const handleSubToolClick = useCallback((tool: SubTool) => {
+  const handleSubToolClick = useCallback((tool: SidebarAction) => {
     switch (tool.handler) {
       case 'setTool':
         // Route directly to modelStore — this is what the canvas reads
@@ -244,8 +114,10 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
 
   const activeTool = useModelStore((s) => s.activeTool);
 
-  // Get current context tools
-  const currentSubTools = CONTEXT_TOOLS[activeStep || 'MODELING'] || GEOMETRY_TOOLS;
+  // Get current context tools from shared registry
+  const currentCategory: SidebarCategory =
+    (activeStep as SidebarCategory) || "MODELING";
+  const currentSubTools = getActionsForSidebarCategory(currentCategory);
 
   return (
     <div className={`h-full bg-white dark:bg-gradient-to-b dark:from-slate-900 dark:to-slate-950 flex flex-col border-r border-slate-200 dark:border-slate-800/60 transition-all duration-300 ease-in-out ${collapsed ? 'w-12' : 'w-52'}`}>
@@ -314,7 +186,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
           <div className="px-2 py-2">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                {activeStep || 'Geometry'} Tools
+                {activeStep || 'Geometry'} Quick Actions
               </span>
               <button type="button" onClick={() => setShowSubTools(false)}
                 className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 p-0.5 rounded hover:bg-slate-200/60 dark:hover:bg-slate-800/40">

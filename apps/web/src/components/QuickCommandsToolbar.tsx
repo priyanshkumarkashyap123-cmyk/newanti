@@ -8,21 +8,8 @@
 import React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import {
-    MousePointer,
-    Move,
-    Plus,
-    Minus,
-    Box,
-    Circle,
-    Square,
-    Maximize2,
-    RotateCcw,
-    Play,
-    Target,
-    Grid,
-    X
-} from 'lucide-react';
+import { X } from 'lucide-react';
+import { getQuickActionIds } from '../data/modelingActionRegistry';
 
 // ============================================
 // TYPES
@@ -279,88 +266,42 @@ export function getDefaultQuickCommands(actions: {
     onSelect?: () => void;
     onMove?: () => void;
 }): QuickCommand[] {
-    return [
-        {
-            id: 'select',
-            icon: <MousePointer className="w-full h-full" />,
-            label: 'Select',
-            shortcut: 'V',
-            action: actions.onSelect || (() => { }),
-            group: 'cursor'
-        },
-        {
-            id: 'move',
-            icon: <Move className="w-full h-full" />,
-            label: 'Move',
-            shortcut: 'M',
-            action: actions.onMove || (() => { }),
-            group: 'cursor'
-        },
-        {
-            id: 'add-node',
-            icon: <Circle className="w-full h-full" />,
-            label: 'Add Node',
-            shortcut: 'N',
-            action: actions.onAddNode || (() => { }),
-            group: 'geometry'
-        },
-        {
-            id: 'add-beam',
-            icon: <Minus className="w-full h-full" />,
-            label: 'Add Beam',
-            shortcut: 'B',
-            action: actions.onAddBeam || (() => { }),
-            group: 'geometry'
-        },
-        {
-            id: 'add-load',
-            icon: <Plus className="w-full h-full" />,
-            label: 'Add Load',
-            shortcut: 'L',
-            action: actions.onAddLoad || (() => { }),
-            group: 'loading'
-        },
-        {
-            id: 'section',
-            icon: <Square className="w-full h-full" />,
-            label: 'Section',
-            shortcut: 'S',
-            action: actions.onAssignSection || (() => { }),
-            group: 'properties'
-        },
-        {
-            id: 'support',
-            icon: <Target className="w-full h-full" />,
-            label: 'Support',
-            shortcut: 'U',
-            action: actions.onAssignSupport || (() => { }),
-            group: 'properties'
-        },
-        {
-            id: 'run-analysis',
-            icon: <Play className="w-full h-full" />,
-            label: 'Analyze',
-            shortcut: 'F5',
-            action: actions.onRunAnalysis || (() => { }),
-            group: 'analysis'
-        },
-        {
-            id: 'fit-view',
-            icon: <Maximize2 className="w-full h-full" />,
-            label: 'Fit View',
-            shortcut: 'Home',
-            action: actions.onFitView || (() => { }),
-            group: 'view'
-        },
-        {
-            id: 'toggle-grid',
-            icon: <Grid className="w-full h-full" />,
-            label: 'Grid',
-            shortcut: 'G',
-            action: actions.onToggleGrid || (() => { }),
-            group: 'view'
-        },
-    ];
+    const actionById: Record<string, () => void> = {
+        select: actions.onSelect || (() => { }),
+        move: actions.onMove || (() => { }),
+        'add-node': actions.onAddNode || (() => { }),
+        'add-beam': actions.onAddBeam || (() => { }),
+        'point-load': actions.onAddLoad || (() => { }),
+        'assign-section': actions.onAssignSection || (() => { }),
+        'support-tool': actions.onAssignSupport || (() => { }),
+        'run-analysis': actions.onRunAnalysis || (() => { }),
+        ortho: actions.onToggleGrid || (() => { }),
+    };
+
+    const quickActions = getQuickActionIds();
+    const mappedQuickActions: QuickCommand[] = quickActions.map((action) => {
+        const Icon = action.icon;
+        return {
+            id: action.id,
+            icon: <Icon className="w-full h-full" />,
+            label: action.label,
+            shortcut: action.shortcut,
+            action: actionById[action.id] || (() => { }),
+            group: action.quickGroup,
+        };
+    });
+
+    // Keep fit-view explicitly as a viewport utility shortcut.
+    mappedQuickActions.push({
+        id: 'fit-view',
+        icon: actions.onFitView ? <span className="w-full h-full inline-flex items-center justify-center text-[10px] font-bold">Fit</span> : <span className="w-full h-full inline-flex items-center justify-center text-[10px] font-bold">Fit</span>,
+        label: 'Fit View',
+        shortcut: 'Home',
+        action: actions.onFitView || (() => { }),
+        group: 'view',
+    });
+
+    return mappedQuickActions;
 }
 
 export { QuickCommandsToolbar };
