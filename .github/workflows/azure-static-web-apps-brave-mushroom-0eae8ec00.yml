@@ -64,7 +64,7 @@ jobs:
       - name: Verify WASM packages exist
         run: |
           echo "Checking backend-rust WASM..."
-          test -f apps/backend-rust/pkg/beamlab_bg.wasm || { echo "::error::Missing beamlab_bg.wasm"; exit 1; }
+          test -f apps/backend-rust/pkg/backend_rust_bg.wasm || { echo "::error::Missing backend_rust_bg.wasm"; exit 1; }
           echo "Checking solver-wasm WASM..."
           test -f packages/solver-wasm/pkg/solver_wasm_bg.wasm || { echo "::error::Missing solver_wasm_bg.wasm"; exit 1; }
           echo "WASM artifacts verified ✅"
