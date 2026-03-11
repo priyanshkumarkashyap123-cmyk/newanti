@@ -122,10 +122,10 @@ export const ContactPage: FC = () => {
                     Our friendly team is here to help.
                   </p>
                   <a
-                    href="mailto:support@beamlab.app"
+                    href="mailto:decodedoffice@gmail.com"
                     className="text-blue-400 font-medium hover:text-blue-300 transition-colors"
                   >
-                    support@beamlab.app
+                    decodedoffice@gmail.com
                   </a>
                 </div>
               </div>
@@ -158,10 +158,10 @@ export const ContactPage: FC = () => {
                     Mon-Sat, 9:00 AM - 7:00 PM (IST)
                   </p>
                   <a
-                    href="tel:+919827012345"
+                    href="tel:7987782378"
                     className="text-emerald-400 font-medium hover:text-emerald-300 transition-colors"
                   >
-                    +91 98270 12345
+                    7987782378
                   </a>
                 </div>
               </div>

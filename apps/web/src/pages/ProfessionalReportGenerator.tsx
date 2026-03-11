@@ -363,7 +363,7 @@ export default function ProfessionalReportGenerator() {
                 </div>
                 <div style="font-size: 8px; color: ${SLATE_500}; text-align: right; line-height: 1.6;">
                   <div>beamlab.app</div>
-                  <div>support@beamlab.app</div>
+                  <div>decodedoffice@gmail.com</div>
                 </div>
               </div>
               

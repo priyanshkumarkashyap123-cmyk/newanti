@@ -915,10 +915,10 @@ function TermsAndConditionsPage() {
                       <div>
                         <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Email</p>
                         <a
-                          href="mailto:grievance@beamlab.app"
+                          href="mailto:decodedoffice@gmail.com"
                           className="text-blue-400 hover:underline"
                         >
-                          grievance@beamlab.app
+                          decodedoffice@gmail.com
                         </a>
                       </div>
                     </div>
@@ -955,10 +955,10 @@ function TermsAndConditionsPage() {
                     <div>
                       <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Email</p>
                       <a
-                        href="mailto:legal@beamlab.app"
+                        href="mailto:decodedoffice@gmail.com"
                         className="text-blue-400 hover:underline"
                       >
-                        legal@beamlab.app
+                        decodedoffice@gmail.com
                       </a>
                     </div>
                   </div>
@@ -1031,7 +1031,7 @@ function TermsAndConditionsPage() {
                 Terms and Conditions
               </Link>
               <a
-                href="mailto:legal@beamlab.app"
+                href="mailto:decodedoffice@gmail.com"
                 className="text-slate-900/50 dark:text-white/50 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
               >
                 Contact

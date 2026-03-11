@@ -224,7 +224,7 @@ export const generateBasicPDFReport = async (
     doc.setFontSize(8);
     doc.setTextColor(...SLATE_500);
     doc.text('beamlab.app', pageWidth - 20, 26, { align: 'right' });
-    doc.text('support@beamlab.app', pageWidth - 20, 31, { align: 'right' });
+    doc.text('decodedoffice@gmail.com', pageWidth - 20, 31, { align: 'right' });
 
     // Divider
     doc.setDrawColor(...SLATE_200);
@@ -533,7 +533,7 @@ export const generateCivilReport = async (
 
     doc.setFontSize(8);
     doc.text('beamlab.app', pageWidth - 20, 26, { align: 'right' });
-    doc.text('support@beamlab.app', pageWidth - 20, 31, { align: 'right' });
+    doc.text('decodedoffice@gmail.com', pageWidth - 20, 31, { align: 'right' });
 
     // Centre title
     const centerY = pageHeight / 2 - 15;

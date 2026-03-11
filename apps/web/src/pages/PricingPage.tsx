@@ -457,7 +457,7 @@ export const PricingPage: FC = () => {
                     <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
                         <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
                         <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>
-                        <a href="mailto:support@beamlab.app" className="hover:text-slate-900 dark:hover:text-white transition-colors">Support</a>
+                        <a href="mailto:decodedoffice@gmail.com" className="hover:text-slate-900 dark:hover:text-white transition-colors">Support</a>
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-400">© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
                 </div>
