@@ -435,11 +435,9 @@ export const buildUnifiedReportData = (
 export const downloadUnifiedReport = async (reportData: UnifiedReportData): Promise<void> => {
   const generator = new UnifiedReportGenerator();
   const pdfBytes = await generator.generateReport(reportData);
-  const pdfBuffer = pdfBytes.buffer.slice(
-    pdfBytes.byteOffset,
-    pdfBytes.byteOffset + pdfBytes.byteLength,
-  );
-  const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+  const pdfBytesSafe = new Uint8Array(pdfBytes.byteLength);
+  pdfBytesSafe.set(pdfBytes);
+  const blob = new Blob([pdfBytesSafe.buffer], { type: 'application/pdf' });
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

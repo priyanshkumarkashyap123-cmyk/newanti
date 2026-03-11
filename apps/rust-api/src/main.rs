@@ -22,6 +22,7 @@ use axum::{
     Router,
     http,
 };
+use rayon::ThreadPoolBuilder;
 use std::sync::Arc;
 use tower_http::{
     compression::CompressionLayer,
@@ -40,6 +41,46 @@ pub struct AppState {
     pub db: Database,
     pub config: Config,
     pub analysis_cache: AnalysisCache,
+}
+
+fn parse_positive_usize_env(name: &str) -> Option<usize> {
+    std::env::var(name)
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .filter(|v| *v > 0)
+}
+
+/// Configure Rayon global thread pool once at process startup.
+///
+/// Priority:
+/// 1) `RAYON_NUM_THREADS` env var
+/// 2) host available parallelism
+fn configure_rayon_pool() -> usize {
+    let host_parallelism = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1);
+    let desired_threads = parse_positive_usize_env("RAYON_NUM_THREADS")
+        .unwrap_or(host_parallelism)
+        .max(1);
+
+    match ThreadPoolBuilder::new().num_threads(desired_threads).build_global() {
+        Ok(_) => {
+            tracing::info!(
+                desired_threads,
+                host_parallelism,
+                "Configured Rayon global thread pool"
+            );
+        }
+        Err(e) => {
+            tracing::warn!(
+                error = %e,
+                current_threads = rayon::current_num_threads(),
+                "Rayon pool already initialized; reusing existing pool"
+            );
+        }
+    }
+
+    rayon::current_num_threads()
 }
 
 #[tokio::main]
@@ -71,6 +112,21 @@ async fn main() -> anyhow::Result<()> {
 
     // Load configuration
     dotenvy::dotenv().ok();
+
+    let host_parallelism = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1);
+    let tokio_workers_env = parse_positive_usize_env("TOKIO_WORKER_THREADS");
+    let rayon_workers_env = parse_positive_usize_env("RAYON_NUM_THREADS");
+
+    tracing::info!(
+        host_parallelism,
+        tokio_workers_env = tokio_workers_env.unwrap_or(host_parallelism),
+        rayon_workers_env = rayon_workers_env.unwrap_or(host_parallelism),
+        "Runtime concurrency configuration"
+    );
+
+    let effective_rayon_threads = configure_rayon_pool();
 
     // ── Sentry Error Monitoring ──────────────────────────────────────────
     let _sentry_guard = match std::env::var("SENTRY_DSN") {
@@ -107,7 +163,12 @@ async fn main() -> anyhow::Result<()> {
         }
     };
 
-    tracing::info!("📊 Using {} worker threads", rayon::current_num_threads());
+    tracing::info!(
+        "📊 Runtime thread summary: host={} tokio_configured={} rayon_effective={}",
+        host_parallelism,
+        tokio_workers_env.unwrap_or(host_parallelism),
+        effective_rayon_threads
+    );
 
     // Connect to MongoDB with retry logic
     tracing::info!("🔌 Connecting to MongoDB...");

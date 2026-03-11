@@ -38,6 +38,7 @@ import {
   BarChart3,
   Compass,
   Activity,
+  ChevronDown,
 } from "lucide-react";
 import { Logo } from "../components/branding";
 import { Button } from "../components/ui/button";
@@ -72,6 +73,7 @@ export const LandingPage: FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showcaseCards, setShowcaseCards] = useState<ShowcaseCard[]>([]);
   const [showcaseUnavailable, setShowcaseUnavailable] = useState(false);
 
@@ -1031,7 +1033,7 @@ export const LandingPage: FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 sm:gap-8 max-w-7xl mx-auto">
               {PRICING_TIERS.map((tier, index) => (
                 <motion.div
                   key={tier.name}
@@ -1103,6 +1105,38 @@ export const LandingPage: FC = () => {
                 View Full Feature Comparison <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
+
+            {/* ===== Pricing FAQ ===== */}
+            <div className="mt-20 max-w-3xl mx-auto">
+              <h3 className="text-xl sm:text-2xl font-bold text-center text-slate-900 dark:text-white mb-8">Frequently Asked Questions</h3>
+              <div className="space-y-3">
+                {PRICING_FAQ.map((item, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 overflow-hidden"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                      className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      aria-expanded={openFaq === i}
+                    >
+                      {item.q}
+                      <ChevronDown
+                        className={`w-4 h-4 flex-shrink-0 text-slate-400 transition-transform duration-300 ${
+                          openFaq === i ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    {openFaq === i && (
+                      <div className="px-6 pb-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                        {item.a}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1147,7 +1181,7 @@ export const LandingPage: FC = () => {
                 <li><a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Pricing</a></li>
                 <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Documentation</Link></li>
                 <li><Link to="/demo" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Live Demo</Link></li>
-                <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Downloads</Link></li>
+                <li><Link to="/tools/print-export" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Downloads</Link></li>
               </ul>
             </div>
 
@@ -1168,8 +1202,8 @@ export const LandingPage: FC = () => {
               <ul className="space-y-1 text-[13px]">
                 <li><Link to="/about" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">About</Link></li>
                 <li><Link to="/contact" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Contact</Link></li>
-                <li><Link to="/contact" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Blog</Link></li>
-                <li><Link to="/contact" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Careers</Link></li>
+                <li><Link to="/blog" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Blog</Link></li>
+                <li><Link to="/about#team" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Careers</Link></li>
               </ul>
             </div>
 
@@ -1648,6 +1682,33 @@ const FEATURES = [
   },
 ];
 
+const PRICING_FAQ = [
+  {
+    q: 'Can I start for free without a credit card?',
+    a: 'Yes. The Academic & Hobbyist plan is completely free — no credit card required. You get up to 3 active projects and access to all core 2D analysis features and IS 456 / ACI 318 design checks.',
+  },
+  {
+    q: 'What happens at the end of my free trial?',
+    a: 'Your 14-day Professional trial automatically downgrades to the free Academic plan. Your projects and data are preserved. You can upgrade at any time without data loss.',
+  },
+  {
+    q: 'Can I switch plans later?',
+    a: 'Absolutely. You can upgrade, downgrade, or cancel any time from your billing settings. Changes take effect at the next billing cycle and we pro-rate any unused days.',
+  },
+  {
+    q: 'Is there a discount for annual billing?',
+    a: 'Yes — annual billing saves you 20% compared to month-to-month. Toggle the billing cycle above the pricing cards to see annual prices.',
+  },
+  {
+    q: 'Does BeamLab support Indian design codes like IS 456 and IS 800?',
+    a: 'Yes. IS 456 (concrete), IS 800 (steel), IS 1893 (seismic), IS 875 Parts 1–5 (loads), and IS 13920 (ductile detailing) are all natively supported on every plan, including the free tier.',
+  },
+  {
+    q: 'What is included in the Enterprise plan?',
+    a: 'Enterprise includes unlimited team members, SSO/SAML integration, on-premises or private cloud deployment, a dedicated customer success manager, and 24/7 priority SLA support. Contact our team for pricing and custom terms.',
+  },
+];
+
 const PRICING_TIERS = [
   {
     name: "Academic & Hobbyist",
@@ -1683,17 +1744,33 @@ const PRICING_TIERS = [
     popular: true,
   },
   {
-    name: "Enterprise",
+    name: "Business",
     description: "For growing engineering firms and consultancies",
     price: "₹1,999",
     yearlyPrice: "₹1,599",
     period: "month",
     features: [
       "Everything in Professional",
-      "Up to 10 team members included",
+      "Up to 10 team members",
       "Advanced team project sharing",
       "Centralized admin dashboard",
       "REST API access for automation",
+    ],
+    cta: "Start Business Trial",
+    popular: false,
+  },
+  {
+    name: "Enterprise",
+    description: "For large organizations requiring enterprise controls",
+    price: "Contact Sales",
+    yearlyPrice: "Contact Sales",
+    period: "",
+    features: [
+      "Unlimited team members",
+      "Single Sign-On (SSO)",
+      "Dedicated customer success manager",
+      "On-prem / private cloud deployment",
+      "24/7 priority SLA support",
     ],
     cta: "Contact Sales",
     popular: false,

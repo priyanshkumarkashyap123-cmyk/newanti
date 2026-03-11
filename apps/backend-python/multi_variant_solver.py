@@ -20,21 +20,30 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-# Assuming imports from layout_solver_v2 and workflow_analyzer
+# Importing from layout_solver_v2 — use correct class names
+from layout_solver_v2 import (
+    AcousticZone,
+    AdjacencyEdge,
+    GlobalConstraints,
+    LayoutSolverV2,
+    LayoutSolutionV2,
+    PenaltyWeightsV2,
+    RoomNode,
+    RoomPlacement,
+    RoomType,
+    Setbacks,
+    SiteConfig,
+)
+
+# workflow_analyzer is optional — degrade gracefully when absent
 try:
-    from layout_solver_v2 import (
-        RoomNode, RoomPlacement, LayoutSolver, PenaltyWeightsV2, LayoutReport
-    )
     from workflow_analyzer import WorkflowAnalyzer, ZoneType, ActivityType
+    _WORKFLOW_ANALYZER_AVAILABLE = True
 except ImportError:
-    RoomNode = Any
-    RoomPlacement = Any
-    LayoutSolver = Any
-    PenaltyWeightsV2 = Any
-    LayoutReport = Any
-    WorkflowAnalyzer = Any
-    ZoneType = Any
-    ActivityType = Any
+    WorkflowAnalyzer = None  # type: ignore[assignment,misc]
+    ZoneType = None          # type: ignore[assignment]
+    ActivityType = None      # type: ignore[assignment]
+    _WORKFLOW_ANALYZER_AVAILABLE = False
 
 
 # =====================================================================
@@ -108,15 +117,16 @@ class MultiVariantSolver:
     
     def __init__(
         self,
-        base_solver: Any = None,  # LayoutSolver instance
         executor: Optional[ThreadPoolExecutor] = None,
         debug: bool = False,
     ):
-        self.base_solver = base_solver
         self.executor = executor or ThreadPoolExecutor(max_workers=5)
         self.debug = debug
-        self.analyzer = WorkflowAnalyzer()
         self.variants: Dict[str, DesignVariant] = {}
+        if _WORKFLOW_ANALYZER_AVAILABLE:
+            self.analyzer = WorkflowAnalyzer()
+        else:
+            self.analyzer = None
     
     def generate_variants(
         self,
@@ -124,127 +134,192 @@ class MultiVariantSolver:
         site_config: Any,  # SiteConfig
         base_penalty_weights: Optional[Dict[str, float]] = None,
         timeout_per_variant_sec: float = 30.0,
+        adjacency_edges: Optional[List[AdjacencyEdge]] = None,
+        constraints: Optional[GlobalConstraints] = None,
     ) -> List[DesignVariant]:
         """
-        Generate 5 design variants using different strategies.
-        
-        Args:
-            rooms: List of room definitions
-            site_config: Site/plot configuration
-            base_penalty_weights: Starting penalty weights (will be modulated per strategy)
-            timeout_per_variant_sec: Max seconds to compute each variant
-        
-        Returns:
-            List of 5 DesignVariant objects, ranked by composite score
+        Generate up to 5 design variants using different weighting strategies.
+
+        Each variant uses the same rooms/site but shifts penalty weights to
+        express a different design philosophy (open-plan, private-sleeping, etc.).
         """
-        
-        print(f"🎯 WORKFLOW-AWARE PLANNING: Analyzing {len(rooms)} rooms...")
-        
-        # Step 1: Analyze activity flows
-        activity_graph = self.analyzer.analyze_rooms(rooms)
-        strategies = self.analyzer.get_variant_strategies()
-        
-        print(f"✓ Identified functional zones: {list(self.analyzer.zones.keys())}")
-        print(f"✓ Criticality path: {activity_graph.criticality_path}")
-        print(f"✓ Required adjacencies: {self.analyzer.required_adjacencies}")
-        
-        # Step 2: Generate variant configurations
+        print(f"🎯 Generating layout variants for {len(rooms)} rooms...")
+
+        # Prepare variant weight profiles
         variant_configs = self._prepare_variant_configs(
-            strategies,
             base_penalty_weights or {},
             rooms,
         )
-        
-        # Step 3: Solve variants in parallel
-        print(f"\n🔧 Generating {len(variant_configs)} design variants in parallel...")
+
+        # Solve each variant with the production LayoutSolverV2
         variants = self._solve_variants_parallel(
             variant_configs,
             rooms,
             site_config,
+            adjacency_edges or [],
+            constraints or GlobalConstraints(),
             timeout_per_variant_sec,
         )
-        
-        # Step 4: Score and rank
-        print(f"\n📊 Scoring and ranking variants...")
+
+        # Score and rank
         for variant in variants:
-            self._score_variant(variant, activity_graph)
-        
+            self._score_variant(variant)
+
         variants.sort(key=lambda v: v.score.composite_score if v.score else 0, reverse=True)
-        
-        print(f"\n✨ VARIANT SUMMARY:")
-        for i, v in enumerate(variants, 1):
-            score_str = f"{v.score.composite_score:.1f}" if v.score else "N/A"
-            print(f"  {i}. {v.strategy_name} (Score: {score_str})")
-            if v.score:
-                print(f"     Compactness: {v.score.compactness:.1f} | "
-                      f"Zone: {v.score.zone_coherence:.1f} | "
-                      f"Flow: {v.score.circulation_efficiency:.1f}")
-        
+
+        if self.debug:
+            for i, v in enumerate(variants, 1):
+                score_str = f"{v.score.composite_score:.1f}" if v.score else "N/A"
+                print(f"  {i}. {v.strategy_name} → score {score_str}")
+
         self.variants = {v.variant_id: v for v in variants}
         return variants
     
     def _prepare_variant_configs(
         self,
-        strategies: Dict[str, Dict[str, Any]],
         base_weights: Dict[str, float],
         rooms: List[RoomNode],
     ) -> List[Dict[str, Any]]:
-        """Prepare configuration for each variant."""
-        
-        variant_ids = ["active_first", "sleeping_refuge", "central_circulation", 
-                      "compact_zones", "linear_flow"]
-        
-        configs = []
-        for variant_id in variant_ids:
-            if variant_id not in strategies:
-                continue
-            
-            strategy = strategies[variant_id]
-            
-            # Import penalty weight generator (from workflow_analyzer)
-            from workflow_analyzer import generate_variant_penalty_weights
-            
-            weights = generate_variant_penalty_weights(variant_id, base_weights)
-            
-            configs.append({
-                "variant_id": variant_id,
-                "strategy_name": strategy.get("name", variant_id),
-                "strategy_description": strategy.get("description", ""),
-                "strategy_config": strategy,
-                "penalty_weights": weights,
-                "zone_priorities": strategy.get("zone_priorities", []),
-                "zone_weights": strategy.get("zone_weights", {}),
-            })
-        
-        return configs
-    
+        """Prepare penalty-weight configuration for each design strategy.
+
+        Each strategy shifts the relative importance of adjacency, solar,
+        circulation, and compactness to achieve a distinct architectural intent.
+        The five profiles are named following IS 3861 room-type classification:
+          1. active_first     — maximise social-zone cohesion
+          2. sleeping_refuge  — maximise private-zone separation
+          3. central_circ     — hub-and-spoke central corridor
+          4. compact_zones    — minimise footprint, maximise area efficiency
+          5. linear_flow      — sequential entry→living→sleeping arrangement
+        """
+        _P = lambda k, default=100.0: float(base_weights.get(k, default))
+
+        # Common base for all variants
+        base = {
+            "overlap_collision":          _P("overlap_collision", 1000.0),
+            "fsi_violation":              _P("fsi_violation", 2000.0),
+            "min_width_violation":        _P("min_width_violation", 500.0),
+            "egress_distance_violation":  _P("egress_distance_violation", 1500.0),
+            "exterior_wall_violation":    _P("exterior_wall_violation", 300.0),
+            "span_violation":             _P("span_violation", 800.0),
+            "beam_headroom_violation":    _P("beam_headroom_violation", 600.0),
+            "clearance_violation":        _P("clearance_violation", 400.0),
+            "grid_snap_deviation":        _P("grid_snap_deviation", 30.0),
+        }
+
+        return [
+            {
+                "variant_id": "active_first",
+                "strategy_name": "Open Living Concept",
+                "strategy_description": "Social spaces (living/dining/kitchen) are centralised and integrated. Ideal for entertaining.",
+                "penalty_weights": {
+                    **base,
+                    "adjacency_violation":    _P("adjacency_violation", 120.0) * 2.0,
+                    "area_deviation":         _P("area_deviation", 100.0) * 0.8,
+                    "acoustic_zone_violation":_P("acoustic_zone_violation", 100.0) * 0.5,
+                    "plumbing_cluster_penalty":_P("plumbing_cluster_penalty", 200.0) * 1.0,
+                    "solar_thermal_penalty":  _P("solar_thermal_penalty", 40.0) * 1.2,
+                    "circulation_excess":     _P("circulation_excess", 150.0) * 0.8,
+                    "fenestration_violation": _P("fenestration_violation", 200.0) * 1.0,
+                    "aspect_ratio_violation": _P("aspect_ratio_violation", 50.0) * 1.0,
+                    "compactness_penalty":    _P("compactness_penalty", 80.0) * 1.5,
+                    "zone_grouping_penalty":  _P("zone_grouping_penalty", 100.0) * 2.0,
+                },
+            },
+            {
+                "variant_id": "sleeping_refuge",
+                "strategy_name": "Private Sleeping Wing",
+                "strategy_description": "Bedrooms clustered in a quiet wing, maximum acoustic separation from active zones.",
+                "penalty_weights": {
+                    **base,
+                    "adjacency_violation":    _P("adjacency_violation", 120.0) * 1.5,
+                    "area_deviation":         _P("area_deviation", 100.0) * 1.0,
+                    "acoustic_zone_violation":_P("acoustic_zone_violation", 100.0) * 3.0,
+                    "plumbing_cluster_penalty":_P("plumbing_cluster_penalty", 200.0) * 1.5,
+                    "solar_thermal_penalty":  _P("solar_thermal_penalty", 40.0) * 1.5,
+                    "circulation_excess":     _P("circulation_excess", 150.0) * 1.2,
+                    "fenestration_violation": _P("fenestration_violation", 200.0) * 1.2,
+                    "aspect_ratio_violation": _P("aspect_ratio_violation", 50.0) * 1.0,
+                    "compactness_penalty":    _P("compactness_penalty", 80.0) * 1.0,
+                    "zone_grouping_penalty":  _P("zone_grouping_penalty", 100.0) * 1.5,
+                },
+            },
+            {
+                "variant_id": "central_circulation",
+                "strategy_name": "Central Corridor Hub",
+                "strategy_description": "Hub-and-spoke layout with central corridor; all rooms radiate from a shared spine.",
+                "penalty_weights": {
+                    **base,
+                    "adjacency_violation":    _P("adjacency_violation", 120.0) * 1.0,
+                    "area_deviation":         _P("area_deviation", 100.0) * 1.0,
+                    "acoustic_zone_violation":_P("acoustic_zone_violation", 100.0) * 1.0,
+                    "plumbing_cluster_penalty":_P("plumbing_cluster_penalty", 200.0) * 1.0,
+                    "solar_thermal_penalty":  _P("solar_thermal_penalty", 40.0) * 0.8,
+                    "circulation_excess":     _P("circulation_excess", 150.0) * 0.3,  # allow wider corridors
+                    "fenestration_violation": _P("fenestration_violation", 200.0) * 1.0,
+                    "aspect_ratio_violation": _P("aspect_ratio_violation", 50.0) * 1.5,
+                    "compactness_penalty":    _P("compactness_penalty", 80.0) * 2.0,
+                    "zone_grouping_penalty":  _P("zone_grouping_penalty", 100.0) * 1.0,
+                },
+            },
+            {
+                "variant_id": "compact_zones",
+                "strategy_name": "Compact Efficient Zones",
+                "strategy_description": "Minimise footprint, maximise usable area ratio. Best for smaller budgets.",
+                "penalty_weights": {
+                    **base,
+                    "adjacency_violation":    _P("adjacency_violation", 120.0) * 1.2,
+                    "area_deviation":         _P("area_deviation", 100.0) * 2.0,   # tight area match
+                    "acoustic_zone_violation":_P("acoustic_zone_violation", 100.0) * 0.8,
+                    "plumbing_cluster_penalty":_P("plumbing_cluster_penalty", 200.0) * 2.0,
+                    "solar_thermal_penalty":  _P("solar_thermal_penalty", 40.0) * 0.5,
+                    "circulation_excess":     _P("circulation_excess", 150.0) * 2.0,  # minimise dead space
+                    "fenestration_violation": _P("fenestration_violation", 200.0) * 0.8,
+                    "aspect_ratio_violation": _P("aspect_ratio_violation", 50.0) * 0.8,
+                    "compactness_penalty":    _P("compactness_penalty", 80.0) * 2.5,
+                    "zone_grouping_penalty":  _P("zone_grouping_penalty", 100.0) * 1.5,
+                },
+            },
+            {
+                "variant_id": "linear_flow",
+                "strategy_name": "Linear Sequential Flow",
+                "strategy_description": "Entry → social zone → private zone in a clear linear progression. Traditional Indian plan.",
+                "penalty_weights": {
+                    **base,
+                    "adjacency_violation":    _P("adjacency_violation", 120.0) * 1.8,
+                    "area_deviation":         _P("area_deviation", 100.0) * 0.9,
+                    "acoustic_zone_violation":_P("acoustic_zone_violation", 100.0) * 1.5,
+                    "plumbing_cluster_penalty":_P("plumbing_cluster_penalty", 200.0) * 1.2,
+                    "solar_thermal_penalty":  _P("solar_thermal_penalty", 40.0) * 1.0,
+                    "circulation_excess":     _P("circulation_excess", 150.0) * 1.0,
+                    "fenestration_violation": _P("fenestration_violation", 200.0) * 1.5,
+                    "aspect_ratio_violation": _P("aspect_ratio_violation", 50.0) * 1.2,
+                    "compactness_penalty":    _P("compactness_penalty", 80.0) * 1.0,
+                    "zone_grouping_penalty":  _P("zone_grouping_penalty", 100.0) * 1.2,
+                },
+            },
+        ]
+
     def _solve_variants_parallel(
         self,
         configs: List[Dict[str, Any]],
         rooms: List[RoomNode],
         site_config: Any,
+        adjacency_edges: List[AdjacencyEdge],
+        constraints: GlobalConstraints,
         timeout_sec: float,
     ) -> List[DesignVariant]:
-        """Solve multiple variants concurrently."""
-        
+        """Solve each variant sequentially using LayoutSolverV2."""
         variants: List[DesignVariant] = []
-        
-        # For now, solve sequentially (threaded solver execution is complex)
-        # In production, this would use actual parallel solving
+
         for i, config in enumerate(configs, 1):
-            print(f"\n  [{i}/{len(configs)}] Solving: {config['strategy_name']}...")
-            
+            if self.debug:
+                print(f"  [{i}/{len(configs)}] Solving: {config['strategy_name']}...")
             try:
                 variant = self._solve_single_variant(
-                    config,
-                    rooms,
-                    site_config,
-                    timeout_sec,
+                    config, rooms, site_config, adjacency_edges, constraints, timeout_sec,
                 )
                 variants.append(variant)
-            except Exception as e:
-                print(f"     ❌ Failed: {str(e)}")
-                # Still create a variant object with error state
+            except Exception as exc:
                 variant = DesignVariant(
                     variant_id=config["variant_id"],
                     strategy_key=config["variant_id"],
@@ -255,21 +330,28 @@ class MultiVariantSolver:
                     variant_id=config["variant_id"],
                     strategy_name=config["strategy_name"],
                     strategy_description=config["strategy_description"],
-                    constraint_violations=[str(e)],
+                    constraint_violations=[str(exc)],
                 )
                 variants.append(variant)
-        
+
         return variants
     
     def _solve_single_variant(
         self,
         config: Dict[str, Any],
         rooms: List[RoomNode],
-        site_config: Any,
+        site_config: SiteConfig,
+        adjacency_edges: List[AdjacencyEdge],
+        constraints: GlobalConstraints,
         timeout_sec: float,
     ) -> DesignVariant:
-        """Solve one variant using configured weights."""
-        
+        """Solve one layout variant using LayoutSolverV2 with strategy-specific penalty weights.
+
+        Runs the production BSP+CSP solver with the strategy's penalty weight profile.
+        The seed is varied per variant to explore different BSP split orderings.
+        """
+        import random as _random
+
         variant = DesignVariant(
             variant_id=config["variant_id"],
             strategy_key=config["variant_id"],
@@ -277,105 +359,122 @@ class MultiVariantSolver:
             strategy_description=config["strategy_description"],
             penalty_weights=config["penalty_weights"],
         )
-        
-        # This would call the actual LayoutSolver with custom weights
-        # For now, this is a placeholder showing the concept
-        
-        if self.base_solver:
-            # Would execute: result = self.base_solver.solve(
-            #     rooms=rooms,
-            #     site=site_config,
-            #     penalty_weights=config["penalty_weights"],
-            #     timeout=timeout_sec,
-            # )
-            pass
-        
+
+        # Build PenaltyWeightsV2 from the strategy config dict
+        pw_dict = config["penalty_weights"]
+        weights = PenaltyWeightsV2(
+            area_deviation=        float(pw_dict.get("area_deviation", 100.0)),
+            min_width_violation=   float(pw_dict.get("min_width_violation", 500.0)),
+            aspect_ratio_violation=float(pw_dict.get("aspect_ratio_violation", 50.0)),
+            adjacency_violation=   float(pw_dict.get("adjacency_violation", 120.0)),
+            exterior_wall_violation=float(pw_dict.get("exterior_wall_violation", 300.0)),
+            overlap_collision=     float(pw_dict.get("overlap_collision", 1000.0)),
+            fsi_violation=         float(pw_dict.get("fsi_violation", 2000.0)),
+            plumbing_cluster_penalty=float(pw_dict.get("plumbing_cluster_penalty", 200.0)),
+            acoustic_zone_violation=float(pw_dict.get("acoustic_zone_violation", 100.0)),
+            clearance_violation=   float(pw_dict.get("clearance_violation", 400.0)),
+            grid_snap_deviation=   float(pw_dict.get("grid_snap_deviation", 30.0)),
+            circulation_excess=    float(pw_dict.get("circulation_excess", 150.0)),
+            span_violation=        float(pw_dict.get("span_violation", 800.0)),
+            beam_headroom_violation=float(pw_dict.get("beam_headroom_violation", 600.0)),
+            solar_thermal_penalty= float(pw_dict.get("solar_thermal_penalty", 40.0)),
+            fenestration_violation=float(pw_dict.get("fenestration_violation", 200.0)),
+            egress_distance_violation=float(pw_dict.get("egress_distance_violation", 1500.0)),
+        )
+
+        # Use per-variant seed for BSP diversity
+        _SEEDS = {
+            "active_first": 1001,
+            "sleeping_refuge": 2002,
+            "central_circulation": 3003,
+            "compact_zones": 4004,
+            "linear_flow": 5005,
+        }
+        seed = _SEEDS.get(config["variant_id"], _random.randint(0, 99999))
+
+        solver = LayoutSolverV2(
+            site=site_config,
+            constraints=constraints,
+            rooms=list(rooms),
+            adjacency_edges=adjacency_edges,
+            weights=weights,
+            max_iterations=200,
+            random_seed=seed,
+        )
+        solver.solve()
+        report = solver.get_full_report()
+        variant._raw_solver_output = report
+
+        if report and "placements" not in report.get("error", ""):
+            variant.placements = solver.best_solution.placements if solver.best_solution else []
+
         return variant
-    
+
     def _score_variant(
         self,
         variant: DesignVariant,
-        activity_graph: Any,
     ) -> None:
-        """Calculate quality scores for a variant."""
-        
-        if not variant.placements:
-            if not variant.score:
-                variant.score = VariantScore(
-                    variant_id=variant.variant_id,
-                    strategy_name=variant.strategy_name,
-                    strategy_description=variant.strategy_description,
-                    constraint_violations=["No valid solution generated"],
-                )
+        """Calculate quality scores from the solver report."""
+        report = variant._raw_solver_output or {}
+
+        if not variant.placements and not report:
+            variant.score = VariantScore(
+                variant_id=variant.variant_id,
+                strategy_name=variant.strategy_name,
+                strategy_description=variant.strategy_description,
+                constraint_violations=["No valid solution generated"],
+            )
             return
-        
+
+        placements = variant.placements
         score = VariantScore(
             variant_id=variant.variant_id,
             strategy_name=variant.strategy_name,
             strategy_description=variant.strategy_description,
         )
-        
-        # Calculate individual metrics
-        score.compactness = self._calculate_compactness_score(variant.placements)
-        score.zone_coherence = self._calculate_zone_coherence(variant.placements, activity_graph)
-        score.adjacency_satisfaction = self._calculate_adjacency_score(variant.placements)
-        score.circulation_efficiency = self._calculate_circulation_flow(variant.placements, activity_graph)
-        score.usable_area_ratio = self._calculate_usable_ratio(variant.placements)
-        
-        # Composite: weighted average
-        score.composite_score = (
-            score.compactness * 0.15 +
-            score.zone_coherence * 0.20 +
-            score.adjacency_satisfaction * 0.20 +
-            score.circulation_efficiency * 0.20 +
-            score.usable_area_ratio * 0.25
+
+        # ── Compactness: bounding-box utilisation (higher = more compact) ──
+        if placements:
+            min_x = min(p.rectangle.x for p in placements)
+            min_y = min(p.rectangle.y for p in placements)
+            max_x = max(p.rectangle.x + p.rectangle.width for p in placements)
+            max_y = max(p.rectangle.y + p.rectangle.height for p in placements)
+            bbox_area = max(1.0, (max_x - min_x) * (max_y - min_y))
+            room_area = sum(p.rectangle.area for p in placements)
+            score.compactness = min(100.0, round((room_area / bbox_area) * 100.0, 1))
+        else:
+            score.compactness = 0.0
+
+        # ── Zone coherence: ratio of satisfied adjacency constraints from report ──
+        constraints_met = report.get("constraints_met_ratio", 0.0)
+        score.zone_coherence = round(constraints_met * 100.0, 1)
+
+        # ── Adjacency satisfaction: invert penalty (lower penalty = better) ──
+        total_penalty = report.get("total_penalty", 10000.0)
+        score.adjacency_satisfaction = round(max(0.0, 100.0 - min(total_penalty / 100.0, 100.0)), 1)
+
+        # ── Circulation efficiency: 1 - corridor_ratio (less corridor = better flow) ──
+        circ = report.get("diagnostics", {}).get("circulation", {})
+        corridor_ratio = circ.get("corridor_ratio", 0.15)
+        score.circulation_efficiency = round(max(0.0, (1.0 - corridor_ratio) * 100.0), 1)
+
+        # ── Usable area ratio ──
+        usable_boundary = report.get("usable_boundary", {})
+        usable_area = usable_boundary.get("area_sqm", 1.0)
+        room_area_total = sum(p.rectangle.area for p in placements) if placements else 0.0
+        score.usable_area_ratio = round(min(100.0, (room_area_total / max(1.0, usable_area)) * 100.0), 1)
+
+        # ── Composite: weighted combination ──
+        score.composite_score = round(
+            score.compactness        * 0.15
+            + score.zone_coherence   * 0.20
+            + score.adjacency_satisfaction * 0.20
+            + score.circulation_efficiency * 0.20
+            + score.usable_area_ratio * 0.25,
+            1,
         )
-        
+
         variant.score = score
-    
-    def _calculate_compactness_score(self, placements: List[Any]) -> float:
-        """Measure how tightly grouped rooms are (0-100, lower=better)."""
-        if not placements:
-            return 100.0
-        
-        # Simplified: average distance to centroid
-        centers = [p.rectangle.center for p in placements]
-        if not centers:
-            return 100.0
-        
-        centroid_x = sum(c[0] for c in centers) / len(centers)
-        centroid_y = sum(c[1] for c in centers) / len(centers)
-        
-        avg_dist = sum(
-            (c[0] - centroid_x)**2 + (c[1] - centroid_y)**2
-            for c in centers
-        ) / len(centers)
-        
-        # Normalize: spread of ~50m² gives ~7m distance ≈ score 70
-        score = min(100.0, avg_dist)
-        return score
-    
-    def _calculate_zone_coherence(self, placements: List[Any], activity_graph: Any) -> float:
-        """Measure how well zones cluster (0-100, higher=better)."""
-        # Placeholder: would measure intra-zone distances
-        return 50.0
-    
-    def _calculate_adjacency_score(self, placements: List[Any]) -> float:
-        """% of required adjacencies that are satisfied (0-100)."""
-        # Placeholder: would check kitchen-dining, bed-bath proximity
-        return 75.0
-    
-    def _calculate_circulation_flow(self, placements: List[Any], activity_graph: Any) -> float:
-        """Quality of entry→living→sleeping circulation (0-100)."""
-        # Placeholder: would measure path efficiency
-        return 60.0
-    
-    def _calculate_usable_ratio(self, placements: List[Any]) -> float:
-        """Ratio of room area to total buildable area (50-95)."""
-        total_area = sum(p.rectangle.area for p in placements)
-        # Simplified: assume good designs use 70-85% of allocated area
-        ratio = min(95.0, 50.0 + (total_area / 1000.0))
-        return ratio
 
 
 # =====================================================================

@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.25.0",
   "type": "module",
   "scripts": {
+    "audit:production": "bash scripts/production-readiness-audit.sh",
     "dev": "node --env-file=.env --import tsx src/index.ts",
     "dev:watch": "tsx watch --env-file=.env src/index.ts",
     "build": "node build.mjs",
@@ -18,7 +19,14 @@
     "test:coverage": "vitest run --coverage",
     "migrate": "tsx src/migrations/runner.ts",
     "migrate:status": "tsx src/migrations/runner.ts --status",
-    "migrate:rollback": "tsx src/migrations/runner.ts --down"
+    "migrate:rollback": "tsx src/migrations/runner.ts --down",
+    "load:capacity:health": "k6 run tests/load/capacity-staged.js --env PROFILE=health --summary-export ./k6-summary.json",
+    "load:capacity:w1": "k6 run tests/load/capacity-staged.js --env PROFILE=w1 --env ENABLE_ANALYSIS=true --env AUTH_TOKEN=${AUTH_TOKEN} --summary-export ./k6-summary.json",
+    "load:capacity:w2": "k6 run tests/load/capacity-staged.js --env PROFILE=w2 --env ENABLE_ANALYSIS=true --env AUTH_TOKEN=${AUTH_TOKEN} --summary-export ./k6-summary.json",
+    "load:capacity:w3": "k6 run tests/load/capacity-staged.js --env PROFILE=w3 --env ENABLE_ANALYSIS=true --env AUTH_TOKEN=${AUTH_TOKEN} --summary-export ./k6-summary.json",
+    "load:capacity:w4": "k6 run tests/load/capacity-staged.js --env PROFILE=w4 --env ENABLE_ANALYSIS=true --env AUTH_TOKEN=${AUTH_TOKEN} --summary-export ./k6-summary.json",
+    "load:summary": "node tests/load/capacity-summary.mjs ./k6-summary.json",
+    "load:full": "npm run load:capacity:w2 && npm run load:summary"
   },
   "dependencies": {
     "@clerk/express": "^1.7.58",

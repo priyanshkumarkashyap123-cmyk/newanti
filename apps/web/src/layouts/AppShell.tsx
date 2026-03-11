@@ -27,6 +27,7 @@ import {
   ChevronRight,
   X,
   Bell,
+  User,
 } from 'lucide-react';
 import { UserButton } from '@clerk/clerk-react';
 import { Logo } from '../components/branding';
@@ -35,6 +36,7 @@ import { FeatureNavigation } from '../components/navigation/FeatureNavigation';
 import { useAuth } from '../providers/AuthProvider';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { getRouteTitle, getSearchItems } from '../config/appRouteMeta';
+import { useNotificationsStore } from '../store/notificationsStore';
 
 // Lazy-load onboarding — only needed on first visit
 const OnboardingFlow = lazy(() =>
@@ -58,6 +60,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isSignedIn } = useAuth();
+  const unreadCount = useNotificationsStore((state) => state.unreadCount());
 
   // Sidebar state (persisted)
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -305,6 +308,28 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
                 Workspace
               </Link>
             )}
+
+            <button
+              type="button"
+              onClick={() => navigate('/notifications')}
+              className="relative p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              aria-label="Open notifications"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4 text-center font-semibold">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            <Link
+              to="/profile"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              <User className="w-3.5 h-3.5" />
+              Profile
+            </Link>
 
             {/* User button */}
             {isSignedIn && <UserButton afterSignOutUrl="/" />}

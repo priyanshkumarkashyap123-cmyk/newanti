@@ -226,7 +226,13 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         setTool(action.target as any);
         break;
       case "openModal":
-        openModal(action.target as any);
+        if (action.target in useUIStore.getState().modals) {
+          openModal(action.target as any);
+        } else {
+          useUIStore
+            .getState()
+            .showNotification("warning", `${action.label} is not available in this build yet.`);
+        }
         break;
       case "dispatch":
         document.dispatchEvent(new CustomEvent(action.target));

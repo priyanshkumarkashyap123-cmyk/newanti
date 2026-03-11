@@ -47,7 +47,14 @@ import {
   requestIdMiddleware,
   requestLoggerWithId,
   secureErrorHandler,
+  costWeightedRateLimit,
 } from "./middleware/security.js";
+import {
+  analysisBackpressure,
+  advancedBackpressure,
+  designBackpressure,
+  aiBackpressure,
+} from "./middleware/backpressure.js";
 import {
   csrfCookieMiddleware,
   csrfValidationMiddleware,
@@ -287,6 +294,14 @@ app.get("/health", async (_req: Request, res: Response) => {
     /* not critical */
   }
 
+  let analysisCache: Record<string, unknown> = {};
+  try {
+    const { getCacheStats } = await import("./utils/resultCache.js");
+    analysisCache = getCacheStats();
+  } catch {
+    /* not critical */
+  }
+
   const status = dbStatus === "connected" ? "ok" : "degraded";
 
   const isDev = process.env["NODE_ENV"] !== "production";
@@ -304,6 +319,7 @@ app.get("/health", async (_req: Request, res: Response) => {
       authProvider: isUsingClerk() ? "clerk" : "inhouse",
       dependencies: { mongodb: dbStatus },
       circuitBreakers,
+      analysisCache,
     }),
   });
 });
@@ -411,18 +427,18 @@ app.use("/api/usage", requireDbReady);
 const authRequired = requireAuth();
 
 // Structural Analysis API (rate limited: 10/min, auth required)
-app.use("/api/v1/analyze", authRequired, analysisRateLimit, analysisRouter);
-app.use("/api/analyze", authRequired, analysisRateLimit, analysisRouter);
-app.use("/api/v1/analysis", authRequired, analysisRateLimit, analysisRouter);
-app.use("/api/analysis", authRequired, analysisRateLimit, analysisRouter);
+app.use("/api/v1/analyze", authRequired, analysisRateLimit, costWeightedRateLimit(5), analysisBackpressure, analysisRouter);
+app.use("/api/analyze", authRequired, analysisRateLimit, costWeightedRateLimit(5), analysisBackpressure, analysisRouter);
+app.use("/api/v1/analysis", authRequired, analysisRateLimit, costWeightedRateLimit(5), analysisBackpressure, analysisRouter);
+app.use("/api/analysis", authRequired, analysisRateLimit, costWeightedRateLimit(5), analysisBackpressure, analysisRouter);
 
 // Structural Design API (rate limited: 10/min, auth required)
-app.use("/api/v1/design", authRequired, analysisRateLimit, designRouter);
-app.use("/api/design", authRequired, analysisRateLimit, designRouter);
+app.use("/api/v1/design", authRequired, analysisRateLimit, costWeightedRateLimit(3), designBackpressure, designRouter);
+app.use("/api/design", authRequired, analysisRateLimit, costWeightedRateLimit(3), designBackpressure, designRouter);
 
 // Advanced Analysis API (P-Delta, Modal, Buckling — auth required)
-app.use("/api/v1/advanced", authRequired, analysisRateLimit, advancedRouter);
-app.use("/api/advanced", authRequired, analysisRateLimit, advancedRouter);
+app.use("/api/v1/advanced", authRequired, analysisRateLimit, costWeightedRateLimit(10), advancedBackpressure, advancedRouter);
+app.use("/api/advanced", authRequired, analysisRateLimit, costWeightedRateLimit(10), advancedBackpressure, advancedRouter);
 
 // Interoperability API (STAAD, DXF import/export — auth required)
 app.use("/api/v1/interop", authRequired, analysisRateLimit, interopRouter);
@@ -477,8 +493,8 @@ app.use("/api/v1/ai-sessions", crudRateLimit, aiSessionRoutes);
 app.use("/api/ai-sessions", crudRateLimit, aiSessionRoutes);
 
 // AI Model Generation API (architect, vision — auth required)
-app.use("/api/v1/ai", authRequired, analysisRateLimit, aiRoutes);
-app.use("/api/ai", authRequired, analysisRateLimit, aiRoutes);
+app.use("/api/v1/ai", authRequired, analysisRateLimit, costWeightedRateLimit(8), aiBackpressure, aiRoutes);
+app.use("/api/ai", authRequired, analysisRateLimit, costWeightedRateLimit(8), aiBackpressure, aiRoutes);
 
 // Feedback API (user feedback for AI improvement — auth required)
 app.use("/api/v1/feedback", authRequired, crudRateLimit, feedbackRoutes);

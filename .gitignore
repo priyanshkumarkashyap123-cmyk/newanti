@@ -82,6 +82,7 @@ onnect-timeout
 .pnpm-store/
 .turbo/
 .venv/
+.venv-1/
 .vscode/
 ADVANCED_FEM_*.md
 CORS_CONFIGURATION.md

@@ -24,6 +24,7 @@ import type {
   PlacementResponse,
   StructuralCheck,
   FenestrationCheck,
+  StructuralGridReport,
 } from '../../services/space-planning/layoutApiService';
 
 // ============================================================================
@@ -404,6 +405,68 @@ const EgressIndicator: React.FC<{
   );
 };
 
+/** Structural grid lines and column markers from the CSP solver output */
+const StructuralGridLayer: React.FC<{
+  grid: StructuralGridReport;
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  canvasH: number;
+  canvasW: number;
+}> = ({ grid, scale, offsetX, offsetY, canvasH, canvasW }) => (
+  <g className="structural-grid-layer" opacity={0.65} pointerEvents="none">
+    {/* Vertical grid lines */}
+    {grid.x_grid_lines.map((x, i) => (
+      <line
+        key={`xgl-${i}`}
+        x1={(x + offsetX) * scale}
+        y1={0}
+        x2={(x + offsetX) * scale}
+        y2={canvasH}
+        stroke="#6366f1"
+        strokeWidth={0.6}
+        strokeDasharray="5 7"
+        opacity={0.35}
+      />
+    ))}
+
+    {/* Horizontal grid lines */}
+    {grid.y_grid_lines.map((y, i) => (
+      <line
+        key={`ygl-${i}`}
+        x1={0}
+        y1={(y + offsetY) * scale}
+        x2={canvasW}
+        y2={(y + offsetY) * scale}
+        stroke="#6366f1"
+        strokeWidth={0.6}
+        strokeDasharray="5 7"
+        opacity={0.35}
+      />
+    ))}
+
+    {/* Column markers — indigo dot + cross-hair */}
+    {grid.columns.map((col, i) => {
+      const cx = (col.x + offsetX) * scale;
+      const cy = (col.y + offsetY) * scale;
+      return (
+        <g key={`col-${i}`} transform={`translate(${cx}, ${cy})`}>
+          {/* Outer ring */}
+          <circle r={6} fill="none" stroke="#4f46e5" strokeWidth={1} opacity={0.6} />
+          {/* Filled dot */}
+          <circle r={3} fill="#4f46e5" opacity={0.8} />
+          {/* Cross-hair arms */}
+          <line x1={-8} y1={0} x2={-4} y2={0} stroke="#4f46e5" strokeWidth={1} opacity={0.7} />
+          <line x1={4} y1={0} x2={8} y2={0} stroke="#4f46e5" strokeWidth={1} opacity={0.7} />
+          <line x1={0} y1={-8} x2={0} y2={-4} stroke="#4f46e5" strokeWidth={1} opacity={0.7} />
+          <line x1={0} y1={4} x2={0} y2={8} stroke="#4f46e5" strokeWidth={1} opacity={0.7} />
+          <title>Structural column @ ({col.x.toFixed(1)} m, {col.y.toFixed(1)} m)</title>
+        </g>
+      );
+    })}
+  </g>
+);
+
 // ============================================================================
 // MAIN OVERLAY COMPONENT
 // ============================================================================
@@ -445,8 +508,9 @@ export const ViolationOverlay: React.FC<ViolationOverlayProps> = ({
   const failedSpans = report.structuralChecks?.filter((s) => !s.compliant) || [];
   const failedFenestration = report.fenestrationChecks?.filter((f) => !f.compliant) || [];
 
-  // Canvas width estimate for FSI banner
+  // Canvas bounding box for grid lines
   const maxX = Math.max(...placements.map((p) => (p.position.x + p.dimensions.width + offsetX) * scale), 200);
+  const maxY = Math.max(...placements.map((p) => (p.position.y + p.dimensions.height + offsetY) * scale), 200);
 
   return (
     <g className="violation-overlay">
@@ -459,9 +523,7 @@ export const ViolationOverlay: React.FC<ViolationOverlayProps> = ({
           fsiLimit={report.fsi.fsi_limit || 1}
           canvasWidth={maxX}
         />
-      )}
-
-      {/* Room-level violation hatches */}
+      )}      {/* Room-level violation hatches */}
       {Array.from(violatedRooms.entries()).map(([roomId, info]) => {
         const placement = placementMap.get(roomId);
         if (!placement) return null;
@@ -530,6 +592,18 @@ export const ViolationOverlay: React.FC<ViolationOverlayProps> = ({
         offsetX={offsetX}
         offsetY={offsetY}
       />
+
+      {/* Structural grid — column dots + dashed grid lines (rendered last so they sit on top) */}
+      {report.structuralGrid && (
+        <StructuralGridLayer
+          grid={report.structuralGrid}
+          scale={scale}
+          offsetX={offsetX}
+          offsetY={offsetY}
+          canvasW={maxX}
+          canvasH={maxY}
+        />
+      )}
     </g>
   );
 };

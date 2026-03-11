@@ -7,6 +7,7 @@ import React, { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ExternalLink, Home, BarChart3, Building2, Zap, FileText, Users, BookOpen, Cog, Search } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 interface PageSection {
   id: string;
@@ -275,6 +276,11 @@ export const SitemapPage: FC<SitemapPageProps> = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 py-12 px-4">
+      <SEO
+        title="Site Map"
+        description="Complete navigation guide to all BeamLab features: structural analysis, RC design, steel design, foundation design, reports, and more."
+        path="/sitemap"
+      />
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="space-y-6 mb-12">

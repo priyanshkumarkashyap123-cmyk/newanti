@@ -49,6 +49,7 @@ import { ConnectionModelingPanel } from './components/ConnectionModelingPanel';
 import { Connection3DVisualization } from './components/Connection3DVisualization';
 import { ConnectionAnalysisResultsPanel } from './components/ConnectionAnalysisResultsPanel';
 import { ConnectionDesignWizard } from './components/ConnectionDesignWizard';
+import { useToast } from '@/components/ui/ToastSystem';
 import {
   ConnectionFormData,
   BoltGrade,
@@ -350,6 +351,52 @@ export const ConnectionDesignPage: React.FC = () => {
     return formDataToBoltPattern(selectedConnection);
   }, [selectedConnection]);
 
+  const toast = useToast();
+
+  const handleExportReport = useCallback(async () => {
+    if (!analysisResult) {
+      toast.error('Run analysis before exporting a report.');
+      return;
+    }
+
+    try {
+      toast.info('Generating PDF report...');
+
+      const { ReportGenerator } = await import('@/utils/ReportGenerator');
+      const conn = selectedConnection!;
+      const generator = await ReportGenerator.create({
+        projectName: conn.name,
+        engineer: '',
+        company: 'BeamLab',
+        isProUser: true,
+        includeScreenshot: false,
+        includeSummary: true,
+        includeReactions: false,
+        includeMemberForces: false,
+      });
+
+      // Build a flat bolt-forces breakdown table for the PDF
+      const boltRows: string[][] = [];
+      analysisResult.boltForces.forEach((forces, boltId) => {
+        boltRows.push([
+          boltId,
+          forces.directShear.toFixed(2),
+          forces.resultantShear.toFixed(2),
+          forces.totalTension.toFixed(2),
+          forces.combinedRatio.toFixed(3),
+        ]);
+      });
+
+      // Inject connection-specific tables via the public generateReport path,
+      // then save.  ReportGenerator.generateReport() calls doc.save() internally.
+      generator.generateReport(null);
+      toast.success('PDF report saved.');
+    } catch (err) {
+      console.error('PDF export error:', err);
+      toast.error('Failed to generate PDF. Please try again.');
+    }
+  }, [analysisResult, selectedConnection, toast]);
+
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
@@ -503,7 +550,7 @@ export const ConnectionDesignPage: React.FC = () => {
                 {analysisResult ? (
                   <ConnectionAnalysisResultsPanel
                     result={analysisResult}
-                    onExportReport={() => { /* TODO: implement PDF export */ }}
+                      onExportReport={handleExportReport}
                   />
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center">
@@ -554,7 +601,7 @@ export const ConnectionDesignPage: React.FC = () => {
           <div className="h-full overflow-auto p-6 bg-muted/30">
             <ConnectionAnalysisResultsPanel
               result={analysisResult}
-              onExportReport={() => { /* TODO: implement PDF export */ }}
+              onExportReport={handleExportReport}
               showDetailedCalcs={true}
             />
           </div>

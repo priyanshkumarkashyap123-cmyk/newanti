@@ -165,6 +165,8 @@ export interface VariantResponse {
   score: VariantScoreResponse | null;
   placements: PlacementResponse[];
   penalty_weights_used: Record<string, number>;
+  /** Clause-traceable compliance items from the per-variant solver run. */
+  compliance_items?: ComplianceItemApi[];
 }
 
 export interface LayoutVariantsRequest extends LayoutV2Request {
@@ -347,6 +349,8 @@ export interface LayoutV2Response {
   anthropometric_issues: string[];
   constraints_detail: ConstraintsDetail;
   placements: PlacementResponse[];
+  /** Clause-traceable compliance items (replaces legacy boolean constraints_detail). */
+  compliance_items?: ComplianceItemApi[];
   travel_distances?: TravelDistances;
   acoustic_buffers?: AcousticBufferReport[];
   structural_grid?: StructuralGridReport;
@@ -374,6 +378,21 @@ export type ConstraintDomain =
   | 'egress'
   | 'solar';
 
+/** Clause-traceable compliance item returned by the backend compliance engine. */
+export interface ComplianceItemApi {
+  domain: string;
+  label: string;
+  passed: boolean;
+  severity: 'critical' | 'warning' | 'info';
+  clause: string;
+  measured_value: number | null;
+  limit_value: number | null;
+  units: string;
+  affected_rooms: string[];
+  remediation: string;
+  evidence_level: 'hard_code_rule' | 'engineering_heuristic';
+}
+
 export interface ConstraintViolation {
   domain: ConstraintDomain;
   label: string;
@@ -383,6 +402,12 @@ export interface ConstraintViolation {
   roomIds?: string[];
   value?: number;
   limit?: number;
+  /** NBC/IS code clause reference, e.g. "NBC 2016 Cl. 4.9" */
+  clause?: string;
+  /** Actionable fix recommendation */
+  remediation?: string;
+  /** Whether the check is a mandatory code rule or engineering best practice */
+  evidenceLevel?: 'hard_code_rule' | 'engineering_heuristic';
 }
 
 export interface ConstraintReport {
@@ -795,11 +820,124 @@ const DOMAIN_SEVERITY: Record<ConstraintDomain, 'critical' | 'warning' | 'info'>
 
 /**
  * Transform the raw backend response into an architect-friendly constraint report.
+ *
+ * When the backend provides `compliance_items` (new compliance engine), those are
+ * used directly for rich clause-traceable display. The legacy `constraints_detail`
+ * boolean dict is used as a fallback for older API versions.
  */
 export function buildConstraintReport(response: LayoutV2Response): ConstraintReport {
   const violations: ConstraintViolation[] = [];
 
-  // Walk every constraint domain
+  if (response.compliance_items && response.compliance_items.length > 0) {
+    // ── New compliance engine path: use structured clause-traceable items ──
+    let met = 0;
+    const total = response.compliance_items.length;
+
+    for (const item of response.compliance_items) {
+      if (item.passed) met++;
+
+      // Build a human message from measured/limit values when available
+      let message = item.remediation || (item.passed ? `${item.label} — PASS` : `${item.label} — FAIL`);
+      if (!item.passed && item.measured_value != null && item.limit_value != null) {
+        message = `${item.label}: ${item.measured_value.toFixed(2)} ${item.units} (limit ${item.limit_value.toFixed(2)} ${item.units}). ${item.remediation}`;
+      }
+
+      violations.push({
+        domain: item.domain as ConstraintDomain,
+        label: item.label,
+        passed: item.passed,
+        severity: item.passed ? 'info' : item.severity,
+        message,
+        roomIds: item.affected_rooms.length > 0 ? item.affected_rooms : undefined,
+        value: item.measured_value ?? undefined,
+        limit: item.limit_value ?? undefined,
+        clause: item.clause,
+        remediation: item.remediation || undefined,
+        evidenceLevel: item.evidence_level,
+      });
+    }
+
+    // Sort: critical failures first, then warnings, then passed
+    const severityOrder = { critical: 0, warning: 1, info: 2 };
+    violations.sort((a, b) => {
+      if (a.passed !== b.passed) return a.passed ? 1 : -1;
+      return severityOrder[a.severity] - severityOrder[b.severity];
+    });
+
+    // Augment with travel distance, acoustic buffers, and structural grid extras
+    if (response.travel_distances) {
+      const td = response.travel_distances;
+      const travelPass = td.max_travel_m <= 22.0;
+      violations.push({
+        domain: 'travel_distance' as ConstraintDomain,
+        label: 'A* Pathfinding Travel Distance',
+        passed: travelPass,
+        severity: travelPass ? 'info' : 'warning',
+        message: travelPass
+          ? `Max travel ${td.max_travel_m.toFixed(1)} m (A*) — within 22 m egress limit; corridor ratio ${(td.corridor_ratio * 100).toFixed(1)}%`
+          : `Max travel ${td.max_travel_m.toFixed(1)} m exceeds 22 m NBC egress limit (A* pathfinding)`,
+        value: td.max_travel_m,
+        limit: 22.0,
+        clause: 'NBC 2016 Cl. 5.3 (A* graph search)',
+        remediation: travelPass ? undefined : 'Add escape staircase closer to furthest rooms or redesign connectivity.',
+      });
+    }
+
+    if (response.acoustic_buffers && response.acoustic_buffers.length > 0) {
+      violations.push({
+        domain: 'acoustic_buffers' as ConstraintDomain,
+        label: 'Acoustic Buffer Zones',
+        passed: true,
+        severity: 'info',
+        message: `${response.acoustic_buffers.length} acoustic buffer(s) auto-inserted between conflicting active/passive zones`,
+        clause: 'NBC 2016 Part 8 Cl. 4',
+      });
+    }
+
+    if (response.structural_grid) {
+      const sg = response.structural_grid;
+      const hasWarnings = sg.span_warnings.length > 0;
+      violations.push({
+        domain: 'structural_grid' as ConstraintDomain,
+        label: 'Structural Grid Layout',
+        passed: !hasWarnings,
+        severity: hasWarnings ? 'warning' : 'info',
+        message: hasWarnings
+          ? `${sg.total_columns} columns, ${sg.total_beams} beams — ${sg.span_warnings.length} span warning(s)`
+          : `${sg.total_columns} columns, ${sg.total_beams} beams on ${sg.grid_module_m} m module`,
+        clause: 'IS 456:2000 Cl. 5.3 / IS 800:2007',
+        remediation: hasWarnings ? sg.span_warnings.map((w) => `${w.room_id}: span ${w.max_span_m}m — ${w.action}`).join('; ') : undefined,
+      });
+    }
+
+    const score = total > 0 ? Math.round((met / total) * 100) : 0;
+
+    return {
+      score,
+      totalPenalty: response.total_penalty,
+      constraintsMet: met,
+      constraintsTotal: total,
+      constraintsMetRatio: response.constraints_met_ratio,
+      iterationFound: response.iteration_found,
+      totalIterations: response.total_iterations,
+      violations,
+      fsi: response.fsi_analysis,
+      circulation: response.circulation,
+      egress: response.egress,
+      structuralChecks: response.structural_checks,
+      solarScores: response.solar_scores,
+      fenestrationChecks: response.fenestration_checks,
+      anthropometricIssues: response.anthropometric_issues,
+      staircaseReport: response.staircase,
+      constraintsDetail: response.constraints_detail,
+      travelDistances: response.travel_distances,
+      acousticBuffers: response.acoustic_buffers,
+      structuralGrid: response.structural_grid,
+      saConvergence: response.sa_convergence,
+    };
+  }
+
+  // ── Legacy fallback path: build from boolean constraints_detail ──
   const domains = Object.keys(response.constraints_detail) as ConstraintDomain[];
   let met = 0;
   const total = domains.length;
@@ -957,6 +1095,119 @@ export function buildConstraintReport(response: LayoutV2Response): ConstraintRep
     acousticBuffers: response.acoustic_buffers,
     structuralGrid: response.structural_grid,
     saConvergence: response.sa_convergence,
+  };
+}
+
+/**
+ * Build a ConstraintReport from a VariantResponse.
+ *
+ * When the variant includes `compliance_items` (from the backend compliance
+ * engine), those are used to build rich clause-traceable violations.
+ * Falls back to a score-only stub when compliance items are absent.
+ */
+export function buildConstraintReportFromVariant(variant: VariantResponse): ConstraintReport {
+  const complianceItems = variant.compliance_items ?? [];
+  const compositeScore = variant.score?.composite_score ?? 0;
+
+  // Empty stub FSI/circulation/egress — real data not returned per-variant
+  const stubFsi: FSIAnalysis = { plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true };
+  const stubCirc: CirculationReport = { total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0.15, compliant: true };
+  const stubEgress: EgressReport = { max_travel_distance_m: 0, limit_m: 22, compliant: true, rooms_beyond_limit: [] };
+  const stubConstraintsDetail: ConstraintsDetail = { fsi: true, overlap: true, min_width: true, aspect_ratio: true, exterior_wall: true, plumbing_cluster: true, acoustic_zones: true, clearance: true, grid_snap: true, circulation: true, span_limits: true, staircase: true, fenestration: true, egress: true, solar: true };
+
+  if (complianceItems.length === 0) {
+    return {
+      score: Math.round(compositeScore),
+      totalPenalty: Math.round((100 - compositeScore) * 10),
+      constraintsMet: 0,
+      constraintsTotal: 0,
+      constraintsMetRatio: compositeScore / 100,
+      iterationFound: 0,
+      totalIterations: 200,
+      violations: [],
+      fsi: stubFsi,
+      circulation: stubCirc,
+      egress: stubEgress,
+      structuralChecks: [],
+      solarScores: [],
+      fenestrationChecks: [],
+      anthropometricIssues: [],
+      staircaseReport: null,
+      constraintsDetail: stubConstraintsDetail,
+    };
+  }
+
+  // Build violations from compliance_items (mirrors new path in buildConstraintReport)
+  const violations: ConstraintViolation[] = [];
+  let met = 0;
+  const total = complianceItems.length;
+
+  for (const item of complianceItems) {
+    if (item.passed) met++;
+    let message = item.remediation || (item.passed ? `${item.label} — PASS` : `${item.label} — FAIL`);
+    if (!item.passed && item.measured_value != null && item.limit_value != null) {
+      message = `${item.label}: ${item.measured_value.toFixed(2)} ${item.units} (limit ${item.limit_value.toFixed(2)} ${item.units}). ${item.remediation}`;
+    }
+    violations.push({
+      domain: item.domain as ConstraintDomain,
+      label: item.label,
+      passed: item.passed,
+      severity: item.passed ? 'info' : item.severity,
+      message,
+      roomIds: item.affected_rooms.length > 0 ? item.affected_rooms : undefined,
+      value: item.measured_value ?? undefined,
+      limit: item.limit_value ?? undefined,
+      clause: item.clause,
+      remediation: item.remediation || undefined,
+      evidenceLevel: item.evidence_level,
+    });
+  }
+
+  const severityOrder = { critical: 0, warning: 1, info: 2 };
+  violations.sort((a, b) => {
+    if (a.passed !== b.passed) return a.passed ? 1 : -1;
+    return severityOrder[a.severity] - severityOrder[b.severity];
+  });
+
+  // Extract FSI values from compliance items when available
+  const fsiItem = complianceItems.find((i) => i.domain === 'fsi');
+  const fsi: FSIAnalysis = {
+    plot_area_sqm: 0,
+    fsi_limit: fsiItem?.limit_value ?? 0,
+    max_allowed_sqm: 0,
+    total_placed_sqm: fsiItem?.measured_value ?? 0,
+    fsi_used: fsiItem?.measured_value ?? 0,
+    fsi_compliant: fsiItem?.passed ?? true,
+  };
+
+  // Derive actual score from compliance ratio (overrides composite when we have real data)
+  const constraintScore = total > 0 ? Math.round((met / total) * 100) : Math.round(compositeScore);
+
+  return {
+    score: constraintScore,
+    totalPenalty: Math.round((100 - compositeScore) * 10),
+    constraintsMet: met,
+    constraintsTotal: total,
+    constraintsMetRatio: total > 0 ? met / total : compositeScore / 100,
+    iterationFound: 0,
+    totalIterations: 200,
+    violations,
+    fsi,
+    circulation: stubCirc,
+    egress: stubEgress,
+    structuralChecks: [],
+    solarScores: complianceItems
+      .filter((i) => i.domain === 'solar')
+      .flatMap((i) =>
+        i.affected_rooms.map((rid) => ({ room_id: rid, solar_score: i.passed ? 0.7 : 0.3, direction: 'N' })),
+      ),
+    fenestrationChecks: [],
+    anthropometricIssues: complianceItems
+      .filter((i) => i.domain === 'clearance' && !i.passed)
+      .map((i) => i.remediation)
+      .filter(Boolean),
+    staircaseReport: null,
+    constraintsDetail: stubConstraintsDetail,
   };
 }
 

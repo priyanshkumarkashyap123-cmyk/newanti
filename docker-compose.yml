@@ -104,6 +104,8 @@ services:
       - MONGODB_URI=mongodb://${MONGO_USERNAME:-beamlab_admin}:${MONGO_PASSWORD:?MONGO_PASSWORD is required}@mongo:27017/beamlab?authSource=admin
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - RUST_LOG=info
+      - TOKIO_WORKER_THREADS=${TOKIO_WORKER_THREADS:-2}
+      - RAYON_NUM_THREADS=${RAYON_NUM_THREADS:-2}
     depends_on:
       mongo:
         condition: service_healthy
@@ -155,6 +157,18 @@ services:
       - RATE_LIMIT_CRUD_MAX=120
       - RATE_LIMIT_AUTH_MAX=20
       - RATE_LIMIT_AI_MAX=60
+      - ANALYSIS_MAX_IN_FLIGHT=20
+      - ANALYSIS_MAX_QUEUE=150
+      - ANALYSIS_QUEUE_TIMEOUT_MS=45000
+      - ADVANCED_MAX_IN_FLIGHT=10
+      - ADVANCED_MAX_QUEUE=80
+      - ADVANCED_QUEUE_TIMEOUT_MS=60000
+      - DESIGN_MAX_IN_FLIGHT=15
+      - DESIGN_MAX_QUEUE=100
+      - DESIGN_QUEUE_TIMEOUT_MS=45000
+      - AI_MAX_IN_FLIGHT=5
+      - AI_MAX_QUEUE=50
+      - AI_QUEUE_TIMEOUT_MS=30000
     depends_on:
       backend-python:
         condition: service_healthy

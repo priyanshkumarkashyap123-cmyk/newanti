@@ -287,6 +287,12 @@ import {
   footingDesignInput,
   shearDesignInput,
 } from '@/lib/validation';
+import { torsionDesignEngine } from '@/components/structural/TorsionDesignEngine';
+import { punchingShearEngine } from '@/components/structural/PunchingShearEngine';
+import { crackWidthEngine } from '@/components/structural/CrackWidthEngine';
+import { retainingWallDesignEngine } from '@/components/structural/RetainingWallDesignEngine';
+import { waterTankDesignEngine } from '@/components/structural/WaterTankDesignEngine';
+import { deepBeamDesignEngine } from '@/components/structural/DeepBeamDesignEngine';
 
 describe('Validation — compositeBeamInput', () => {
   it('accepts valid W14x22 input', () => {
@@ -377,5 +383,155 @@ describe('Validation — footingDesignInput', () => {
       frictionAngle: 55,
     });
     expect(result.success).toBe(false);
+  });
+});
+
+// ============================================================================
+// Additional Structural Engines (Production-readiness coverage)
+// ============================================================================
+
+describe('TorsionDesignEngine — calculate', () => {
+  it('returns a valid torsion design response for IS 456 beam input', () => {
+    const result = torsionDesignEngine.calculate({
+      width: 300,
+      depth: 550,
+      effectiveDepth: 500,
+      span: 6000,
+      clearCover: 25,
+      fck: 30,
+      fy: 500,
+      factoredMoment: 180,
+      factoredShear: 120,
+      factoredTorsion: 40,
+      sectionType: 'rectangular',
+    });
+
+    expect(result.status === 'OK' || result.status === 'FAIL').toBe(true);
+    expect(result.utilization).toBeGreaterThan(0);
+    expect(result.reinforcement.longitudinal.area).toBeGreaterThan(0);
+    expect(result.steps.length).toBeGreaterThan(0);
+    expect(result.codeChecks.length).toBeGreaterThan(0);
+  });
+});
+
+describe('PunchingShearEngine — calculate', () => {
+  it('evaluates slab-column punching shear and returns stress components', () => {
+    const result = punchingShearEngine.calculate({
+      slabThickness: 220,
+      effectiveDepth: 180,
+      fck: 30,
+      fy: 500,
+      columnWidth: 400,
+      columnDepth: 400,
+      columnType: 'interior',
+      factoredShear: 950,
+      unbalancedMoment: 45,
+      hasShearReinforcement: false,
+      hasDropPanel: true,
+      dropPanelDepth: 70,
+      dropPanelWidth: 1800,
+      designCode: 'IS456',
+    });
+
+    expect(result.stresses.vu).toBeGreaterThan(0);
+    expect(result.criticalPerimeter.bo).toBeGreaterThan(0);
+    expect(result.message.length).toBeGreaterThan(0);
+  });
+});
+
+describe('CrackWidthEngine — calculate', () => {
+  it('checks crack width against IS 456 serviceability limit', () => {
+    const result = crackWidthEngine.calculate({
+      width: 300,
+      depth: 600,
+      effectiveDepth: 550,
+      clearCover: 30,
+      barDiameter: 16,
+      barSpacing: 150,
+      steelArea: 1600,
+      fck: 30,
+      fy: 500,
+      Es: 200000,
+      serviceMoment: 90,
+      exposureCondition: 'moderate',
+      designCode: 'IS456',
+      memberType: 'beam',
+    });
+
+    expect(result.crackWidth.allowable).toBeGreaterThan(0);
+    expect(result.crackWidth.calculated).toBeGreaterThanOrEqual(0);
+    expect(result.status === 'OK' || result.status === 'FAIL').toBe(true);
+  });
+});
+
+describe('RetainingWallDesignEngine — calculate', () => {
+  it('produces stability factors (OT/Sliding/Bearing) for cantilever wall', () => {
+    const result = retainingWallDesignEngine.calculate({
+      totalHeight: 5000,
+      stemThicknessTop: 250,
+      stemThicknessBot: 450,
+      toeLength: 1200,
+      heelLength: 2200,
+      baseThickness: 550,
+      soilUnitWeight: 18,
+      soilFriction: 30,
+      surchageLoad: 10,
+      foundationBearing: 250,
+      coeffFriction: 0.5,
+      passiveEnabled: true,
+      fck: 30,
+      fy: 500,
+      wallType: 'cantilever',
+      backfillSlope: 0,
+      waterTable: 2500,
+    });
+
+    expect(result.stability.fosFOT).toBeGreaterThan(0);
+    expect(result.stability.fosSliding).toBeGreaterThan(0);
+    expect(result.stability.basePressureMax).toBeGreaterThan(0);
+  });
+});
+
+describe('WaterTankDesignEngine — calculate', () => {
+  it('returns wall/base steel demand with crack control check', () => {
+    const result = waterTankDesignEngine.calculate({
+      tankType: 'rectangular',
+      length: 6000,
+      width: 4000,
+      waterDepth: 3500,
+      freeboard: 300,
+      position: 'ground',
+      fck: 30,
+      fy: 500,
+      crackWidthLimit: 0.2,
+      steelStressLimit: 130,
+    });
+
+    expect(result.wallDesign.steelArea).toBeGreaterThan(0);
+    expect(result.baseDesign.steelArea).toBeGreaterThan(0);
+    expect(result.status === 'OK' || result.status === 'FAIL').toBe(true);
+  });
+});
+
+describe('DeepBeamDesignEngine — calculate', () => {
+  it('classifies deep beam and returns STM reinforcement', () => {
+    const result = deepBeamDesignEngine.calculate({
+      span: 2000,
+      depth: 1200,
+      width: 300,
+      clearCover: 30,
+      fck: 30,
+      fy: 500,
+      loadType: 'point',
+      factoredLoad: 800,
+      loadPosition: 1000,
+      supportType: 'simple',
+      supportWidth: 300,
+      designCode: 'IS456',
+    });
+
+    expect(result.classification.isDeepBeam).toBe(true);
+    expect(result.reinforcement.mainTension.area).toBeGreaterThan(0);
+    expect(result.strutAndTie.strutCapacity).toBeGreaterThan(0);
   });
 });

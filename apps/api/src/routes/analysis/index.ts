@@ -16,6 +16,7 @@ import { AnalysisJob } from "../../models.js";
 import { requireAuth, getAuth } from "../../middleware/authMiddleware.js";
 import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
+import { cacheKey, getCachedResult, setCachedResult } from "../../utils/resultCache.js";
 
 const router: Router = express.Router();
 
@@ -193,9 +194,20 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
         return;
     }
 
-    // Synchronous analysis - proxy to Rust API
+    // Synchronous analysis - check cache before proxying to Rust API
+    const key = cacheKey(model);
+    const cached = getCachedResult(key);
+    if (cached !== undefined) {
+        logger.info(`[Analysis] cache HIT | ${nodeCount} nodes, ${memberCount} members`);
+        res.setHeader("X-Analysis-Cache", "HIT");
+        res.json(cached);
+        return;
+    }
+
     const result = await rustProxy("POST", "/api/analyze", model, undefined, 120_000);
     if (result.success) {
+        setCachedResult(key, result.data);
+        res.setHeader("X-Analysis-Cache", "MISS");
         res.json(result.data);
     } else {
         const errorMsg = result.error || "Analysis failed";

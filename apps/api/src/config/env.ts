@@ -55,6 +55,35 @@ const envSchema = z.object({
   // Inter-service
   PYTHON_API_URL: z.string().url().optional().default("http://localhost:8000"),
   RUST_API_URL: z.string().url().optional().default("http://localhost:8080"),
+
+  // Redis — distributed rate limiting & caching
+  REDIS_URL: z.string().optional().default("redis://redis:6379"),
+  RATE_LIMIT_DISTRIBUTED: z
+    .string()
+    .optional()
+    .transform((v) => v === "true")
+    .default("false"),
+
+  // Backpressure lanes
+  ANALYSIS_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(20),
+  ANALYSIS_MAX_QUEUE: z.coerce.number().int().positive().optional().default(150),
+  ANALYSIS_QUEUE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(45000),
+  ADVANCED_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(10),
+  ADVANCED_MAX_QUEUE: z.coerce.number().int().positive().optional().default(80),
+  ADVANCED_QUEUE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(60000),
+  DESIGN_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(15),
+  DESIGN_MAX_QUEUE: z.coerce.number().int().positive().optional().default(100),
+  DESIGN_QUEUE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(45000),
+  AI_MAX_IN_FLIGHT: z.coerce.number().int().positive().optional().default(5),
+  AI_MAX_QUEUE: z.coerce.number().int().positive().optional().default(50),
+  AI_QUEUE_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(30000),
+
+  // Analysis result cache
+  ANALYSIS_CACHE_MAX_ENTRIES: z.coerce.number().int().positive().optional().default(500),
+  ANALYSIS_CACHE_TTL_MS: z.coerce.number().int().positive().optional().default(600000),
+
+  // Cost-weighted rate limiting
+  RATE_LIMIT_COST_BUDGET: z.coerce.number().int().positive().optional().default(200),
 });
 
 // ============================================

@@ -192,7 +192,7 @@ function createRateLimit(
       if (opts?.skipMethods?.includes(req.method)) return true;
       return false;
     },
-    keyGenerator: opts?.keyGenerator,
+    keyGenerator: opts?.keyGenerator as any,
   }) as unknown as RequestHandler;
 }
 
@@ -346,6 +346,82 @@ export const aiRateLimit: RequestHandler = createHybridRateLimit(localAiRateLimi
     return `ai:${userId}`;
   },
 });
+
+// ============================================
+// COST-WEIGHTED RATE LIMITING
+//
+// Each endpoint category has a "token cost" per call. A user has a shared
+// budget of RATE_LIMIT_COST_BUDGET tokens per window. Expensive endpoints
+// (analysis=5, advanced=10, AI=8, design=3) burn more budget per call,
+// so a burst of heavy requests is throttled faster than lightweight CRUD.
+// Falls back gracefully to a flat 1-token-per-call Redis counter if Redis
+// is unavailable.
+// ============================================
+
+const RATE_LIMIT_COST_BUDGET = envInt("RATE_LIMIT_COST_BUDGET", 200);
+
+function getUserId(req: Request): string {
+  const authFn = (req as unknown as Record<string, unknown>).auth;
+  const userId =
+    (typeof authFn === "function"
+      ? (authFn() as Record<string, unknown>)?.userId
+      : undefined) || req.ip || "unknown";
+  return String(userId);
+}
+
+export function costWeightedRateLimit(costPerRequest: number): RequestHandler {
+  return async (req, res, next) => {
+    if (!RATE_LIMIT_DISTRIBUTED) {
+      // Without Redis we can't track cross-request cost; pass through and rely
+      // on the existing per-endpoint rate limits (analysisRateLimit, etc.).
+      return next();
+    }
+
+    const client = await getRedisClient();
+    if (!client) return next();
+
+    const userId = getUserId(req);
+    const key = `cost:${userId}`;
+    const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+
+    try {
+      const current = await client.incrBy(key, costPerRequest);
+      if (current === costPerRequest) {
+        // First call in this window — set TTL
+        await client.expire(key, windowSeconds);
+      }
+
+      const ttl = await client.ttl(key);
+      const resetSeconds = ttl > 0 ? ttl : windowSeconds;
+      const remaining = Math.max(RATE_LIMIT_COST_BUDGET - current, 0);
+
+      res.setHeader("X-RateLimit-Cost-Limit", String(RATE_LIMIT_COST_BUDGET));
+      res.setHeader("X-RateLimit-Cost-Remaining", String(remaining));
+      res.setHeader("X-RateLimit-Cost-Reset", String(resetSeconds));
+      res.setHeader("X-RateLimit-Cost-Used", String(current));
+
+      if (current > RATE_LIMIT_COST_BUDGET) {
+        logger.warn(
+          { userId, key, current, budget: RATE_LIMIT_COST_BUDGET, cost: costPerRequest },
+          "Cost budget exceeded",
+        );
+        return res.status(429).json({
+          success: false,
+          error: "Request cost budget exceeded. Please wait before making more heavy requests.",
+          code: "COST_BUDGET_EXCEEDED",
+          retryAfter: resetSeconds,
+          costUsed: current,
+          costLimit: RATE_LIMIT_COST_BUDGET,
+        });
+      }
+
+      return next();
+    } catch (err) {
+      logger.warn({ err }, "Cost-weighted rate limit failed; passing through");
+      return next();
+    }
+  };
+}
 
 // ============================================
 // REQUEST LOGGING — Structured JSON

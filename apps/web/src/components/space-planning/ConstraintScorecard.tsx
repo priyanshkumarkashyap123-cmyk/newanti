@@ -55,6 +55,7 @@ import {
   BarChart3,
   Target,
   Gauge,
+  FileDown,
 } from 'lucide-react';
 import type {
   ConstraintReport,
@@ -69,6 +70,8 @@ import type {
 interface ConstraintScorecardProps {
   report: ConstraintReport;
   onViolationClick?: (roomIds: string[]) => void;
+  onExportJson?: () => void;
+  onExportPdf?: () => void;
   className?: string;
   collapsed?: boolean;
 }
@@ -208,6 +211,14 @@ const ViolationRow: React.FC<{
                 {violation.message}
               </p>
 
+              {/* Clause reference badge */}
+              {violation.clause && (
+                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[9px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                  <Target className="w-2.5 h-2.5 flex-shrink-0" />
+                  <span>{violation.clause}</span>
+                </div>
+              )}
+
               {/* Value bar if applicable */}
               {violation.value != null && violation.limit != null && (
                 <div className="space-y-0.5">
@@ -232,6 +243,25 @@ const ViolationRow: React.FC<{
                       }}
                     />
                   </div>
+                </div>
+              )}
+
+              {/* Remediation hint */}
+              {!violation.passed && violation.remediation && (
+                <div className="mt-1 p-2 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-md">
+                  <p className="text-[9px] text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
+                    Fix: {violation.remediation}
+                  </p>
+                  {violation.evidenceLevel === 'hard_code_rule' && (
+                    <span className="mt-0.5 inline-block text-[8px] text-blue-500 dark:text-blue-400 uppercase tracking-wide">
+                      Mandatory code provision
+                    </span>
+                  )}
+                  {violation.evidenceLevel === 'engineering_heuristic' && (
+                    <span className="mt-0.5 inline-block text-[8px] text-blue-400 dark:text-blue-500 uppercase tracking-wide">
+                      Best-practice guidance
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -331,6 +361,8 @@ const SolverStats: React.FC<{ report: ConstraintReport }> = ({ report }) => (
 export const ConstraintScorecard: React.FC<ConstraintScorecardProps> = ({
   report,
   onViolationClick,
+  onExportJson,
+  onExportPdf,
   className = '',
   collapsed: initialCollapsed = false,
 }) => {
@@ -384,6 +416,35 @@ export const ConstraintScorecard: React.FC<ConstraintScorecardProps> = ({
           <ChevronUp className="w-4 h-4 text-slate-400" />
         )}
       </button>
+
+      {(onExportJson || onExportPdf) && (
+        <div className="px-4 pb-2 flex items-center gap-1.5">
+          {onExportJson && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onExportJson();
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              title="Export compliance report as JSON"
+            >
+              <FileDown className="w-3 h-3" /> JSON
+            </button>
+          )}
+          {onExportPdf && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onExportPdf();
+              }}
+              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              title="Open print dialog for PDF export"
+            >
+              <FileDown className="w-3 h-3" /> PDF
+            </button>
+          )}
+        </div>
+      )}
 
       <AnimatePresence>
         {!isCollapsed && (

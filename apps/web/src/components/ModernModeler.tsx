@@ -1052,6 +1052,7 @@ export const ModernModeler: FC = () => {
           >
             <WorkflowSidebar
               activeCategory={activeCategory}
+              showActionPanel={false}
               onCategoryChange={(cat) => {
                 setCategory(cat);
                 setIsSidebarOpen(false); // Close on selection on mobile
@@ -1080,7 +1081,7 @@ export const ModernModeler: FC = () => {
                   contextMenu.show(
                     e,
                     getNodeContextMenuItems(selectedId, {
-                      onEdit: () => {},
+                      onEdit: () => showNotification("info", "Edit node from the Inspector panel on the right."),
                       onAddBeamFrom: () =>
                         useModelStore.getState().setTool("member"),
                       onAssignSupport: () =>
@@ -1109,9 +1110,12 @@ export const ModernModeler: FC = () => {
                   contextMenu.show(
                     e,
                     getMemberContextMenuItems(selectedId, {
-                      onEdit: () => {},
+                      onEdit: () => {
+                        setSpecMemberId(selectedId);
+                        setShowSpecDialog(true);
+                      },
                       onAssignSection: () => openModal("structureWizard"),
-                      onAssignMaterial: () => {},
+                      onAssignMaterial: () => openModal("materialAssign"),
                       onInsertNode: () => {
                         setSplitMemberId(selectedId);
                         setShowSplitDialog(true);
@@ -1140,12 +1144,12 @@ export const ModernModeler: FC = () => {
                     getEmptyContextMenuItems({
                       onAddNodeHere: () =>
                         useModelStore.getState().setTool("node"),
-                      onPaste: () => {},
+                      onPaste: () => showNotification("info", "Paste from context menu is coming next — use ⌘V for now."),
                       onFitView: () =>
                         document.dispatchEvent(new CustomEvent("fit-view")),
                       onToggleGrid: () =>
                         document.dispatchEvent(new CustomEvent("toggle-grid")),
-                      onViewSettings: () => {},
+                      onViewSettings: () => openModal("geometryTools"),
                     }),
                   );
                 }

@@ -165,6 +165,29 @@ class PlacementResponse(BaseModel):
     requires_exterior_wall: bool
 
 
+class ComplianceItemResponse(BaseModel):
+    """Clause-traceable compliance result for one constraint domain.
+
+    Provides architect-grade output with code clause reference, measured
+    vs. limit values, severity, affected room IDs, and actionable remediation
+    text — replacing the legacy boolean-only constraints_detail dict.
+    """
+    domain: str = Field(..., description="Constraint domain key, e.g. 'fsi', 'egress'")
+    label: str = Field(..., description="Human-readable constraint name")
+    passed: bool
+    severity: str = Field(..., description="One of: critical, warning, info")
+    clause: str = Field(..., description="Code clause reference, e.g. 'NBC 2016 Cl. 4.8'")
+    measured_value: Optional[float] = Field(None, description="Actual measured value")
+    limit_value: Optional[float] = Field(None, description="Code-prescribed limit")
+    units: str = Field(default="", description="Units for measured/limit values")
+    affected_rooms: List[str] = Field(default_factory=list, description="Room IDs that trigger this violation")
+    remediation: str = Field(default="", description="Actionable fix recommendation")
+    evidence_level: str = Field(
+        default="hard_code_rule",
+        description="'hard_code_rule' = mandatory code provision; 'engineering_heuristic' = best-practice guidance",
+    )
+
+
 class LayoutV2Response(BaseModel):
     success: bool
     total_penalty: float
@@ -181,6 +204,12 @@ class LayoutV2Response(BaseModel):
     fenestration_checks: List[Dict[str, Any]]
     anthropometric_issues: List[str]
     constraints_detail: Dict[str, bool]
+    compliance_items: List[ComplianceItemResponse] = Field(
+        default_factory=list,
+        description="Clause-traceable compliance items replacing legacy boolean constraints_detail. "
+                    "Each item includes severity, code clause, measured vs. limit values, "
+                    "affected room IDs, and actionable remediation text.",
+    )
     placements: List[PlacementResponse]
     travel_distances: Optional[Dict[str, Any]] = None
     acoustic_buffers: Optional[List[Dict[str, Any]]] = None
@@ -214,6 +243,10 @@ class VariantResponse(BaseModel):
     score: Optional[VariantScoreResponse] = None
     placements: List[PlacementResponse] = Field(default_factory=list)
     penalty_weights_used: Dict[str, float] = Field(default_factory=dict)
+    compliance_items: List[ComplianceItemResponse] = Field(
+        default_factory=list,
+        description="Clause-traceable compliance items from the compliance engine",
+    )
 
 
 class LayoutVariantsRequest(BaseModel):
@@ -500,6 +533,10 @@ async def optimize_layout_v2(request: LayoutV2Request):
             fenestration_checks=report["diagnostics"].get("fenestration_checks", []),
             anthropometric_issues=report["diagnostics"].get("anthropometric_issues", []),
             constraints_detail=report["constraints_detail"],
+            compliance_items=[
+                ComplianceItemResponse(**item)
+                for item in report.get("compliance_items", [])
+            ],
             placements=[PlacementResponse(**p) for p in report["placements"]],
             travel_distances=report.get("travel_distances"),
             acoustic_buffers=report.get("acoustic_buffers"),
@@ -643,6 +680,8 @@ async def optimize_layout_variants(request: LayoutVariantsRequest):
             site_config=site_cfg,
             base_penalty_weights=base_weights,
             timeout_per_variant_sec=30.0,
+            adjacency_edges=edges,
+            constraints=constraints,
         )
 
         # ── Map to response ──
@@ -669,8 +708,16 @@ async def optimize_layout_variants(request: LayoutVariantsRequest):
                     best_score = variant.score.composite_score
                     best_variant_id = variant.variant_id
             
-            placement_responses = [PlacementResponse(**p) for p in (variant._raw_solver_output or {}).get("placements", [])]
-            
+            raw = variant._raw_solver_output or {}
+            placement_responses = [PlacementResponse(**p) for p in raw.get("placements", [])]
+            compliance_raw = raw.get("compliance_items", [])
+            compliance_item_responses = []
+            for ci in compliance_raw:
+                try:
+                    compliance_item_responses.append(ComplianceItemResponse(**ci))
+                except Exception:
+                    pass  # skip malformed items
+
             variant_responses.append(VariantResponse(
                 variant_id=variant.variant_id,
                 strategy_key=variant.strategy_key,
@@ -679,6 +726,7 @@ async def optimize_layout_variants(request: LayoutVariantsRequest):
                 score=score_resp,
                 placements=placement_responses,
                 penalty_weights_used=variant.penalty_weights,
+                compliance_items=compliance_item_responses,
             ))
         
         elapsed_ms = (time.time() - start_time) * 1000.0

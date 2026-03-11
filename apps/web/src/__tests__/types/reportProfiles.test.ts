@@ -13,7 +13,7 @@ import {
   shouldUseMinimalMetadata,
   getProfileLabel,
   getAllProfiles,
-} from '../types/reportProfiles';
+} from '../../types/reportProfiles';
 
 describe('Report Profiles', () => {
   describe('Profile Specs', () => {

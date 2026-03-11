@@ -981,14 +981,12 @@ export class SpacePlanningEngine {
     const circuits: ElectricalCircuit[] = [];
     const panels: ElectricalPlan['panels'] = [];
     let fixtureId = 1;
-    let totalLoad = 0;
 
     for (const plan of floorPlans) {
       for (const room of plan.rooms) {
         const roomFixtures = this.generateElectricalFixturesForRoom(room, fixtureId);
         fixtures.push(...roomFixtures);
         fixtureId += roomFixtures.length;
-        totalLoad += roomFixtures.reduce((sum, f) => sum + f.wattage, 0);
 
         // Life-safety and low-voltage points
         const roomArea = room.width * room.height;
@@ -1108,113 +1106,6 @@ export class SpacePlanningEngine {
       }
     }
 
-    // Group fixtures into circuits
-    const lightingFixtures = fixtures.filter(
-      (f) =>
-        f.type === 'light_point' ||
-        f.type === 'fan_point' ||
-        f.type === 'emergency_light' ||
-        f.type === 'smoke_detector' ||
-        f.type === 'motion_sensor' ||
-        f.type === 'bell_point',
-    );
-    const powerFixtures = fixtures.filter(
-      (f) =>
-        f.type === 'socket' ||
-        f.type === 'tv_point' ||
-        f.type === 'data_point' ||
-        f.type === 'telephone_point' ||
-        f.type === 'cctv',
-    );
-    const acFixtures = fixtures.filter((f) => f.type === 'ac_point');
-    const kitchenFixtures = fixtures.filter(
-      (f) =>
-        f.circuit === 'CKT-KITCHEN' ||
-        f.type === 'exhaust_fan' ||
-        (f.roomId.includes('kitchen') && ['socket', 'geyser_point'].includes(f.type)),
-    );
-    const geyserFixtures = fixtures.filter((f) => f.type === 'geyser_point');
-    const motorFixtures = fixtures.filter(
-      (f) =>
-        f.type === 'ev_charging' ||
-        f.type === 'distribution_board' ||
-        f.type === 'meter_board' ||
-        f.type === 'inverter_point' ||
-        f.type === 'ups_point',
-    );
-
-    if (lightingFixtures.length > 0) {
-      circuits.push({
-        id: 'CKT-LIGHT',
-        name: 'Lighting Circuit',
-        type: 'lighting',
-        mcbRating: 10,
-        wireSize: 1.5,
-        fixtures: lightingFixtures.map((f) => f.id),
-        phase: 1,
-      });
-    }
-
-    if (powerFixtures.length > 0) {
-      circuits.push({
-        id: 'CKT-POWER',
-        name: 'Power Circuit',
-        type: 'power',
-        mcbRating: 16,
-        wireSize: 2.5,
-        fixtures: powerFixtures.map((f) => f.id),
-        phase: 1,
-      });
-    }
-
-    if (acFixtures.length > 0) {
-      circuits.push({
-        id: 'CKT-AC',
-        name: 'AC Circuit',
-        type: 'ac',
-        mcbRating: 20,
-        wireSize: 4.0,
-        fixtures: acFixtures.map((f) => f.id),
-        phase: 1,
-      });
-    }
-
-    if (kitchenFixtures.length > 0) {
-      circuits.push({
-        id: 'CKT-KITCHEN',
-        name: 'Kitchen Circuit',
-        type: 'kitchen',
-        mcbRating: 20,
-        wireSize: 4.0,
-        fixtures: kitchenFixtures.map((f) => f.id),
-        phase: 1,
-      });
-    }
-
-    if (geyserFixtures.length > 0) {
-      circuits.push({
-        id: 'CKT-GEYSER',
-        name: 'Water Heater Circuit',
-        type: 'geyser',
-        mcbRating: 20,
-        wireSize: 4.0,
-        fixtures: geyserFixtures.map((f) => f.id),
-        phase: 1,
-      });
-    }
-
-    if (motorFixtures.length > 0) {
-      circuits.push({
-        id: 'CKT-MOTOR',
-        name: 'Motor / Utility Circuit',
-        type: 'motor',
-        mcbRating: 32,
-        wireSize: 6.0,
-        fixtures: motorFixtures.map((f) => f.id),
-        phase: 3,
-      });
-    }
-
     // Main service points (entry/electrical room)
     const serviceRoom =
       floorPlans
@@ -1291,26 +1182,91 @@ export class SpacePlanningEngine {
       });
     }
 
+    // Group fixtures into circuits (after all fixtures are generated)
+    const circuitSpecs: Array<{
+      id: string;
+      name: string;
+      type: ElectricalCircuit['type'];
+      phase: 1 | 3;
+      minWireSizeSqmm: number;
+    }> = [
+      { id: 'CKT-LIGHT', name: 'Lighting Circuit', type: 'lighting', phase: 1, minWireSizeSqmm: 1.5 },
+      { id: 'CKT-POWER', name: 'Power Circuit', type: 'power', phase: 1, minWireSizeSqmm: 2.5 },
+      { id: 'CKT-AC', name: 'AC Circuit', type: 'ac', phase: 1, minWireSizeSqmm: 4.0 },
+      { id: 'CKT-KITCHEN', name: 'Kitchen Circuit', type: 'kitchen', phase: 1, minWireSizeSqmm: 4.0 },
+      { id: 'CKT-GEYSER', name: 'Water Heater Circuit', type: 'geyser', phase: 1, minWireSizeSqmm: 4.0 },
+      { id: 'CKT-MOTOR', name: 'Motor / Utility Circuit', type: 'motor', phase: 3, minWireSizeSqmm: 6.0 },
+    ];
+
+    // IS 732:1989 current sizing baseline with residential design assumptions.
+    // I = P / (V × pf) for 1-phase, I = P / (sqrt(3) × V_LL × pf) for 3-phase.
+    // Use 25% headroom for breaker selection and next higher standard MCB.
+    const computeCurrentAmp = (watt: number, phase: 1 | 3): number => {
+      const pf = 0.9;
+      if (phase === 3) {
+        return watt / (Math.sqrt(3) * 415 * pf);
+      }
+      return watt / (230 * pf);
+    };
+
+    const pickMCBRating = (designCurrentA: number, phase: 1 | 3): number => {
+      const stdRatings = phase === 3 ? [16, 20, 25, 32, 40, 63] : [6, 10, 16, 20, 25, 32, 40, 63];
+      const required = designCurrentA * 1.25;
+      return stdRatings.find((r) => r >= required) ?? stdRatings[stdRatings.length - 1];
+    };
+
+    const pickWireSizeSqmm = (mcbA: number, minWireSqmm: number): number => {
+      const base =
+        mcbA <= 10 ? 1.5
+          : mcbA <= 16 ? 2.5
+            : mcbA <= 25 ? 4.0
+              : mcbA <= 32 ? 6.0
+                : mcbA <= 40 ? 10.0
+                  : 16.0;
+      return Math.max(base, minWireSqmm);
+    };
+
+    for (const spec of circuitSpecs) {
+      const grouped = fixtures.filter((f) => f.circuit === spec.id);
+      if (grouped.length === 0) continue;
+
+      const connectedWatt = grouped.reduce((sum, f) => sum + f.wattage, 0);
+      const designCurrentA = computeCurrentAmp(connectedWatt, spec.phase);
+      const mcbRating = pickMCBRating(designCurrentA, spec.phase);
+      const wireSize = pickWireSizeSqmm(mcbRating, spec.minWireSizeSqmm);
+
+      circuits.push({
+        id: spec.id,
+        name: spec.name,
+        type: spec.type,
+        mcbRating,
+        wireSize,
+        fixtures: grouped.map((f) => f.id),
+        phase: spec.phase,
+      });
+    }
+
     // Recompute connected load including all generated service fixtures
     const connectedLoad = fixtures.reduce((sum, f) => sum + f.wattage, 0) / 1000;
 
     // Diversity factors (typical residential):
     // lighting 90%, power 60%, AC 80%, kitchen 70%, geyser 90%, motor 100%
-    const categoryLoad = {
-      lighting:
-        lightingFixtures.reduce((s, f) => s + f.wattage, 0) / 1000,
-      power:
-        powerFixtures.reduce((s, f) => s + f.wattage, 0) / 1000,
-      ac: acFixtures.reduce((s, f) => s + f.wattage, 0) / 1000,
-      kitchen:
-        kitchenFixtures.reduce((s, f) => s + f.wattage, 0) / 1000,
-      geyser:
-        geyserFixtures.reduce((s, f) => s + f.wattage, 0) / 1000,
-      motor:
-        (motorFixtures.reduce((s, f) => s + f.wattage, 0) +
-          fixtures.filter((f) => f.type === 'ev_charging').reduce((s, f) => s + f.wattage, 0)) /
-        1000,
+    const fixtureWattById = new Map(fixtures.map((f) => [f.id, f.wattage]));
+    const categoryLoad: Record<ElectricalCircuit['type'], number> = {
+      lighting: 0,
+      power: 0,
+      ac: 0,
+      kitchen: 0,
+      geyser: 0,
+      motor: 0,
     };
+
+    for (const circuit of circuits) {
+      const kw =
+        circuit.fixtures.reduce((sum, fixtureId) => sum + (fixtureWattById.get(fixtureId) ?? 0), 0) /
+        1000;
+      categoryLoad[circuit.type] += kw;
+    }
 
     const demandLoad =
       categoryLoad.lighting * 0.9 +
@@ -1378,6 +1334,22 @@ export class SpacePlanningEngine {
         const stackX = mainStack.x + mainStack.width / 2;
         const stackY = mainStack.y + mainStack.height / 2;
 
+        // IS 1172:1993 fixture unit method — Table 6-1 for branch pipe sizing.
+        // Fixture units per room type:
+        //   bathroom (WC+washbasin+shower): 6+1+2 = 9 FU → 25 mm branch
+        //   toilet (WC only): 6 FU → 25 mm branch
+        //   kitchen (sink+dishwasher): 3+2 = 5 FU → 20 mm branch
+        //   laundry/utility (washing machine): 4 FU → 20 mm branch
+        //   pantry (sink): 1 FU → 15 mm (use 20 mm for practical minimum)
+        const FIXTURE_UNITS: Record<string, number> = {
+          bathroom: 9, toilet: 6, kitchen: 5, laundry: 4, utility: 4, pantry: 2,
+        };
+        const fu = FIXTURE_UNITS[room.spec.type] ?? 3;
+        // IS 1172 Table 6-1: 1-5 FU → 20mm, 6-12 FU → 25mm, 13-25 FU → 32mm
+        const wsDiam = fu >= 13 ? 32 : fu >= 6 ? 25 : 20;
+        // Drainage: IS 1172 cl. 9.4 — branch drain min 50mm for WC, 32mm others
+        const drDiam = ['bathroom', 'toilet'].includes(room.spec.type) ? 100 : 75;
+
         pipes.push({
           id: `WS-${pipeId}`,
           type: 'water_supply',
@@ -1385,7 +1357,7 @@ export class SpacePlanningEngine {
           startY: stackY,
           endX: roomCx,
           endY: roomCy,
-          diameter: room.spec.type === 'kitchen' ? 25 : 20,
+          diameter: wsDiam,
           material: 'cpvc',
           floor: room.floor,
         });
@@ -1396,7 +1368,7 @@ export class SpacePlanningEngine {
           startY: roomCy,
           endX: stackX,
           endY: stackY,
-          diameter: 100,
+          diameter: drDiam,
           material: 'upvc',
           slope: 0.02,
           floor: room.floor,
@@ -1579,7 +1551,18 @@ export class SpacePlanningEngine {
         ].includes(room.spec.type);
 
         if (acEligible && roomArea > 8) {
-          const tons = Math.ceil((roomArea / 12) * 10) / 10;
+          // ECBC 2017 + NBC 2016 Part 8 — residential cooling load per room.
+          // Base: 1 TR per 12 sqm (India average for residential), adjusted for:
+          //   - Ceiling height factor (higher ceiling = more volume to cool)
+          //   - Floor-area × 0.083 TR/sqm base rate (≈ 1 TR/12 sqm at 3 m ceiling)
+          // Round UP to nearest standard Indian AC size: 0.75, 1.0, 1.5, 2.0, 2.5, 3.0 TR
+          // Reference: ECBC 2017 Appendix B, SP 41(S&T)-1987 Table 5
+          const ceilingH = room.ceilingHeight || 3.0;
+          const heightFactor = Math.max(0.85, Math.min(1.30, ceilingH / 3.0));
+          const rawTR = roomArea * 0.0833 * heightFactor; // 0.0833 ≈ 1/12 TR per sqm
+          const STD_SIZES = [0.75, 1.0, 1.5, 2.0, 2.5, 3.0] as const;
+          // Round UP to next standard size (conservative — never undersize)
+          const tons = STD_SIZES.find((s) => s >= rawTR) ?? 3.0;
           totalCooling += tons;
           equipment.push({
             id: `AC-${eqId++}`,
@@ -3597,7 +3580,7 @@ export class SpacePlanningEngine {
         x: room.x + 0.5,
         y: room.y + room.height - 0.3,
         roomId: room.id,
-        circuit: 'CKT-KITCHEN',
+        circuit: 'CKT-GEYSER',
         wattage: 2000,
         height: 1.8,
       });
@@ -3611,7 +3594,7 @@ export class SpacePlanningEngine {
         x: room.x + 0.3,
         y: room.y + 0.3,
         roomId: room.id,
-        circuit: 'CKT-POWER',
+        circuit: 'CKT-GEYSER',
         wattage: 2000,
         height: 1.8,
       });

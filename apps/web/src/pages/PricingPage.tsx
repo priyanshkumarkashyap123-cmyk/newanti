@@ -13,6 +13,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import { CheckCircle, X, HelpCircle, ChevronRight, Menu } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
+import { SEO } from '../components/SEO';
 
 // ============================================
 // PRICING DATA
@@ -183,7 +184,12 @@ export const PricingPage: FC = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-500/30">
-            {/* Navbar - Dark Theme Matching Landing Page */}
+            <SEO
+              title="Pricing"
+              description="Compare BeamLab plans: free Academic tier, Professional at ₹999/mo, Business at ₹1,999/mo, and Enterprise. All plans include IS 456, IS 800, ACI 318, AISC 360, and Eurocode design checks."
+              path="/pricing"
+            />
+                        {/* Navbar - Dark Theme Matching Landing Page */}
             <nav className="fixed top-0 inset-x-0 z-50 border-b border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">

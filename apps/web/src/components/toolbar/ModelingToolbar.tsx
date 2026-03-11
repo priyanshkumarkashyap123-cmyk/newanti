@@ -302,6 +302,8 @@ export const ModelingToolbar: FC = () => {
   const activeTool = useUIStore((state) => state.activeTool);
   const activeCategory = useUIStore((state) => state.activeCategory);
   const setActiveTool = useUIStore((state) => state.setActiveTool);
+  const openModal = useUIStore((state) => state.openModal);
+  const setRenderMode3D = useUIStore((state) => state.setRenderMode3D);
   const setModelTool = useModelStore((state) => state.setTool);
 
   // Snap state
@@ -327,20 +329,97 @@ export const ModelingToolbar: FC = () => {
     (toolId: string) => {
       setActiveTool(toolId);
 
-      // Map UI tool names to model tool names
+      const dispatch = (name: string, detail?: Record<string, unknown>) => {
+        document.dispatchEvent(new CustomEvent(name, detail ? { detail } : undefined));
+      };
+
+      switch (toolId) {
+        case "SELECT":
+        case "SELECT_RANGE":
+        case "PAN":
+        case "ZOOM_WINDOW":
+          setModelTool("select" as any);
+          return;
+        case "DRAW_NODE":
+          setModelTool("node" as any);
+          return;
+        case "DRAW_BEAM":
+        case "DRAW_COLUMN":
+        case "DRAW_CABLE":
+        case "DRAW_ARCH":
+        case "DRAW_RIGID_LINK":
+          setModelTool("member" as any);
+          return;
+        case "DRAW_PLATE":
+          openModal("plateDialog");
+          return;
+        case "DELETE":
+          dispatch("trigger-delete");
+          return;
+        case "COPY":
+          dispatch("trigger-copy");
+          return;
+        case "MOVE":
+          dispatch("trigger-move");
+          return;
+        case "MIRROR":
+        case "ROTATE":
+          openModal("geometryTools");
+          return;
+        case "DIVIDE_MEMBER":
+          openModal("divideMember");
+          return;
+        case "MERGE_NODES":
+          openModal("mergeNodes");
+          return;
+        case "SPLIT_MEMBER":
+          dispatch("trigger-split");
+          return;
+        case "SNAP_GRID":
+          dispatch("toggle-grid-snap");
+          return;
+        case "VIEW_FIT":
+          dispatch("fit-view");
+          return;
+        case "VIEW_FRONT":
+          dispatch("change-view", { view: "front" });
+          return;
+        case "VIEW_TOP":
+          dispatch("change-view", { view: "top" });
+          return;
+        case "VIEW_RIGHT":
+          dispatch("change-view", { view: "right" });
+          return;
+        case "VIEW_ISO":
+          dispatch("change-view", { view: "iso" });
+          return;
+        case "RENDER_SOLID":
+          setRenderMode3D(true);
+          return;
+        case "RENDER_WIREFRAME":
+        case "RENDER_ANALYTICAL":
+          setRenderMode3D(false);
+          return;
+        case "RUN_ANALYSIS":
+          dispatch("trigger-analysis");
+          return;
+        default:
+          break;
+      }
+
+      // Fallback mapping for tools that map directly to the model store.
       const toolMap: Record<string, string> = {
-        SELECT: "select",
-        NODE: "node",
-        MEMBER: "member",
         SUPPORT: "support",
         LOAD: "load",
         MEMBER_LOAD: "memberLoad",
       };
 
-      const modelTool = toolMap[toolId] || toolId.toLowerCase();
-      setModelTool(modelTool as any);
+      const mapped = toolMap[toolId];
+      if (mapped) {
+        setModelTool(mapped as any);
+      }
     },
-    [setActiveTool, setModelTool],
+    [openModal, setActiveTool, setModelTool, setRenderMode3D],
   );
 
   // Handle keyboard shortcuts

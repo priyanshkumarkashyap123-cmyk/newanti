@@ -188,6 +188,12 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
     shape: 'rectangular',
     unit: 'meters',
   });
+  const [polygonVerticesText, setPolygonVerticesText] = useState('0,0\n15,0\n15,20\n0,20');
+  const [polygonValidation, setPolygonValidation] = useState<{
+    validVertices: number;
+    invalidLines: number;
+    hasEnoughVertices: boolean;
+  }>({ validVertices: 4, invalidLines: 0, hasEnoughVertices: true });
 
   // Orientation
   const [orientation, setOrientation] = useState<SiteOrientation>({
@@ -349,6 +355,90 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
       return updated;
     });
   }, []);
+
+  const applyPolygonVertices = useCallback((rawText: string) => {
+    const rows = rawText
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    let invalidLines = 0;
+    const vertices = rows
+      .map((line) => {
+        const [xRaw, yRaw] = line.split(',').map((v) => v.trim());
+        const x = Number(xRaw);
+        const y = Number(yRaw);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          invalidLines += 1;
+          return null;
+        }
+        return { x, y };
+      })
+      .filter((v): v is { x: number; y: number } => !!v);
+
+    setPolygonValidation({
+      validVertices: vertices.length,
+      invalidLines,
+      hasEnoughVertices: vertices.length >= 3,
+    });
+
+    if (vertices.length < 3) {
+      setPlot((p) => ({ ...p, irregularVertices: vertices }));
+      return;
+    }
+
+    let twiceArea = 0;
+    for (let i = 0; i < vertices.length; i++) {
+      const a = vertices[i];
+      const b = vertices[(i + 1) % vertices.length];
+      twiceArea += a.x * b.y - b.x * a.y;
+    }
+    const polygonArea = Math.abs(twiceArea) / 2;
+
+    const xs = vertices.map((v) => v.x);
+    const ys = vertices.map((v) => v.y);
+    const width = Math.max(...xs) - Math.min(...xs);
+    const depth = Math.max(...ys) - Math.min(...ys);
+
+    setPlot((p) => ({
+      ...p,
+      irregularVertices: vertices,
+      width: Math.max(0.1, Math.round(width * 100) / 100),
+      depth: Math.max(0.1, Math.round(depth * 100) / 100),
+      area: Math.max(0.01, Math.round(polygonArea * 100) / 100),
+    }));
+  }, []);
+
+  const updatePlotShape = useCallback(
+    (shape: PlotDimensions['shape']) => {
+      setPlot((p) => {
+        if (shape === 'irregular' || shape === 'trapezoidal' || shape === 'L-shaped') {
+          return p;
+        }
+        return { ...p, shape, irregularVertices: undefined };
+      });
+
+      if (shape === 'irregular' || shape === 'trapezoidal' || shape === 'L-shaped') {
+        setPlot((p) => ({ ...p, shape }));
+        applyPolygonVertices(polygonVerticesText);
+      }
+    },
+    [applyPolygonVertices, polygonVerticesText],
+  );
+
+  const applyPolygonPreset = useCallback(
+    (preset: 'rect' | 'lshape' | 'trapezoid') => {
+      const textByPreset: Record<typeof preset, string> = {
+        rect: '0,0\n15,0\n15,20\n0,20',
+        lshape: '0,0\n14,0\n14,8\n8,8\n8,18\n0,18',
+        trapezoid: '0,0\n16,0\n13,18\n3,18',
+      };
+      const text = textByPreset[preset];
+      setPolygonVerticesText(text);
+      applyPolygonVertices(text);
+    },
+    [applyPolygonVertices],
+  );
 
   const toggleRoom = useCallback((type: RoomType) => {
     setSelectedRooms((prev) => {
@@ -523,8 +613,66 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 { value: 'irregular', label: 'Irregular' },
                 { value: 'trapezoidal', label: 'Trapezoidal' },
               ]}
-              onChange={(v) => updatePlot('shape', v)}
+              onChange={(v) => updatePlotShape(v as PlotDimensions['shape'])}
             />
+            {(plot.shape === 'irregular' || plot.shape === 'L-shaped' || plot.shape === 'trapezoidal') && (
+              <div>
+                <label className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 block">
+                  Polygon Vertices (x,y per line; units in {plot.unit})
+                </label>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <button
+                    type="button"
+                    onClick={() => applyPolygonPreset('rect')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Rectangle
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPolygonPreset('lshape')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    L-Shape
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPolygonPreset('trapezoid')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Trapezoid
+                  </button>
+                </div>
+                <textarea
+                  value={polygonVerticesText}
+                  onChange={(e) => {
+                    const txt = e.target.value;
+                    setPolygonVerticesText(txt);
+                    applyPolygonVertices(txt);
+                  }}
+                  className="w-full min-h-[110px] px-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                  placeholder={'0,0\n15,0\n15,20\n0,20'}
+                />
+                <div className="text-[10px] text-slate-400 mt-1">
+                  Use clockwise or counter-clockwise order. Minimum 3 vertices required.
+                </div>
+                <div className="mt-1 text-[10px]">
+                  <span className="text-slate-500 dark:text-slate-400">
+                    Parsed vertices: {polygonValidation.validVertices}
+                  </span>
+                  {polygonValidation.invalidLines > 0 && (
+                    <span className="ml-2 text-amber-600 dark:text-amber-400">
+                      Invalid lines: {polygonValidation.invalidLines}
+                    </span>
+                  )}
+                  {!polygonValidation.hasEnoughVertices && (
+                    <span className="ml-2 text-red-600 dark:text-red-400">
+                      Need at least 3 valid vertices
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
               <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold">
                 Plot Area: {plot.area.toFixed(0)} {plot.unit === 'meters' ? 'sq.m' : 'sq.ft'} (

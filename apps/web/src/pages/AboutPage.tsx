@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { Users, Globe, Target, Award, ArrowRight, Rocket, Code, Lightbulb } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
+import { SEO } from '../components/SEO';
 
 const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -21,7 +22,19 @@ export const AboutPage: FC = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-500/30">
-            {/* Header - Dark Theme */}
+            <SEO
+              title="About BeamLab"
+              description="Learn about BeamLab — the modern web-based structural engineering platform built for Indian and global engineers. IS 456, IS 800, ACI 318, AISC 360, Eurocode."
+              path="/about"
+              jsonLd={{
+                '@context': 'https://schema.org',
+                '@type': 'Organization',
+                name: 'BeamLab',
+                url: 'https://beamlab.app',
+                description: 'Professional structural engineering platform for beam, column, slab, foundation, and steel connection design.',
+                foundingLocation: 'India',
+              }}
+                        />
             <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/90 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">

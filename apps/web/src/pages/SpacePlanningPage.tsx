@@ -63,6 +63,7 @@ import {
   generateLayoutVariants,
   placementsToPlacedRooms,
   checkSolverBackendHealth,
+  buildConstraintReportFromVariant,
   type ConstraintReport,
   type PlacementResponse,
   type MultiCandidateResult,
@@ -169,6 +170,94 @@ export function SpacePlanningPage() {
     },
     [layoutVariantsResult, selectedFloor, lastWizardConfig],
   );
+
+  const handleExportConstraintJson = useCallback(() => {
+    if (!constraintReport) return;
+    const payload = {
+      export_type: 'space_planning_constraint_report',
+      exported_at: new Date().toISOString(),
+      selected_floor: selectedFloor,
+      report: constraintReport,
+      placements: solverPlacements ?? [],
+      wizard_config: lastWizardConfig,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    triggerDownload(blob, `constraint-report-floor-${selectedFloor}.json`);
+  }, [constraintReport, selectedFloor, solverPlacements, lastWizardConfig]);
+
+  const handleExportConstraintPdf = useCallback(() => {
+    if (!constraintReport) return;
+
+    const esc = (s: string) =>
+      s
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+
+    const rows = constraintReport.violations
+      .map(
+        (v) =>
+          `<tr>
+            <td>${esc(v.domain)}</td>
+            <td>${v.passed ? 'PASS' : 'FAIL'}</td>
+            <td>${esc(v.severity)}</td>
+            <td>${esc(v.message)}</td>
+            <td>${esc(v.clause || '-')}</td>
+          </tr>`,
+      )
+      .join('');
+
+    const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Constraint Report</title>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; color: #111827; }
+      h1 { margin: 0 0 8px 0; font-size: 20px; }
+      .meta { margin-bottom: 16px; color: #4b5563; font-size: 12px; }
+      .chips { display: flex; gap: 8px; margin-bottom: 12px; }
+      .chip { padding: 4px 8px; border-radius: 999px; border: 1px solid #d1d5db; font-size: 12px; }
+      table { border-collapse: collapse; width: 100%; font-size: 12px; }
+      th, td { border: 1px solid #e5e7eb; padding: 6px; vertical-align: top; text-align: left; }
+      th { background: #f9fafb; }
+      .pass { color: #15803d; font-weight: 700; }
+      .fail { color: #b91c1c; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <h1>Constraint Compliance Report</h1>
+    <div class="meta">Generated ${esc(new Date().toLocaleString())} • Floor ${selectedFloor}</div>
+    <div class="chips">
+      <div class="chip">Score: ${constraintReport.score}%</div>
+      <div class="chip">Domains: ${constraintReport.constraintsMet}/${constraintReport.constraintsTotal}</div>
+      <div class="chip">Penalty: ${constraintReport.totalPenalty.toFixed(0)}</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Domain</th>
+          <th>Status</th>
+          <th>Severity</th>
+          <th>Message</th>
+          <th>Clause</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <script>
+      setTimeout(() => window.print(), 250);
+    </script>
+  </body>
+</html>`;
+
+    const win = window.open('', '_blank', 'noopener,noreferrer,width=960,height=720');
+    if (!win) return;
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  }, [constraintReport, selectedFloor]);
 
   const parseSolverError = (err: unknown): string => {
     if (err && typeof err === 'object') {
@@ -420,26 +509,8 @@ export function SpacePlanningPage() {
           );
           if (bestVariant) {
             setSolverPlacements(bestVariant.placements);
-            // Create constraint report from variant data
-            setConstraintReport({
-              score: bestVariant.score?.composite_score || 0,
-              totalPenalty: 100 - (bestVariant.score?.composite_score || 0),
-              constraintsMet: 0,
-              constraintsTotal: 0,
-              constraintsMetRatio: 0,
-              iterationFound: 0,
-              totalIterations: 0,
-              violations: [],
-              fsi: { plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true },
-              circulation: { total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0, compliant: true },
-              egress: { max_travel_distance_m: 0, limit_m: 0, compliant: true, rooms_beyond_limit: [] },
-              structuralChecks: [],
-              solarScores: [],
-              fenestrationChecks: [],
-              anthropometricIssues: [],
-              staircaseReport: null,
-              constraintsDetail: { fsi: true, overlap: true, min_width: true, aspect_ratio: true, exterior_wall: true, plumbing_cluster: true, acoustic_zones: true, clearance: true, grid_snap: true, circulation: true, span_limits: true, staircase: true, fenestration: true, egress: true, solar: true },
-            });
+            // Build proper constraint report from variant compliance items
+            setConstraintReport(buildConstraintReportFromVariant(bestVariant));
           }
         }
 
@@ -515,26 +586,8 @@ export function SpacePlanningPage() {
       setSelectedVariantId(variantId);
       setSolverPlacements(variant.placements);
       
-      // Create constraint report from variant scores
-      setConstraintReport({
-        score: variant.score?.composite_score || 0,
-        totalPenalty: 100 - (variant.score?.composite_score || 0),
-        constraintsMet: 0,
-        constraintsTotal: 0,
-        constraintsMetRatio: 0,
-        iterationFound: 0,
-        totalIterations: 0,
-        violations: [],
-        fsi: { plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true },
-        circulation: { total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0, compliant: true },
-        egress: { max_travel_distance_m: 0, limit_m: 0, compliant: true, rooms_beyond_limit: [] },
-        structuralChecks: [],
-        solarScores: [],
-        fenestrationChecks: [],
-        anthropometricIssues: [],
-        staircaseReport: null,
-        constraintsDetail: { fsi: true, overlap: true, min_width: true, aspect_ratio: true, exterior_wall: true, plumbing_cluster: true, acoustic_zones: true, clearance: true, grid_snap: true, circulation: true, span_limits: true, staircase: true, fenestration: true, egress: true, solar: true },
-      });
+      // Build proper constraint report from variant compliance items
+      setConstraintReport(buildConstraintReportFromVariant(variant));
 
       // Re-merge this variant's placements into the project
       if (project && project.floorPlans.length > 0) {
@@ -598,11 +651,27 @@ export function SpacePlanningPage() {
     if (!project || !currentFloorPlan) return null;
     const fixtures = project.electrical.fixtures.filter((f) => floorRoomIdSet.has(f.roomId));
     const fixtureSet = new Set(fixtures.map((f) => f.id));
+    const fixtureWattById = new Map(fixtures.map((f) => [f.id, f.wattage]));
     const circuits = project.electrical.circuits
       .map((c) => ({ ...c, fixtures: c.fixtures.filter((id) => fixtureSet.has(id)) }))
       .filter((c) => c.fixtures.length > 0);
     const panels = project.electrical.panels.filter((p) => floorRoomIdSet.has(p.roomId));
     const connectedLoad = fixtures.reduce((sum, f) => sum + f.wattage, 0) / 1000;
+
+    const diversity: Record<'lighting' | 'power' | 'ac' | 'kitchen' | 'geyser' | 'motor', number> = {
+      lighting: 0.9,
+      power: 0.6,
+      ac: 0.8,
+      kitchen: 0.7,
+      geyser: 0.9,
+      motor: 1.0,
+    };
+
+    const demandLoad = circuits.reduce((sum, c) => {
+      const circuitKw =
+        c.fixtures.reduce((w, fixtureId) => w + (fixtureWattById.get(fixtureId) ?? 0), 0) / 1000;
+      return sum + circuitKw * (diversity[c.type] ?? 0.72);
+    }, 0);
 
     return {
       ...project.electrical,
@@ -611,7 +680,7 @@ export function SpacePlanningPage() {
       panels,
       connectedLoad,
       mainLoad: connectedLoad,
-      demandLoad: connectedLoad * 0.72,
+      demandLoad,
     };
   }, [project, currentFloorPlan, floorRoomIdSet]);
 
@@ -1023,6 +1092,8 @@ export function SpacePlanningPage() {
                         <ConstraintScorecard
                           report={constraintReport}
                           onViolationClick={handleViolationClick}
+                          onExportJson={handleExportConstraintJson}
+                          onExportPdf={handleExportConstraintPdf}
                         />
                       </div>
                     )}
@@ -1034,6 +1105,8 @@ export function SpacePlanningPage() {
                       <ConstraintScorecard
                         report={constraintReport}
                         onViolationClick={handleViolationClick}
+                        onExportJson={handleExportConstraintJson}
+                        onExportPdf={handleExportConstraintPdf}
                         collapsed
                       />
                     </div>
@@ -1507,6 +1580,7 @@ const ElectricalDetailingPanel: React.FC<{ electrical: HousePlanProject['electri
     acc[f.type] = (acc[f.type] || 0) + 1;
     return acc;
   }, {});
+  const fixtureWattById = new Map(electrical.fixtures.map((f) => [f.id, f.wattage]));
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 space-y-3">
@@ -1520,18 +1594,25 @@ const ElectricalDetailingPanel: React.FC<{ electrical: HousePlanProject['electri
                 <th className="px-2 py-1 text-left">Circuit</th>
                 <th className="px-2 py-1 text-center">MCB</th>
                 <th className="px-2 py-1 text-center">Wire</th>
+                <th className="px-2 py-1 text-center">Load</th>
                 <th className="px-2 py-1 text-center">Pts</th>
               </tr>
             </thead>
             <tbody>
-              {electrical.circuits.map((c) => (
-                <tr key={c.id} className="border-t border-slate-100 dark:border-slate-800">
-                  <td className="px-2 py-1">{c.name}</td>
-                  <td className="px-2 py-1 text-center">{c.mcbRating}A</td>
-                  <td className="px-2 py-1 text-center">{c.wireSize}mm²</td>
-                  <td className="px-2 py-1 text-center">{c.fixtures.length}</td>
-                </tr>
-              ))}
+              {electrical.circuits.map((c) => {
+                const circuitLoadKw =
+                  c.fixtures.reduce((sum, fixtureId) => sum + (fixtureWattById.get(fixtureId) ?? 0), 0) /
+                  1000;
+                return (
+                  <tr key={c.id} className="border-t border-slate-100 dark:border-slate-800">
+                    <td className="px-2 py-1">{c.name}</td>
+                    <td className="px-2 py-1 text-center">{c.mcbRating}A</td>
+                    <td className="px-2 py-1 text-center">{c.wireSize}mm²</td>
+                    <td className="px-2 py-1 text-center">{circuitLoadKw.toFixed(2)} kW</td>
+                    <td className="px-2 py-1 text-center">{c.fixtures.length}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

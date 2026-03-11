@@ -53,15 +53,9 @@ const SettingsPage = lazy(() =>
     default: module.SettingsPage,
   })),
 );
-const SettingsPageEnhanced = lazy(() => import('./pages/SettingsPageEnhanced'));
 const EnhancedPricingPage = lazy(() =>
   import('./pages/EnhancedPricingPage').then((module) => ({
     default: module.EnhancedPricingPage,
-  })),
-);
-const PricingPage = lazy(() =>
-  import('./pages/PricingPage').then((module) => ({
-    default: module.PricingPage,
   })),
 );
 
@@ -164,7 +158,11 @@ const TimeHistoryAnalysisPage = lazy(() => import('./pages/TimeHistoryAnalysisPa
 const ModalAnalysisPage = lazy(() => import('./pages/ModalAnalysisPage'));
 const NonlinearAnalysisPage = lazy(() => import('./pages/NonlinearAnalysisPage'));
 const DynamicAnalysisPage = lazy(() => import('./pages/DynamicAnalysisPage'));
-const AdvancedSettingsPage = lazy(() => import('./pages/AdvancedSettingsPage'));
+
+// New core pages (Phase 1 implementation)
+const BlogPage = lazy(() => import('./pages/BlogPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
 // Phase 15: Professional Tools (Industry Parity)
 const ProfessionalReportGenerator = lazy(() => import('./pages/ProfessionalReportGenerator'));
@@ -422,28 +420,14 @@ function App() {
                   </RequireAuth>
                 }
               />
-              {/* Enhanced Settings - NEW Advanced Template */}
-              {/* Enhanced Settings - NEW Advanced Template */}
-              <Route
-                path="/settings-enhanced"
-                element={
-                  <RequireAuth>
-                    <SettingsPageEnhanced />
-                  </RequireAuth>
-                }
-              />
-              {/* Advanced Settings - Comprehensive Analysis Configuration */}
-              <Route
-                path="/settings/advanced"
-                element={
-                  <RequireAuth>
-                    <AdvancedSettingsPage />
-                  </RequireAuth>
-                }
-              />
+              {/* Legacy settings aliases */}
+              <Route path="/settings-enhanced" element={<Navigate to="/settings" replace />} />
+              <Route path="/settings/advanced" element={<Navigate to="/settings" replace />} />
               {/* Pricing Page */}
               <Route path="/pricing" element={<EnhancedPricingPage />} />
-              <Route path="/pricing-old" element={<PricingPage />} />
+              <Route path="/pricing-old" element={<Navigate to="/pricing" replace />} />
+              {/* Blog */}
+              <Route path="/blog" element={<BlogPage />} />
               {/* Forgot Password */}
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               {/* Reset Password */}
@@ -497,6 +481,22 @@ function App() {
                 element={
                   <RequireAuth>
                     <ReportsPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <RequireAuth>
+                    <NotificationsPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <RequireAuth>
+                    <ProfilePage />
                   </RequireAuth>
                 }
               />
@@ -558,7 +558,9 @@ function App() {
                 path="/analysis/modal"
                 element={
                   <RequireAuth>
-                    <ModalAnalysisRouteWrapper />
+                    <MobileGuard>
+                      <ModalAnalysisRouteWrapper />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -566,7 +568,9 @@ function App() {
                 path="/analysis/time-history"
                 element={
                   <RequireAuth>
-                    <TimeHistoryPanel />
+                    <MobileGuard>
+                      <TimeHistoryPanel />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -574,7 +578,9 @@ function App() {
                 path="/analysis/seismic"
                 element={
                   <RequireAuth>
-                    <SeismicAnalysisPanel />
+                    <MobileGuard>
+                      <SeismicAnalysisPanel />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -582,7 +588,9 @@ function App() {
                 path="/analysis/buckling"
                 element={
                   <RequireAuth>
-                    <BucklingAnalysisPanel />
+                    <MobileGuard>
+                      <BucklingAnalysisPanel />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -590,7 +598,9 @@ function App() {
                 path="/analysis/cable"
                 element={
                   <RequireAuth>
-                    <CableAnalysisPanel />
+                    <MobileGuard>
+                      <CableAnalysisPanel />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -598,7 +608,9 @@ function App() {
                 path="/analysis/pdelta"
                 element={
                   <RequireAuth>
-                    <PDeltaAnalysisPanel />
+                    <MobileGuard>
+                      <PDeltaAnalysisPanel />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -606,7 +618,9 @@ function App() {
                 path="/analysis/nonlinear"
                 element={
                   <RequireAuth>
-                    <NonlinearAnalysisPage />
+                    <MobileGuard>
+                      <NonlinearAnalysisPage />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -614,7 +628,9 @@ function App() {
                 path="/analysis/dynamic"
                 element={
                   <RequireAuth>
-                    <DynamicAnalysisPage />
+                    <MobileGuard>
+                      <DynamicAnalysisPage />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -623,7 +639,9 @@ function App() {
                 path="/analysis/pushover"
                 element={
                   <RequireAuth>
-                    <PushoverAnalysisPage />
+                    <MobileGuard>
+                      <PushoverAnalysisPage />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -632,9 +650,11 @@ function App() {
                 path="/design/steel"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <SteelDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <SteelDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -643,9 +663,11 @@ function App() {
                 path="/design/connections"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <ConnectionDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <ConnectionDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -654,9 +676,11 @@ function App() {
                 path="/design/welded-connections"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <WeldedConnectionsPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <WeldedConnectionsPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -665,9 +689,11 @@ function App() {
                 path="/design/reinforcement"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <ReinforcementDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <ReinforcementDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -676,9 +702,11 @@ function App() {
                 path="/design/detailing"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <DetailingDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <DetailingDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -687,9 +715,11 @@ function App() {
                 path="/design/concrete"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <ConcreteDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <ConcreteDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -698,9 +728,11 @@ function App() {
                 path="/design/foundation"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <FoundationDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <FoundationDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -709,9 +741,11 @@ function App() {
                 path="/design/composite"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <CompositeDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <CompositeDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -720,9 +754,11 @@ function App() {
                 path="/design/timber"
                 element={
                   <RequireAuth>
-                    <Suspense fallback={<DesignPageSkeleton />}>
-                      <TimberDesignPage />
-                    </Suspense>
+                    <MobileGuard>
+                      <Suspense fallback={<DesignPageSkeleton />}>
+                        <TimberDesignPage />
+                      </Suspense>
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />
@@ -758,7 +794,9 @@ function App() {
                 path="/analysis/plate-shell"
                 element={
                   <RequireAuth>
-                    <PlateShellAnalysisPage />
+                    <MobileGuard>
+                      <PlateShellAnalysisPage />
+                    </MobileGuard>
                   </RequireAuth>
                 }
               />

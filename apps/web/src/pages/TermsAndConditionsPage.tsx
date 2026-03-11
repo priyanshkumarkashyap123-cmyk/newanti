@@ -24,6 +24,7 @@ import {
   Gavel,
 } from 'lucide-react';
 import { useState, useEffect, memo } from 'react';
+import { SEO } from '../components/SEO';
 
 // ============================================
 // TYPES & CONSTANTS
@@ -106,6 +107,11 @@ function TermsAndConditionsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white dark:from-slate-950 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">
+      <SEO
+        title="Terms & Conditions"
+        description="BeamLab Terms of Service. Governed by the Indian IT Act 2000 and Consumer Protection Act 2019. Jurisdiction: Civil Court, Rewa, Madhya Pradesh."
+        path="/terms-and-conditions"
+      />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-slate-50 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
