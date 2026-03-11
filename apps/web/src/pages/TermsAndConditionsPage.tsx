@@ -963,6 +963,13 @@ function TermsAndConditionsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-slate-900/80 dark:text-white/80">
+                    <Phone className="w-5 h-5 text-blue-400" />
+                    <div>
+                      <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Phone</p>
+                      <a href="tel:7987782378" className="text-blue-400 hover:underline">7987782378</a>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-900/80 dark:text-white/80">
                     <Globe className="w-5 h-5 text-blue-400" />
                     <div>
                       <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Website</p>

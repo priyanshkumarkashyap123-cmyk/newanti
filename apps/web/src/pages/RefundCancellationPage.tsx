@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Mail,
+  Phone,
   MapPin,
   Clock,
   Scale,
@@ -674,6 +675,17 @@ function RefundCancellationPage() {
                           className="text-blue-400 hover:underline"
                         >
                           decodedoffice@gmail.com
+                        </a>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">
+                          Phone
+                        </p>
+                        <a href="tel:7987782378" className="text-blue-400 hover:underline">
+                          7987782378
                         </a>
                       </div>
                     </div>
