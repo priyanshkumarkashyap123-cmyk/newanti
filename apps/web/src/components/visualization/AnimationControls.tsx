@@ -871,14 +871,6 @@ export const AnimationControls: React.FC<AnimationControlsProps> = ({
                     </button>
                     
                     <button type="button"
-                        onClick={() => {}}
-                        className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg"
-                        title="Take Screenshot"
-                    >
-                        <Camera className="w-4 h-4" />
-                    </button>
-                    
-                    <button type="button"
                         onClick={() => setIsFullscreen(!isFullscreen)}
                         className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg"
                     >

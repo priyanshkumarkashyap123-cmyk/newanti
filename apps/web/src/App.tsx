@@ -134,7 +134,6 @@ const WorkerValidation = lazy(() => import('./components/WorkerValidation'));
 
 // Phase 12 Design Modules
 const ConnectionDesignPage = lazy(() => import('./pages/ConnectionDesignPage'));
-const WeldedConnectionsPage = lazy(() => import('./pages/ConnectionDesignPage')); // Reusing Connection Page
 const DetailingDesignPage = lazy(() => import('./pages/DetailingDesignPage'));
 const ReinforcementDesignPage = lazy(() => import('./pages/DetailingDesignPage')); // Reusing Detailing Page
 
@@ -323,6 +322,11 @@ const ROUTE_ALIASES: Array<{ from: string; to: string }> = [
   { from: '/analysis/modal-page', to: '/analysis/modal' },
   { from: '/analysis/time-history-page', to: '/analysis/time-history' },
   { from: '/analysis/nonlinear-page', to: '/analysis/nonlinear' },
+  { from: '/design/welded-connections', to: '/design/connections' },
+  { from: '/load-combination-page', to: '/tools/load-combinations' },
+  { from: '/section-database-page', to: '/tools/section-database' },
+  { from: '/tools/load-combination', to: '/tools/load-combinations' },
+  { from: '/reports/generator', to: '/reports/professional' },
 ];
 
 // ============================================
@@ -671,19 +675,7 @@ function App() {
                   </RequireAuth>
                 }
               />
-              {/* Welded Connections Module - Fillet, Groove, Base Plates */}
-              <Route
-                path="/design/welded-connections"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <WeldedConnectionsPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
+              {/* Legacy route handled by ROUTE_ALIASES: /design/welded-connections -> /design/connections */}
               {/* Reinforcement Design Module - Stirrups, Development Length, Lap Splices */}
               <Route
                 path="/design/reinforcement"

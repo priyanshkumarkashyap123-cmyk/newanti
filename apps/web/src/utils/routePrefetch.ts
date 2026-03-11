@@ -11,7 +11,6 @@ const routeImportMap: Record<string, () => Promise<unknown>> = {
   // Design modules
   '/design/steel': () => import('../pages/SteelDesignPage'),
   '/design/connections': () => import('../pages/ConnectionDesignPage'),
-  '/design/welded-connections': () => import('../pages/ConnectionDesignPage'),
   '/design/reinforcement': () => import('../pages/DetailingDesignPage'),
   '/design/detailing': () => import('../pages/DetailingDesignPage'),
   '/design/concrete': () => import('../pages/ConcreteDesignPage'),

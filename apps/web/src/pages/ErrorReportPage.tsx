@@ -570,11 +570,11 @@ const ErrorReportPage: FC = () => {
       <header className="border-b border-slate-200 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link
-            to="/app"
+            to="/stream"
             className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to App
+            Back to Dashboard
           </Link>
           <div className="h-5 w-px bg-slate-200 dark:bg-slate-800" />
           <div className="flex items-center gap-2.5">

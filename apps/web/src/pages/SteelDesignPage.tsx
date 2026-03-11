@@ -3,7 +3,7 @@
  * Uses Rust AISC design API for 10x faster design checks
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Play, AlertTriangle, Box, ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
 import { useToast } from '../components/ui/ToastSystem';
@@ -19,6 +19,7 @@ import {
     DesignParameters 
 } from '../services/SteelDesignService';
 import { getSectionById, Material } from '../data/SectionDatabase';
+import { VirtualTable } from '../components/ui/VirtualScroll';
 
 export function SteelDesignPage() {
     const navigate = useNavigate();
@@ -45,6 +46,13 @@ export function SteelDesignPage() {
     });
 
     const members = Array.from(store.members.values());
+
+    const resultSummary = useMemo(() => {
+        const passing = results.filter((r) => r.overallStatus === 'PASS').length;
+        const warning = results.filter((r) => r.overallStatus === 'WARNING').length;
+        const failing = results.filter((r) => r.overallStatus === 'FAIL').length;
+        return { passing, warning, failing };
+    }, [results]);
 
     const handleRunDesign = async () => {
         if (members.length === 0) {
@@ -280,62 +288,80 @@ export function SteelDesignPage() {
                 <div className="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
                     <h3 className="mb-5 font-semibold">Design Check Results</h3>
                     
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="border-b-2 border-slate-300 dark:border-slate-600">
-                                    <th className="p-3 text-left">Member</th>
-                                    <th className="p-3 text-left">Section</th>
-                                    <th className="p-3 text-center">Status</th>
-                                    <th className="p-3 text-right">Critical Ratio</th>
-                                    <th className="p-3 text-left">Governing Check</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {results.map((result, idx) => {
-                                    return (
-                                        <tr key={idx} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                            <td className="p-3">{result.memberId}</td>
-                                            <td className="p-3 text-blue-600 dark:text-blue-400 font-medium">
-                                                {result.section.name}
-                                            </td>
-                                            <td className="p-3 text-center">
-                                                {result.overallStatus === 'PASS' && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
-                                                        <CheckCircle2 size={12}/> PASS
-                                                    </span>
-                                                )}
-                                                {result.overallStatus === 'WARNING' && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
-                                                        <AlertTriangle size={12}/> WARN
-                                                    </span>
-                                                )}
-                                                {result.overallStatus === 'FAIL' && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400">
-                                                        <XCircle size={12}/> FAIL
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="p-3 text-right font-bold">
-                                                <span className={result.criticalRatio > 1.0 ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}>
-                                                {(result.criticalRatio * 100).toFixed(1)}%
-                                                </span>
-                                                <div className="mt-1 h-1.5 w-20 ml-auto rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full transition-all ${result.criticalRatio > 1.0 ? 'bg-red-500' : result.criticalRatio > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                                                        style={{ width: `${Math.min(result.criticalRatio * 100, 100)}%` }}
-                                                    />
-                                                </div>
-                                            </td>
-                                            <td className="p-3 text-sm">
-                                                {result.governingCheck || 'N/A'}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                    <VirtualTable
+                        items={results}
+                        className="h-[460px] rounded-lg border border-slate-200 dark:border-slate-700"
+                        rowHeight={60}
+                        headerHeight={46}
+                        getRowKey={(result) => result.memberId}
+                        columns={[
+                            {
+                                key: 'member',
+                                header: 'Member',
+                                width: 130,
+                                render: (result) => <span className="text-sm">{result.memberId}</span>,
+                            },
+                            {
+                                key: 'section',
+                                header: 'Section',
+                                width: 220,
+                                render: (result) => (
+                                    <span className="text-sm text-blue-600 dark:text-blue-400 font-medium truncate">
+                                        {result.section.name}
+                                    </span>
+                                ),
+                            },
+                            {
+                                key: 'status',
+                                header: 'Status',
+                                width: 150,
+                                render: (result) => (
+                                    <div className="text-center w-full">
+                                        {result.overallStatus === 'PASS' && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
+                                                <CheckCircle2 size={12}/> PASS
+                                            </span>
+                                        )}
+                                        {result.overallStatus === 'WARNING' && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+                                                <AlertTriangle size={12}/> WARN
+                                            </span>
+                                        )}
+                                        {result.overallStatus === 'FAIL' && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400">
+                                                <XCircle size={12}/> FAIL
+                                            </span>
+                                        )}
+                                    </div>
+                                ),
+                            },
+                            {
+                                key: 'ratio',
+                                header: 'Critical Ratio',
+                                width: 180,
+                                render: (result) => (
+                                    <div className="w-full text-right font-bold">
+                                        <span className={result.criticalRatio > 1.0 ? 'text-red-500' : 'text-blue-600 dark:text-blue-400'}>
+                                            {(result.criticalRatio * 100).toFixed(1)}%
+                                        </span>
+                                        <div className="mt-1 h-1.5 w-20 ml-auto rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full transition-all ${result.criticalRatio > 1.0 ? 'bg-red-500' : result.criticalRatio > 0.8 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                                                style={{ width: `${Math.min(result.criticalRatio * 100, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                ),
+                            },
+                            {
+                                key: 'governing',
+                                header: 'Governing Check',
+                                render: (result) => (
+                                    <span className="text-sm truncate">{result.governingCheck || 'N/A'}</span>
+                                ),
+                            },
+                        ]}
+                    />
 
                     {/* Summary Statistics */}
                     <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -349,21 +375,21 @@ export function SteelDesignPage() {
                         <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
                             <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Passing</div>
                             <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-                                {results.filter(r => r.overallStatus === 'PASS').length}
+                                {resultSummary.passing}
                             </div>
                         </div>
                         
                         <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
                             <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Warning</div>
                             <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-                                {results.filter(r => r.overallStatus === 'WARNING').length}
+                                {resultSummary.warning}
                             </div>
                         </div>
                         
                         <div className="p-5 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
                             <div className="text-slate-500 text-xs font-medium uppercase tracking-wider">Failing</div>
                             <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
-                                {results.filter(r => r.overallStatus === 'FAIL').length}
+                                {resultSummary.failing}
                             </div>
                         </div>
                     </div>

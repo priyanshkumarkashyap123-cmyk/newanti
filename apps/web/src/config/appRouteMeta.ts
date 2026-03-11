@@ -338,7 +338,7 @@ const CATEGORY_BREADCRUMB_LABEL_OVERRIDES: Record<string, string> = {
 };
 
 const CATEGORY_BREADCRUMB_PATH_OVERRIDES: Record<string, string> = {
-  design: '/design-hub',
+  design: '/design-center',
 };
 
 const CATEGORY_BREADCRUMB_META: Record<string, { label: string; path: string }> =
@@ -412,6 +412,13 @@ const EXACT_ROUTE_TITLE_OVERRIDES: Record<string, string> = {
   '/civil/hydraulics': 'Hydraulics',
   '/civil/transportation': 'Transportation',
   '/civil/construction': 'Construction',
+  '/design-center': 'Design Center',
+  '/design-hub': 'Post-Analysis Design Hub',
+  '/design/welded-connections': 'Connection Design',
+  '/account-locked': 'Account Locked',
+  '/link-expired': 'Link Expired',
+  '/verify-email': 'Verify Email',
+  '/error-report': 'Error Report',
 
   // Non-feature static/auth/marketing routes
   '/help': 'Help & Tutorials',
@@ -450,6 +457,33 @@ const ROUTE_BREADCRUMB_OVERRIDES: Record<string, BreadcrumbItem[]> = {
   '/settings': [
     { label: 'Dashboard', path: '/stream' },
     { label: 'Settings', path: '/settings', current: true },
+  ],
+  '/design-center': [
+    { label: 'Dashboard', path: '/stream' },
+    { label: 'Design', path: '/design-center', current: true },
+  ],
+  '/design-hub': [
+    { label: 'Dashboard', path: '/stream' },
+    { label: 'Design', path: '/design-center' },
+    { label: 'Post-Analysis Hub', path: '/design-hub', current: true },
+  ],
+  '/account-locked': [
+    { label: 'Home', path: '/' },
+    { label: 'Sign In', path: '/sign-in' },
+    { label: 'Account Locked', path: '/account-locked', current: true },
+  ],
+  '/link-expired': [
+    { label: 'Home', path: '/' },
+    { label: 'Verify Email', path: '/verify-email' },
+    { label: 'Link Expired', path: '/link-expired', current: true },
+  ],
+  '/verify-email': [
+    { label: 'Home', path: '/' },
+    { label: 'Verify Email', path: '/verify-email', current: true },
+  ],
+  '/error-report': [
+    { label: 'Dashboard', path: '/stream' },
+    { label: 'Diagnostics', path: '/error-report', current: true },
   ],
 };
 

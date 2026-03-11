@@ -1608,17 +1608,6 @@ const AIOptimizationPanel: FC = () => {
   return (
     <div className="space-y-2">
       <button type="button"
-        onClick={() => openModal("sectionOptimization")}
-        className="w-full flex items-center justify-between px-3 py-2.5 bg-blue-600/20 rounded-lg text-blue-300 hover:bg-blue-600/30 border border-blue-500/30 transition-colors"
-      >
-        <span className="flex items-center gap-2">
-          <Layers className="w-4 h-4" />
-          FSD Section Optimization
-        </span>
-        <ArrowRight className="w-4 h-4 text-blue-400" />
-      </button>
-
-      <button type="button"
         onClick={() => openModal("generativeDesign")}
         className="w-full flex items-center justify-between px-3 py-2.5 bg-emerald-600/20 rounded-lg text-emerald-300 hover:bg-emerald-600/30 border border-emerald-500/30 transition-colors"
       >

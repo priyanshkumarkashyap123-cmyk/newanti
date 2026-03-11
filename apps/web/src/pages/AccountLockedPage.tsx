@@ -32,6 +32,13 @@ export const AccountLockedPage = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-4">
             <div className="w-full max-w-md text-center space-y-6">
+                <div className="flex items-center justify-center gap-4 text-xs text-slate-500">
+                    <Link to="/" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Home</Link>
+                    <span>•</span>
+                    <Link to="/help" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Help Center</Link>
+                    <span>•</span>
+                    <Link to="/sign-in" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Sign In</Link>
+                </div>
                 {/* Logo */}
                 <Link to="/" className="inline-flex items-center gap-3 group">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">

@@ -150,7 +150,7 @@ interface PagePreviewProps {
     settings: PrintSettings;
     scale: number;
     isSelected: boolean;
-    onClick: () => void;
+    onClick?: () => void;
     projectName: string;
 }
 
@@ -918,7 +918,6 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                                         settings={settings}
                                         scale={zoom}
                                         isSelected={true}
-                                        onClick={() => {}}
                                         projectName={projectName}
                                     />
                                 )}
@@ -933,7 +932,6 @@ export const PrintPreview: React.FC<PrintPreviewProps> = ({
                                     settings={settings}
                                     scale={zoom}
                                     isSelected={true}
-                                    onClick={() => {}}
                                     projectName={projectName}
                                 />
                             )

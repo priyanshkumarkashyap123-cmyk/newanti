@@ -10,6 +10,7 @@ import { Users, Globe, Target, Award, ArrowRight, Rocket, Code, Lightbulb } from
 import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
 import { SEO } from '../components/SEO';
+import { PageFooter } from '../components/layout/PageFooter';
 
 const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -252,10 +253,7 @@ export const AboutPage: FC = () => {
                 </section>
             </main>
 
-            {/* Footer */}
-            <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 text-center text-sm text-slate-600 dark:text-slate-400">
-                <p>© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
-            </footer>
+            <PageFooter />
         </div>
     );
 };

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from './dialog';
+import { APP_SEARCH_ITEMS } from '../../config/appRouteMeta';
 
 // ============================================
 // Types
@@ -127,6 +128,47 @@ const createDefaultCommands = (navigate: (path: string) => void, onClose: () => 
     },
 ];
 
+const createRouteCommands = (
+    navigate: (path: string) => void,
+    onClose: () => void,
+): CommandItem[] => {
+    const seen = new Set<string>();
+
+    return APP_SEARCH_ITEMS
+        .filter((item) => {
+            const key = `${item.path}|${item.label}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        })
+        .map((item): CommandItem => {
+            const category = item.type === 'help'
+                ? 'Help'
+                : item.type === 'action'
+                    ? 'Actions'
+                    : 'Navigation';
+
+            const icon = item.type === 'help'
+                ? <HelpCircle className="w-4 h-4" />
+                : item.type === 'action'
+                    ? <Zap className="w-4 h-4" />
+                    : <ArrowRight className="w-4 h-4" />;
+
+            return {
+                id: `route-${item.type}-${item.path}`,
+                label: item.label,
+                description: `Open ${item.path}`,
+                icon,
+                shortcut: item.shortcut,
+                category,
+                action: () => {
+                    navigate(item.path);
+                    onClose();
+                },
+            };
+        });
+};
+
 // ============================================
 // Fuzzy Search
 // ============================================
@@ -179,9 +221,14 @@ export const CommandPalette: FC<CommandPaletteProps> = ({
         [navigate, onClose]
     );
 
+    const routeCommands = useMemo(
+        () => createRouteCommands(navigate, onClose),
+        [navigate, onClose]
+    );
+
     const allCommands = useMemo(
-        () => [...defaultCommands, ...customCommands],
-        [defaultCommands, customCommands]
+        () => [...defaultCommands, ...routeCommands, ...customCommands],
+        [defaultCommands, routeCommands, customCommands]
     );
 
     const filteredCommands = useMemo(
@@ -372,8 +419,17 @@ export const useCommandPalette = () => {
             }
         };
 
+        const openPalette = () => {
+            setIsOpen(true);
+        };
+
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        window.addEventListener('beamlab:open-command-palette', openPalette as EventListener);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('beamlab:open-command-palette', openPalette as EventListener);
+        };
     }, []);
 
     return {

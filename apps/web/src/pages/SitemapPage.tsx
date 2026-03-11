@@ -62,7 +62,7 @@ const PAGE_SECTIONS: PageSection[] = [
       { title: 'Foundation Design', path: '/design/foundation', description: 'Footing analysis and design' },
       { title: 'Steel Design', path: '/design/steel', description: 'Steel member design per AISC/IS 800' },
       { title: 'Connection Design', path: '/design/connections', description: 'Bolted & welded connections' },
-      { title: 'Welded Connections', path: '/design/welded-connections', description: 'Fillet & groove weld design' },
+      { title: 'Welded Connections', path: '/design/connections', description: 'Fillet & groove weld design (inside Connection Design)' },
       { title: 'Reinforcement Design', path: '/design/reinforcement', description: 'Stirrup and development length' },
       { title: 'RC Detailing', path: '/design/detailing', description: 'Detailed reinforcement drawings' },
       { title: 'Design Center', path: '/design-center', description: 'Unified design interface' },

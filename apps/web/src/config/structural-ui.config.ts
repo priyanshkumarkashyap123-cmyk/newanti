@@ -122,7 +122,7 @@ export const MODULE_CONFIG = {
       'Development length calculations',
       'Curtailment schedule',
     ],
-    route: '/design-center?module=rc-beam',
+    route: '/design/concrete',
   },
   
   // RC Column Design
@@ -141,7 +141,7 @@ export const MODULE_CONFIG = {
       'P-M interaction diagrams',
       'Tie/spiral design',
     ],
-    route: '/design-center?module=rc-column',
+    route: '/design/concrete',
   },
   
   // RC Slab Design
@@ -160,7 +160,7 @@ export const MODULE_CONFIG = {
       'Punching shear design',
       'Deflection checks',
     ],
-    route: '/design-center?module=rc-slab',
+    route: '/design/concrete',
   },
   
   // Steel Member Design
@@ -179,7 +179,7 @@ export const MODULE_CONFIG = {
       'Beam-column interaction',
       'Section classification',
     ],
-    route: '/design-center?module=steel-member',
+    route: '/design/steel',
   },
   
   // Bridge Design
@@ -217,7 +217,7 @@ export const MODULE_CONFIG = {
       'Pile foundation design',
       'Raft foundation design',
     ],
-    route: '/design-center?module=foundation',
+    route: '/design/foundation',
   },
 } as const;
 
@@ -334,14 +334,14 @@ export const ROUTES = {
   workspace: '/app',
   
   // Design modules
-  rcBeam: '/design-center?module=rc-beam',
-  rcColumn: '/design-center?module=rc-column',
-  rcSlab: '/design-center?module=rc-slab',
-  rcFooting: '/design-center?module=rc-footing',
-  steelMember: '/design-center?module=steel-member',
-  steelConnection: '/design-center?module=steel-connection',
+  rcBeam: '/design/concrete',
+  rcColumn: '/design/concrete',
+  rcSlab: '/design/concrete',
+  rcFooting: '/design/foundation',
+  steelMember: '/design/steel',
+  steelConnection: '/design/connections',
   bridgeDeck: '/design-center?module=bridge-deck',
-  foundation: '/design-center?module=foundation',
+  foundation: '/design/foundation',
   
   // Analysis
   modalAnalysis: '/analysis/modal',

@@ -426,17 +426,13 @@ export function LearningCenter() {
           <div>
             <h3 className="font-bold text-slate-900 dark:text-white mb-3">Resources</h3>
             <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Code References</a></li>
-              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Video Library</a></li>
               <li><a href="/help" className="hover:text-slate-900 dark:hover:text-white">FAQs</a></li>
             </ul>
           </div>
           <div>
             <h3 className="font-bold text-slate-900 dark:text-white mb-3">Community</h3>
             <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Forum</a></li>
-              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Discussion</a></li>
-              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Newsletter</a></li>
+              <li><span className="text-slate-400 dark:text-slate-500">Community features coming in a future release</span></li>
             </ul>
           </div>
         </div>

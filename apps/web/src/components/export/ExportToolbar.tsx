@@ -285,8 +285,8 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
                     extension = 'csv';
                     break;
                 case 'pdf':
-                    // Trigger print dialog for now (Clean PDF is handled by print stylesheet)
-                    window.print();
+                    // Dispatch unified branded PDF report generation
+                    document.dispatchEvent(new CustomEvent('trigger-pdf-report'));
                     onExportComplete?.('pdf');
                     setExporting(null);
                     setIsOpen(false);

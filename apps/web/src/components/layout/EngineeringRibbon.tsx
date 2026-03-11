@@ -820,32 +820,6 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 tooltip="Civil Engineering Design Center"
                 size="large"
               />
-              <ToolButton
-                icon={Mountain}
-                label="Geotech"
-                onClick={() => openModal("geotechnicalDesign")}
-                tooltip="Geotechnical — Bearing Capacity, Settlement, Slope Stability"
-              />
-              <ToolButton
-                icon={Droplets}
-                label="Hydraulics"
-                onClick={() => openModal("hydraulicsDesign")}
-                tooltip="Hydraulics — Open Channel, Pipe Networks, Culverts"
-              />
-            </ToolGroup>
-            <ToolGroup label="Infrastructure">
-              <ToolButton
-                icon={Car}
-                label="Transport"
-                onClick={() => openModal("transportDesign")}
-                tooltip="Transportation — Highway Geometry, Pavement Design, Traffic"
-              />
-              <ToolButton
-                icon={HardHat}
-                label="Construction"
-                onClick={() => openModal("constructionMgmt")}
-                tooltip="Construction Mgmt — CPM/PERT, Gantt, Cost Estimation"
-              />
             </ToolGroup>
             <ToolGroup label="Advanced AI">
               <ToolButton

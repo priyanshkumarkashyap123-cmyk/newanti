@@ -14,7 +14,7 @@
  * - Legal pages (/privacy-policy, /terms, etc.)
  */
 
-import React, { FC, useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
+import React, { FC, useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   PanelLeftClose,
@@ -25,7 +25,6 @@ import {
   Box as BoxIcon,
   ArrowLeft,
   ChevronRight,
-  X,
   Bell,
   User,
 } from 'lucide-react';
@@ -33,9 +32,9 @@ import { UserButton } from '@clerk/clerk-react';
 import { Logo } from '../components/branding';
 import { BreadcrumbNavigation } from '../components/navigation/BreadcrumbNavigation';
 import { FeatureNavigation } from '../components/navigation/FeatureNavigation';
+import { PageFooter } from '../components/layout/PageFooter';
 import { useAuth } from '../providers/AuthProvider';
-import { Dialog, DialogContent } from '../components/ui/dialog';
-import { getRouteTitle, getSearchItems } from '../config/appRouteMeta';
+import { getRouteTitle } from '../config/appRouteMeta';
 import { useNotificationsStore } from '../store/notificationsStore';
 
 // Lazy-load onboarding — only needed on first visit
@@ -71,11 +70,6 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
     }
   });
 
-  // Search modal
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const searchRef = useRef<HTMLInputElement>(null);
-
   // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try {
@@ -96,20 +90,6 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
     });
   }, []);
 
-  // ⌘K shortcut
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen(true);
-        setTimeout(() => searchRef.current?.focus(), 100);
-      }
-      if (e.key === 'Escape') setSearchOpen(false);
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
-
   // Close sidebar on mobile when navigating
   useEffect(() => {
     if (window.innerWidth < 1024) {
@@ -117,8 +97,9 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
     }
   }, [location.pathname]);
 
-  // Filter search results
-  const filteredSearch = getSearchItems(searchQuery);
+  const openGlobalCommandPalette = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('beamlab:open-command-palette'));
+  }, []);
 
   // Handle onboarding completion
   const handleOnboardingComplete = useCallback(() => {
@@ -199,7 +180,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             </Link>
             <button
               type="button"
-              onClick={() => setSearchOpen(true)}
+              onClick={openGlobalCommandPalette}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-blue-600 transition-colors"
               title="Search (⌘K)"
             >
@@ -288,7 +269,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
             {/* Search trigger */}
             <button
               type="button"
-              onClick={() => setSearchOpen(true)}
+              onClick={openGlobalCommandPalette}
               className="flex items-center gap-2 px-3 py-1.5 text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all"
             >
               <Search className="w-4 h-4 flex-shrink-0" />
@@ -337,93 +318,11 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto" id="main-content">
-          {children}
+        <main className="flex-1 overflow-y-auto flex flex-col" id="main-content">
+          <div className="flex-1">{children}</div>
+          <PageFooter />
         </main>
       </div>
-
-      {/* ===================== SEARCH DIALOG ===================== */}
-      <Dialog open={searchOpen} onOpenChange={(open) => !open && setSearchOpen(false)}>
-        <DialogContent className="max-w-xl p-0 gap-0 top-[20%] translate-y-0">
-          <div className="flex items-center gap-3 p-4 border-b border-slate-200 dark:border-slate-800">
-            <Search className="w-5 h-5 text-slate-400 flex-shrink-0" />
-            <input
-              ref={searchRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search pages, features, help..."
-              className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none text-sm"
-              autoFocus
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="p-1 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
-          <div className="max-h-80 overflow-y-auto">
-            {filteredSearch.length > 0 ? (
-              <div className="p-2">
-                {filteredSearch.map((item, i) => (
-                  <button
-                    type="button"
-                    key={i}
-                    className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-                    onClick={() => {
-                      setSearchOpen(false);
-                      setSearchQuery('');
-                      navigate(item.path);
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                          item.type === 'action'
-                            ? 'bg-blue-500'
-                            : item.type === 'page'
-                              ? 'bg-green-500'
-                              : 'bg-purple-500'
-                        }`}
-                      />
-                      <span className="text-sm text-slate-900 dark:text-white">
-                        {item.label}
-                      </span>
-                    </div>
-                    {item.shortcut && (
-                      <kbd className="px-2 py-1 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 rounded">
-                        {item.shortcut}
-                      </kbd>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0" />
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                No results for "{searchQuery}"
-              </div>
-            )}
-          </div>
-
-          <div className="p-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400">
-            <span>
-              <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">↑↓</kbd> Navigate
-            </span>
-            <span>
-              <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">↵</kbd> Open
-            </span>
-            <span>
-              <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">esc</kbd> Close
-            </span>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* ===================== ONBOARDING ===================== */}
       {showOnboarding && (

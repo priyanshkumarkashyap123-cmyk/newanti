@@ -15,7 +15,7 @@ import {
   useMemo,
   useEffect,
   useCallback,
-  useRef,
+  useDeferredValue,
   memo,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -370,6 +370,7 @@ export const UnifiedDashboard: FC<{
 
   const { isSignedIn, user, getToken } = useAuth();
   const userName = isSignedIn && user?.firstName ? user.firstName : "Engineer";
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   // Fetch projects
   const fetchProjects = useCallback(async () => {
@@ -417,11 +418,11 @@ export const UnifiedDashboard: FC<{
       projects.filter((p) => {
         const matchSearch = p.name
           .toLowerCase()
-          .includes(searchQuery.toLowerCase());
+          .includes(deferredSearchQuery.toLowerCase());
         const matchStatus = filterStatus === "all" || p.status === filterStatus;
         return matchSearch && matchStatus;
       }),
-    [searchQuery, filterStatus, projects],
+    [deferredSearchQuery, filterStatus, projects],
   );
 
   // Stats

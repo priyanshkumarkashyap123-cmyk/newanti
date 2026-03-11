@@ -219,7 +219,29 @@ export default function StructuralDesignCenter() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const legacyModuleRouteMap: Partial<Record<DesignModule, string>> = {
+    'rc-beam': '/design/concrete',
+    'rc-column': '/design/concrete',
+    'rc-slab': '/design/concrete',
+    'rc-footing': '/design/foundation',
+    'steel-member': '/design/steel',
+    'steel-connection': '/design/connections',
+    'bar-bending': '/tools/bar-bending',
+    'section-database': '/tools/section-database',
+    'plate-shell': '/analysis/plate-shell',
+    'foundation': '/design/foundation',
+  };
+
   useEffect(() => { document.title = 'Design Center | BeamLab'; }, []);
+
+  useEffect(() => {
+    const legacyModule = searchParams.get('module') as DesignModule | null;
+    if (!legacyModule) return;
+    const canonicalPath = legacyModuleRouteMap[legacyModule];
+    if (canonicalPath) {
+      navigate(canonicalPath, { replace: true });
+    }
+  }, [navigate, searchParams]);
   
   const activeModule = (searchParams.get('module') as DesignModule) || 'dashboard';
   const [sidebarOpen, setSidebarOpen] = useState(true);

@@ -421,17 +421,19 @@ export class UnifiedReportGenerator {
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
     const m = this.margin;
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
     for (let i = 1; i <= totalPages; i += 1) {
       doc.setPage(i);
       doc.setDrawColor(...this.headerColor);
       doc.setLineWidth(0.4);
-      doc.line(m, pageH - 10, pageW - m, pageH - 10);
+      doc.line(m, pageH - 12, pageW - m, pageH - 12);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
       doc.setTextColor(...this.mutedColor);
-      doc.text(projectName, m, pageH - 5);
-      doc.text(`Page ${i} of ${totalPages}`, pageW - m, pageH - 5, { align: 'right' });
+      doc.text(`BeamLab  |  ${projectName}`, m, pageH - 7);
+      doc.text(dateStr, pageW / 2, pageH - 7, { align: 'center' });
+      doc.text(`Page ${i} of ${totalPages}`, pageW - m, pageH - 7, { align: 'right' });
     }
   }
 }

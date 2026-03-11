@@ -44,13 +44,12 @@ export const EngineeringWorkspace: FC<EngineeringWorkspaceProps> = ({
                     </div>
                     <nav className="flex items-center gap-4">
                         {['File', 'Edit', 'View', 'Analyze', 'Design'].map((item) => (
-                            <a
+                            <span
                                 key={item}
-                                href="#"
-                                className="text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                                className="text-xs font-medium text-slate-600 dark:text-slate-300 cursor-default"
                             >
                                 {item}
-                            </a>
+                            </span>
                         ))}
                     </nav>
                 </div>

@@ -96,7 +96,7 @@ export const ROUTES: Record<string, NavRoute> = {
   // RC Design
   RC_BEAM: {
     id: 'rc-beam',
-    path: '/design-center?module=rc-beam',
+    path: '/design/concrete',
     label: 'RC Beam Design',
     shortLabel: 'Beam',
     icon: Box,
@@ -107,7 +107,7 @@ export const ROUTES: Record<string, NavRoute> = {
   },
   RC_COLUMN: {
     id: 'rc-column',
-    path: '/design-center?module=rc-column',
+    path: '/design/concrete',
     label: 'RC Column Design',
     shortLabel: 'Column',
     icon: Columns,
@@ -118,7 +118,7 @@ export const ROUTES: Record<string, NavRoute> = {
   },
   RC_SLAB: {
     id: 'rc-slab',
-    path: '/design-center?module=rc-slab',
+    path: '/design/concrete',
     label: 'RC Slab Design',
     shortLabel: 'Slab',
     icon: Layers,
@@ -129,7 +129,7 @@ export const ROUTES: Record<string, NavRoute> = {
   },
   RC_FOOTING: {
     id: 'rc-footing',
-    path: '/design-center?module=rc-footing',
+    path: '/design/foundation',
     label: 'RC Footing Design',
     shortLabel: 'Footing',
     icon: Mountain,
@@ -178,7 +178,7 @@ export const ROUTES: Record<string, NavRoute> = {
   // Steel Design
   STEEL_MEMBER: {
     id: 'steel-member',
-    path: '/design-center?module=steel-member',
+    path: '/design/steel',
     label: 'Steel Member Design',
     shortLabel: 'Member',
     icon: Ruler,
@@ -190,7 +190,7 @@ export const ROUTES: Record<string, NavRoute> = {
   },
   STEEL_CONNECTION: {
     id: 'steel-connection',
-    path: '/design-center?module=steel-connection',
+    path: '/design/connections',
     label: 'Steel Connections',
     shortLabel: 'Connection',
     icon: Grid3X3,
@@ -202,7 +202,7 @@ export const ROUTES: Record<string, NavRoute> = {
   },
   STEEL_BASE_PLATE: {
     id: 'steel-base-plate',
-    path: '/design-center?module=steel-base-plate',
+    path: '/design/connections',
     label: 'Base Plate Design',
     shortLabel: 'Base Plate',
     icon: Anchor,
@@ -242,7 +242,7 @@ export const ROUTES: Record<string, NavRoute> = {
   // Foundation
   FOUNDATION: {
     id: 'foundation',
-    path: '/design-center?module=foundation',
+    path: '/design/foundation',
     label: 'Foundation Design',
     shortLabel: 'Foundation',
     icon: Mountain,

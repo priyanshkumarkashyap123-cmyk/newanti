@@ -51,4 +51,30 @@ describe('appRouteMeta helpers', () => {
     expect(byLabel.some((item) => item.path === '/design/steel')).toBe(true);
     expect(byPath.some((item) => item.path === '/analysis/modal')).toBe(true);
   });
+
+  it('returns explicit titles for newly hardened routes', () => {
+    expect(getRouteTitle('/design-center')).toBe('Design Center');
+    expect(getRouteTitle('/design-hub')).toBe('Post-Analysis Design Hub');
+    expect(getRouteTitle('/error-report')).toBe('Error Report');
+    expect(getRouteTitle('/account-locked')).toBe('Account Locked');
+  });
+
+  it('returns breadcrumb overrides for post-analysis and diagnostics flows', () => {
+    const designHubCrumbs = getBreadcrumbsForPath('/design-hub');
+    const errorReportCrumbs = getBreadcrumbsForPath('/error-report');
+
+    expect(designHubCrumbs.map((crumb) => crumb.label)).toEqual([
+      'Dashboard',
+      'Design',
+      'Post-Analysis Hub',
+    ]);
+    expect(designHubCrumbs[2]?.current).toBe(true);
+
+    expect(errorReportCrumbs.map((crumb) => crumb.label)).toEqual([
+      'Dashboard',
+      'Diagnostics',
+    ]);
+    expect(errorReportCrumbs[1]?.path).toBe('/error-report');
+    expect(errorReportCrumbs[1]?.current).toBe(true);
+  });
 });

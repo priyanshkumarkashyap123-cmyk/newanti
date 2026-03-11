@@ -191,7 +191,7 @@ const StatCard: React.FC<{
 const ProjectCard: React.FC<{
   project: Project;
   onOpen: () => void;
-  onAnalyze: () => void;
+  onAnalyze?: () => void;
 }> = ({ project, onOpen, onAnalyze }) => {
   const typeIcon = {
     frame: icons.frame,
@@ -259,13 +259,17 @@ const ProjectCard: React.FC<{
         >
           Open
         </button>
-        <div className="w-px bg-slate-200 dark:bg-slate-700" />
-        <button type="button"
-          onClick={onAnalyze}
-          className="flex-1 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-        >
-          Analyze
-        </button>
+        {onAnalyze && (
+          <>
+            <div className="w-px bg-slate-200 dark:bg-slate-700" />
+            <button type="button"
+              onClick={onAnalyze}
+              className="flex-1 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+            >
+              Analyze
+            </button>
+          </>
+        )}
       </div>
     </motion.div>
   );
@@ -496,13 +500,7 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                   onClick={() => onOpenAI?.()}
                   color="from-green-500 to-teal-600"
                 />
-                <QuickActionButton
-                  icon={icons.code}
-                  label="Code Check"
-                  description="Verify design codes"
-                  onClick={() => {}}
-                  color="from-orange-500 to-red-600"
-                />
+
               </div>
             </section>
 
@@ -510,9 +508,6 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Recent Projects</h2>
-                <button type="button" className="text-sm font-medium text-blue-600 hover:text-blue-700">
-                  View All →
-                </button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {projects.slice(0, 4).map(project => (
@@ -520,7 +515,6 @@ export const AdvancedDashboard: React.FC<AdvancedDashboardProps> = ({
                     key={project.id}
                     project={project}
                     onOpen={() => onOpenProject?.(project.id)}
-                    onAnalyze={() => {}}
                   />
                 ))}
               </div>

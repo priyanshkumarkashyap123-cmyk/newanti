@@ -243,7 +243,7 @@ const CODE_COMBINATIONS: Record<DesignCode, { name: string; combinations: Partia
 const LoadCaseCard: React.FC<{
   loadCase: LoadCase;
   onToggle: () => void;
-  onEdit: () => void;
+  onEdit?: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
 }> = ({ loadCase, onToggle, onEdit, onDelete, onDuplicate }) => {
@@ -307,12 +307,14 @@ const LoadCaseCard: React.FC<{
         
         {/* Actions */}
         <div className="flex items-center gap-1">
-          <button type="button"
-            onClick={onEdit}
-            className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-          >
-            <Edit3 className="w-4 h-4" />
-          </button>
+          {onEdit && (
+            <button type="button"
+              onClick={onEdit}
+              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            >
+              <Edit3 className="w-4 h-4" />
+            </button>
+          )}
           <button type="button"
             onClick={onDuplicate}
             className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -715,7 +717,6 @@ export const ModernLoadCombinator: React.FC<{
                     key={loadCase.id}
                     loadCase={loadCase}
                     onToggle={() => toggleLoadCase(loadCase.id)}
-                    onEdit={() => {}}
                     onDelete={() => deleteLoadCase(loadCase.id)}
                     onDuplicate={() => duplicateLoadCase(loadCase.id)}
                   />

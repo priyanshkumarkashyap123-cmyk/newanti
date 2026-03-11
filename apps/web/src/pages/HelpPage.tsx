@@ -14,6 +14,7 @@ import {
 import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
 import { SEO } from '../components/SEO';
+import { PageFooter } from '../components/layout/PageFooter';
 
 // ============================================
 // TYPES & DATA
@@ -329,17 +330,7 @@ export const HelpPage = () => {
                 </div>
             </main>
 
-            {/* Footer - Dark Theme */}
-            <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
-                    <p>© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
-                    <div className="flex gap-6">
-                        <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>
-                        <Link to="/help" className="hover:text-slate-900 dark:hover:text-white transition-colors">Status</Link>
-                    </div>
-                </div>
-            </footer>
+            <PageFooter />
         </div>
     );
 };

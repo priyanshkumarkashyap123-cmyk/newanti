@@ -18,8 +18,9 @@
  *       + client-side SteelDesignService / ConcreteDesignService as fallback
  */
 
-import React, { FC, useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { FC, useState, useMemo, useCallback, useEffect, memo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2, XCircle, AlertTriangle, ChevronRight,
@@ -29,10 +30,11 @@ import {
   Shield, Award, Cpu, Wrench,
   Target, TrendingUp, Copy, ArrowRight
 } from 'lucide-react';
-import { useModelStore, hydrateAnalysisResults, type Member, type Node as ModelNode, type AnalysisResults, type MemberForceData } from '../store/model';
+import { VirtualTable } from '../components/ui/VirtualScroll';
+import { useModelStore, hydrateAnalysisResults, type Member, type Node as ModelNode, type AnalysisResults, type MemberForceData, type Plate as ModelPlate } from '../store/model';
 import {
   designSteelMember, designConcreteBeam, designConcreteColumn,
-  designConnection, designFoundation,
+  designConnection, designFoundation, designSlabIS456,
   type SteelDesignRequest, type SteelDesignResult,
   type ConcreteBeamRequest, type ConcreteBeamResult,
   type ConcreteColumnRequest, type ConcreteColumnResult,
@@ -50,7 +52,7 @@ import { Input, Select } from '../components/ui/FormInputs';
 // TYPES
 // ================================================================
 
-type DesignTab = 'overview' | 'steel' | 'concrete' | 'connections' | 'foundations' | 'optimization' | 'detailing' | 'report';
+type DesignTab = 'overview' | 'steel' | 'concrete' | 'slabs' | 'connections' | 'foundations' | 'optimization' | 'detailing' | 'report';
 
 interface DesignCodeOption {
   id: string;
@@ -86,6 +88,18 @@ interface MemberRow {
   maxMomentZ: number;
   selected: boolean;
   designResult: MemberDesignResult | null;
+}
+
+interface SlabDesignRecord {
+  plateId: string;
+  label: string;
+  lx: number;
+  ly: number;
+  area: number;
+  existingThicknessMm: number;
+  recommendedThicknessMm: number;
+  utilizationRatio: number;
+  result: Awaited<ReturnType<typeof designSlabIS456>>;
 }
 
 interface DesignParameters {
@@ -581,6 +595,67 @@ function formatForce(v: number): string {
   return v.toFixed(2);
 }
 
+function parseConcreteSection(section: string): { widthMm: number; depthMm: number } | null {
+  const match = section.match(/(?:RC)?\s*(\d+)\s*[x×]\s*(\d+)/i);
+  if (!match) return null;
+  return { widthMm: Number(match[1]), depthMm: Number(match[2]) };
+}
+
+function getConcreteSectionLabel(widthMm: number, depthMm: number): string {
+  return `RC ${widthMm}×${depthMm}`;
+}
+
+function getRectangleSectionProperties(widthMm: number, depthMm: number) {
+  const widthM = widthMm / 1000;
+  const depthM = depthMm / 1000;
+  return {
+    A: widthM * depthM,
+    Imajor: (widthM * depthM ** 3) / 12,
+    Iminor: (depthM * widthM ** 3) / 12,
+  };
+}
+
+function getPlatePlanDimensions(plate: ModelPlate, nodes: Map<string, ModelNode>) {
+  const coords = plate.nodeIds
+    .map((nodeId) => nodes.get(nodeId))
+    .filter((node): node is ModelNode => Boolean(node));
+
+  if (coords.length < 4) {
+    return { lx: 0, ly: 0, area: 0 };
+  }
+
+  const xs = coords.map((node) => node.x);
+  const zs = coords.map((node) => node.z);
+  const spanX = Math.max(...xs) - Math.min(...xs);
+  const spanZ = Math.max(...zs) - Math.min(...zs);
+  const lx = Math.min(spanX, spanZ);
+  const ly = Math.max(spanX, spanZ);
+
+  return {
+    lx,
+    ly,
+    area: spanX * spanZ,
+  };
+}
+
+function getSlabUtilization(result: Awaited<ReturnType<typeof designSlabIS456>>): number {
+  const flexureRatio = result.Mu_demand / Math.max(result.Mu_capacity, 1e-6);
+  const deflectionRatio = result.deflection_check / Math.max(result.deflection_limit, 1e-6);
+  return Math.max(flexureRatio, deflectionRatio);
+}
+
+function estimateOptimizedSlabThickness(
+  baseThicknessMm: number,
+  result: Awaited<ReturnType<typeof designSlabIS456>>,
+  targetRatio: number,
+): number {
+  const flexureRatio = result.Mu_demand / Math.max(result.Mu_capacity, 1e-6);
+  const deflectionRatio = result.deflection_check / Math.max(result.deflection_limit, 1e-6);
+  const flexureThickness = baseThicknessMm * Math.sqrt(Math.max(flexureRatio, 0.05) / targetRatio);
+  const deflectionThickness = baseThicknessMm * Math.cbrt(Math.max(deflectionRatio, 0.05) / targetRatio);
+  return Math.max(100, Math.ceil(Math.max(flexureThickness, deflectionThickness) / 5) * 5);
+}
+
 // ================================================================
 // SUB-COMPONENTS
 // ================================================================
@@ -651,92 +726,136 @@ const MemberDesignTable: FC<{
   onSelectAll: (selected: boolean) => void;
   onViewDetail: (id: string) => void;
   searchQuery: string;
-}> = ({ rows, onToggleSelect, onSelectAll, onViewDetail, searchQuery }) => {
+  sectionOverrides?: Record<string, string>;
+}> = ({ rows, onToggleSelect, onSelectAll, onViewDetail, searchQuery, sectionOverrides = {} }) => {
   const filtered = useMemo(() => {
     if (!searchQuery) return rows;
     const q = searchQuery.toLowerCase();
-    return rows.filter(r => r.label.toLowerCase().includes(q) || r.sectionName.toLowerCase().includes(q));
-  }, [rows, searchQuery]);
+    return rows.filter(r => {
+      const displaySection = (r.designResult?.section || sectionOverrides[r.id] || r.sectionName || '').toLowerCase();
+      return r.label.toLowerCase().includes(q) || displaySection.includes(q);
+    });
+  }, [rows, searchQuery, sectionOverrides]);
 
   const allSelected = filtered.length > 0 && filtered.every(r => r.selected);
 
+  const tableRows = useMemo(() => filtered.map((row) => {
+    const dr = row.designResult;
+    return {
+      ...row,
+      displaySection: dr?.section || sectionOverrides[row.id] || row.sectionName,
+      utilizationText: dr ? `${(dr.utilizationRatio * 100).toFixed(0)}%` : '—',
+    };
+  }), [filtered, sectionOverrides]);
+
+  const columns = useMemo(() => [
+    {
+      key: 'select',
+      header: (
+        <input
+          type="checkbox"
+          checked={allSelected}
+          onChange={() => onSelectAll(!allSelected)}
+          className="rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
+        />
+      ),
+      width: 48,
+      render: (row: typeof tableRows[number]) => (
+        <input
+          type="checkbox"
+          checked={row.selected}
+          onChange={() => onToggleSelect(row.id)}
+          className="rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
+        />
+      ),
+    },
+    {
+      key: 'member',
+      header: 'Member',
+      width: 120,
+      render: (row: typeof tableRows[number]) => <span className="font-medium text-slate-700 dark:text-slate-200">{row.label}</span>,
+    },
+    {
+      key: 'section',
+      header: 'Section',
+      width: 150,
+      render: (row: typeof tableRows[number]) => <span className="text-slate-600 dark:text-slate-400 font-mono text-xs">{row.displaySection || '—'}</span>,
+    },
+    {
+      key: 'length',
+      header: 'Length (m)',
+      width: 110,
+      render: (row: typeof tableRows[number]) => <span className="text-right block font-mono text-slate-700 dark:text-slate-300">{row.length.toFixed(3)}</span>,
+    },
+    {
+      key: 'axial',
+      header: 'Axial (kN)',
+      width: 110,
+      render: (row: typeof tableRows[number]) => <span className="text-right block font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxAxial)}</span>,
+    },
+    {
+      key: 'shear',
+      header: 'Shear (kN)',
+      width: 110,
+      render: (row: typeof tableRows[number]) => <span className="text-right block font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxShearY)}</span>,
+    },
+    {
+      key: 'moment',
+      header: 'Moment (kN·m)',
+      width: 130,
+      render: (row: typeof tableRows[number]) => <span className="text-right block font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxMomentZ)}</span>,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: 90,
+      render: (row: typeof tableRows[number]) => (
+        <div className="flex justify-center">{row.designResult ? statusIcon(row.designResult.status) : <div className="w-4 h-4 rounded-full border-2 border-slate-300 dark:border-slate-700" />}</div>
+      ),
+    },
+    {
+      key: 'utilization',
+      header: 'Utilization',
+      width: 170,
+      render: (row: typeof tableRows[number]) => (
+        row.designResult ? (
+          <div className="flex items-center gap-2">
+            <div className="flex-1"><UtilizationBar ratio={row.designResult.utilizationRatio} /></div>
+            <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(row.designResult.utilizationRatio)}`}>{row.utilizationText}</span>
+          </div>
+        ) : <span className="text-xs text-slate-600">—</span>
+      ),
+    },
+    {
+      key: 'detail',
+      header: '',
+      width: 60,
+      render: (row: typeof tableRows[number]) => (
+        row.designResult ? (
+          <button type="button"
+            onClick={() => onViewDetail(row.id)}
+            className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors"
+            title="View detailed checks"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+        ) : null
+      ),
+    },
+  ], [allSelected, onSelectAll, onToggleSelect, onViewDetail, tableRows]);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
-            <th className="py-3 px-2 text-left w-10">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={() => onSelectAll(!allSelected)}
-                className="rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
-              />
-            </th>
-            <th className="py-3 px-2 text-left">Member</th>
-            <th className="py-3 px-2 text-left">Section</th>
-            <th className="py-3 px-2 text-right">Length (m)</th>
-            <th className="py-3 px-2 text-right">Axial (kN)</th>
-            <th className="py-3 px-2 text-right">Shear (kN)</th>
-            <th className="py-3 px-2 text-right">Moment (kN·m)</th>
-            <th className="py-3 px-2 text-center w-20">Status</th>
-            <th className="py-3 px-2 text-left w-40">Utilization</th>
-            <th className="py-3 px-2 text-center w-16"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map(row => {
-            const dr = row.designResult;
-            return (
-              <tr
-                key={row.id}
-                className={`border-b border-slate-200 dark:border-slate-800/50 hover:bg-slate-100 dark:bg-slate-800/30 transition-colors ${row.selected ? 'bg-blue-500/5' : ''}`}
-              >
-                <td className="py-2 px-2">
-                  <input
-                    type="checkbox"
-                    checked={row.selected}
-                    onChange={() => onToggleSelect(row.id)}
-                    className="rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-blue-500 focus:ring-blue-500"
-                  />
-                </td>
-                <td className="py-2 px-2 font-medium text-slate-700 dark:text-slate-200">{row.label}</td>
-                <td className="py-2 px-2 text-slate-600 dark:text-slate-400 font-mono text-xs">{row.sectionName || '—'}</td>
-                <td className="py-2 px-2 text-right text-slate-700 dark:text-slate-300 font-mono">{row.length.toFixed(3)}</td>
-                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxAxial)}</td>
-                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxShearY)}</td>
-                <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{formatForce(row.maxMomentZ)}</td>
-                <td className="py-2 px-2 text-center">
-                  {dr ? statusIcon(dr.status) : <div className="w-4 h-4 rounded-full border-2 border-slate-300 dark:border-slate-700 mx-auto" />}
-                </td>
-                <td className="py-2 px-2">
-                  {dr ? (
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1"><UtilizationBar ratio={dr.utilizationRatio} /></div>
-                      <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(dr.utilizationRatio)}`}>
-                        {(dr.utilizationRatio * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-slate-600">—</span>
-                  )}
-                </td>
-                <td className="py-2 px-2 text-center">
-                  {dr && (
-                    <button type="button"
-                      onClick={() => onViewDetail(row.id)}
-                      className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 hover:text-blue-400 transition-colors"
-                      title="View detailed checks"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="h-[520px]">
+      <VirtualTable
+        items={tableRows}
+        columns={columns}
+        rowHeight={42}
+        headerHeight={44}
+        overscan={12}
+        className="h-full"
+        getRowKey={(row) => row.id}
+        onRowClick={(row) => onToggleSelect(row.id)}
+      />
       {filtered.length === 0 && (
         <div className="py-12 text-center text-slate-500">
           No members found. {searchQuery ? 'Try adjusting your search.' : 'Run analysis first.'}
@@ -1498,6 +1617,7 @@ const FoundationDesignTab: FC<{
 // ================================================================
 
 const PostAnalysisDesignHub: FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<DesignTab>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
@@ -1510,6 +1630,17 @@ const PostAnalysisDesignHub: FC = () => {
   const [preOptWeight, setPreOptWeight] = useState<number | null>(null);
   const [concreteSection, setConcreteSection] = useState({ width: 300, depth: 500, cover: 40 });
   const [concreteDesignResults, setConcreteDesignResults] = useState<Map<string, ConcreteDesignOutput>>(new Map());
+  const [memberTargetUtilization, setMemberTargetUtilization] = useState<Record<string, number>>({});
+  const [memberSectionOverrides, setMemberSectionOverrides] = useState<Record<string, string>>({});
+  const [reportTemplate, setReportTemplate] = useState<'professional' | 'studio' | 'quick'>('professional');
+  const [slabDesignResults, setSlabDesignResults] = useState<Map<string, SlabDesignRecord>>(new Map());
+  const [isDesigningSlabs, setIsDesigningSlabs] = useState(false);
+  const [slabParams, setSlabParams] = useState({
+    liveLoad: 3,
+    floorFinish: 1,
+    supportType: 'continuous',
+    edgeConditions: 'all_continuous',
+  });
 
   const [params, setParams] = useState<DesignParameters>({
     steelCode: 'IS800',
@@ -1532,11 +1663,28 @@ const PostAnalysisDesignHub: FC = () => {
     return () => { document.title = 'BeamLab'; };
   }, []);
 
-  // Read from model store
-  const nodes = useModelStore(s => s.nodes);
-  const members = useModelStore(s => s.members);
-  const analysisResults = useModelStore(s => s.analysisResults);
-  const projectInfo = useModelStore(s => s.projectInfo);
+  // Read from model store (batched shallow subscription for fewer re-renders)
+  const {
+    nodes,
+    members,
+    plates,
+    floorLoads,
+    analysisResults,
+    projectInfo,
+    updateMember,
+    updatePlate,
+  } = useModelStore(
+    useShallow((s) => ({
+      nodes: s.nodes,
+      members: s.members,
+      plates: s.plates,
+      floorLoads: s.floorLoads,
+      analysisResults: s.analysisResults,
+      projectInfo: s.projectInfo,
+      updateMember: s.updateMember,
+      updatePlate: s.updatePlate,
+    })),
+  );
 
   // Hydrate from sessionStorage if in-memory results are missing (page was
   // refreshed or hard-navigated).  This runs once on mount.
@@ -1591,6 +1739,21 @@ const PostAnalysisDesignHub: FC = () => {
       designResult: designResults.get(r.id) ?? null,
     })),
   [baseMemberRows, selectedMemberIds, designResults]);
+
+  const slabRows = useMemo(() => {
+    const rows = Array.from(plates.values()).map((plate) => {
+      const { lx, ly, area } = getPlatePlanDimensions(plate, nodes);
+      return {
+        id: plate.id,
+        label: `Slab ${plate.id}`,
+        lx,
+        ly,
+        area,
+        thicknessMm: Math.round(plate.thickness * 1000),
+      };
+    });
+    return rows.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+  }, [plates, nodes]);
 
   // Stats — memoized to avoid iterating Map on every render
   const { totalMembers, designedCount, passCount, failCount, maxUtilization } = useMemo(() => {
@@ -1827,9 +1990,24 @@ const PostAnalysisDesignHub: FC = () => {
   const [targetUtilization, setTargetUtilization] = useState(0.85);
   const [optimizationMaterial, setOptimizationMaterial] = useState<'steel' | 'concrete'>('steel');
 
+  const setMemberTarget = useCallback((memberId: string, value: number) => {
+    setMemberTargetUtilization(prev => ({ ...prev, [memberId]: value }));
+  }, []);
+
+  const setMemberSectionOverride = useCallback((memberId: string, value: string) => {
+    setMemberSectionOverrides(prev => {
+      if (!value) {
+        const next = { ...prev };
+        delete next[memberId];
+        return next;
+      }
+      return { ...prev, [memberId]: value };
+    });
+  }, []);
+
   // CONCRETE OPTIMIZATION — sweep RC section database
   const runConcreteOptimization = useCallback(async () => {
-    if (concreteDesignResults.size === 0 && designResults.size === 0) return;
+    if (memberRows.length === 0) return;
     setIsOptimizing(true);
 
     const rcWeightMap = new Map(RC_BEAM_SECTIONS.map(s => [s.name, s.weightPerM]));
@@ -1847,18 +2025,28 @@ const PostAnalysisDesignHub: FC = () => {
 
     const sectionsByArea = [...RC_BEAM_SECTIONS].sort((a, b) => a.area - b.area);
 
+    const targetRows = selectedMemberIds.size > 0
+      ? memberRows.filter(row => selectedMemberIds.has(row.id))
+      : memberRows;
+
     const newConcreteResults = new Map(concreteDesignResults);
     // Also update the main designResults map so optimization table shows results
     const newResults = new Map(designResults);
 
-    for (const row of memberRows) {
+    for (const row of targetRows) {
+      const memberTarget = memberTargetUtilization[row.id] ?? target;
+      const overrideSectionName = memberSectionOverrides[row.id];
+      const overrideSection = overrideSectionName
+        ? sectionsByArea.find(section => section.name === overrideSectionName || `${section.b}×${section.d}` === overrideSectionName || getConcreteSectionLabel(section.b, section.d) === overrideSectionName)
+        : null;
       let bestSection: RcSectionDef | null = null;
       let bestResult: ConcreteDesignOutput | null = null;
 
-      for (const trySection of sectionsByArea) {
-        const cResult = clientSideDesignConcreteBeam({
-          width: trySection.b,
-          depth: trySection.d,
+      if (overrideSection) {
+        bestSection = overrideSection;
+        bestResult = clientSideDesignConcreteBeam({
+          width: overrideSection.b,
+          depth: overrideSection.d,
           cover: concreteSection.cover,
           fck: concreteGrade.fck,
           fy: rebarGrade.fy,
@@ -1867,11 +2055,27 @@ const PostAnalysisDesignHub: FC = () => {
           Nu: row.maxAxial,
           code: designCode as 'IS456' | 'ACI318',
         });
+      }
 
-        if (cResult.status === 'PASS' && cResult.utilizationRatio <= target) {
-          bestSection = trySection;
-          bestResult = cResult;
-          break;
+      if (!overrideSection) {
+        for (const trySection of sectionsByArea) {
+          const cResult = clientSideDesignConcreteBeam({
+            width: trySection.b,
+            depth: trySection.d,
+            cover: concreteSection.cover,
+            fck: concreteGrade.fck,
+            fy: rebarGrade.fy,
+            Mu: row.maxMomentZ,
+            Vu: row.maxShearY,
+            Nu: row.maxAxial,
+            code: designCode as 'IS456' | 'ACI318',
+          });
+
+          if (cResult.status === 'PASS' && cResult.utilizationRatio <= memberTarget) {
+            bestSection = trySection;
+            bestResult = cResult;
+            break;
+          }
         }
       }
 
@@ -1904,7 +2108,7 @@ const PostAnalysisDesignHub: FC = () => {
           memberId: row.id,
           memberName: row.label,
           code: params.concreteCode,
-          section: `${bestSection.b}×${bestSection.d}`,
+          section: getConcreteSectionLabel(bestSection.b, bestSection.d),
           utilizationRatio: bestResult.utilizationRatio,
           status: bestResult.status,
           governingCheck: bestResult.governingCheck,
@@ -1923,7 +2127,7 @@ const PostAnalysisDesignHub: FC = () => {
     setConcreteDesignResults(newConcreteResults);
     setDesignResults(newResults);
     setIsOptimizing(false);
-  }, [concreteDesignResults, designResults, memberRows, params, concreteSection, targetUtilization]);
+  }, [concreteDesignResults, designResults, memberRows, params, concreteSection, targetUtilization, selectedMemberIds, memberTargetUtilization, memberSectionOverrides]);
 
   const runOptimization = useCallback(async () => {
     if (designResults.size === 0) return;
@@ -2035,12 +2239,90 @@ const PostAnalysisDesignHub: FC = () => {
     return runOptimization();
   }, [optimizationMaterial, runConcreteOptimization, runOptimization]);
 
+  const applyConcreteOptimizedSections = useCallback(() => {
+    const targetRows = selectedMemberIds.size > 0
+      ? memberRows.filter(row => selectedMemberIds.has(row.id))
+      : memberRows;
+
+    targetRows.forEach((row) => {
+      const result = designResults.get(row.id);
+      const dims = result ? parseConcreteSection(result.section) : null;
+      if (!dims) return;
+
+      const properties = getRectangleSectionProperties(dims.widthMm, dims.depthMm);
+      updateMember(row.id, {
+        sectionId: getConcreteSectionLabel(dims.widthMm, dims.depthMm),
+        sectionType: 'RECTANGLE',
+        dimensions: {
+          rectWidth: dims.widthMm / 1000,
+          rectHeight: dims.depthMm / 1000,
+        },
+        A: properties.A,
+        I: properties.Imajor,
+        Iy: properties.Iminor,
+        Iz: properties.Imajor,
+      });
+    });
+  }, [selectedMemberIds, memberRows, designResults, updateMember]);
+
+  const runSlabDesignWorkflow = useCallback(async (optimizeToTarget: boolean) => {
+    if (slabRows.length === 0) return;
+    setIsDesigningSlabs(true);
+
+    const concreteGrade = CONCRETE_GRADES.find(g => g.name === params.concreteGrade) ?? CONCRETE_GRADES[0];
+    const rebarGrade = REBAR_GRADES.find(g => g.name === params.rebarGrade) ?? REBAR_GRADES[0];
+    const areaLoadIntensity = floorLoads.reduce((max, load) => Math.max(max, Math.abs(load.pressure || 0)), 0);
+    const liveLoad = Math.max(slabParams.liveLoad, areaLoadIntensity || 0);
+    const nextResults = new Map<string, SlabDesignRecord>();
+
+    for (const slab of slabRows) {
+      if (slab.lx <= 0) continue;
+
+      const result = await designSlabIS456({
+        lx: slab.lx,
+        ly: slab.ly > slab.lx ? slab.ly : undefined,
+        live_load: liveLoad,
+        floor_finish: slabParams.floorFinish,
+        support_type: slabParams.supportType,
+        edge_conditions: slabParams.edgeConditions,
+        fck: concreteGrade.fck,
+        fy: rebarGrade.fy,
+      });
+
+      const recommendedThicknessMm = optimizeToTarget
+        ? estimateOptimizedSlabThickness(result.thickness, result, targetUtilization)
+        : result.thickness;
+
+      nextResults.set(slab.id, {
+        plateId: slab.id,
+        label: slab.label,
+        lx: slab.lx,
+        ly: slab.ly,
+        area: slab.area,
+        existingThicknessMm: slab.thicknessMm,
+        recommendedThicknessMm,
+        utilizationRatio: getSlabUtilization(result),
+        result,
+      });
+    }
+
+    setSlabDesignResults(nextResults);
+    setIsDesigningSlabs(false);
+  }, [slabRows, params.concreteGrade, params.rebarGrade, floorLoads, slabParams, targetUtilization]);
+
+  const applySlabOptimizedThickness = useCallback(() => {
+    slabDesignResults.forEach((record, plateId) => {
+      updatePlate(plateId, { thickness: record.recommendedThicknessMm / 1000 });
+    });
+  }, [slabDesignResults, updatePlate]);
+
   // Memoized weight (avoids O(N×M) find per render)
   const totalWeight = useMemo(() => {
+    const rcWeightMap = new Map([...RC_BEAM_SECTIONS, ...RC_COLUMN_SECTIONS].map(s => [getConcreteSectionLabel(s.b, s.d), s.weightPerM]));
     const weightMap = new Map(STEEL_SECTIONS.map(s => [s.designation, s.weight]));
     return memberRows.reduce((acc, row) => {
       const sec = designResults.get(row.id)?.section || assignedSection;
-      return acc + (weightMap.get(sec) ?? 25) * row.length;
+      return acc + (weightMap.get(sec) ?? rcWeightMap.get(sec) ?? 25) * row.length;
     }, 0);
   }, [memberRows, designResults, assignedSection]);
 
@@ -2049,6 +2331,7 @@ const PostAnalysisDesignHub: FC = () => {
     { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
     { id: 'steel', label: 'Steel Design', icon: <Columns className="w-4 h-4" /> },
     { id: 'concrete', label: 'Concrete Design', icon: <Building2 className="w-4 h-4" /> },
+    { id: 'slabs', label: 'Slabs', icon: <Box className="w-4 h-4" /> },
     { id: 'connections', label: 'Connections', icon: <Wrench className="w-4 h-4" /> },
     { id: 'foundations', label: 'Foundations', icon: <Layers className="w-4 h-4" /> },
     { id: 'optimization', label: 'Optimization', icon: <Zap className="w-4 h-4" /> },
@@ -2182,6 +2465,12 @@ const PostAnalysisDesignHub: FC = () => {
                   <h3 className="font-semibold text-white">Optimize Sections</h3>
                   <p className="text-sm text-slate-900/70 dark:text-white/70">Find lightest passing</p>
                 </button>
+                <button type="button" onClick={() => setActiveTab('slabs')}
+                  className="bg-gradient-to-br from-teal-600 to-teal-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
+                  <Box className="w-6 h-6 text-white mb-2" />
+                  <h3 className="font-semibold text-white">Design Slabs</h3>
+                  <p className="text-sm text-slate-900/70 dark:text-white/70">Integrated slab design & sizing</p>
+                </button>
               </div>
             </div>
 
@@ -2207,6 +2496,7 @@ const PostAnalysisDesignHub: FC = () => {
                   onSelectAll={selectAll}
                   onViewDetail={setDetailMemberId}
                   searchQuery={searchQuery}
+                  sectionOverrides={memberSectionOverrides}
                 />
               </div>
               )}
@@ -2314,6 +2604,7 @@ const PostAnalysisDesignHub: FC = () => {
                     onSelectAll={selectAll}
                     onViewDetail={setDetailMemberId}
                     searchQuery={searchQuery}
+                    sectionOverrides={memberSectionOverrides}
                   />
                 </div>
               </div>
@@ -2476,9 +2767,165 @@ const PostAnalysisDesignHub: FC = () => {
                       onSelectAll={selectAll}
                       onViewDetail={setDetailMemberId}
                       searchQuery={searchQuery}
+                      sectionOverrides={memberSectionOverrides}
                     />
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========== SLABS TAB ========== */}
+        {activeTab === 'slabs' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="space-y-4">
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Box className="w-4 h-4 text-teal-400" />
+                    Slab Design Inputs
+                  </h3>
+                  <Input
+                    label="Live Load (kN/m²)"
+                    type="number"
+                    value={slabParams.liveLoad}
+                    onChange={e => setSlabParams(prev => ({ ...prev, liveLoad: Number(e.target.value) || 0 }))}
+                  />
+                  <Input
+                    label="Floor Finish (kN/m²)"
+                    type="number"
+                    value={slabParams.floorFinish}
+                    onChange={e => setSlabParams(prev => ({ ...prev, floorFinish: Number(e.target.value) || 0 }))}
+                  />
+                  <Select
+                    label="Support Type"
+                    value={slabParams.supportType}
+                    onChange={(value) => setSlabParams(prev => ({ ...prev, supportType: value }))}
+                    options={[
+                      { value: 'simple', label: 'Simply supported' },
+                      { value: 'continuous', label: 'Continuous' },
+                      { value: 'cantilever', label: 'Cantilever' },
+                    ]}
+                  />
+                  <Select
+                    label="Edge Conditions"
+                    value={slabParams.edgeConditions}
+                    onChange={(value) => setSlabParams(prev => ({ ...prev, edgeConditions: value }))}
+                    options={[
+                      { value: 'all_simple', label: 'All edges simple' },
+                      { value: 'all_continuous', label: 'All edges continuous' },
+                      { value: 'interior', label: 'Interior panel' },
+                      { value: 'corner', label: 'Corner panel' },
+                    ]}
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() => void runSlabDesignWorkflow(false)}
+                  disabled={isDesigningSlabs || slabRows.length === 0}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isDesigningSlabs ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Shield className="w-5 h-5" />}
+                  Design Slabs
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => void runSlabDesignWorkflow(true)}
+                  disabled={isDesigningSlabs || slabRows.length === 0}
+                  className="w-full"
+                  variant="premium"
+                  size="lg"
+                >
+                  {isDesigningSlabs ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                  Optimize Slab Thickness
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={applySlabOptimizedThickness}
+                  disabled={slabDesignResults.size === 0}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Download className="w-4 h-4" />
+                  Apply Thickness to Model
+                </Button>
+
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-sm text-slate-600 dark:text-slate-400">
+                  <p className="font-semibold text-slate-900 dark:text-white mb-2">Integrated workflow</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Uses plate panels already present in the model.</li>
+                    <li>Designs one-way/two-way slabs from panel spans.</li>
+                    <li>Optimization nudges thickness toward the selected target utilization.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="lg:col-span-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Integrated Slab Design & Optimization</h2>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+                    {slabRows.length} slab panel{slabRows.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                          <th className="py-3 px-2 text-left">Panel</th>
+                          <th className="py-3 px-2 text-right">Short Span (m)</th>
+                          <th className="py-3 px-2 text-right">Long Span (m)</th>
+                          <th className="py-3 px-2 text-right">Area (m²)</th>
+                          <th className="py-3 px-2 text-right">Current t (mm)</th>
+                          <th className="py-3 px-2 text-right">Recommended t (mm)</th>
+                          <th className="py-3 px-2 text-left">Main Reinforcement</th>
+                          <th className="py-3 px-2 text-left w-40">Utilization</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {slabRows.map((slab) => {
+                          const record = slabDesignResults.get(slab.id);
+                          return (
+                            <tr key={slab.id} className="border-b border-slate-200 dark:border-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/30">
+                              <td className="py-2 px-2 font-medium text-slate-700 dark:text-slate-200">{slab.label}</td>
+                              <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{slab.lx.toFixed(2)}</td>
+                              <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{slab.ly.toFixed(2)}</td>
+                              <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{slab.area.toFixed(2)}</td>
+                              <td className="py-2 px-2 text-right font-mono text-slate-700 dark:text-slate-300">{slab.thicknessMm}</td>
+                              <td className="py-2 px-2 text-right font-mono text-teal-500">{record?.recommendedThicknessMm ?? '—'}</td>
+                              <td className="py-2 px-2 text-slate-600 dark:text-slate-400 font-mono text-xs">
+                                {record ? `${record.result.main_reinforcement.diameter}Ø @ ${record.result.main_reinforcement.spacing} mm` : '—'}
+                              </td>
+                              <td className="py-2 px-2">
+                                {record ? (
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1"><UtilizationBar ratio={record.utilizationRatio} /></div>
+                                    <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(record.utilizationRatio)}`}>
+                                      {(record.utilizationRatio * 100).toFixed(0)}%
+                                    </span>
+                                  </div>
+                                ) : <span className="text-xs text-slate-500">Run slab design</span>}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {slabRows.length === 0 && (
+                          <tr>
+                            <td colSpan={8} className="py-10 text-center text-slate-500">
+                              No slab/plate panels found in the model.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2657,7 +3104,98 @@ const PostAnalysisDesignHub: FC = () => {
                     onSelectAll={selectAll}
                     onViewDetail={setDetailMemberId}
                     searchQuery=""
+                    sectionOverrides={memberSectionOverrides}
                   />
+                </div>
+              </div>
+            )}
+
+            {optimizationMaterial === 'concrete' && memberRows.length > 0 && (
+              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 space-y-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">RCC target utilization & section overrides</h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Global target updates all RCC members; override individual targets or lock a specific section where needed.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={applyConcreteOptimizedSections}
+                    disabled={designResults.size === 0}
+                    variant="outline"
+                  >
+                    <Download className="w-4 h-4" />
+                    Apply optimized RCC sections to model
+                  </Button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                        <th className="py-3 px-2 text-left">Member</th>
+                        <th className="py-3 px-2 text-left">Current / optimized</th>
+                        <th className="py-3 px-2 text-right">Global target</th>
+                        <th className="py-3 px-2 text-right">Member target</th>
+                        <th className="py-3 px-2 text-left">Section override</th>
+                        <th className="py-3 px-2 text-left w-40">Utilization</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {memberRows.map((row) => {
+                        const optimized = designResults.get(row.id);
+                        const memberTarget = memberTargetUtilization[row.id] ?? targetUtilization;
+                        return (
+                          <tr key={row.id} className="border-b border-slate-200 dark:border-slate-800/50">
+                            <td className="py-2 px-2 font-medium text-slate-700 dark:text-slate-200">{row.label}</td>
+                            <td className="py-2 px-2 font-mono text-xs text-slate-600 dark:text-slate-400">
+                              <div>{row.sectionName || '—'}</div>
+                              <div className="text-emerald-500">{optimized?.section || memberSectionOverrides[row.id] || 'Awaiting optimization'}</div>
+                            </td>
+                            <td className="py-2 px-2 text-right font-mono text-slate-500">{targetUtilization.toFixed(2)}</td>
+                            <td className="py-2 px-2 text-right">
+                              <input
+                                type="number"
+                                min="0.50"
+                                max="0.99"
+                                step="0.01"
+                                value={memberTarget}
+                                onChange={(e) => {
+                                  const value = parseFloat(e.target.value);
+                                  if (!Number.isNaN(value) && value >= 0.5 && value <= 0.99) setMemberTarget(row.id, value);
+                                }}
+                                className="w-24 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-right text-slate-900 dark:text-white"
+                              />
+                            </td>
+                            <td className="py-2 px-2">
+                              <select
+                                value={memberSectionOverrides[row.id] || ''}
+                                onChange={(e) => setMemberSectionOverride(row.id, e.target.value)}
+                                className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-slate-900 dark:text-white"
+                              >
+                                <option value="">Auto-select lightest passing</option>
+                                {RC_BEAM_SECTIONS.map((section) => {
+                                  const label = getConcreteSectionLabel(section.b, section.d);
+                                  return <option key={section.name} value={label}>{label}</option>;
+                                })}
+                              </select>
+                            </td>
+                            <td className="py-2 px-2">
+                              {optimized ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1"><UtilizationBar ratio={optimized.utilizationRatio} /></div>
+                                  <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(optimized.utilizationRatio)}`}>
+                                    {(optimized.utilizationRatio * 100).toFixed(0)}%
+                                  </span>
+                                </div>
+                              ) : <span className="text-xs text-slate-500">Run RCC optimization</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             )}
@@ -2750,6 +3288,40 @@ const PostAnalysisDesignHub: FC = () => {
                 <FileText className="w-5 h-5 text-blue-400" />
                 Design Report
               </h2>
+
+              <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Report template</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                    The professional template is now the default again. Pick a richer report path first, and only fall back to the quick exporter if you just need a fast snapshot.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {[
+                      { id: 'professional', label: 'Professional', desc: 'Rich report view with polished document layout' },
+                      { id: 'studio', label: 'Report Studio', desc: 'Template selection and report dashboard' },
+                      { id: 'quick', label: 'Quick Export', desc: 'Fast current-session PDF export' },
+                    ].map((template) => (
+                      <button
+                        type="button"
+                        key={template.id}
+                        onClick={() => setReportTemplate(template.id as 'professional' | 'studio' | 'quick')}
+                        className={`text-left rounded-lg border p-3 transition-colors ${reportTemplate === template.id ? 'border-blue-500 bg-blue-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-400'}`}
+                      >
+                        <div className="font-semibold text-slate-900 dark:text-white">{template.label}</div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">{template.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Default actions</h3>
+                  <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                    <div>• Professional report opens the richer document experience.</div>
+                    <div>• Report Studio keeps template selection available.</div>
+                    <div>• Quick export still works for a one-click PDF.</div>
+                  </div>
+                </div>
+              </div>
 
               {designResults.size === 0 ? (
                 <p className="text-slate-600 dark:text-slate-400 py-8 text-center">Run design checks first to generate a report.</p>
@@ -2897,11 +3469,19 @@ const PostAnalysisDesignHub: FC = () => {
                     </button>
                     <button type="button"
                       onClick={() => {
+                        if (reportTemplate === 'professional') {
+                          navigate('/reports/professional');
+                          return;
+                        }
+                        if (reportTemplate === 'studio') {
+                          navigate('/reports');
+                          return;
+                        }
                         document.dispatchEvent(new CustomEvent("trigger-pdf-report"));
                       }}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >
-                      <Download className="w-4 h-4" /> Export PDF Report
+                      <Download className="w-4 h-4" /> {reportTemplate === 'professional' ? 'Open Professional Report' : reportTemplate === 'studio' ? 'Open Report Studio' : 'Export Quick PDF'}
                     </button>
                     <Link
                       to="/reports"

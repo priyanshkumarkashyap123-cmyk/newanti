@@ -13,6 +13,7 @@ import logger from "../lib/logger";
 import { Button } from "../components/ui/button";
 import { Logo } from '../components/branding';
 import { SEO } from '../components/SEO';
+import { PageFooter } from '../components/layout/PageFooter';
 
 export const ContactPage: FC = () => {
   useEffect(() => { document.title = 'Contact - BeamLab'; }, []);
@@ -302,10 +303,7 @@ export const ContactPage: FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 text-center text-sm text-slate-600 dark:text-slate-400">
-        <p>© {new Date().getFullYear()} BeamLab. All rights reserved.</p>
-      </footer>
+      <PageFooter />
     </div>
   );
 };
