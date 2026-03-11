@@ -227,7 +227,7 @@ function TermsAndConditionsPage() {
                 Last Updated: February 24, 2026 | Effective Date: February 24, 2026
               </p>
               <p className="text-slate-900/50 dark:text-white/50 text-sm mt-1">
-                Domain: beamlab.app
+                Domain: beamlabultimate.tech
               </p>
 
               {/* Important Notice */}
@@ -261,7 +261,7 @@ function TermsAndConditionsPage() {
                     This document is published in accordance with the provisions of <strong>Rule 3(1) of the Information
                     Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021</strong> that require
                     publishing the rules and regulations, privacy policy, and Terms of Use for access or usage of domain name{' '}
-                    <strong>beamlab.app</strong> (&apos;Website&apos;), including the related mobile site and mobile
+                    <strong>beamlabultimate.tech</strong> (&apos;Website&apos;), including the related mobile site and mobile
                     application (hereinafter referred to as &apos;<strong>Platform</strong>&apos;).
                   </p>
                 </div>
@@ -312,12 +312,12 @@ function TermsAndConditionsPage() {
                   <li>
                     <strong>&quot;Platform&quot;</strong> means the website at{' '}
                     <a
-                      href="https://beamlab.app"
+                      href="https://beamlabultimate.tech"
                       className="text-blue-400 hover:underline"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      beamlab.app
+                      beamlabultimate.tech
                     </a>
                     , including the related mobile site and mobile application.
                   </li>
@@ -974,12 +974,12 @@ function TermsAndConditionsPage() {
                     <div>
                       <p className="text-slate-900/50 dark:text-white/50 text-xs uppercase tracking-wider">Website</p>
                       <a
-                        href="https://beamlab.app"
+                        href="https://beamlabultimate.tech"
                         className="text-blue-400 hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        https://beamlab.app
+                        https://beamlabultimate.tech
                       </a>
                     </div>
                   </div>

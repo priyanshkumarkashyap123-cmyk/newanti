@@ -223,7 +223,7 @@ export const generateBasicPDFReport = async (
     // Right side branding
     doc.setFontSize(8);
     doc.setTextColor(...SLATE_500);
-    doc.text('beamlab.app', pageWidth - 20, 26, { align: 'right' });
+    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
     doc.text('decodedoffice@gmail.com', pageWidth - 20, 31, { align: 'right' });
 
     // Divider
@@ -477,7 +477,7 @@ export const generateBasicPDFReport = async (
         doc.setTextColor(...SLATE_500);
         doc.text(`BeamLab  \u2014  ${docRef}  Rev 00`, 14, pageHeight - 11);
         doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
-        doc.text('beamlab.app', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
         doc.setFontSize(6);
         doc.setTextColor(180, 180, 180);
         doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });
@@ -532,7 +532,7 @@ export const generateCivilReport = async (
     doc.text('CIVIL ENGINEERING DESIGN', 20, 36);
 
     doc.setFontSize(8);
-    doc.text('beamlab.app', pageWidth - 20, 26, { align: 'right' });
+    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
     doc.text('decodedoffice@gmail.com', pageWidth - 20, 31, { align: 'right' });
 
     // Centre title
@@ -665,7 +665,7 @@ export const generateCivilReport = async (
         doc.setTextColor(...SLATE_500);
         doc.text('BeamLab  \u2014  Civil Engineering Design', 14, pageHeight - 11);
         doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
-        doc.text('beamlab.app', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
         doc.setFontSize(6);
         doc.setTextColor(180, 180, 180);
         doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });

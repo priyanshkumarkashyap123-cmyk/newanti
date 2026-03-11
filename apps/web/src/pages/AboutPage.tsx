@@ -30,7 +30,7 @@ export const AboutPage: FC = () => {
                 '@context': 'https://schema.org',
                 '@type': 'Organization',
                 name: 'BeamLab',
-                url: 'https://beamlab.app',
+                url: 'https://beamlabultimate.tech',
                 description: 'Professional structural engineering platform for beam, column, slab, foundation, and steel connection design.',
                 foundingLocation: 'India',
               }}

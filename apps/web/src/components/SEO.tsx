@@ -7,7 +7,7 @@ interface SEOProps {
   jsonLd?: Record<string, unknown>;
 }
 
-const BASE_URL = 'https://beamlab.app';
+const BASE_URL = 'https://beamlabultimate.tech';
 const SITE_NAME = 'BeamLab';
 const DEFAULT_DESCRIPTION =
   'Professional structural engineering platform. Design beams, columns, slabs, foundations, and steel connections per IS 456, IS 800, ACI 318, AISC 360, and Eurocode.';

@@ -424,12 +424,12 @@ export const TermsOfServicePage = () => {
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900 dark:text-white">Website</p>
                                         <a 
-                                            href="https://beamlab.app" 
+                                            href="https://beamlabultimate.tech" 
                                             className="text-emerald-600 dark:text-emerald-400 hover:underline"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            https://beamlab.app
+                                            https://beamlabultimate.tech
                                         </a>
                                     </div>
                                 </div>

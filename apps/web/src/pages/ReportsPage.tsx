@@ -385,7 +385,7 @@ export const ReportsPage = () => {
                                 </div>
                             </div>
                             <div className="text-right text-[10px] text-slate-600 dark:text-slate-400 space-y-0.5 leading-tight">
-                                <p>beamlab.app</p>
+                                <p>beamlabultimate.tech</p>
                                 <p>decodedoffice@gmail.com</p>
                             </div>
                         </div>

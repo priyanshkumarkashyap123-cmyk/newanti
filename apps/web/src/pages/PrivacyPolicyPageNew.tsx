@@ -184,7 +184,7 @@ export const PrivacyPolicyPageNew = () => {
                 2026
               </p>
               <p className="text-slate-900/50 dark:text-white/50 text-sm mt-1">
-                Domain: beamlab.app
+                Domain: beamlabultimate.tech
               </p>
 
               {/* Important Notice */}
@@ -223,12 +223,12 @@ export const PrivacyPolicyPageNew = () => {
                   or otherwise process your information and personal data
                   through our website{" "}
                   <a
-                    href="https://beamlab.app"
+                    href="https://beamlabultimate.tech"
                     className="text-blue-400 hover:underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    beamlab.app
+                    beamlabultimate.tech
                   </a>{" "}
                   (hereinafter referred to as the &quot;
                   <strong>Platform</strong>&quot;).
@@ -760,12 +760,12 @@ export const PrivacyPolicyPageNew = () => {
                         Website
                       </p>
                       <a
-                        href="https://beamlab.app"
+                        href="https://beamlabultimate.tech"
                         className="text-blue-400 hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        https://beamlab.app
+                        https://beamlabultimate.tech
                       </a>
                     </div>
                   </div>

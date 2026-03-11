@@ -339,7 +339,7 @@ const APIIntegrationDashboard: React.FC = () => {
     const spec = {
       openapi: '3.0.3',
       info: { title: 'BeamLab API', version: '1.0.0' },
-      servers: [{ url: 'https://api.beamlab.app/v1' }],
+      servers: [{ url: 'https://api.beamlabultimate.tech/v1' }],
       paths,
     };
 
@@ -712,7 +712,7 @@ const APIIntegrationDashboard: React.FC = () => {
         
         <div className="mb-6">
           <p className="text-slate-600 dark:text-slate-400 mb-4">
-            Base URL: <code className="text-cyan-400 bg-slate-700 px-2 py-1 rounded">https://api.beamlab.app/v1</code>
+            Base URL: <code className="text-cyan-400 bg-slate-700 px-2 py-1 rounded">https://api.beamlabultimate.tech/v1</code>
           </p>
           <div className="flex gap-4">
             <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
@@ -768,7 +768,7 @@ const APIIntegrationDashboard: React.FC = () => {
         <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
           <pre className="text-sm text-slate-700 dark:text-slate-300">
 {`// Run structural analysis via API
-const response = await fetch('https://api.beamlab.app/v1/projects/123/analyze', {
+const response = await fetch('https://api.beamlabultimate.tech/v1/projects/123/analyze', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer bl_prod_xxxx',

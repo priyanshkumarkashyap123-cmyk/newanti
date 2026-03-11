@@ -71,7 +71,7 @@ export const BlogPage = () => {
           '@type': 'Blog',
           name: 'BeamLab Engineering Blog',
           description: 'Structural analysis insights, IS 456/IS 800 design-code walkthroughs, and product tutorials.',
-          url: 'https://beamlab.app/blog',
+          url: 'https://beamlabultimate.tech/blog',
         }}
       />
 

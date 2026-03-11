@@ -218,7 +218,7 @@ export const LandingPage: FC = () => {
           name: 'BeamLab',
           applicationCategory: 'EngineeringApplication',
           operatingSystem: 'Web',
-          url: 'https://beamlab.app',
+          url: 'https://beamlabultimate.tech',
           description: 'Professional structural engineering platform for beam, column, slab, foundation, and steel connection design per IS 456, IS 800, ACI 318, AISC 360, and Eurocode.',
           offers: {
             '@type': 'Offer',
@@ -462,7 +462,7 @@ export const LandingPage: FC = () => {
                   </div>
                   <div className="flex-1 flex justify-center">
                     <div className="bg-slate-700/60 rounded-md px-4 py-1 text-[11px] text-slate-400 font-mono">
-                      beamlab.app/workspace
+                      beamlabultimate.tech/workspace
                     </div>
                   </div>
                 </div>
@@ -1346,7 +1346,7 @@ const SCREENSHOT_CARDS = [
     title: "3D Frame Model with Loads Applied",
     description: "Multi-story steel frame with UDL, point loads, and supports clearly visualized on the 3D canvas with category-based workflow sidebar.",
     category: "Modelling",
-    windowTitle: "beamlab.app/workspace — Project: G+3 Office Block",
+    windowTitle: "beamlabultimate.tech/workspace — Project: G+3 Office Block",
     bgGradient: "bg-gradient-to-br from-slate-800 via-slate-900 to-blue-950",
     mockContent: (
       <svg viewBox="0 0 600 300" className="w-full h-full">
@@ -1383,7 +1383,7 @@ const SCREENSHOT_CARDS = [
     title: "Bending Moment & Shear Force Diagrams",
     description: "Color-coded SFD and BMD plotted directly over the structural members with maximum values annotated. Deflection shape visualization included.",
     category: "Analysis Results",
-    windowTitle: "beamlab.app/workspace — BMD/SFD View",
+    windowTitle: "beamlabultimate.tech/workspace — BMD/SFD View",
     bgGradient: "bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-950",
     mockContent: (
       <svg viewBox="0 0 600 300" className="w-full h-full">
@@ -1413,7 +1413,7 @@ const SCREENSHOT_CARDS = [
     title: "Steel Section Design Check Results",
     description: "IS 800:2007 / AISC 360 design results with clause-by-clause utilization ratios, color-coded pass/fail indicators, and optimization suggestions.",
     category: "Design",
-    windowTitle: "beamlab.app/design-hub — Steel Design Checks",
+    windowTitle: "beamlabultimate.tech/design-hub — Steel Design Checks",
     bgGradient: "bg-gradient-to-br from-emerald-900 via-slate-900 to-teal-950",
     mockContent: (
       <svg viewBox="0 0 600 300" className="w-full h-full">
@@ -1461,7 +1461,7 @@ const SCREENSHOT_CARDS = [
     title: "RCC Detailing Drawing — Beam Section",
     description: "Automated reinforcement detailing with bar diameter, spacing, clear cover, stirrup arrangement, and cross-section views as per IS 456:2000.",
     category: "Detailing",
-    windowTitle: "beamlab.app/design/detailing — RCC Beam B1",
+    windowTitle: "beamlabultimate.tech/design/detailing — RCC Beam B1",
     bgGradient: "bg-gradient-to-br from-amber-900 via-slate-900 to-orange-950",
     mockContent: (
       <svg viewBox="0 0 600 300" className="w-full h-full">

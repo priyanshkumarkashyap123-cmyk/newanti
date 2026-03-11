@@ -80,7 +80,7 @@ const CollaborationHub: React.FC = () => {
     "viewer" | "engineer" | "reviewer"
   >("viewer");
   const [shareLink] = useState(
-    `https://beamlab.app/project/${Date.now().toString(36)}`,
+    `https://beamlabultimate.tech/project/${Date.now().toString(36)}`,
   );
   const [linkCopied, setLinkCopied] = useState(false);
   const [accessSettings, setAccessSettings] = useState<Record<string, boolean>>(

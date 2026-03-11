@@ -178,7 +178,7 @@ export class ReportGenerator {
       classification = 'CONFIDENTIAL',
       date = new Date(),
       companyName = 'BeamLab',
-      companyAddress = 'beamlab.app',
+      companyAddress = 'beamlabultimate.tech',
     } = options;
 
     // Store metadata for headers/footers

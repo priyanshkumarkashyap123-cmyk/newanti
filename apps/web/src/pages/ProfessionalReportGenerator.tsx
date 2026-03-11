@@ -362,7 +362,7 @@ export default function ProfessionalReportGenerator() {
                   <div style="font-size: 9px; font-weight: 700; color: ${SLATE_500}; text-transform: uppercase; letter-spacing: 0.25em; margin-top: 2px;">Structural Engineering</div>
                 </div>
                 <div style="font-size: 8px; color: ${SLATE_500}; text-align: right; line-height: 1.6;">
-                  <div>beamlab.app</div>
+                  <div>beamlabultimate.tech</div>
                   <div>decodedoffice@gmail.com</div>
                 </div>
               </div>
