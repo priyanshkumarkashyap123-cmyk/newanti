@@ -326,35 +326,39 @@ export function classifyStructure(
 
   // --- P-Delta ---
   const pDeltaEligible = (() => {
-    // P-Delta needs: gravity loads on vertical members (columns) or significant axial loads
-    // Applicable to: frames with columns, multi-story, slender structures
-    // NOT applicable to: pure beams (no axial-gravity coupling), trusses (already geometric),
-    //                     cable structures, plate-only models
-    if (category === 'simple_beam' || category === 'continuous_beam') {
-      return { ok: false, reason: 'P-Delta is not applicable to beams without columns — no gravity-axial coupling.', hint: 'Add columns to create a frame.' };
-    }
+    // P-Delta needs: axial loads on members (columns, arches, prestressed beams, etc.)
+    // Applicable to: frames with columns, beams with axial load, multi-story, slender structures
+    // NOT applicable to: cable structures, plate-only models, unstable models
     if (!hasTransSupport) {
       return { ok: false, reason: 'Model appears unstable (no translational supports) — P-Delta requires a stable supported structure.', hint: 'Add supports/restraints before running second-order analysis.' };
-    }
-    if (isTruss) {
-      return { ok: false, reason: 'Trusses carry purely axial loads — P-Delta geometric nonlinearity is implicit in axial behavior.', hint: undefined };
     }
     if (category === 'cable_structure') {
       return { ok: false, reason: 'Cable structures use catenary analysis, not P-Delta.', hint: 'Use Cable Analysis instead.' };
     }
     if (category === 'plate_shell') {
-      return { ok: false, reason: 'P-Delta is for frame structures with columns, not plate/shell models.', hint: undefined };
-    }
-    if (!hasColumns) {
-      return { ok: false, reason: 'No vertical (column) members detected — P-Delta requires gravity-loaded columns.', hint: 'Add column members.' };
+      return { ok: false, reason: 'P-Delta is for frame structures, not plate/shell models.', hint: undefined };
     }
     if (!hasLoadsDefined) {
       return { ok: false, reason: 'No loading detected — P-Delta needs a reference loaded state.', hint: 'Apply gravity/lateral loads before running second-order analysis.' };
     }
-    if (!hasGravity) {
-      return { ok: false, reason: 'No gravity loading detected — P-Delta effects are typically driven by vertical load on columns.', hint: 'Apply dead/live load for meaningful P-Delta amplification.' };
+    // Allow beams if they have axial loads (prestressed, tied arches, etc.)
+    if ((category === 'simple_beam' || category === 'continuous_beam') && !hasColumns) {
+      // Check if any node loads have horizontal components (axial on beams)
+      const hasAxialOnBeams = nodeLoads.some(
+        nl => (nl.fx && Math.abs(nl.fx) > 1e-6) || (nl.fz && Math.abs(nl.fz) > 1e-6)
+      );
+      if (!hasAxialOnBeams) {
+        return { ok: false, reason: 'P-Delta requires axial loads on members — this beam has no axial loading.', hint: 'Apply axial forces or add columns to create a frame.' };
+      }
+      return { ok: true, reason: 'Beam with axial loads — P-Delta second-order effects may amplify moments.' };
     }
-    return { ok: true, reason: 'Structure has columns subject to gravity loads — second-order effects may be significant.' };
+    if (isTruss) {
+      return { ok: false, reason: 'Trusses carry purely axial loads — P-Delta geometric nonlinearity is implicit in axial behavior.', hint: undefined };
+    }
+    if (!hasColumns && !hasGravity) {
+      return { ok: false, reason: 'No vertical members or gravity loads detected — P-Delta effects require gravity-axial coupling.', hint: 'Add column members or axial loads.' };
+    }
+    return { ok: true, reason: 'Structure has members subject to axial loads — second-order effects may be significant.' };
   })();
   eligibility.push({ id: 'pdelta', eligible: pDeltaEligible.ok, reason: pDeltaEligible.reason, hint: pDeltaEligible.hint });
 
@@ -399,8 +403,8 @@ export function classifyStructure(
     if (category === 'plate_shell') {
       return { ok: false, reason: 'Plate/shell time-history not yet supported.', hint: 'Add frame members.' };
     }
-    if (isTruss && numMembers < 5) {
-      return { ok: false, reason: 'Too few truss members for meaningful dynamic analysis.', hint: 'Expand the truss to 5+ members.' };
+    if (isTruss && numMembers < 2) {
+      return { ok: false, reason: 'Need at least 2 members for meaningful dynamic analysis.', hint: 'Add more structural members.' };
     }
     if (!hasLateral) {
       return { ok: true, reason: 'Structure is suitable for time-history analysis; dynamic excitation can be provided in the time-history input.' };
@@ -424,8 +428,8 @@ export function classifyStructure(
     if (category === 'simple_beam' || category === 'continuous_beam') {
       return { ok: false, reason: 'Beams do not have significant lateral seismic response — response spectrum is for multi-DOF systems.', hint: 'Create a frame or multi-story structure.' };
     }
-    if (isTruss) {
-      return { ok: false, reason: 'Trusses typically lack lateral mass participation needed for meaningful spectrum analysis.', hint: 'Use a frame model for seismic analysis.' };
+    if (isTruss && !hasColumns && numStories < 2) {
+      return { ok: false, reason: 'Single-span trusses lack lateral mass participation needed for meaningful spectrum analysis.', hint: 'Use a multi-story braced frame for seismic analysis.' };
     }
     if (category === 'cable_structure') {
       return { ok: false, reason: 'Cable structures require nonlinear dynamic analysis, not linear spectrum superposition.', hint: undefined };
@@ -462,9 +466,14 @@ export function classifyStructure(
       return { ok: false, reason: 'Plate buckling analysis requires shell eigenvalue formulation (not yet supported).', hint: 'Use frame members for Euler buckling.' };
     }
     if (category === 'simple_beam' || category === 'continuous_beam') {
-      // Beams can have lateral-torsional buckling, but that requires axial loads
-      // For our solver: we check Euler column buckling → needs axial compression
-      return { ok: false, reason: 'Euler buckling analysis requires compression members (columns). Beams without axial load do not buckle.', hint: 'Add columns or apply axial compression.' };
+      // Allow beams if they have axial loads (prestressed, tied arches, strut-and-tie)
+      const hasAxialOnBeams = nodeLoads.some(
+        nl => (nl.fx && Math.abs(nl.fx) > 1e-6) || (nl.fz && Math.abs(nl.fz) > 1e-6)
+      );
+      if (!hasAxialOnBeams) {
+        return { ok: false, reason: 'Buckling analysis requires compression — apply axial loads or add columns.', hint: 'Apply axial compression or create a frame with columns.' };
+      }
+      return { ok: true, reason: 'Beam with axial compression — lateral-torsional or flexural buckling may govern.' };
     }
     if (!hasLoadsDefined) {
       return { ok: false, reason: 'No loads detected — buckling load factors are meaningful only with a reference load state.', hint: 'Apply compressive/reference loading first.' };

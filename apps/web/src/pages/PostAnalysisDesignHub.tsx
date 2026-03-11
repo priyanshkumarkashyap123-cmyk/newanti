@@ -469,6 +469,58 @@ function clientSideDesignConcreteBeam(input: ConcreteDesignInput): ConcreteDesig
 }
 
 // ================================================================
+// RC SECTION DATABASE — Standard Indian RCC sizes (matches Rust backend)
+// Sorted by area (lightest → heaviest) for optimization sweep
+// ================================================================
+
+interface RcSectionDef {
+  name: string;
+  b: number; // width mm
+  d: number; // depth mm
+  area: number; // mm²
+  weightPerM: number; // kg/m (density ~25 kN/m³ ≈ 2500 kg/m³)
+}
+
+const RC_BEAM_SECTIONS: RcSectionDef[] = [
+  { name: 'RC230x300', b: 230, d: 300, area: 69000, weightPerM: 0.1725 },
+  { name: 'RC230x350', b: 230, d: 350, area: 80500, weightPerM: 0.2013 },
+  { name: 'RC230x400', b: 230, d: 400, area: 92000, weightPerM: 0.2300 },
+  { name: 'RC230x450', b: 230, d: 450, area: 103500, weightPerM: 0.2588 },
+  { name: 'RC230x500', b: 230, d: 500, area: 115000, weightPerM: 0.2875 },
+  { name: 'RC230x600', b: 230, d: 600, area: 138000, weightPerM: 0.3450 },
+  { name: 'RC300x450', b: 300, d: 450, area: 135000, weightPerM: 0.3375 },
+  { name: 'RC300x500', b: 300, d: 500, area: 150000, weightPerM: 0.3750 },
+  { name: 'RC300x600', b: 300, d: 600, area: 180000, weightPerM: 0.4500 },
+  { name: 'RC300x700', b: 300, d: 700, area: 210000, weightPerM: 0.5250 },
+  { name: 'RC300x750', b: 300, d: 750, area: 225000, weightPerM: 0.5625 },
+  { name: 'RC350x600', b: 350, d: 600, area: 210000, weightPerM: 0.5250 },
+  { name: 'RC350x700', b: 350, d: 700, area: 245000, weightPerM: 0.6125 },
+  { name: 'RC350x750', b: 350, d: 750, area: 262500, weightPerM: 0.6563 },
+  { name: 'RC400x600', b: 400, d: 600, area: 240000, weightPerM: 0.6000 },
+  { name: 'RC400x700', b: 400, d: 700, area: 280000, weightPerM: 0.7000 },
+  { name: 'RC400x750', b: 400, d: 750, area: 300000, weightPerM: 0.7500 },
+  { name: 'RC400x800', b: 400, d: 800, area: 320000, weightPerM: 0.8000 },
+  { name: 'RC450x800', b: 450, d: 800, area: 360000, weightPerM: 0.9000 },
+  { name: 'RC450x900', b: 450, d: 900, area: 405000, weightPerM: 1.0125 },
+];
+
+const RC_COLUMN_SECTIONS: RcSectionDef[] = [
+  { name: 'RC230x230', b: 230, d: 230, area: 52900, weightPerM: 0.1323 },
+  { name: 'RC230x300', b: 230, d: 300, area: 69000, weightPerM: 0.1725 },
+  { name: 'RC300x300', b: 300, d: 300, area: 90000, weightPerM: 0.2250 },
+  { name: 'RC300x400', b: 300, d: 400, area: 120000, weightPerM: 0.3000 },
+  { name: 'RC300x450', b: 300, d: 450, area: 135000, weightPerM: 0.3375 },
+  { name: 'RC300x500', b: 300, d: 500, area: 150000, weightPerM: 0.3750 },
+  { name: 'RC300x600', b: 300, d: 600, area: 180000, weightPerM: 0.4500 },
+  { name: 'RC350x350', b: 350, d: 350, area: 122500, weightPerM: 0.3063 },
+  { name: 'RC400x400', b: 400, d: 400, area: 160000, weightPerM: 0.4000 },
+  { name: 'RC450x450', b: 450, d: 450, area: 202500, weightPerM: 0.5063 },
+  { name: 'RC500x500', b: 500, d: 500, area: 250000, weightPerM: 0.6250 },
+  { name: 'RC600x600', b: 600, d: 600, area: 360000, weightPerM: 0.9000 },
+  { name: 'RC750x750', b: 750, d: 750, area: 562500, weightPerM: 1.4063 },
+];
+
+// ================================================================
 // MEMBER GROUP TYPES
 // ================================================================
 
@@ -1773,6 +1825,105 @@ const PostAnalysisDesignHub: FC = () => {
   // ============================
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [targetUtilization, setTargetUtilization] = useState(0.85);
+  const [optimizationMaterial, setOptimizationMaterial] = useState<'steel' | 'concrete'>('steel');
+
+  // CONCRETE OPTIMIZATION — sweep RC section database
+  const runConcreteOptimization = useCallback(async () => {
+    if (concreteDesignResults.size === 0 && designResults.size === 0) return;
+    setIsOptimizing(true);
+
+    const rcWeightMap = new Map(RC_BEAM_SECTIONS.map(s => [s.name, s.weightPerM]));
+    const preWeight = memberRows.reduce((acc, row) => {
+      return acc + (rcWeightMap.get(`RC${concreteSection.width}x${concreteSection.depth}`) ?? 0.375) * row.length;
+    }, 0);
+    setPreOptWeight(preWeight);
+
+    await new Promise(r => setTimeout(r, 50));
+
+    const concreteGrade = CONCRETE_GRADES.find(g => g.name === params.concreteGrade) ?? CONCRETE_GRADES[0];
+    const rebarGrade = REBAR_GRADES.find(g => g.name === params.rebarGrade) ?? REBAR_GRADES[0];
+    const designCode = params.concreteCode === 'ACI318' ? 'ACI318' : 'IS456';
+    const target = targetUtilization;
+
+    const sectionsByArea = [...RC_BEAM_SECTIONS].sort((a, b) => a.area - b.area);
+
+    const newConcreteResults = new Map(concreteDesignResults);
+    // Also update the main designResults map so optimization table shows results
+    const newResults = new Map(designResults);
+
+    for (const row of memberRows) {
+      let bestSection: RcSectionDef | null = null;
+      let bestResult: ConcreteDesignOutput | null = null;
+
+      for (const trySection of sectionsByArea) {
+        const cResult = clientSideDesignConcreteBeam({
+          width: trySection.b,
+          depth: trySection.d,
+          cover: concreteSection.cover,
+          fck: concreteGrade.fck,
+          fy: rebarGrade.fy,
+          Mu: row.maxMomentZ,
+          Vu: row.maxShearY,
+          Nu: row.maxAxial,
+          code: designCode as 'IS456' | 'ACI318',
+        });
+
+        if (cResult.status === 'PASS' && cResult.utilizationRatio <= target) {
+          bestSection = trySection;
+          bestResult = cResult;
+          break;
+        }
+      }
+
+      // Fallback: lightest that passes
+      if (!bestSection) {
+        for (const trySection of sectionsByArea) {
+          const cResult = clientSideDesignConcreteBeam({
+            width: trySection.b,
+            depth: trySection.d,
+            cover: concreteSection.cover,
+            fck: concreteGrade.fck,
+            fy: rebarGrade.fy,
+            Mu: row.maxMomentZ,
+            Vu: row.maxShearY,
+            Nu: row.maxAxial,
+            code: designCode as 'IS456' | 'ACI318',
+          });
+          if (cResult.status === 'PASS') {
+            bestSection = trySection;
+            bestResult = cResult;
+            break;
+          }
+        }
+      }
+
+      if (bestSection && bestResult) {
+        newConcreteResults.set(row.id, bestResult);
+        // Mirror into designResults for the table
+        newResults.set(row.id, {
+          memberId: row.id,
+          memberName: row.label,
+          code: params.concreteCode,
+          section: `${bestSection.b}×${bestSection.d}`,
+          utilizationRatio: bestResult.utilizationRatio,
+          status: bestResult.status,
+          governingCheck: bestResult.governingCheck,
+          checks: bestResult.checks,
+          forces: { N: row.maxAxial, Vy: row.maxShearY, Vz: 0, My: 0, Mz: row.maxMomentZ },
+          capacities: {
+            tension: 0,
+            compression: 0,
+            moment: bestResult.flexure.Mu_capacity,
+            shear: bestResult.shear.Vu_capacity,
+          },
+        });
+      }
+    }
+
+    setConcreteDesignResults(newConcreteResults);
+    setDesignResults(newResults);
+    setIsOptimizing(false);
+  }, [concreteDesignResults, designResults, memberRows, params, concreteSection, targetUtilization]);
 
   const runOptimization = useCallback(async () => {
     if (designResults.size === 0) return;
@@ -1876,6 +2027,13 @@ const PostAnalysisDesignHub: FC = () => {
     setDesignResults(newResults);
     setIsOptimizing(false);
   }, [designResults, memberRows, params, targetUtilization]);
+
+  const handleRunOptimization = useCallback(async () => {
+    if (optimizationMaterial === 'concrete') {
+      return runConcreteOptimization();
+    }
+    return runOptimization();
+  }, [optimizationMaterial, runConcreteOptimization, runOptimization]);
 
   // Memoized weight (avoids O(N×M) find per render)
   const totalWeight = useMemo(() => {
@@ -2355,14 +2513,23 @@ const PostAnalysisDesignHub: FC = () => {
               <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
                 <Zap className="w-8 h-8 text-amber-400 mb-3" />
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Auto-Optimize</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                  Automatically find the lightest section that passes all design checks for each member.
-                  Iterates through the section database from lightest to heaviest.
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                  Find the lightest section passing all checks. Supports both steel (ISMB/W shapes) and concrete (b×d) sections.
                 </p>
+                <div className="flex gap-2 mb-3">
+                  <button type="button"
+                    onClick={() => setOptimizationMaterial('steel')}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${optimizationMaterial === 'steel' ? 'bg-blue-600 text-white border-blue-600' : 'bg-transparent text-slate-400 border-slate-600 hover:border-slate-400'}`}
+                  >Steel</button>
+                  <button type="button"
+                    onClick={() => setOptimizationMaterial('concrete')}
+                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${optimizationMaterial === 'concrete' ? 'bg-orange-600 text-white border-orange-600' : 'bg-transparent text-slate-400 border-slate-600 hover:border-slate-400'}`}
+                  >Concrete (RCC)</button>
+                </div>
                 <Button
                   type="button"
-                  onClick={runOptimization}
-                  disabled={isOptimizing || designResults.size === 0}
+                  onClick={handleRunOptimization}
+                  disabled={isOptimizing || (optimizationMaterial === 'steel' ? designResults.size === 0 : memberRows.length === 0)}
                   className="w-full"
                   variant="premium"
                   size="lg"
@@ -2370,11 +2537,14 @@ const PostAnalysisDesignHub: FC = () => {
                   {isOptimizing ? (
                     <><RefreshCw className="w-5 h-5 animate-spin" /> Optimizing...</>
                   ) : (
-                    <><Zap className="w-5 h-5" /> Run Optimization</>
+                    <><Zap className="w-5 h-5" /> Run {optimizationMaterial === 'concrete' ? 'RCC' : 'Steel'} Optimization</>
                   )}
                 </Button>
-                {designResults.size === 0 && (
-                  <p className="text-xs text-slate-500 mt-2 text-center">Run design checks first</p>
+                {optimizationMaterial === 'steel' && designResults.size === 0 && (
+                  <p className="text-xs text-slate-500 mt-2 text-center">Run steel design checks first</p>
+                )}
+                {optimizationMaterial === 'concrete' && memberRows.length === 0 && (
+                  <p className="text-xs text-slate-500 mt-2 text-center">No members to optimize</p>
                 )}
               </div>
 
@@ -2508,18 +2678,17 @@ const PostAnalysisDesignHub: FC = () => {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Beam Detailing', desc: 'Longitudinal & shear reinforcement, development lengths, bar bending schedule', icon: '🏗️' },
-                  { label: 'Column Detailing', desc: 'Ties/spirals, lap splice, interaction diagram overlay', icon: '🏢' },
-                  { label: 'Slab Detailing', desc: 'Top/bottom mesh, strip reinforcement, opening reinforcement', icon: '🪵' },
-                  { label: 'Footing Detailing', desc: 'Pedestal, punching shear reinforcement, development length', icon: '🧱' },
+                  { label: 'Beam Detailing', desc: 'Longitudinal & shear reinforcement, development lengths, bar bending schedule', icon: '🏗️', tab: 'beam' },
+                  { label: 'Column Detailing', desc: 'Ties/spirals, lap splice, interaction diagram overlay', icon: '🏢', tab: 'column' },
+                  { label: 'Slab Detailing', desc: 'Top/bottom mesh, strip reinforcement, opening reinforcement', icon: '🪵', tab: 'slab' },
+                  { label: 'Footing Detailing', desc: 'Pedestal, punching shear reinforcement, development length', icon: '🧱', tab: 'foundation' },
                 ].map((item) => (
-                  <button key={item.label} type="button"
-                    className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-400 hover:shadow-md transition-all text-left group"
-                    onClick={() => document.dispatchEvent(new CustomEvent('open-detailing', { detail: { type: item.label } }))}>
+                  <Link key={item.label} to={`/design/detailing?tab=${item.tab}`}
+                    className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-400 hover:shadow-md transition-all text-left group no-underline">
                     <div className="text-2xl mb-2">{item.icon}</div>
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-orange-500 transition-colors">{item.label}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.desc}</p>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -2535,18 +2704,17 @@ const PostAnalysisDesignHub: FC = () => {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Bolted Connections', desc: 'HSFG/bearing bolts, bolt patterns, edge/pitch distances', icon: '🔩' },
-                  { label: 'Welded Connections', desc: 'Fillet/butt welds, weld sizes, throat thickness calculations', icon: '⚡' },
-                  { label: 'Base Plate', desc: 'Column base plate, anchor bolts, grout detail', icon: '🏗️' },
-                  { label: 'Splice Joints', desc: 'Beam/column splices, cover plates, flange/web connections', icon: '🔗' },
+                  { label: 'Bolted Connections', desc: 'HSFG/bearing bolts, bolt patterns, edge/pitch distances', icon: '🔩', tab: 'steel' },
+                  { label: 'Welded Connections', desc: 'Fillet/butt welds, weld sizes, throat thickness calculations', icon: '⚡', tab: 'steel' },
+                  { label: 'Base Plate', desc: 'Column base plate, anchor bolts, grout detail', icon: '🏗️', tab: 'steel' },
+                  { label: 'Splice Joints', desc: 'Beam/column splices, cover plates, flange/web connections', icon: '🔗', tab: 'steel' },
                 ].map((item) => (
-                  <button key={item.label} type="button"
-                    className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-blue-400 hover:shadow-md transition-all text-left group"
-                    onClick={() => document.dispatchEvent(new CustomEvent('open-detailing', { detail: { type: item.label } }))}>
+                  <Link key={item.label} to={`/design/detailing?tab=${item.tab}`}
+                    className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:border-blue-400 hover:shadow-md transition-all text-left group no-underline">
                     <div className="text-2xl mb-2">{item.icon}</div>
                     <h3 className="text-sm font-semibold text-slate-800 dark:text-white group-hover:text-blue-500 transition-colors">{item.label}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.desc}</p>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -2561,16 +2729,14 @@ const PostAnalysisDesignHub: FC = () => {
                 Auto-generate bar bending schedule from designed members with cutting lengths, shapes, and quantities.
               </p>
               <div className="flex gap-3">
-                <button type="button"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                  onClick={() => document.dispatchEvent(new CustomEvent('generate-bbs'))}>
+                <Link to="/tools/bar-bending"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 no-underline">
                   <FileText className="w-4 h-4" /> Generate BBS
-                </button>
-                <button type="button"
-                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                  onClick={() => document.dispatchEvent(new CustomEvent('export-bbs'))}>
+                </Link>
+                <Link to="/tools/bar-bending"
+                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 no-underline">
                   <Download className="w-4 h-4" /> Export BBS to Excel
-                </button>
+                </Link>
               </div>
             </div>
           </div>

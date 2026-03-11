@@ -43,6 +43,22 @@ pub struct DuctileDetailingParams {
     pub seismic_zone: SeismicZone,
     /// Design code
     pub code: DesignCode,
+    /// Sum of beam sagging + hogging moment capacities meeting at the joint (kN·m)
+    /// Required for joint shear calculation per IS 1893 Cl. 12.4 / ACI 318-19 § 18.8
+    #[serde(default)]
+    pub beam_moment_sum_knm: Option<f64>,
+    /// Column depth at joint (mm) — for effective joint width calculation
+    #[serde(default)]
+    pub column_depth_mm: Option<f64>,
+    /// Column width at joint (mm)
+    #[serde(default)]
+    pub column_width_mm: Option<f64>,
+    /// Column shear at joint (kN b)
+    #[serde(default)]
+    pub column_shear_kn: Option<f64>,
+    /// Storey height / clear column height at joint (mm)
+    #[serde(default)]
+    pub storey_height_mm: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -336,16 +352,52 @@ fn check_splice_location_is(params: &DuctileDetailingParams) -> SpliceCheck {
     }
 }
 
-/// Check beam-column joint shear per IS 1893 Cl. 12.4
+/// Check beam-column joint shear per IS 1893:2016 Cl. 12.4 / IS 13920 Cl. 8
+///
+/// Joint shear force: Vj = T₁ + C₂ − Vcol
+///   where T₁ = 1.25 * fy * Ast_beam (IS 1893 overstrength factor 1.25)
+///   Simplified: Vj ≈ ΣMb / (0.875 * hb) − Vcol
+///   ΣMb = sum of beam sagging + hogging moment capacities at joint
+///
+/// Effective joint width: bj = min(bb + hc, bb + 0.5*bc)  (IS 13920 Cl. 8.1)
+/// Joint shear stress: τj = Vj / (bj * hc)
+/// Allowable: 1.0*√fck for confined joints (IS 1893 Table 6)
+///            1.2*√fck for all-4-face confined joints
 fn check_joint_shear_is(params: &DuctileDetailingParams) -> JointCheck {
-    // Simplified joint shear stress calculation
-    // τ_j = V_u / (b_j * h_col) where V_u = beam moment / (0.875 * h_beam)
-    // Allowable: τ_c,max = 1.2 * sqrt(fck) for confined joints (IS 1893 Table 6)
-    
-    let allowable_shear = 1.2 * params.fck_mpa.sqrt();
-    
-    // Placeholder: actual joint shear requires beam/column moments
-    let joint_shear = 0.0; // User should provide
+    let h_col = params.column_depth_mm.unwrap_or(params.depth_mm);
+    let b_col = params.column_width_mm.unwrap_or(params.width_mm);
+    let b_beam = params.width_mm;
+
+    // Effective joint width per IS 13920 Cl. 8.1
+    let bj = (b_beam + h_col).min(b_beam + 0.5 * b_col);
+
+    // Allowable joint shear stress — IS 1893 Table 6
+    // Confined on all 4 faces: 1.2 √fck, otherwise 1.0 √fck
+    let confinement_factor = match params.seismic_zone {
+        SeismicZone::ZoneV | SeismicZone::ZoneIV => 1.0,
+        _ => 1.2,
+    };
+    let allowable_shear = confinement_factor * params.fck_mpa.sqrt();
+
+    // Calculate joint shear if beam moment data is provided
+    let joint_shear = if let Some(sum_mb) = params.beam_moment_sum_knm {
+        // Vj = ΣMb / (0.875 * hb) − Vcol
+        // hb = beam depth = params.depth_mm
+        let v_beam = sum_mb * 1e3 / (0.875 * params.depth_mm); // N
+        let v_col = params.column_shear_kn.unwrap_or(0.0) * 1e3; // N
+        let vj_n = (v_beam - v_col).abs();
+        // Joint shear stress τj = Vj / (bj * hc)
+        vj_n / (bj * h_col) // N/mm² = MPa
+    } else {
+        // Estimate from rebar capacity: T = 1.25 * fy * Ast
+        // Ast = num_bars * π/4 * dia²
+        let ast = params.num_long_bars as f64
+            * std::f64::consts::PI * params.long_bar_dia_mm.powi(2) / 4.0;
+        let t_beam = 1.25 * params.fy_mpa * ast; // N (overstrength factor 1.25 per IS 1893)
+        let v_col = params.column_shear_kn.unwrap_or(0.0) * 1e3;
+        let vj_n = (t_beam - v_col).abs();
+        vj_n / (bj * h_col)
+    };
 
     JointCheck {
         joint_shear_stress_mpa: joint_shear,

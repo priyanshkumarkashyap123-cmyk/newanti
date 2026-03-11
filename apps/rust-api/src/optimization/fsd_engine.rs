@@ -92,6 +92,19 @@ pub struct MemberForces {
     pub max_deflection_mm: Option<f64>,
 }
 
+/// Material type for optimization routing
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum MaterialType {
+    Steel,
+    Concrete,
+}
+
+impl Default for MaterialType {
+    fn default() -> Self {
+        MaterialType::Steel
+    }
+}
+
 /// Member geometric properties
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MemberGeometry {
@@ -103,6 +116,24 @@ pub struct MemberGeometry {
     #[serde(default)]
     pub unbraced_length: Option<f64>,
     pub member_type: MemberType,   // Beam, Column, Brace
+    /// Material type: Steel or Concrete. Defaults to Steel.
+    #[serde(default)]
+    pub material_type: MaterialType,
+    /// Section width for concrete members (mm)
+    #[serde(default)]
+    pub b_mm: Option<f64>,
+    /// Section overall depth for concrete members (mm)
+    #[serde(default)]
+    pub d_mm: Option<f64>,
+    /// Clear cover for concrete members (mm), default 30–40
+    #[serde(default)]
+    pub cover_mm: Option<f64>,
+    /// Characteristic concrete strength (N/mm²), e.g. 25.0 for M25
+    #[serde(default)]
+    pub fck: Option<f64>,
+    /// Yield strength of reinforcement (N/mm²), e.g. 500.0 for Fe500
+    #[serde(default)]
+    pub fy_rebar: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -111,6 +142,105 @@ pub enum MemberType {
     Column,
     Brace,
     Truss,
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RC (CONCRETE) SECTION DATABASE
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Standard RC cross-section (beam or column) for optimization
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RcSection {
+    /// Name, e.g. "RC230x400", "RC300x500"
+    pub name: String,
+    /// Width (mm)
+    pub b_mm: f64,
+    /// Overall depth (mm)
+    pub d_mm: f64,
+    /// Cross-sectional area (mm²)
+    pub area_mm2: f64,
+    /// Weight per meter (kg/m) assuming reinforced concrete density 25 kN/m³
+    pub weight_per_m: f64,
+    /// Second moment of area Ixx (mm⁴)
+    pub ixx_mm4: f64,
+    /// Section modulus Zxx (mm³)
+    pub zxx_mm3: f64,
+}
+
+/// Standard Indian RC beam sizes ordered by increasing section modulus
+pub fn rc_beam_database() -> Vec<RcSection> {
+    let sections = [
+        (230.0, 300.0),
+        (230.0, 350.0),
+        (230.0, 400.0),
+        (230.0, 450.0),
+        (230.0, 500.0),
+        (250.0, 400.0),
+        (250.0, 450.0),
+        (250.0, 500.0),
+        (300.0, 450.0),
+        (300.0, 500.0),
+        (300.0, 600.0),
+        (300.0, 700.0),
+        (350.0, 500.0),
+        (350.0, 600.0),
+        (350.0, 700.0),
+        (400.0, 600.0),
+        (400.0, 700.0),
+        (400.0, 800.0),
+        (450.0, 750.0),
+        (450.0, 900.0),
+    ];
+    sections.iter().map(|&(b, d)| {
+        let area = b * d;
+        // Density of RC ≈ 25 kN/m³ = 2500 kg/m³ = 2.5e-6 kg/mm³
+        let weight = area * 2.5e-6 * 1000.0; // kg/m
+        let ixx = b * d * d * d / 12.0;
+        let zxx = b * d * d / 6.0;
+        RcSection {
+            name: format!("RC{}x{}", b as u32, d as u32),
+            b_mm: b, d_mm: d,
+            area_mm2: area,
+            weight_per_m: weight,
+            ixx_mm4: ixx,
+            zxx_mm3: zxx,
+        }
+    }).collect()
+}
+
+/// Standard Indian RC column sizes ordered by increasing area
+pub fn rc_column_database() -> Vec<RcSection> {
+    let sections = [
+        (230.0, 230.0),
+        (230.0, 300.0),
+        (300.0, 300.0),
+        (300.0, 400.0),
+        (350.0, 350.0),
+        (350.0, 450.0),
+        (400.0, 400.0),
+        (400.0, 500.0),
+        (450.0, 450.0),
+        (450.0, 600.0),
+        (500.0, 500.0),
+        (500.0, 700.0),
+        (600.0, 600.0),
+        (600.0, 800.0),
+        (750.0, 750.0),
+    ];
+    sections.iter().map(|&(b, d)| {
+        let area = b * d;
+        let weight = area * 2.5e-6 * 1000.0;
+        let ixx = b * d * d * d / 12.0;
+        let zxx = b * d * d / 6.0;
+        RcSection {
+            name: format!("RC{}x{}", b as u32, d as u32),
+            b_mm: b, d_mm: d,
+            area_mm2: area,
+            weight_per_m: weight,
+            ixx_mm4: ixx,
+            zxx_mm3: zxx,
+        }
+    }).collect()
 }
 
 /// Design check result per member per load combo
@@ -302,6 +432,8 @@ pub struct IterationHistory {
 pub struct FSDEngine {
     config: FSDConfig,
     section_database: Vec<IsmbSection>,
+    rc_beam_db: Vec<RcSection>,
+    rc_column_db: Vec<RcSection>,
 }
 
 impl FSDEngine {
@@ -341,6 +473,8 @@ impl FSDEngine {
         Self {
             config,
             section_database,
+            rc_beam_db: rc_beam_database(),
+            rc_column_db: rc_column_database(),
         }
     }
     
@@ -497,6 +631,8 @@ impl FSDEngine {
     /// - UR < target_ur (Over-designed): Find next lighter section
     /// - target_ur ≤ UR ≤ max_ur (Optimal): Keep current section
     ///
+    /// Routes steel vs. concrete members to their respective databases.
+    ///
     /// Returns: (new_sections, number_of_changes)
     fn resize_members(
         &self,
@@ -509,40 +645,54 @@ impl FSDEngine {
         
         for geom in geometries {
             let member_id = &geom.member_id;
+            let default_section = if geom.material_type == MaterialType::Concrete {
+                match geom.member_type {
+                    MemberType::Column => "RC300x300".to_string(),
+                    _ => "RC300x500".to_string(),
+                }
+            } else {
+                "ISMB 200".to_string()
+            };
             let current_section = current_sections.get(member_id).cloned()
-                .unwrap_or_else(|| "ISMB 200".to_string());
+                .unwrap_or(default_section);
             
             let ur = member_ur.get(member_id).copied().unwrap_or(0.0);
             
-            // Find current section index in database
-            let current_idx = self.section_database.iter()
-                .position(|s| s.name == current_section)
-                .unwrap_or(0);
-            
-            let new_section = if ur > self.config.max_ur {
+            let new_section = if geom.material_type == MaterialType::Concrete {
                 // ═══════════════════════════════════════════════════════════
-                // STRESS-DRIVEN RESIZING: Member is failing → Upsize
+                // CONCRETE RESIZING — use RC section catalog
                 // ═══════════════════════════════════════════════════════════
+                let rc_db = match geom.member_type {
+                    MemberType::Column => &self.rc_column_db,
+                    _ => &self.rc_beam_db,
+                };
+                let current_idx = rc_db.iter()
+                    .position(|s| s.name == current_section)
+                    .unwrap_or(0);
                 
-                // Estimate required section modulus scaling
-                let scale_factor = ur / self.config.max_ur;
-                
-                // Search for next adequate section
-                self.upsize_section(current_idx, scale_factor)
-                
-            } else if ur < self.config.target_ur {
-                // ═══════════════════════════════════════════════════════════
-                // ECONOMY-DRIVEN RESIZING: Member is over-designed → Downsize
-                // ═══════════════════════════════════════════════════════════
-                
-                // Try one step lighter (conservative downsizing)
-                self.downsize_section(current_idx)
-                
+                if ur > self.config.max_ur {
+                    self.upsize_rc_section(rc_db, current_idx, ur / self.config.max_ur)
+                } else if ur < self.config.target_ur {
+                    self.downsize_rc_section(rc_db, current_idx)
+                } else {
+                    current_section.clone()
+                }
             } else {
                 // ═══════════════════════════════════════════════════════════
-                // OPTIMAL RANGE: Keep current section
+                // STEEL RESIZING — existing ISMB catalog logic
                 // ═══════════════════════════════════════════════════════════
-                current_section.clone()
+                let current_idx = self.section_database.iter()
+                    .position(|s| s.name == current_section)
+                    .unwrap_or(0);
+                
+                if ur > self.config.max_ur {
+                    let scale_factor = ur / self.config.max_ur;
+                    self.upsize_section(current_idx, scale_factor)
+                } else if ur < self.config.target_ur {
+                    self.downsize_section(current_idx)
+                } else {
+                    current_section.clone()
+                }
             };
             
             if new_section != current_section {
@@ -580,6 +730,38 @@ impl FSDEngine {
         } else {
             // Already at lightest section
             self.section_database[current_idx].name.clone()
+        }
+    }
+    
+    /// Upsize RC section — find next larger concrete section by section modulus
+    ///
+    /// Strategy: increase depth first (more efficient for flexure per IS 456),
+    /// then width if depth limit is reached.
+    fn upsize_rc_section(&self, rc_db: &[RcSection], current_idx: usize, scale_factor: f64) -> String {
+        if rc_db.is_empty() {
+            return format!("RC300x500");
+        }
+        let current_zxx = rc_db[current_idx].zxx_mm3;
+        let required_zxx = current_zxx * scale_factor;
+        
+        // Search forward for first section with Zxx >= required
+        for section in rc_db.iter().skip(current_idx + 1) {
+            if section.zxx_mm3 >= required_zxx {
+                return section.name.clone();
+            }
+        }
+        // If no adequate section, return largest
+        rc_db.last()
+            .map(|s| s.name.clone())
+            .unwrap_or_else(|| "RC400x800".to_string())
+    }
+    
+    /// Downsize RC section — find next lighter concrete section
+    fn downsize_rc_section(&self, rc_db: &[RcSection], current_idx: usize) -> String {
+        if current_idx > 0 {
+            rc_db[current_idx - 1].name.clone()
+        } else {
+            rc_db[current_idx].name.clone()
         }
     }
     
@@ -667,12 +849,25 @@ impl FSDEngine {
         for geom in geometries {
             let section_name = sections.get(&geom.member_id)
                 .cloned()
-                .unwrap_or_else(|| "ISMB 200".to_string());
+                .unwrap_or_else(|| {
+                    if geom.material_type == MaterialType::Concrete {
+                        "RC300x500".to_string()
+                    } else {
+                        "ISMB 200".to_string()
+                    }
+                });
             
-            if let Some(section) = self.section_database.iter().find(|s| s.name == section_name) {
-                // Weight = density × area × length
-                // Note: section.weight is kg/m, so convert accordingly
-                let length_m = geom.length_mm / 1000.0;
+            let length_m = geom.length_mm / 1000.0;
+            
+            if geom.material_type == MaterialType::Concrete {
+                let rc_db = match geom.member_type {
+                    MemberType::Column => &self.rc_column_db,
+                    _ => &self.rc_beam_db,
+                };
+                if let Some(section) = rc_db.iter().find(|s| s.name == section_name) {
+                    total_weight += section.weight_per_m * length_m;
+                }
+            } else if let Some(section) = self.section_database.iter().find(|s| s.name == section_name) {
                 total_weight += section.weight * length_m;
             }
         }

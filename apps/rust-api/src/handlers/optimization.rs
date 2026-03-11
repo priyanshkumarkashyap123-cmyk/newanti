@@ -11,8 +11,9 @@ use crate::error::{ApiError, ApiResult};
 use crate::optimization::{
     FSDEngine, FSDConfig, FSDResult,
     Objective, Constraint,
-    MemberForces, MemberGeometry, MemberType,
-    DesignCheck, check_member,
+    MemberForces, MemberGeometry, MemberType, MaterialType,
+    DesignCheck, check_member, check_member_rc,
+    rc_beam_database, rc_column_database, RcSection,
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -121,11 +122,12 @@ pub async fn fsd_optimize(
     // Create FSD engine
     let engine = FSDEngine::new(config);
     
-    // Create analysis callback
-    // In a real implementation, this would call the structural analysis solver
-    // For now, we use the provided forces directly
+    // Create analysis callback that routes Steel vs Concrete members
     let member_forces = req.member_forces;
     let fy = req.config.fy;
+    // Pre-build RC section databases
+    let rc_beams = rc_beam_database();
+    let rc_columns = rc_column_database();
     
     let analyze_fn = |sections: &HashMap<String, String>| -> Vec<DesignCheck> {
         let mut checks = Vec::new();
@@ -134,10 +136,69 @@ pub async fn fsd_optimize(
             if let Some(geom) = req.geometries.iter().find(|g| g.member_id == forces.member_id) {
                 let section_name = sections.get(&forces.member_id)
                     .cloned()
-                    .unwrap_or_else(|| "ISMB 200".to_string());
+                    .unwrap_or_else(|| {
+                        if geom.material_type == MaterialType::Concrete {
+                            "RC300x500".to_string()
+                        } else {
+                            "ISMB 200".to_string()
+                        }
+                    });
                 
-                let check = check_member(forces, geom, &section_name, fy);
-                checks.push(check);
+                if geom.material_type == MaterialType::Concrete {
+                    // Route to RC design check
+                    let b = geom.b_mm.unwrap_or(300.0);
+                    let d = geom.d_mm.unwrap_or(500.0);
+                    let cover = geom.cover_mm.unwrap_or(40.0);
+                    let fck = geom.fck.unwrap_or(25.0);
+                    let fy_rebar = geom.fy_rebar.unwrap_or(500.0);
+                    
+                    // Look up section from RC database to get actual b/d
+                    let rc_db: &[RcSection] = match geom.member_type {
+                        MemberType::Column => &rc_columns,
+                        _ => &rc_beams,
+                    };
+                    let (actual_b, actual_d) = rc_db.iter()
+                        .find(|s| s.name == section_name)
+                        .map(|s| (s.b_mm, s.d_mm))
+                        .unwrap_or((b, d));
+
+                    let support_type = match geom.member_type {
+                        MemberType::Column => "fixed",
+                        _ => "simply_supported",
+                    };
+
+                    let rc_check = check_member_rc(
+                        &forces.member_id,
+                        &forces.load_combo,
+                        forces.moment_z_knm.abs(),
+                        forces.shear_y_kn.abs(),
+                        actual_b, actual_d, cover,
+                        geom.length_mm, fck, fy_rebar,
+                        support_type,
+                    );
+                    
+                    // Convert RCDesignCheck to DesignCheck for uniform handling
+                    checks.push(DesignCheck {
+                        member_id: forces.member_id.clone(),
+                        load_combo: forces.load_combo.clone(),
+                        section_name: section_name.clone(),
+                        utilization_ratio: rc_check.utilization_ratio,
+                        flexure_ur: rc_check.flexure_ur,
+                        shear_ur: rc_check.shear_ur,
+                        compression_ur: 0.0,
+                        interaction_ur: 0.0,
+                        ltb_ur: 0.0,
+                        deflection_ur: rc_check.deflection_ur,
+                        web_crippling_ur: 0.0,
+                        connection_adequate: true,
+                        passed: rc_check.passed,
+                        governing_check: rc_check.governing_check,
+                    });
+                } else {
+                    // Route to steel design check
+                    let check = check_member(forces, geom, &section_name, fy);
+                    checks.push(check);
+                }
             }
         }
         

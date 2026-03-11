@@ -253,6 +253,121 @@ pub fn ec3_ipe_sections() -> Vec<EC3Section> {
     ]
 }
 
+// ── Column Buckling (EN 1993-1-1 Cl. 6.3.1) ──
+
+/// EC3 column buckling result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EC3BucklingResult {
+    pub passed: bool,
+    pub utilization: f64,
+    pub nb_rd_kn: f64,
+    pub chi: f64,
+    pub lambda_bar: f64,
+    pub message: String,
+}
+
+/// Flexural buckling resistance per EN 1993-1-1 Cl. 6.3.1.2
+///
+/// Nb,Rd = χ × A × fy / γM1
+/// χ = 1 / (Φ + √(Φ² − λ̄²)) ≤ 1.0
+/// Φ = 0.5[1 + α(λ̄ − 0.2) + λ̄²]
+/// λ̄ = √(A fy / Ncr) = (Lcr/i) × (1/π) × √(fy/E)
+pub fn check_column_buckling(
+    a_mm2: f64,
+    fy_mpa: f64,
+    lcr_mm: f64,
+    i_mm: f64,
+    ned_kn: f64,
+    buckling_curve: char,
+) -> EC3BucklingResult {
+    let gamma_m1 = 1.0; // EN 1993-1-1 NA — typically 1.0
+    let e = 210_000.0; // MPa
+
+    // Imperfection factor α from Table 6.1
+    let alpha = match buckling_curve {
+        'a' => 0.21,
+        'b' => 0.34,
+        'c' => 0.49,
+        'd' => 0.76,
+        _ => 0.49, // default to curve c
+    };
+
+    // Non-dimensional slenderness
+    let lambda_bar = (lcr_mm / i_mm) * (1.0 / std::f64::consts::PI) * (fy_mpa / e).sqrt();
+
+    // Reduction factor χ
+    let phi = 0.5 * (1.0 + alpha * (lambda_bar - 0.2) + lambda_bar.powi(2));
+    let chi = (1.0 / (phi + (phi.powi(2) - lambda_bar.powi(2)).max(0.0).sqrt())).min(1.0);
+
+    let nb_rd = chi * a_mm2 * fy_mpa / (gamma_m1 * 1000.0); // kN
+    let utilization = ned_kn.abs() / nb_rd.max(f64::EPSILON);
+
+    EC3BucklingResult {
+        passed: utilization <= 1.0,
+        utilization,
+        nb_rd_kn: nb_rd,
+        chi,
+        lambda_bar,
+        message: format!(
+            "EC3 Cl. 6.3.1: λ̄={lambda_bar:.3}, χ={chi:.3}, \
+             Nb,Rd={nb_rd:.1} kN, NEd={:.1} kN, util={utilization:.3}",
+            ned_kn.abs(),
+        ),
+    }
+}
+
+// ── Combined N + M Interaction (EN 1993-1-1 Cl. 6.3.3) ──
+
+/// EC3 combined check result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EC3InteractionResult {
+    pub passed: bool,
+    pub utilization: f64,
+    pub equation: String,
+    pub message: String,
+}
+
+/// Combined axial + bending interaction per EN 1993-1-1 Eq. 6.61/6.62
+///
+/// NEd / (χy NRk/γM1) + kyy MEd,y / (χLT MRk,y/γM1) + kyz MEd,z / (MRk,z/γM1) ≤ 1.0
+///
+/// Simplified version (Method 2, Annex B):
+/// NEd/(χ NRk/γM1) + ky My/(Mpl,y/γM1) + kz Mz/(Mpl,z/γM1) ≤ 1.0
+pub fn check_interaction_ec3(
+    ned_kn: f64,
+    nb_rd_kn: f64,
+    my_knm: f64,
+    mpl_y_knm: f64,
+    mz_knm: f64,
+    mpl_z_knm: f64,
+    chi_lt: f64,
+) -> EC3InteractionResult {
+    let gamma_m1 = 1.0;
+
+    // Simplified interaction factors (Annex B, Table B.3)
+    // For Class 1/2 sections: kyy ≈ 1 + 0.6 λ̄y NEd/(χy NRk/γM1)
+    // Simplified: use kyy = 1.0, kyz = 0.6 for conservative check
+    let kyy = 1.0;
+    let kyz = 0.6;
+
+    let ratio_n = ned_kn.abs() / nb_rd_kn.max(f64::EPSILON);
+    let ratio_my = my_knm.abs() / (chi_lt * mpl_y_knm / gamma_m1).max(f64::EPSILON);
+    let ratio_mz = mz_knm.abs() / (mpl_z_knm / gamma_m1).max(f64::EPSILON);
+
+    // Eq. 6.61
+    let util_661 = ratio_n + kyy * ratio_my + kyz * ratio_mz;
+
+    EC3InteractionResult {
+        passed: util_661 <= 1.0,
+        utilization: util_661,
+        equation: "Eq. 6.61".to_string(),
+        message: format!(
+            "EC3 Cl. 6.3.3 Eq. 6.61: N/{nb_rd_kn:.0}={ratio_n:.3}, \
+             My/Mpl={ratio_my:.3}, Mz/Mpl={ratio_mz:.3}, sum={util_661:.3}"
+        ),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

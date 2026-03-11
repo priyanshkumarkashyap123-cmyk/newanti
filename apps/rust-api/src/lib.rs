@@ -33,11 +33,12 @@ pub use optimization::{
 };
 
 // Re-export design code types for international standards
-pub use design_codes::aisc_360::{AiscCapacity, AiscSection, AiscDesignParams};
-pub use design_codes::eurocode3::{EC3Capacity, EC3Section, EC3DesignParams, SectionClass};
-pub use design_codes::aci_318::{ACICapacity, ACISection, ACIDesignParams};
-pub use design_codes::eurocode2::{EC2Capacity, EC2Section, EC2DesignParams};
+pub use design_codes::aisc_360::{AiscCapacity, AiscSection, AiscDesignParams, AiscCompressionParams, AiscCompressionCapacity, AiscShearCapacity, AiscInteractionResult};
+pub use design_codes::eurocode3::{EC3Capacity, EC3Section, EC3DesignParams, SectionClass, EC3BucklingResult, EC3InteractionResult};
+pub use design_codes::aci_318::{ACICapacity, ACISection, ACIDesignParams, ACIColumnResult, ACIDevLengthResult};
+pub use design_codes::eurocode2::{EC2Capacity, EC2Section, EC2DesignParams, EC2CrackWidthResult, EC2PunchingShearResult};
 pub use design_codes::nds_2018::{NDSCapacity, NDSSection, NDSDesignParams};
+pub use design_codes::is_456::TorsionDesignResult;
 
 // Re-export AppState for integration tests
 pub use crate::cache::AnalysisCache;

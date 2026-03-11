@@ -154,3 +154,4 @@ restore_*.py
 test_erfinv_*
 # Persisted data (PrismaClient file-backed stub)
 apps/api/data/
+.env.deploy

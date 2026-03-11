@@ -8,7 +8,9 @@ RUST_APP=beamlab-rust-api
 SWA_NAME="brave-mushroom-0eae8ec00"
 
 find_var(){
-  for f in apps/api/.env.local apps/backend-python/.env apps/web/.env.local apps/rust-api/.env; do
+
+
+  for f in .env.deploy apps/api/.env.local apps/backend-python/.env apps/web/.env.local apps/rust-api/.env; do
     [ -f "$f" ] || continue
     val=$(grep -m1 "^$1=" "$f" || true)
     if [ -n "$val" ]; then
@@ -28,6 +30,14 @@ for s in "${secrets[@]}"; do
     gh secret set "$s" --body "$val" --repo "$REPO" || echo "gh secret set failed for $s"
   else
     echo "Local value for $s not found; skipping"
+  fi
+done
+
+# If user has provided publish profiles or SWA token in .env.deploy, prefer those over az fetch
+for k in AZURE_WEBAPP_PUBLISH_PROFILE_API AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON AZURE_PUBLISH_PROFILE_RUST AZURE_STATIC_WEB_APPS_API_TOKEN; do
+  if v=$(find_var "$k" 2>/dev/null); then
+    echo "Setting GH secret from local .env.deploy: $k"
+    gh secret set "$k" --body "$v" --repo "$REPO" || echo "gh secret set failed for $k"
   fi
 done
 

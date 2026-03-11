@@ -11,8 +11,9 @@ pub mod fsd_engine;
 pub use fsd_engine::{
     FSDEngine, FSDConfig, FSDResult,
     Objective, Constraint,
-    MemberForces, MemberGeometry, MemberType,
+    MemberForces, MemberGeometry, MemberType, MaterialType,
     DesignCheck, IterationHistory, MemberEnvelopeSummary,
-    RCDesignCheck,
+    RCDesignCheck, RcSection,
     check_member, check_member_rc,
+    rc_beam_database, rc_column_database,
 };

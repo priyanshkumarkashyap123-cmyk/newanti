@@ -44,6 +44,14 @@ import { ModalAnalysisPanel } from './ModalAnalysisPanel';
 import { BucklingAnalysisPanel } from './BucklingAnalysisPanel';
 import { TimeHistoryPanel } from './TimeHistoryPanel';
 
+/** Safely format a number, returning 'N/A' for null/undefined/NaN */
+function safeFixed(val: unknown, decimals: number = 2): string {
+    if (val === null || val === undefined) return 'N/A';
+    const n = Number(val);
+    if (!Number.isFinite(n)) return 'N/A';
+    return n.toFixed(decimals);
+}
+
 // ============================================
 // TYPES
 // ============================================
@@ -219,8 +227,14 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
             });
 
             if (!res.ok) {
-                const errJson = await res.json();
-                throw new Error(errJson.detail || 'Analysis failed');
+                let errDetail = 'Analysis failed';
+                try {
+                    const errJson = await res.json();
+                    errDetail = errJson.detail || errJson.message || `Server error (${res.status})`;
+                } catch {
+                    errDetail = `Server returned status ${res.status}`;
+                }
+                throw new Error(errDetail);
             }
 
             const data = await res.json();
@@ -421,11 +435,11 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <div className="text-slate-500 text-xs">Base Shear ({direction})</div>
-                                    <div className="font-mono font-bold">{result.base_shear?.toFixed(2) ?? '—'} kN</div>
+                                    <div className="font-mono font-bold">{safeFixed(result.base_shear)} kN</div>
                                 </div>
                                 <div>
                                     <div className="text-slate-500 text-xs">Modes Used</div>
-                                    <div className="font-mono font-bold">{result.modes?.length || 0}</div>
+                                    <div className="font-mono font-bold">{result.modes?.length ?? 0}</div>
                                 </div>
                             </div>
                         </div>
@@ -444,10 +458,10 @@ const ResponseSpectrumPanel: FC<{ isPro: boolean }> = ({ isPro }) => {
                                 <tbody>
                                     {result.modal_contributions?.slice(0, 5).map((m: any, i: number) => (
                                         <tr key={i} className="border-t border-slate-200 dark:border-slate-700">
-                                            <td className="p-1.5">{m.mode}</td>
-                                            <td className="p-1.5">{m.period?.toFixed(3) ?? '—'}</td>
-                                            <td className="p-1.5">{m.contribution_pct?.toFixed(2) ?? '—'}%</td>
-                                            <td className="p-1.5">{m.base_shear?.toFixed(2) ?? '—'}</td>
+                                            <td className="p-1.5">{m.mode ?? i + 1}</td>
+                                            <td className="p-1.5">{safeFixed(m.period, 3)}</td>
+                                            <td className="p-1.5">{safeFixed(m.contribution_pct)}%</td>
+                                            <td className="p-1.5">{safeFixed(m.base_shear)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -530,8 +544,8 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
             };
             const result = await runCableAnalysis(request);
             setCableResult(result);
-        } catch (err: any) {
-            setCableError(err.message || 'Cable analysis failed');
+        } catch (err: unknown) {
+            setCableError(getErrorMessage(err, 'Cable analysis failed'));
         } finally {
             setIsRunning(false);
         }
@@ -608,9 +622,9 @@ const CableAnalysisPanel: FC<{ isPro: boolean }> = ({ isPro: _isPro }) => {
                         <div className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">Cable Analysis Results</div>
                         {cableResult.cables.map((c: any, i: number) => (
                             <div key={i} className="text-xs text-green-600 dark:text-green-400 space-y-0.5">
-                                <div>Span: {c.span?.toFixed(2)} m | Sag: {c.sag?.toFixed(4)} m</div>
-                                <div>Cable Length: {c.cableLength?.toFixed(3)} m | Sag Ratio: {(c.sagRatio * 100)?.toFixed(2)}%</div>
-                                <div>E<sub>eq</sub>: {(c.equivalentModulus / 1e6)?.toFixed(1)} MPa (Reduction: {((1 - c.modulusReduction) * 100)?.toFixed(1)}%)</div>
+                                <div>Span: {safeFixed(c.span)} m | Sag: {safeFixed(c.sag, 4)} m</div>
+                                <div>Cable Length: {safeFixed(c.cableLength, 3)} m | Sag Ratio: {safeFixed(c.sagRatio != null ? c.sagRatio * 100 : null)}%</div>
+                                <div>E<sub>eq</sub>: {safeFixed(c.equivalentModulus != null ? c.equivalentModulus / 1e6 : null, 1)} MPa (Reduction: {safeFixed(c.modulusReduction != null ? (1 - c.modulusReduction) * 100 : null, 1)}%)</div>
                             </div>
                         ))}
                     </div>

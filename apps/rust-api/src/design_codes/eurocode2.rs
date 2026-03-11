@@ -265,6 +265,144 @@ pub fn ec2_sections() -> Vec<EC2Section> {
     ]
 }
 
+// ── Crack Width Check (EN 1992-1-1 Cl. 7.3) ──
+
+/// Crack width result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EC2CrackWidthResult {
+    pub passed: bool,
+    pub utilization: f64,
+    pub wk_mm: f64,
+    pub wk_limit_mm: f64,
+    pub sr_max_mm: f64,
+    pub epsilon_sm_minus_cm: f64,
+    pub message: String,
+}
+
+/// Crack width calculation per EN 1992-1-1 Cl. 7.3.4
+///
+/// wk = sr,max × (εsm − εcm)
+///
+/// sr,max = 3.4c + 0.425 k1 k2 Ø / ρp,eff  (Eq. 7.11)
+/// εsm − εcm = [σs − kt fct,eff/ρp,eff (1 + αe ρp,eff)] / Es  (Eq. 7.9)
+///
+/// Typical limits: 0.3mm for XC1 exposure, 0.2mm for XC2–XC4
+pub fn check_crack_width(
+    b_mm: f64,
+    d_mm: f64,
+    cover_mm: f64,
+    as_mm2: f64,
+    bar_dia_mm: f64,
+    fck_mpa: f64,
+    sigma_s_mpa: f64,
+    wk_limit_mm: f64,
+    is_long_term: bool,
+) -> EC2CrackWidthResult {
+    let fctm = 0.3 * fck_mpa.powf(2.0 / 3.0); // EN 1992-1-1 Table 3.1
+    let es = 200_000.0; // MPa
+    let ecm_gpa = 22.0 * (fck_mpa / 10.0).powf(0.3); // Table 3.1
+    let alpha_e = es / (ecm_gpa * 1000.0);
+
+    // Effective tension area: Ac,eff = b × hc,eff
+    // hc,eff = min(2.5(h − d), (h − x)/3, h/2) — simplified as 2.5 × cover + bar_dia
+    let h = d_mm + cover_mm + bar_dia_mm / 2.0;
+    let hc_eff = (2.5 * (h - d_mm)).min(h / 2.0);
+    let ac_eff = b_mm * hc_eff;
+    let rho_p_eff = (as_mm2 / ac_eff).max(0.001);
+
+    // kt: 0.6 for short-term, 0.4 for long-term loading
+    let kt = if is_long_term { 0.4 } else { 0.6 };
+
+    // Eq. 7.9: εsm − εcm
+    let esm_ecm_raw = (sigma_s_mpa - kt * fctm / rho_p_eff * (1.0 + alpha_e * rho_p_eff)) / es;
+    let esm_ecm = esm_ecm_raw.max(0.6 * sigma_s_mpa / es);
+
+    // Eq. 7.11: sr,max — k1=0.8 (high bond), k2=0.5 (flexure)
+    let k1 = 0.8;
+    let k2 = 0.5;
+    let sr_max = 3.4 * cover_mm + 0.425 * k1 * k2 * bar_dia_mm / rho_p_eff;
+
+    let wk = sr_max * esm_ecm;
+    let utilization = wk / wk_limit_mm.max(f64::EPSILON);
+
+    EC2CrackWidthResult {
+        passed: wk <= wk_limit_mm,
+        utilization,
+        wk_mm: wk,
+        wk_limit_mm,
+        sr_max_mm: sr_max,
+        epsilon_sm_minus_cm: esm_ecm,
+        message: format!(
+            "EC2 Cl. 7.3: wk={wk:.3}mm ≤ {wk_limit_mm}mm, sr,max={sr_max:.1}mm, \
+             (εsm−εcm)={esm_ecm:.6}"
+        ),
+    }
+}
+
+// ── Punching Shear (EN 1992-1-1 Cl. 6.4) ──
+
+/// Punching shear result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EC2PunchingShearResult {
+    pub passed: bool,
+    pub utilization: f64,
+    pub ved_mpa: f64,
+    pub vrd_c_mpa: f64,
+    pub vrd_max_mpa: f64,
+    pub u1_mm: f64,
+    pub message: String,
+}
+
+/// Punching shear check per EN 1992-1-1 Cl. 6.4.3–6.4.4
+///
+/// Control perimeter u1 at 2d from column face.
+/// vEd = β × VEd / (u1 × d)
+/// vRd,c = CRd,c × k × (100 ρl fck)^(1/3) ≥ vmin   (Eq. 6.47)
+///
+/// β = 1.15 for interior, 1.4 for edge, 1.5 for corner columns
+pub fn check_punching_shear(
+    column_b_mm: f64,
+    column_h_mm: f64,
+    slab_d_mm: f64,
+    fck_mpa: f64,
+    rho_l: f64,
+    ved_kn: f64,
+    beta: f64,
+) -> EC2PunchingShearResult {
+    // Control perimeter at 2d from column face (rectangular column)
+    let u1 = 2.0 * (column_b_mm + column_h_mm) + 4.0 * std::f64::consts::PI * slab_d_mm;
+
+    // Applied punching shear stress
+    let v_ed = beta * ved_kn * 1000.0 / (u1 * slab_d_mm); // MPa
+
+    // vRd,c per Cl. 6.4.4 / Eq. 6.47
+    let k = (1.0 + (200.0 / slab_d_mm).sqrt()).min(2.0);
+    let crd_c = 0.18 / 1.5; // CRd,c / γc
+    let vrd_c = crd_c * k * (100.0 * rho_l.min(0.02) * fck_mpa).powf(1.0 / 3.0);
+    let vmin = 0.035 * k.powf(1.5) * fck_mpa.sqrt();
+    let vrd_c = vrd_c.max(vmin);
+
+    // Maximum punching shear stress vRd,max
+    let nu = 0.6 * (1.0 - fck_mpa / 250.0);
+    let fcd = fck_mpa / 1.5;
+    let vrd_max = 0.5 * nu * fcd;
+
+    let utilization = v_ed / vrd_c.max(f64::EPSILON);
+
+    EC2PunchingShearResult {
+        passed: v_ed <= vrd_c && v_ed <= vrd_max,
+        utilization,
+        ved_mpa: v_ed,
+        vrd_c_mpa: vrd_c,
+        vrd_max_mpa: vrd_max,
+        u1_mm: u1,
+        message: format!(
+            "EC2 Cl. 6.4: vEd={v_ed:.3} MPa ≤ vRd,c={vrd_c:.3} MPa, \
+             u1={u1:.0}mm, β={beta:.2}"
+        ),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

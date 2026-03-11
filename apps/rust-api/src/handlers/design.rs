@@ -1444,6 +1444,240 @@ pub async fn nds_bending(
     Ok(Json(cap))
 }
 
+// ── IS 456 Torsion Design (Cl. 41.1–41.4) ──────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct TorsionDesignReq {
+    pub b_mm: f64,
+    pub d_mm: f64,
+    pub d_prime_mm: f64,
+    pub fck_mpa: f64,
+    pub fy_mpa: f64,
+    pub tu_knm: f64,
+    pub mu_knm: f64,
+    pub vu_kn: f64,
+    #[serde(default)]
+    pub asv_mm2: f64,
+    #[serde(default)]
+    pub pt_percent: f64,
+}
+
+pub async fn torsion_design(
+    Json(req): Json<TorsionDesignReq>,
+) -> ApiResult<Json<is_456::TorsionDesignResult>> {
+    let result = is_456::design_torsion(
+        req.tu_knm, req.vu_kn, req.mu_knm,
+        req.b_mm, req.d_mm, req.d_prime_mm,
+        req.fck_mpa, req.fy_mpa,
+        req.asv_mm2, req.pt_percent,
+    );
+    Ok(Json(result))
+}
+
+// ── AISC 360 Compression (Ch. E) ───────────────────────────────────────────
+
+pub async fn aisc_compression(
+    Json(req): Json<aisc_360::AiscCompressionParams>,
+) -> ApiResult<Json<aisc_360::AiscCompressionCapacity>> {
+    let cap = aisc_360::calculate_compression_capacity(&req);
+    Ok(Json(cap))
+}
+
+// ── AISC 360 Shear (Ch. G) ─────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AiscShearReq {
+    pub d_mm: f64,
+    pub tw_mm: f64,
+    pub fy_mpa: f64,
+    pub vu_kn: f64,
+}
+
+pub async fn aisc_shear(
+    Json(req): Json<AiscShearReq>,
+) -> ApiResult<Json<aisc_360::AiscShearCapacity>> {
+    let cap = aisc_360::calculate_shear_capacity(req.d_mm, req.tw_mm, req.fy_mpa, req.vu_kn);
+    Ok(Json(cap))
+}
+
+// ── AISC 360 Combined (Ch. H Eq. H1-1a/H1-1b) ─────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AiscInteractionReq {
+    pub pu_kn: f64,
+    pub phi_pn_kn: f64,
+    pub mu_x_knm: f64,
+    pub phi_mn_x_knm: f64,
+    pub mu_y_knm: f64,
+    pub phi_mn_y_knm: f64,
+}
+
+pub async fn aisc_interaction(
+    Json(req): Json<AiscInteractionReq>,
+) -> ApiResult<Json<aisc_360::AiscInteractionResult>> {
+    let result = aisc_360::check_interaction_h1(
+        req.pu_kn, req.phi_pn_kn,
+        req.mu_x_knm, req.phi_mn_x_knm,
+        req.mu_y_knm, req.phi_mn_y_knm,
+    );
+    Ok(Json(result))
+}
+
+// ── ACI 318 Column P-M Interaction (§22.4) ──────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AciColumnReq {
+    pub b_mm: f64,
+    pub h_mm: f64,
+    pub cover_mm: f64,
+    pub fc_mpa: f64,
+    pub fy_mpa: f64,
+    pub as_total_mm2: f64,
+    pub pu_kn: f64,
+    pub mu_knm: f64,
+}
+
+pub async fn aci_column(
+    Json(req): Json<AciColumnReq>,
+) -> ApiResult<Json<aci_318::ACIColumnResult>> {
+    let result = aci_318::check_column_aci(
+        req.b_mm, req.h_mm, req.cover_mm,
+        req.fc_mpa, req.fy_mpa, req.as_total_mm2,
+        req.pu_kn, req.mu_knm,
+    );
+    Ok(Json(result))
+}
+
+// ── ACI 318 Development Length (§25.4.2.3) ──────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AciDevLengthReq {
+    pub db_mm: f64,
+    pub fy_mpa: f64,
+    pub fc_mpa: f64,
+    #[serde(default)]
+    pub is_top_bar: bool,
+    #[serde(default)]
+    pub is_epoxy_coated: bool,
+}
+
+pub async fn aci_development_length(
+    Json(req): Json<AciDevLengthReq>,
+) -> ApiResult<Json<aci_318::ACIDevLengthResult>> {
+    let result = aci_318::development_length_aci(
+        req.db_mm, req.fy_mpa, req.fc_mpa,
+        req.is_top_bar, req.is_epoxy_coated,
+    );
+    Ok(Json(result))
+}
+
+// ── Eurocode 2 Crack Width (Cl. 7.3.4) ─────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC2CrackWidthReq {
+    pub b_mm: f64,
+    pub d_mm: f64,
+    pub cover_mm: f64,
+    pub as_mm2: f64,
+    pub bar_dia_mm: f64,
+    pub fck_mpa: f64,
+    pub sigma_s_mpa: f64,
+    #[serde(default = "default_wk_limit")]
+    pub wk_limit_mm: f64,
+    #[serde(default)]
+    pub is_long_term: bool,
+}
+
+fn default_wk_limit() -> f64 { 0.3 }
+
+pub async fn ec2_crack_width(
+    Json(req): Json<EC2CrackWidthReq>,
+) -> ApiResult<Json<eurocode2::EC2CrackWidthResult>> {
+    let result = eurocode2::check_crack_width(
+        req.b_mm, req.d_mm, req.cover_mm,
+        req.as_mm2, req.bar_dia_mm, req.fck_mpa,
+        req.sigma_s_mpa, req.wk_limit_mm, req.is_long_term,
+    );
+    Ok(Json(result))
+}
+
+// ── Eurocode 2 Punching Shear (Cl. 6.4.3–6.4.4) ───────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC2PunchingReq {
+    pub column_b_mm: f64,
+    pub column_h_mm: f64,
+    pub slab_d_mm: f64,
+    pub fck_mpa: f64,
+    pub rho_l: f64,
+    pub ved_kn: f64,
+    pub beta: f64,
+}
+
+pub async fn ec2_punching_shear(
+    Json(req): Json<EC2PunchingReq>,
+) -> ApiResult<Json<eurocode2::EC2PunchingShearResult>> {
+    let result = eurocode2::check_punching_shear(
+        req.column_b_mm, req.column_h_mm, req.slab_d_mm,
+        req.fck_mpa, req.rho_l, req.ved_kn, req.beta,
+    );
+    Ok(Json(result))
+}
+
+// ── Eurocode 3 Column Buckling (Cl. 6.3.1.2) ───────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC3BucklingReq2 {
+    pub area_mm2: f64,
+    pub fy_mpa: f64,
+    pub lcr_mm: f64,
+    pub i_mm: f64,
+    pub ned_kn: f64,
+    #[serde(default = "default_buckling_curve")]
+    pub curve: String,
+}
+
+fn default_buckling_curve() -> String { "b".to_string() }
+
+pub async fn ec3_column_buckling(
+    Json(req): Json<EC3BucklingReq2>,
+) -> ApiResult<Json<eurocode3::EC3BucklingResult>> {
+    let curve_char = req.curve.chars().next().unwrap_or('b');
+    let result = eurocode3::check_column_buckling(
+        req.area_mm2, req.fy_mpa, req.lcr_mm,
+        req.i_mm, req.ned_kn, curve_char,
+    );
+    Ok(Json(result))
+}
+
+// ── Eurocode 3 N+M Interaction (Cl. 6.3.3 Eq. 6.61) ───────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct EC3InteractionReq {
+    pub ned_kn: f64,
+    pub nb_rd_kn: f64,
+    pub my_ed_knm: f64,
+    pub my_rd_knm: f64,
+    pub mz_ed_knm: f64,
+    pub mz_rd_knm: f64,
+    #[serde(default = "default_chi_lt")]
+    pub chi_lt: f64,
+}
+
+fn default_chi_lt() -> f64 { 1.0 }
+
+pub async fn ec3_interaction(
+    Json(req): Json<EC3InteractionReq>,
+) -> ApiResult<Json<eurocode3::EC3InteractionResult>> {
+    let result = eurocode3::check_interaction_ec3(
+        req.ned_kn, req.nb_rd_kn,
+        req.my_ed_knm, req.my_rd_knm,
+        req.mz_ed_knm, req.mz_rd_knm,
+        req.chi_lt,
+    );
+    Ok(Json(result))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

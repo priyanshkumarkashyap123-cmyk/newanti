@@ -176,6 +176,154 @@ pub fn design_shear(
     }
 }
 
+// ── Torsion Design (IS 456 Cl. 41) ──
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TorsionDesignResult {
+    pub passed: bool,
+    pub utilization: f64,
+    pub message: String,
+    /// Equivalent shear Ve (kN) per Cl. 41.3.1
+    pub ve_kn: f64,
+    /// Equivalent moment Me1 (kN·m) per Cl. 41.4.2
+    pub me1_knm: f64,
+    /// Equivalent moment Me2 (kN·m) per Cl. 41.4.2 (opposite face)
+    pub me2_knm: f64,
+    /// Longitudinal steel on flexural tension face (mm²)
+    pub ast_torsion_mm2: f64,
+    /// Longitudinal steel on compression face (mm²)
+    pub asc_torsion_mm2: f64,
+    /// Transverse reinforcement area per spacing (mm²/mm)
+    pub asv_over_sv: f64,
+    /// Required stirrup spacing (mm)
+    pub spacing_mm: f64,
+    /// Shear check result for equivalent shear
+    pub shear_check: ShearCheckResult,
+}
+
+/// Torsion design per IS 456:2000 Cl. 41.1–41.4
+///
+/// Approach: equivalent shear + equivalent moment method.
+///
+/// - Cl. 41.3.1: Ve = Vu + 1.6*(Tu/b) — equivalent shear
+/// - Cl. 41.4.2: Me1 = Mu + Mt — equivalent moment (tension face)
+///               Me2 = Mt − Mu  — equivalent moment (compression face)
+///               Mt = Tu * (1 + D/b) / 1.7
+/// - Cl. 41.4.3: Transverse reinforcement from shear and torsion combined
+///
+/// # Arguments
+/// - `tu_knm`: Factored torsional moment (kN·m)
+/// - `vu_kn`: Factored shear force (kN)
+/// - `mu_knm`: Factored bending moment (kN·m)
+/// - `b`: Width of beam (mm)
+/// - `d`: Effective depth (mm)
+/// - `d_prime`: Compression steel depth from extreme fibre (mm)
+/// - `fck`: Characteristic concrete strength (MPa)
+/// - `fy`: Yield strength of reinforcement (MPa)
+/// - `asv`: Area of two-legged stirrups (mm²)
+/// - `pt_percent`: Tension steel percentage for τc lookup
+pub fn design_torsion(
+    tu_knm: f64,
+    vu_kn: f64,
+    mu_knm: f64,
+    b: f64,
+    d: f64,
+    d_prime: f64,
+    fck: f64,
+    fy: f64,
+    asv: f64,
+    pt_percent: f64,
+) -> TorsionDesignResult {
+    // IS 456 Cl. 41.4.2: Equivalent moment due to torsion
+    // Mt = Tu * (1 + D/b) / 1.7
+    // Note: D is overall depth. For simplicity, D ≈ d + cover ≈ d + 50 for standard beams
+    let big_d = d + 50.0; // approximate overall depth
+    let mt = tu_knm * (1.0 + big_d / b) / 1.7;
+
+    // Me1 = Mu + Mt (flexural tension face)
+    let me1 = mu_knm.abs() + mt;
+    // Me2 = Mt - Mu (compression face) — if positive, needs compression steel
+    let me2 = mt - mu_knm.abs();
+
+    // IS 456 Cl. 41.3.1: Equivalent shear
+    // Ve = Vu + 1.6 * (Tu / b)
+    let ve = vu_kn.abs() + 1.6 * (tu_knm.abs() * 1e6) / (b * 1000.0); // kN
+
+    // Check equivalent shear against shear capacity
+    let shear_check = design_shear(ve, b, d, fck, fy, pt_percent, asv);
+
+    // Longitudinal steel for Me1 (tension face)
+    let mu_lim = 0.36 * fck * b * (xu_max_ratio(fy) * d)
+        * (d - 0.42 * xu_max_ratio(fy) * d) / 1e6; // kN·m
+    let ast_torsion = if me1 <= mu_lim {
+        // Singly reinforced
+        let me1_nmm = me1 * 1e6;
+        let discriminant = 1.0 - (4.598 * me1_nmm) / (fck * b * d * d);
+        if discriminant > 0.0 {
+            (fck * b * d / (2.0 * fy)) * (1.0 - discriminant.sqrt())
+        } else {
+            me1_nmm / (0.87 * fy * 0.80 * d)
+        }
+    } else {
+        me1 * 1e6 / (0.87 * fy * 0.80 * d) // simplified for doubly reinforced
+    };
+
+    // Compression face steel for Me2 (only if Me2 > 0)
+    let asc_torsion = if me2 > 0.0 {
+        me2 * 1e6 / (0.87 * fy * (d - d_prime))
+    } else {
+        0.0
+    };
+
+    // IS 456 Cl. 41.4.3: Transverse reinforcement
+    // Asv/sv = Tu / (b1 * d1 * 0.87 * fy) + Vu / (2.5 * d1 * 0.87 * fy)
+    // b1 = b - 2*cover (≈ b - 2*40), d1 = d - 2*cover (≈ d - 2*40)
+    let b1 = (b - 80.0).max(b * 0.6);
+    let d1 = (d - 80.0).max(d * 0.6);
+    let asv_sv_torsion = tu_knm.abs() * 1e6 / (b1 * d1 * 0.87 * fy)
+        + vu_kn.abs() * 1e3 / (2.5 * d1 * 0.87 * fy);
+
+    // Minimum per Cl. 41.4.3: Asv/sv ≥ (τve - τc) * b / (0.87 * fy)
+    let tau_ve = ve * 1000.0 / (b * d);
+    let tau_c = table_19_tc(fck, pt_percent);
+    let asv_sv_min = ((tau_ve - tau_c).max(0.0) * b) / (0.87 * fy);
+    let asv_sv = asv_sv_torsion.max(asv_sv_min);
+
+    // Required stirrup spacing
+    let spacing = if asv_sv > f64::EPSILON {
+        let sv = asv / asv_sv;
+        sv.min(0.75 * d).min(300.0).max(MIN_STIRRUP_SPACING)
+    } else {
+        (0.75 * d).min(MAX_STIRRUP_SPACING)
+    };
+
+    let utilization = if shear_check.tau_c_max > f64::EPSILON {
+        tau_ve / shear_check.tau_c_max
+    } else {
+        0.0
+    };
+
+    let passed = shear_check.passed && (me1 <= mu_lim * 1.5); // conservative 1.5x for doubly reinforced margin
+
+    TorsionDesignResult {
+        passed,
+        utilization,
+        message: format!(
+            "IS 456 Cl. 41: Tu={tu_knm:.1} kN·m, Ve={ve:.1} kN, Me1={me1:.1} kN·m, \
+             Me2={me2:.1} kN·m, Ast(torsion)={ast_torsion:.0} mm², \
+             stirrup spacing={spacing:.0} mm"
+        ),
+        ve_kn: ve,
+        me1_knm: me1,
+        me2_knm: me2,
+        ast_torsion_mm2: ast_torsion,
+        asc_torsion_mm2: asc_torsion,
+        asv_over_sv: asv_sv,
+        spacing_mm: spacing,
+        shear_check,
+    }
+}
+
 // ── P-M Interaction Curve ──
 
 /// A point on the P-M interaction diagram

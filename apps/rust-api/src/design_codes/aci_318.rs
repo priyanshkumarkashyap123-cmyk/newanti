@@ -291,6 +291,154 @@ pub fn aci_sections() -> Vec<ACISection> {
     ]
 }
 
+// ── Column P-M Interaction (ACI 318-19 Ch. 22.4) ──
+
+/// Single point on the P-M interaction diagram
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ACIPMPoint {
+    pub phi_pn_kn: f64,
+    pub phi_mn_knm: f64,
+}
+
+/// ACI 318 column check result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ACIColumnResult {
+    pub passed: bool,
+    pub utilization: f64,
+    pub phi_pn0_kn: f64,
+    pub phi_mn_at_pu_knm: f64,
+    pub message: String,
+}
+
+/// Column axial + bending check per ACI 318-19 Eq. 22.4.2
+///
+/// Generates a simplified P-M envelope and checks if (Pu, Mu)
+/// falls inside the diagram.
+///
+/// - Pure axial: φPn(max) = 0.80 × φ × (0.85 f'c (Ag−Ast) + fy Ast) (Eq. 22.4.2.1)
+/// - Balanced: εs = εy at balanced point
+/// - Pure bending: As × fy × (d − a/2) with φ = 0.90
+pub fn check_column_aci(
+    b_mm: f64,
+    h_mm: f64,
+    fc_prime_mpa: f64,
+    fy_mpa: f64,
+    ast_mm2: f64,
+    cover_mm: f64,
+    pu_kn: f64,
+    mu_knm: f64,
+) -> ACIColumnResult {
+    let ag = b_mm * h_mm;
+    let d = h_mm - cover_mm - 10.0; // effective depth assuming 20mm bar
+    let d_prime = cover_mm + 10.0;
+
+    // β1 per Cl. 22.2.2.4.3
+    let beta1 = if fc_prime_mpa <= 28.0 {
+        0.85
+    } else {
+        (0.85 - 0.05 * (fc_prime_mpa - 28.0) / 7.0).max(0.65)
+    };
+
+    let es_mod = 200_000.0; // MPa
+    let epsilon_cu = 0.003;
+
+    // Pure axial capacity (no bending)
+    // φPn0 = 0.80 × φ × [0.85 × f'c × (Ag − Ast) + fy × Ast]
+    let phi_axial = 0.65; // Compression-controlled
+    let pn0 = 0.85 * fc_prime_mpa * (ag - ast_mm2) + fy_mpa * ast_mm2;
+    let phi_pn0 = 0.80 * phi_axial * pn0 / 1000.0; // kN
+
+    // Balanced point: c_b = εcu / (εcu + εy) × d
+    let epsilon_y = fy_mpa / es_mod;
+    let c_b = epsilon_cu / (epsilon_cu + epsilon_y) * d;
+    let a_b = beta1 * c_b;
+
+    // Half steel on each face (simplified symmetric reinforcement)
+    let as_half = ast_mm2 / 2.0;
+    // Strain in compression steel at balanced
+    let fs_prime = (es_mod * epsilon_cu * (c_b - d_prime) / c_b).min(fy_mpa);
+    let pn_b = 0.85 * fc_prime_mpa * a_b * b_mm + as_half * fs_prime - as_half * fy_mpa;
+    let mn_b = 0.85 * fc_prime_mpa * a_b * b_mm * (h_mm / 2.0 - a_b / 2.0)
+        + as_half * fs_prime * (h_mm / 2.0 - d_prime)
+        + as_half * fy_mpa * (d - h_mm / 2.0);
+    let _phi_pn_b = phi_axial * pn_b / 1000.0;
+    let phi_mn_b = phi_axial * mn_b / 1e6;
+
+    // Pure bending capacity (no axial)
+    let a_flex = ast_mm2 * fy_mpa / (0.85 * fc_prime_mpa * b_mm);
+    let phi_mn0 = 0.9 * ast_mm2 * fy_mpa * (d - a_flex / 2.0) / 1e6;
+
+    // Linear interpolation on the P-M diagram to find φMn at Pu
+    let pu_abs = pu_kn.abs();
+    let phi_mn_at_pu = if pu_abs >= phi_pn0 {
+        0.0 // Over pure axial — fails
+    } else if pu_abs >= _phi_pn_b.abs() {
+        // Between pure axial and balanced — linear interpolation
+        let ratio = (phi_pn0 - pu_abs) / (phi_pn0 - _phi_pn_b.abs()).max(f64::EPSILON);
+        ratio * phi_mn_b
+    } else {
+        // Between balanced and pure bending — linear interpolation
+        let ratio = pu_abs / _phi_pn_b.abs().max(f64::EPSILON);
+        phi_mn0 + ratio * (phi_mn_b - phi_mn0)
+    };
+
+    let utilization = mu_knm.abs() / phi_mn_at_pu.max(f64::EPSILON);
+
+    ACIColumnResult {
+        passed: utilization <= 1.0 && pu_abs <= phi_pn0,
+        utilization,
+        phi_pn0_kn: phi_pn0,
+        phi_mn_at_pu_knm: phi_mn_at_pu,
+        message: format!(
+            "ACI 318-19 §22.4: φPn0={phi_pn0:.1} kN, φMn@Pu={phi_mn_at_pu:.1} kN·m, \
+             Pu={pu_abs:.1} kN, Mu={:.1} kN·m, util={utilization:.3}",
+            mu_knm.abs(),
+        ),
+    }
+}
+
+// ── Development Length (ACI 318-19 Ch. 25) ──
+
+/// Development length result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ACIDevLengthResult {
+    pub ld_mm: f64,
+    pub message: String,
+}
+
+/// Development length for deformed bars in tension per ACI 318-19 §25.4.2.3 (simplified)
+///
+/// ld = (fy × ψt × ψe × ψs / (1.1 × λ × √f'c)) × db
+/// where ψt = 1.3 for top bars, 1.0 otherwise
+///       ψe = 1.0 for uncoated, 1.5 for epoxy-coated
+///       ψs = 0.8 for ≤ #6 (≤ 19mm), 1.0 otherwise
+///       λ = 1.0 for normal weight concrete
+pub fn development_length_aci(
+    db_mm: f64,
+    fy_mpa: f64,
+    fc_prime_mpa: f64,
+    is_top_bar: bool,
+    is_epoxy_coated: bool,
+) -> ACIDevLengthResult {
+    let psi_t = if is_top_bar { 1.3 } else { 1.0 };
+    let psi_e = if is_epoxy_coated { 1.5 } else { 1.0 };
+    let psi_s = if db_mm <= 19.0 { 0.8 } else { 1.0 };
+    let lambda = 1.0; // Normal weight concrete
+
+    // ACI 318-19 Eq. 25.4.2.3a
+    let ld = (fy_mpa * psi_t * psi_e * psi_s) / (1.1 * lambda * fc_prime_mpa.sqrt()) * db_mm;
+    // Minimum per §25.4.2.4
+    let ld = ld.max(300.0);
+
+    ACIDevLengthResult {
+        ld_mm: ld,
+        message: format!(
+            "ACI 318-19 §25.4.2.3: db={db_mm:.0}mm, ld={ld:.0}mm \
+             (ψt={psi_t}, ψe={psi_e}, ψs={psi_s})"
+        ),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

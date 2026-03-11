@@ -158,6 +158,178 @@ pub fn aisc_w_sections() -> Vec<AiscSection> {
     ]
 }
 
+// ── Compression Capacity (AISC 360-22 Ch. E) ──
+
+/// AISC 360 compression section properties (extends AiscSection for column checks)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiscCompressionParams {
+    /// Gross area (mm²)
+    pub ag_mm2: f64,
+    /// Radius of gyration about critical axis (mm)
+    pub r_mm: f64,
+    /// Effective length KL (mm)
+    pub kl_mm: f64,
+    /// Yield stress (MPa)
+    pub fy_mpa: f64,
+    /// Applied axial force (kN)
+    pub pu_kn: f64,
+}
+
+/// AISC 360 compression capacity result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiscCompressionCapacity {
+    pub passed: bool,
+    pub utilization: f64,
+    pub phi_pn_kn: f64,
+    pub fcr_mpa: f64,
+    pub slenderness: f64,
+    pub message: String,
+}
+
+/// Compression capacity per AISC 360-22 Eq. E3-1 through E3-4
+///
+/// Fcr depends on slenderness ratio KL/r relative to elastic buckling limit.
+/// - KL/r ≤ 4.71√(E/Fy): inelastic buckling, Eq. E3-2
+/// - KL/r > 4.71√(E/Fy): elastic buckling, Eq. E3-3
+pub fn calculate_compression_capacity(params: &AiscCompressionParams) -> AiscCompressionCapacity {
+    let phi = 0.9; // AISC 360 §E1
+    let e = 200_000.0; // MPa
+
+    let slenderness = params.kl_mm / params.r_mm;
+    let fe = std::f64::consts::PI.powi(2) * e / slenderness.powi(2); // Eq. E3-4
+    let limit = 4.71 * (e / params.fy_mpa).sqrt();
+
+    let fcr = if slenderness <= limit {
+        // Inelastic buckling: Fcr = (0.658^(Fy/Fe)) * Fy — Eq. E3-2
+        (0.658_f64).powf(params.fy_mpa / fe) * params.fy_mpa
+    } else {
+        // Elastic buckling: Fcr = 0.877 * Fe — Eq. E3-3
+        0.877 * fe
+    };
+
+    let phi_pn = phi * fcr * params.ag_mm2 / 1000.0; // kN
+    let utilization = params.pu_kn.abs() / phi_pn.max(f64::EPSILON);
+
+    AiscCompressionCapacity {
+        passed: utilization <= 1.0,
+        utilization,
+        phi_pn_kn: phi_pn,
+        fcr_mpa: fcr,
+        slenderness,
+        message: format!(
+            "AISC 360 Eq. E3: KL/r={slenderness:.1}, Fcr={fcr:.1} MPa, \
+             φPn={phi_pn:.1} kN, Pu={:.1} kN, util={utilization:.3}",
+            params.pu_kn.abs(),
+        ),
+    }
+}
+
+// ── Shear Capacity (AISC 360-22 Ch. G) ──
+
+/// AISC 360 shear capacity result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiscShearCapacity {
+    pub passed: bool,
+    pub utilization: f64,
+    pub phi_vn_kn: f64,
+    pub cv1: f64,
+    pub message: String,
+}
+
+/// Shear capacity per AISC 360-22 Eq. G2-1
+///
+/// φVn = φ × 0.6 × Fy × Aw × Cv1
+/// - Cv1 = 1.0 for h/tw ≤ 2.24√(E/Fy) (most rolled shapes)
+/// - Otherwise reduced per Table G2.2
+pub fn calculate_shear_capacity(
+    d_mm: f64,
+    tw_mm: f64,
+    fy_mpa: f64,
+    vu_kn: f64,
+) -> AiscShearCapacity {
+    let phi_v = 1.0; // AISC 360 §G1 for rolled I-shapes with h/tw ≤ 2.24√(E/Fy)
+    let e = 200_000.0;
+    let aw = d_mm * tw_mm; // Web area (mm²)
+    let h_tw = d_mm / tw_mm;
+    let limit = 2.24 * (e / fy_mpa).sqrt();
+
+    let (cv1, phi_actual) = if h_tw <= limit {
+        (1.0, 1.0)
+    } else {
+        // For slender webs: Cv1 per Eq. G2-3/G2-4, φ = 0.9
+        let kv = 5.34; // no stiffeners
+        let cv = if h_tw <= 1.10 * (kv * e / fy_mpa).sqrt() {
+            1.0
+        } else {
+            1.10 * (kv * e / fy_mpa).sqrt() / h_tw
+        };
+        (cv, 0.9)
+    };
+
+    let phi_vn = phi_actual * 0.6 * fy_mpa * aw * cv1 / 1000.0; // kN
+    let utilization = vu_kn.abs() / phi_vn.max(f64::EPSILON);
+
+    AiscShearCapacity {
+        passed: utilization <= 1.0,
+        utilization,
+        phi_vn_kn: phi_vn,
+        cv1,
+        message: format!(
+            "AISC 360 Eq. G2-1: h/tw={h_tw:.1}, Cv1={cv1:.3}, \
+             φVn={phi_vn:.1} kN, Vu={:.1} kN, util={utilization:.3}",
+            vu_kn.abs(),
+        ),
+    }
+}
+
+// ── Combined Axial + Bending Interaction (AISC 360-22 Ch. H) ──
+
+/// AISC 360 interaction check result
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiscInteractionResult {
+    pub passed: bool,
+    pub utilization: f64,
+    pub equation: String,
+    pub message: String,
+}
+
+/// Combined axial + bending check per AISC 360-22 Eq. H1-1a/H1-1b
+///
+/// When Pr/Pc ≥ 0.2: Pr/Pc + (8/9)(Mrx/Mcx + Mry/Mcy) ≤ 1.0 (H1-1a)
+/// When Pr/Pc < 0.2: Pr/(2Pc) + (Mrx/Mcx + Mry/Mcy) ≤ 1.0 (H1-1b)
+pub fn check_interaction_h1(
+    pr_kn: f64,      // Required axial strength (kN)
+    pc_kn: f64,      // Available axial strength φPn (kN)
+    mrx_knm: f64,    // Required flexural strength about x-axis (kN·m)
+    mcx_knm: f64,    // Available flexural strength about x-axis φMnx (kN·m)
+    mry_knm: f64,    // Required flexural strength about y-axis (kN·m)
+    mcy_knm: f64,    // Available flexural strength about y-axis φMny (kN·m)
+) -> AiscInteractionResult {
+    let ratio_p = pr_kn.abs() / pc_kn.max(f64::EPSILON);
+    let ratio_mx = mrx_knm.abs() / mcx_knm.max(f64::EPSILON);
+    let ratio_my = mry_knm.abs() / mcy_knm.max(f64::EPSILON);
+
+    let (utilization, equation) = if ratio_p >= 0.2 {
+        // Eq. H1-1a
+        let u = ratio_p + (8.0 / 9.0) * (ratio_mx + ratio_my);
+        (u, "H1-1a".to_string())
+    } else {
+        // Eq. H1-1b
+        let u = ratio_p / 2.0 + ratio_mx + ratio_my;
+        (u, "H1-1b".to_string())
+    };
+
+    AiscInteractionResult {
+        passed: utilization <= 1.0,
+        utilization,
+        equation: equation.clone(),
+        message: format!(
+            "AISC 360 Eq. {equation}: Pr/Pc={ratio_p:.3}, Mrx/Mcx={ratio_mx:.3}, \
+             Mry/Mcy={ratio_my:.3}, interaction={utilization:.3}",
+        ),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

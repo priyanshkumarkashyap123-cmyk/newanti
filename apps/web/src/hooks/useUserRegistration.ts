@@ -55,7 +55,7 @@ export function useUserRegistration() {
                     method: 'POST',
                     headers,
                     body: JSON.stringify({
-                        email: user.email || 'unknown@beamlab.app'
+                        email: user.email || 'unknown@beamlabultimate.tech'
                     }),
                     signal: controller.signal
                 });
