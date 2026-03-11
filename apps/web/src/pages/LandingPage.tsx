@@ -74,6 +74,7 @@ export const LandingPage: FC = () => {
   const [scrolled, setScrolled] = useState(false);
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const REVIEW_DISPLAY_COUNT = 3;
+    const SHOW_REVIEWS = false; // temporarily hide reviews section and nav
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showcaseCards, setShowcaseCards] = useState<ShowcaseCard[]>([]);
   const [showcaseUnavailable, setShowcaseUnavailable] = useState(false);
@@ -264,12 +265,13 @@ export const LandingPage: FC = () => {
                 <a href="#tools" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Tools</a>
                 <a href="#screenshots" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Screenshots</a>
                 <a href="#pricing" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Pricing</a>
-                <a href="#reviews" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">{`Reviews (3)`}</a>
+                {SHOW_REVIEWS && (
+                  <a href="#reviews" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">{`Reviews (3)`}</a>
+                )}
                 <a href="#compare" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Compare</a>
                 <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Demo</Link>
               </div>
             </div>
-
             {/* Auth - Right aligned */}
             <div className="hidden md:flex items-center flex-shrink-0">
               {renderAuthButtons()}
@@ -311,7 +313,7 @@ export const LandingPage: FC = () => {
               { href: '#tools', label: 'Tools' },
               { href: '#screenshots', label: 'Screenshots' },
               { href: '#pricing', label: 'Pricing' },
-              { href: '#reviews', label: `Reviews (3)` },
+              ...(SHOW_REVIEWS ? [{ href: '#reviews', label: `Reviews (3)` }] : []),
               { href: '#compare', label: 'Compare' },
             ].map((item) => (
               <a key={item.href} href={item.href} onClick={() => setMobileMenuOpen(false)}
@@ -899,7 +901,8 @@ export const LandingPage: FC = () => {
         </section>
 
         {/* ===== Reviews & Testimonials ===== */}
-        <section id="reviews" className="py-24 sm:py-32 bg-gradient-to-b from-slate-900 to-slate-950 relative overflow-hidden">
+        {SHOW_REVIEWS && (
+          <section id="reviews" className="py-24 sm:py-32 bg-gradient-to-b from-slate-900 to-slate-950 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
@@ -936,7 +939,8 @@ export const LandingPage: FC = () => {
               ))}
             </div>
           </div>
-        </section>
+          </section>
+        )}
 
         {/* Comparison Table */}
         <section id="compare" className="py-24 sm:py-32 bg-slate-50/50 dark:bg-slate-900/20">
