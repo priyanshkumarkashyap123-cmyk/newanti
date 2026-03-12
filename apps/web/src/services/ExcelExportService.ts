@@ -29,6 +29,7 @@ function getXLSX() {
   return _xlsxPromise;
 }
 import { AnalysisResults } from "../store/model";
+import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -180,7 +181,8 @@ export const exportToExcel = async (
     // ========================================
     if (includeSummary) {
         const summaryData = [
-            ['BeamLab - Structural Analysis Report'],
+                [`${BEAMLAB_COMPANY.name} — Structural Analysis Report`],
+                [`${BEAMLAB_COMPANY.website}  |  ${BEAMLAB_COMPANY.email}`],
             [],
             ['Project Information'],
             ['Project Name:', projectInfo.name],
@@ -245,7 +247,15 @@ export const exportToExcel = async (
         const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
         summaryWs['!cols'] = [{ wch: 25 }, { wch: 30 }];
         XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
-    }
+
+            // Append branded disclaimer at the bottom of the summary
+            const footerRow = summaryData.length + 2;
+            XLSX.utils.sheet_add_aoa(summaryWs, [
+                [],
+                [BEAMLAB_COMPANY.generatedByLine],
+                [BEAMLAB_COMPANY.disclaimer],
+            ], { origin: { r: footerRow, c: 0 } });
+        }
 
     // ========================================
     // 2. NODES SHEET

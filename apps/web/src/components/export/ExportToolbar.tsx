@@ -375,6 +375,7 @@ export const ExportToolbar: FC<ExportToolbarProps> = ({
             <div className="relative">
                 <button type="button"
                     onClick={() => setIsOpen(!isOpen)}
+                    aria-label="Open export options"
                     className="flex items-center gap-1 px-2 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-600 
                              text-slate-700 dark:text-slate-200 text-sm rounded-md transition-colors border border-slate-600"
                 >

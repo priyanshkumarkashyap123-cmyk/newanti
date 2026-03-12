@@ -719,12 +719,12 @@ export const ModernModeler: FC = () => {
       }
     };
     const onTriggerCsvExport = () => {
+      // Consolidated: trigger-csv-export now handled by trigger-export
       const s = useModelStore.getState();
       if (s.analysisResults) {
         setShowExportDialog(true);
-        showNotification("info", "Opening export dialog for CSV");
       } else {
-        showNotification("warning", "Run analysis before exporting CSV");
+        showNotification("warning", "Run analysis before exporting");
       }
     };
     const onToggleGridSnap = () => {
@@ -1393,7 +1393,7 @@ export const ModernModeler: FC = () => {
                 ? "buckling"
                 : showPDeltaAnalysis
                   ? "pdelta"
-                  : "pdelta"
+                  : "spectrum"
             }
           />
 

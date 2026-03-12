@@ -22,7 +22,7 @@ export const up = async (db: mongoose.Connection): Promise<void> => {
         if (found) {
             // Index with same key exists (possibly with a different name) — skip
             // Keep behavior idempotent across environments
-            // eslint-disable-next-line no-console
+             
             console.log(`Index on ${collName} ${JSON.stringify(key)} already exists as ${found.name}, skipping`);
             return;
         }

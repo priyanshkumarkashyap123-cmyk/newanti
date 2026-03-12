@@ -27,8 +27,10 @@ import { useModelStore } from '../store/model';
 import type { Member, NodeLoad, MemberLoad, LoadCase, LoadCombination, ModeShape } from '../store/model';
 import type { SectionProperties } from '../data/SectionDatabase';
 import { useAuth } from '../providers/AuthProvider';
-import { LOGO_ICON_COLORED } from '../utils/LogoData';
 import { generateDesignReport } from '../services/PDFReportService';
+import { Logo } from '../components/branding/Logo';
+import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
+import { ReportStatusPill } from '../components/reports/UnifiedReportTemplate';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { exportProjectData } from '../services/ExcelExportService';
@@ -377,16 +379,16 @@ export const ReportsPage = () => {
                         <div className="flex items-start justify-between mt-2">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 flex items-center justify-center">
-                                    <img src={LOGO_ICON_COLORED} alt="BeamLab" className="w-full h-full object-contain" />
+                                     <Logo size="lg" variant="icon" clickable={false} />
                                 </div>
                                 <div>
-                                    <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">BeamLab</h1>
-                                    <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-[0.25em] mt-0.5">Structural Engineering</p>
+                                     <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">{BEAMLAB_COMPANY.name}</h1>
+                                     <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-[0.25em] mt-0.5">{BEAMLAB_COMPANY.tagline}</p>
                                 </div>
                             </div>
                             <div className="text-right text-[10px] text-slate-600 dark:text-slate-400 space-y-0.5 leading-tight">
-                                <p>beamlabultimate.tech</p>
-                                <p>decodedoffice@gmail.com</p>
+                                  <p>{BEAMLAB_COMPANY.website}</p>
+                                  <p>{BEAMLAB_COMPANY.email}</p>
                             </div>
                         </div>
 
@@ -446,7 +448,7 @@ export const ReportsPage = () => {
                             @page {
                                 size: A4 portrait;
                                 margin: 20mm 15mm 25mm 15mm;
-                                @top-left   { content: "BeamLab — ${ref}"; font-size: 8pt; color: #94a3b8; }
+                                @top-left   { content: "${BEAMLAB_COMPANY.name} — ${ref}"; font-size: 8pt; color: #94a3b8; }
                                 @top-right  { content: "Rev ${revision}  |  ${fmtDate(now)}"; font-size: 8pt; color: #94a3b8; }
                                 @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #94a3b8; }
                                 @bottom-left { content: "CONFIDENTIAL — ${userName}"; font-size: 7pt; color: #cbd5e1; }
@@ -456,7 +458,7 @@ export const ReportsPage = () => {
 
                     {/* ─── On-screen running header (hidden in print, @page handles it) ─── */}
                     <div className="flex items-center justify-between px-12 md:px-16 print:hidden py-2 border-b-2 border-[#12376A] bg-slate-50 text-[10px] text-slate-600 dark:text-slate-400">
-                        <span className="font-bold tracking-wider">BeamLab — {ref}</span>
+                            <span className="font-bold tracking-wider">{BEAMLAB_COMPANY.name} — {ref}</span>
                         <span>Rev {revision} &nbsp;|&nbsp; {fmtDate(now)}</span>
                     </div>
 
@@ -507,7 +509,7 @@ export const ReportsPage = () => {
                                     <tr className="border-t border-slate-200">
                                         <td className="px-3 py-2">{userName}</td>
                                         <td className="px-3 py-2">Structural Engineer</td>
-                                        <td className="px-3 py-2">BeamLab</td>
+                                        <td className="px-3 py-2">{BEAMLAB_COMPANY.name}</td>
                                         <td className="px-3 py-2">1 (electronic)</td>
                                     </tr>
                                 </tbody>
@@ -1632,7 +1634,7 @@ export const ReportsPage = () => {
                                 <div className="mt-6 border-t border-slate-200 pt-4">
                                     <p className="text-[11px] font-bold text-slate-700 mb-2">Disclaimer & Limitations</p>
                                     <ul className="list-disc list-inside space-y-1.5 text-[10px] text-slate-500 leading-relaxed">
-                                        <li>This report has been prepared using automated structural analysis software (BeamLab). Results should be independently verified by a qualified structural engineer.</li>
+                                        <li>This report has been prepared using automated structural analysis software ({BEAMLAB_COMPANY.name}). Results should be independently verified by a qualified structural engineer.</li>
                                         <li>The analysis is limited to a linear elastic, first-order static analysis unless otherwise stated. Effects of geometric nonlinearity (P-Δ), material nonlinearity, and construction sequence are outside the scope of this report.</li>
                                         <li>The design verification checks presented in Section 5.0 are indicative only and based on assumed reference capacities. They do not constitute a full code-compliance design check.</li>
                                         <li>Connection design, foundation design, and detailing are not covered in this report.</li>
@@ -1674,10 +1676,10 @@ export const ReportsPage = () => {
                                 This is a computer-generated document. Results should be independently verified.
                             </p>
                             <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">
-                                Generated by <strong>BeamLab</strong> — Document {ref} Rev {revision} — {fmtDate(now)} {fmtTime(now)}
+                                Generated by <strong>{BEAMLAB_COMPANY.name}</strong> — Document {ref} Rev {revision} — {fmtDate(now)} {fmtTime(now)}
                             </p>
                             <p className="text-[9px] text-slate-700 dark:text-slate-300 mt-2">
-                                © {now.getFullYear()} BeamLab. All rights reserved. CONFIDENTIAL.
+                                © {now.getFullYear()} {BEAMLAB_COMPANY.name}. All rights reserved. CONFIDENTIAL.
                             </p>
                         </div>
                     </div>

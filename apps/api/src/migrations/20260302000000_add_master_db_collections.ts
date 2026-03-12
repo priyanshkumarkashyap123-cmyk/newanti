@@ -29,7 +29,7 @@ export const up = async (db: mongoose.Connection): Promise<void> => {
         const found = existing.find((idx) => JSON.stringify(idx.key) === JSON.stringify(key));
         if (found) {
             // Index with same key exists — skip
-            // eslint-disable-next-line no-console
+             
             console.log(`Index on ${collName} ${JSON.stringify(key)} already exists as ${found.name}, skipping`);
             return;
         }

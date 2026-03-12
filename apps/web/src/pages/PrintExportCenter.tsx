@@ -51,6 +51,7 @@ import {
   Box,
 } from "lucide-react";
 import { useModelStore } from "../store/model";
+import { BEAMLAB_COMPANY } from "../constants/BrandingConstants";
 
 // Types
 type ExportFormat =
@@ -432,7 +433,7 @@ const PrintExportCenter: React.FC = () => {
 h2{color:#2b6cb0;margin-top:20px}table{width:100%;border-collapse:collapse;margin:10px 0}th,td{border:1px solid #ccc;padding:6px 10px;text-align:right}
 th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pass{color:green}.fail{color:red}
 .header{display:flex;justify-content:space-between;align-items:center}.meta{color:#718096;font-size:0.9em}</style></head><body>`;
-      html += `<div class="header"><h1>Structural Analysis Report</h1><div class="meta">Generated: ${new Date().toLocaleDateString()}<br>BeamLab</div></div>`;
+      html += `<div class="header"><h1>Structural Analysis Report</h1><div class="meta">Generated: ${new Date().toLocaleDateString()}<br>${BEAMLAB_COMPANY.name}</div></div>`;
       html += `<h2>Model Summary</h2><p>Nodes: ${nodes.size} | Members: ${members.size}</p>`;
 
       // Nodes table
@@ -479,7 +480,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
 
     const buildJSON = (): string => {
       const data: any = {
-        meta: { generated: new Date().toISOString(), app: "BeamLab" },
+        meta: { generated: new Date().toISOString(), app: BEAMLAB_COMPANY.name },
         nodes: Object.fromEntries(nodes),
         members: Object.fromEntries(
           Array.from(members.entries()).map(([id, m]) => [id, { ...m }]),
@@ -1003,7 +1004,7 @@ th{background:#e2e8f0;text-align:left}tr:nth-child(even){background:#f7fafc}.pas
                           style={{ fontSize: 6 * (previewZoom / 100) }}
                         >
                           <span className="text-slate-600 dark:text-slate-400">
-                            BeamLab
+                            {BEAMLAB_COMPANY.name}
                           </span>
                           {pageSettings.pageNumbers && (
                             <span className="text-slate-600 dark:text-slate-400">

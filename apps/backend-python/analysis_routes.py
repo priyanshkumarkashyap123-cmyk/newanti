@@ -67,7 +67,7 @@ class TimeHistoryAnalysisRequest(BaseModel):
 # ENDPOINTS
 # ============================================
 
-@router.post("/analyze/time-history", tags=["Analysis"])
+@router.post("/time-history", tags=["Analysis"])
 async def analyze_timehistory(request: TimeHistoryAnalysisRequest):
     """
     Perform Dynamic Time History Analysis

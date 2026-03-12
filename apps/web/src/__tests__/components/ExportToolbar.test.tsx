@@ -77,8 +77,7 @@ describe('ExportToolbar', () => {
       <ExportToolbar exportData={exportData} onExportComplete={onExportComplete} />,
     );
 
-    const menuButtons = screen.getAllByRole('button');
-    await user.click(menuButtons[1]!);
+    await user.click(screen.getByRole('button', { name: /open export options/i }));
     await user.click(screen.getByRole('button', { name: /clean pdf report/i }));
 
     expect(triggerListener).toHaveBeenCalledTimes(1);

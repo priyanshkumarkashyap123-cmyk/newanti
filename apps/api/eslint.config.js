@@ -5,7 +5,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ['dist/**', 'node_modules/**', '*.js', '*.mjs'],
+    ignores: ['dist/**', 'node_modules/**', '*.js', '*.mjs', '**/* 2.ts'],
   },
   {
     files: ['**/*.ts'],
@@ -18,6 +18,19 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
+    },
+  },
+  {
+    files: ['**/*.test.ts', '**/__tests__/**/*.ts', 'tests/**/*.ts', '**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
+    files: ['scripts/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   }
 );

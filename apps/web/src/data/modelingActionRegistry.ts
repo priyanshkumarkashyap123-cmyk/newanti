@@ -108,7 +108,7 @@ export const MODELING_ACTIONS: SidebarAction[] = [
   { id: "open-results-hub", label: "Results Hub", icon: Eye, handler: "dispatch", target: "open-results-hub", categories: ["ANALYSIS", "DESIGN"], quick: true, quickGroup: "analysis" },
 
   { id: "design-codes", label: "Select Design Code", icon: Settings, handler: "openModal", target: "designCodes", categories: ["DESIGN"] },
-  { id: "design-check", label: "Run Design Check", icon: Ruler, handler: "dispatch", target: "trigger-analysis", categories: ["DESIGN"] },
+  { id: "design-check", label: "Run Design Check", icon: Ruler, handler: "dispatch", target: "trigger-design-check", categories: ["DESIGN"] },
   { id: "design-results", label: "View Design Results", icon: Eye, handler: "dispatch", target: "toggle-results-dock", categories: ["DESIGN"] },
   { id: "steel-design", label: "Steel Design", icon: Building2, handler: "openModal", target: "steelDesign", categories: ["DESIGN"] },
   { id: "rc-design", label: "RC Design", icon: Columns, handler: "openModal", target: "concreteDesign", categories: ["DESIGN"] },

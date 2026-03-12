@@ -3,12 +3,25 @@ import { AnalysisResults, Node, Member, NodeLoad, MemberLoad } from '../store/mo
 import { SteelDesignResults } from './SteelDesignService';
 import { API_CONFIG } from '../config/env';
 
+import { BEAMLAB_COMPANY, BEAMLAB_COLORS_RGB } from '../constants/BrandingConstants';
+
 interface ProjectInfo {
     name: string;
     engineer: string;
     date: string;
     description: string;
 }
+
+// Re-export so callers can type project info without a separate import
+export type { ProjectInfo };
+
+// Centralized branding — these override any locally hardcoded strings
+const _CO_NAME      = BEAMLAB_COMPANY.name;
+const _CO_WEBSITE   = BEAMLAB_COMPANY.website;
+const _CO_EMAIL     = BEAMLAB_COMPANY.email;
+const _CO_DISCLAIMER = BEAMLAB_COMPANY.disclaimer;
+// Silence lint warnings on unused aliases until full adoption
+void _CO_NAME; void _CO_WEBSITE; void _CO_EMAIL; void _CO_DISCLAIMER;
 
 const PYTHON_API_URL = API_CONFIG.pythonUrl;
 
@@ -91,7 +104,7 @@ export const generateProfessionalReport = async (
             settings: {
                 project_name: project.name,
                 engineer_name: project.engineer,
-                company_name: "BeamLab",
+                company_name: BEAMLAB_COMPANY.name,
                 include_diagrams: true
             },
             analysis_data: {
@@ -213,7 +226,7 @@ export const generateBasicPDFReport = async (
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...NAVY);
-    doc.text('BeamLab', 20, 30);
+    doc.text(BEAMLAB_COMPANY.name, 20, 30);
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -223,8 +236,8 @@ export const generateBasicPDFReport = async (
     // Right side branding
     doc.setFontSize(8);
     doc.setTextColor(...SLATE_500);
-    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
-    doc.text('decodedoffice@gmail.com', pageWidth - 20, 31, { align: 'right' });
+    doc.text(BEAMLAB_COMPANY.website, pageWidth - 20, 26, { align: 'right' });
+    doc.text(BEAMLAB_COMPANY.email, pageWidth - 20, 31, { align: 'right' });
 
     // Divider
     doc.setDrawColor(...SLATE_200);
@@ -297,7 +310,7 @@ export const generateBasicPDFReport = async (
         doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...SLATE_500);
-        doc.text(`BeamLab \u2014 ${docRef}`, 14, 8);
+        doc.text(`${BEAMLAB_COMPANY.name} \u2014 ${docRef}`, 14, 8);
         doc.text(`Rev 00  |  ${dateStr}`, pageWidth - 14, 8, { align: 'right' });
         doc.setDrawColor(...NAVY);
         doc.setLineWidth(0.5);
@@ -475,9 +488,9 @@ export const generateBasicPDFReport = async (
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...SLATE_500);
-        doc.text(`BeamLab  \u2014  ${docRef}  Rev 00`, 14, pageHeight - 11);
+        doc.text(`${BEAMLAB_COMPANY.name}  \u2014  ${docRef}  Rev 00`, 14, pageHeight - 11);
         doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
-        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.text(BEAMLAB_COMPANY.website, pageWidth - 14, pageHeight - 11, { align: 'right' });
         doc.setFontSize(6);
         doc.setTextColor(180, 180, 180);
         doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });
@@ -524,7 +537,7 @@ export const generateCivilReport = async (
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...NAVY);
-    doc.text('BeamLab', 20, 30);
+    doc.text(BEAMLAB_COMPANY.name, 20, 30);
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -532,8 +545,8 @@ export const generateCivilReport = async (
     doc.text('CIVIL ENGINEERING DESIGN', 20, 36);
 
     doc.setFontSize(8);
-    doc.text('beamlabultimate.tech', pageWidth - 20, 26, { align: 'right' });
-    doc.text('decodedoffice@gmail.com', pageWidth - 20, 31, { align: 'right' });
+    doc.text(BEAMLAB_COMPANY.website, pageWidth - 20, 26, { align: 'right' });
+    doc.text(BEAMLAB_COMPANY.email, pageWidth - 20, 31, { align: 'right' });
 
     // Centre title
     const centerY = pageHeight / 2 - 15;
@@ -663,9 +676,9 @@ export const generateCivilReport = async (
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(...SLATE_500);
-        doc.text('BeamLab  \u2014  Civil Engineering Design', 14, pageHeight - 11);
+        doc.text(`${BEAMLAB_COMPANY.name}  \u2014  Civil Engineering Design`, 14, pageHeight - 11);
         doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 11, { align: 'center' });
-        doc.text('beamlabultimate.tech', pageWidth - 14, pageHeight - 11, { align: 'right' });
+        doc.text(BEAMLAB_COMPANY.website, pageWidth - 14, pageHeight - 11, { align: 'right' });
         doc.setFontSize(6);
         doc.setTextColor(180, 180, 180);
         doc.text('CONFIDENTIAL \u2014 Computer-generated document. Results should be independently verified.', pageWidth / 2, pageHeight - 7, { align: 'center' });

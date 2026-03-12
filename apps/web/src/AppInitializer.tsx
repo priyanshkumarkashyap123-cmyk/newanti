@@ -282,7 +282,7 @@ function registerGlobalHandlers() {
       // Ctrl+S / Cmd+S - Save
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
-        window.dispatchEvent(new CustomEvent("app:save"));
+        document.dispatchEvent(new CustomEvent("trigger-save"));
       }
       // Ctrl+Z / Cmd+Z - Undo
       if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {

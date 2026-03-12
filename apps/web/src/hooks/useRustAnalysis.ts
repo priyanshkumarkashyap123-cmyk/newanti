@@ -225,6 +225,38 @@ export function useAnalysisJob() {
     };
   }, []);
 
+  const startPolling = useCallback((id: string) => {
+    const poll = async () => {
+      if (!isMountedRef.current) return;
+      try {
+        const st = await rustApi.getJobStatus(id);
+        if (!isMountedRef.current) return;
+        setStatus(st.status);
+        setProgress({
+          type: "job_progress",
+          percent: st.progress,
+          stage: st.stage,
+          message: st.message,
+        });
+
+        if (st.status === "completed") {
+          setResult(st.result);
+          setLoading(false);
+        } else if (st.status === "failed") {
+          setError(st.error || "Job failed");
+          setLoading(false);
+        } else {
+          pollingRef.current = setTimeout(poll, 2000);
+        }
+      } catch {
+        if (isMountedRef.current) {
+          pollingRef.current = setTimeout(poll, 5000);
+        }
+      }
+    };
+    poll();
+  }, []);
+
   const submit = useCallback(
     async (
       jobType: string,
@@ -273,40 +305,8 @@ export function useAnalysisJob() {
         throw e;
       }
     },
-    [],
+    [startPolling],
   );
-
-  const startPolling = useCallback((id: string) => {
-    const poll = async () => {
-      if (!isMountedRef.current) return;
-      try {
-        const st = await rustApi.getJobStatus(id);
-        if (!isMountedRef.current) return;
-        setStatus(st.status);
-        setProgress({
-          type: "job_progress",
-          percent: st.progress,
-          stage: st.stage,
-          message: st.message,
-        });
-
-        if (st.status === "completed") {
-          setResult(st.result);
-          setLoading(false);
-        } else if (st.status === "failed") {
-          setError(st.error || "Job failed");
-          setLoading(false);
-        } else {
-          pollingRef.current = setTimeout(poll, 2000);
-        }
-      } catch {
-        if (isMountedRef.current) {
-          pollingRef.current = setTimeout(poll, 5000);
-        }
-      }
-    };
-    poll();
-  }, []);
 
   const cancel = useCallback(async () => {
     if (jobId) {
@@ -337,10 +337,13 @@ export function useSteelSections(standard: string = "is") {
   const [sections, setSections] = useState<SteelSection[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
+    setError(null);
 
     rustApi
       .getSections(standard)
@@ -360,7 +363,7 @@ export function useSteelSections(standard: string = "is") {
     return () => {
       cancelled = true;
     };
-  }, [standard]);
+  }, [standard, reloadKey]);
 
   const search = useCallback(async (query: string) => {
     try {
@@ -371,7 +374,11 @@ export function useSteelSections(standard: string = "is") {
     }
   }, []);
 
-  return { sections, loading, error, search };
+  const reload = useCallback(() => {
+    setReloadKey(k => k + 1);
+  }, []);
+
+  return { sections, loading, error, search, reload };
 }
 
 // ============================================================================

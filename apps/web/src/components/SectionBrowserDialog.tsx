@@ -52,22 +52,17 @@ const SectionBrowserDialog: React.FC = () => {
     const [sortField, setSortField] = useState<SortField>('designation');
     const [sortDir, setSortDir] = useState<SortDir>('asc');
 
-    const { sections, loading, error, search } = useSteelSections(standard);
+    const { sections, loading, error, reload } = useSteelSections(standard);
 
-    // Debounced search
-    useEffect(() => {
-        if (!searchQuery.trim()) return;
-        const timer = setTimeout(() => {
-            search(searchQuery);
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [searchQuery, search]);
-
-    // Sort sections
+    // Filter and sort sections (client-side)
     const sortedSections = React.useMemo(() => {
-        const filtered = searchQuery.trim()
-            ? sections
-            : sections;
+        let filtered = sections;
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            filtered = sections.filter(s =>
+                s.designation.toLowerCase().includes(q)
+            );
+        }
         return [...filtered].sort((a, b) => {
             const av = a[sortField];
             const bv = b[sortField];
@@ -162,8 +157,11 @@ const SectionBrowserDialog: React.FC = () => {
 
                 {error && (
                     <div className="flex items-center gap-2 px-3 py-2 text-xs text-red-600 bg-red-50 dark:bg-red-950 rounded">
-                        <AlertCircle className="h-3 w-3" />
-                        {error}
+                        <AlertCircle className="h-3 w-3 flex-shrink-0" />
+                        <span className="flex-1">{error}</span>
+                        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-red-600 hover:text-red-700" onClick={reload}>
+                            Retry
+                        </Button>
                     </div>
                 )}
 
@@ -216,10 +214,24 @@ const SectionBrowserDialog: React.FC = () => {
                                     <td className="px-3 py-1.5 font-mono text-right">{section.iy.toFixed(0)}</td>
                                 </tr>
                             ))}
+                            {loading && sortedSections.length === 0 && (
+                                <tr>
+                                    <td colSpan={7} className="px-3 py-12">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Loader2 className="h-6 w-6 animate-spin text-cyan-500" />
+                                            <span className="text-sm text-muted-foreground">Loading sections...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
                             {!loading && sortedSections.length === 0 && (
                                 <tr>
                                     <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
-                                        {searchQuery ? 'No sections match your search' : 'No sections available'}
+                                        {error
+                                            ? 'Could not connect to section database'
+                                            : searchQuery
+                                                ? 'No sections match your search'
+                                                : 'No sections available for this standard'}
                                     </td>
                                 </tr>
                             )}

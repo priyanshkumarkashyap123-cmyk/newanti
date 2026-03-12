@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { VirtualTable } from '../components/ui/VirtualScroll';
 import { useModelStore, hydrateAnalysisResults, type Member, type Node as ModelNode, type AnalysisResults, type MemberForceData, type Plate as ModelPlate } from '../store/model';
+import { useUIStore } from '../store/uiStore';
 import {
   designSteelMember, designConcreteBeam, designConcreteColumn,
   designConnection, designFoundation, designSlabIS456,
@@ -47,6 +48,7 @@ import { STEEL_SECTION_DATABASE as STEEL_SECTIONS, type SteelSectionProperties }
 import { Logo } from '../components/branding';
 import { Button } from '../components/ui/button';
 import { Input, Select } from '../components/ui/FormInputs';
+import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 
 // ================================================================
 // TYPES
@@ -1635,12 +1637,15 @@ const PostAnalysisDesignHub: FC = () => {
   const [reportTemplate, setReportTemplate] = useState<'professional' | 'studio' | 'quick'>('professional');
   const [slabDesignResults, setSlabDesignResults] = useState<Map<string, SlabDesignRecord>>(new Map());
   const [isDesigningSlabs, setIsDesigningSlabs] = useState(false);
+  const [slabDesignError, setSlabDesignError] = useState<string | null>(null);
+  const [optimizationError, setOptimizationError] = useState<string | null>(null);
   const [slabParams, setSlabParams] = useState({
     liveLoad: 3,
     floorFinish: 1,
     supportType: 'continuous',
     edgeConditions: 'all_continuous',
   });
+  const openModal = useUIStore((s) => s.openModal);
 
   const [params, setParams] = useState<DesignParameters>({
     steelCode: 'IS800',
@@ -2009,59 +2014,46 @@ const PostAnalysisDesignHub: FC = () => {
   const runConcreteOptimization = useCallback(async () => {
     if (memberRows.length === 0) return;
     setIsOptimizing(true);
+    setOptimizationError(null);
 
-    const rcWeightMap = new Map(RC_BEAM_SECTIONS.map(s => [s.name, s.weightPerM]));
-    const preWeight = memberRows.reduce((acc, row) => {
-      return acc + (rcWeightMap.get(`RC${concreteSection.width}x${concreteSection.depth}`) ?? 0.375) * row.length;
-    }, 0);
-    setPreOptWeight(preWeight);
+    try {
+      const rcWeightMap = new Map(RC_BEAM_SECTIONS.map(s => [s.name, s.weightPerM]));
+      const preWeight = memberRows.reduce((acc, row) => {
+        return acc + (rcWeightMap.get(`RC${concreteSection.width}x${concreteSection.depth}`) ?? 0.375) * row.length;
+      }, 0);
+      setPreOptWeight(preWeight);
 
-    await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 50));
 
-    const concreteGrade = CONCRETE_GRADES.find(g => g.name === params.concreteGrade) ?? CONCRETE_GRADES[0];
-    const rebarGrade = REBAR_GRADES.find(g => g.name === params.rebarGrade) ?? REBAR_GRADES[0];
-    const designCode = params.concreteCode === 'ACI318' ? 'ACI318' : 'IS456';
-    const target = targetUtilization;
+      const concreteGrade = CONCRETE_GRADES.find(g => g.name === params.concreteGrade) ?? CONCRETE_GRADES[0];
+      const rebarGrade = REBAR_GRADES.find(g => g.name === params.rebarGrade) ?? REBAR_GRADES[0];
+      const designCode = params.concreteCode === 'ACI318' ? 'ACI318' : 'IS456';
+      const target = targetUtilization;
 
-    const sectionsByArea = [...RC_BEAM_SECTIONS].sort((a, b) => a.area - b.area);
+      const sectionsByArea = [...RC_BEAM_SECTIONS].sort((a, b) => a.area - b.area);
 
-    const targetRows = selectedMemberIds.size > 0
-      ? memberRows.filter(row => selectedMemberIds.has(row.id))
-      : memberRows;
+      const targetRows = selectedMemberIds.size > 0
+        ? memberRows.filter(row => selectedMemberIds.has(row.id))
+        : memberRows;
 
-    const newConcreteResults = new Map(concreteDesignResults);
-    // Also update the main designResults map so optimization table shows results
-    const newResults = new Map(designResults);
+      const newConcreteResults = new Map(concreteDesignResults);
+      // Also update the main designResults map so optimization table shows results
+      const newResults = new Map(designResults);
 
-    for (const row of targetRows) {
-      const memberTarget = memberTargetUtilization[row.id] ?? target;
-      const overrideSectionName = memberSectionOverrides[row.id];
-      const overrideSection = overrideSectionName
-        ? sectionsByArea.find(section => section.name === overrideSectionName || `${section.b}×${section.d}` === overrideSectionName || getConcreteSectionLabel(section.b, section.d) === overrideSectionName)
-        : null;
-      let bestSection: RcSectionDef | null = null;
-      let bestResult: ConcreteDesignOutput | null = null;
+      for (const row of targetRows) {
+        const memberTarget = memberTargetUtilization[row.id] ?? target;
+        const overrideSectionName = memberSectionOverrides[row.id];
+        const overrideSection = overrideSectionName
+          ? sectionsByArea.find(section => section.name === overrideSectionName || `${section.b}×${section.d}` === overrideSectionName || getConcreteSectionLabel(section.b, section.d) === overrideSectionName)
+          : null;
+        let bestSection: RcSectionDef | null = null;
+        let bestResult: ConcreteDesignOutput | null = null;
 
-      if (overrideSection) {
-        bestSection = overrideSection;
-        bestResult = clientSideDesignConcreteBeam({
-          width: overrideSection.b,
-          depth: overrideSection.d,
-          cover: concreteSection.cover,
-          fck: concreteGrade.fck,
-          fy: rebarGrade.fy,
-          Mu: row.maxMomentZ,
-          Vu: row.maxShearY,
-          Nu: row.maxAxial,
-          code: designCode as 'IS456' | 'ACI318',
-        });
-      }
-
-      if (!overrideSection) {
-        for (const trySection of sectionsByArea) {
-          const cResult = clientSideDesignConcreteBeam({
-            width: trySection.b,
-            depth: trySection.d,
+        if (overrideSection) {
+          bestSection = overrideSection;
+          bestResult = clientSideDesignConcreteBeam({
+            width: overrideSection.b,
+            depth: overrideSection.d,
             cover: concreteSection.cover,
             fck: concreteGrade.fck,
             fy: rebarGrade.fy,
@@ -2070,131 +2062,129 @@ const PostAnalysisDesignHub: FC = () => {
             Nu: row.maxAxial,
             code: designCode as 'IS456' | 'ACI318',
           });
+        }
 
-          if (cResult.status === 'PASS' && cResult.utilizationRatio <= memberTarget) {
-            bestSection = trySection;
-            bestResult = cResult;
-            break;
+        if (!overrideSection) {
+          for (const trySection of sectionsByArea) {
+            const cResult = clientSideDesignConcreteBeam({
+              width: trySection.b,
+              depth: trySection.d,
+              cover: concreteSection.cover,
+              fck: concreteGrade.fck,
+              fy: rebarGrade.fy,
+              Mu: row.maxMomentZ,
+              Vu: row.maxShearY,
+              Nu: row.maxAxial,
+              code: designCode as 'IS456' | 'ACI318',
+            });
+
+            if (cResult.status === 'PASS' && cResult.utilizationRatio <= memberTarget) {
+              bestSection = trySection;
+              bestResult = cResult;
+              break;
+            }
           }
         }
-      }
 
-      // Fallback: lightest that passes
-      if (!bestSection) {
-        for (const trySection of sectionsByArea) {
-          const cResult = clientSideDesignConcreteBeam({
-            width: trySection.b,
-            depth: trySection.d,
-            cover: concreteSection.cover,
-            fck: concreteGrade.fck,
-            fy: rebarGrade.fy,
-            Mu: row.maxMomentZ,
-            Vu: row.maxShearY,
-            Nu: row.maxAxial,
-            code: designCode as 'IS456' | 'ACI318',
+        // Fallback: lightest that passes
+        if (!bestSection) {
+          for (const trySection of sectionsByArea) {
+            const cResult = clientSideDesignConcreteBeam({
+              width: trySection.b,
+              depth: trySection.d,
+              cover: concreteSection.cover,
+              fck: concreteGrade.fck,
+              fy: rebarGrade.fy,
+              Mu: row.maxMomentZ,
+              Vu: row.maxShearY,
+              Nu: row.maxAxial,
+              code: designCode as 'IS456' | 'ACI318',
+            });
+            if (cResult.status === 'PASS') {
+              bestSection = trySection;
+              bestResult = cResult;
+              break;
+            }
+          }
+        }
+
+        if (bestSection && bestResult) {
+          newConcreteResults.set(row.id, bestResult);
+          // Mirror into designResults for the table
+          newResults.set(row.id, {
+            memberId: row.id,
+            memberName: row.label,
+            code: params.concreteCode,
+            section: getConcreteSectionLabel(bestSection.b, bestSection.d),
+            utilizationRatio: bestResult.utilizationRatio,
+            status: bestResult.status,
+            governingCheck: bestResult.governingCheck,
+            checks: bestResult.checks,
+            forces: { N: row.maxAxial, Vy: row.maxShearY, Vz: 0, My: 0, Mz: row.maxMomentZ },
+            capacities: {
+              tension: 0,
+              compression: 0,
+              moment: bestResult.flexure.Mu_capacity,
+              shear: bestResult.shear.Vu_capacity,
+            },
           });
-          if (cResult.status === 'PASS') {
-            bestSection = trySection;
-            bestResult = cResult;
-            break;
-          }
         }
       }
 
-      if (bestSection && bestResult) {
-        newConcreteResults.set(row.id, bestResult);
-        // Mirror into designResults for the table
-        newResults.set(row.id, {
-          memberId: row.id,
-          memberName: row.label,
-          code: params.concreteCode,
-          section: getConcreteSectionLabel(bestSection.b, bestSection.d),
-          utilizationRatio: bestResult.utilizationRatio,
-          status: bestResult.status,
-          governingCheck: bestResult.governingCheck,
-          checks: bestResult.checks,
-          forces: { N: row.maxAxial, Vy: row.maxShearY, Vz: 0, My: 0, Mz: row.maxMomentZ },
-          capacities: {
-            tension: 0,
-            compression: 0,
-            moment: bestResult.flexure.Mu_capacity,
-            shear: bestResult.shear.Vu_capacity,
-          },
-        });
-      }
+      setConcreteDesignResults(newConcreteResults);
+      setDesignResults(newResults);
+    } catch (error) {
+      setOptimizationError(error instanceof Error ? error.message : 'RCC optimization failed. Please review slab/member inputs and retry.');
+    } finally {
+      setIsOptimizing(false);
     }
-
-    setConcreteDesignResults(newConcreteResults);
-    setDesignResults(newResults);
-    setIsOptimizing(false);
   }, [concreteDesignResults, designResults, memberRows, params, concreteSection, targetUtilization, selectedMemberIds, memberTargetUtilization, memberSectionOverrides]);
 
   const runOptimization = useCallback(async () => {
     if (designResults.size === 0) return;
     setIsOptimizing(true);
+    setOptimizationError(null);
 
-    // Save pre-optimization weight
-    const weightMap = new Map(STEEL_SECTIONS.map(s => [s.designation, s.weight]));
-    const preWeight = memberRows.reduce((acc, row) => {
-      const sec = designResults.get(row.id)?.section || assignedSection;
-      return acc + (weightMap.get(sec) ?? 25) * row.length;
-    }, 0);
-    setPreOptWeight(preWeight);
+    try {
+      // Save pre-optimization weight
+      const weightMap = new Map(STEEL_SECTIONS.map(s => [s.designation, s.weight]));
+      const preWeight = memberRows.reduce((acc, row) => {
+        const sec = designResults.get(row.id)?.section || assignedSection;
+        return acc + (weightMap.get(sec) ?? 25) * row.length;
+      }, 0);
+      setPreOptWeight(preWeight);
 
-    // Allow UI to update before heavy computation
-    await new Promise(r => setTimeout(r, 50));
+      // Allow UI to update before heavy computation
+      await new Promise(r => setTimeout(r, 50));
 
-    const designCode = (params.steelCode === 'AISC360' || params.steelCode === 'BS5950' || params.steelCode === 'AS4100') ? 'AISC360' : 'IS800';
-    const grade = STEEL_GRADES.find(g => g.name === params.steelGrade) ?? STEEL_GRADES[0];
+      const designCode = (params.steelCode === 'AISC360' || params.steelCode === 'BS5950' || params.steelCode === 'AS4100') ? 'AISC360' : 'IS800';
+      const grade = STEEL_GRADES.find(g => g.name === params.steelGrade) ?? STEEL_GRADES[0];
 
-    // Filter sections by design-code standard and sort lightest → heaviest
-    const sectionsByWeight = [...STEEL_SECTIONS]
-      .filter(s => {
-        if (params.steelCode === 'IS800') return s.standard === 'IS';
-        if (params.steelCode === 'AISC360') return s.standard === 'AISC';
-        if (params.steelCode === 'EC3') return s.standard === 'EU';
-        if (params.steelCode === 'BS5950') return s.standard === 'BS';
-        return true;
-      })
-      .sort((a, b) => a.weight - b.weight);
+      // Filter sections by design-code standard and sort lightest → heaviest
+      const sectionsByWeight = [...STEEL_SECTIONS]
+        .filter(s => {
+          if (params.steelCode === 'IS800') return s.standard === 'IS';
+          if (params.steelCode === 'AISC360') return s.standard === 'AISC';
+          if (params.steelCode === 'EC3') return s.standard === 'EU';
+          if (params.steelCode === 'BS5950') return s.standard === 'BS';
+          return true;
+        })
+        .sort((a, b) => a.weight - b.weight);
 
-    const newResults = new Map(designResults);
-    const target = targetUtilization;
+      const newResults = new Map(designResults);
+      const target = targetUtilization;
 
-    // Optimize EVERY member — find the lightest section where utilization ≤ target
-    for (const [memberId, currentResult] of designResults.entries()) {
-      const row = memberRows.find(r => r.id === memberId);
-      if (!row) continue;
+      // Optimize EVERY member — find the lightest section where utilization ≤ target
+      for (const [memberId, currentResult] of designResults.entries()) {
+        const row = memberRows.find(r => r.id === memberId);
+        if (!row) continue;
 
-      const lengthMM = row.length * 1000;
-      let bestSection: (typeof sectionsByWeight)[0] | null = null;
-      let bestResult: ReturnType<typeof clientSideDesignSteel> | null = null;
+        const lengthMM = row.length * 1000;
+        let bestSection: (typeof sectionsByWeight)[0] | null = null;
+        let bestResult: ReturnType<typeof clientSideDesignSteel> | null = null;
 
-      // Scan from lightest to heaviest — first section that passes
-      // with utilization ≤ target is the optimal (lightest adequate) one.
-      for (const trySection of sectionsByWeight) {
-        const cResult = clientSideDesignSteel({
-          section: trySection as ClientDesignInput['section'],
-          lengthMM,
-          forces: currentResult.forces,
-          material: { fy: grade.fy, fu: grade.fu, E: 200000 },
-          Ky: params.effectiveLengthFactorY,
-          Kz: params.effectiveLengthFactorZ,
-          Lb_ratio: params.unbracedLengthRatio,
-          Cb: params.Cb,
-          code: designCode,
-        });
-
-        if (cResult.status === 'PASS' && cResult.utilizationRatio <= target) {
-          bestSection = trySection;
-          bestResult = cResult;
-          break; // Lightest section meeting both PASS + target util — done
-        }
-      }
-
-      // Fallback: if no section meets the target ratio, pick the lightest
-      // section that at least passes (utilization ≤ 1.0)
-      if (!bestSection) {
+        // Scan from lightest to heaviest — first section that passes
+        // with utilization ≤ target is the optimal (lightest adequate) one.
         for (const trySection of sectionsByWeight) {
           const cResult = clientSideDesignSteel({
             section: trySection as ClientDesignInput['section'],
@@ -2207,29 +2197,56 @@ const PostAnalysisDesignHub: FC = () => {
             Cb: params.Cb,
             code: designCode,
           });
-          if (cResult.status === 'PASS') {
+
+          if (cResult.status === 'PASS' && cResult.utilizationRatio <= target) {
             bestSection = trySection;
             bestResult = cResult;
-            break;
+            break; // Lightest section meeting both PASS + target util — done
           }
+        }
+
+        // Fallback: if no section meets the target ratio, pick the lightest
+        // section that at least passes (utilization ≤ 1.0)
+        if (!bestSection) {
+          for (const trySection of sectionsByWeight) {
+            const cResult = clientSideDesignSteel({
+              section: trySection as ClientDesignInput['section'],
+              lengthMM,
+              forces: currentResult.forces,
+              material: { fy: grade.fy, fu: grade.fu, E: 200000 },
+              Ky: params.effectiveLengthFactorY,
+              Kz: params.effectiveLengthFactorZ,
+              Lb_ratio: params.unbracedLengthRatio,
+              Cb: params.Cb,
+              code: designCode,
+            });
+            if (cResult.status === 'PASS') {
+              bestSection = trySection;
+              bestResult = cResult;
+              break;
+            }
+          }
+        }
+
+        if (bestSection && bestResult) {
+          newResults.set(memberId, {
+            ...currentResult,
+            section: bestSection.designation,
+            utilizationRatio: bestResult.utilizationRatio,
+            status: bestResult.status as 'PASS' | 'FAIL',
+            governingCheck: bestResult.governingCheck,
+            checks: bestResult.checks,
+            capacities: bestResult.capacities,
+          });
         }
       }
 
-      if (bestSection && bestResult) {
-        newResults.set(memberId, {
-          ...currentResult,
-          section: bestSection.designation,
-          utilizationRatio: bestResult.utilizationRatio,
-          status: bestResult.status as 'PASS' | 'FAIL',
-          governingCheck: bestResult.governingCheck,
-          checks: bestResult.checks,
-          capacities: bestResult.capacities,
-        });
-      }
+      setDesignResults(newResults);
+    } catch (error) {
+      setOptimizationError(error instanceof Error ? error.message : 'Steel optimization failed. Please review member forces and retry.');
+    } finally {
+      setIsOptimizing(false);
     }
-
-    setDesignResults(newResults);
-    setIsOptimizing(false);
   }, [designResults, memberRows, params, targetUtilization]);
 
   const handleRunOptimization = useCallback(async () => {
@@ -2268,46 +2285,52 @@ const PostAnalysisDesignHub: FC = () => {
   const runSlabDesignWorkflow = useCallback(async (optimizeToTarget: boolean) => {
     if (slabRows.length === 0) return;
     setIsDesigningSlabs(true);
+    setSlabDesignError(null);
 
-    const concreteGrade = CONCRETE_GRADES.find(g => g.name === params.concreteGrade) ?? CONCRETE_GRADES[0];
-    const rebarGrade = REBAR_GRADES.find(g => g.name === params.rebarGrade) ?? REBAR_GRADES[0];
-    const areaLoadIntensity = floorLoads.reduce((max, load) => Math.max(max, Math.abs(load.pressure || 0)), 0);
-    const liveLoad = Math.max(slabParams.liveLoad, areaLoadIntensity || 0);
-    const nextResults = new Map<string, SlabDesignRecord>();
+    try {
+      const concreteGrade = CONCRETE_GRADES.find(g => g.name === params.concreteGrade) ?? CONCRETE_GRADES[0];
+      const rebarGrade = REBAR_GRADES.find(g => g.name === params.rebarGrade) ?? REBAR_GRADES[0];
+      const areaLoadIntensity = floorLoads.reduce((max, load) => Math.max(max, Math.abs(load.pressure || 0)), 0);
+      const liveLoad = Math.max(slabParams.liveLoad, areaLoadIntensity || 0);
+      const nextResults = new Map<string, SlabDesignRecord>();
 
-    for (const slab of slabRows) {
-      if (slab.lx <= 0) continue;
+      for (const slab of slabRows) {
+        if (slab.lx <= 0) continue;
 
-      const result = await designSlabIS456({
-        lx: slab.lx,
-        ly: slab.ly > slab.lx ? slab.ly : undefined,
-        live_load: liveLoad,
-        floor_finish: slabParams.floorFinish,
-        support_type: slabParams.supportType,
-        edge_conditions: slabParams.edgeConditions,
-        fck: concreteGrade.fck,
-        fy: rebarGrade.fy,
-      });
+        const result = await designSlabIS456({
+          lx: slab.lx,
+          ly: slab.ly > slab.lx ? slab.ly : undefined,
+          live_load: liveLoad,
+          floor_finish: slabParams.floorFinish,
+          support_type: slabParams.supportType,
+          edge_conditions: slabParams.edgeConditions,
+          fck: concreteGrade.fck,
+          fy: rebarGrade.fy,
+        });
 
-      const recommendedThicknessMm = optimizeToTarget
-        ? estimateOptimizedSlabThickness(result.thickness, result, targetUtilization)
-        : result.thickness;
+        const recommendedThicknessMm = optimizeToTarget
+          ? estimateOptimizedSlabThickness(result.thickness, result, targetUtilization)
+          : result.thickness;
 
-      nextResults.set(slab.id, {
-        plateId: slab.id,
-        label: slab.label,
-        lx: slab.lx,
-        ly: slab.ly,
-        area: slab.area,
-        existingThicknessMm: slab.thicknessMm,
-        recommendedThicknessMm,
-        utilizationRatio: getSlabUtilization(result),
-        result,
-      });
+        nextResults.set(slab.id, {
+          plateId: slab.id,
+          label: slab.label,
+          lx: slab.lx,
+          ly: slab.ly,
+          area: slab.area,
+          existingThicknessMm: slab.thicknessMm,
+          recommendedThicknessMm,
+          utilizationRatio: getSlabUtilization(result),
+          result,
+        });
+      }
+
+      setSlabDesignResults(nextResults);
+    } catch (error) {
+      setSlabDesignError(error instanceof Error ? error.message : 'Slab design failed. Please verify inputs and try again.');
+    } finally {
+      setIsDesigningSlabs(false);
     }
-
-    setSlabDesignResults(nextResults);
-    setIsDesigningSlabs(false);
   }, [slabRows, params.concreteGrade, params.rebarGrade, floorLoads, slabParams, targetUtilization]);
 
   const applySlabOptimizedThickness = useCallback(() => {
@@ -2855,6 +2878,24 @@ const PostAnalysisDesignHub: FC = () => {
                   Apply Thickness to Model
                 </Button>
 
+                {slabRows.length === 0 && (
+                  <Button
+                    type="button"
+                    onClick={() => openModal('floorSlabDialog')}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <Box className="w-4 h-4" />
+                    One-Click Slab Generator
+                  </Button>
+                )}
+
+                {slabDesignError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+                    {slabDesignError}
+                  </div>
+                )}
+
                 <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-sm text-slate-600 dark:text-slate-400">
                   <p className="font-semibold text-slate-900 dark:text-white mb-2">Integrated workflow</p>
                   <ul className="space-y-1 list-disc list-inside">
@@ -2918,7 +2959,20 @@ const PostAnalysisDesignHub: FC = () => {
                         {slabRows.length === 0 && (
                           <tr>
                             <td colSpan={8} className="py-10 text-center text-slate-500">
-                              No slab/plate panels found in the model.
+                              <div className="space-y-3">
+                                <p>No slab/plate panels found in the model.</p>
+                                <div>
+                                  <Button
+                                    type="button"
+                                    onClick={() => openModal('floorSlabDialog')}
+                                    variant="outline"
+                                    size="sm"
+                                  >
+                                    <Box className="w-4 h-4" />
+                                    Create slabs from bays
+                                  </Button>
+                                </div>
+                              </div>
                             </td>
                           </tr>
                         )}
@@ -2992,6 +3046,11 @@ const PostAnalysisDesignHub: FC = () => {
                 )}
                 {optimizationMaterial === 'concrete' && memberRows.length === 0 && (
                   <p className="text-xs text-slate-500 mt-2 text-center">No members to optimize</p>
+                )}
+                {optimizationError && (
+                  <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300">
+                    {optimizationError}
+                  </div>
                 )}
               </div>
 
@@ -3335,7 +3394,7 @@ const PostAnalysisDesignHub: FC = () => {
                         <Logo size="md" variant="icon" clickable={false} />
                         <div>
                           <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">STRUCTURAL DESIGN REPORT</h3>
-                          <p className="text-xs text-blue-500 font-semibold">BeamLab Ultimate — Professional Engineering Software</p>
+                          <p className="text-xs text-blue-500 font-semibold">{BEAMLAB_COMPANY.name} — Professional Engineering Software</p>
                         </div>
                       </div>
                       <div className="text-right text-xs text-slate-500">
@@ -3432,7 +3491,7 @@ const PostAnalysisDesignHub: FC = () => {
 
                     {/* Report Footer */}
                     <div className="mt-6 pt-4 border-t border-slate-300 dark:border-slate-600 flex items-center justify-between text-[10px] text-slate-400">
-                      <span>Generated by BeamLab Ultimate v2.0 — Not for construction without independent verification</span>
+                      <span>Generated by {BEAMLAB_COMPANY.name} — Not for construction without independent verification</span>
                       <span>Page 1 of 1</span>
                     </div>
                   </div>
@@ -3442,7 +3501,7 @@ const PostAnalysisDesignHub: FC = () => {
                     <button type="button"
                       onClick={() => {
                         // Copy report to clipboard
-                        const lines = ['STRUCTURAL DESIGN REPORT — BeamLab', ''];
+                        const lines = [`STRUCTURAL DESIGN REPORT — ${BEAMLAB_COMPANY.name}`, ''];
                         lines.push(`Project: ${projectInfo?.name || 'Untitled'}`);
                         lines.push(`Client: ${projectInfo?.client || '—'}`);
                         lines.push(`Engineer: ${projectInfo?.engineer || '—'}`);
@@ -3491,7 +3550,7 @@ const PostAnalysisDesignHub: FC = () => {
                     </Link>
                     <button type="button"
                       onClick={() => {
-                        document.dispatchEvent(new CustomEvent("trigger-csv-export"));
+                        document.dispatchEvent(new CustomEvent("trigger-export"));
                       }}
                       className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >

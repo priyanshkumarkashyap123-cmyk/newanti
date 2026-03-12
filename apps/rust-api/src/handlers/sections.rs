@@ -1,7 +1,7 @@
 //! Section database handlers
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     Json,
 };
 use serde::{Deserialize, Serialize};
@@ -14,16 +14,23 @@ use crate::AppState;
 #[derive(Debug, Clone, Serialize)]
 pub struct SteelSection {
     pub id: String,
+    #[serde(rename = "designation")]
     pub name: String,
-    pub section_type: String,  // W, ISMB, ISMC, etc.
+    pub standard: String,     // is, aisc, en, bs
+    pub section_type: String, // W, ISMB, ISMC, etc.
+    #[serde(rename = "depth")]
     pub d: f64,      // Depth (mm)
+    #[serde(rename = "width")]
     pub bf: f64,     // Flange width (mm)
     pub tf: f64,     // Flange thickness (mm)
     pub tw: f64,     // Web thickness (mm)
+    #[serde(rename = "area")]
     pub a: f64,      // Area (mm²)
     pub ix: f64,     // Moment of inertia X (mm⁴)
     pub iy: f64,     // Moment of inertia Y (mm⁴)
+    #[serde(rename = "zx")]
     pub sx: f64,     // Section modulus X (mm³)
+    #[serde(rename = "zy")]
     pub sy: f64,     // Section modulus Y (mm³)
     pub rx: f64,     // Radius of gyration X (mm)
     pub ry: f64,     // Radius of gyration Y (mm)
@@ -37,6 +44,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB100".into(),
             name: "ISMB 100".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 100.0, bf: 75.0, tf: 7.2, tw: 4.0,
             a: 1140.0, ix: 2570000.0, iy: 262000.0,
@@ -45,6 +53,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB150".into(),
             name: "ISMB 150".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 150.0, bf: 80.0, tf: 7.6, tw: 4.8,
             a: 1650.0, ix: 7260000.0, iy: 350000.0,
@@ -53,6 +62,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB200".into(),
             name: "ISMB 200".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 200.0, bf: 100.0, tf: 10.8, tw: 5.7,
             a: 3230.0, ix: 22900000.0, iy: 1500000.0,
@@ -61,6 +71,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB250".into(),
             name: "ISMB 250".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 250.0, bf: 125.0, tf: 12.5, tw: 6.9,
             a: 4621.0, ix: 51300000.0, iy: 3340000.0,
@@ -69,6 +80,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB300".into(),
             name: "ISMB 300".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 300.0, bf: 140.0, tf: 12.4, tw: 7.5,
             a: 5626.0, ix: 79900000.0, iy: 4530000.0,
@@ -77,6 +89,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB350".into(),
             name: "ISMB 350".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 350.0, bf: 140.0, tf: 14.2, tw: 8.1,
             a: 6670.0, ix: 136300000.0, iy: 5380000.0,
@@ -85,6 +98,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB400".into(),
             name: "ISMB 400".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 400.0, bf: 140.0, tf: 16.0, tw: 8.9,
             a: 7850.0, ix: 204600000.0, iy: 6220000.0,
@@ -93,6 +107,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB450".into(),
             name: "ISMB 450".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 450.0, bf: 150.0, tf: 17.4, tw: 9.4,
             a: 9226.0, ix: 303900000.0, iy: 8340000.0,
@@ -101,6 +116,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB500".into(),
             name: "ISMB 500".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 500.0, bf: 180.0, tf: 17.2, tw: 10.2,
             a: 11074.0, ix: 452180000.0, iy: 13700000.0,
@@ -109,6 +125,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "ISMB600".into(),
             name: "ISMB 600".into(),
+            standard: "is".into(),
             section_type: "ISMB".into(),
             d: 600.0, bf: 210.0, tf: 20.8, tw: 12.0,
             a: 15600.0, ix: 918120000.0, iy: 26600000.0,
@@ -118,6 +135,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "W14x22".into(),
             name: "W14×22".into(),
+            standard: "aisc".into(),
             section_type: "W".into(),
             d: 350.0, bf: 127.0, tf: 8.5, tw: 5.8,
             a: 4180.0, ix: 82800000.0, iy: 4390000.0,
@@ -126,6 +144,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "W14x30".into(),
             name: "W14×30".into(),
+            standard: "aisc".into(),
             section_type: "W".into(),
             d: 353.0, bf: 171.0, tf: 9.8, tw: 6.9,
             a: 5680.0, ix: 123000000.0, iy: 12100000.0,
@@ -134,6 +153,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "W18x35".into(),
             name: "W18×35".into(),
+            standard: "aisc".into(),
             section_type: "W".into(),
             d: 450.0, bf: 152.0, tf: 10.8, tw: 7.6,
             a: 6650.0, ix: 231000000.0, iy: 8330000.0,
@@ -142,6 +162,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "W21x44".into(),
             name: "W21×44".into(),
+            standard: "aisc".into(),
             section_type: "W".into(),
             d: 525.0, bf: 165.0, tf: 11.4, tw: 8.9,
             a: 8390.0, ix: 351000000.0, iy: 11000000.0,
@@ -150,6 +171,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "W24x55".into(),
             name: "W24×55".into(),
+            standard: "aisc".into(),
             section_type: "W".into(),
             d: 600.0, bf: 178.0, tf: 12.8, tw: 10.0,
             a: 10500.0, ix: 562000000.0, iy: 15200000.0,
@@ -159,6 +181,7 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "HSS6x6x0.5".into(),
             name: "HSS 6×6×½".into(),
+            standard: "aisc".into(),
             section_type: "HSS".into(),
             d: 152.0, bf: 152.0, tf: 12.7, tw: 12.7,
             a: 6840.0, ix: 23000000.0, iy: 23000000.0,
@@ -167,10 +190,57 @@ fn get_section_database() -> Vec<SteelSection> {
         SteelSection {
             id: "HSS8x8x0.5".into(),
             name: "HSS 8×8×½".into(),
+            standard: "aisc".into(),
             section_type: "HSS".into(),
             d: 203.0, bf: 203.0, tf: 12.7, tw: 12.7,
             a: 9290.0, ix: 57700000.0, iy: 57700000.0,
             sx: 568000.0, sy: 568000.0, rx: 78.8, ry: 78.8, weight: 72.9,
+        },
+        // ISMC Sections (Indian Standard Medium Channels)
+        SteelSection {
+            id: "ISMC100".into(),
+            name: "ISMC 100".into(),
+            standard: "is".into(),
+            section_type: "ISMC".into(),
+            d: 100.0, bf: 50.0, tf: 7.5, tw: 4.7,
+            a: 1170.0, ix: 1870000.0, iy: 260000.0,
+            sx: 37400.0, sy: 10400.0, rx: 40.0, ry: 14.9, weight: 9.2,
+        },
+        SteelSection {
+            id: "ISMC150".into(),
+            name: "ISMC 150".into(),
+            standard: "is".into(),
+            section_type: "ISMC".into(),
+            d: 150.0, bf: 75.0, tf: 9.0, tw: 5.4,
+            a: 2170.0, ix: 7790000.0, iy: 1030000.0,
+            sx: 104000.0, sy: 27400.0, rx: 59.9, ry: 21.8, weight: 17.0,
+        },
+        SteelSection {
+            id: "ISMC200".into(),
+            name: "ISMC 200".into(),
+            standard: "is".into(),
+            section_type: "ISMC".into(),
+            d: 200.0, bf: 75.0, tf: 11.4, tw: 6.1,
+            a: 2830.0, ix: 18200000.0, iy: 1410000.0,
+            sx: 182000.0, sy: 37600.0, rx: 80.2, ry: 22.3, weight: 22.2,
+        },
+        SteelSection {
+            id: "ISMC250".into(),
+            name: "ISMC 250".into(),
+            standard: "is".into(),
+            section_type: "ISMC".into(),
+            d: 250.0, bf: 80.0, tf: 14.1, tw: 7.1,
+            a: 3870.0, ix: 38100000.0, iy: 2020000.0,
+            sx: 305000.0, sy: 50400.0, rx: 99.2, ry: 22.8, weight: 30.4,
+        },
+        SteelSection {
+            id: "ISMC300".into(),
+            name: "ISMC 300".into(),
+            standard: "is".into(),
+            section_type: "ISMC".into(),
+            d: 300.0, bf: 90.0, tf: 13.6, tw: 7.6,
+            a: 4640.0, ix: 63600000.0, iy: 3100000.0,
+            sx: 424000.0, sy: 68800.0, rx: 117.0, ry: 25.8, weight: 36.3,
         },
     ]
 }
@@ -182,16 +252,67 @@ pub struct SectionListResponse {
     pub count: usize,
 }
 
-/// GET /api/sections - List all sections
+#[derive(Debug, Deserialize)]
+pub struct ListSectionsParams {
+    pub standard: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SearchQueryParams {
+    pub q: Option<String>,
+    pub section_type: Option<String>,
+}
+
+/// GET /api/sections - List all sections (optionally filtered by ?standard=is|aisc|en|bs)
 pub async fn list_sections(
     State(_state): State<Arc<AppState>>,
+    Query(params): Query<ListSectionsParams>,
 ) -> ApiResult<Json<SectionListResponse>> {
-    let sections = get_section_database();
+    let mut sections = get_section_database();
+    if let Some(ref std_filter) = params.standard {
+        sections.retain(|s| s.standard.eq_ignore_ascii_case(std_filter));
+    }
     let count = sections.len();
 
     Ok(Json(SectionListResponse {
         success: true,
         sections,
+        count,
+    }))
+}
+
+/// GET /api/sections/search?q=...&section_type=... - Search sections via query params
+pub async fn search_sections_get(
+    State(_state): State<Arc<AppState>>,
+    Query(params): Query<SearchQueryParams>,
+) -> ApiResult<Json<SectionListResponse>> {
+    let sections = get_section_database();
+
+    let filtered: Vec<SteelSection> = sections
+        .into_iter()
+        .filter(|s| {
+            if let Some(ref q) = params.q {
+                let q_lower = q.to_lowercase();
+                if !s.id.to_lowercase().contains(&q_lower)
+                    && !s.name.to_lowercase().contains(&q_lower)
+                    && !s.section_type.to_lowercase().contains(&q_lower) {
+                    return false;
+                }
+            }
+            if let Some(ref st) = params.section_type {
+                if !s.section_type.eq_ignore_ascii_case(st) {
+                    return false;
+                }
+            }
+            true
+        })
+        .collect();
+
+    let count = filtered.len();
+
+    Ok(Json(SectionListResponse {
+        success: true,
+        sections: filtered,
         count,
     }))
 }

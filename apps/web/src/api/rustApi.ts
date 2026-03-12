@@ -433,8 +433,8 @@ class RustApiService {
 
   async getSections(standard: string = "is"): Promise<SteelSection[]> {
     const resp = await this.client.get<{ sections: SteelSection[] }>(
-      `/api/sections/${standard}`,
-      { cache: true },
+      `/api/sections`,
+      { params: { standard }, cache: true },
     );
     return resp.data.sections || [];
   }
