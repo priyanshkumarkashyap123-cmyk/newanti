@@ -26,6 +26,7 @@ import type {
 } from './modelTypes';
 import type { CircularRepeatRequest, CircularRepeatResult, IntersectionSplitResult } from './modelTypes';
 import { extrudeGeometry, rotateCopy, autoNodeIntersections } from '../core/geometry_engine';
+import { useUIStore } from './uiStore';
 
 // Re-export persistence functions for backward compatibility
 export {
@@ -1663,6 +1664,7 @@ export const useModelStore = create<ModelState>()(
           );
 
           if (result.nodes.length === 0 && result.members.length === 0) {
+            useUIStore.getState().showNotification('info', 'No geometry created');
             return { createdNodeIds: [], createdMemberIds: [] };
           }
 
@@ -1691,10 +1693,21 @@ export const useModelStore = create<ModelState>()(
             };
           });
 
-          return {
-            createdNodeIds: result.nodes.map((node) => node.id),
-            createdMemberIds: result.members.map((member) => member.id),
-          };
+          const createdNodeIds = result.nodes.map((node) => node.id);
+          const createdMemberIds = result.members.map((member) => member.id);
+
+          // Highlight created elements in UI
+          set(() => ({ selectedIds: new Set<string>([...createdNodeIds, ...createdMemberIds]) }));
+
+          useUIStore.getState().showNotification(
+            'success',
+            `Created ${createdNodeIds.length} nodes and ${createdMemberIds.length} members`
+          );
+
+          // Clear selection after 4s so highlighting is transient
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
+
+          return { createdNodeIds, createdMemberIds };
         },
 
         applyCircularRepeat: (request) => {
@@ -1738,6 +1751,7 @@ export const useModelStore = create<ModelState>()(
           );
 
           if (result.nodes.length === 0 && result.members.length === 0) {
+            useUIStore.getState().showNotification('info', 'No geometry created');
             return { createdNodeIds: [], createdMemberIds: [] };
           }
 
@@ -1759,10 +1773,17 @@ export const useModelStore = create<ModelState>()(
             return { nodes: newNodes, members: newMembers, analysisResults: null };
           });
 
-          return {
-            createdNodeIds: result.nodes.map((n) => n.id),
-            createdMemberIds: result.members.map((m) => m.id),
-          };
+          const createdNodeIds = result.nodes.map((n) => n.id);
+          const createdMemberIds = result.members.map((m) => m.id);
+
+          set(() => ({ selectedIds: new Set<string>([...createdNodeIds, ...createdMemberIds]) }));
+          useUIStore.getState().showNotification(
+            'success',
+            `Created ${createdNodeIds.length} nodes and ${createdMemberIds.length} members`
+          );
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
+
+          return { createdNodeIds, createdMemberIds };
         },
 
         detectAndAutoNode: (tolerance = 0.01) => {
@@ -1779,6 +1800,7 @@ export const useModelStore = create<ModelState>()(
           );
 
           if (autoResult.newNodes.length === 0 && autoResult.newMembers.length === 0) {
+            useUIStore.getState().showNotification('info', 'No intersections found');
             return {
               createdNodeIds: [],
               createdMemberIds: [],
@@ -1806,12 +1828,18 @@ export const useModelStore = create<ModelState>()(
             return { nodes: newNodes, members: newMembers, analysisResults: null };
           });
 
-          return {
-            createdNodeIds: autoResult.newNodes.map((n) => n.id),
-            createdMemberIds: autoResult.newMembers.map((m) => m.id),
-            deletedMemberIds: autoResult.deletedMemberIds,
-            intersectionCount: autoResult.newNodes.length,
-          };
+          const createdNodeIds = autoResult.newNodes.map((n) => n.id);
+          const createdMemberIds = autoResult.newMembers.map((m) => m.id);
+          const deletedMemberIds = autoResult.deletedMemberIds;
+
+          set(() => ({ selectedIds: new Set<string>([...createdNodeIds, ...createdMemberIds]) }));
+          useUIStore.getState().showNotification(
+            'success',
+            `Auto-noded ${createdNodeIds.length} intersections, created ${createdMemberIds.length} members`
+          );
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
+
+          return { createdNodeIds, createdMemberIds, deletedMemberIds, intersectionCount: createdNodeIds.length };
         },
 
         splitMemberById: (memberId, ratio) =>
@@ -1873,6 +1901,20 @@ export const useModelStore = create<ModelState>()(
             const newMemberLoads = state.memberLoads.filter(
               (ml) => ml.memberId !== memberId,
             );
+
+            const createdNodeIds = [newNodeId];
+            const createdMemberIds = [member1.id, member2.id];
+
+            // Highlight created elements and notify
+            try {
+              useUIStore.getState().showNotification(
+                'success',
+                `Inserted node ${newNodeId} and split into ${createdMemberIds.length} members`
+              );
+            } catch (e) {}
+
+            set(() => ({ selectedIds: new Set<string>([...createdNodeIds, ...createdMemberIds]) }));
+            try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
 
             return {
               nodes: newNodes,

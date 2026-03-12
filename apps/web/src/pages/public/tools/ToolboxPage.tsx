@@ -46,7 +46,6 @@ interface Tool {
     path: string;
     category: 'calculator' | 'reference' | 'generator';
     featured?: boolean;
-    comingSoon?: boolean;
 }
 
 const TOOLS: Tool[] = [
@@ -143,21 +142,13 @@ const ToolCard: FC<{ tool: Tool }> = ({ tool }) => {
 
     return (
         <Link
-            to={tool.comingSoon ? '#' : tool.path}
-            className={`group relative bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-2xl p-6 transition-all duration-300 ${tool.comingSoon ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1'
-                }`}
+            to={tool.path}
+            className="group relative bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1"
         >
             {/* Featured badge */}
             {tool.featured && (
                 <div className="absolute -top-2 -right-2 bg-yellow-500 rounded-full p-1.5">
                     <Star className="w-3 h-3 text-yellow-900 fill-current" />
-                </div>
-            )}
-
-            {/* Coming soon badge */}
-            {tool.comingSoon && (
-                <div className="absolute top-4 right-4 bg-slate-600 text-xs px-2 py-1 rounded-full text-slate-600 dark:text-slate-300">
-                    Coming Soon
                 </div>
             )}
 
@@ -182,12 +173,10 @@ const ToolCard: FC<{ tool: Tool }> = ({ tool }) => {
             </p>
 
             {/* CTA */}
-            {!tool.comingSoon && (
-                <div className="flex items-center text-blue-400 text-sm font-medium">
-                    Open Tool
-                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </div>
-            )}
+            <div className="flex items-center text-blue-400 text-sm font-medium">
+                Open Tool
+                <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </div>
         </Link>
     );
 };
@@ -212,8 +201,6 @@ export const ToolboxPage: FC = () => {
             return matchesSearch && matchesCategory;
         });
     }, [searchQuery, selectedCategory]);
-
-    const featuredTools = TOOLS.filter(t => t.featured && !t.comingSoon);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 dark:from-slate-900 via-slate-100 dark:via-slate-900 to-white dark:to-slate-950">

@@ -34,6 +34,34 @@ router.post(
 );
 
 /**
+ * POST /layout/v2/auto-optimize
+ * Minimal-input optimization: backend auto-generates room program then optimizes.
+ */
+router.post(
+  "/v2/auto-optimize",
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await pythonProxy(
+      "POST",
+      "/api/layout/v2/auto-optimize",
+      req.body,
+      undefined,
+      90_000,
+    );
+
+    if (result.success) {
+      res.json(result.data);
+      return;
+    }
+
+    res.status(result.status || 502).json({
+      success: false,
+      error: result.error || "Layout auto-optimization service is unavailable",
+      service: "optimizer",
+    });
+  }),
+);
+
+/**
  * GET /layout/v2/health
  * Lightweight health probe used by the Space Planning UI retry flow.
  */

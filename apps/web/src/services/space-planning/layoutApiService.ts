@@ -141,6 +141,47 @@ export interface LayoutV2Request {
   sa_params?: SAParamsRequest;
 }
 
+function buildDeterministicSeed(config: WizardConfig): number {
+  const basis = {
+    plot: {
+      width: config.plot.width,
+      depth: config.plot.depth,
+      area: config.plot.area,
+      shape: config.plot.shape,
+      unit: config.plot.unit,
+    },
+    orientation: {
+      northDirection: config.orientation.northDirection,
+      plotFacing: config.orientation.plotFacing,
+      mainEntryDirection: config.orientation.mainEntryDirection,
+      roadSide: [...config.orientation.roadSide].sort(),
+    },
+    constraints: {
+      maxFloors: config.constraints.maxFloors,
+      farAllowed: config.constraints.farAllowed,
+      buildingType: config.constraints.buildingType,
+    },
+    rooms: config.roomSpecs
+      .map((r) => ({
+        type: r.type,
+        floor: r.floor,
+        minArea: r.minArea,
+        preferredArea: r.preferredArea,
+        priority: r.priority,
+      }))
+      .sort((a, b) => `${a.type}-${a.floor}`.localeCompare(`${b.type}-${b.floor}`)),
+  };
+
+  const text = JSON.stringify(basis);
+  let hash = 2166136261 >>> 0; // FNV-1a 32-bit offset
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  // Keep positive int for backend random seed handling
+  return (hash >>> 1) || 1;
+}
+
 // ============================================================================
 // VARIANT GENERATION REQUEST/RESPONSE TYPES (NEW)
 // ============================================================================
@@ -445,6 +486,19 @@ export interface LayoutV2Response {
   structural_handoff?: StructuralHandoffData | null;
   /** MEP schedule: plumbing stacks, electrical circuits, HVAC loads */
   mep_schedule?: MEPScheduleData | null;
+}
+
+export interface MinimalAutoOptimizeRequest {
+  site: SiteRequest;
+  global_constraints?: GlobalConstraintsRequest;
+  main_entry_direction?: string;
+  road_sides?: string[];
+  bedroom_preference?: number;
+  include_study?: boolean;
+  include_guest_room?: boolean;
+  include_parking?: boolean;
+  max_iterations?: number;
+  random_seed?: number;
 }
 
 // ============================================================================
@@ -867,7 +921,7 @@ export function wizardConfigToRequest(
     adjacency_matrix: validAdjacency,
     penalty_weights: options?.penaltyWeights,
     max_iterations: options?.maxIterations || 300,
-    random_seed: options?.randomSeed,
+    random_seed: options?.randomSeed ?? buildDeterministicSeed(config),
   };
 }
 
@@ -1464,6 +1518,44 @@ export async function solveLayout(
   const response = await optimizeLayoutV2(request);
   const report = buildConstraintReport(response);
   return { placements: response.placements, report, response };
+}
+
+/**
+ * Minimal-input solve path:
+ * Backend auto-generates a robust room program from plot size + entry/road directions,
+ * then runs the v2 optimizer.
+ */
+export async function solveLayoutFromMinimal(
+  config: WizardConfig,
+  options?: {
+    maxIterations?: number;
+    randomSeed?: number;
+  },
+): Promise<{ placements: PlacementResponse[]; report: ConstraintReport; response: LayoutV2Response }> {
+  const base = wizardConfigToRequest(config, options);
+  const areaSqm = config.plot.unit === 'feet' ? config.plot.area * 0.092903 : config.plot.area;
+  const bedroomPref = areaSqm < 85 ? 1 : areaSqm < 145 ? 2 : areaSqm < 230 ? 3 : 4;
+
+  const request: MinimalAutoOptimizeRequest = {
+    site: base.site,
+    global_constraints: base.global_constraints,
+    main_entry_direction: config.orientation.mainEntryDirection,
+    road_sides: config.orientation.roadSide,
+    bedroom_preference: bedroomPref,
+    include_study: areaSqm >= 210,
+    include_guest_room: areaSqm >= 155,
+    include_parking: areaSqm >= 95 || (config.constraints.parkingRequired ?? 0) > 0,
+    max_iterations: options?.maxIterations || 300,
+    random_seed: options?.randomSeed ?? base.random_seed,
+  };
+
+  const { data } = await layoutApiClient.post<LayoutV2Response>(
+    '/api/layout/v2/auto-optimize',
+    request,
+  );
+
+  const report = buildConstraintReport(data);
+  return { placements: data.placements, report, response: data };
 }
 
 /**

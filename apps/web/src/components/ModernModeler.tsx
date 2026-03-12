@@ -1455,16 +1455,10 @@ export const ModernModeler: FC = () => {
               setTimeout(() => executeAnalysis(), 100);
             }}
             onRevalidate={() => {
-              const validationResult = validateStructure(nodes, members);
-              setStructuralValidationErrors(validationResult.errors);
-              setStructuralValidationWarnings(validationResult.warnings);
-              if (
-                validationResult.valid &&
-                validationResult.errors.length === 0
-              ) {
-                setShowValidationDialog(false);
-                setTimeout(() => executeAnalysis(), 200);
-              }
+              setShowValidationDialog(false);
+              setTimeout(() => {
+                void handleRunAnalysis();
+              }, 100);
             }}
           />
 

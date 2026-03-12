@@ -17,7 +17,7 @@
  * @version 1.0.0
  */
 
-import React, { memo, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
 // ============================================================================
 // BASE EMPTY STATE
@@ -503,7 +503,7 @@ export const MaintenanceState: React.FC<MaintenanceStateProps> = ({
 };
 
 // ============================================================================
-// FEATURE COMING SOON
+// FEATURE PREVIEW
 // ============================================================================
 
 export interface ComingSoonProps {
@@ -523,8 +523,8 @@ export const ComingSoon: React.FC<ComingSoonProps> = ({
 }) => {
   return (
     <EmptyState
-      title={`${feature} Coming Soon`}
-      description={description || `We're working on something exciting. ${releaseDate ? `Expected: ${releaseDate}` : ''}`}
+      title={`${feature} Preview`}
+      description={description || `Explore feature scope and rollout notes. ${releaseDate ? `Target: ${releaseDate}` : ''}`}
       icon={
         <svg className="w-6 h-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path

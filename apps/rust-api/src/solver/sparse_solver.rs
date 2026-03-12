@@ -114,12 +114,18 @@ pub struct SparseSolver {
     pub pcg_tolerance_medium: f64,
     /// Tolerance used for large models
     pub pcg_tolerance_large: f64,
+    /// DOF threshold where huge-model tolerance is used
+    pub pcg_huge_dofs_min: usize,
+    /// Tolerance used for huge models
+    pub pcg_tolerance_huge: f64,
     /// Selected PCG preconditioner
     pcg_preconditioner: PcgPreconditioner,
     /// Enable direct fallback when PCG does not converge
     pub pcg_enable_fallback_direct: bool,
     /// Max DOFs where dense fallback is allowed
     pub pcg_fallback_dense_max_dofs: usize,
+    /// Hard cap on PCG iterations to avoid runaway solve times on huge systems
+    pub pcg_max_iter_cap: usize,
 }
 
 impl SparseSolver {
@@ -170,9 +176,12 @@ impl SparseSolver {
         let pcg_tolerance_small = Self::env_f64("SPARSE_PCG_TOL_SMALL", pcg_tolerance);
         let pcg_tolerance_medium = Self::env_f64("SPARSE_PCG_TOL_MEDIUM", 5e-10);
         let pcg_tolerance_large = Self::env_f64("SPARSE_PCG_TOL_LARGE", 1e-9);
+        let pcg_huge_dofs_min = Self::env_usize("SPARSE_PCG_HUGE_DOFS_MIN", 200_000);
+        let pcg_tolerance_huge = Self::env_f64("SPARSE_PCG_TOL_HUGE", 5e-9);
         let pcg_preconditioner = Self::env_preconditioner("SPARSE_PCG_PRECONDITIONER", PcgPreconditioner::Jacobi);
         let pcg_enable_fallback_direct = Self::env_bool("SPARSE_PCG_ENABLE_FALLBACK_DIRECT", true);
         let pcg_fallback_dense_max_dofs = Self::env_usize("SPARSE_PCG_FALLBACK_DENSE_MAX_DOFS", 6000);
+        let pcg_max_iter_cap = Self::env_usize("SPARSE_PCG_MAX_ITER_CAP", 200_000);
 
         Self {
             auto_strategy: true,
@@ -188,20 +197,30 @@ impl SparseSolver {
             pcg_tolerance_small,
             pcg_tolerance_medium,
             pcg_tolerance_large,
+            pcg_huge_dofs_min,
+            pcg_tolerance_huge,
             pcg_preconditioner,
             pcg_enable_fallback_direct,
             pcg_fallback_dense_max_dofs,
+            pcg_max_iter_cap,
         }
     }
 
     fn effective_pcg_tolerance(&self, n: usize) -> f64 {
-        if n <= self.pcg_small_dofs_max {
+        if n >= self.pcg_huge_dofs_min {
+            self.pcg_tolerance_huge
+        } else if n <= self.pcg_small_dofs_max {
             self.pcg_tolerance_small
         } else if n <= self.pcg_medium_dofs_max {
             self.pcg_tolerance_medium
         } else {
             self.pcg_tolerance_large
         }
+    }
+
+    fn effective_pcg_max_iter(&self, n: usize) -> usize {
+        let scaled = n.saturating_mul(self.pcg_max_iter_scale.max(1));
+        scaled.min(self.pcg_max_iter_cap.max(1))
     }
 
     fn preconditioner_label(&self) -> String {
@@ -284,7 +303,7 @@ impl SparseSolver {
 
         if strategy == SolverStrategy::PreconditionedCG && constrained_dofs.is_empty() {
             let solve_start = Instant::now();
-            let max_iter = n.saturating_mul(self.pcg_max_iter_scale.max(1));
+            let max_iter = self.effective_pcg_max_iter(n);
             let pcg_tol = self.effective_pcg_tolerance(n);
             let mut pcg_out = self.solve_pcg_csr(&csr_matrix, f_global, pcg_tol, max_iter)?;
 
@@ -561,6 +580,7 @@ impl SparseSolver {
         max_iter: usize,
     ) -> Result<PcgSolveOutput, String> {
         let n = k.nrows();
+        let rhs_norm = f.norm().max(1.0);
 
         let m_inv = self.build_dense_preconditioner(k);
 
@@ -577,7 +597,7 @@ impl SparseSolver {
             r -= alpha * &ap;
 
             let r_norm = r.norm();
-            if r_norm < tol {
+            if r_norm <= tol * rhs_norm {
                 return Ok(PcgSolveOutput {
                     solution: x,
                     iteration_count: _iter + 1,
@@ -613,6 +633,7 @@ impl SparseSolver {
         if n != f.len() {
             return Err("Force vector size must match sparse matrix dimension".into());
         }
+        let rhs_norm = f.norm().max(1.0);
 
         let m_inv = self.build_csr_preconditioner(k);
 
@@ -622,7 +643,7 @@ impl SparseSolver {
         let mut p = z.clone();
         let mut rz = r.dot(&z);
 
-        if r.norm() < tol {
+        if r.norm() <= tol * rhs_norm {
             return Ok(PcgSolveOutput {
                 solution: x,
                 iteration_count: 0,
@@ -637,7 +658,7 @@ impl SparseSolver {
             x += alpha * &p;
             r -= alpha * &ap;
 
-            if r.norm() < tol {
+            if r.norm() <= tol * rhs_norm {
                 return Ok(PcgSolveOutput {
                     solution: x,
                     iteration_count: iter + 1,
@@ -717,7 +738,7 @@ impl SparseSolver {
                 final_residual_norm: 0.0,
             },
             SolverStrategy::PreconditionedCG => {
-                let max_iter = n.saturating_mul(self.pcg_max_iter_scale.max(1));
+                let max_iter = self.effective_pcg_max_iter(n);
                 let pcg_tol = self.effective_pcg_tolerance(n);
                 let mut pcg_out = self.solve_pcg(&k_mod, &f_mod, pcg_tol, max_iter)?;
 
@@ -775,7 +796,7 @@ impl SparseSolver {
                 None
             },
             max_iterations_used: if strategy == SolverStrategy::PreconditionedCG {
-                Some(n.saturating_mul(self.pcg_max_iter_scale.max(1)))
+                Some(self.effective_pcg_max_iter(n))
             } else {
                 None
             },

@@ -1,9 +1,11 @@
 /**
- * ComingSoonDialog.tsx — Reusable "Coming Soon" placeholder for features in development
+ * ComingSoonDialog.tsx — Reusable feature preview dialog
  * Used by modules that are planned but not yet implemented.
  */
 
 import React from 'react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -18,8 +20,10 @@ import { Construction, Sparkles, type LucideIcon } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { useShallow } from 'zustand/react/shallow';
 
+type ModalKey = keyof ReturnType<typeof useUIStore.getState>['modals'];
+
 interface ComingSoonDialogProps {
-  modalKey: string;
+  modalKey: ModalKey;
   title: string;
   description: string;
   icon?: LucideIcon;
@@ -41,14 +45,14 @@ const ComingSoonDialog: React.FC<ComingSoonDialogProps> = ({
   const isOpen = (modals as Record<string, boolean>)[modalKey] || false;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => setModal(modalKey as any, open)}>
+    <Dialog open={isOpen} onOpenChange={(open) => setModal(modalKey, open)}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon className="h-5 w-5 text-amber-500" />
             {title}
             <Badge variant="outline" className="ml-2 text-amber-600 border-amber-300">
-              Coming Soon
+              Preview
             </Badge>
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -80,7 +84,7 @@ const ComingSoonDialog: React.FC<ComingSoonDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button onClick={() => setModal(modalKey as any, false)}>Got it</Button>
+          <Button onClick={() => setModal(modalKey, false)}>Got it</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -89,132 +93,48 @@ const ComingSoonDialog: React.FC<ComingSoonDialogProps> = ({
 
 export default ComingSoonDialog;
 
-// ===== Pre-configured wrappers for each Coming Soon module =====
+// ===== Pre-configured wrappers for feature modules =====
+
+const RedirectModal: React.FC<{ modalKey: ModalKey; path: string }> = ({ modalKey, path }) => {
+  const navigate = useNavigate();
+  const setModal = useUIStore((s) => s.setModal);
+
+  useEffect(() => {
+    setModal(modalKey, false);
+    navigate(path);
+  }, [modalKey, navigate, path, setModal]);
+
+  return null;
+};
 
 export const RCDetailingDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="rcDetailing"
-    title="RC Detailing"
-    description="Automated reinforcement detailing and bar bending schedules"
-    features={[
-      'Auto-generate bar bending schedules per IS 2502',
-      'Beam & column section detailing drawings',
-      'Lap length and development length checks (IS 456 Cl. 26.2)',
-      'Curtailment optimization',
-      'Export to DXF / PDF',
-    ]}
-    expectedVersion="v2.5"
-  />
+  <RedirectModal modalKey="rcDetailing" path="/design/detailing" />
 );
 
 export const SteelDetailingDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="steelDetailing"
-    title="Steel Detailing"
-    description="Connection detailing and shop drawing generation"
-    features={[
-      'Bolted & welded connection detail drawings',
-      'Stiffener and splice plate layout',
-      'Weld symbol annotation per IS 813 / AWS D1.1',
-      'Bill of materials with section cut lengths',
-      'Export to DXF / IFC',
-    ]}
-    expectedVersion="v2.5"
-  />
+  <RedirectModal modalKey="steelDetailing" path="/design/connections" />
 );
 
 export const SectionOptimizationDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="sectionOptimization"
-    title="Section Optimization"
-    description="Automated member sizing using FSD and genetic algorithms"
-    features={[
-      'Fully Stressed Design (FSD) iteration',
-      'Genetic algorithm-based multi-objective optimization',
-      'Weight minimization with code compliance constraints',
-      'Strength & serviceability limit state checks',
-      'Batch optimization across all members',
-    ]}
-    expectedVersion="v2.6"
-  />
+  <RedirectModal modalKey="sectionOptimization" path="/design-hub" />
 );
 
 export const DesignHubDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="designHub"
-    title="Design Hub"
-    description="Centralized multi-code design workflow dashboard"
-    features={[
-      'Unified design check dashboard across IS/ACI/EC codes',
-      'Combined utilization ratio heat maps',
-      'Automated design iteration with solver feedback',
-      'Design report generation (PDF/DOCX)',
-      'Version-controlled design audit trail',
-    ]}
-    expectedVersion="v3.0"
-  />
+  <RedirectModal modalKey="designHub" path="/design-hub" />
 );
 
 export const GeotechnicalDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="geotechnicalDesign"
-    title="Geotechnical Design"
-    description="Foundation and soil engineering analysis tools"
-    features={[
-      'Bearing capacity per IS 6403 / Terzaghi / Meyerhof',
-      'Settlement analysis (immediate + consolidation)',
-      'Pile capacity — static formula & load test correlation',
-      'Lateral earth pressure (Rankine, Coulomb)',
-      'Slope stability (Bishop, Morgenstern-Price)',
-    ]}
-    expectedVersion="v3.0"
-  />
+  <RedirectModal modalKey="geotechnicalDesign" path="/design/foundation" />
 );
 
 export const HydraulicsDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="hydraulicsDesign"
-    title="Hydraulics Design"
-    description="Open channel and pipe flow analysis"
-    features={[
-      'Manning\'s equation for open channel design',
-      'Pipe network analysis (Hardy Cross)',
-      'Critical & normal depth calculations',
-      'Hydraulic jump analysis',
-      'Water hammer / surge analysis',
-    ]}
-    expectedVersion="v3.0"
-  />
+  <RedirectModal modalKey="hydraulicsDesign" path="/analysis/plate-shell" />
 );
 
 export const TransportDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="transportDesign"
-    title="Transport Engineering"
-    description="Highway geometry and pavement design"
-    features={[
-      'Horizontal & vertical curve design (IRC SP-23)',
-      'Sight distance analysis',
-      'Flexible & rigid pavement design per IRC 37 / IRC 58',
-      'Traffic analysis and LOS estimation',
-      'Super-elevation and widening calculations',
-    ]}
-    expectedVersion="v3.0"
-  />
+  <RedirectModal modalKey="transportDesign" path="/space-planning" />
 );
 
 export const ConstructionMgmtDialog: React.FC = () => (
-  <ComingSoonDialog
-    modalKey="constructionMgmt"
-    title="Construction Management"
-    description="Project scheduling and resource planning tools"
-    features={[
-      'CPM / PERT network scheduling',
-      'Gantt chart with resource leveling',
-      'Earned value management (EVM) tracking',
-      'Material quantity take-off from model',
-      'Cost estimation and budget tracking',
-    ]}
-    expectedVersion="v3.0"
-  />
+  <RedirectModal modalKey="constructionMgmt" path="/dashboard" />
 );

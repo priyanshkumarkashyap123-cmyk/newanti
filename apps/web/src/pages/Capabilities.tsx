@@ -19,7 +19,6 @@ import {
     FileText,
     Shield,
     Ruler,
-    Calculator,
     Wind,
     Building2,
     Layers,
@@ -29,7 +28,6 @@ import {
     Download,
     Globe,
     Code2,
-    Cpu,
     ArrowRight,
     LucideIcon,
     Play,
@@ -368,16 +366,10 @@ const FeatureCard: FC<FeatureCardProps> = ({ feature, index }) => {
             ">
                 {/* Status Badge */}
                 <div className="absolute top-4 right-4">
-                    {feature.available ? (
-                        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium">
-                            <CheckCircle className="w-3 h-3" />
-                            Available
-                        </span>
-                    ) : (
-                        <span className="px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-medium">
-                            Coming Soon
-                        </span>
-                    )}
+                    <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-medium">
+                        <CheckCircle className="w-3 h-3" />
+                        Available
+                    </span>
                 </div>
 
                 {/* Icon */}

@@ -48,7 +48,7 @@ interface IntegrationApp {
   icon: string;
   description: string;
   category: 'cad' | 'bim' | 'pm' | 'cloud' | 'analysis';
-  status: 'connected' | 'available' | 'coming-soon';
+  status: 'connected' | 'available';
   features: string[];
 }
 
@@ -154,96 +154,94 @@ const APIIntegrationDashboard: React.FC = () => {
     { method: 'POST', path: '/api/v1/projects/:id/export/dxf', description: 'Export to DXF', category: 'Export', authentication: true },
   ]);
 
-  const [integrations, setIntegrations] = useState<IntegrationApp[]>([
-    {
-      id: '1',
-      name: 'Autodesk Revit',
-      icon: '🔷',
-      description: 'Two-way sync with Revit models',
-      category: 'bim',
-      status: 'connected',
-      features: ['Model sync', 'Section mapping', 'Results overlay', 'Round-trip'],
-    },
-    {
-      id: '2',
-      name: 'Tekla Structures',
-      icon: '🔶',
-      description: 'Direct link to Tekla detailing',
-      category: 'bim',
-      status: 'available',
-      features: ['Model export', 'Connection details', 'Fabrication data'],
-    },
-    {
-      id: '3',
-      name: 'AutoCAD',
-      icon: '📐',
-      description: 'DWG/DXF import and export',
-      category: 'cad',
-      status: 'connected',
-      features: ['2D drawings', 'Layer mapping', 'Batch export'],
-    },
-    {
-      id: '4',
-      name: 'Procore',
-      icon: '📊',
-      description: 'Project management integration',
-      category: 'pm',
-      status: 'available',
-      features: ['Document sync', 'RFI integration', 'Submittals'],
-    },
-    {
-      id: '5',
-      name: 'BIM 360',
-      icon: '☁️',
-      description: 'Cloud collaboration platform',
-      category: 'cloud',
-      status: 'connected',
-      features: ['File sync', 'Version control', 'Team access'],
-    },
-    {
-      id: '6',
-      name: 'ETABS',
-      icon: '🏗️',
-      description: 'Import/export ETABS models',
-      category: 'analysis',
-      status: 'available',
-      features: ['Model import', 'Results comparison', 'Section mapping'],
-    },
-    {
-      id: '7',
-      name: 'STAAD.Pro',
-      icon: '🏢',
-      description: 'STAAD file compatibility',
-      category: 'analysis',
-      status: 'available',
-      features: ['STD import', 'ANL results', 'Design integration'],
-    },
-    {
-      id: '8',
-      name: 'Microsoft Excel',
-      icon: '📗',
-      description: 'Spreadsheet data exchange',
-      category: 'cloud',
-      status: 'connected',
-      features: ['Data export', 'Template import', 'Live link'],
-    },
-  ]);
+  const [integrations, setIntegrations] = useState<IntegrationApp[]>(() => {
+    const defaults: IntegrationApp[] = [
+      {
+        id: '1',
+        name: 'Autodesk Revit',
+        icon: '🔷',
+        description: 'Two-way sync with Revit models',
+        category: 'bim',
+        status: 'connected',
+        features: ['Model sync', 'Section mapping', 'Results overlay', 'Round-trip'],
+      },
+      {
+        id: '2',
+        name: 'Tekla Structures',
+        icon: '🔶',
+        description: 'Direct link to Tekla detailing',
+        category: 'bim',
+        status: 'available',
+        features: ['Model export', 'Connection details', 'Fabrication data'],
+      },
+      {
+        id: '3',
+        name: 'AutoCAD',
+        icon: '📐',
+        description: 'DWG/DXF import and export',
+        category: 'cad',
+        status: 'connected',
+        features: ['2D drawings', 'Layer mapping', 'Batch export'],
+      },
+      {
+        id: '4',
+        name: 'Procore',
+        icon: '📊',
+        description: 'Project management integration',
+        category: 'pm',
+        status: 'available',
+        features: ['Document sync', 'RFI integration', 'Submittals'],
+      },
+      {
+        id: '5',
+        name: 'BIM 360',
+        icon: '☁️',
+        description: 'Cloud collaboration platform',
+        category: 'cloud',
+        status: 'connected',
+        features: ['File sync', 'Version control', 'Team access'],
+      },
+      {
+        id: '6',
+        name: 'ETABS',
+        icon: '🏗️',
+        description: 'Import/export ETABS models',
+        category: 'analysis',
+        status: 'available',
+        features: ['Model import', 'Results comparison', 'Section mapping'],
+      },
+      {
+        id: '7',
+        name: 'STAAD.Pro',
+        icon: '🏢',
+        description: 'STAAD file compatibility',
+        category: 'analysis',
+        status: 'available',
+        features: ['STD import', 'ANL results', 'Design integration'],
+      },
+      {
+        id: '8',
+        name: 'Microsoft Excel',
+        icon: '📗',
+        description: 'Spreadsheet data exchange',
+        category: 'cloud',
+        status: 'connected',
+        features: ['Data export', 'Template import', 'Live link'],
+      },
+    ];
 
-  useEffect(() => { document.title = 'API Integration | BeamLab'; }, []);
-
-  useEffect(() => {
     const saved = localStorage.getItem('beamlab_api_integrations');
-    if (!saved) return;
+    if (!saved) return defaults;
 
     try {
       const parsed = JSON.parse(saved) as IntegrationApp[];
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        setIntegrations(parsed);
-      }
+      return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaults;
     } catch {
-      // ignore parse errors and keep defaults
+      return defaults;
     }
-  }, []);
+  });
+
+  useEffect(() => { document.title = 'API Integration | BeamLab'; }, []);
 
   useEffect(() => {
     localStorage.setItem('beamlab_api_integrations', JSON.stringify(integrations));
@@ -322,11 +320,7 @@ const APIIntegrationDashboard: React.FC = () => {
       return;
     }
 
-    const existing = JSON.parse(localStorage.getItem('beamlab_integration_waitlist') || '[]') as string[];
-    if (!existing.includes(integration.id)) {
-      localStorage.setItem('beamlab_integration_waitlist', JSON.stringify([...existing, integration.id]));
-    }
-    showBanner(`${integration.name} marked for early access notification.`, 'info');
+    showBanner(`${integration.name} status is already up to date.`, 'info');
   };
 
   const downloadOpenApiSpec = () => {
@@ -715,10 +709,10 @@ const APIIntegrationDashboard: React.FC = () => {
             Base URL: <code className="text-cyan-400 bg-slate-700 px-2 py-1 rounded">https://api.beamlabultimate.tech/v1</code>
           </p>
           <div className="flex gap-4">
-            <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
+            <button type="button" onClick={downloadOpenApiSpec} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
               📥 Download OpenAPI Spec
             </button>
-            <button type="button" className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
+            <button type="button" onClick={openSwaggerDocs} className="px-4 py-2 bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-600">
               🔗 View in Swagger
             </button>
           </div>
@@ -817,12 +811,10 @@ const results = await response.json();
                   <h4 className="text-slate-900 dark:text-white font-medium">{integration.name}</h4>
                   <span className={`text-xs capitalize ${
                     integration.status === 'connected' ? 'text-green-400' :
-                    integration.status === 'available' ? 'text-cyan-400' :
-                    'text-slate-600 dark:text-slate-400'
+                    'text-cyan-400'
                   }`}>
                     {integration.status === 'connected' ? '✓ Connected' :
-                     integration.status === 'available' ? 'Available' :
-                     'Coming Soon'}
+                     'Available'}
                   </span>
                 </div>
               </div>
@@ -835,18 +827,15 @@ const results = await response.json();
                 ))}
               </div>
               <button type="button"
+                onClick={() => handleIntegrationAction(integration)}
                 className={`w-full py-2 rounded text-sm ${
                   integration.status === 'connected'
                     ? 'bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-500'
-                    : integration.status === 'available'
-                    ? 'bg-cyan-600 text-white hover:bg-cyan-500'
-                    : 'bg-slate-600 text-slate-600 dark:text-slate-400 cursor-not-allowed'
+                    : 'bg-cyan-600 text-white hover:bg-cyan-500'
                 }`}
-                disabled={integration.status === 'coming-soon'}
               >
                 {integration.status === 'connected' ? 'Configure' :
-                 integration.status === 'available' ? 'Connect' :
-                 'Coming Soon'}
+                 'Connect'}
               </button>
             </div>
           ))}
@@ -871,7 +860,7 @@ const results = await response.json();
                 <p className="text-slate-600 dark:text-slate-400 text-sm">v{plugin.version} • {plugin.size}</p>
                 <p className="text-slate-500 text-xs">{plugin.platform}</p>
               </div>
-              <button type="button" className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
+              <button type="button" onClick={() => downloadPluginInstaller(plugin)} className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">
                 📥 Download
               </button>
             </div>

@@ -27,9 +27,17 @@ Environment variables:
 - `SPARSE_PCG_TOL_SMALL` (default: `SPARSE_PCG_TOLERANCE`) => tolerance for small-model PCG
 - `SPARSE_PCG_TOL_MEDIUM` (default: `5e-10`) => tolerance for medium-model PCG
 - `SPARSE_PCG_TOL_LARGE` (default: `1e-9`) => tolerance for large-model PCG
+- `SPARSE_PCG_HUGE_DOFS_MIN` (default: `200000`) => lower DOF bound for huge-model tolerance band
+- `SPARSE_PCG_TOL_HUGE` (default: `5e-9`) => tolerance for huge-model PCG
+- `SPARSE_PCG_MAX_ITER_CAP` (default: `200000`) => hard cap applied after `n * SPARSE_PCG_MAX_ITER_SCALE`
 - `SPARSE_PCG_PRECONDITIONER` (default: `jacobi`) => `jacobi` | `none` | `block_jacobi` (hook)
 - `SPARSE_PCG_ENABLE_FALLBACK_DIRECT` (default: `true`) => fallback to direct sparse route when PCG does not converge
 - `SPARSE_PCG_FALLBACK_DENSE_MAX_DOFS` (default: `6000`) => upper DOF cap for fallback route
+
+Convergence policy note:
+
+- PCG convergence now uses a **relative residual gate**: `||r|| <= tol * max(1, ||b||)`
+- This avoids over-penalizing large-force or large-DOF models that would otherwise fail strict absolute residual checks.
 
 ## Next backend optimization steps
 
@@ -77,6 +85,9 @@ Environment variables:
 Manual micro-bench test harness:
 
 - File: `apps/rust-api/tests/sparse_solver_benchmarks.rs`
+- Coverage:
+   - Tridiagonal SPD: `1000`, `3000`, `6000`, `20000`, `50000`, `100000` DOF-equivalent
+   - Frame-like block-coupled SPD: `60000` DOF-equivalent (`10000` nodes × `6` DOF)
 - Run:
   - `cargo test sparse_solver_benchmark_ --test sparse_solver_benchmarks -- --ignored --nocapture`
 
@@ -95,3 +106,33 @@ Interpretation guidance:
 - `converged=true` and low residual: accept PCG route
 - `converged=false` with `fallbackUsed=true`: result served via safe direct fallback; treat as tuning signal
 - Frequent fallback indicates tolerance/preconditioner/reordering adjustments needed before GPU phase
+
+## Latest measured benchmark snapshot (macOS dev run, 2026-03-12)
+
+From:
+
+- `cargo test --test sparse_solver_benchmarks -- --ignored --nocapture`
+
+Observed output summary:
+
+| DOF | Strategy | Iterations | Converged | Residual | Tolerance | Matrix build (ms) | Solve (ms) | Total (ms) | Fallback |
+|---:|---|---:|---|---:|---:|---:|---:|---:|---|
+| 1,000 | Skyline | — | — | — | — | 2.781 | 2.748 | 22.905 | — |
+| 3,000 | PreconditionedCG | 14 | true | 2.605e-7 | 5e-10 | 5.372 | 26.822 | 32.195 | false |
+| 6,000 | PreconditionedCG | 14 | true | 2.606e-7 | 5e-10 | 6.937 | 33.042 | 39.980 | false |
+| 20,000 | PreconditionedCG | 13 | true | 9.727e-7 | 1e-9 | 43.118 | 88.947 | 132.066 | false |
+| 50,000 | PreconditionedCG | 13 | true | 9.728e-7 | 1e-9 | 79.881 | 200.281 | 280.163 | false |
+| 100,000 | PreconditionedCG | 13 | true | 9.728e-7 | 1e-9 | 177.857 | 341.046 | 518.905 | false |
+
+Additional structural-like synthetic case:
+
+| Case | Strategy | Iterations | Converged | Residual | Tolerance | Matrix build (ms) | Solve (ms) | Total (ms) | Fallback |
+|---|---|---:|---|---:|---:|---:|---:|---:|---|
+| FRAME_LIKE_60000 (10000 nodes × 6 DOF) | PreconditionedCG | 7 | true | 1.195e-7 | 1e-9 | 253.792 | 113.148 | 366.941 | false |
+
+Notes:
+
+- All benchmark cases passed in one suite execution.
+- 100k DOF-equivalent sparse benchmark converged with no fallback, confirming current CPU sparse-PCG path is stable for this synthetic SPD class.
+- Frame-like 60k DOF benchmark also converged with no fallback, providing a closer proxy to structural block-coupled sparsity.
+- Keep using these numbers as **baseline development telemetry** (not production SLA), since timings depend on local machine, compiler profile, and thermal state.

@@ -49,6 +49,8 @@ import { Logo } from '../components/branding';
 import { Button } from '../components/ui/button';
 import { Input, Select } from '../components/ui/FormInputs';
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
+import { utilizationColor as utilizationTextColor } from '../contracts/resultContract';
+import { designSummaryToCSV, type DesignSummaryCSVRow } from '../contracts/reportSchema';
 
 // ================================================================
 // TYPES
@@ -569,13 +571,6 @@ async function isBackendAvailable(): Promise<boolean> {
   return _backendAvailable;
 }
 
-function utilizationColor(ratio: number): string {
-  if (ratio <= 0.5) return 'text-emerald-400';
-  if (ratio <= 0.8) return 'text-blue-400';
-  if (ratio <= 1.0) return 'text-amber-400';
-  return 'text-red-400';
-}
-
 function utilizationBg(ratio: number): string {
   if (ratio <= 0.5) return 'bg-emerald-500';
   if (ratio <= 0.8) return 'bg-blue-500';
@@ -709,7 +704,7 @@ const CheckDetailRow = memo<{ check: { name: string; clause?: string; ratio: num
         <div className="w-24">
           <UtilizationBar ratio={check.ratio} />
         </div>
-        <span className={`text-sm font-mono font-bold w-16 text-right ${utilizationColor(check.ratio)}`}>
+        <span className={`text-sm font-mono font-bold w-16 text-right ${utilizationTextColor(check.ratio)}`}>
           {(check.ratio * 100).toFixed(1)}%
         </span>
       </div>
@@ -823,7 +818,7 @@ const MemberDesignTable: FC<{
         row.designResult ? (
           <div className="flex items-center gap-2">
             <div className="flex-1"><UtilizationBar ratio={row.designResult.utilizationRatio} /></div>
-            <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(row.designResult.utilizationRatio)}`}>{row.utilizationText}</span>
+            <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationTextColor(row.designResult.utilizationRatio)}`}>{row.utilizationText}</span>
           </div>
         ) : <span className="text-xs text-slate-600">—</span>
       ),
@@ -1591,7 +1586,7 @@ const FoundationDesignTab: FC<{
                   <div key={label as string} className="flex items-center gap-3">
                     <span className="text-xs text-slate-700 dark:text-slate-300 w-28">{label as string}</span>
                     <div className="flex-1"><UtilizationBar ratio={ratio as number} /></div>
-                    <span className={`text-xs font-mono w-12 text-right ${utilizationColor(ratio as number)}`}>
+                    <span className={`text-xs font-mono w-12 text-right ${utilizationTextColor(ratio as number)}`}>
                       {((ratio as number) * 100).toFixed(0)}%
                     </span>
                   </div>
@@ -2575,7 +2570,7 @@ const PostAnalysisDesignHub: FC = () => {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-600 dark:text-slate-400">Max Utilization</span>
-                        <span className={`font-bold ${utilizationColor(maxUtilization)}`}>
+                        <span className={`font-bold ${utilizationTextColor(maxUtilization)}`}>
                           {(maxUtilization * 100).toFixed(1)}%
                         </span>
                       </div>
@@ -2705,7 +2700,7 @@ const PostAnalysisDesignHub: FC = () => {
                           <>
                             <div className="flex justify-between"><span className="text-emerald-400">Pass</span><span className="font-bold text-emerald-400">{pass}</span></div>
                             <div className="flex justify-between"><span className="text-red-400">Fail</span><span className="font-bold text-red-400">{fail}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-400">Max Util.</span><span className={`font-bold ${utilizationColor(maxU)}`}>{(maxU * 100).toFixed(1)}%</span></div>
+                            <div className="flex justify-between"><span className="text-slate-400">Max Util.</span><span className={`font-bold ${utilizationTextColor(maxU)}`}>{(maxU * 100).toFixed(1)}%</span></div>
                           </>
                         );
                       })()}
@@ -2769,7 +2764,7 @@ const PostAnalysisDesignHub: FC = () => {
                                 <td className="py-2 px-2">
                                   <div className="flex items-center gap-2">
                                     <div className="flex-1"><UtilizationBar ratio={cr.utilizationRatio} /></div>
-                                    <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(cr.utilizationRatio)}`}>
+                                    <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationTextColor(cr.utilizationRatio)}`}>
                                       {(cr.utilizationRatio * 100).toFixed(0)}%
                                     </span>
                                   </div>
@@ -2946,7 +2941,7 @@ const PostAnalysisDesignHub: FC = () => {
                                 {record ? (
                                   <div className="flex items-center gap-2">
                                     <div className="flex-1"><UtilizationBar ratio={record.utilizationRatio} /></div>
-                                    <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(record.utilizationRatio)}`}>
+                                    <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationTextColor(record.utilizationRatio)}`}>
                                       {(record.utilizationRatio * 100).toFixed(0)}%
                                     </span>
                                   </div>
@@ -3243,7 +3238,7 @@ const PostAnalysisDesignHub: FC = () => {
                               {optimized ? (
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1"><UtilizationBar ratio={optimized.utilizationRatio} /></div>
-                                  <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationColor(optimized.utilizationRatio)}`}>
+                                  <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationTextColor(optimized.utilizationRatio)}`}>
                                     {(optimized.utilizationRatio * 100).toFixed(0)}%
                                   </span>
                                 </div>
@@ -3476,7 +3471,7 @@ const PostAnalysisDesignHub: FC = () => {
                             <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">{formatForce(r.forces.N)}</td>
                             <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">{formatForce(r.forces.Vy)}</td>
                             <td className="py-1.5 px-2 text-right text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">{formatForce(r.forces.Mz)}</td>
-                            <td className={`py-1.5 px-2 text-right font-bold border border-slate-200 dark:border-slate-700 ${utilizationColor(r.utilizationRatio)}`}>
+                            <td className={`py-1.5 px-2 text-right font-bold border border-slate-200 dark:border-slate-700 ${utilizationTextColor(r.utilizationRatio)}`}>
                               {(r.utilizationRatio * 100).toFixed(1)}%
                             </td>
                             <td className="py-1.5 px-2 text-center text-slate-500 dark:text-slate-400 text-[10px] border border-slate-200 dark:border-slate-700">{r.governingCheck || '—'}</td>
@@ -3549,7 +3544,39 @@ const PostAnalysisDesignHub: FC = () => {
                     </Link>
                     <button type="button"
                       onClick={() => {
-                        document.dispatchEvent(new CustomEvent("trigger-export"));
+                        const rows: DesignSummaryCSVRow[] = Array.from(designResults.values()).map((r) => {
+                          const memberRow = memberRows.find((m) => m.id === r.memberId);
+                          const governing = r.checks.reduce(
+                            (max, c) => (c.ratio >= max.ratio ? c : max),
+                            { name: r.governingCheck || '—', clause: '', ratio: -Infinity, status: r.status } as {
+                              name: string;
+                              clause?: string;
+                              ratio: number;
+                              status: string;
+                            },
+                          );
+                          return {
+                            memberId: r.memberName,
+                            section: r.section,
+                            material: params.steelGrade,
+                            length: memberRow?.length ?? 0,
+                            maxUtilization: r.utilizationRatio,
+                            governingCheck: r.governingCheck || governing.name || '—',
+                            governingClause: governing.clause || '—',
+                            status: r.status,
+                          };
+                        });
+
+                        const csv = designSummaryToCSV(rows);
+                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `design-summary-${new Date().toISOString().slice(0, 10)}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
                       }}
                       className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                     >

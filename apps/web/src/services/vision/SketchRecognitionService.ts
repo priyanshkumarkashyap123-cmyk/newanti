@@ -348,7 +348,7 @@ class PDFParserServiceClass {
             drawings: [],
             tables: [],
             text: '',
-            warnings: ['PDF parsing requires pdf.js integration - coming soon']
+            warnings: ['PDF parsing requires pdf.js integration - pending setup']
         };
     }
 

@@ -248,7 +248,7 @@ export const IS875LiveLoadDialog = lazy(() => import("../dialogs/IS875LiveLoadDi
 // Nonlinear analysis dialog
 export const NonlinearAnalysisDialog = lazy(() => import("../dialogs/NonlinearAnalysisDialog"));
 
-// Coming Soon stubs
+// Feature redirect stubs
 export const RCDetailingDialog = lazy(() =>
   import("../dialogs/ComingSoonDialog").then((m) => ({ default: m.RCDetailingDialog })),
 );

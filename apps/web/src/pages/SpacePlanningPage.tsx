@@ -59,6 +59,7 @@ import { VariantDetail } from '../components/space-planning/VariantDetail';
 import { spacePlanningEngine } from '../services/space-planning/SpacePlanningEngine';
 import {
   solveLayout,
+  solveLayoutFromMinimal,
   solveMultipleCandidates,
   generateLayoutVariants,
   placementsToPlacedRooms,
@@ -132,7 +133,7 @@ export function SpacePlanningPage() {
   const [multiCandidateResult, setMultiCandidateResult] = useState<MultiCandidateResult | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
   const [showCandidates, setShowCandidates] = useState(false);
-  const [generationMode, setGenerationMode] = useState<'single' | 'multi' | 'variants'>('single');
+  const [generationMode, setGenerationMode] = useState<'single' | 'multi' | 'variants'>('variants');
   const [solverError, setSolverError] = useState<string | null>(null);
   const [solverBackendState, setSolverBackendState] = useState<'unknown' | 'checking' | 'online' | 'offline'>('unknown');
   const [solverBackendMessage, setSolverBackendMessage] = useState<string | null>(null);
@@ -362,7 +363,10 @@ export function SpacePlanningPage() {
         if (!report) {
           // Single candidate mode (or fallback)
           try {
-            const solverResult = await solveLayout(config, { maxIterations: 300 });
+            const solverResult =
+              config.inputMode === 'minimal'
+                ? await solveLayoutFromMinimal(config, { maxIterations: 300 })
+                : await solveLayout(config, { maxIterations: 300 });
             report = solverResult.report;
             placements = solverResult.placements;
             setConstraintReport(report);

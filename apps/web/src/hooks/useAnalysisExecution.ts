@@ -13,6 +13,7 @@ import type { AnalysisStage } from "../components/AnalysisProgressModal";
 import type { Member, MemberForceData } from "../store/model";
 import { API_CONFIG } from "../config/env";
 import { validateStructure, type ValidationResult, type ValidationError } from "../utils/structuralValidation";
+import { runDiagnostics } from "../engine/diagnostics";
 import { distributeFloorLoads } from "../services/floorLoadDistributor";
 import type { ValidationResults } from "../components/ValidationErrorDisplay";
 import type { MemberStress } from "../components/StressVisualization";
@@ -1290,15 +1291,75 @@ export function useAnalysisExecution(
   // HANDLE RUN ANALYSIS (validation + lock + execute)
   // ══════════════════════════════════════════
   const handleRunAnalysis = useCallback(async () => {
-    const { nodes, members } = useModelStore.getState();
+    const { nodes, members, loads } = useModelStore.getState();
     const { showNotification } = useUIStore.getState();
 
     // STEP 1: Validate structure
     const validationResult = validateStructure(nodes, members);
 
-    if (!validationResult.valid || validationResult.errors.length > 0) {
-      setStructuralValidationErrors(validationResult.errors);
-      setStructuralValidationWarnings(validationResult.warnings);
+    // STEP 1b: Run model diagnostics engine and merge with structural validation
+    const nodesArray = Array.from(nodes.values());
+    const membersArray = Array.from(members.values());
+    const supports = nodesArray
+      .filter((n) => {
+        const r = n.restraints;
+        return !!(r && (r.fx || r.fy || r.fz || r.mx || r.my || r.mz));
+      })
+      .map((n) => ({
+        nodeId: n.id,
+        fx: n.restraints?.fx,
+        fy: n.restraints?.fy,
+        fz: n.restraints?.fz,
+        mx: n.restraints?.mx,
+        my: n.restraints?.my,
+        mz: n.restraints?.mz,
+      }));
+
+    const diagSummary = runDiagnostics({
+      nodes: nodesArray.map((n) => ({ id: n.id, x: n.x, y: n.y, z: n.z })),
+      members: membersArray.map((m) => ({
+        id: m.id,
+        startNodeId: m.startNodeId,
+        endNodeId: m.endNodeId,
+        E: m.E,
+        A: m.A,
+        I: m.I,
+      })),
+      supports,
+      loads: loads.map((l) => ({ nodeId: l.nodeId, fx: l.fx, fy: l.fy, fz: l.fz })),
+    });
+
+    const diagErrors: ValidationError[] = diagSummary.items
+      .filter((d) => d.severity === "error")
+      .map((d) => ({
+        type: "error",
+        message: d.message,
+        details: `Code: ${d.code}`,
+        affectedItems: d.entityIds,
+      }));
+
+    const diagWarnings: ValidationError[] = diagSummary.items
+      .filter((d) => d.severity === "warning")
+      .map((d) => ({
+        type: "warning",
+        message: d.message,
+        details: `Code: ${d.code}`,
+        affectedItems: d.entityIds,
+      }));
+
+    const mergedErrors = [...validationResult.errors, ...diagErrors];
+    const mergedWarnings = [...validationResult.warnings, ...diagWarnings];
+
+    if (!validationResult.valid || mergedErrors.length > 0) {
+      setStructuralValidationErrors(mergedErrors);
+      setStructuralValidationWarnings(mergedWarnings);
+      setShowValidationDialog(true);
+      return;
+    }
+
+    if (mergedWarnings.length > 0) {
+      setStructuralValidationErrors([]);
+      setStructuralValidationWarnings(mergedWarnings);
       setShowValidationDialog(true);
       return;
     }

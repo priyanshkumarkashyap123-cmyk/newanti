@@ -37,7 +37,7 @@ interface AnalysisCard {
   color: string;
   link: string;
   tags: string[];
-  status: 'ready' | 'beta' | 'coming';
+  status: 'ready' | 'beta';
 }
 
 const analysisTypes: AnalysisCard[] = [
@@ -185,21 +185,19 @@ export const DynamicAnalysisPage: React.FC = () => {
             return (
               <Link
                 key={analysis.id}
-                to={analysis.status === 'coming' ? '#' : analysis.link}
-                className={`group relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl ${
-                  analysis.status === 'coming' ? 'opacity-60 cursor-not-allowed' : ''
-                }`}
+                to={analysis.link}
+                className="group relative bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-all hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-xl"
               >
                 {/* Gradient Header */}
                 <div className={`h-24 bg-gradient-to-br ${analysis.color} flex items-center justify-center relative`}>
                   <Icon className="w-12 h-12 text-slate-900/90 dark:text-white/90" />
                   {analysis.status !== 'ready' && (
                     <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full ${
-                      analysis.status === 'beta' 
-                        ? 'bg-amber-500/20 text-amber-300' 
+                      analysis.status === 'beta'
+                        ? 'bg-amber-500/20 text-amber-300'
                         : 'bg-slate-500/20 text-slate-700 dark:text-slate-300'
                     }`}>
-                      {analysis.status === 'beta' ? 'Beta' : 'Coming Soon'}
+                      {analysis.status === 'beta' ? 'Beta' : 'Preview'}
                     </span>
                   )}
                 </div>
@@ -226,12 +224,10 @@ export const DynamicAnalysisPage: React.FC = () => {
                   </div>
 
                   {/* Action */}
-                  {analysis.status !== 'coming' && (
-                    <div className="flex items-center text-sm text-blue-400 group-hover:text-blue-300">
-                      Open Analysis
-                      <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  )}
+                  <div className="flex items-center text-sm text-blue-400 group-hover:text-blue-300">
+                    Open Analysis
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </Link>
             );

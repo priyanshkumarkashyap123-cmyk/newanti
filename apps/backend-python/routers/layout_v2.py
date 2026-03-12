@@ -143,6 +143,25 @@ class LayoutV2Request(BaseModel):
     )
 
 
+class MinimalAutoOptimizeRequest(BaseModel):
+    """Minimal-input request for automatic room program + optimization.
+
+    Users provide only high-level site and entry/road orientation data; the backend
+    synthesizes a practical residential room program and adjacency graph, then runs
+    the same v2 optimizer pipeline.
+    """
+    site: SiteRequest
+    global_constraints: Optional[GlobalConstraintsRequest] = None
+    main_entry_direction: str = Field(default="N", description="Primary entry direction")
+    road_sides: List[str] = Field(default_factory=lambda: ["N"])
+    bedroom_preference: int = Field(default=2, ge=1, le=5)
+    include_study: bool = False
+    include_guest_room: bool = False
+    include_parking: bool = True
+    max_iterations: int = Field(default=300, ge=1, le=5000)
+    random_seed: Optional[int] = None
+
+
 # =====================================================================
 # RESPONSE MODELS
 # =====================================================================
@@ -384,6 +403,274 @@ def _validate_v2(request: LayoutV2Request) -> None:
         seen[key] = entry.weight
 
 
+def _build_auto_program_nodes(request: MinimalAutoOptimizeRequest) -> List[RoomNodeRequest]:
+    """Generate a robust default residential room program from plot area and preferences."""
+    w, h = request.site.dimensions_m
+    area_sqm = w * h
+    floors = max(1, request.site.num_floors)
+    upper_floor = 1 if floors > 1 else 0
+    bedrooms = max(1, min(5, request.bedroom_preference))
+
+    nodes: List[RoomNodeRequest] = [
+        RoomNodeRequest(
+            id="entry_1",
+            name="Entrance Lobby",
+            type="circulation",
+            acoustic_zone="buffer",
+            target_area_sqm=6.0,
+            min_width_m=1.8,
+            max_aspect_ratio=2.5,
+            min_aspect_ratio=1.0,
+            requires_exterior_wall=True,
+            plumbing_required=False,
+            priority=1,
+            is_entry=True,
+            num_doors=2,
+        ),
+        RoomNodeRequest(
+            id="living_1",
+            name="Living",
+            type="habitable",
+            acoustic_zone="active",
+            target_area_sqm=20.0 if area_sqm >= 120 else 16.0,
+            min_width_m=3.2,
+            max_aspect_ratio=2.0,
+            min_aspect_ratio=1.0,
+            requires_exterior_wall=True,
+            plumbing_required=False,
+            priority=1,
+            is_entry=False,
+            num_doors=2,
+        ),
+        RoomNodeRequest(
+            id="kitchen_1",
+            name="Kitchen",
+            type="wet",
+            acoustic_zone="service",
+            target_area_sqm=10.0,
+            min_width_m=2.4,
+            max_aspect_ratio=2.5,
+            min_aspect_ratio=1.0,
+            requires_exterior_wall=True,
+            plumbing_required=True,
+            priority=1,
+            is_entry=False,
+            num_doors=1,
+        ),
+        RoomNodeRequest(
+            id="dining_1",
+            name="Dining",
+            type="habitable",
+            acoustic_zone="active",
+            target_area_sqm=12.0 if area_sqm >= 90 else 9.0,
+            min_width_m=2.8,
+            max_aspect_ratio=2.0,
+            min_aspect_ratio=1.0,
+            requires_exterior_wall=True,
+            plumbing_required=False,
+            priority=2,
+            is_entry=False,
+            num_doors=1,
+        ),
+        RoomNodeRequest(
+            id="toilet_gf",
+            name="Common Toilet",
+            type="wet",
+            acoustic_zone="service",
+            target_area_sqm=2.2,
+            min_width_m=1.0,
+            max_aspect_ratio=3.0,
+            min_aspect_ratio=1.0,
+            requires_exterior_wall=False,
+            plumbing_required=True,
+            priority=1,
+            is_entry=False,
+            num_doors=1,
+        ),
+    ]
+
+    if floors > 1:
+        nodes.append(
+            RoomNodeRequest(
+                id="stair_1",
+                name="Staircase",
+                type="staircase",
+                acoustic_zone="buffer",
+                target_area_sqm=7.0,
+                min_width_m=1.0,
+                max_aspect_ratio=3.0,
+                min_aspect_ratio=1.0,
+                requires_exterior_wall=False,
+                plumbing_required=False,
+                priority=1,
+                is_entry=False,
+                num_doors=1,
+            )
+        )
+
+    nodes.append(
+        RoomNodeRequest(
+            id="master_1",
+            name="Master Bedroom",
+            type="habitable",
+            acoustic_zone="passive",
+            target_area_sqm=15.0,
+            min_width_m=3.0,
+            max_aspect_ratio=2.0,
+            min_aspect_ratio=1.0,
+            requires_exterior_wall=True,
+            plumbing_required=False,
+            priority=1,
+            is_entry=False,
+            num_doors=1,
+        )
+    )
+    nodes.append(
+        RoomNodeRequest(
+            id="bath_master_1",
+            name="Master Bath",
+            type="wet",
+            acoustic_zone="service",
+            target_area_sqm=4.2,
+            min_width_m=1.6,
+            max_aspect_ratio=2.5,
+            min_aspect_ratio=1.0,
+            requires_exterior_wall=False,
+            plumbing_required=True,
+            priority=1,
+            is_entry=False,
+            num_doors=1,
+        )
+    )
+
+    for i in range(max(0, bedrooms - 1)):
+        nodes.append(
+            RoomNodeRequest(
+                id=f"bed_{i+1}",
+                name=f"Bedroom {i+1}",
+                type="habitable",
+                acoustic_zone="passive",
+                target_area_sqm=11.0,
+                min_width_m=2.8,
+                max_aspect_ratio=2.0,
+                min_aspect_ratio=1.0,
+                requires_exterior_wall=True,
+                plumbing_required=False,
+                priority=2,
+                is_entry=False,
+                num_doors=1,
+            )
+        )
+
+    if bedrooms >= 3:
+        nodes.append(
+            RoomNodeRequest(
+                id="bath_common_1",
+                name="Common Bath",
+                type="wet",
+                acoustic_zone="service",
+                target_area_sqm=3.5,
+                min_width_m=1.5,
+                max_aspect_ratio=2.5,
+                min_aspect_ratio=1.0,
+                requires_exterior_wall=False,
+                plumbing_required=True,
+                priority=2,
+                is_entry=False,
+                num_doors=1,
+            )
+        )
+
+    if request.include_guest_room and area_sqm >= 140:
+        nodes.append(
+            RoomNodeRequest(
+                id="guest_1",
+                name="Guest Room",
+                type="habitable",
+                acoustic_zone="passive",
+                target_area_sqm=11.0,
+                min_width_m=2.8,
+                max_aspect_ratio=2.0,
+                min_aspect_ratio=1.0,
+                requires_exterior_wall=True,
+                plumbing_required=False,
+                priority=3,
+                is_entry=False,
+                num_doors=1,
+            )
+        )
+
+    if request.include_study and area_sqm >= 170:
+        nodes.append(
+            RoomNodeRequest(
+                id="study_1",
+                name="Study",
+                type="habitable",
+                acoustic_zone="passive",
+                target_area_sqm=8.0,
+                min_width_m=2.4,
+                max_aspect_ratio=2.0,
+                min_aspect_ratio=1.0,
+                requires_exterior_wall=True,
+                plumbing_required=False,
+                priority=3,
+                is_entry=False,
+                num_doors=1,
+            )
+        )
+
+    if request.include_parking and area_sqm >= 90:
+        nodes.append(
+            RoomNodeRequest(
+                id="parking_1",
+                name="Parking",
+                type="utility",
+                acoustic_zone="buffer",
+                target_area_sqm=14.0,
+                min_width_m=2.5,
+                max_aspect_ratio=2.5,
+                min_aspect_ratio=1.0,
+                requires_exterior_wall=True,
+                plumbing_required=False,
+                priority=2,
+                is_entry=False,
+                num_doors=1,
+            )
+        )
+
+    return nodes
+
+
+def _build_auto_program_adjacency(nodes: List[RoomNodeRequest]) -> List[AdjacencyMatrixEntry]:
+    """Build practical adjacency weights for the autogenerated room program."""
+    ids = {n.id for n in nodes}
+    edges: List[AdjacencyMatrixEntry] = []
+
+    def add(a: str, b: str, w: float):
+        if a in ids and b in ids and a != b:
+            edges.append(AdjacencyMatrixEntry(node_a=a, node_b=b, weight=w))
+
+    add("entry_1", "living_1", 10)
+    add("entry_1", "dining_1", 7)
+    add("living_1", "dining_1", 8)
+    add("dining_1", "kitchen_1", 9)
+    add("kitchen_1", "toilet_gf", -4)
+    add("master_1", "bath_master_1", 10)
+
+    for n in nodes:
+        if n.id.startswith("bed_"):
+            add("living_1", n.id, 4)
+            add("kitchen_1", n.id, -4)
+            add(n.id, "bath_common_1", 8)
+
+    add("guest_1", "toilet_gf", 6)
+    add("study_1", "living_1", 3)
+    add("parking_1", "entry_1", 8)
+    add("stair_1", "living_1", 6)
+
+    return edges
+
+
 # =====================================================================
 # ENDPOINT
 # =====================================================================
@@ -564,6 +851,35 @@ async def optimize_layout_v2(request: LayoutV2Request):
     except Exception as exc:
         raise HTTPException(
             status_code=500, detail=f"Layout v2 optimisation failed: {exc}"
+        ) from exc
+
+
+@router.post("/api/layout/v2/auto-optimize", response_model=LayoutV2Response)
+async def optimize_layout_v2_auto(request: MinimalAutoOptimizeRequest):
+    """Minimal-input optimization endpoint.
+
+    Creates a robust default room program from plot area + entry/road cues,
+    then runs the same v2 optimizer for high-quality floor-plan generation.
+    """
+    try:
+        nodes = _build_auto_program_nodes(request)
+        adjacency = _build_auto_program_adjacency(nodes)
+
+        full_request = LayoutV2Request(
+            site=request.site,
+            global_constraints=request.global_constraints,
+            nodes=nodes,
+            adjacency_matrix=adjacency,
+            max_iterations=request.max_iterations,
+            random_seed=request.random_seed,
+        )
+
+        return await optimize_layout_v2(full_request)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail=f"Auto layout optimization failed: {exc}"
         ) from exc
 
 

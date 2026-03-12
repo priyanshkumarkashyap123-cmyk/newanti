@@ -10,7 +10,7 @@
  * Step 7: Review & Generate
  */
 
-import { FC, useState, useCallback, useEffect } from 'react';
+import { FC, useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Home,
   Compass,
@@ -61,6 +61,7 @@ export interface WizardConfig {
   roomSpecs: RoomSpec[];
   preferences: UserPreferences;
   location: { latitude: number; longitude: number; city: string; state: string; country: string };
+  inputMode: InputMode;
 }
 
 const WIZARD_STEPS: { key: WizardStep; label: string; icon: FC<{ className?: string }> }[] = [
@@ -146,8 +147,59 @@ const ROOM_PRESETS: Record<
 };
 
 type QuickBuildingType = keyof typeof ROOM_PRESETS;
+type InputMode = 'minimal' | 'detailed';
 
 const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
+
+const SQFT_TO_SQM = 0.092903;
+
+const toSqm = (plot: PlotDimensions): number =>
+  plot.unit === 'feet' ? plot.area * SQFT_TO_SQM : plot.area;
+
+function createAutoRoomProgram(
+  plot: PlotDimensions,
+  constraints: SiteConstraints,
+): Map<RoomType, { count: number; floor: number }> {
+  const areaSqm = toSqm(plot);
+  const floors = Math.max(1, constraints.maxFloors || 1);
+  const bedroomCount = areaSqm < 85 ? 1 : areaSqm < 145 ? 2 : areaSqm < 230 ? 3 : 4;
+  const upperFloor = floors > 1 ? 1 : 0;
+
+  const rooms = new Map<RoomType, { count: number; floor: number }>([
+    ['entrance_lobby', { count: 1, floor: 0 }],
+    ['living', { count: 1, floor: 0 }],
+    ['kitchen', { count: 1, floor: 0 }],
+    ['dining', { count: areaSqm >= 70 ? 1 : 0, floor: 0 }],
+    ['master_bedroom', { count: 1, floor: upperFloor }],
+    ['bathroom', { count: bedroomCount >= 3 ? 2 : 1, floor: upperFloor }],
+    ['toilet', { count: 1, floor: 0 }],
+  ]);
+
+  if (bedroomCount > 1) {
+    rooms.set('bedroom', { count: bedroomCount - 1, floor: upperFloor });
+  }
+
+  if (floors > 1) {
+    rooms.set('staircase', { count: 1, floor: 0 });
+    rooms.set('balcony', { count: bedroomCount >= 2 ? 1 : 0, floor: 1 });
+  }
+
+  if (areaSqm >= 100) rooms.set('utility', { count: 1, floor: 0 });
+  if (areaSqm >= 155) rooms.set('guest_room', { count: 1, floor: 0 });
+  if (areaSqm >= 210) rooms.set('study', { count: 1, floor: upperFloor });
+
+  const parkingCount = Math.max(0, constraints.parkingRequired || 0);
+  if (parkingCount > 0 || areaSqm >= 95) {
+    rooms.set('parking', { count: Math.max(1, parkingCount), floor: 0 });
+  }
+
+  // Remove zero-count artifacts
+  Array.from(rooms.entries()).forEach(([type, cfg]) => {
+    if (!cfg.count || cfg.count <= 0) rooms.delete(type);
+  });
+
+  return rooms;
+}
 
 const inferProblemTypeFromTemplate = (templateId: string): SmartDefaultsInput['problemType'] => {
   if (templateId.includes('beam')) return 'beam';
@@ -177,6 +229,7 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
   initialTemplateId,
 }) => {
   const [step, setStep] = useState(0);
+  const [inputMode, setInputMode] = useState<InputMode>('minimal');
   const [smartDefaults, setSmartDefaults] = useState<SmartDefaults | null>(null);
   const [appliedTemplateId, setAppliedTemplateId] = useState<string | null>(null);
 
@@ -477,13 +530,29 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
     });
   }, []);
 
-  const handleGenerate = useCallback(() => {
-    const roomSpecs: RoomSpec[] = [];
-    selectedRooms.forEach((config, type) => {
-      for (let i = 0; i < config.count; i++) {
-        roomSpecs.push(spacePlanningEngine.getDefaultRoomSpec(type, config.floor));
-      }
-    });
+  const buildRoomSpecsFromSelection = useCallback(
+    (selection: Map<RoomType, { count: number; floor: number }>): RoomSpec[] => {
+      const roomSpecs: RoomSpec[] = [];
+      selection.forEach((config, type) => {
+        for (let i = 0; i < config.count; i++) {
+          roomSpecs.push(spacePlanningEngine.getDefaultRoomSpec(type, config.floor));
+        }
+      });
+      return roomSpecs;
+    },
+    [],
+  );
+
+  const autoProgram = useMemo(
+    () => createAutoRoomProgram(plot, constraints),
+    [plot, constraints],
+  );
+
+  const handleQuickGenerate = useCallback(() => {
+    const roomSpecs = buildRoomSpecsFromSelection(autoProgram);
+
+    // Keep wizard state in sync so user can switch to detailed mode and edit.
+    setSelectedRooms(new Map(autoProgram));
 
     onGenerate({
       plot,
@@ -492,8 +561,23 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
       roomSpecs,
       preferences,
       location,
+      inputMode,
     });
-  }, [plot, orientation, constraints, selectedRooms, preferences, location, onGenerate]);
+  }, [autoProgram, buildRoomSpecsFromSelection, constraints, inputMode, location, onGenerate, orientation, plot, preferences]);
+
+  const handleGenerate = useCallback(() => {
+    const roomSpecs = buildRoomSpecsFromSelection(selectedRooms);
+
+    onGenerate({
+      plot,
+      orientation,
+      constraints,
+      roomSpecs,
+      preferences,
+      location,
+      inputMode,
+    });
+  }, [plot, orientation, constraints, selectedRooms, preferences, location, onGenerate, buildRoomSpecsFromSelection, inputMode]);
 
   const buildableArea =
     (plot.width - constraints.setbacks.left - constraints.setbacks.right) *
@@ -534,6 +618,38 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
         {/* Step 0: Plot Details */}
         {step === 0 && (
           <div className="space-y-4">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-3">
+              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Input Mode</div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setInputMode('minimal')}
+                  className={`px-3 py-2 rounded text-xs font-medium transition-colors ${
+                    inputMode === 'minimal'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
+                  }`}
+                >
+                  Minimal (Auto Plan)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputMode('detailed')}
+                  className={`px-3 py-2 rounded text-xs font-medium transition-colors ${
+                    inputMode === 'detailed'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
+                  }`}
+                >
+                  Detailed (Custom)
+                </button>
+              </div>
+              <div className="mt-2 text-[10px] text-slate-500 dark:text-slate-400">
+                Minimal mode uses only plot size + road/entry directions to auto-create a practical room program.
+                Detailed mode lets you customize all constraints and room requirements.
+              </div>
+            </div>
+
             {smartDefaults && (
               <div className="rounded-lg border border-blue-200 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-900/20 p-3">
                 <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-1">
@@ -592,6 +708,82 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 suffix={plot.unit === 'meters' ? 'm' : 'ft'}
               />
             </div>
+
+            {inputMode === 'minimal' && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <FieldSelect
+                    label="Main Entry Direction"
+                    value={orientation.mainEntryDirection}
+                    options={DIRECTIONS.map((d) => ({ value: d, label: d }))}
+                    onChange={(v) =>
+                      setOrientation((o) => ({ ...o, mainEntryDirection: v as CardinalDirection }))
+                    }
+                  />
+                  <FieldSelect
+                    label="Plot Facing"
+                    value={orientation.plotFacing}
+                    options={DIRECTIONS.map((d) => ({ value: d, label: d }))}
+                    onChange={(v) => setOrientation((o) => ({ ...o, plotFacing: v as CardinalDirection }))}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-500 mb-1 block">Road Side(s)</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {DIRECTIONS.map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => {
+                          setOrientation((o) => ({
+                            ...o,
+                            roadSide: o.roadSide.includes(d)
+                              ? o.roadSide.filter((r) => r !== d)
+                              : [...o.roadSide, d],
+                          }));
+                        }}
+                        className={`py-2 text-xs font-medium rounded-lg transition-colors ${
+                          orientation.roadSide.includes(d)
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-emerald-200 dark:border-emerald-800/30 bg-emerald-50 dark:bg-emerald-900/20 p-3">
+                  <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-1">
+                    Auto Plan Preview (Based on Plot Size)
+                  </div>
+                  <div className="text-[11px] text-emerald-700/90 dark:text-emerald-300/90 mb-2">
+                    Built-up intent: {toSqm(plot).toFixed(0)} sqm plot → {Array.from(autoProgram.values()).reduce((s, r) => s + r.count, 0)} rooms
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {Array.from(autoProgram.entries()).map(([type, cfg]) => (
+                      <span
+                        key={type}
+                        className="px-2 py-0.5 rounded-full text-[10px] bg-white/80 dark:bg-slate-800/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-700/40"
+                      >
+                        {type.replace(/_/g, ' ')} ×{cfg.count}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleQuickGenerate}
+                    disabled={isGenerating}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg disabled:opacity-60"
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate Plan from Minimum Inputs'}
+                  </button>
+                  <div className="text-[10px] text-emerald-700/80 dark:text-emerald-300/80 mt-2">
+                    Need full control? Switch to <strong>Detailed</strong> mode above.
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="flex items-center gap-3">
               <span className="text-xs text-slate-500">Unit:</span>
               {['meters', 'feet'].map((u) => (
@@ -604,6 +796,9 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 </button>
               ))}
             </div>
+
+            {inputMode === 'detailed' && (
+              <>
             <FieldSelect
               label="Plot Shape"
               value={plot.shape}
@@ -746,6 +941,8 @@ export const RoomConfigWizard: FC<RoomConfigWizardProps> = ({
                 suffix="%"
               />
             </div>
+              </>
+            )}
           </div>
         )}
 

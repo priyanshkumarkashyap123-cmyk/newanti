@@ -28,10 +28,6 @@ import {
   FileCheck,
   Layers,
   SquareStack,
-  Mountain,
-  Droplets,
-  Car,
-  HardHat,
   Globe,
   Sparkles,
   BarChart3,
@@ -58,7 +54,7 @@ import {
   Thermometer,
   FileSpreadsheet,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useModelStore, useModelStoreTemporal } from "../../store/model";
 import { useUIStore, Category } from "../../store/uiStore";
 import { Tooltip } from "../ui/Tooltip";
@@ -206,7 +202,10 @@ interface RibbonProps {
   isSidebarOpen?: boolean;
 }
 
+type RibbonModalKey = keyof ReturnType<typeof useUIStore.getState>['modals'];
+
 export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSidebarOpen }) => {
+  const navigate = useNavigate();
   const activeTool = useModelStore((s) => s.activeTool);
   const setTool = useModelStore((s) => s.setTool);
   const isAnalyzing = useModelStore((s) => s.isAnalyzing);
@@ -221,13 +220,24 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
     const action = MODELING_ACTIONS.find((item) => item.id === actionId);
     if (!action) return;
 
+    const designRedirectByModal: Record<string, string> = {
+      rcDetailing: "/design/detailing",
+      steelDetailing: "/design/connections",
+      sectionOptimization: "/design-hub",
+      designHub: "/design-hub",
+    };
+
     switch (action.handler) {
       case "setTool":
-        setTool(action.target as any);
+        setTool(action.target as Parameters<typeof setTool>[0]);
         break;
       case "openModal":
+        if (action.target in designRedirectByModal) {
+          navigate(designRedirectByModal[action.target]);
+          break;
+        }
         if (action.target in useUIStore.getState().modals) {
-          openModal(action.target as any);
+          openModal(action.target as RibbonModalKey);
         } else {
           useUIStore
             .getState()
@@ -245,7 +255,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
       default:
         break;
     }
-  }, [openModal, setTool]);
+  }, [navigate, openModal, setTool]);
 
   const renderGeometryTab = useMemo(() => (
     <>
@@ -359,7 +369,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         />
       </ToolGroup>
     </>
-  ), [activeTool, setTool, openModal, undo, redo]);
+  ), [activeTool, executeSharedAction, openModal, undo, redo]);
 
   const renderPropertiesTab = useMemo(() => (
     <>
@@ -615,9 +625,6 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
       </ToolGroup>
     </>
   ), [isAnalyzing, executeSharedAction, openModal, hasResults]);
-
-  const activeTab = RIBBON_TABS.find(t => t.id === activeCategory);
-  const activeColor = activeTab?.color || "blue";
 
   return (
     <div
