@@ -106,7 +106,7 @@ jobs:
 
       - name: Deploy API via Kudu ZIP fallback
         id: deploy_api_kudu_fallback
-        if: steps.deploy_api_publish_profile.outcome != 'success'
+        if: steps.deploy_api_publish_profile.conclusion != 'success'
         env:
           KUDU_USER: ${{ secrets.AZURE_NODE_DEPLOY_USER }}
           KUDU_PASS: ${{ secrets.AZURE_NODE_DEPLOY_PASS }}
@@ -154,7 +154,7 @@ jobs:
           exit 0
 
       - name: Fail with actionable API deployment guidance
-        if: steps.deploy_api_publish_profile.outcome != 'success' && steps.deploy_api_kudu_fallback.outcome != 'success'
+        if: steps.deploy_api_publish_profile.conclusion != 'success' && steps.deploy_api_kudu_fallback.conclusion != 'success'
         run: |
           echo "::error::API deployment failed via both publish-profile and Kudu ZIP fallback."
           echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_API or set AZURE_NODE_DEPLOY_USER/AZURE_NODE_DEPLOY_PASS secrets."
@@ -231,7 +231,7 @@ jobs:
 
       - name: Deploy Python via Kudu ZIP fallback
         id: deploy_python_kudu_fallback
-        if: steps.deploy_python_publish_profile.outcome != 'success'
+        if: steps.deploy_python_publish_profile.conclusion != 'success'
         env:
           KUDU_USER: ${{ secrets.AZURE_PY_DEPLOY_USER }}
           KUDU_PASS: ${{ secrets.AZURE_PY_DEPLOY_PASS }}
@@ -279,7 +279,7 @@ jobs:
           exit 0
 
       - name: Fail with actionable Python deployment guidance
-        if: steps.deploy_python_publish_profile.outcome != 'success' && steps.deploy_python_kudu_fallback.outcome != 'success'
+        if: steps.deploy_python_publish_profile.conclusion != 'success' && steps.deploy_python_kudu_fallback.conclusion != 'success'
         run: |
           echo "::error::Python deployment failed via both publish-profile and Kudu ZIP fallback."
           echo "::error::Rotate AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON or set AZURE_PY_DEPLOY_USER/AZURE_PY_DEPLOY_PASS secrets."

@@ -21,25 +21,52 @@ find_var(){
   return 1
 }
 
-secrets=(JWT_SECRET JWT_REFRESH_SECRET SESSION_SECRET MONGODB_URI CLERK_SECRET_KEY GEMINI_API_KEY INTERNAL_SERVICE_SECRET VITE_CLERK_PUBLISHABLE_KEY SENTRY_DSN PHONEPE_MERCHANT_ID PHONEPE_SALT_KEY PHONEPE_SALT_INDEX)
+find_any_var(){
+  for key in "$@"; do
+    if val=$(find_var "$key" 2>/dev/null); then
+      if [ -n "$val" ]; then
+        echo "$val"
+        return 0
+      fi
+    fi
+  done
+  return 1
+}
+
+set_secret_mapped(){
+  local target="$1"
+  shift
+  if val=$(find_any_var "$@" 2>/dev/null); then
+    echo "Setting GH secret: $target"
+    gh secret set "$target" --body "$val" --repo "$REPO" || echo "gh secret set failed for $target"
+  else
+    echo "Local value for $target not found via mapped keys ($*); skipping"
+  fi
+}
 
 echo "== Setting GitHub repository secrets into $REPO =="
-for s in "${secrets[@]}"; do
-  if val=$(find_var "$s" 2>/dev/null); then
-    echo "Setting GH secret: $s"
-    gh secret set "$s" --body "$val" --repo "$REPO" || echo "gh secret set failed for $s"
-  else
-    echo "Local value for $s not found; skipping"
-  fi
-done
+
+# Core runtime secrets (with fallback key mapping)
+set_secret_mapped JWT_SECRET JWT_SECRET
+set_secret_mapped JWT_REFRESH_SECRET JWT_REFRESH_SECRET
+set_secret_mapped SESSION_SECRET SESSION_SECRET
+set_secret_mapped MONGODB_URI MONGODB_URI MONGODB_URL
+set_secret_mapped CLERK_SECRET_KEY CLERK_SECRET_KEY
+set_secret_mapped CLERK_PUBLISHABLE_KEY CLERK_PUBLISHABLE_KEY VITE_CLERK_PUBLISHABLE_KEY
+set_secret_mapped GEMINI_API_KEY GEMINI_API_KEY GOOGLE_API_KEY
+set_secret_mapped INTERNAL_SERVICE_SECRET INTERNAL_SERVICE_SECRET
+set_secret_mapped SENTRY_DSN SENTRY_DSN
+set_secret_mapped PHONEPE_MERCHANT_ID PHONEPE_MERCHANT_ID
+set_secret_mapped PHONEPE_SALT_KEY PHONEPE_SALT_KEY
+set_secret_mapped PHONEPE_SALT_INDEX PHONEPE_SALT_INDEX
+set_secret_mapped REGISTRY_USERNAME REGISTRY_USERNAME
+set_secret_mapped REGISTRY_PASSWORD REGISTRY_PASSWORD
 
 # If user has provided publish profiles or SWA token in .env.deploy, prefer those over az fetch
-for k in AZURE_WEBAPP_PUBLISH_PROFILE_API AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON AZURE_PUBLISH_PROFILE_RUST AZURE_STATIC_WEB_APPS_API_TOKEN; do
-  if v=$(find_var "$k" 2>/dev/null); then
-    echo "Setting GH secret from local .env.deploy: $k"
-    gh secret set "$k" --body "$v" --repo "$REPO" || echo "gh secret set failed for $k"
-  fi
-done
+set_secret_mapped AZURE_WEBAPP_PUBLISH_PROFILE_API AZURE_WEBAPP_PUBLISH_PROFILE_API
+set_secret_mapped AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON
+set_secret_mapped AZURE_PUBLISH_PROFILE_RUST AZURE_PUBLISH_PROFILE_RUST AZURE_WEBAPP_PUBLISH_PROFILE_RUST
+set_secret_mapped AZURE_STATIC_WEB_APPS_API_TOKEN AZURE_STATIC_WEB_APPS_API_TOKEN
 
 set_publish_profile(){
   local app="$1"
