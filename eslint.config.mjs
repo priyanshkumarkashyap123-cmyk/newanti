@@ -38,6 +38,7 @@ export default tseslint.config(
         ignores: [
             '**/dist/**',
             '**/node_modules/**',
+            '**/.copilot-safety-backup-*/**',
             'apps/backend-python/.venv/**',
             'deploy-pkg/**',
             'docs/**',

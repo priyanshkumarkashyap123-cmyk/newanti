@@ -1700,7 +1700,6 @@ const PostAnalysisDesignHub: FC = () => {
         useModelStore.getState().setAnalysisResults(restored);
       }
     }
-     
   }, []);
 
   const hasAnalysis = Boolean(
