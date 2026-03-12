@@ -110,7 +110,18 @@ jobs:
         env:
           KUDU_USER: ${{ secrets.AZURE_NODE_DEPLOY_USER }}
           KUDU_PASS: ${{ secrets.AZURE_NODE_DEPLOY_PASS }}
+          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
         run: |
+          if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
+            echo "Kudu creds not set in dedicated secrets, attempting to parse from publish profile..."
+            parsed_user=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userName="\([^"]*\)".*/\1/p' | head -1)
+            parsed_pass=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userPWD="\([^"]*\)".*/\1/p' | head -1)
+            if [ -n "$parsed_user" ] && [ -n "$parsed_pass" ]; then
+              KUDU_USER="$parsed_user"
+              KUDU_PASS="$parsed_pass"
+              echo "Derived Kudu credentials from publish profile."
+            fi
+          fi
           if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
             echo "::error::Missing AZURE_NODE_DEPLOY_USER / AZURE_NODE_DEPLOY_PASS for Kudu fallback"
             exit 1
@@ -224,7 +235,18 @@ jobs:
         env:
           KUDU_USER: ${{ secrets.AZURE_PY_DEPLOY_USER }}
           KUDU_PASS: ${{ secrets.AZURE_PY_DEPLOY_PASS }}
+          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
         run: |
+          if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
+            echo "Kudu creds not set in dedicated secrets, attempting to parse from publish profile..."
+            parsed_user=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userName="\([^"]*\)".*/\1/p' | head -1)
+            parsed_pass=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userPWD="\([^"]*\)".*/\1/p' | head -1)
+            if [ -n "$parsed_user" ] && [ -n "$parsed_pass" ]; then
+              KUDU_USER="$parsed_user"
+              KUDU_PASS="$parsed_pass"
+              echo "Derived Kudu credentials from publish profile."
+            fi
+          fi
           if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
             echo "::error::Missing AZURE_PY_DEPLOY_USER / AZURE_PY_DEPLOY_PASS for Kudu fallback"
             exit 1
@@ -286,26 +308,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Login to Azure using service principal
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Log in to Azure Container Registry (az acr login)
+      - name: Log in to Azure Container Registry (direct credentials)
+        env:
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: |
-          echo "Logging in to ACR: beamlabregistry"
-          az acr login --name beamlabregistry
-          echo "ACR login completed"
-          
+          if [ -z "${REGISTRY_USERNAME:-}" ] || [ -z "${REGISTRY_PASSWORD:-}" ]; then
+            echo "::error::Missing REGISTRY_USERNAME / REGISTRY_PASSWORD for ACR login"
+            exit 1
+          fi
+          echo "$REGISTRY_PASSWORD" | docker login beamlabregistry.azurecr.io -u "$REGISTRY_USERNAME" --password-stdin
+
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./apps/rust-api
-          push: true
-          tags: |
-            beamlabregistry.azurecr.io/beamlab-rust:latest
-            beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
+        run: |
+          docker build \
+            -t beamlabregistry.azurecr.io/beamlab-rust:latest \
+            -t beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }} \
+            ./apps/rust-api
+          docker push beamlabregistry.azurecr.io/beamlab-rust:latest
+          docker push beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
             
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
