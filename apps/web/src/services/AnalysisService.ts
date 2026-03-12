@@ -31,6 +31,7 @@ export interface ModelData {
   members: MemberData[];
   plates?: PlateData[];
   loads: LoadData[];
+  memberLoads?: Array<Record<string, unknown>>;
   dofPerNode?: 2 | 3 | 6;
   settings?: {
     selfWeight: boolean; // Auto-apply self weight

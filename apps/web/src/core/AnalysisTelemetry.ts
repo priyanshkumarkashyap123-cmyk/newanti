@@ -457,3 +457,57 @@ export async function sendAnalysisTelemetry(
     // Never block the user
   }
 }
+
+function scheduleIdleTask(task: () => void, timeout = 1500): void {
+  try {
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(() => task(), { timeout });
+      return;
+    }
+  } catch {
+    // Fallback below
+  }
+  setTimeout(task, 200);
+}
+
+/**
+ * Schedule telemetry graph building + upload outside the main completion path.
+ * This keeps post-analysis UI responsive by deferring normalization/serialization work.
+ */
+export function scheduleAnalysisTelemetry(
+  nodes: Map<string, { id: string; x: number; y: number; z: number; restraints?: Record<string, boolean> | { fx: boolean; fy: boolean; fz: boolean; mx: boolean; my: boolean; mz: boolean } }>,
+  members: Map<string, {
+    id: string; startNodeId: string; endNodeId: string;
+    E?: number; A?: number; Iy?: number; Iz?: number; J?: number; G?: number;
+    betaAngle?: number; releases?: Record<string, boolean>;
+  }>,
+  loads: Array<{ nodeId: string; fx?: number; fy?: number; fz?: number; mx?: number; my?: number; mz?: number }>,
+  analysisResults: {
+    displacements?: Map<string, Record<string, number>>;
+    reactions?: Map<string, Record<string, number>>;
+    memberForces?: Map<string, Record<string, unknown>>;
+    equilibriumCheck?: { error_percent?: number; pass?: boolean };
+    conditionNumber?: number;
+  },
+  solveTimeMs: number,
+  getToken: () => Promise<string | null>,
+): void {
+  scheduleIdleTask(() => {
+    try {
+      const nodeIdToIdx = new Map<string, number>();
+      let idx = 0;
+      for (const [id] of nodes) nodeIdToIdx.set(id, idx++);
+
+      const graph = buildStructuralGraph(nodes, members, loads);
+      void sendAnalysisTelemetry(
+        graph,
+        analysisResults,
+        solveTimeMs,
+        getToken,
+        nodeIdToIdx,
+      );
+    } catch {
+      // Telemetry must never block or fail the user flow.
+    }
+  });
+}

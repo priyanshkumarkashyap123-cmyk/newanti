@@ -461,10 +461,39 @@ function sendProgress(
   percent: number,
   message: string,
 ): void {
+  const now = performance.now();
+  const roundedPercent = Math.max(0, Math.min(100, Math.round(percent)));
+
+  // Throttle frequent progress spam from tight assembly/solve loops.
+  // Always allow: stage changes, completion (100%), and meaningful progress delta.
+  if (!(self as unknown as { __progressState?: { t: number; stage: string; percent: number } }).__progressState) {
+    (self as unknown as { __progressState?: { t: number; stage: string; percent: number } }).__progressState = {
+      t: 0,
+      stage,
+      percent: -1,
+    };
+  }
+
+  const state = (self as unknown as { __progressState: { t: number; stage: string; percent: number } }).__progressState;
+  const stageChanged = state.stage !== stage;
+  const percentDelta = Math.abs(roundedPercent - state.percent);
+  const elapsedMs = now - state.t;
+  const shouldSend =
+    stageChanged ||
+    roundedPercent >= 100 ||
+    percentDelta >= 2 ||
+    elapsedMs >= 120;
+
+  if (!shouldSend) return;
+
+  state.t = now;
+  state.stage = stage;
+  state.percent = roundedPercent;
+
   self.postMessage({
     type: "progress",
     stage,
-    percent,
+    percent: roundedPercent,
     message,
   } as ProgressEvent);
 }

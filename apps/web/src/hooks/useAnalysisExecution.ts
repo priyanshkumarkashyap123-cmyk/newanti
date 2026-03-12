@@ -5,7 +5,8 @@
  * Manages: executeAnalysis, handleRunAnalysis, cancelAnalysis,
  *          calculateStresses, and all associated state.
  */
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, startTransition } from "react";
+import { unstable_batchedUpdates } from "react-dom";
 import { useModelStore } from "../store/model";
 import { useUIStore } from "../store/uiStore";
 import type { AnalysisStage } from "../components/AnalysisProgressModal";
@@ -15,7 +16,7 @@ import { validateStructure, type ValidationResult, type ValidationError } from "
 import { distributeFloorLoads } from "../services/floorLoadDistributor";
 import type { ValidationResults } from "../components/ValidationErrorDisplay";
 import type { MemberStress } from "../components/StressVisualization";
-import { buildStructuralGraph, sendAnalysisTelemetry } from "../core/AnalysisTelemetry";
+import { scheduleAnalysisTelemetry } from "../core/AnalysisTelemetry";
 
 /** Result from stress calculation endpoint */
 type StressResult = MemberStress;
@@ -109,6 +110,9 @@ export interface UseAnalysisExecutionReturn {
 export function useAnalysisExecution(
   getToken: () => Promise<string | null>,
 ): UseAnalysisExecutionReturn {
+  const MAIN_THREAD_WASM_MAX_NODES = 750;
+  const MAIN_THREAD_WASM_MAX_MEMBERS = 1500;
+
   // ── Analysis state ──
   const [isAnalyzing, setIsAnalyzingLocal] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
@@ -135,6 +139,32 @@ export function useAnalysisExecution(
 
   // ── Refs ──
   const analysisAbortRef = useRef<AbortController | null>(null);
+  const progressUiStateRef = useRef<{ stage: AnalysisStage; progress: number; at: number }>({
+    stage: "validating",
+    progress: 0,
+    at: 0,
+  });
+
+  const commitAnalysisProgress = useCallback(
+    (stage: AnalysisStage, progress: number, options?: { force?: boolean }) => {
+      const now = performance.now();
+      const rounded = Math.max(0, Math.min(100, Math.round(progress)));
+      const prev = progressUiStateRef.current;
+      const stageChanged = prev.stage !== stage;
+      const delta = Math.abs(rounded - prev.progress);
+      const elapsed = now - prev.at;
+      const shouldCommit = options?.force || stageChanged || rounded >= 100 || delta >= 2 || elapsed >= 100;
+
+      if (!shouldCommit) return;
+
+      progressUiStateRef.current = { stage, progress: rounded, at: now };
+      unstable_batchedUpdates(() => {
+        setAnalysisStage(stage);
+        setAnalysisProgress(rounded);
+      });
+    },
+    [],
+  );
 
   // ══════════════════════════════════════════
   // CALCULATE STRESSES
@@ -243,8 +273,7 @@ export function useAnalysisExecution(
     setIsAnalyzingLocal(false);
     useModelStore.getState().setIsAnalyzing(false);
     setShowProgressModal(false);
-    setAnalysisStage("validating");
-    setAnalysisProgress(0);
+    commitAnalysisProgress("validating", 0, { force: true });
   }, []);
 
   // ══════════════════════════════════════════
@@ -263,8 +292,7 @@ export function useAnalysisExecution(
     setIsAnalyzingLocal(true);
     setIsAnalyzing(true);
     setShowProgressModal(true);
-    setAnalysisStage("validating");
-    setAnalysisProgress(5);
+    commitAnalysisProgress("validating", 5, { force: true });
     setAnalysisError(undefined);
 
     // Smooth sub-progress animation for each stage
@@ -275,7 +303,7 @@ export function useAnalysisExecution(
       const step = (to - from) / (durationMs / 50);
       progressInterval = setInterval(() => {
         current = Math.min(current + step, to);
-        setAnalysisProgress(Math.round(current));
+        commitAnalysisProgress(progressUiStateRef.current.stage, current);
         if (current >= to && progressInterval) clearInterval(progressInterval);
       }, 50);
     };
@@ -347,9 +375,39 @@ export function useAnalysisExecution(
         [key: string]: unknown; // Accept AnalysisResult and WASM output shapes
       };
 
-      // Always try WASM solver first
-      {
-        setAnalysisStage("assembling");
+      const workerCompatible = plates.size === 0 && floorLoads.length === 0;
+      const shouldPreferWorkerPath =
+        workerCompatible &&
+        (nodes.size > MAIN_THREAD_WASM_MAX_NODES ||
+          members.size > MAIN_THREAD_WASM_MAX_MEMBERS);
+
+      // Prefer worker/cloud routing for larger worker-compatible models to avoid
+      // blocking the UI thread with synchronous main-thread WASM execution.
+      if (shouldPreferWorkerPath) {
+        modelerLogger.log(
+          `[Analysis] Routing directly to worker/cloud path (${nodes.size} nodes, ${members.size} members)` ,
+        );
+
+        const token = await getToken();
+        const { analysisService } = await getAnalysisService();
+        const workerModelData = {
+          nodes: nodesArray,
+          members: membersArray,
+          loads,
+          memberLoads,
+          dofPerNode: undefined,
+          settings: { selfWeight: modelSettings?.selfWeight ?? false },
+        } as any;
+
+        result = (await analysisService.analyze(
+          workerModelData,
+          (stage, progress) => {
+            commitAnalysisProgress(stage as AnalysisStage, progress);
+          },
+          token,
+        )) as typeof result;
+      } else {
+        commitAnalysisProgress("assembling", 15, { force: true });
         animateProgress(15, 40, 800);
 
         const convertDirection = (dir: string): string => {
@@ -566,7 +624,7 @@ export function useAnalysisExecution(
 
         // Use Rust WASM solver (client-side) for frame analysis
         try {
-          setAnalysisStage("solving");
+          commitAnalysisProgress("solving", 40, { force: true });
           animateProgress(40, 75, 1200);
 
           modelerLogger.log("[Analysis] Using Rust WASM solver - client-side computation");
@@ -1008,14 +1066,15 @@ export function useAnalysisExecution(
         } catch (err) {
           // WASM failed — try EnhancedAnalysisEngine, then Worker fallback
           modelerLogger.warn("[Analysis] WASM solver failed, trying EnhancedAnalysisEngine:", err);
-          setAnalysisStage("assembling");
-          setAnalysisProgress(35);
+          commitAnalysisProgress("assembling", 35, { force: true });
 
           try {
             const { analyzeWithEnhancedEngine } = await import("../core/engineAdapter");
             const engineResult = await analyzeWithEnhancedEngine(
               nodesArray, membersArray, loads, memberLoads,
-              (stage: string, progress: number) => { setAnalysisStage(stage as AnalysisStage); setAnalysisProgress(progress); },
+              (stage: string, progress: number) => {
+                commitAnalysisProgress(stage as AnalysisStage, progress);
+              },
             );
             if (engineResult.success) {
               result = engineResult as typeof result;
@@ -1052,7 +1111,9 @@ export function useAnalysisExecution(
               const { analysisService } = await getAnalysisService();
               result = await analysisService.analyze(
                 modelData,
-                (stage, progress) => { setAnalysisStage(stage as AnalysisStage); setAnalysisProgress(progress); },
+                (stage, progress) => {
+                  commitAnalysisProgress(stage as AnalysisStage, progress);
+                },
                 token,
               ) as typeof result;
 
@@ -1162,29 +1223,37 @@ export function useAnalysisExecution(
 
         useUIStore.getState().setAnalysisResults({ completed: true, timestamp: Date.now(), type: (result.stats?.solver as string) ?? "Rust WASM" });
 
-        setAnalysisStage("complete");
         if (progressInterval) clearInterval(progressInterval);
-        setAnalysisProgress(100);
-        setAnalysisStats({ nodes: nodes.size, members: members.size, dof: (result.stats?.totalDof as number) ?? nodes.size * 3, timeMs: endTime - startTime });
-        setShowResultsToolbar(true);
-        setShowResultsDock(true);
+        unstable_batchedUpdates(() => {
+          commitAnalysisProgress("complete", 100, { force: true });
+          setAnalysisStats({ nodes: nodes.size, members: members.size, dof: (result.stats?.totalDof as number) ?? nodes.size * 3, timeMs: endTime - startTime });
+          setShowResultsToolbar(true);
+          setShowResultsDock(true);
+        });
         showNotification("success", "Analysis completed successfully!");
-        calculateStresses(memberForcesStoreMap, members);
+        startTransition(() => {
+          void calculateStresses(memberForcesStoreMap, members);
+        });
 
         // ── AI Telemetry (fire-and-forget, opt-out, non-blocking) ──
         try {
-          const graph = buildStructuralGraph(nodes, members, loads);
-          const nodeIdToIdx = new Map<string, number>();
-          let telIdx = 0;
-          for (const [id] of nodes) nodeIdToIdx.set(id, telIdx++);
-          sendAnalysisTelemetry(graph, {
-            displacements: displacementsMap as Map<string, Record<string, number>>,
-            conditionNumber: result.conditionNumber,
-          }, endTime - startTime, async () => null, nodeIdToIdx)
-            .catch(() => { /* telemetry failure is non-critical */ });
+          scheduleAnalysisTelemetry(
+            nodes,
+            members,
+            loads,
+            {
+              displacements: displacementsMap as Map<string, Record<string, number>>,
+              reactions: reactionsMap as Map<string, Record<string, number>>,
+              memberForces: memberForcesStoreMap as Map<string, Record<string, unknown>>,
+              equilibriumCheck: result.equilibriumCheck,
+              conditionNumber: result.conditionNumber,
+            },
+            endTime - startTime,
+            async () => null,
+          );
         } catch { /* telemetry errors must never break analysis */ }
       } else {
-        setAnalysisStage("error");
+        commitAnalysisProgress("error" as AnalysisStage, progressUiStateRef.current.progress, { force: true });
         setAnalysisError(result.error || "Analysis failed");
         const event = new CustomEvent("ai-diagnose-error", { detail: { error: result.error || "Unknown analysis error" } });
         window.dispatchEvent(event);
@@ -1192,7 +1261,7 @@ export function useAnalysisExecution(
       }
     } catch (err) {
       if (progressInterval) clearInterval(progressInterval);
-      setAnalysisStage("error");
+      commitAnalysisProgress("error" as AnalysisStage, progressUiStateRef.current.progress, { force: true });
       setAnalysisError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       if (progressInterval) clearInterval(progressInterval);
@@ -1215,7 +1284,7 @@ export function useAnalysisExecution(
         }
       } catch { /* non-critical */ }
     }
-  }, [getToken, calculateStresses]);
+  }, [getToken, calculateStresses, commitAnalysisProgress]);
 
   // ══════════════════════════════════════════
   // HANDLE RUN ANALYSIS (validation + lock + execute)

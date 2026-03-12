@@ -11,6 +11,7 @@
 
 use nalgebra::{DMatrix, DVector};
 use rayon::prelude::*;
+use std::collections::HashMap;
 use std::time::Instant;
 
 /// Solver strategy selection based on problem characteristics
@@ -46,31 +47,170 @@ pub struct SkylineMatrix {
 pub struct SparseResult {
     pub solution: DVector<f64>,
     pub strategy_used: SolverStrategy,
+    pub matrix_build_time_ms: f64,
     pub factorization_time_ms: f64,
     pub solve_time_ms: f64,
     pub total_time_ms: f64,
     pub nnz: usize,
     pub bandwidth: usize,
     pub condition_estimate: f64,
+    pub iteration_count: Option<usize>,
+    pub converged: Option<bool>,
+    pub final_residual_norm: Option<f64>,
+    pub tolerance_used: Option<f64>,
+    pub max_iterations_used: Option<usize>,
+    pub preconditioner_used: Option<String>,
+    pub fallback_used: Option<bool>,
+    pub fallback_strategy: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct SparseMatrixStats {
+    nnz: usize,
+    bandwidth: usize,
+}
+
+#[derive(Debug, Clone)]
+struct CsrTripletMatrix {
+    n: usize,
+    row_offsets: Vec<usize>,
+    col_indices: Vec<usize>,
+    values: Vec<f64>,
+    diagonal: Vec<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum PcgPreconditioner {
+    Jacobi,
+    None,
+    BlockJacobi,
 }
 
 /// Industrial sparse solver engine
 pub struct SparseSolver {
     /// Automatic strategy selection threshold
     pub auto_strategy: bool,
+    /// Maximum DOFs for Skyline strategy
+    pub skyline_max_dofs: usize,
+    /// Maximum DOFs for MultiFrontal strategy
+    pub multifrontal_max_dofs: usize,
     /// Pivot tolerance for numerical stability
     pub pivot_tolerance: f64,
     /// Zero tolerance
     pub zero_tolerance: f64,
+    /// PCG relative/absolute residual tolerance
+    pub pcg_tolerance: f64,
+    /// PCG max-iteration scale factor (max_iter = n * scale)
+    pub pcg_max_iter_scale: usize,
+    /// Prefer PCG above this DOF count for sufficiently sparse COO systems
+    pub pcg_prefer_from_dofs: usize,
+    /// DOF threshold for small-model tolerance band
+    pub pcg_small_dofs_max: usize,
+    /// DOF threshold for medium-model tolerance band
+    pub pcg_medium_dofs_max: usize,
+    /// Tolerance used for small models
+    pub pcg_tolerance_small: f64,
+    /// Tolerance used for medium models
+    pub pcg_tolerance_medium: f64,
+    /// Tolerance used for large models
+    pub pcg_tolerance_large: f64,
+    /// Selected PCG preconditioner
+    pcg_preconditioner: PcgPreconditioner,
+    /// Enable direct fallback when PCG does not converge
+    pub pcg_enable_fallback_direct: bool,
+    /// Max DOFs where dense fallback is allowed
+    pub pcg_fallback_dense_max_dofs: usize,
 }
 
 impl SparseSolver {
+    fn env_usize(name: &str, default: usize) -> usize {
+        std::env::var(name)
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .filter(|&v| v > 0)
+            .unwrap_or(default)
+    }
+
+    fn env_f64(name: &str, default: f64) -> f64 {
+        std::env::var(name)
+            .ok()
+            .and_then(|v| v.parse::<f64>().ok())
+            .filter(|v| v.is_finite() && *v > 0.0)
+            .unwrap_or(default)
+    }
+
+    fn env_bool(name: &str, default: bool) -> bool {
+        std::env::var(name)
+            .ok()
+            .map(|v| matches!(v.to_ascii_lowercase().as_str(), "1" | "true" | "yes" | "on"))
+            .unwrap_or(default)
+    }
+
+    fn env_preconditioner(name: &str, default: PcgPreconditioner) -> PcgPreconditioner {
+        std::env::var(name)
+            .ok()
+            .map(|v| match v.to_ascii_lowercase().as_str() {
+                "none" => PcgPreconditioner::None,
+                "block_jacobi" | "block-jacobi" | "blockjacobi" => PcgPreconditioner::BlockJacobi,
+                _ => PcgPreconditioner::Jacobi,
+            })
+            .unwrap_or(default)
+    }
+
     pub fn new() -> Self {
+        let skyline_max_dofs = Self::env_usize("SPARSE_SKYLINE_MAX_DOFS", 1500);
+        let multifrontal_max_dofs = Self::env_usize("SPARSE_MULTIFRONTAL_MAX_DOFS", 5000)
+            .max(skyline_max_dofs + 1);
+        let pcg_tolerance = Self::env_f64("SPARSE_PCG_TOLERANCE", 1e-10);
+        let pcg_max_iter_scale = Self::env_usize("SPARSE_PCG_MAX_ITER_SCALE", 2);
+        let pcg_prefer_from_dofs = Self::env_usize("SPARSE_PCG_PREFER_DOFS", 2500);
+        let pcg_small_dofs_max = Self::env_usize("SPARSE_PCG_SMALL_DOFS_MAX", 2000);
+        let pcg_medium_dofs_max = Self::env_usize("SPARSE_PCG_MEDIUM_DOFS_MAX", 10000)
+            .max(pcg_small_dofs_max + 1);
+        let pcg_tolerance_small = Self::env_f64("SPARSE_PCG_TOL_SMALL", pcg_tolerance);
+        let pcg_tolerance_medium = Self::env_f64("SPARSE_PCG_TOL_MEDIUM", 5e-10);
+        let pcg_tolerance_large = Self::env_f64("SPARSE_PCG_TOL_LARGE", 1e-9);
+        let pcg_preconditioner = Self::env_preconditioner("SPARSE_PCG_PRECONDITIONER", PcgPreconditioner::Jacobi);
+        let pcg_enable_fallback_direct = Self::env_bool("SPARSE_PCG_ENABLE_FALLBACK_DIRECT", true);
+        let pcg_fallback_dense_max_dofs = Self::env_usize("SPARSE_PCG_FALLBACK_DENSE_MAX_DOFS", 6000);
+
         Self {
             auto_strategy: true,
+            skyline_max_dofs,
+            multifrontal_max_dofs,
             pivot_tolerance: 1e-12,
             zero_tolerance: 1e-15,
+            pcg_tolerance,
+            pcg_max_iter_scale,
+            pcg_prefer_from_dofs,
+            pcg_small_dofs_max,
+            pcg_medium_dofs_max,
+            pcg_tolerance_small,
+            pcg_tolerance_medium,
+            pcg_tolerance_large,
+            pcg_preconditioner,
+            pcg_enable_fallback_direct,
+            pcg_fallback_dense_max_dofs,
         }
+    }
+
+    fn effective_pcg_tolerance(&self, n: usize) -> f64 {
+        if n <= self.pcg_small_dofs_max {
+            self.pcg_tolerance_small
+        } else if n <= self.pcg_medium_dofs_max {
+            self.pcg_tolerance_medium
+        } else {
+            self.pcg_tolerance_large
+        }
+    }
+
+    fn preconditioner_label(&self) -> String {
+        match self.pcg_preconditioner {
+            PcgPreconditioner::Jacobi => "jacobi",
+            PcgPreconditioner::None => "none",
+            PcgPreconditioner::BlockJacobi => "block_jacobi",
+        }
+        .to_string()
     }
 
     /// Select optimal solver strategy based on problem size and sparsity
@@ -78,9 +218,9 @@ impl SparseSolver {
         let density = nnz as f64 / (n as f64 * n as f64);
         if n <= 500 || density > 0.3 {
             SolverStrategy::DirectCholesky
-        } else if n <= 5000 {
+        } else if n <= self.skyline_max_dofs {
             SolverStrategy::Skyline
-        } else if n <= 50000 {
+        } else if n <= self.multifrontal_max_dofs {
             SolverStrategy::MultiFrontal
         } else {
             SolverStrategy::PreconditionedCG
@@ -95,72 +235,105 @@ impl SparseSolver {
         f_global: &DVector<f64>,
         constrained_dofs: &[usize],
     ) -> Result<SparseResult, String> {
-        let total_start = Instant::now();
-        let n = k_global.nrows();
+        let stats = SparseMatrixStats {
+            nnz: Self::count_nnz(k_global),
+            bandwidth: Self::compute_bandwidth(k_global),
+        };
+        self.solve_with_stats(k_global, f_global, constrained_dofs, stats, 0.0)
+    }
 
-        if n != k_global.ncols() {
-            return Err("Stiffness matrix must be square".into());
+    /// Solve a system assembled in COO/triplet form.
+    ///
+    /// This avoids an additional $O(n^2)$ scan for nnz/bandwidth statistics in the
+    /// analysis pipeline where the reduced matrix already exists as sparse triplets.
+    pub fn solve_coo(
+        &self,
+        n: usize,
+        row_indices: &[usize],
+        col_indices: &[usize],
+        values: &[f64],
+        f_global: &DVector<f64>,
+        constrained_dofs: &[usize],
+    ) -> Result<SparseResult, String> {
+        if row_indices.len() != col_indices.len() || row_indices.len() != values.len() {
+            return Err("Sparse triplet arrays must have matching lengths".into());
         }
         if n != f_global.len() {
             return Err("Force vector size must match matrix dimension".into());
         }
 
-        // Apply boundary conditions via penalty method
-        let mut k_mod = k_global.clone();
-        let mut f_mod = f_global.clone();
-        let penalty = self.estimate_penalty(&k_mod);
+        let total_start = Instant::now();
+        let build_start = Instant::now();
+        let (csr_matrix, stats) = self.build_csr_from_coo(n, row_indices, col_indices, values)?;
+        let matrix_build_time_ms = build_start.elapsed().as_secs_f64() * 1000.0;
 
-        for &dof in constrained_dofs {
-            if dof < n {
-                k_mod[(dof, dof)] += penalty;
-                f_mod[dof] = 0.0;
-            }
-        }
-
-        // Count non-zeros
-        let nnz = Self::count_nnz(&k_mod);
-        let bandwidth = Self::compute_bandwidth(&k_mod);
-
-        // Select strategy
-        let strategy = if self.auto_strategy {
-            self.select_strategy(n, nnz)
+        let mut strategy = if self.auto_strategy {
+            self.select_strategy(n, stats.nnz)
         } else {
             SolverStrategy::DirectCholesky
         };
 
-        // Factorize and solve
-        let fact_start = Instant::now();
-        let solution = match strategy {
-            SolverStrategy::DirectCholesky => self.solve_cholesky(&k_mod, &f_mod)?,
-            SolverStrategy::Skyline => self.solve_skyline(&k_mod, &f_mod)?,
-            SolverStrategy::MultiFrontal => self.solve_multifrontal(&k_mod, &f_mod)?,
-            SolverStrategy::PreconditionedCG => self.solve_pcg(&k_mod, &f_mod, 1e-10, n * 2)?,
-        };
-        let factorization_time = fact_start.elapsed().as_secs_f64() * 1000.0;
-
-        // Zero out constrained DOFs
-        let mut sol = solution;
-        for &dof in constrained_dofs {
-            if dof < n {
-                sol[dof] = 0.0;
-            }
+        let density = stats.nnz as f64 / ((n * n) as f64);
+        if self.auto_strategy
+            && constrained_dofs.is_empty()
+            && n >= self.pcg_prefer_from_dofs
+            && density <= 0.01
+        {
+            strategy = SolverStrategy::PreconditionedCG;
         }
 
-        // Estimate condition number from diagonal
-        let cond = self.estimate_condition(&k_mod);
+        if strategy == SolverStrategy::PreconditionedCG && constrained_dofs.is_empty() {
+            let solve_start = Instant::now();
+            let max_iter = n.saturating_mul(self.pcg_max_iter_scale.max(1));
+            let pcg_tol = self.effective_pcg_tolerance(n);
+            let mut pcg_out = self.solve_pcg_csr(&csr_matrix, f_global, pcg_tol, max_iter)?;
 
-        let total_time = total_start.elapsed().as_secs_f64() * 1000.0;
+            let mut fallback_used = false;
+            let mut fallback_strategy = None;
 
-        Ok(SparseResult {
-            solution: sol,
-            strategy_used: strategy,
-            factorization_time_ms: factorization_time,
-            solve_time_ms: total_time - factorization_time,
-            total_time_ms: total_time,
-            nnz,
-            bandwidth,
-            condition_estimate: cond,
-        })
+            if !pcg_out.converged
+                && self.pcg_enable_fallback_direct
+                && n <= self.pcg_fallback_dense_max_dofs
+            {
+                let k_dense = self.csr_to_dense(&csr_matrix);
+                let fallback_sol = self.solve_multifrontal(&k_dense, f_global)?;
+                pcg_out.solution = fallback_sol;
+                fallback_used = true;
+                fallback_strategy = Some("MultiFrontal".to_string());
+            }
+
+            let solve_time_ms = solve_start.elapsed().as_secs_f64() * 1000.0;
+            let total_time_ms = total_start.elapsed().as_secs_f64() * 1000.0;
+
+            return Ok(SparseResult {
+                solution: pcg_out.solution,
+                strategy_used: strategy,
+                matrix_build_time_ms,
+                factorization_time_ms: 0.0,
+                solve_time_ms,
+                total_time_ms,
+                nnz: stats.nnz,
+                bandwidth: stats.bandwidth,
+                condition_estimate: self.estimate_condition_from_diagonal(&csr_matrix.diagonal),
+                iteration_count: Some(pcg_out.iteration_count),
+                converged: Some(pcg_out.converged),
+                final_residual_norm: Some(pcg_out.final_residual_norm),
+                tolerance_used: Some(pcg_tol),
+                max_iterations_used: Some(max_iter),
+                preconditioner_used: Some(self.preconditioner_label()),
+                fallback_used: Some(fallback_used),
+                fallback_strategy,
+            });
+        }
+
+        let k_global = self.csr_to_dense(&csr_matrix);
+        self.solve_with_stats(
+            &k_global,
+            f_global,
+            constrained_dofs,
+            stats,
+            matrix_build_time_ms,
+        )
     }
 
     /// Solve multiple load cases simultaneously (STAAD-like batch solve)
@@ -211,12 +384,21 @@ impl SparseSolver {
             Ok(SparseResult {
                 solution: sol,
                 strategy_used: SolverStrategy::DirectCholesky,
+                matrix_build_time_ms: 0.0,
                 factorization_time_ms: fact_time,
                 solve_time_ms: solve_time,
                 total_time_ms: fact_time + solve_time,
                 nnz,
                 bandwidth,
                 condition_estimate: cond,
+                iteration_count: None,
+                converged: None,
+                final_residual_norm: None,
+                tolerance_used: None,
+                max_iterations_used: None,
+                preconditioner_used: None,
+                fallback_used: None,
+                fallback_strategy: None,
             })
         }).collect()
     }
@@ -377,15 +559,10 @@ impl SparseSolver {
         f: &DVector<f64>,
         tol: f64,
         max_iter: usize,
-    ) -> Result<DVector<f64>, String> {
+    ) -> Result<PcgSolveOutput, String> {
         let n = k.nrows();
 
-        // Jacobi preconditioner (diagonal)
-        let mut m_inv = DVector::zeros(n);
-        for i in 0..n {
-            let d = k[(i, i)];
-            m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
-        }
+        let m_inv = self.build_dense_preconditioner(k);
 
         let mut x = DVector::zeros(n);
         let mut r = f - k * &x;
@@ -401,7 +578,12 @@ impl SparseSolver {
 
             let r_norm = r.norm();
             if r_norm < tol {
-                return Ok(x);
+                return Ok(PcgSolveOutput {
+                    solution: x,
+                    iteration_count: _iter + 1,
+                    converged: true,
+                    final_residual_norm: r_norm,
+                });
             }
 
             z = DVector::from_fn(n, |i, _| r[i] * m_inv[i]);
@@ -412,7 +594,380 @@ impl SparseSolver {
         }
 
         // Return best solution even if not fully converged
-        Ok(x)
+        Ok(PcgSolveOutput {
+            solution: x,
+            iteration_count: max_iter,
+            converged: false,
+            final_residual_norm: r.norm(),
+        })
+    }
+
+    fn solve_pcg_csr(
+        &self,
+        k: &CsrTripletMatrix,
+        f: &DVector<f64>,
+        tol: f64,
+        max_iter: usize,
+    ) -> Result<PcgSolveOutput, String> {
+        let n = k.n;
+        if n != f.len() {
+            return Err("Force vector size must match sparse matrix dimension".into());
+        }
+
+        let m_inv = self.build_csr_preconditioner(k);
+
+        let mut x = DVector::zeros(n);
+        let mut r = f.clone();
+        let mut z = DVector::from_fn(n, |i, _| r[i] * m_inv[i]);
+        let mut p = z.clone();
+        let mut rz = r.dot(&z);
+
+        if r.norm() < tol {
+            return Ok(PcgSolveOutput {
+                solution: x,
+                iteration_count: 0,
+                converged: true,
+                final_residual_norm: r.norm(),
+            });
+        }
+
+        for iter in 0..max_iter {
+            let ap = self.csr_matvec(k, &p);
+            let alpha = rz / p.dot(&ap).max(self.zero_tolerance);
+            x += alpha * &p;
+            r -= alpha * &ap;
+
+            if r.norm() < tol {
+                return Ok(PcgSolveOutput {
+                    solution: x,
+                    iteration_count: iter + 1,
+                    converged: true,
+                    final_residual_norm: r.norm(),
+                });
+            }
+
+            z = DVector::from_fn(n, |i, _| r[i] * m_inv[i]);
+            let rz_new = r.dot(&z);
+            let beta = rz_new / rz.max(self.zero_tolerance);
+            p = &z + beta * &p;
+            rz = rz_new;
+        }
+
+        Ok(PcgSolveOutput {
+            solution: x,
+            iteration_count: max_iter,
+            converged: false,
+            final_residual_norm: r.norm(),
+        })
+    }
+
+    fn solve_with_stats(
+        &self,
+        k_global: &DMatrix<f64>,
+        f_global: &DVector<f64>,
+        constrained_dofs: &[usize],
+        stats: SparseMatrixStats,
+        matrix_build_time_ms: f64,
+    ) -> Result<SparseResult, String> {
+        let total_start = Instant::now();
+        let n = k_global.nrows();
+
+        if n != k_global.ncols() {
+            return Err("Stiffness matrix must be square".into());
+        }
+        if n != f_global.len() {
+            return Err("Force vector size must match matrix dimension".into());
+        }
+
+        let mut k_mod = k_global.clone();
+        let mut f_mod = f_global.clone();
+        let penalty = self.estimate_penalty(&k_mod);
+
+        for &dof in constrained_dofs {
+            if dof < n {
+                k_mod[(dof, dof)] += penalty;
+                f_mod[dof] = 0.0;
+            }
+        }
+
+        let strategy = if self.auto_strategy {
+            self.select_strategy(n, stats.nnz)
+        } else {
+            SolverStrategy::DirectCholesky
+        };
+
+        let fact_start = Instant::now();
+        let solution = match strategy {
+            SolverStrategy::DirectCholesky => PcgSolveOutput {
+                solution: self.solve_cholesky(&k_mod, &f_mod)?,
+                iteration_count: 0,
+                converged: true,
+                final_residual_norm: 0.0,
+            },
+            SolverStrategy::Skyline => PcgSolveOutput {
+                solution: self.solve_skyline(&k_mod, &f_mod)?,
+                iteration_count: 0,
+                converged: true,
+                final_residual_norm: 0.0,
+            },
+            SolverStrategy::MultiFrontal => PcgSolveOutput {
+                solution: self.solve_multifrontal(&k_mod, &f_mod)?,
+                iteration_count: 0,
+                converged: true,
+                final_residual_norm: 0.0,
+            },
+            SolverStrategy::PreconditionedCG => {
+                let max_iter = n.saturating_mul(self.pcg_max_iter_scale.max(1));
+                let pcg_tol = self.effective_pcg_tolerance(n);
+                let mut pcg_out = self.solve_pcg(&k_mod, &f_mod, pcg_tol, max_iter)?;
+
+                if !pcg_out.converged
+                    && self.pcg_enable_fallback_direct
+                    && n <= self.pcg_fallback_dense_max_dofs
+                {
+                    let fallback_solution = self.solve_multifrontal(&k_mod, &f_mod)?;
+                    pcg_out.solution = fallback_solution;
+                }
+
+                pcg_out
+            }
+        };
+        let factorization_time = fact_start.elapsed().as_secs_f64() * 1000.0;
+
+        let mut sol = solution.solution;
+        for &dof in constrained_dofs {
+            if dof < n {
+                sol[dof] = 0.0;
+            }
+        }
+
+        let cond = self.estimate_condition(&k_mod);
+        let total_time = total_start.elapsed().as_secs_f64() * 1000.0;
+
+        Ok(SparseResult {
+            solution: sol,
+            strategy_used: strategy,
+            matrix_build_time_ms,
+            factorization_time_ms: factorization_time,
+            solve_time_ms: total_time - factorization_time,
+            total_time_ms: matrix_build_time_ms + total_time,
+            nnz: stats.nnz,
+            bandwidth: stats.bandwidth,
+            condition_estimate: cond,
+            iteration_count: if strategy == SolverStrategy::PreconditionedCG {
+                Some(solution.iteration_count)
+            } else {
+                None
+            },
+            converged: if strategy == SolverStrategy::PreconditionedCG {
+                Some(solution.converged)
+            } else {
+                None
+            },
+            final_residual_norm: if strategy == SolverStrategy::PreconditionedCG {
+                Some(solution.final_residual_norm)
+            } else {
+                None
+            },
+            tolerance_used: if strategy == SolverStrategy::PreconditionedCG {
+                Some(self.effective_pcg_tolerance(n))
+            } else {
+                None
+            },
+            max_iterations_used: if strategy == SolverStrategy::PreconditionedCG {
+                Some(n.saturating_mul(self.pcg_max_iter_scale.max(1)))
+            } else {
+                None
+            },
+            preconditioner_used: if strategy == SolverStrategy::PreconditionedCG {
+                Some(self.preconditioner_label())
+            } else {
+                None
+            },
+            fallback_used: if strategy == SolverStrategy::PreconditionedCG {
+                Some(!solution.converged && self.pcg_enable_fallback_direct && n <= self.pcg_fallback_dense_max_dofs)
+            } else {
+                None
+            },
+            fallback_strategy: if strategy == SolverStrategy::PreconditionedCG
+                && !solution.converged
+                && self.pcg_enable_fallback_direct
+                && n <= self.pcg_fallback_dense_max_dofs
+            {
+                Some("MultiFrontal".to_string())
+            } else {
+                None
+            },
+        })
+    }
+
+    fn build_dense_preconditioner(&self, k: &DMatrix<f64>) -> DVector<f64> {
+        let n = k.nrows();
+        match self.pcg_preconditioner {
+            PcgPreconditioner::None => DVector::from_element(n, 1.0),
+            PcgPreconditioner::BlockJacobi => {
+                // Hook for future block-Jacobi implementation. We keep Jacobi-equivalent
+                // behavior for correctness while exposing the selectable preconditioner.
+                let mut m_inv = DVector::zeros(n);
+                for i in 0..n {
+                    let d = k[(i, i)];
+                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                }
+                m_inv
+            }
+            PcgPreconditioner::Jacobi => {
+                let mut m_inv = DVector::zeros(n);
+                for i in 0..n {
+                    let d = k[(i, i)];
+                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                }
+                m_inv
+            }
+        }
+    }
+
+    fn build_csr_preconditioner(&self, k: &CsrTripletMatrix) -> DVector<f64> {
+        let n = k.n;
+        match self.pcg_preconditioner {
+            PcgPreconditioner::None => DVector::from_element(n, 1.0),
+            PcgPreconditioner::BlockJacobi => {
+                let mut m_inv = DVector::zeros(n);
+                for i in 0..n {
+                    let d = k.diagonal[i];
+                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                }
+                m_inv
+            }
+            PcgPreconditioner::Jacobi => {
+                let mut m_inv = DVector::zeros(n);
+                for i in 0..n {
+                    let d = k.diagonal[i];
+                    m_inv[i] = if d.abs() > self.zero_tolerance { 1.0 / d } else { 1.0 };
+                }
+                m_inv
+            }
+        }
+    }
+
+    fn build_csr_from_coo(
+        &self,
+        n: usize,
+        row_indices: &[usize],
+        col_indices: &[usize],
+        values: &[f64],
+    ) -> Result<(CsrTripletMatrix, SparseMatrixStats), String> {
+        let mut aggregated: HashMap<(usize, usize), f64> = HashMap::with_capacity(values.len());
+
+        for ((&r, &c), &v) in row_indices.iter().zip(col_indices.iter()).zip(values.iter()) {
+            if r >= n || c >= n {
+                return Err(format!(
+                    "Sparse triplet index out of bounds: ({}, {}) for matrix size {}",
+                    r, c, n
+                ));
+            }
+            if v.abs() <= self.zero_tolerance {
+                continue;
+            }
+            *aggregated.entry((r, c)).or_insert(0.0) += v;
+        }
+
+        let mut bandwidth = 0usize;
+        let mut per_row: Vec<Vec<(usize, f64)>> = vec![Vec::new(); n];
+        let mut diagonal = vec![0.0; n];
+        let mut nnz = 0usize;
+
+        for ((r, c), value) in aggregated {
+            if value.abs() <= self.zero_tolerance {
+                continue;
+            }
+            bandwidth = bandwidth.max(r.abs_diff(c));
+            if r == c {
+                diagonal[r] = value;
+            }
+            per_row[r].push((c, value));
+            nnz += 1;
+        }
+
+        let mut row_offsets = Vec::with_capacity(n + 1);
+        let mut csr_col_indices = Vec::with_capacity(nnz);
+        let mut csr_values = Vec::with_capacity(nnz);
+        row_offsets.push(0);
+
+        for row in per_row.iter_mut() {
+            row.sort_by_key(|(col, _)| *col);
+            for &(col, value) in row.iter() {
+                csr_col_indices.push(col);
+                csr_values.push(value);
+            }
+            row_offsets.push(csr_col_indices.len());
+        }
+
+        let stats = SparseMatrixStats {
+            nnz,
+            bandwidth,
+        };
+
+        Ok((
+            CsrTripletMatrix {
+                n,
+                row_offsets,
+                col_indices: csr_col_indices,
+                values: csr_values,
+                diagonal,
+            },
+            stats,
+        ))
+    }
+
+    fn csr_to_dense(&self, matrix: &CsrTripletMatrix) -> DMatrix<f64> {
+        let mut dense = DMatrix::zeros(matrix.n, matrix.n);
+        for row in 0..matrix.n {
+            let start = matrix.row_offsets[row];
+            let end = matrix.row_offsets[row + 1];
+            for idx in start..end {
+                dense[(row, matrix.col_indices[idx])] = matrix.values[idx];
+            }
+        }
+        dense
+    }
+
+    fn csr_matvec(&self, matrix: &CsrTripletMatrix, x: &DVector<f64>) -> DVector<f64> {
+        let result: Vec<f64> = (0..matrix.n)
+            .into_par_iter()
+            .map(|row| {
+                let start = matrix.row_offsets[row];
+                let end = matrix.row_offsets[row + 1];
+                let mut sum = 0.0;
+                for idx in start..end {
+                    sum += matrix.values[idx] * x[matrix.col_indices[idx]];
+                }
+                sum
+            })
+            .collect();
+
+        DVector::from_vec(result)
+    }
+
+    fn estimate_condition_from_diagonal(&self, diagonal: &[f64]) -> f64 {
+        if diagonal.is_empty() {
+            return 1.0;
+        }
+
+        let mut min_diag = f64::MAX;
+        let mut max_diag = 0.0_f64;
+        for &d in diagonal {
+            let value = d.abs();
+            if value > self.zero_tolerance {
+                min_diag = min_diag.min(value);
+                max_diag = max_diag.max(value);
+            }
+        }
+
+        if min_diag < self.zero_tolerance {
+            return f64::INFINITY;
+        }
+
+        max_diag / min_diag
     }
 
     /// Build skyline storage from dense matrix
@@ -579,6 +1134,14 @@ impl SparseSolver {
     }
 }
 
+#[derive(Debug, Clone)]
+struct PcgSolveOutput {
+    solution: DVector<f64>,
+    iteration_count: usize,
+    converged: bool,
+    final_residual_norm: f64,
+}
+
 impl Default for SparseSolver {
     fn default() -> Self {
         Self::new()
@@ -637,8 +1200,82 @@ mod tests {
     fn test_strategy_selection() {
         let solver = SparseSolver::new();
         assert_eq!(solver.select_strategy(100, 5000), SolverStrategy::DirectCholesky);
-        assert_eq!(solver.select_strategy(2000, 50000), SolverStrategy::Skyline);
-        assert_eq!(solver.select_strategy(10000, 200000), SolverStrategy::MultiFrontal);
-        assert_eq!(solver.select_strategy(100000, 1000000), SolverStrategy::PreconditionedCG);
+        assert_eq!(solver.select_strategy(1200, 50000), SolverStrategy::Skyline);
+        assert_eq!(solver.select_strategy(4000, 200000), SolverStrategy::MultiFrontal);
+        assert_eq!(solver.select_strategy(7000, 1000000), SolverStrategy::PreconditionedCG);
+    }
+
+    #[test]
+    fn test_solve_coo_matches_dense_path() {
+        let solver = SparseSolver::new();
+
+        let mut k = DMatrix::zeros(3, 3);
+        k[(0, 0)] = 100.0;
+        k[(0, 1)] = -100.0;
+        k[(1, 0)] = -100.0;
+        k[(1, 1)] = 300.0;
+        k[(1, 2)] = -200.0;
+        k[(2, 1)] = -200.0;
+        k[(2, 2)] = 200.0;
+
+        let row_indices = vec![0, 0, 1, 1, 1, 2, 2];
+        let col_indices = vec![0, 1, 0, 1, 2, 1, 2];
+        let values = vec![100.0, -100.0, -100.0, 300.0, -200.0, -200.0, 200.0];
+
+        let mut f = DVector::zeros(3);
+        f[1] = 50.0;
+
+        let dense_result = solver.solve(&k, &f, &[0, 2]).unwrap();
+        let coo_result = solver.solve_coo(3, &row_indices, &col_indices, &values, &f, &[0, 2]).unwrap();
+
+        assert!((dense_result.solution[1] - coo_result.solution[1]).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_solve_coo_pcg_sparse_path_matches_dense_solution() {
+        let mut sparse_solver = SparseSolver::new();
+        sparse_solver.skyline_max_dofs = 1;
+        sparse_solver.multifrontal_max_dofs = 2;
+
+        let mut reference_solver = SparseSolver::new();
+        reference_solver.auto_strategy = false;
+
+        let n = 600;
+        let mut k = DMatrix::zeros(n, n);
+        let mut row_indices = Vec::new();
+        let mut col_indices = Vec::new();
+        let mut values = Vec::new();
+
+        for i in 0..n {
+            let diag = if i == n - 1 { 3.0 } else { 4.0 };
+            k[(i, i)] = diag;
+            row_indices.push(i);
+            col_indices.push(i);
+            values.push(diag);
+
+            if i + 1 < n {
+                k[(i, i + 1)] = -1.0;
+                k[(i + 1, i)] = -1.0;
+
+                row_indices.push(i);
+                col_indices.push(i + 1);
+                values.push(-1.0);
+
+                row_indices.push(i + 1);
+                col_indices.push(i);
+                values.push(-1.0);
+            }
+        }
+
+        let f = DVector::from_element(n, 10.0);
+
+        let dense_result = reference_solver.solve(&k, &f, &[]).unwrap();
+        let sparse_result = sparse_solver.solve_coo(n, &row_indices, &col_indices, &values, &f, &[]).unwrap();
+
+        for i in [0usize, 1, 2, n / 2, n - 3, n - 2, n - 1] {
+            assert!((dense_result.solution[i] - sparse_result.solution[i]).abs() < 1e-8);
+        }
+        assert_eq!(sparse_result.strategy_used, SolverStrategy::PreconditionedCG);
+        assert!(sparse_result.iteration_count.is_some());
     }
 }

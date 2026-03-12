@@ -14,13 +14,13 @@
 //! - P-Delta geometric nonlinearity
 //! - Cable elements with catenary
 
-use nalgebra::{DMatrix, DVector, Matrix6, Vector3, Vector6};
-use nalgebra_sparse::{CooMatrix, CsrMatrix};
+use nalgebra::{DMatrix, DVector};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
+
+use crate::solver::sparse_solver::SparseSolver;
 
 // Advanced analysis modules
 pub mod cable;
@@ -337,6 +337,38 @@ pub struct PerformanceMetrics {
     #[serde(rename = "matrixSize")]
     pub matrix_size: usize,
     pub sparsity: f64,
+    #[serde(rename = "solverStrategy", skip_serializing_if = "Option::is_none")]
+    pub solver_strategy: Option<String>,
+    #[serde(rename = "solverMatrixBuildTimeMs", skip_serializing_if = "Option::is_none")]
+    pub solver_matrix_build_time_ms: Option<f64>,
+    #[serde(rename = "solverFactorizationTimeMs", skip_serializing_if = "Option::is_none")]
+    pub solver_factorization_time_ms: Option<f64>,
+    #[serde(rename = "solverInternalSolveTimeMs", skip_serializing_if = "Option::is_none")]
+    pub solver_internal_solve_time_ms: Option<f64>,
+    #[serde(rename = "solverInternalTotalTimeMs", skip_serializing_if = "Option::is_none")]
+    pub solver_internal_total_time_ms: Option<f64>,
+    #[serde(rename = "solverIterations", skip_serializing_if = "Option::is_none")]
+    pub solver_iterations: Option<usize>,
+    #[serde(rename = "solverConverged", skip_serializing_if = "Option::is_none")]
+    pub solver_converged: Option<bool>,
+    #[serde(rename = "solverFinalResidualNorm", skip_serializing_if = "Option::is_none")]
+    pub solver_final_residual_norm: Option<f64>,
+    #[serde(rename = "solverTolerance", skip_serializing_if = "Option::is_none")]
+    pub solver_tolerance: Option<f64>,
+    #[serde(rename = "solverMaxIterations", skip_serializing_if = "Option::is_none")]
+    pub solver_max_iterations: Option<usize>,
+    #[serde(rename = "solverPreconditioner", skip_serializing_if = "Option::is_none")]
+    pub solver_preconditioner: Option<String>,
+    #[serde(rename = "solverFallbackUsed", skip_serializing_if = "Option::is_none")]
+    pub solver_fallback_used: Option<bool>,
+    #[serde(rename = "solverFallbackStrategy", skip_serializing_if = "Option::is_none")]
+    pub solver_fallback_strategy: Option<String>,
+    #[serde(rename = "solverNnz", skip_serializing_if = "Option::is_none")]
+    pub solver_nnz: Option<usize>,
+    #[serde(rename = "solverBandwidth", skip_serializing_if = "Option::is_none")]
+    pub solver_bandwidth: Option<usize>,
+    #[serde(rename = "solverConditionEstimate", skip_serializing_if = "Option::is_none")]
+    pub solver_condition_estimate: Option<f64>,
 }
 
 /// Analysis result
@@ -410,6 +442,12 @@ impl Solver {
             .iter()
             .enumerate()
             .map(|(i, n)| (n.id.clone(), i))
+            .collect();
+        let member_index_by_id: HashMap<&str, usize> = input
+            .members
+            .iter()
+            .enumerate()
+            .map(|(i, m)| (m.id.as_str(), i))
             .collect();
 
         // ============================================
@@ -518,8 +556,8 @@ impl Solver {
 
         // Accumulate member load fixed-end forces (FEF)
         for ml in &input.member_loads {
-            let member = input.members.iter().find(|m| m.id == ml.member_id);
-            if let Some(member) = member {
+            if let Some(&member_idx) = member_index_by_id.get(ml.member_id.as_str()) {
+                let member = &input.members[member_idx];
                 if let (Some(&si), Some(&ei)) = (
                     node_index.get(&member.start_node_id),
                     node_index.get(&member.end_node_id),
@@ -599,22 +637,21 @@ impl Solver {
         }
 
         // Build reduced stiffness matrix (only free DOFs)
-        let free_dof_set: HashMap<usize, usize> = free_dof_indices
-            .iter()
-            .enumerate()
-            .map(|(new, &old)| (old, new))
-            .collect();
+        let mut free_dof_map = vec![None; n_dofs];
+        for (new_idx, &old_idx) in free_dof_indices.iter().enumerate() {
+            free_dof_map[old_idx] = Some(new_idx);
+        }
 
-        let mut reduced_rows = Vec::new();
-        let mut reduced_cols = Vec::new();
-        let mut reduced_vals = Vec::new();
+        let mut reduced_rows = Vec::with_capacity(row_indices.len());
+        let mut reduced_cols = Vec::with_capacity(col_indices.len());
+        let mut reduced_vals = Vec::with_capacity(values.len());
 
         for (_idx, ((&r, &c), &v)) in row_indices.iter()
             .zip(col_indices.iter())
             .zip(values.iter())
             .enumerate()
         {
-            if let (Some(&new_r), Some(&new_c)) = (free_dof_set.get(&r), free_dof_set.get(&c)) {
+            if let (Some(new_r), Some(new_c)) = (free_dof_map[r], free_dof_map[c]) {
                 reduced_rows.push(new_r);
                 reduced_cols.push(new_c);
                 reduced_vals.push(v);
@@ -627,17 +664,21 @@ impl Solver {
             f_reduced[new_idx] = f[old_idx];
         }
 
-        // Convert to dense matrix for solving (TODO: use sparse solver for very large models)
-        let mut k_dense = DMatrix::zeros(n_free, n_free);
-        for ((&r, &c), &v) in reduced_rows.iter().zip(reduced_cols.iter()).zip(reduced_vals.iter()) {
-            k_dense[(r, c)] += v;
-        }
+        // Solve reduced K * d = F directly from sparse triplets.
+        // Note: the reduced system already excludes restrained DOFs, so constrained_dofs is empty.
+        let sparse_solver = SparseSolver::new();
+        let sparse_result = sparse_solver
+            .solve_coo(n_free, &reduced_rows, &reduced_cols, &reduced_vals, &f_reduced, &[])
+            .map_err(|e| format!("Failed to solve reduced system: {}", e))?;
+        let d_reduced = sparse_result.solution;
 
-        // Solve K * d = F using LU decomposition
-        let d_reduced = match k_dense.lu().solve(&f_reduced) {
-            Some(d) => d,
-            None => return Err("Failed to solve: matrix is singular".to_string()),
-        };
+        tracing::debug!(
+            "Reduced solve strategy: {:?}, nnz={}, bandwidth={}, cond≈{:.3e}",
+            sparse_result.strategy_used,
+            sparse_result.nnz,
+            sparse_result.bandwidth,
+            sparse_result.condition_estimate
+        );
 
         // Expand to full displacement vector
         let mut displacements_vec = DVector::zeros(n_dofs);
@@ -830,6 +871,22 @@ impl Solver {
                 total_time_ms: total_time,
                 matrix_size: n_dofs,
                 sparsity,
+                solver_strategy: Some(format!("{:?}", sparse_result.strategy_used)),
+                solver_matrix_build_time_ms: Some(sparse_result.matrix_build_time_ms),
+                solver_factorization_time_ms: Some(sparse_result.factorization_time_ms),
+                solver_internal_solve_time_ms: Some(sparse_result.solve_time_ms),
+                solver_internal_total_time_ms: Some(sparse_result.total_time_ms),
+                solver_iterations: sparse_result.iteration_count,
+                solver_converged: sparse_result.converged,
+                solver_final_residual_norm: sparse_result.final_residual_norm,
+                solver_tolerance: sparse_result.tolerance_used,
+                solver_max_iterations: sparse_result.max_iterations_used,
+                solver_preconditioner: sparse_result.preconditioner_used,
+                solver_fallback_used: sparse_result.fallback_used,
+                solver_fallback_strategy: sparse_result.fallback_strategy,
+                solver_nnz: Some(sparse_result.nnz),
+                solver_bandwidth: Some(sparse_result.bandwidth),
+                solver_condition_estimate: Some(sparse_result.condition_estimate),
             },
             max_displacement,
             max_stress,

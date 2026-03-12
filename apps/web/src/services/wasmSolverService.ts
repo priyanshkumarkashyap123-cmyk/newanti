@@ -388,17 +388,21 @@ export async function analyzeStructure(
       temperatureLoads.length > 0 ||
       pointLoadsOnMembers.length > 0 ||
       config.include_self_weight;
-    const result = hasExtended
-      ? solve_3d_frame_extended(
-          nodes,
-          elements,
-          pointLoads,
-          memberLoads,
-          temperatureLoads,
-          pointLoadsOnMembers,
-          config,
-        )
-      : solve_3d_frame(nodes, elements, pointLoads, memberLoads);
+    const result = await withSolveTimeout(
+      () =>
+        hasExtended
+          ? solve_3d_frame_extended(
+              nodes,
+              elements,
+              pointLoads,
+              memberLoads,
+              temperatureLoads,
+              pointLoadsOnMembers,
+              config,
+            )
+          : solve_3d_frame(nodes, elements, pointLoads, memberLoads),
+      DEFAULT_SOLVE_TIMEOUT_MS,
+    );
 
     const endTime = performance.now();
     const solveTime = endTime - startTime;

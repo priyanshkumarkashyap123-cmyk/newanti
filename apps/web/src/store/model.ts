@@ -397,6 +397,26 @@ function serializeAnalysisMap<V>(map: Map<string, V> | undefined): [string, V][]
   return Array.from(map.entries());
 }
 
+function serializeMemberForcesForSession(
+  map: Map<string, MemberForceData> | undefined,
+): [string, Partial<MemberForceData>][] | undefined {
+  if (!map || map.size === 0) return undefined;
+
+  // Very large result sets should not serialize full diagram arrays to session storage.
+  if (map.size > 2000) {
+    logger.warn('Skipping member force session persistence for very large result set', { count: map.size });
+    return undefined;
+  }
+
+  const stripDiagramData = map.size > 500;
+
+  return Array.from(map.entries()).map(([id, value]) => {
+    if (!stripDiagramData) return [id, value];
+    const { diagramData, ...rest } = value as MemberForceData & { diagramData?: unknown };
+    return [id, rest];
+  });
+}
+
 /** Persist analysis results to sessionStorage — deferred to idle time
  *  so JSON.stringify doesn't block the main thread during interactions. */
 let _persistTimer: ReturnType<typeof setTimeout> | null = null;
@@ -415,7 +435,7 @@ function persistAnalysisResults(results: AnalysisResults | null): void {
       const serializable = {
         displacements: serializeAnalysisMap(results.displacements),
         reactions: serializeAnalysisMap(results.reactions),
-        memberForces: serializeAnalysisMap(results.memberForces),
+        memberForces: serializeMemberForcesForSession(results.memberForces),
         plateResults: results.plateResults,
         equilibriumCheck: results.equilibriumCheck,
         conditionNumber: results.conditionNumber,
