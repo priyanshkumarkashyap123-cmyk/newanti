@@ -9,14 +9,20 @@ export type {
   ProjectInfo, Restraints, Node, NodeLoad, MemberLoadType, MemberLoad,
   LoadCaseType, LoadCase, LoadCombination, FloorLoad, SectionType,
   SectionDimensions, Member, Plate, MemberForceData, AnalysisResults,
+  PropertyAssignmentPayload, MemberGroup,
   ModeShape, ModalResult, CivilResult, SavedProjectData,
+  PropertyAssignmentScopeMode, MaterialFamily, PropertyReductionFactors,
+  SectionMechanics,
 } from './modelTypes';
 
 import type {
   ProjectInfo, Restraints, Node, NodeLoad, MemberLoad, LoadCase,
   LoadCombination, FloorLoad, Member, Plate, MemberForceData,
   AnalysisResults, ModalResult, CivilResult, SavedProjectData,
+  PropertyAssignmentPayload, MemberGroup,
+  TranslationalRepeatRequest, TranslationalRepeatResult,
 } from './modelTypes';
+import { extrudeGeometry } from '../core/geometry_engine';
 
 // Re-export persistence functions for backward compatibility
 export {
@@ -39,6 +45,8 @@ interface ModelState {
   floorLoads: FloorLoad[]; // Floor/area loads (distributed to beams at analysis time)
   loadCases: LoadCase[]; // Load case definitions (DL, LL, WL, etc.)
   loadCombinations: LoadCombination[]; // Factored load combinations (IS 875, ASCE 7, EC)
+  propertyAssignments: PropertyAssignmentPayload[]; // Canonical property assignment payloads
+  memberGroups: MemberGroup[]; // Member groups for property precedence
   activeLoadCaseId: string | null; // Currently active load case for editing
   selectedIds: Set<string>;
   /** Element IDs flagged as problematic by analysis error diagnosis */
@@ -94,6 +102,15 @@ interface ModelState {
   addFloorLoad: (load: FloorLoad) => void;
   removeFloorLoad: (id: string) => void;
   clearFloorLoads: () => void;
+  // Property Assignment CRUD
+  addPropertyAssignment: (pa: PropertyAssignmentPayload) => void;
+  removePropertyAssignment: (id: string) => void;
+  updatePropertyAssignment: (id: string, updates: Partial<PropertyAssignmentPayload>) => void;
+  // Member Group CRUD
+  addMemberGroup: (group: MemberGroup) => void;
+  removeMemberGroup: (id: string) => void;
+  updateMemberGroup: (id: string, updates: Partial<MemberGroup>) => void;
+  assignPropertyToSelection: (propertyId: string) => void;
   // Load Case Management
   addLoadCase: (lc: LoadCase) => void;
   removeLoadCase: (id: string) => void;
@@ -192,6 +209,7 @@ interface ModelState {
   removeMember: (id: string) => void;
   addNodes: (nodes: Node[]) => void; // Bulk add nodes
   addMembers: (members: Member[]) => void; // Bulk add members
+  applyTranslationalRepeat: (request: TranslationalRepeatRequest) => TranslationalRepeatResult;
   updateNodes: (updates: Map<string, Partial<Node>>) => void; // Batch update nodes
   updateMembers: (updates: Map<string, Partial<Member>>) => void; // Batch update members
   splitMemberById: (memberId: string, ratio: number) => void; // Insert node in member
@@ -298,6 +316,8 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
   const memberLoads = Array.isArray(data.memberLoads) ? data.memberLoads : [];
   const loadCases = Array.isArray(data.loadCases) ? data.loadCases : [];
   const loadCombinations = Array.isArray(data.loadCombinations) ? data.loadCombinations : [];
+  const propertyAssignments = Array.isArray(data.propertyAssignments) ? data.propertyAssignments : [];
+  const memberGroups = Array.isArray(data.memberGroups) ? data.memberGroups : [];
   const floorLoads = Array.isArray(data.floorLoads) ? data.floorLoads : [];
 
   // Restore plates (may be tuples [id, plate] or objects with .id)
@@ -319,6 +339,8 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     memberLoads,
     loadCases,
     loadCombinations,
+    propertyAssignments,
+    memberGroups,
     activeLoadCaseId: null,
     projectInfo: data.projectInfo
       ? {
@@ -356,7 +378,7 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
 // Only enable devtools in development to avoid expensive serialization in production
 const withDevtools = <T,>(fn: T): T => {
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     return devtools(fn as any, { name: 'ModelStore', serialize: { options: { map: true } } }) as unknown as T;
   }
   return fn;
@@ -436,6 +458,8 @@ export const useModelStore = create<ModelState>()(
         floorLoads: [], // Floor/area loads (converted to beam UDLs at analysis time)
         loadCases: [], // Load case definitions
         loadCombinations: [], // Factored load combinations
+        propertyAssignments: [], // Canonical property payloads
+        memberGroups: [], // Member groups
         activeLoadCaseId: null, // No active load case initially
         selectedIds: new Set(),
         errorElementIds: new Set(),
@@ -613,6 +637,55 @@ export const useModelStore = create<ModelState>()(
           })),
 
         clearFloorLoads: () => set({ floorLoads: [] }),
+
+        // Property Assignment CRUD
+        addPropertyAssignment: (pa: PropertyAssignmentPayload) =>
+          set((state) => {
+            if (state.propertyAssignments.some((p) => p.id === pa.id)) return state;
+            return { propertyAssignments: [...state.propertyAssignments, pa] };
+          }),
+
+        removePropertyAssignment: (id: string) =>
+          set((state) => ({
+            propertyAssignments: state.propertyAssignments.filter((p) => p.id !== id),
+          })),
+
+        updatePropertyAssignment: (id: string, updates: Partial<PropertyAssignmentPayload>) =>
+          set((state) => ({
+            propertyAssignments: state.propertyAssignments.map((p) =>
+              p.id === id ? { ...p, ...updates } : p,
+            ),
+          })),
+
+        // Member Group CRUD
+        addMemberGroup: (group: MemberGroup) =>
+          set((state) => {
+            if (state.memberGroups.some((g) => g.id === group.id)) return state;
+            return { memberGroups: [...state.memberGroups, group] };
+          }),
+
+        removeMemberGroup: (id: string) =>
+          set((state) => ({
+            memberGroups: state.memberGroups.filter((g) => g.id !== id),
+          })),
+
+        updateMemberGroup: (id: string, updates: Partial<MemberGroup>) =>
+          set((state) => ({
+            memberGroups: state.memberGroups.map((g) =>
+              g.id === id ? { ...g, ...updates } : g,
+            ),
+          })),
+
+        // Assign property to selected members
+        assignPropertyToSelection: (propertyId: string) =>
+          set((state) => {
+            const newMembers = new Map(state.members);
+            for (const id of state.selectedIds) {
+              const m = newMembers.get(id);
+              if (m) newMembers.set(id, { ...m, propertyAssignmentId: propertyId });
+            }
+            return { members: newMembers };
+          }),
 
         // Load Case Management
         addLoadCase: (lc) =>
@@ -1214,6 +1287,8 @@ export const useModelStore = create<ModelState>()(
             floorLoads: [],
             loadCases: [],
             loadCombinations: [],
+            propertyAssignments: [],
+            memberGroups: [],
             activeLoadCaseId: null,
             selectedIds: new Set(),
             analysisResults: null,
@@ -1433,6 +1508,8 @@ export const useModelStore = create<ModelState>()(
               loads: [],
               memberLoads: [],
               floorLoads: [],
+              propertyAssignments: [],
+              memberGroups: [],
               selectedIds: new Set(),
               analysisResults: null,
               isAnalyzing: false,
@@ -1498,6 +1575,74 @@ export const useModelStore = create<ModelState>()(
             });
             return { members: newMembers };
           }),
+
+        applyTranslationalRepeat: (request) => {
+          const state = get();
+
+          const nodeIds = new Set<string>(request.nodeIds ?? []);
+          (request.memberIds ?? []).forEach((memberId) => {
+            const member = state.members.get(memberId);
+            if (member) {
+              nodeIds.add(member.startNodeId);
+              nodeIds.add(member.endNodeId);
+            }
+          });
+
+          const selectedNodes = Array.from(nodeIds)
+            .map((id) => state.nodes.get(id))
+            .filter((node): node is Node => node !== undefined);
+
+          const selectedMembers = (request.memberIds ?? [])
+            .map((id) => state.members.get(id))
+            .filter((member): member is Member => member !== undefined);
+
+          const result = extrudeGeometry(
+            selectedNodes,
+            selectedMembers,
+            request.axis,
+            request.spacing_m,
+            request.steps,
+            request.linkSteps,
+            {
+              existingNodeIds: new Set(state.nodes.keys()),
+              existingMemberIds: new Set(state.members.keys())
+            }
+          );
+
+          if (result.nodes.length === 0 && result.members.length === 0) {
+            return { createdNodeIds: [], createdMemberIds: [] };
+          }
+
+          set((currentState) => {
+            const newNodes = new Map(currentState.nodes);
+            const newMembers = new Map(currentState.members);
+
+            result.nodes.forEach((node) => {
+              newNodes.set(node.id, node);
+            });
+
+            result.members.forEach((member) => {
+              newMembers.set(member.id, {
+                ...member,
+                sectionId: member.sectionId ?? 'Default',
+                E: member.E ?? 200e6,
+                A: member.A ?? 0.01,
+                I: member.I ?? 1e-4,
+              });
+            });
+
+            return {
+              nodes: newNodes,
+              members: newMembers,
+              analysisResults: null,
+            };
+          });
+
+          return {
+            createdNodeIds: result.nodes.map((node) => node.id),
+            createdMemberIds: result.members.map((member) => member.id),
+          };
+        },
 
         splitMemberById: (memberId, ratio) =>
           set((state) => {
@@ -1782,6 +1927,8 @@ export const useModelStore = create<ModelState>()(
           floorLoads: state.floorLoads,
           loadCases: state.loadCases,
           loadCombinations: state.loadCombinations,
+          propertyAssignments: state.propertyAssignments,
+          memberGroups: state.memberGroups,
           projectInfo: state.projectInfo,
           settings: state.settings,
         }),

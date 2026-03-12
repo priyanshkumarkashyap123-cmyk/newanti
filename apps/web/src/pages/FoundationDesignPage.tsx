@@ -422,7 +422,7 @@ export const FoundationDesignPage: React.FC = () => {
           : 'Foundation design complete — review failed checks'
       );
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [results]);
 
   const updateInput = (key: keyof FoundationInput, value: any) => {

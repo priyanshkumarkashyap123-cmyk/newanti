@@ -160,7 +160,7 @@ export const BoxSelector: FC = memo(() => {
         };
     // Only re-run if the gl context or camera instance changes (i.e. canvas remount)
     // Store values are accessed via refs so they never force a re-attach.
-    }, [gl, camera]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [gl, camera]);  
 
     return null;
 });

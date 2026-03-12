@@ -1032,7 +1032,7 @@ export const ResultsToolbar: FC<ResultsToolbarProps> = React.memo(({ onClose }) 
               ? allDetailedMembers
               : sorted.slice(0, MAX_DETAILED);
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+             
             const detailedMembers = selectedMembers.map(({ _rankScore, ...rest }) => rest);
 
             report.addDetailedMemberDiagrams(detailedMembers);

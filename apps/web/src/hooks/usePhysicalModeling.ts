@@ -68,7 +68,13 @@ interface UsePhysicalModelingReturn {
     generateShell: (params: ShellGeneratorParams) => void;
     
     // Geometry Operations
-    linearRepeat: (memberIds: string[], direction: Vector3, count: number, spacing: number) => void;
+    linearRepeat: (
+        memberIds: string[],
+        direction: Vector3,
+        count: number,
+        spacing: number,
+        options?: { linkSteps?: boolean }
+    ) => void;
     circularRepeat: (memberIds: string[], center: Vector3, axis: Vector3, count: number) => void;
     mirror: (memberIds: string[], plane: 'XY' | 'XZ' | 'YZ') => void;
     
@@ -223,7 +229,8 @@ export function usePhysicalModeling(): UsePhysicalModelingReturn {
         memberIds: string[],
         direction: Vector3,
         count: number,
-        spacing: number
+        spacing: number,
+        options?: { linkSteps?: boolean }
     ) => {
         try {
             setIsProcessing(true);
@@ -253,7 +260,11 @@ export function usePhysicalModeling(): UsePhysicalModelingReturn {
                 direction,
                 spacing,
                 count,
-                false // Don't link steps for linear repeat
+                options?.linkSteps ?? false,
+                {
+                    existingNodeIds: new Set(nodes.keys()),
+                    existingMemberIds: new Set(members.keys())
+                }
             );
             
             addNodes(newNodes);

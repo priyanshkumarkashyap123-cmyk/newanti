@@ -10,7 +10,7 @@
  * - Online/offline detection
  */
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+ 
 // @ts-ignore - idb types may not be available during build
 import { openDB } from 'idb';
 import { API_CONFIG } from '../config/env';
@@ -19,7 +19,7 @@ import { addCsrfHeader } from './security';
 import { useModelStore } from '../store/model';
 
 // Using loose types for idb since exact types are complex
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type IDBDatabase = any;
 
 // ============================================================================

@@ -302,6 +302,7 @@ export const ModelingToolbar: FC = () => {
   const activeTool = useUIStore((state) => state.activeTool);
   const activeCategory = useUIStore((state) => state.activeCategory);
   const setActiveTool = useUIStore((state) => state.setActiveTool);
+  const setGeometryToolPreset = useUIStore((state) => state.setGeometryToolPreset);
   const openModal = useUIStore((state) => state.openModal);
   const setRenderMode3D = useUIStore((state) => state.setRenderMode3D);
   const setModelTool = useModelStore((state) => state.setTool);
@@ -363,7 +364,24 @@ export const ModelingToolbar: FC = () => {
           dispatch("trigger-move");
           return;
         case "MIRROR":
+          setGeometryToolPreset("mirror");
+          openModal("geometryTools");
+          return;
         case "ROTATE":
+          setGeometryToolPreset("rotate");
+          openModal("geometryTools");
+          return;
+        case "EXTRUDE":
+        case "ARRAY_LINEAR":
+          setGeometryToolPreset("extrude");
+          openModal("geometryTools");
+          return;
+        case "ARRAY_POLAR":
+          setGeometryToolPreset("rotate");
+          openModal("geometryTools");
+          return;
+        case "ARRAY_3D":
+          setGeometryToolPreset("extrude");
           openModal("geometryTools");
           return;
         case "DIVIDE_MEMBER":
@@ -419,7 +437,7 @@ export const ModelingToolbar: FC = () => {
         setModelTool(mapped as any);
       }
     },
-    [openModal, setActiveTool, setModelTool, setRenderMode3D],
+    [openModal, setActiveTool, setGeometryToolPreset, setModelTool, setRenderMode3D],
   );
 
   // Handle keyboard shortcuts

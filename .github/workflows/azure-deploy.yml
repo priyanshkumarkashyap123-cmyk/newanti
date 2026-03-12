@@ -1,6 +1,6 @@
 name: Deploy to Azure
 
-# Temporarily re-enabled for public repo deployment
+# Main Azure deployment workflow for API, Python, and Rust services.
 on:
   push:
     branches: [main]
@@ -43,6 +43,7 @@ jobs:
         working-directory: apps/api
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        continue-on-error: true
         run: |
           if [ -z "${MONGODB_URI:-}" ]; then
             echo "Skipping migrations because MONGODB_URI secret is not set."

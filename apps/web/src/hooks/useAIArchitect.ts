@@ -29,7 +29,7 @@ export interface AIAction {
   type: 'addNode' | 'addMember' | 'addSupport' | 'addLoad' | 'removeMember' |
         'removeNode' | 'changeSection' | 'runAnalysis' | 'optimize' | 'applyModel' |
         'clearModel' | 'report';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   params: Record<string, any>;
   description: string;
 }
@@ -118,7 +118,7 @@ export interface ModelContext {
 
 const AI_API_BASE = `${API_CONFIG.baseUrl}/api/ai`;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 async function callAIApi(endpoint: string, body: Record<string, any>): Promise<AIResponse> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout

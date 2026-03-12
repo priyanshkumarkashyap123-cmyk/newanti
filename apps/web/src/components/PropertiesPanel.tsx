@@ -302,7 +302,7 @@ export const PropertiesPanel: FC = memo(() => {
         }
         setShowCustomSection(false);
         setShowCustomMaterial(false);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [selectedId]);
 
     const selectedMember = selectedId ? members.get(selectedId) : null;

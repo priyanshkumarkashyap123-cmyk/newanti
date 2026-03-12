@@ -154,7 +154,7 @@ export function initGoogleAnalytics(): void {
   // Initialize dataLayer
   (window as { dataLayer?: unknown[] }).dataLayer = (window as { dataLayer?: unknown[] }).dataLayer || [];
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const w = window as any;
   w.gtag = function gtag(...args: unknown[]) {
     w.dataLayer?.push(args);
@@ -187,7 +187,7 @@ export function trackEvent(event: AnalyticsEvent): void {
   }
 
   // Send to GA4
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const gtag = (window as any).gtag;
   if (gtag) {
     gtag('event', event.name, {
@@ -210,7 +210,7 @@ export function trackEvent(event: AnalyticsEvent): void {
 export function trackPageView(data: PageViewData): void {
   if (!hasConsent('analytics')) return;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const gtag = (window as any).gtag;
   if (gtag) {
     gtag('event', 'page_view', {
@@ -231,7 +231,7 @@ export function trackPageView(data: PageViewData): void {
 export function setUserProperties(properties: UserProperties): void {
   if (!hasConsent('analytics')) return;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const gtag = (window as any).gtag;
   if (gtag) {
     gtag('set', 'user_properties', properties);

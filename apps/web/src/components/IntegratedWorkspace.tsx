@@ -69,7 +69,7 @@ export const IntegratedWorkspace: FC = () => {
             const nodes = nodesRaw.map((n, idx: number) => ({ ...n, id: Number(n.id ?? idx + 1) }));
             const members = membersRaw.map((m, idx: number) => ({ ...m, id: Number(m.id ?? idx + 1) }));
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const result = await beamlab.solver.analyze(
                 nodes as any,
                 members as any,

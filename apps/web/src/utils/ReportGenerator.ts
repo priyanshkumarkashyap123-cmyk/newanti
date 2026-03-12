@@ -242,7 +242,7 @@ export class ReportGenerator {
             alternateRowStyles: { fillColor: [248, 250, 252] }
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
     }
 
@@ -277,7 +277,7 @@ export class ReportGenerator {
             alternateRowStyles: { fillColor: [248, 250, 252] }
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
     }
 
@@ -323,7 +323,7 @@ export class ReportGenerator {
             alternateRowStyles: { fillColor: [248, 250, 252] }
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
     }
 
@@ -366,7 +366,7 @@ export class ReportGenerator {
             alternateRowStyles: { fillColor: [248, 250, 252] }
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
     }
 

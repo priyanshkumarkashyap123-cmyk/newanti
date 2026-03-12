@@ -9,7 +9,7 @@
  * - Split Member (Insert Node)
  */
 
-import { FC, useState, useMemo } from 'react';
+import { FC, useEffect, useState, useMemo } from 'react';
 import {
     Copy, RotateCcw, FlipHorizontal, Scissors,
     ArrowRight, ArrowUp, ArrowDown, Grid3X3, Circle,
@@ -20,8 +20,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useModelStore, Node, Member } from '../store/model';
+import { useUIStore } from '../store/uiStore';
 import {
-    extrudeGeometry,
     rotateCopy,
     mirror,
     degToRad,
@@ -52,6 +52,9 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
     const addNodes = useModelStore((s) => s.addNodes);
     const addMembers = useModelStore((s) => s.addMembers);
     const splitMemberById = useModelStore((s) => s.splitMemberById);
+    const applyTranslationalRepeat = useModelStore((s) => s.applyTranslationalRepeat);
+    const geometryToolPreset = useUIStore((s) => s.geometryToolPreset);
+    const setGeometryToolPreset = useUIStore((s) => s.setGeometryToolPreset);
 
     // State
     const [activeTool, setActiveTool] = useState<GeometryTool>('extrude');
@@ -95,6 +98,20 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
         return { selectedNodes: sNodes, selectedMembers: sMembers };
     }, [selectedIds, nodes, members]);
 
+    const getOperationNodes = (): Node[] => {
+        const nodeMap = new Map<string, Node>();
+        selectedNodes.forEach((node) => nodeMap.set(node.id, node));
+
+        selectedMembers.forEach((member) => {
+            const start = nodes.get(member.startNodeId);
+            const end = nodes.get(member.endNodeId);
+            if (start) nodeMap.set(start.id, start);
+            if (end) nodeMap.set(end.id, end);
+        });
+
+        return Array.from(nodeMap.values());
+    };
+
     // Tool config
     const TOOLS = [
         { id: 'extrude' as GeometryTool, name: 'Extrude', icon: Copy, description: 'Repeat along axis' },
@@ -103,6 +120,23 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
         { id: 'split' as GeometryTool, name: 'Split Member', icon: Scissors, description: 'Insert node' },
         { id: 'renumber' as GeometryTool, name: 'Renumber', icon: Grid3X3, description: 'Sort IDs' },
     ];
+
+    useEffect(() => {
+        if (!isOpen || !geometryToolPreset) return;
+
+        const presetMap: Record<string, GeometryTool> = {
+            extrude: 'extrude',
+            rotate: 'rotate',
+            mirror: 'mirror',
+            split: 'split',
+            renumber: 'renumber'
+        };
+
+        const nextTool = presetMap[geometryToolPreset];
+        if (nextTool) {
+            setActiveTool(nextTool);
+        }
+    }, [isOpen, geometryToolPreset]);
 
     // Execute the current operation
     const handleExecute = () => {
@@ -113,21 +147,25 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
         switch (activeTool) {
             case 'extrude': {
+                const operationNodes = getOperationNodes();
+                if (operationNodes.length === 0) {
+                    alert('Please select at least one node or member to extrude');
+                    return;
+                }
+
                 const axis = {
                     x: extrudeAxis === 'x' ? 1 : 0,
                     y: extrudeAxis === 'y' ? 1 : 0,
                     z: extrudeAxis === 'z' ? 1 : 0
                 };
-                const result = extrudeGeometry(
-                    selectedNodes,
-                    selectedMembers,
+                applyTranslationalRepeat({
+                    nodeIds: operationNodes.map((node) => node.id),
+                    memberIds: selectedMembers.map((member) => member.id),
                     axis,
-                    extrudeSpacing,
-                    extrudeSteps,
+                    spacing_m: extrudeSpacing,
+                    steps: extrudeSteps,
                     linkSteps
-                );
-                addNodes(result.nodes);
-                addMembers(result.members);
+                });
                 break;
             }
             case 'rotate': {
@@ -174,13 +212,19 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
             }
         }
 
+        setGeometryToolPreset(null);
         onClose();
     };
 
     const ActiveIcon = TOOLS.find(t => t.id === activeTool)?.icon || Copy;
 
+    const handleClose = () => {
+        setGeometryToolPreset(null);
+        onClose();
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <DialogHeader>
@@ -444,7 +488,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
 
                 {/* Footer */}
                 <DialogFooter className="flex justify-between sm:justify-between">
-                    <Button variant="ghost" onClick={onClose}>
+                    <Button variant="ghost" onClick={handleClose}>
                         Cancel
                     </Button>
                     <Button onClick={handleExecute} className="bg-violet-600 hover:bg-violet-700 text-white">

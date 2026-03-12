@@ -227,7 +227,7 @@ const Visualization3DEngine: React.FC = () => {
   };
 
   // Get color for stress value (used when stress legend rendering is enabled)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const _getStressColor = (value: number) => {
     const normalized =
       (value - stressRange.min) / (stressRange.max - stressRange.min);

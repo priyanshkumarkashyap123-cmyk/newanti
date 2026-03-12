@@ -103,7 +103,7 @@ export default function BackendHealthDashboard() {
 
   useEffect(() => {
     checkAllServices();
-  }, []); // eslint-disable-line
+  }, []);  
 
   useEffect(() => {
     if (!autoRefresh) return;

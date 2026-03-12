@@ -296,7 +296,7 @@ class OTEngine {
     return newState;
   }
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   private insertAtPath(obj: Record<string, any>, path: string[], value: unknown): void {
     let current = obj;
     for (let i = 0; i < path.length - 1; i++) {
@@ -316,7 +316,7 @@ class OTEngine {
     }
   }
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   private deleteAtPath(obj: Record<string, any>, path: string[]): void {
     let current = obj;
     for (let i = 0; i < path.length - 1; i++) {
@@ -334,7 +334,7 @@ class OTEngine {
     }
   }
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   private updateAtPath(obj: Record<string, any>, path: string[], value: unknown): void {
     let current = obj;
     for (let i = 0; i < path.length - 1; i++) {
@@ -344,10 +344,10 @@ class OTEngine {
     current[path[path.length - 1]] = value;
   }
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   private moveAtPath(obj: Record<string, any>, fromPath: string[], toPath: string[]): void {
     // Get value at fromPath
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let current: Record<string, any> = obj;
     for (let i = 0; i < fromPath.length - 1; i++) {
       if (!current[fromPath[i]]) return;

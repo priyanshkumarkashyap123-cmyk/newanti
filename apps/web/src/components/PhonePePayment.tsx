@@ -309,7 +309,7 @@ export const PhonePePaymentModal: FC<PaymentModalProps> = ({
     return () => {
       clearTimeout(successTimerRef.current);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   const handleUpgrade = useCallback(async () => {
     if (isProcessing) return;
@@ -588,7 +588,7 @@ export function usePhonePePayment() {
         }
       })();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);  
 
   const openPayment = useCallback(
     async (

@@ -1427,7 +1427,7 @@ export interface CurvedTemplate {
   category: "dome" | "vault" | "arch" | "tunnel" | "surface" | "tower" | "misc";
   description: string;
   generator: (params?: Record<string, unknown>) => CurvedStructure;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   defaultParams: Record<string, any>;
   icon: string; // lucide icon name
 }

@@ -135,7 +135,7 @@ class LazyErrorBoundary extends React.Component<
  *   }
  * );
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function createLazyComponent<T extends ComponentType<any>>(
   factory: ModuleFactory<T>,
   options: LazyComponentOptions = {}

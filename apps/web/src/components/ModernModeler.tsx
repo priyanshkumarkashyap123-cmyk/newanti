@@ -226,6 +226,7 @@ export const ModernModeler: FC = () => {
     setCategory,
     activeTool,
     setActiveTool,
+    setGeometryToolPreset,
     openModal,
     closeModal,
     notification,
@@ -237,6 +238,7 @@ export const ModernModeler: FC = () => {
       setCategory: s.setCategory,
       activeTool: s.activeTool,
       setActiveTool: s.setActiveTool,
+      setGeometryToolPreset: s.setGeometryToolPreset,
       openModal: s.openModal,
       closeModal: s.closeModal,
       notification: s.notification,
@@ -264,6 +266,24 @@ export const ModernModeler: FC = () => {
   // Wiring for Generator Tools
   useEffect(() => {
     if (!activeTool) return;
+
+    const geometryModalMap: Record<string, "extrude" | "rotate" | "mirror" | "split" | "renumber"> = {
+      ARRAY_LINEAR: "extrude",
+      ARRAY_POLAR: "rotate",
+      ARRAY_3D: "extrude",
+      EXTRUDE: "extrude",
+      ROTATE: "rotate",
+      MIRROR: "mirror",
+      SPLIT_MEMBER: "split",
+    };
+
+    const geometryPreset = geometryModalMap[activeTool];
+    if (geometryPreset) {
+      setGeometryToolPreset(geometryPreset);
+      openModal("geometryTools");
+      setActiveTool("SELECT");
+      return;
+    }
 
     const GENERATOR_TOOLS = [
       "GRID_GENERATE",
@@ -294,7 +314,7 @@ export const ModernModeler: FC = () => {
       openModal("structureWizard");
       setActiveTool("SELECT");
     }
-  }, [activeTool, openModal, setActiveTool]);
+  }, [activeTool, openModal, setActiveTool, setGeometryToolPreset]);
 
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
   const [showCloudManager, setShowCloudManager] = useState(false);

@@ -653,7 +653,7 @@ export const ConcreteDesignPage: React.FC = () => {
           : `${memberType.charAt(0).toUpperCase() + memberType.slice(1)} design complete — review failed checks`
       );
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [results]);
 
   const renderBeamForm = () => (

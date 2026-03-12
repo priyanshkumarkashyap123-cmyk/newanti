@@ -8,7 +8,7 @@
  * - Matrix Operations for transformations
  */
 
-import { Node, Member } from '../store/model';
+import type { Node, Member } from '../store/modelTypes';
 
 // ============================================
 // TYPES
@@ -207,6 +207,29 @@ export interface ExtrudeResult {
     members: Member[];
 }
 
+export interface ExtrudeOptions {
+    existingNodeIds?: Set<string>;
+    existingMemberIds?: Set<string>;
+    cloneNodeRestraints?: boolean;
+    linkSectionId?: string;
+}
+
+function makeUniqueId(baseId: string, existingIds: Set<string>): string {
+    if (!existingIds.has(baseId)) {
+        existingIds.add(baseId);
+        return baseId;
+    }
+
+    let suffix = 1;
+    let candidate = `${baseId}_${suffix}`;
+    while (existingIds.has(candidate)) {
+        suffix += 1;
+        candidate = `${baseId}_${suffix}`;
+    }
+    existingIds.add(candidate);
+    return candidate;
+}
+
 /**
  * Extrude geometry along an axis
  * Creates N copies along a vector, connecting with new members
@@ -224,9 +247,23 @@ export function extrudeGeometry(
     axis: Vector3,
     spacing: number,
     steps: number,
-    linkSteps: boolean = true
+    linkSteps: boolean = true,
+    options?: ExtrudeOptions
 ): ExtrudeResult {
     const result: ExtrudeResult = { nodes: [], members: [] };
+
+    if (selectedNodes.length === 0 || steps < 1 || spacing <= 0) {
+        return result;
+    }
+
+    const axisMagnitude = magnitude(axis);
+    if (axisMagnitude <= Number.EPSILON) {
+        return result;
+    }
+
+    const existingNodeIds = new Set<string>(options?.existingNodeIds ?? selectedNodes.map((node) => node.id));
+    const existingMemberIds = new Set<string>(options?.existingMemberIds ?? selectedMembers.map((member) => member.id));
+    const cloneNodeRestraints = options?.cloneNodeRestraints ?? false;
 
     // Normalize and scale the axis vector
     const direction = scaleVector(normalize(axis), spacing);
@@ -244,13 +281,14 @@ export function extrudeGeometry(
         const offset = scaleVector(direction, step);
 
         selectedNodes.forEach(node => {
-            const newNodeId = `${node.id}_ext${step}`;
+            const baseNodeId = `${node.id}_ext${step}`;
+            const newNodeId = makeUniqueId(baseNodeId, existingNodeIds);
             const newNode: Node = {
                 id: newNodeId,
                 x: node.x + offset.x,
                 y: node.y + offset.y,
                 z: node.z + offset.z,
-                restraints: undefined // Cloned nodes typically don't have restraints
+                restraints: cloneNodeRestraints ? node.restraints : undefined
             };
             result.nodes.push(newNode);
 
@@ -268,14 +306,13 @@ export function extrudeGeometry(
             const endIds = nodeIdMap.get(member.endNodeId);
 
             if (startIds && endIds && startIds[step] && endIds[step]) {
+                const baseMemberId = `${member.id}_ext${step}`;
+                const newMemberId = makeUniqueId(baseMemberId, existingMemberIds);
                 const newMember: Member = {
-                    id: `${member.id}_ext${step}`,
+                    ...member,
+                    id: newMemberId,
                     startNodeId: startIds[step],
-                    endNodeId: endIds[step],
-                    sectionId: member.sectionId,
-                    E: member.E,
-                    A: member.A,
-                    I: member.I
+                    endNodeId: endIds[step]
                 };
                 result.members.push(newMember);
             }
@@ -288,11 +325,21 @@ export function extrudeGeometry(
             const ids = nodeIdMap.get(node.id);
             if (ids) {
                 for (let step = 0; step < steps; step++) {
+                    const baseLinkId = `link_${node.id}_${step}`;
+                    const linkMemberId = makeUniqueId(baseLinkId, existingMemberIds);
                     const linkMember: Member = {
-                        id: `link_${node.id}_${step}`,
+                        id: linkMemberId,
                         startNodeId: ids[step],
                         endNodeId: ids[step + 1],
-                        sectionId: selectedMembers[0]?.sectionId || 'default'
+                        sectionId: options?.linkSectionId || selectedMembers[0]?.sectionId || 'Default',
+                        E: selectedMembers[0]?.E,
+                        A: selectedMembers[0]?.A,
+                        I: selectedMembers[0]?.I,
+                        Iy: selectedMembers[0]?.Iy,
+                        Iz: selectedMembers[0]?.Iz,
+                        J: selectedMembers[0]?.J,
+                        G: selectedMembers[0]?.G,
+                        rho: selectedMembers[0]?.rho
                     };
                     result.members.push(linkMember);
                 }
@@ -312,16 +359,30 @@ export interface RotateCopyResult {
     members: Member[];
 }
 
+export interface RotateCopyOptions {
+    existingNodeIds?: Set<string>;
+    existingMemberIds?: Set<string>;
+    /** Connect adjacent copies with members (spokes) */
+    linkSteps?: boolean;
+    /** Also connect last copy back to first copy, forming a closed ring */
+    closeLoop?: boolean;
+    /** Section ID for link/ring members */
+    linkSectionId?: string;
+}
+
 /**
- * Clone and rotate selection around an axis
- * 
- * @param selectedNodes - Nodes to rotate
- * @param selectedMembers - Members to rotate
- * @param axis - Axis of rotation (e.g., {x:0, y:0, z:1} for Z-axis)
- * @param center - Center point for rotation
- * @param angleStep - Angle between each copy (radians)
- * @param totalSteps - Number of copies to create
- * @param includeOriginal - Whether to include the original in the result
+ * Clone and rotate selection around an axis.
+ * Creates `totalSteps` copies at angles angleStep, 2*angleStep, …, totalSteps*angleStep.
+ * Uses collision-safe unique IDs and clones all member properties.
+ *
+ * @param selectedNodes   - Nodes to rotate
+ * @param selectedMembers - Members to rotate (fully cloned including all properties)
+ * @param axis            - Axis of rotation (e.g., {x:0,y:1,z:0} for Y-axis)
+ * @param center          - Centre point for rotation
+ * @param angleStep       - Angle between each copy (radians)
+ * @param totalSteps      - Number of copies to create (original NOT duplicated)
+ * @param includeOriginal - Reserved for API compatibility (not used, original never duplicated)
+ * @param options         - Collision safety, linkSteps, closeLoop
  */
 export function rotateCopy(
     selectedNodes: Node[],
@@ -330,72 +391,106 @@ export function rotateCopy(
     center: Vector3,
     angleStep: number,
     totalSteps: number,
-    includeOriginal: boolean = false
+    includeOriginal: boolean = false,
+    options?: RotateCopyOptions
 ): RotateCopyResult {
     const result: RotateCopyResult = { nodes: [], members: [] };
 
-    // Map from original node ID to array of rotated node IDs
-    const nodeIdMap = new Map<string, string[]>();
+    if (selectedNodes.length === 0 || totalSteps < 1 || Math.abs(angleStep) < 1e-12) {
+        return result;
+    }
 
-    // Initialize mapping
-    selectedNodes.forEach(node => {
-        nodeIdMap.set(node.id, includeOriginal ? [node.id] : []);
+    const normAxis = normalize(axis);
+    if (magnitude(normAxis) < 1e-12) return result;
+
+    const existingNodeIds = new Set<string>(
+        options?.existingNodeIds ?? selectedNodes.map((n) => n.id)
+    );
+    const existingMemberIds = new Set<string>(
+        options?.existingMemberIds ?? selectedMembers.map((m) => m.id)
+    );
+    const linkSteps = options?.linkSteps ?? false;
+    const closeLoop = options?.closeLoop ?? false;
+
+    // nodeIdMap: original node ID → [original_id, copy1_id, copy2_id, ..., copyN_id]
+    // Index 0 is always the original (not added to result.nodes).
+    const nodeIdMap = new Map<string, string[]>();
+    selectedNodes.forEach((node) => {
+        nodeIdMap.set(node.id, [node.id]);
     });
 
-    // Start from step 1 (step 0 is original)
-    const startStep = includeOriginal ? 1 : 0;
-    const endStep = includeOriginal ? totalSteps : totalSteps - 1;
-
-    for (let step = startStep; step <= endStep; step++) {
+    // Create N copies
+    for (let step = 1; step <= totalSteps; step++) {
         const angle = angleStep * step;
-        const rotMatrix = rotationMatrixAroundAxis(axis, angle);
+        const rotMatrix = rotationMatrixAroundAxis(normAxis, angle);
 
-        // Rotate nodes
-        selectedNodes.forEach(node => {
-            // Translate to origin (relative to center)
+        selectedNodes.forEach((node) => {
             const relative: Vector3 = {
                 x: node.x - center.x,
                 y: node.y - center.y,
-                z: node.z - center.z
+                z: node.z - center.z,
             };
-
-            // Apply rotation
             const rotated = applyMatrix(rotMatrix, relative);
+            const baseId = `${node.id}_rot${step}`;
+            const newNodeId = makeUniqueId(baseId, existingNodeIds);
 
-            // Translate back
-            const newNodeId = `${node.id}_rot${step}`;
-            const newNode: Node = {
+            result.nodes.push({
                 id: newNodeId,
                 x: rotated.x + center.x,
                 y: rotated.y + center.y,
-                z: rotated.z + center.z
-            };
-            result.nodes.push(newNode);
+                z: rotated.z + center.z,
+            });
 
-            // Update mapping
-            const ids = nodeIdMap.get(node.id) || [];
-            ids.push(newNodeId);
-            nodeIdMap.set(node.id, ids);
+            nodeIdMap.get(node.id)!.push(newNodeId);
         });
 
-        // Clone members
-        selectedMembers.forEach(member => {
+        // Fully clone members at this step
+        selectedMembers.forEach((member) => {
             const startIds = nodeIdMap.get(member.startNodeId);
             const endIds = nodeIdMap.get(member.endNodeId);
 
-            const stepIdx = includeOriginal ? step - 1 : step;
+            if (startIds?.[step] && endIds?.[step]) {
+                const baseId = `${member.id}_rot${step}`;
+                const newMemberId = makeUniqueId(baseId, existingMemberIds);
+                result.members.push({
+                    ...member,
+                    id: newMemberId,
+                    startNodeId: startIds[step],
+                    endNodeId: endIds[step],
+                });
+            }
+        });
+    }
 
-            if (startIds && endIds && startIds[stepIdx] !== undefined && endIds[stepIdx] !== undefined) {
-                const newMember: Member = {
-                    id: `${member.id}_rot${step}`,
-                    startNodeId: startIds[stepIdx],
-                    endNodeId: endIds[stepIdx],
-                    sectionId: member.sectionId,
-                    E: member.E,
-                    A: member.A,
-                    I: member.I
-                };
-                result.members.push(newMember);
+    // Create inter-copy link members (spokes / ring members)
+    if (linkSteps && totalSteps >= 1) {
+        const refMember = selectedMembers[0];
+        const linkProps = {
+            sectionId: options?.linkSectionId ?? refMember?.sectionId ?? 'Default',
+            E: refMember?.E,
+            A: refMember?.A,
+            I: refMember?.I,
+            Iy: refMember?.Iy,
+            Iz: refMember?.Iz,
+            J: refMember?.J,
+            G: refMember?.G,
+            rho: refMember?.rho,
+        };
+
+        selectedNodes.forEach((node) => {
+            const ids = nodeIdMap.get(node.id);
+            if (!ids || ids.length < 2) return;
+
+            // Connect copy1→copy2→…→copyN
+            for (let s = 1; s < ids.length - 1; s++) {
+                const linkId = makeUniqueId(`link_rot_${node.id}_${s}`, existingMemberIds);
+                result.members.push({ id: linkId, startNodeId: ids[s], endNodeId: ids[s + 1], ...linkProps });
+            }
+
+            // Close the ring: copyN → copy1
+            if (closeLoop && ids.length >= 3) {
+                const linkId = makeUniqueId(`link_rot_close_${node.id}`, existingMemberIds);
+                result.members.push({ id: linkId, startNodeId: ids[ids.length - 1], endNodeId: ids[1], ...linkProps });
             }
         });
     }
@@ -665,6 +760,211 @@ export function closestPointOnLine(
 }
 
 // ============================================
+// AUTO-NODING: 3D MEMBER INTERSECTION DETECTION
+// ============================================
+
+export interface IntersectionPoint {
+    /** Intersection position in 3D space */
+    position: Vector3;
+    memberAId: string;
+    memberBId: string;
+    /** Parameter along member A [0, 1] */
+    tA: number;
+    /** Parameter along member B [0, 1] */
+    tB: number;
+}
+
+export interface AutoNodeResult {
+    newNodes: Node[];
+    newMembers: Member[];
+    /** IDs of original members replaced by sub-segments */
+    deletedMemberIds: string[];
+}
+
+/**
+ * Compute the closest points between two 3D finite line segments A=(a0,a1) and B=(b0,b1).
+ * Returns null when segments are parallel/degenerate.
+ * Algorithm: Dan Sunday, "Distance between 3D lines & segments".
+ */
+function segmentSegmentClosestPoints(
+    a0: Vector3, a1: Vector3,
+    b0: Vector3, b1: Vector3
+): { pA: Vector3; pB: Vector3; tA: number; tB: number; dist: number } | null {
+    const SMALL = 1e-10;
+    const u = subtractVectors(a1, a0);
+    const v = subtractVectors(b1, b0);
+    const w = subtractVectors(a0, b0);
+
+    const a = dotProduct(u, u);
+    const b = dotProduct(u, v);
+    const c = dotProduct(v, v);
+    const d = dotProduct(u, w);
+    const e = dotProduct(v, w);
+    const denom = a * c - b * b;
+
+    if (denom < SMALL) return null; // Parallel
+
+    let sN = b * e - c * d;
+    let sD = denom;
+    let tN = a * e - b * d;
+    let tD = denom;
+
+    // Clamp s to [0, 1]
+    if (sN < 0.0) { sN = 0.0; tN = e; tD = c; }
+    else if (sN > sD) { sN = sD; tN = e + b; tD = c; }
+
+    // Clamp t to [0, 1]
+    if (tN < 0.0) {
+        tN = 0.0;
+        sN = Math.max(0.0, Math.min(sD, -d));
+    } else if (tN > tD) {
+        tN = tD;
+        sN = Math.max(0.0, Math.min(sD, -d + b));
+    }
+
+    const sC = Math.abs(sN) < SMALL ? 0.0 : sN / sD;
+    const tC = Math.abs(tN) < SMALL ? 0.0 : tN / tD;
+
+    const pA = addVectors(a0, scaleVector(u, sC));
+    const pB = addVectors(b0, scaleVector(v, tC));
+    return { pA, pB, tA: sC, tB: tC, dist: magnitude(subtractVectors(pB, pA)) };
+}
+
+/**
+ * Find all interior intersection points between member segments.
+ * Parallel segments and members sharing an endpoint are skipped.
+ *
+ * @param members   - Members to check (must be 3D segments)
+ * @param nodes     - Node map for coordinate lookup
+ * @param tolerance - Closest-point distance that counts as intersection (m)
+ */
+export function findMemberIntersections(
+    members: Member[],
+    nodes: Map<string, Node>,
+    tolerance: number = 0.01
+): IntersectionPoint[] {
+    const EDGE = 1e-4; // Avoid flagging shared endpoints as intersections
+    const intersections: IntersectionPoint[] = [];
+
+    for (let i = 0; i < members.length; i++) {
+        const mA = members[i];
+        const nA0 = nodes.get(mA.startNodeId);
+        const nA1 = nodes.get(mA.endNodeId);
+        if (!nA0 || !nA1) continue;
+        const va0: Vector3 = { x: nA0.x, y: nA0.y, z: nA0.z };
+        const va1: Vector3 = { x: nA1.x, y: nA1.y, z: nA1.z };
+
+        for (let j = i + 1; j < members.length; j++) {
+            const mB = members[j];
+
+            // Skip members already sharing a node (they meet at an endpoint, not an interior crossing)
+            if (
+                mA.startNodeId === mB.startNodeId || mA.startNodeId === mB.endNodeId ||
+                mA.endNodeId === mB.startNodeId  || mA.endNodeId === mB.endNodeId
+            ) continue;
+
+            const nB0 = nodes.get(mB.startNodeId);
+            const nB1 = nodes.get(mB.endNodeId);
+            if (!nB0 || !nB1) continue;
+            const vb0: Vector3 = { x: nB0.x, y: nB0.y, z: nB0.z };
+            const vb1: Vector3 = { x: nB1.x, y: nB1.y, z: nB1.z };
+
+            const closest = segmentSegmentClosestPoints(va0, va1, vb0, vb1);
+            if (!closest) continue;
+
+            if (
+                closest.dist <= tolerance &&
+                closest.tA > EDGE && closest.tA < 1.0 - EDGE &&
+                closest.tB > EDGE && closest.tB < 1.0 - EDGE
+            ) {
+                // Midpoint as the shared intersection node position
+                intersections.push({
+                    position: scaleVector(addVectors(closest.pA, closest.pB), 0.5),
+                    memberAId: mA.id,
+                    memberBId: mB.id,
+                    tA: closest.tA,
+                    tB: closest.tB,
+                });
+            }
+        }
+    }
+    return intersections;
+}
+
+/**
+ * Auto-node intersecting members: detect interior crossings, inject a shared node,
+ * split both members, and return all new/deleted entities.
+ *
+ * The caller must remove `deletedMemberIds` from the store and add `newNodes` + `newMembers`.
+ */
+export function autoNodeIntersections(
+    members: Member[],
+    nodes: Map<string, Node>,
+    options?: {
+        tolerance?: number;
+        existingNodeIds?: Set<string>;
+        existingMemberIds?: Set<string>;
+    }
+): AutoNodeResult {
+    const tolerance = options?.tolerance ?? 0.01;
+    const existingNodeIds = new Set<string>(options?.existingNodeIds ?? [...nodes.keys()]);
+    const existingMemberIds = new Set<string>(options?.existingMemberIds ?? members.map((m) => m.id));
+
+    const result: AutoNodeResult = { newNodes: [], newMembers: [], deletedMemberIds: [] };
+
+    const intersections = findMemberIntersections(members, nodes, tolerance);
+    if (intersections.length === 0) return result;
+
+    // For each intersection, create (or reuse) a shared node, then record splits on each member
+    type SplitPoint = { t: number; nodeId: string };
+    const splitsByMember = new Map<string, SplitPoint[]>();
+
+    for (const ix of intersections) {
+        // Check if we already created a node near this position
+        let sharedNodeId: string | undefined;
+        for (const n of result.newNodes) {
+            const p: Vector3 = { x: n.x, y: n.y, z: n.z };
+            if (magnitude(subtractVectors(p, ix.position)) < tolerance) {
+                sharedNodeId = n.id;
+                break;
+            }
+        }
+        if (!sharedNodeId) {
+            const baseId = `IX${result.newNodes.length + 1}`;
+            sharedNodeId = makeUniqueId(baseId, existingNodeIds);
+            result.newNodes.push({ id: sharedNodeId, x: ix.position.x, y: ix.position.y, z: ix.position.z });
+        }
+
+        for (const [memberId, t] of [[ix.memberAId, ix.tA], [ix.memberBId, ix.tB]] as [string, number][]) {
+            if (!splitsByMember.has(memberId)) splitsByMember.set(memberId, []);
+            splitsByMember.get(memberId)!.push({ t, nodeId: sharedNodeId });
+        }
+    }
+
+    const memberMap = new Map<string, Member>(members.map((m) => [m.id, m]));
+
+    for (const [memberId, splits] of splitsByMember) {
+        const member = memberMap.get(memberId);
+        if (!member) continue;
+
+        // Sort splits by parameter t ascending
+        const sorted = [...splits].sort((a, b) => a.t - b.t);
+        const chain = [member.startNodeId, ...sorted.map((s) => s.nodeId), member.endNodeId];
+
+        for (let i = 0; i < chain.length - 1; i++) {
+            const newId = makeUniqueId(`${memberId}_s${i}`, existingMemberIds);
+            result.newMembers.push({ ...member, id: newId, startNodeId: chain[i], endNodeId: chain[i + 1] });
+        }
+
+        if (!result.deletedMemberIds.includes(memberId)) {
+            result.deletedMemberIds.push(memberId);
+        }
+    }
+
+    return result;
+}
+
+// ============================================
 // GEOMETRY ENGINE CLASS
 // ============================================
 
@@ -725,6 +1025,8 @@ export class GeometryEngine {
     rotateCopy = rotateCopy;
     mirror = mirror;
     splitMember = splitMember;
+    findIntersections = findMemberIntersections;
+    autoNode = autoNodeIntersections;
 }
 
 export default GeometryEngine;

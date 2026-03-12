@@ -231,7 +231,7 @@ function DragPreview({ position, item }: DragPreviewProps): JSX.Element {
 // Draggable Component
 // ============================================================================
 
-/* eslint-disable react-hooks/refs */
+ 
 export function Draggable({
   id,
   type,

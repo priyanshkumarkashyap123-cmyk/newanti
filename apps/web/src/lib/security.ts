@@ -519,6 +519,6 @@ export function clearSensitiveString(str: string): void {
   // For truly sensitive data, avoid storing in strings at all
   
   // The best we can do is set references to null and hope GC cleans up
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   str = '';
 }

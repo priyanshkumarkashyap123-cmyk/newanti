@@ -331,7 +331,7 @@ export function useAnalysisExecution(
         success: boolean;
         displacements?: Record<string, NodeDisplacementResult | number[]>;
         reactions?: Record<string, number[]>;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         memberForces?: Record<string, any>;
         plateResults?: Record<string, PlateResult>;
         equilibriumCheck?: {
@@ -761,7 +761,7 @@ export function useAnalysisExecution(
           };
 
           // ── Parse member forces ──
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const membersDict: Record<string, any> = {};
           const memberForcesMap = wasmResult.member_forces;
           for (const [elemId, forces] of mapEntries(memberForcesMap)) {
@@ -1108,7 +1108,7 @@ export function useAnalysisExecution(
         // Parse member forces
         if (result.memberForces) {
           Object.entries(result.memberForces).forEach(([memberId, forces]) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const f = forces as Record<string, any>;  // Solver output has variable property naming
             const getMaxAbs = (arr: number[] | undefined): number => {
               if (!arr || arr.length === 0) return 0;
@@ -1152,7 +1152,7 @@ export function useAnalysisExecution(
           });
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         setAnalysisResults({
           displacements: displacementsMap, reactions: reactionsMap, memberForces: memberForcesStoreMap,
           plateResults: result.plateResults ?? {},

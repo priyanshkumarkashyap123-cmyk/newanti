@@ -27,7 +27,7 @@ export function useDocumentTitle(
         document.title = saved;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 }
 

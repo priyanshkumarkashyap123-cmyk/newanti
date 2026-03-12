@@ -106,6 +106,89 @@ export interface LoadCombination {
   factors: { loadCaseId: string; factor: number }[];
 }
 
+export type PropertyAssignmentScopeMode =
+  | "selected"
+  | "view"
+  | "cursor"
+  | "group"
+  | "manual_range";
+
+export type MaterialFamily =
+  | "steel"
+  | "concrete"
+  | "composite"
+  | "timber"
+  | "custom";
+
+export interface PropertyReductionFactors {
+  axial?: number; // EA multiplier (0-1)
+  shearY?: number; // GAy multiplier (0-1)
+  shearZ?: number; // GAz multiplier (0-1)
+  torsion?: number; // GJ multiplier (0-1)
+  bendingY?: number; // EIy multiplier (0-1)
+  bendingZ?: number; // EIz multiplier (0-1)
+}
+
+export interface SectionMechanics {
+  // SI family — keep units explicit in names
+  area_m2: number;
+  iyy_m4: number;
+  izz_m4: number;
+  j_m4: number;
+  ay_m2?: number;
+  az_m2?: number;
+  zy_m3?: number;
+  zz_m3?: number;
+  zpy_m3?: number;
+  zpz_m3?: number;
+  ry_m?: number;
+  rz_m?: number;
+}
+
+export interface PropertyAssignmentPayload {
+  id: string;
+  name: string;
+  sectionType: SectionType;
+  dimensions: SectionDimensions;
+  mechanics: SectionMechanics;
+  material: {
+    id: string;
+    family: MaterialFamily;
+    E_kN_m2: number;
+    nu: number;
+    G_kN_m2?: number; // If omitted, derive as E/(2(1+nu))
+    rho_kg_m3?: number;
+    fy_mpa?: number;
+    fck_mpa?: number;
+  };
+  behavior?: {
+    tensionOnly?: boolean;
+    compressionOnly?: boolean;
+  };
+  reductionFactors?: PropertyReductionFactors;
+  orientation?: {
+    betaAngleDeg?: number;
+  };
+  offsets?: {
+    startGlobal_m?: { x: number; y: number; z: number };
+    endGlobal_m?: { x: number; y: number; z: number };
+    startLocal_m?: { x: number; y: number; z: number };
+    endLocal_m?: { x: number; y: number; z: number };
+  };
+  assignment: {
+    mode: PropertyAssignmentScopeMode;
+    memberIds?: string[];
+    groupIds?: string[];
+    manualRange?: string; // e.g. "1 TO 50"
+  };
+  source?: "database" | "computed" | "user";
+  codeContext?: {
+    designCode?: string;
+    steelCode?: string;
+    concreteCode?: string;
+  };
+}
+
 // Floor / Area Load (distributed to beams via yield-line method at analysis time)
 export interface FloorLoad {
   id: string;
@@ -202,6 +285,10 @@ export interface Member {
   endNodeId: string;
   sectionId?: string; // Made optional with default 'Default'
 
+  // Property assignment binding (Phase B)
+  propertyAssignmentId?: string; // Explicit binding to PropertyAssignmentPayload.id
+  groupId?: string;              // Group-level property resolution
+
   // Section geometry for 3D rendering
   sectionType?: SectionType;
   dimensions?: SectionDimensions;
@@ -237,6 +324,16 @@ export interface Member {
   startOffset?: { x: number; y: number; z: number };
   endOffset?: { x: number; y: number; z: number };
   betaAngle?: number; // Rotation angle in degrees
+}
+
+// ─── Member Groups ──────────────────────────────────────────────────────────
+
+export interface MemberGroup {
+  id: string;
+  name: string;
+  memberIds: string[];
+  propertyAssignmentId?: string; // Group-level property binding
+  color?: string;                // UI color for visualization
 }
 
 // Plate/Shell element (quadrilateral)
@@ -372,6 +469,7 @@ export interface CivilResult {
 
 // Saved project data structure (for localStorage / cloud persistence)
 export interface SavedProjectData {
+  schema_version?: number;
   projectInfo: ProjectInfo;
   nodes: [string, Node][];
   members: [string, Member][];
@@ -379,7 +477,24 @@ export interface SavedProjectData {
   memberLoads: MemberLoad[];
   loadCases?: LoadCase[];
   loadCombinations?: LoadCombination[];
+  propertyAssignments?: PropertyAssignmentPayload[];
+  memberGroups?: MemberGroup[];
   plates?: [string, Plate][];
   floorLoads?: FloorLoad[];
   savedAt: string;
+}
+
+// Geometry operation contracts
+export interface TranslationalRepeatRequest {
+  nodeIds?: string[];
+  memberIds?: string[];
+  axis: { x: number; y: number; z: number };
+  spacing_m: number;
+  steps: number;
+  linkSteps: boolean;
+}
+
+export interface TranslationalRepeatResult {
+  createdNodeIds: string[];
+  createdMemberIds: string[];
 }

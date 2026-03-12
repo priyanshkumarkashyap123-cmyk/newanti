@@ -594,7 +594,7 @@ export function ResponsiveProvider({ children }: { children: ReactNode }) {
       ...touch,
       safeAreaInsets,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [
       viewport.width, viewport.height, viewport.breakpoint,
       viewport.isMobile, viewport.isTablet, viewport.isDesktop,

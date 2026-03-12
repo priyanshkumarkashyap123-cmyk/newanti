@@ -19,12 +19,15 @@
 // ============================================================================
 // CONSTANTS WITH MAXIMUM PRECISION
 // ============================================================================
-
 export const ENGINEERING_CONSTANTS = {
   // Mathematical constants
+  // eslint-disable-next-line no-loss-of-precision
   PI: 3.141592653589793238462643383279502884197,
+  // eslint-disable-next-line no-loss-of-precision
   E: 2.718281828459045235360287471352662497757,
+  // eslint-disable-next-line no-loss-of-precision
   SQRT2: 1.414213562373095048801688724209698078569,
+  // eslint-disable-next-line no-loss-of-precision
   SQRT3: 1.732050807568877293527446341505872366942,
   
   // Gravity constants

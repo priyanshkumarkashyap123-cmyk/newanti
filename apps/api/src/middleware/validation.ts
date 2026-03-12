@@ -75,6 +75,204 @@ const memberSchema = z.object({
     path: ["endNodeId"]
 });
 
+const propertyAssignmentScopeSchema = z.object({
+    mode: z.enum(['selected', 'view', 'cursor', 'group', 'manual_range']),
+    memberIds: z.array(z.union([z.string(), z.number()]).transform(String)).optional().default([]),
+    groupIds: z.array(z.string().min(1)).optional().default([]),
+    manualRange: z.string().min(1).optional(),
+});
+
+const sectionMechanicsSchema = z.object({
+    area_m2: z.number().positive(),
+    iyy_m4: z.number().positive(),
+    izz_m4: z.number().positive(),
+    j_m4: z.number().positive(),
+    ay_m2: z.number().positive().optional(),
+    az_m2: z.number().positive().optional(),
+    zy_m3: z.number().positive().optional(),
+    zz_m3: z.number().positive().optional(),
+    zpy_m3: z.number().positive().optional(),
+    zpz_m3: z.number().positive().optional(),
+    ry_m: z.number().positive().optional(),
+    rz_m: z.number().positive().optional(),
+});
+
+const propertyReductionFactorsSchema = z.object({
+    axial: z.number().min(0).max(1).optional(),
+    shearY: z.number().min(0).max(1).optional(),
+    shearZ: z.number().min(0).max(1).optional(),
+    torsion: z.number().min(0).max(1).optional(),
+    bendingY: z.number().min(0).max(1).optional(),
+    bendingZ: z.number().min(0).max(1).optional(),
+});
+
+const offsetVectorSchema = z.object({
+    x: z.number().finite(),
+    y: z.number().finite(),
+    z: z.number().finite(),
+});
+
+const propertyAssignmentSchema = z.object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    name: z.string().min(1),
+    sectionType: z.enum([
+        'I-BEAM', 'TUBE', 'L-ANGLE', 'RECTANGLE', 'CIRCLE', 'C-CHANNEL', 'T-SECTION', 'DOUBLE-ANGLE', 'PIPE', 'TAPERED', 'BUILT-UP',
+    ]),
+    dimensions: z.record(z.number().finite()).optional().default({}),
+    mechanics: sectionMechanicsSchema,
+    material: z.object({
+        id: z.union([z.string(), z.number()]).transform(String),
+        family: z.enum(['steel', 'concrete', 'composite', 'timber', 'custom']),
+        E_kN_m2: z.number().positive(),
+        nu: z.number().positive().lt(0.5),
+        G_kN_m2: z.number().positive().optional(),
+        rho_kg_m3: z.number().positive().optional(),
+        fy_mpa: z.number().positive().optional(),
+        fck_mpa: z.number().positive().optional(),
+    }),
+    behavior: z.object({
+        tensionOnly: z.boolean().optional().default(false),
+        compressionOnly: z.boolean().optional().default(false),
+    }).optional(),
+    reductionFactors: propertyReductionFactorsSchema.optional(),
+    orientation: z.object({
+        betaAngleDeg: z.number().finite().optional().default(0),
+    }).optional(),
+    offsets: z.object({
+        startGlobal_m: offsetVectorSchema.optional(),
+        endGlobal_m: offsetVectorSchema.optional(),
+        startLocal_m: offsetVectorSchema.optional(),
+        endLocal_m: offsetVectorSchema.optional(),
+    }).optional(),
+    assignment: propertyAssignmentScopeSchema,
+    source: z.enum(['database', 'computed', 'user']).optional().default('user'),
+    codeContext: z.object({
+        designCode: z.string().optional(),
+        steelCode: z.string().optional(),
+        concreteCode: z.string().optional(),
+    }).optional(),
+}).superRefine((payload, ctx) => {
+    if (payload.behavior?.tensionOnly && payload.behavior?.compressionOnly) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'tensionOnly and compressionOnly cannot both be true',
+            path: ['behavior'],
+        });
+    }
+});
+
+// ─── Member Group Schema ────────────────────────────────────────────────────
+
+const memberGroupSchema = z.object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    name: z.string().min(1),
+    memberIds: z.array(z.union([z.string(), z.number()]).transform(String)),
+    propertyAssignmentId: z.union([z.string(), z.number()]).transform(String).optional(),
+    color: z.string().optional(),
+});
+
+// ─── Member Load Schemas ────────────────────────────────────────────────────
+
+const memberLoadDirectionSchema = z.enum([
+    'local_x', 'local_y', 'local_z',
+    'global_x', 'global_y', 'global_z', 'axial',
+]);
+
+const memberLoadSchema = z.object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    memberId: z.union([z.string(), z.number()]).transform(String),
+    type: z.enum(['UDL', 'UVL', 'point', 'moment']),
+    w1: z.number().finite().optional(),
+    w2: z.number().finite().optional(),
+    P: z.number().finite().optional(),
+    M: z.number().finite().optional(),
+    a: z.number().min(0).max(1).optional(),
+    direction: memberLoadDirectionSchema,
+    startPos: z.number().min(0).max(1).optional().default(0),
+    endPos: z.number().min(0).max(1).optional().default(1),
+});
+
+// ─── Floor Load Schema ──────────────────────────────────────────────────────
+
+const floorLoadSchema = z.object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    pressure: z.number().finite(),
+    yLevel: z.number().finite(),
+    xMin: z.number().finite(),
+    xMax: z.number().finite(),
+    zMin: z.number().finite(),
+    zMax: z.number().finite(),
+    distributionOverride: z.enum(['one_way', 'two_way_triangular', 'two_way_trapezoidal']).optional(),
+    loadCase: z.string().optional(),
+});
+
+// ─── Load Case & Combination Schemas ────────────────────────────────────────
+
+const loadCaseSchema = z.object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    name: z.string().min(1),
+    type: z.enum(['dead', 'live', 'wind', 'seismic', 'snow', 'temperature', 'self_weight', 'custom']),
+    loads: z.array(z.object({
+        id: z.string(),
+        nodeId: z.string(),
+        fx: z.number().finite().optional().default(0),
+        fy: z.number().finite().optional().default(0),
+        fz: z.number().finite().optional().default(0),
+        mx: z.number().finite().optional().default(0),
+        my: z.number().finite().optional().default(0),
+        mz: z.number().finite().optional().default(0),
+    })).optional().default([]),
+    memberLoads: z.array(memberLoadSchema).optional().default([]),
+    selfWeight: z.boolean().optional(),
+    factor: z.number().finite().optional().default(1.0),
+});
+
+const loadCombinationSchema = z.object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    name: z.string().min(1),
+    code: z.string().optional(),
+    factors: z.array(z.object({
+        loadCaseId: z.string(),
+        factor: z.number().finite(),
+    })),
+}).superRefine((combo, ctx) => {
+    // IS 1893 Cl. 6.3.2: Wind and seismic must not appear simultaneously
+    // This requires load case type lookup, deferred to analysis route handler
+});
+
+// ─── Seismic Profile Schema ─────────────────────────────────────────────────
+
+export const seismicProfileSchema = z.object({
+    code: z.enum(['IS_1893', 'ASCE_7', 'EC8']).optional().default('IS_1893'),
+    zone: z.enum(['II', 'III', 'IV', 'V']),
+    soilType: z.enum(['hard', 'medium', 'soft']),
+    importanceFactor: z.number().positive(),
+    responseReduction: z.number().positive(),
+    buildingHeight_m: z.number().positive(),
+    buildingType: z.enum(['rc_frame', 'steel_frame', 'masonry', 'infill']).optional().default('rc_frame'),
+    baseDimension_m: z.number().positive().optional(),
+    storyWeights: z.array(z.object({
+        storyId: z.string(),
+        height_m: z.number().positive(),
+        weight_kN: z.number().positive(),
+    })).optional(),
+});
+
+// ─── Wind Profile Schema ────────────────────────────────────────────────────
+
+export const windProfileSchema = z.object({
+    code: z.enum(['IS_875_3', 'ASCE_7', 'EC1']).optional().default('IS_875_3'),
+    basicWindSpeed_m_s: z.number().positive(),
+    terrainCategory: z.number().int().min(1).max(4),
+    buildingClass: z.enum(['A', 'B', 'C']).optional().default('B'),
+    topography: z.enum(['flat', 'hill', 'ridge', 'cliff']).optional().default('flat'),
+    riskCoefficient: z.number().positive().optional().default(1.0),
+    heightPressures: z.array(z.object({
+        height_m: z.number().nonnegative(),
+        pressure_kN_m2: z.number().finite(),
+    })).optional(),
+});
+
 const loadSchema = z.object({
     nodeId: z.union([z.string(), z.number()]).transform(String),
     fx: z.number().finite().optional().default(0),
@@ -86,13 +284,40 @@ const loadSchema = z.object({
 });
 
 export const analyzeRequestSchema = z.object({
+    schema_version: z.number().int().optional().default(2),
     nodes: z.array(nodeSchema).min(2, 'At least 2 nodes are required').max(50000, 'Maximum 50,000 nodes allowed'),
     members: z.array(memberSchema).min(1, 'At least 1 member is required').max(100000, 'Maximum 100,000 members allowed'),
     loads: z.array(loadSchema).max(100000, 'Maximum 100,000 loads allowed').optional().default([]),
+    memberLoads: z.array(memberLoadSchema).max(100000, 'Maximum 100,000 member loads allowed').optional().default([]),
+    floorLoads: z.array(floorLoadSchema).max(10000, 'Maximum 10,000 floor loads allowed').optional().default([]),
+    propertyAssignments: z.array(propertyAssignmentSchema).max(100000, 'Maximum 100,000 property assignments allowed').optional().default([]),
+    memberGroups: z.array(memberGroupSchema).max(10000, 'Maximum 10,000 member groups allowed').optional().default([]),
+    loadCases: z.array(loadCaseSchema).max(500, 'Maximum 500 load cases allowed').optional().default([]),
+    loadCombinations: z.array(loadCombinationSchema).max(5000, 'Maximum 5,000 load combinations allowed').optional().default([]),
+    seismicProfile: seismicProfileSchema.optional(),
+    windProfile: windProfileSchema.optional(),
     dofPerNode: z.number().int().min(1).max(6).optional().default(3),
     options: z.object({
         method: z.enum(['spsolve', 'cg', 'gmres']).optional().default('spsolve'),
+        includeSelfWeight: z.boolean().optional().default(false),
+        pDelta: z.boolean().optional().default(false),
+        pDeltaIterations: z.number().int().min(1).max(50).optional().default(10),
+        pDeltaTolerance: z.number().positive().optional().default(0.001),
     }).optional(),
+}).superRefine((model, ctx) => {
+    const memberIds = new Set(model.members.map((m) => m.id));
+
+    model.propertyAssignments.forEach((assignment, idx) => {
+        assignment.assignment.memberIds.forEach((memberId, midx) => {
+            if (!memberIds.has(memberId)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `Property assignment references unknown memberId: ${memberId}`,
+                    path: ['propertyAssignments', idx, 'assignment', 'memberIds', midx],
+                });
+            }
+        });
+    });
 });
 
 // ============================================

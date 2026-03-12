@@ -28,6 +28,13 @@ export type Category =
  */
 export type SidebarMode = "EXPANDED" | "COLLAPSED" | "HIDDEN";
 
+export type GeometryToolPreset =
+  | "extrude"
+  | "rotate"
+  | "mirror"
+  | "split"
+  | "renumber";
+
 /**
  * Analysis status interface (UI state, not full results — see modelTypes.AnalysisResults)
  */
@@ -320,6 +327,8 @@ interface UIState {
   setDesignCodePreset: (p: string | null) => void;
   designTabPreset: string | null;  // e.g. 'beam', 'column', 'slab' — consumed by concrete design dialog
   setDesignTabPreset: (p: string | null) => void;
+  geometryToolPreset: GeometryToolPreset | null;
+  setGeometryToolPreset: (p: GeometryToolPreset | null) => void;
 
   // Onboarding coordination — only one overlay at a time
   activeOverlay: 'none' | 'onboarding' | 'tour' | 'quickstart';
@@ -508,6 +517,8 @@ export const useUIStore = create<UIState>()(
       setDesignCodePreset: (p) => set({ designCodePreset: p }),
       designTabPreset: null as string | null,
       setDesignTabPreset: (p) => set({ designTabPreset: p }),
+      geometryToolPreset: null as GeometryToolPreset | null,
+      setGeometryToolPreset: (p) => set({ geometryToolPreset: p }),
 
       // ========================================
       // SET CATEGORY - THE "ONE-BY-ONE" LOGIC
@@ -698,6 +709,7 @@ export const useUIStore = create<UIState>()(
           activeStep: "MODELING",
           sidebarMode: "EXPANDED",
           activeTool: "SELECT",
+          geometryToolPreset: null,
           analysisResults: null,
           lastValidation: null,
           notification: null,

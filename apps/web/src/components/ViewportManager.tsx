@@ -552,7 +552,7 @@ export const ViewportManager: FC = () => {
                 type="button"
                 onClick={() => {
                   setWebGpuNoticeDismissed(true);
-                  try { localStorage.setItem('beamlab-webgpu-notice-dismissed', 'true'); } catch {}
+                  try { localStorage.setItem('beamlab-webgpu-notice-dismissed', 'true'); } catch {} // eslint-disable-line no-empty
                 }}
                 className="text-[#9ca3af] hover:text-white"
                 aria-label="Dismiss WebGPU notice"

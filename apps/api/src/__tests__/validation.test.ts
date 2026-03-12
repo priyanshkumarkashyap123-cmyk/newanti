@@ -381,6 +381,112 @@ describe('analyzeRequestSchema', () => {
     });
     expect(r2.success).toBe(false);
   });
+
+  it('accepts valid property assignment payload', () => {
+    const result = analyzeRequestSchema.safeParse({
+      nodes: validNodes,
+      members: validMembers,
+      propertyAssignments: [
+        {
+          id: 'PA-1',
+          name: 'Rect RC Beam Property',
+          sectionType: 'RECTANGLE',
+          dimensions: { rectWidth: 0.3, rectHeight: 0.6 },
+          mechanics: {
+            area_m2: 0.18,
+            iyy_m4: 0.0054,
+            izz_m4: 0.00135,
+            j_m4: 0.0002,
+          },
+          material: {
+            id: 'M25',
+            family: 'concrete',
+            E_kN_m2: 25_000_000,
+            nu: 0.2,
+            fck_mpa: 25,
+          },
+          assignment: {
+            mode: 'selected',
+            memberIds: ['1'],
+          },
+        },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects property assignment with unknown member reference', () => {
+    const result = analyzeRequestSchema.safeParse({
+      nodes: validNodes,
+      members: validMembers,
+      propertyAssignments: [
+        {
+          id: 'PA-2',
+          name: 'Unknown member test',
+          sectionType: 'RECTANGLE',
+          dimensions: { rectWidth: 0.3, rectHeight: 0.6 },
+          mechanics: {
+            area_m2: 0.18,
+            iyy_m4: 0.0054,
+            izz_m4: 0.00135,
+            j_m4: 0.0002,
+          },
+          material: {
+            id: 'M25',
+            family: 'concrete',
+            E_kN_m2: 25_000_000,
+            nu: 0.2,
+          },
+          assignment: {
+            mode: 'selected',
+            memberIds: ['M404'],
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((i) => i.message.includes('unknown memberId'))).toBe(true);
+    }
+  });
+
+  it('rejects contradictory tension/compression-only flags', () => {
+    const result = analyzeRequestSchema.safeParse({
+      nodes: validNodes,
+      members: validMembers,
+      propertyAssignments: [
+        {
+          id: 'PA-3',
+          name: 'Invalid behavior flags',
+          sectionType: 'RECTANGLE',
+          dimensions: { rectWidth: 0.3, rectHeight: 0.6 },
+          mechanics: {
+            area_m2: 0.18,
+            iyy_m4: 0.0054,
+            izz_m4: 0.00135,
+            j_m4: 0.0002,
+          },
+          material: {
+            id: 'M25',
+            family: 'concrete',
+            E_kN_m2: 25_000_000,
+            nu: 0.2,
+          },
+          behavior: {
+            tensionOnly: true,
+            compressionOnly: true,
+          },
+          assignment: {
+            mode: 'selected',
+            memberIds: ['1'],
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
 });
 
 // ============================================

@@ -1910,6 +1910,30 @@ class LayoutSolverV2:
         # Build clause-traceable compliance items (industry-grade output)
         compliance_items = self._build_compliance_items(sol)
 
+        # Space-syntax graph analysis
+        space_syntax_data = None
+        try:
+            from space_syntax import SpaceSyntaxAnalyzer
+            ss = SpaceSyntaxAnalyzer()
+            ss_result = ss.analyze(
+                sol.placements,
+                self.usable_boundary,
+                self.adjacency_map,
+            )
+            space_syntax_data = ss_result.to_dict()
+        except ImportError:
+            pass
+
+        # Structural handoff payload (Phase G)
+        structural_handoff = generate_structural_handoff(
+            sol.placements,
+            self.usable_boundary,
+            self.constraints,
+        )
+
+        # MEP schedule summary (Phase G)
+        mep_schedule = generate_mep_schedule(sol.placements)
+
         return {
             "total_penalty": round(sol.total_penalty, 4),
             "iteration_found": sol.iteration,
@@ -1930,6 +1954,9 @@ class LayoutSolverV2:
             "travel_distances": travel,
             "acoustic_buffers": acoustic_buffers,
             "structural_grid": structural,
+            "space_syntax": space_syntax_data,
+            "structural_handoff": structural_handoff,
+            "mep_schedule": mep_schedule,
             "placements": [
                 {
                     "room_id": p.room.id,

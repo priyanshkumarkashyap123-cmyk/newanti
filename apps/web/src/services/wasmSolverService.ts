@@ -34,12 +34,12 @@ import init, {
 // serde-wasm-bindgen v0.6 serializes Rust HashMap as JavaScript Map,
 // NOT a plain object.  Object.entries() / Object.keys() return []
 // for JS Maps.  Convert them so the rest of the codebase works.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- WASM boundary: Map→Object conversion requires any
+ 
 function jsMapToPlainObject(val: any): Record<string, any> {
   if (val instanceof Map) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const obj: Record<string, any> = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     val.forEach((v: any, k: any) => {
       // Recursively convert nested Maps (e.g. MemberForces with sub-Maps)
       obj[String(k)] = v instanceof Map ? jsMapToPlainObject(v) : v;
@@ -1328,7 +1328,7 @@ export async function validateSolverConsistency(): Promise<ConsistencyReport> {
   // Check member forces (moment at midspan approximated from end moments)
   // The WASM solver returns the full 3D MemberForces struct with forces_i, forces_j, max_*
   // TypeScript typing may differ slightly — eslint-disable since raw WASM result is dynamic
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const mfRaw = wasmResult.member_forces?.M1 as any;
   if (mfRaw) {
     // Try 3D struct fields first, fall back to 2D names

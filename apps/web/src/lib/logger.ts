@@ -33,7 +33,7 @@ interface Logger {
   groupEnd: () => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+ 
 const noop = () => {};
 
 function createLogger(prefix?: string): Logger {

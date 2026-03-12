@@ -53,7 +53,7 @@ const reactionHelper = createColumnHelper<ReactionRow>();
 const forceHelper = createColumnHelper<ForceRow>();
 
 // CSV Export utility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const exportToCSV = (data: any[], filename: string) => {
     if (data.length === 0) return;
 

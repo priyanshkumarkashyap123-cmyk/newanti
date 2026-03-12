@@ -346,7 +346,7 @@ export function pickFields<T extends z.ZodRawShape, K extends keyof T>(
     acc[key as string] = true;
     return acc;
   }, {});
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return schema.pick(mask as any);
 }
 
@@ -361,7 +361,7 @@ export function omitFields<T extends z.ZodRawShape, K extends keyof T>(
     acc[key as string] = true;
     return acc;
   }, {});
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return schema.omit(mask as any);
 }
 

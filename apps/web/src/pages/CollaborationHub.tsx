@@ -154,7 +154,7 @@ const CollaborationHub: React.FC = () => {
     isConnected,
     userId: myId,
     userName: myName,
-    userColor: _myColor, // eslint-disable-line @typescript-eslint/no-unused-vars
+    userColor: _myColor,  
     remoteUsers,
     projectVersion,
   } = useMultiplayer({
