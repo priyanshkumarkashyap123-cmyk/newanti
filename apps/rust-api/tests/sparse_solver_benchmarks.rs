@@ -50,7 +50,7 @@ fn sparse_solver_benchmark_1000_dof() {
     assert!(result.total_time_ms.is_finite());
 
     println!(
-        "[BENCH][1000] strategy={:?} matrix_build_ms={:.3} solve_ms={:.3} total_ms={:.3} iterations={:?} converged={:?} residual={:?} wall_ms={:.3}",
+        "[BENCH][1000] strategy={:?} matrix_build_ms={:.3} solve_ms={:.3} total_ms={:.3} iterations={:?} converged={:?} residual={:?} tol={:?} precond={:?} fallback={:?} fallback_strategy={:?} wall_ms={:.3}",
         result.strategy_used,
         result.matrix_build_time_ms,
         result.solve_time_ms,
@@ -58,6 +58,10 @@ fn sparse_solver_benchmark_1000_dof() {
         result.iteration_count,
         result.converged,
         result.final_residual_norm,
+        result.tolerance_used,
+        result.preconditioner_used,
+        result.fallback_used,
+        result.fallback_strategy,
         elapsed_ms
     );
 }
@@ -84,7 +88,7 @@ fn sparse_solver_benchmark_3000_dof() {
     );
 
     println!(
-        "[BENCH][3000] strategy={:?} matrix_build_ms={:.3} solve_ms={:.3} total_ms={:.3} iterations={:?} converged={:?} residual={:?} wall_ms={:.3}",
+        "[BENCH][3000] strategy={:?} matrix_build_ms={:.3} solve_ms={:.3} total_ms={:.3} iterations={:?} converged={:?} residual={:?} tol={:?} precond={:?} fallback={:?} fallback_strategy={:?} wall_ms={:.3}",
         result.strategy_used,
         result.matrix_build_time_ms,
         result.solve_time_ms,
@@ -92,6 +96,43 @@ fn sparse_solver_benchmark_3000_dof() {
         result.iteration_count,
         result.converged,
         result.final_residual_norm,
+        result.tolerance_used,
+        result.preconditioner_used,
+        result.fallback_used,
+        result.fallback_strategy,
+        elapsed_ms
+    );
+}
+
+#[test]
+#[ignore = "manual benchmark"]
+fn sparse_solver_benchmark_6000_dof() {
+    let solver = SparseSolver::new();
+    let n = 6_000;
+    let (rows, cols, vals, rhs) = build_tridiagonal_spd_coo(n);
+
+    let start = Instant::now();
+    let result = solver
+        .solve_coo(n, &rows, &cols, &vals, &rhs, &[])
+        .expect("6000 DOF solve should succeed");
+    let elapsed_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    assert!(result.solution.iter().all(|v| v.is_finite()));
+    assert!(result.total_time_ms.is_finite());
+
+    println!(
+        "[BENCH][6000] strategy={:?} matrix_build_ms={:.3} solve_ms={:.3} total_ms={:.3} iterations={:?} converged={:?} residual={:?} tol={:?} precond={:?} fallback={:?} fallback_strategy={:?} wall_ms={:.3}",
+        result.strategy_used,
+        result.matrix_build_time_ms,
+        result.solve_time_ms,
+        result.total_time_ms,
+        result.iteration_count,
+        result.converged,
+        result.final_residual_norm,
+        result.tolerance_used,
+        result.preconditioner_used,
+        result.fallback_used,
+        result.fallback_strategy,
         elapsed_ms
     );
 }

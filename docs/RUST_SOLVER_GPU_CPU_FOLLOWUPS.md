@@ -22,16 +22,25 @@ Environment variables:
 - `SPARSE_PCG_TOLERANCE` (default: `1e-10`)
 - `SPARSE_PCG_MAX_ITER_SCALE` (default: `2`) => `max_iter = n * scale`
 - `SPARSE_PCG_PREFER_DOFS` (default: `2500`) => if matrix is sufficiently sparse (density ≤ 1%), prefer PCG route
+- `SPARSE_PCG_SMALL_DOFS_MAX` (default: `2000`) => upper DOF bound for small-model tolerance band
+- `SPARSE_PCG_MEDIUM_DOFS_MAX` (default: `10000`) => upper DOF bound for medium-model tolerance band
+- `SPARSE_PCG_TOL_SMALL` (default: `SPARSE_PCG_TOLERANCE`) => tolerance for small-model PCG
+- `SPARSE_PCG_TOL_MEDIUM` (default: `5e-10`) => tolerance for medium-model PCG
+- `SPARSE_PCG_TOL_LARGE` (default: `1e-9`) => tolerance for large-model PCG
+- `SPARSE_PCG_PRECONDITIONER` (default: `jacobi`) => `jacobi` | `none` | `block_jacobi` (hook)
+- `SPARSE_PCG_ENABLE_FALLBACK_DIRECT` (default: `true`) => fallback to direct sparse route when PCG does not converge
+- `SPARSE_PCG_FALLBACK_DENSE_MAX_DOFS` (default: `6000`) => upper DOF cap for fallback route
 
 ## Next backend optimization steps
 
 1. **Adaptive tolerance policy by model scale**
-   - Small/medium: stricter residual
-   - Very large: looser default + post-check residual gate
+   - ✅ Implemented DOF-banded policy (`small/medium/large`) with env overrides
+   - Next: calibrate final band values against benchmark corpus
 
 2. **Preconditioner upgrade path**
-   - Current: Jacobi (diagonal)
-   - Next: ILU(0) / block-Jacobi option behind feature flag
+   - ✅ Added configurable preconditioner hook (`jacobi`, `none`, `block_jacobi` hook)
+   - Current numerical implementation uses Jacobi-equivalent behavior for `block_jacobi` until block kernel lands
+   - Next: ILU(0)/true block-Jacobi implementation behind feature flag
 
 3. **Sparse reordering before iterative solve**
    - Integrate RCM/AMD policy for difficult sparsity patterns
@@ -80,3 +89,9 @@ Capture and compare:
 - iterations
 - convergence
 - residual norm
+
+Interpretation guidance:
+
+- `converged=true` and low residual: accept PCG route
+- `converged=false` with `fallbackUsed=true`: result served via safe direct fallback; treat as tuning signal
+- Frequent fallback indicates tolerance/preconditioner/reordering adjustments needed before GPU phase
