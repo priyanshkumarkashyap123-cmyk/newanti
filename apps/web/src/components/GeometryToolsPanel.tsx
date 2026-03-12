@@ -22,9 +22,7 @@ import { Label } from './ui/label';
 import { useModelStore, Node, Member } from '../store/model';
 import { useUIStore } from '../store/uiStore';
 import {
-    rotateCopy,
     mirror,
-    degToRad,
     GeometryEngine,
     CoordinateSystem
 } from '../core/geometry_engine';
@@ -53,6 +51,7 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
     const addMembers = useModelStore((s) => s.addMembers);
     const splitMemberById = useModelStore((s) => s.splitMemberById);
     const applyTranslationalRepeat = useModelStore((s) => s.applyTranslationalRepeat);
+    const applyCircularRepeat = useModelStore((s) => s.applyCircularRepeat);
     const geometryToolPreset = useUIStore((s) => s.geometryToolPreset);
     const setGeometryToolPreset = useUIStore((s) => s.setGeometryToolPreset);
 
@@ -70,6 +69,8 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
     const [rotateAxis, setRotateAxis] = useState<'x' | 'y' | 'z'>('z');
     const [rotateAngle, setRotateAngle] = useState(30);
     const [rotateSteps, setRotateSteps] = useState(6);
+    const [rotateLinkSteps, setRotateLinkSteps] = useState(false);
+    const [rotateCloseLoop, setRotateCloseLoop] = useState(false);
     const [rotateCenterX, setRotateCenterX] = useState(0);
     const [rotateCenterY, setRotateCenterY] = useState(0);
     const [rotateCenterZ, setRotateCenterZ] = useState(0);
@@ -169,22 +170,27 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                 break;
             }
             case 'rotate': {
+                const operationNodes = getOperationNodes();
+                if (operationNodes.length === 0) {
+                    alert('Please select at least one node or member to rotate-copy');
+                    return;
+                }
+
                 const axis = {
                     x: rotateAxis === 'x' ? 1 : 0,
                     y: rotateAxis === 'y' ? 1 : 0,
                     z: rotateAxis === 'z' ? 1 : 0
                 };
-                const center = { x: rotateCenterX, y: rotateCenterY, z: rotateCenterZ };
-                const result = rotateCopy(
-                    selectedNodes,
-                    selectedMembers,
+                applyCircularRepeat({
+                    nodeIds: operationNodes.map((node) => node.id),
+                    memberIds: selectedMembers.map((member) => member.id),
                     axis,
-                    center,
-                    degToRad(rotateAngle),
-                    rotateSteps
-                );
-                addNodes(result.nodes);
-                addMembers(result.members);
+                    center_m: { x: rotateCenterX, y: rotateCenterY, z: rotateCenterZ },
+                    angleDeg: rotateAngle,
+                    steps: rotateSteps,
+                    linkSteps: rotateLinkSteps,
+                    closeLoop: rotateCloseLoop
+                });
                 break;
             }
             case 'mirror': {
@@ -407,6 +413,27 @@ export const GeometryToolsPanel: FC<GeometryToolsPanelProps> = ({ isOpen, onClos
                                             onChange={(e) => setRotateCenterZ(parseFloat(e.target.value) || 0)}
                                         />
                                     </div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={rotateLinkSteps}
+                                            onChange={(e) => setRotateLinkSteps(e.target.checked)}
+                                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-600"
+                                        />
+                                        <span className="text-sm text-slate-600 dark:text-slate-300">Link adjacent rotated copies</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={rotateCloseLoop}
+                                            onChange={(e) => setRotateCloseLoop(e.target.checked)}
+                                            disabled={!rotateLinkSteps}
+                                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-violet-600 disabled:opacity-50"
+                                        />
+                                        <span className="text-sm text-slate-600 dark:text-slate-300">Close loop (last copy → first copy)</span>
+                                    </label>
                                 </div>
                             </>
                         )}

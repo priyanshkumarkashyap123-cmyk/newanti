@@ -702,3 +702,209 @@ export interface UserPreferences {
   accessibilityRequired: boolean;
   vastuCompliance: 'strict' | 'moderate' | 'optional' | 'none';
 }
+
+// ============================================
+// SPACE-SYNTAX GRAPH ANALYSIS (Phase C)
+// ============================================
+
+export interface GraphNode {
+  room_id: string;
+  room_type: string;
+  acoustic_zone: string | null;
+  connectivity: number;
+  depth: number;
+  integration: number;
+  control_value: number;
+}
+
+export interface GraphEdge {
+  source: string;
+  target: string;
+  weight: number;
+  is_required_adjacency: boolean;
+}
+
+export interface SpaceSyntaxResult {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  mean_depth: number;
+  max_depth: number;
+  integration_mean: number;
+  integration_variance: number;
+  is_planar: boolean;
+  depth_histogram: Record<string, number>;
+  visibility_penalties: { room_id: string; penalty: number; reason: string }[];
+  circulation_depth_rooms: string[];
+}
+
+// ============================================
+// GA / POPULATION OPTIMIZATION (Phase D)
+// ============================================
+
+export interface GAConfig {
+  population_size: number;
+  max_generations: number;
+  elite_count: number;
+  tournament_size: number;
+  crossover_rate: number;
+  mutation_rate: number;
+}
+
+export interface GAResult {
+  best_fitness: number;
+  fitness_history: number[];
+  converged: boolean;
+  pareto_front_size: number;
+}
+
+// ============================================
+// STRUCTURAL HANDOFF (Phase G)
+// ============================================
+
+export interface WallSegmentHandoff {
+  type: 'vertical' | 'horizontal';
+  x?: number;
+  y?: number;
+  x_start?: number;
+  x_end?: number;
+  y_start?: number;
+  y_end?: number;
+  length_m: number;
+  rooms: string[];
+  load_bearing: boolean;
+}
+
+export interface CantileverRoom {
+  room_id: string;
+  max_overhang_m: number;
+  direction: string;
+  action: string;
+}
+
+export interface SlabPanel {
+  room_id: string;
+  lx_m: number;
+  ly_m: number;
+  ly_lx_ratio: number;
+  slab_type: 'one_way' | 'two_way';
+}
+
+export interface StructuralHandoff {
+  wall_segments: WallSegmentHandoff[];
+  total_shared_walls: number;
+  cantilever_rooms: CantileverRoom[];
+  slab_panels: SlabPanel[];
+  grid_module_m: number;
+}
+
+// ============================================
+// MEP SCHEDULE (Phase G)
+// ============================================
+
+export interface PlumbingSchedule {
+  wet_rooms: { room_id: string; room_type: string; needs_floor_drain: boolean; needs_water_supply: boolean }[];
+  plumbing_stacks: string[][];
+  total_stacks: number;
+}
+
+export interface ElectricalSchedule {
+  power_schedule: { room_id: string; room_type: string; estimated_power_points: number; estimated_lighting_points: number }[];
+  total_power_points: number;
+  total_lighting_points: number;
+}
+
+export interface HVACSchedule {
+  room_loads: { room_id: string; room_type: string; area_sqm: number; estimated_tonnage_tr: number }[];
+  total_tonnage_tr: number;
+  recommended_system: 'split' | 'centralised';
+}
+
+export interface MEPSchedule {
+  plumbing: PlumbingSchedule;
+  electrical: ElectricalSchedule;
+  hvac: HVACSchedule;
+}
+
+// ============================================
+// COMPLIANCE ITEM (Phase E)
+// ============================================
+
+export interface ComplianceItem {
+  domain: string;
+  label: string;
+  passed: boolean;
+  severity: 'critical' | 'warning' | 'info';
+  clause: string;
+  measured_value: number | null;
+  limit_value: number | null;
+  units: string;
+  affected_rooms: string[];
+  remediation: string;
+  evidence_level: 'hard_code_rule' | 'engineering_heuristic';
+}
+
+// ============================================
+// EXTENDED LAYOUT V2 RESPONSE (unified)
+// ============================================
+
+export interface LayoutV2ApiResponse {
+  success: boolean;
+  total_penalty: number;
+  iteration_found: number;
+  total_iterations: number;
+  constraints_met_ratio: number;
+  fsi_analysis: Record<string, unknown>;
+  usable_boundary: { x: number; y: number; width: number; height: number; area_sqm: number };
+  staircase: Record<string, unknown> | null;
+  circulation: Record<string, unknown>;
+  egress: Record<string, unknown>;
+  structural_checks: Record<string, unknown>[];
+  solar_scores: Record<string, unknown>[];
+  fenestration_checks: Record<string, unknown>[];
+  anthropometric_issues: string[];
+  constraints_detail: Record<string, boolean>;
+  compliance_items: ComplianceItem[];
+  placements: PlacementApiResponse[];
+  travel_distances: Record<string, unknown> | null;
+  acoustic_buffers: Record<string, unknown>[] | null;
+  structural_grid: Record<string, unknown> | null;
+  sa_convergence: Record<string, unknown> | null;
+  space_syntax: SpaceSyntaxResult | null;
+  structural_handoff: StructuralHandoff | null;
+  mep_schedule: MEPSchedule | null;
+}
+
+export interface PlacementApiResponse {
+  room_id: string;
+  name: string;
+  type: string;
+  acoustic_zone: string | null;
+  target_area_sqm: number;
+  actual_area_sqm: number;
+  area_deviation_pct: number;
+  position: { x: number; y: number };
+  dimensions: { width: number; height: number };
+  aspect_ratio: number;
+  min_dimension_m: number;
+  width_valid: boolean;
+  aspect_ratio_valid: boolean;
+  plumbing_required: boolean;
+  requires_exterior_wall: boolean;
+}
+
+// ============================================
+// GA OPTIMIZATION RESPONSE
+// ============================================
+
+export interface GAOptimizeResponse {
+  success: boolean;
+  best_fitness: number;
+  fitness_history: number[];
+  converged: boolean;
+  pareto_front_size: number;
+  placements: PlacementApiResponse[];
+  compliance_items: ComplianceItem[];
+  space_syntax: SpaceSyntaxResult | null;
+  structural_handoff: StructuralHandoff | null;
+  mep_schedule: MEPSchedule | null;
+}

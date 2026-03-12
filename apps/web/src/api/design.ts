@@ -265,8 +265,8 @@ async function apiCall<T>(endpoint: string, data: unknown): Promise<T> {
 }
 
 /**
- * Design steel member per IS 800:2007
- * Routes to Python backend's /design/steel endpoint
+ * Design steel member per IS 800:2007 / AISC360.
+ * Routed through Node gateway `/api/design/*` (Rust-first, Python fallback).
  */
 export async function designSteelMember(
     request: SteelDesignRequest
@@ -301,104 +301,133 @@ export async function designSteelMember(
         fu: request.material.fu,
         E: request.material.E ?? 200000
     };
-    const result = await pythonApiCall<{
-        success: boolean;
-        section_class: string;
-        governing_ratio: number;
-        overall_status: string;
-        capacities: { tension_kN: number; compression_kN: number; moment_major_kNm: number; shear_kN: number };
-        checks: Array<{ name: string; clause: string; demand: number; capacity: number; ratio: number; status: string }>;
-    }>('/design/steel', payload);
+    const result = await apiCall<Record<string, unknown>>('/api/design/steel', payload);
+
+    const capacities = (result.capacities as {
+        tension_kN?: number;
+        compression_kN?: number;
+        moment_major_kNm?: number;
+        shear_kN?: number;
+    } | undefined) || {};
+
+    const checksRaw = Array.isArray(result.checks) ? result.checks : [];
+    const rustPassed = typeof result.passed === 'boolean' ? result.passed : undefined;
+    const rustUtil = typeof result.utilization === 'number' ? result.utilization : undefined;
+    const pyStatus = typeof result.overall_status === 'string' ? result.overall_status : undefined;
+
     return {
-        code: 'IS 800:2007',
-        sectionClass: result.section_class,
-        method: 'LRFD',
-        tensionCapacity: result.capacities.tension_kN,
-        compressionCapacity: result.capacities.compression_kN,
-        momentCapacity: result.capacities.moment_major_kNm,
-        shearCapacity: result.capacities.shear_kN,
-        interactionRatio: result.governing_ratio,
-        status: result.overall_status === 'PASS' ? 'PASS' : 'FAIL',
-        checks: result.checks.map(c => ({ name: c.name, clause: c.clause, ratio: c.ratio, status: c.status }))
+        code: request.code === 'AISC360' ? 'AISC 360' : 'IS 800:2007',
+        sectionClass: (result.section_class as string | undefined) || undefined,
+        method: (result.method as string | undefined) || 'LRFD',
+        tensionCapacity: capacities.tension_kN ?? (result.tension_capacity as number | undefined) ?? 0,
+        compressionCapacity: capacities.compression_kN ?? (result.compression_capacity as number | undefined) ?? 0,
+        momentCapacity: capacities.moment_major_kNm ?? (result.moment_capacity as number | undefined) ?? 0,
+        shearCapacity: capacities.shear_kN ?? (result.shear_capacity as number | undefined) ?? 0,
+        interactionRatio:
+            (result.governing_ratio as number | undefined) ??
+            (result.interaction_ratio as number | undefined) ??
+            rustUtil ??
+            0,
+        status:
+            pyStatus
+                ? (pyStatus === 'PASS' ? 'PASS' : 'FAIL')
+                : (rustPassed ? 'PASS' : 'FAIL'),
+        checks: checksRaw.map((c) => {
+            const cc = c as Record<string, unknown>;
+            return {
+                name: String(cc.name || 'check'),
+                clause: typeof cc.clause === 'string' ? cc.clause : undefined,
+                ratio: typeof cc.ratio === 'number' ? cc.ratio : (typeof cc.utilization === 'number' ? cc.utilization : 0),
+                status: typeof cc.status === 'string' ? cc.status : undefined,
+            };
+        }),
     };
 }
 
 /**
- * Design concrete beam per IS 456
- * Delegates to the Python-backed designBeamIS456
+ * Design concrete beam per IS 456 (via Node gateway, Rust-first).
  */
 export async function designConcreteBeam(
     request: ConcreteBeamRequest
 ): Promise<ConcreteBeamResult> {
-    const result = await designBeamIS456({
-        width: request.section.width,
-        depth: request.section.depth,
-        cover: request.section.cover ?? 40,
-        Mu: request.forces.Mu,
-        Vu: request.forces.Vu,
-        fck: request.material.fck,
-        fy: request.material.fy
+    const result = await apiCall<Record<string, unknown>>('/api/design/concrete/beam', {
+        section: request.section,
+        forces: request.forces,
+        material: request.material,
     });
+
+    const tensionSteel = (result.tension_steel as { diameter: number; count: number; area: number } | undefined)
+        || (result.tensionSteel as { diameter: number; count: number; area: number } | undefined)
+        || { diameter: 16, count: 0, area: 0 };
+    const compressionSteel =
+        (result.compression_steel as { diameter: number; count: number; area: number } | null | undefined)
+        ?? (result.compressionSteel as { diameter: number; count: number; area: number } | null | undefined)
+        ?? null;
+    const stirrups = (result.stirrups as { diameter: number; spacing: number } | undefined)
+        || { diameter: 8, spacing: 0 };
+
     return {
-        tensionSteel: result.tension_steel,
-        compressionSteel: result.compression_steel,
-        stirrups: result.stirrups,
-        MuCapacity: result.Mu_capacity,
-        VuCapacity: result.Vu_capacity,
-        status: result.status === 'PASS' ? 'PASS' : 'FAIL',
-        checks: result.checks
+        tensionSteel,
+        compressionSteel,
+        stirrups,
+        MuCapacity: (result.Mu_capacity as number | undefined) ?? (result.MuCapacity as number | undefined) ?? 0,
+        VuCapacity: (result.Vu_capacity as number | undefined) ?? (result.VuCapacity as number | undefined) ?? 0,
+        status:
+            (typeof result.status === 'string' && result.status === 'PASS') || result.passed === true
+                ? 'PASS'
+                : 'FAIL',
+        checks: Array.isArray(result.checks) ? (result.checks as string[]) : [],
     };
 }
 
 /**
- * Design concrete column per IS 456
- * Delegates to the Python-backed designColumnIS456
+ * Design concrete column per IS 456 (via Node gateway, Rust-first).
  */
 export async function designConcreteColumn(
     request: ConcreteColumnRequest
 ): Promise<ConcreteColumnResult> {
-    const result = await designColumnIS456({
-        width: request.section.width,
-        depth: request.section.depth,
-        cover: request.section.cover ?? 40,
-        Pu: request.forces.Pu,
-        Mux: request.forces.Mux,
-        Muy: request.forces.Muy,
-        unsupported_length: request.geometry.unsupportedLength,
-        effective_length_factor: request.geometry.effectiveLengthFactor ?? 1.0,
-        fck: request.material.fck,
-        fy: request.material.fy
+    const result = await apiCall<Record<string, unknown>>('/api/design/concrete/column', {
+        section: request.section,
+        forces: request.forces,
+        geometry: request.geometry,
+        material: request.material,
     });
+
+    const longitudinalSteel =
+        (result.longitudinal_steel as Array<{ diameter: number; count: number; area: number }> | undefined)
+        ?? (result.longitudinalSteel as Array<{ diameter: number; count: number; area: number }> | undefined)
+        ?? [];
+    const ties = (result.ties as { diameter: number; spacing: number } | undefined) || { diameter: 8, spacing: 0 };
+
     return {
-        longitudinalSteel: result.longitudinal_steel,
-        ties: result.ties,
-        PuCapacity: result.Pu_capacity,
-        MuxCapacity: result.Mux_capacity,
-        MuyCapacity: result.Muy_capacity,
-        interactionRatio: result.interaction_ratio,
-        status: result.status === 'PASS' ? 'PASS' : 'FAIL',
-        checks: result.checks
+        longitudinalSteel,
+        ties,
+        PuCapacity: (result.Pu_capacity as number | undefined) ?? (result.PuCapacity as number | undefined) ?? 0,
+        MuxCapacity: (result.Mux_capacity as number | undefined) ?? (result.MuxCapacity as number | undefined) ?? 0,
+        MuyCapacity: (result.Muy_capacity as number | undefined) ?? (result.MuyCapacity as number | undefined) ?? 0,
+        interactionRatio: (result.interaction_ratio as number | undefined) ?? (result.utilization as number | undefined) ?? 0,
+        status:
+            (typeof result.status === 'string' && result.status === 'PASS') || result.passed === true
+                ? 'PASS'
+                : 'FAIL',
+        checks: Array.isArray(result.checks) ? (result.checks as string[]) : [],
     };
 }
 
-/**
- * Design steel connection
- * Routes to Python backend's /design/connection/check endpoint
- */
+/** Design steel connection via Node gateway (Rust-first, Python fallback). */
 export async function designConnection(
     request: ConnectionRequest
 ): Promise<ConnectionResult> {
-    return pythonApiCall<ConnectionResult>('/design/connection/check', request);
+    return apiCall<ConnectionResult>('/api/design/connection', request);
 }
 
 /**
- * Design foundation
- * Routes to Python backend's /design/foundation/check endpoint
+ * Design foundation via Node gateway (currently Python-backed behind gateway).
  */
 export async function designFoundation(
     request: FootingRequest
 ): Promise<FootingResult> {
-    return pythonApiCall<FootingResult>('/design/foundation/check', request);
+    return apiCall<FootingResult>('/api/design/foundation', request);
 }
 
 /**
@@ -410,7 +439,6 @@ export async function getDesignCodes(): Promise<{
     connections: Array<{ code: string; name: string; country: string }>;
     foundations: Array<{ code: string; name: string; country: string }>;
 }> {
-    const normalizedBase = PYTHON_API.endsWith('/') ? PYTHON_API.slice(0, -1) : PYTHON_API;
     const { data } = await apiClient.get<{
         success: boolean;
         codes: {
@@ -419,7 +447,7 @@ export async function getDesignCodes(): Promise<{
             connections: Array<{ code: string; name: string; country: string }>;
             foundations: Array<{ code: string; name: string; country: string }>;
         }
-    }>(`${normalizedBase}/design/codes`);
+    }>(`${API_CONFIG.baseUrl}/api/design/codes`);
 
     return data.codes;
 }

@@ -306,7 +306,9 @@ export const analyzeRequestSchema = z.object({
     }).optional(),
 }).superRefine((model, ctx) => {
     const memberIds = new Set(model.members.map((m) => m.id));
+    const nodeIds = new Set(model.nodes.map((n) => n.id));
 
+    // Validate property assignment member references
     model.propertyAssignments.forEach((assignment, idx) => {
         assignment.assignment.memberIds.forEach((memberId, midx) => {
             if (!memberIds.has(memberId)) {
@@ -317,6 +319,58 @@ export const analyzeRequestSchema = z.object({
                 });
             }
         });
+    });
+
+    // Validate member group member references
+    model.memberGroups.forEach((group, gidx) => {
+        group.memberIds.forEach((memberId, midx) => {
+            if (!memberIds.has(memberId)) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: `Member group "${group.name}" references unknown memberId: ${memberId}`,
+                    path: ['memberGroups', gidx, 'memberIds', midx],
+                });
+            }
+        });
+    });
+
+    // Validate member load references
+    model.memberLoads.forEach((ml, idx) => {
+        if (!memberIds.has(ml.memberId)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Member load references unknown memberId: ${ml.memberId}`,
+                path: ['memberLoads', idx, 'memberId'],
+            });
+        }
+    });
+
+    // Validate load node references
+    model.loads.forEach((load, idx) => {
+        if (!nodeIds.has(load.nodeId)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Load references unknown nodeId: ${load.nodeId}`,
+                path: ['loads', idx, 'nodeId'],
+            });
+        }
+    });
+
+    // IS 1893 Cl. 6.3.2: Wind + seismic cannot appear in the same combination
+    const loadCaseTypeById = new Map<string, string>();
+    model.loadCases.forEach((lc) => loadCaseTypeById.set(lc.id, lc.type));
+
+    model.loadCombinations.forEach((combo, cidx) => {
+        const types = combo.factors.map((f) => loadCaseTypeById.get(f.loadCaseId)).filter(Boolean);
+        const hasWind = types.includes('wind');
+        const hasSeismic = types.includes('seismic');
+        if (hasWind && hasSeismic) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Load combination "${combo.name}" combines wind and seismic loads simultaneously, violating IS 1893 Cl. 6.3.2`,
+                path: ['loadCombinations', cidx],
+            });
+        }
     });
 });
 

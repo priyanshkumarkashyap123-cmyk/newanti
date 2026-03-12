@@ -2435,6 +2435,211 @@ def generate_structural_grid(
 
 
 # =====================================================================
+#  STRUCTURAL HANDOFF PAYLOAD  (Phase G)
+# =====================================================================
+
+def generate_structural_handoff(
+    placements: List[RoomPlacement],
+    boundary: Rectangle,
+    constraints: "SiteConfig",
+) -> Dict[str, Any]:
+    """Produce an extended structural-engineering handoff payload.
+
+    Includes:
+    - Wall stacking metadata (walls shared between rooms)
+    - Load-path continuity hints (stacked walls that form continuous load paths)
+    - Cantilever flags (rooms protruding beyond column grid)
+    - Slab panel dimensions for two-way slab check
+    """
+    grid_mod = constraints.structural_grid_module_m
+
+    # --- wall stacking ---
+    wall_segments: List[Dict[str, Any]] = []
+    for i, p1 in enumerate(placements):
+        r1 = p1.rectangle
+        for j, p2 in enumerate(placements):
+            if j <= i:
+                continue
+            r2 = p2.rectangle
+            # Shared vertical wall
+            if abs(r1.x + r1.width - r2.x) < 0.05 or abs(r2.x + r2.width - r1.x) < 0.05:
+                y_lo = max(r1.y, r2.y)
+                y_hi = min(r1.y + r1.height, r2.y + r2.height)
+                if y_hi - y_lo > 0.1:
+                    shared_x = r1.x + r1.width if abs(r1.x + r1.width - r2.x) < 0.05 else r2.x + r2.width
+                    wall_segments.append({
+                        "type": "vertical",
+                        "x": round(shared_x, 3),
+                        "y_start": round(y_lo, 3),
+                        "y_end": round(y_hi, 3),
+                        "length_m": round(y_hi - y_lo, 3),
+                        "rooms": [p1.room.id, p2.room.id],
+                        "load_bearing": True,
+                    })
+            # Shared horizontal wall
+            if abs(r1.y + r1.height - r2.y) < 0.05 or abs(r2.y + r2.height - r1.y) < 0.05:
+                x_lo = max(r1.x, r2.x)
+                x_hi = min(r1.x + r1.width, r2.x + r2.width)
+                if x_hi - x_lo > 0.1:
+                    shared_y = r1.y + r1.height if abs(r1.y + r1.height - r2.y) < 0.05 else r2.y + r2.height
+                    wall_segments.append({
+                        "type": "horizontal",
+                        "y": round(shared_y, 3),
+                        "x_start": round(x_lo, 3),
+                        "x_end": round(x_hi, 3),
+                        "length_m": round(x_hi - x_lo, 3),
+                        "rooms": [p1.room.id, p2.room.id],
+                        "load_bearing": True,
+                    })
+
+    # --- cantilever flags ---
+    cantilever_rooms: List[Dict[str, Any]] = []
+    for p in placements:
+        r = p.rectangle
+        overhang_left = max(0, boundary.x - r.x)
+        overhang_right = max(0, (r.x + r.width) - (boundary.x + boundary.width))
+        overhang_bottom = max(0, boundary.y - r.y)
+        overhang_top = max(0, (r.y + r.height) - (boundary.y + boundary.height))
+        max_oh = max(overhang_left, overhang_right, overhang_bottom, overhang_top)
+        if max_oh > 0.05:
+            cantilever_rooms.append({
+                "room_id": p.room.id,
+                "max_overhang_m": round(max_oh, 3),
+                "direction": (
+                    "left" if overhang_left == max_oh else
+                    "right" if overhang_right == max_oh else
+                    "bottom" if overhang_bottom == max_oh else "top"
+                ),
+                "action": "Verify cantilever slab design per IS 456 Cl. 24.1",
+            })
+
+    # --- slab panels ---
+    slab_panels: List[Dict[str, Any]] = []
+    for p in placements:
+        r = p.rectangle
+        ly = max(r.width, r.height)
+        lx = min(r.width, r.height)
+        ratio = ly / max(lx, 0.01)
+        slab_panels.append({
+            "room_id": p.room.id,
+            "lx_m": round(lx, 3),
+            "ly_m": round(ly, 3),
+            "ly_lx_ratio": round(ratio, 3),
+            "slab_type": "one_way" if ratio > 2.0 else "two_way",
+        })
+
+    return {
+        "wall_segments": wall_segments,
+        "total_shared_walls": len(wall_segments),
+        "cantilever_rooms": cantilever_rooms,
+        "slab_panels": slab_panels,
+        "grid_module_m": grid_mod,
+    }
+
+
+# =====================================================================
+#  MEP SCHEDULE SUMMARY  (Phase G)
+# =====================================================================
+
+def generate_mep_schedule(placements: List[RoomPlacement]) -> Dict[str, Any]:
+    """Generate a high-level MEP (Mechanical/Electrical/Plumbing) schedule.
+
+    Produces:
+    - Plumbing stack summary (wet rooms grouped by proximity)
+    - Electrical circuit breakdown (power points per room type)
+    - HVAC placeholder (tonnage estimate based on area)
+    """
+    wet_rooms: List[Dict[str, Any]] = []
+    power_schedule: List[Dict[str, Any]] = []
+    hvac_loads: List[Dict[str, Any]] = []
+
+    # Room-type → estimated electrical points
+    electrical_estimate: Dict[str, int] = {
+        "bedroom": 4, "master_bedroom": 6, "living_room": 6,
+        "kitchen": 8, "bathroom": 3, "toilet": 2,
+        "dining_room": 4, "study": 5, "office": 6,
+        "pooja_room": 2, "staircase": 1, "balcony": 2,
+        "utility": 3, "store_room": 1, "passage": 1,
+        "foyer": 2, "drawing_room": 6, "guest_room": 4,
+        "servant_room": 3, "garage": 2, "parking": 0,
+    }
+
+    # HVAC: ~0.15 TR per sqm (residential estimate)
+    HVAC_TR_PER_SQM = 0.15
+
+    for p in placements:
+        area = p.rectangle.area
+        rtype = p.room.type.value
+
+        # Plumbing
+        if p.room.plumbing_required:
+            wet_rooms.append({
+                "room_id": p.room.id,
+                "room_type": rtype,
+                "position": {"x": round(p.rectangle.x, 3), "y": round(p.rectangle.y, 3)},
+                "needs_floor_drain": rtype in ("bathroom", "toilet", "kitchen", "utility"),
+                "needs_water_supply": True,
+            })
+
+        # Electrical
+        est_points = electrical_estimate.get(rtype, 3)
+        power_schedule.append({
+            "room_id": p.room.id,
+            "room_type": rtype,
+            "estimated_power_points": est_points,
+            "estimated_lighting_points": max(1, int(area / 6)),
+        })
+
+        # HVAC (skip non-conditioned spaces)
+        if rtype not in ("balcony", "staircase", "parking", "garage", "passage", "store_room", "utility"):
+            hvac_loads.append({
+                "room_id": p.room.id,
+                "room_type": rtype,
+                "area_sqm": round(area, 2),
+                "estimated_tonnage_tr": round(area * HVAC_TR_PER_SQM, 2),
+            })
+
+    # Plumbing stack grouping (group wet rooms within 2m of each other)
+    stacks: List[List[str]] = []
+    visited: set = set()
+    for i, wr in enumerate(wet_rooms):
+        if wr["room_id"] in visited:
+            continue
+        stack = [wr["room_id"]]
+        visited.add(wr["room_id"])
+        for j, wr2 in enumerate(wet_rooms):
+            if wr2["room_id"] in visited:
+                continue
+            dx = abs(wr["position"]["x"] - wr2["position"]["x"])
+            dy = abs(wr["position"]["y"] - wr2["position"]["y"])
+            if dx < 2.0 and dy < 2.0:
+                stack.append(wr2["room_id"])
+                visited.add(wr2["room_id"])
+        stacks.append(stack)
+
+    total_tonnage = sum(h["estimated_tonnage_tr"] for h in hvac_loads)
+    total_power_pts = sum(ps["estimated_power_points"] for ps in power_schedule)
+
+    return {
+        "plumbing": {
+            "wet_rooms": wet_rooms,
+            "plumbing_stacks": stacks,
+            "total_stacks": len(stacks),
+        },
+        "electrical": {
+            "power_schedule": power_schedule,
+            "total_power_points": total_power_pts,
+            "total_lighting_points": sum(ps["estimated_lighting_points"] for ps in power_schedule),
+        },
+        "hvac": {
+            "room_loads": hvac_loads,
+            "total_tonnage_tr": round(total_tonnage, 2),
+            "recommended_system": "split" if total_tonnage < 10 else "centralised",
+        },
+    }
+
+
+# =====================================================================
 #  SIMULATED ANNEALING OPTIMIZER
 # =====================================================================
 

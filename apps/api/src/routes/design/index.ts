@@ -1,13 +1,14 @@
 /**
- * Design Routes - Proxies to Python backend for structural design checks
+ * Design Routes - Rust-first proxy for structural design checks
  *
- * CANONICAL OWNER: Python (richest implementations - IS 456, IS 800,
- *   AISC 360, Eurocode 3, connections, foundations with full rebar layout)
- * This file is a THIN PROXY. No design computation runs in Node.js.
+ * Strategy:
+ *  - Prefer Rust API for performance-critical design checks.
+ *  - Fallback to Python API for endpoint/payload compatibility.
+ *  - Keep Node.js as a thin gateway only (no local design calculations).
  */
 
 import express, { Router, Request, Response } from "express";
-import { pythonProxy } from "../../services/serviceProxy.js";
+import { pythonProxy, rustProxy } from "../../services/serviceProxy.js";
 import {
   validateBody,
   steelDesignSchema,
@@ -22,39 +23,87 @@ import { logger } from "../../utils/logger.js";
 const router: Router = express.Router();
 
 // ============================================
-// Helper: Forward to Python and handle response
+// Helper: Rust-first forwarding with Python fallback
 // ============================================
 
-async function forwardToPython(
-  pythonPath: string,
+const DESIGN_PRIMARY_ENGINE =
+  (process.env["DESIGN_PRIMARY_ENGINE"] || "rust").toLowerCase();
+
+type BackendService = "rust" | "python";
+
+async function callBackend(
+  service: BackendService,
+  path: string,
   body: unknown,
-  res: Response,
-  label: string,
-  timeoutMs = 30_000,
+  timeoutMs: number,
+) {
+  if (service === "rust") {
+    return rustProxy("POST", path, body, undefined, timeoutMs);
+  }
+  return pythonProxy("POST", path, body, undefined, timeoutMs);
+}
+
+async function forwardDesign(
+  options: {
+    rustPath?: string;
+    pythonPath: string;
+    body: unknown;
+    res: Response;
+    label: string;
+    timeoutMs?: number;
+  },
 ): Promise<void> {
-  try {
-    const result = await pythonProxy(
-      "POST",
-      pythonPath,
-      body,
-      undefined,
-      timeoutMs,
-    );
+  const { rustPath, pythonPath, body, res, label, timeoutMs = 30_000 } = options;
+
+  const preferRust = DESIGN_PRIMARY_ENGINE !== "python";
+  const order: Array<{ service: BackendService; path: string }> = preferRust
+    ? [
+        ...(rustPath ? [{ service: "rust" as const, path: rustPath }] : []),
+        { service: "python" as const, path: pythonPath },
+      ]
+    : [
+        { service: "python" as const, path: pythonPath },
+        ...(rustPath ? [{ service: "rust" as const, path: rustPath }] : []),
+      ];
+
+  let lastError = `${label} failed`;
+  let lastStatus = 500;
+
+  for (const target of order) {
+    const result = await callBackend(target.service, target.path, body, timeoutMs);
     if (result.success) {
-      res.json({ success: true, result: result.data });
-    } else {
-      res.status(result.status || 500).json({
-        success: false,
-        error: result.error || `${label} failed`,
-        service: "python",
+      res.json({
+        success: true,
+        result: result.data,
+        engine: target.service,
       });
+      return;
     }
-  } catch (error) {
-    logger.error({ err: error }, `[Design/${label}] Error`);
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : `${label} failed`,
-    });
+
+    lastError = result.error || `${label} failed via ${target.service}`;
+    lastStatus = result.status || 500;
+    logger.warn(
+      `[Design/${label}] ${target.service.toUpperCase()} failed (${lastStatus}). ${
+        target.service === "rust" ? "Trying Python fallback if available." : "No further fallback."
+      }`,
+    );
+  }
+
+  res.status(lastStatus).json({
+    success: false,
+    error: lastError,
+    service: "design-gateway",
+  });
+}
+
+function mapConnectionRustPath(body: unknown): string | undefined {
+  try {
+    const req = (body || {}) as { type?: string };
+    if (req.type === "welded") return "/api/design/is800/fillet-weld";
+    if (req.type === "base_plate") return "/api/design/base-plate";
+    return "/api/design/is800/bolt-bearing";
+  } catch {
+    return undefined;
   }
 }
 
@@ -66,7 +115,16 @@ router.post(
   "/steel",
   validateBody(steelDesignSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    await forwardToPython("/design/steel/check", req.body, res, "Steel");
+    await forwardDesign({
+      rustPath:
+        req.body?.code === "AISC360"
+          ? "/api/design/aisc360/bending"
+          : "/api/design/is800/auto-select",
+      pythonPath: "/design/steel/check",
+      body: req.body,
+      res,
+      label: "Steel",
+    });
   }),
 );
 
@@ -78,12 +136,13 @@ router.post(
   "/concrete/beam",
   validateBody(concreteBeamSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    await forwardToPython(
-      "/design/concrete/check",
-      { ...req.body, element_type: "beam", code: "IS456" },
+    await forwardDesign({
+      rustPath: "/api/design/is456/flexural-capacity",
+      pythonPath: "/design/concrete/check",
+      body: { ...req.body, element_type: "beam", code: "IS456" },
       res,
-      "Concrete/Beam",
-    );
+      label: "Concrete/Beam",
+    });
   }),
 );
 
@@ -95,12 +154,13 @@ router.post(
   "/concrete/column",
   validateBody(concreteColumnSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    await forwardToPython(
-      "/design/concrete/check",
-      { ...req.body, element_type: "column", code: "IS456" },
+    await forwardDesign({
+      rustPath: "/api/design/is456/biaxial-column",
+      pythonPath: "/design/concrete/check",
+      body: { ...req.body, element_type: "column", code: "IS456" },
       res,
-      "Concrete/Column",
-    );
+      label: "Concrete/Column",
+    });
   }),
 );
 
@@ -112,12 +172,13 @@ router.post(
   "/connection",
   validateBody(connectionDesignSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    await forwardToPython(
-      "/design/connection/check",
-      req.body,
+    await forwardDesign({
+      rustPath: mapConnectionRustPath(req.body),
+      pythonPath: "/design/connection/check",
+      body: req.body,
       res,
-      "Connection",
-    );
+      label: "Connection",
+    });
   }),
 );
 
@@ -129,12 +190,13 @@ router.post(
   "/foundation",
   validateBody(foundationDesignSchema),
   asyncHandler(async (req: Request, res: Response) => {
-    await forwardToPython(
-      "/design/foundation/check",
-      req.body,
+    // Rust endpoint parity for foundation design is not complete yet.
+    await forwardDesign({
+      pythonPath: "/design/foundation/check",
+      body: req.body,
       res,
-      "Foundation",
-    );
+      label: "Foundation",
+    });
   }),
 );
 
@@ -144,38 +206,60 @@ router.post(
 // ============================================
 
 router.post("/aisc", asyncHandler(async (req: Request, res: Response) => {
-  await forwardToPython(
-    "/design/steel/check",
-    { ...req.body, code: "AISC360" },
+  await forwardDesign({
+    rustPath: "/api/design/aisc360/bending",
+    pythonPath: "/design/steel/check",
+    body: { ...req.body, code: "AISC360" },
     res,
-    "Steel/AISC",
-  );
+    label: "Steel/AISC",
+  });
 }));
 
 router.post("/is800", asyncHandler(async (req: Request, res: Response) => {
-  await forwardToPython(
-    "/design/steel/check",
-    { ...req.body, code: "IS800" },
+  await forwardDesign({
+    rustPath: "/api/design/is800/auto-select",
+    pythonPath: "/design/steel/check",
+    body: { ...req.body, code: "IS800" },
     res,
-    "Steel/IS800",
-  );
+    label: "Steel/IS800",
+  });
 }));
 
 router.post("/steel/check", asyncHandler(async (req: Request, res: Response) => {
-  await forwardToPython("/design/steel/check", req.body, res, "Steel/Check");
+  await forwardDesign({
+    rustPath:
+      req.body?.code === "AISC360"
+        ? "/api/design/aisc360/bending"
+        : "/api/design/is800/auto-select",
+    pythonPath: "/design/steel/check",
+    body: req.body,
+    res,
+    label: "Steel/Check",
+  });
 }));
 
 router.post("/concrete/check", asyncHandler(async (req: Request, res: Response) => {
-  await forwardToPython(
-    "/design/concrete/check",
-    req.body,
+  await forwardDesign({
+    rustPath:
+      req.body?.element_type === "column"
+        ? "/api/design/is456/biaxial-column"
+        : "/api/design/is456/flexural-capacity",
+    pythonPath: "/design/concrete/check",
+    body: req.body,
     res,
-    "Concrete/Check",
-  );
+    label: "Concrete/Check",
+  });
 }));
 
 router.post("/optimize", asyncHandler(async (req: Request, res: Response) => {
-  await forwardToPython("/design/optimize", req.body, res, "Optimize", 60_000);
+  await forwardDesign({
+    rustPath: "/api/optimization/auto-select",
+    pythonPath: "/design/optimize",
+    body: req.body,
+    res,
+    label: "Optimize",
+    timeoutMs: 60_000,
+  });
 }));
 
 // ============================================

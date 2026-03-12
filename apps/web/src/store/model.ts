@@ -14,6 +14,8 @@ export type {
   PropertyAssignmentScopeMode, MaterialFamily, PropertyReductionFactors,
   SectionMechanics,
 } from './modelTypes';
+export type { SpringStiffness } from './modelTypes';
+export type { CircularRepeatRequest, CircularRepeatResult, IntersectionSplitResult } from './modelTypes';
 
 import type {
   ProjectInfo, Restraints, Node, NodeLoad, MemberLoad, LoadCase,
@@ -22,7 +24,8 @@ import type {
   PropertyAssignmentPayload, MemberGroup,
   TranslationalRepeatRequest, TranslationalRepeatResult,
 } from './modelTypes';
-import { extrudeGeometry } from '../core/geometry_engine';
+import type { CircularRepeatRequest, CircularRepeatResult, IntersectionSplitResult } from './modelTypes';
+import { extrudeGeometry, rotateCopy, autoNodeIntersections } from '../core/geometry_engine';
 
 // Re-export persistence functions for backward compatibility
 export {
@@ -216,6 +219,8 @@ interface ModelState {
   mergeNodes: (nodeId1: string, nodeId2: string) => void; // Merge two nodes
   renumberNodes: () => void; // Renumber all nodes from N1
   renumberMembers: () => void; // Renumber all members from M1
+  applyCircularRepeat: (request: CircularRepeatRequest) => CircularRepeatResult;
+  detectAndAutoNode: (tolerance?: number) => IntersectionSplitResult;
 
   // Plate/Shell Operations
   nextPlateNumber: number;
@@ -1463,6 +1468,34 @@ export const useModelStore = create<ModelState>()(
               fixed.push(`Merged duplicate node ${duplicateId} into ${keepId}`);
             }
 
+            // 6. Auto-node intersecting members (interior crossings only)
+            const autoNode = autoNodeIntersections(
+              Array.from(newMembers.values()),
+              newNodes,
+              {
+                tolerance: 0.01, // 10 mm default geometric tolerance
+                existingNodeIds: new Set(newNodes.keys()),
+                existingMemberIds: new Set(newMembers.keys()),
+              }
+            );
+
+            if (autoNode.newNodes.length > 0 || autoNode.newMembers.length > 0) {
+              autoNode.newNodes.forEach((node) => newNodes.set(node.id, node));
+              autoNode.deletedMemberIds.forEach((id) => newMembers.delete(id));
+              autoNode.newMembers.forEach((member) => {
+                newMembers.set(member.id, {
+                  ...member,
+                  sectionId: member.sectionId ?? 'Default',
+                  E: member.E ?? 200e6,
+                  A: member.A ?? 0.01,
+                  I: member.I ?? 1e-4,
+                });
+              });
+              fixed.push(
+                `Auto-noded ${autoNode.newNodes.length} member intersections (${autoNode.deletedMemberIds.length} members split)`
+              );
+            }
+
             return { nodes: newNodes, members: newMembers };
           });
 
@@ -1641,6 +1674,123 @@ export const useModelStore = create<ModelState>()(
           return {
             createdNodeIds: result.nodes.map((node) => node.id),
             createdMemberIds: result.members.map((member) => member.id),
+          };
+        },
+
+        applyCircularRepeat: (request) => {
+          const state = get();
+
+          const nodeIds = new Set<string>(request.nodeIds ?? []);
+          (request.memberIds ?? []).forEach((memberId) => {
+            const member = state.members.get(memberId);
+            if (member) {
+              nodeIds.add(member.startNodeId);
+              nodeIds.add(member.endNodeId);
+            }
+          });
+
+          const selectedNodes = Array.from(nodeIds)
+            .map((id) => state.nodes.get(id))
+            .filter((n): n is Node => n !== undefined);
+
+          const selectedMembers = (request.memberIds ?? [])
+            .map((id) => state.members.get(id))
+            .filter((m): m is Member => m !== undefined);
+
+          if (selectedNodes.length === 0) {
+            return { createdNodeIds: [], createdMemberIds: [] };
+          }
+
+          const result = rotateCopy(
+            selectedNodes,
+            selectedMembers,
+            request.axis,
+            request.center_m,
+            (request.angleDeg * Math.PI) / 180,
+            request.steps,
+            false,
+            {
+              existingNodeIds: new Set(state.nodes.keys()),
+              existingMemberIds: new Set(state.members.keys()),
+              linkSteps: request.linkSteps,
+              closeLoop: request.closeLoop ?? false,
+            }
+          );
+
+          if (result.nodes.length === 0 && result.members.length === 0) {
+            return { createdNodeIds: [], createdMemberIds: [] };
+          }
+
+          set((currentState) => {
+            const newNodes = new Map(currentState.nodes);
+            const newMembers = new Map(currentState.members);
+
+            result.nodes.forEach((node) => newNodes.set(node.id, node));
+            result.members.forEach((member) => {
+              newMembers.set(member.id, {
+                ...member,
+                sectionId: member.sectionId ?? 'Default',
+                E: member.E ?? 200e6,
+                A: member.A ?? 0.01,
+                I: member.I ?? 1e-4,
+              });
+            });
+
+            return { nodes: newNodes, members: newMembers, analysisResults: null };
+          });
+
+          return {
+            createdNodeIds: result.nodes.map((n) => n.id),
+            createdMemberIds: result.members.map((m) => m.id),
+          };
+        },
+
+        detectAndAutoNode: (tolerance = 0.01) => {
+          const state = get();
+
+          const autoResult = autoNodeIntersections(
+            Array.from(state.members.values()),
+            state.nodes,
+            {
+              tolerance,
+              existingNodeIds: new Set(state.nodes.keys()),
+              existingMemberIds: new Set(state.members.keys()),
+            }
+          );
+
+          if (autoResult.newNodes.length === 0 && autoResult.newMembers.length === 0) {
+            return {
+              createdNodeIds: [],
+              createdMemberIds: [],
+              deletedMemberIds: [],
+              intersectionCount: 0,
+            };
+          }
+
+          set((currentState) => {
+            const newNodes = new Map(currentState.nodes);
+            const newMembers = new Map(currentState.members);
+
+            autoResult.newNodes.forEach((node) => newNodes.set(node.id, node));
+            autoResult.deletedMemberIds.forEach((id) => newMembers.delete(id));
+            autoResult.newMembers.forEach((member) => {
+              newMembers.set(member.id, {
+                ...member,
+                sectionId: member.sectionId ?? 'Default',
+                E: member.E ?? 200e6,
+                A: member.A ?? 0.01,
+                I: member.I ?? 1e-4,
+              });
+            });
+
+            return { nodes: newNodes, members: newMembers, analysisResults: null };
+          });
+
+          return {
+            createdNodeIds: autoResult.newNodes.map((n) => n.id),
+            createdMemberIds: autoResult.newMembers.map((m) => m.id),
+            deletedMemberIds: autoResult.deletedMemberIds,
+            intersectionCount: autoResult.newNodes.length,
           };
         },
 

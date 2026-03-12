@@ -544,6 +544,11 @@ mod tests {
             fy_mpa: 500.0,
             seismic_zone: SeismicZone::ZoneIV,
             code: DesignCode::IS1893,
+            beam_moment_sum_knm: None,
+            column_depth_mm: None,
+            column_width_mm: None,
+            column_shear_kn: None,
+            storey_height_mm: None,
         };
 
         let result = check_ductile_detailing(&params).unwrap();
@@ -567,6 +572,11 @@ mod tests {
             fy_mpa: 500.0,
             seismic_zone: SeismicZone::ZoneIII,
             code: DesignCode::IS1893,
+            beam_moment_sum_knm: None,
+            column_depth_mm: None,
+            column_width_mm: None,
+            column_shear_kn: None,
+            storey_height_mm: None,
         };
 
         let result = check_ductile_detailing(&params).unwrap();
@@ -589,6 +599,11 @@ mod tests {
             fy_mpa: 500.0,
             seismic_zone: SeismicZone::ZoneIII,
             code: DesignCode::IS456,
+            beam_moment_sum_knm: None,
+            column_depth_mm: None,
+            column_width_mm: None,
+            column_shear_kn: None,
+            storey_height_mm: None,
         };
 
         let result = check_ductile_detailing(&params).unwrap();

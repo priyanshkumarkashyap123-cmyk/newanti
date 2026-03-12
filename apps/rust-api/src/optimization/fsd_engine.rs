@@ -1641,6 +1641,12 @@ mod tests {
             effective_length_z: 5000.0,
             unbraced_length: None,
             member_type: MemberType::Beam,
+            material_type: MaterialType::Steel,
+            b_mm: None,
+            d_mm: None,
+            cover_mm: None,
+            fck: None,
+            fy_rebar: None,
         };
         
         let check = check_member(&forces, &geometry, "ISMB300", 250.0);
@@ -1676,6 +1682,12 @@ mod tests {
             effective_length_z: 6000.0,
             unbraced_length: Some(6000.0),
             member_type: MemberType::Beam,
+            material_type: MaterialType::Steel,
+            b_mm: None,
+            d_mm: None,
+            cover_mm: None,
+            fck: None,
+            fy_rebar: None,
         };
         let check = check_member(&forces, &geometry, "ISMB300", 250.0);
         // With 6m unbraced length, LTB should be active for ISMB 300
@@ -1706,6 +1718,12 @@ mod tests {
             effective_length_z: 3500.0,
             unbraced_length: None,
             member_type: MemberType::Column,
+            material_type: MaterialType::Steel,
+            b_mm: None,
+            d_mm: None,
+            cover_mm: None,
+            fck: None,
+            fy_rebar: None,
         };
         let check = check_member(&forces, &geometry, "ISMB300", 250.0);
         // P-M interaction should exceed individual compression and flexure URs
@@ -1734,6 +1752,12 @@ mod tests {
                 effective_length_z: 6000.0,
                 unbraced_length: None,
                 member_type: MemberType::Beam,
+                material_type: MaterialType::Steel,
+                b_mm: None,
+                d_mm: None,
+                cover_mm: None,
+                fck: None,
+                fy_rebar: None,
             },
             MemberGeometry {
                 member_id: "B2".to_string(),
@@ -1742,6 +1766,12 @@ mod tests {
                 effective_length_z: 5000.0,
                 unbraced_length: None,
                 member_type: MemberType::Beam,
+                material_type: MaterialType::Steel,
+                b_mm: None,
+                d_mm: None,
+                cover_mm: None,
+                fck: None,
+                fy_rebar: None,
             },
         ];
         

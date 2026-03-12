@@ -50,6 +50,14 @@ export interface NodeData {
     my?: boolean;
     mz?: boolean;
   };
+  springStiffness?: {
+    kx?: number;
+    ky?: number;
+    kz?: number;
+    kmx?: number;
+    kmy?: number;
+    kmz?: number;
+  };
 }
 
 export interface MemberData {

@@ -310,7 +310,14 @@ export function usePhysicalModeling(): UsePhysicalModelingReturn {
                 axis,
                 center,
                 angleStep,
-                count - 1  // totalSteps (excluding original)
+                count - 1,  // totalSteps (excluding original)
+                false,
+                {
+                    existingNodeIds: new Set(nodes.keys()),
+                    existingMemberIds: new Set(members.keys()),
+                    linkSteps: false,
+                    closeLoop: false,
+                }
             );
             
             addNodes(newNodes);

@@ -7,7 +7,7 @@
 
 import { FC, useState, useEffect } from 'react';
 import { Anchor, CircleDot, Move } from 'lucide-react';
-import { useModelStore, type Restraints } from '../store/model';
+import { useModelStore, type Restraints, type SpringStiffness } from '../store/model';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 
@@ -16,7 +16,7 @@ interface BoundaryConditionsDialogProps {
     onClose: () => void;
 }
 
-type SupportType = 'none' | 'fixed' | 'pinned' | 'roller-x' | 'roller-y' | 'roller-z' | 'custom';
+type SupportType = 'none' | 'fixed' | 'pinned' | 'roller-x' | 'roller-y' | 'roller-z' | 'spring' | 'custom';
 
 const SUPPORT_PRESETS: Record<SupportType, { label: string; icon: string; restraints: Restraints | null }> = {
     'none': {
@@ -49,6 +49,11 @@ const SUPPORT_PRESETS: Record<SupportType, { label: string; icon: string; restra
         icon: '⤢',
         restraints: { fx: true, fy: true, fz: false, mx: false, my: false, mz: false }
     },
+    'spring': {
+        label: 'Elastic Spring Support',
+        icon: '🌀',
+        restraints: { fx: false, fy: false, fz: false, mx: false, my: false, mz: false }
+    },
     'custom': {
         label: 'Custom',
         icon: '⚙️',
@@ -64,6 +69,14 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
     const [selectedType, setSelectedType] = useState<SupportType>('fixed');
     const [customRestraints, setCustomRestraints] = useState<Restraints>({
         fx: true, fy: true, fz: true, mx: false, my: false, mz: false
+    });
+    const [springStiffness, setSpringStiffness] = useState<SpringStiffness>({
+        kx: 10000,
+        ky: 10000,
+        kz: 10000,
+        kmx: 0,
+        kmy: 0,
+        kmz: 0,
     });
 
     // Get selected nodes
@@ -86,7 +99,12 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
             queueMicrotask(() => {
                 const firstNode = selectedNodes[0];
                 if (!firstNode.restraints) {
-                    setSelectedType('none');
+                    if (firstNode.springStiffness) {
+                        setSelectedType('spring');
+                        setSpringStiffness(firstNode.springStiffness);
+                    } else {
+                        setSelectedType('none');
+                    }
                 } else {
                     // Try to match to a preset
                     const restraints = firstNode.restraints;
@@ -120,7 +138,19 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
         // Prepare batch updates
         const updates = new Map();
         selectedNodes.forEach(node => {
-            updates.set(node.id, { restraints: { ...restraintsToApply } });
+            updates.set(node.id, {
+                restraints: { ...restraintsToApply },
+                springStiffness: selectedType === 'spring'
+                    ? {
+                        kx: springStiffness.kx,
+                        ky: springStiffness.ky,
+                        kz: springStiffness.kz,
+                        kmx: springStiffness.kmx,
+                        kmy: springStiffness.kmy,
+                        kmz: springStiffness.kmz,
+                    }
+                    : undefined,
+            });
         });
 
         // Batch update
@@ -242,6 +272,73 @@ export const BoundaryConditionsDialog: FC<BoundaryConditionsDialogProps> = ({ op
                                                         </span>
                                                     </label>
                                                 ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedType === 'spring' && (
+                                <div>
+                                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Spring Stiffness</h3>
+                                    <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-4 space-y-3">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                                            Translational stiffness in kN/m, rotational stiffness in kN·m/rad
+                                        </p>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">KX (kN/m)</div>
+                                                <input
+                                                    type="number"
+                                                    value={springStiffness.kx ?? 0}
+                                                    onChange={(e) => setSpringStiffness((prev) => ({ ...prev, kx: Number(e.target.value) || 0 }))}
+                                                    className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">KY (kN/m)</div>
+                                                <input
+                                                    type="number"
+                                                    value={springStiffness.ky ?? 0}
+                                                    onChange={(e) => setSpringStiffness((prev) => ({ ...prev, ky: Number(e.target.value) || 0 }))}
+                                                    className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">KZ (kN/m)</div>
+                                                <input
+                                                    type="number"
+                                                    value={springStiffness.kz ?? 0}
+                                                    onChange={(e) => setSpringStiffness((prev) => ({ ...prev, kz: Number(e.target.value) || 0 }))}
+                                                    className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">KMX (kN·m/rad)</div>
+                                                <input
+                                                    type="number"
+                                                    value={springStiffness.kmx ?? 0}
+                                                    onChange={(e) => setSpringStiffness((prev) => ({ ...prev, kmx: Number(e.target.value) || 0 }))}
+                                                    className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">KMY (kN·m/rad)</div>
+                                                <input
+                                                    type="number"
+                                                    value={springStiffness.kmy ?? 0}
+                                                    onChange={(e) => setSpringStiffness((prev) => ({ ...prev, kmy: Number(e.target.value) || 0 }))}
+                                                    className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">KMZ (kN·m/rad)</div>
+                                                <input
+                                                    type="number"
+                                                    value={springStiffness.kmz ?? 0}
+                                                    onChange={(e) => setSpringStiffness((prev) => ({ ...prev, kmz: Number(e.target.value) || 0 }))}
+                                                    className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                                                />
                                             </div>
                                         </div>
                                     </div>

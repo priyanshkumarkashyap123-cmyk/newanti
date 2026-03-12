@@ -1,12 +1,8 @@
 name: Deploy Rust API to Azure
 
+# Superseded by .github/workflows/azure-deploy.yml for automatic deployments.
+# Kept as a manual fallback workflow only.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/rust-api/**'
-      - '.github/workflows/deploy-rust-api.yml'
   workflow_dispatch:
 
 concurrency:

@@ -132,6 +132,7 @@ pub async fn beam_template(
         a: 0.01,   // 100 cm²
         i: 0.0001, // Example I
         j: 0.00005,
+        ..Default::default()
     });
 
     let description = match support.as_str() {
@@ -199,6 +200,7 @@ pub async fn continuous_beam_template(
             a: 0.01,
             i: 0.0001,
             j: 0.00005,
+            ..Default::default()
         });
     }
 
@@ -264,6 +266,7 @@ pub async fn truss_template(
             a: 0.005,
             i: 0.00005,
             j: 0.000025,
+            ..Default::default()
         });
     }
 
@@ -277,6 +280,7 @@ pub async fn truss_template(
             a: 0.005,
             i: 0.00005,
             j: 0.000025,
+            ..Default::default()
         });
     }
 
@@ -290,6 +294,7 @@ pub async fn truss_template(
             a: 0.003,
             i: 0.00003,
             j: 0.000015,
+            ..Default::default()
         });
     }
 
@@ -303,6 +308,7 @@ pub async fn truss_template(
             a: 0.003,
             i: 0.00003,
             j: 0.000015,
+            ..Default::default()
         });
     }
 
@@ -371,6 +377,7 @@ pub async fn frame_template(
                 a: 0.01,
                 i: 0.0001,
                 j: 0.00005,
+                ..Default::default()
             });
             member_id += 1;
         }
@@ -388,6 +395,7 @@ pub async fn frame_template(
                     a: 0.008,
                     i: 0.00008,
                     j: 0.00004,
+                    ..Default::default()
                 });
                 member_id += 1;
             }
@@ -406,6 +414,7 @@ pub async fn frame_template(
                     a: 0.008,
                     i: 0.00008,
                     j: 0.00004,
+                    ..Default::default()
                 });
                 member_id += 1;
             }
@@ -493,6 +502,7 @@ pub async fn portal_template(
         a: 0.012,
         i: 0.00012,
         j: 0.00006,
+        ..Default::default()
     });
 
     members.push(Member {
@@ -503,6 +513,7 @@ pub async fn portal_template(
         a: 0.012,
         i: 0.00012,
         j: 0.00006,
+        ..Default::default()
     });
 
     // Rafters
@@ -514,6 +525,7 @@ pub async fn portal_template(
         a: 0.010,
         i: 0.0001,
         j: 0.00005,
+        ..Default::default()
     });
 
     members.push(Member {
@@ -524,6 +536,7 @@ pub async fn portal_template(
         a: 0.010,
         i: 0.0001,
         j: 0.00005,
+        ..Default::default()
     });
 
     Ok(Json(TemplateResponse {

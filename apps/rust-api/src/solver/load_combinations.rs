@@ -132,6 +132,75 @@ impl LoadCombinationEngine {
         self.load_cases.push(case);
     }
 
+    /// Validate that no combination mixes wind and seismic loads.
+    /// Per IS 1893 Cl. 6.3.2: "Wind load and earthquake load shall not be
+    /// considered to act simultaneously."
+    pub fn validate_wind_seismic_exclusion(&self) -> Vec<String> {
+        let mut violations = Vec::new();
+        let case_type_map: HashMap<&str, LoadCaseType> = self
+            .load_cases
+            .iter()
+            .map(|lc| (lc.id.as_str(), lc.case_type))
+            .collect();
+
+        for combo in &self.combinations {
+            let mut has_wind = false;
+            let mut has_seismic = false;
+            for f in &combo.factors {
+                if f.factor.abs() < 1e-15 {
+                    continue;
+                }
+                if let Some(&ct) = case_type_map.get(f.load_case_id.as_str()) {
+                    match ct {
+                        LoadCaseType::Wind => has_wind = true,
+                        LoadCaseType::Seismic => has_seismic = true,
+                        _ => {}
+                    }
+                }
+            }
+            if has_wind && has_seismic {
+                violations.push(format!(
+                    "Combination '{}' ({}) mixes wind and seismic loads — violates IS 1893 Cl. 6.3.2",
+                    combo.name, combo.id
+                ));
+            }
+        }
+        violations
+    }
+
+    /// Add a user-defined combination, rejecting it if it mixes wind + seismic.
+    /// Returns Err with violation message if the combo fails IS 1893 Cl. 6.3.2.
+    pub fn add_combination_checked(&mut self, combo: LoadCombination) -> Result<(), String> {
+        let case_type_map: HashMap<&str, LoadCaseType> = self
+            .load_cases
+            .iter()
+            .map(|lc| (lc.id.as_str(), lc.case_type))
+            .collect();
+
+        let mut has_wind = false;
+        let mut has_seismic = false;
+        for f in &combo.factors {
+            if f.factor.abs() < 1e-15 {
+                continue;
+            }
+            if let Some(&ct) = case_type_map.get(f.load_case_id.as_str()) {
+                match ct {
+                    LoadCaseType::Wind => has_wind = true,
+                    LoadCaseType::Seismic => has_seismic = true,
+                    _ => {}
+                }
+            }
+        }
+        if has_wind && has_seismic {
+            return Err(format!(
+                "Combination '{}' mixes wind and seismic loads — IS 1893 Cl. 6.3.2 prohibits simultaneous WL+EQ",
+                combo.name
+            ));
+        }
+        self.combinations.push(combo);
+        Ok(())
+    }
+
     /// Generate combinations automatically from design code
     pub fn generate_combinations(&mut self, code: CombinationCode) {
         let case_types: HashMap<LoadCaseType, Vec<String>> = {
@@ -743,5 +812,44 @@ mod tests {
 
         engine.generate_combinations(CombinationCode::ASCE7_LRFD);
         assert!(engine.combinations.len() >= 6);
+    }
+
+    #[test]
+    fn test_wind_seismic_exclusion_valid() {
+        // IS 456 auto-generated combos should never mix wind + seismic
+        let mut engine = LoadCombinationEngine::new();
+        engine.add_load_case(make_test_load_case("DL", LoadCaseType::Dead, 1.0));
+        engine.add_load_case(make_test_load_case("LL", LoadCaseType::Live, 0.5));
+        engine.add_load_case(make_test_load_case("WL", LoadCaseType::Wind, 0.3));
+        engine.add_load_case(make_test_load_case("EQ", LoadCaseType::Seismic, 0.6));
+
+        engine.generate_combinations(CombinationCode::IS456);
+        let violations = engine.validate_wind_seismic_exclusion();
+        assert!(violations.is_empty(), "IS 456 auto-combos should not mix WL+EQ: {:?}", violations);
+    }
+
+    #[test]
+    fn test_wind_seismic_exclusion_rejects_user_combo() {
+        // User-defined combo that mixes WL + EQ should be rejected
+        let mut engine = LoadCombinationEngine::new();
+        engine.add_load_case(make_test_load_case("DL", LoadCaseType::Dead, 1.0));
+        engine.add_load_case(make_test_load_case("WL", LoadCaseType::Wind, 0.3));
+        engine.add_load_case(make_test_load_case("EQ", LoadCaseType::Seismic, 0.6));
+
+        let bad_combo = LoadCombination {
+            id: "BAD-1".to_string(),
+            name: "1.2DL+1.5WL+1.5EQ (ILLEGAL)".to_string(),
+            code: CombinationCode::Custom,
+            factors: vec![
+                LoadFactor { load_case_id: "DL".to_string(), factor: 1.2 },
+                LoadFactor { load_case_id: "WL".to_string(), factor: 1.5 },
+                LoadFactor { load_case_id: "EQ".to_string(), factor: 1.5 },
+            ],
+            is_service: false,
+        };
+
+        let result = engine.add_combination_checked(bad_combo);
+        assert!(result.is_err(), "Should reject wind+seismic combo");
+        assert!(result.unwrap_err().contains("IS 1893"));
     }
 }

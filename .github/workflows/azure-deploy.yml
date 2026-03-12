@@ -88,6 +88,7 @@ jobs:
           CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
           PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
           RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
+          DESIGN_PRIMARY_ENGINE=rust
           TEMP_UNLOCK_ALL=true
           SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           ENVEOF

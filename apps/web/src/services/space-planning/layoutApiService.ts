@@ -332,6 +332,90 @@ export interface SAConvergenceReport {
   final_temperature: number;
 }
 
+// ============================================================================
+// SPACE-SYNTAX, STRUCTURAL HANDOFF & MEP DATA (Phase C/G)
+// ============================================================================
+
+export interface SpaceSyntaxNode {
+  room_id: string;
+  room_type: string;
+  acoustic_zone: string | null;
+  connectivity: number;
+  depth: number;
+  integration: number;
+  control_value: number;
+}
+
+export interface SpaceSyntaxEdge {
+  source: string;
+  target: string;
+  weight: number;
+  is_required_adjacency: boolean;
+}
+
+export interface SpaceSyntaxData {
+  nodes: SpaceSyntaxNode[];
+  edges: SpaceSyntaxEdge[];
+  mean_depth: number;
+  max_depth: number;
+  integration_mean: number;
+  integration_variance: number;
+  is_planar: boolean;
+  depth_histogram: Record<string, number>;
+  visibility_penalties: { room_id: string; penalty: number; reason: string }[];
+  circulation_depth_rooms: string[];
+}
+
+export interface WallSegmentData {
+  type: 'vertical' | 'horizontal';
+  x?: number;
+  y?: number;
+  x_start?: number;
+  x_end?: number;
+  y_start?: number;
+  y_end?: number;
+  length_m: number;
+  rooms: string[];
+  load_bearing: boolean;
+}
+
+export interface StructuralHandoffData {
+  wall_segments: WallSegmentData[];
+  total_shared_walls: number;
+  cantilever_rooms: {
+    room_id: string;
+    max_overhang_m: number;
+    direction: string;
+    action: string;
+  }[];
+  slab_panels: {
+    room_id: string;
+    lx_m: number;
+    ly_m: number;
+    ly_lx_ratio: number;
+    slab_type: 'one_way' | 'two_way';
+  }[];
+  grid_module_m: number;
+}
+
+export interface MEPScheduleData {
+  plumbing: {
+    wet_rooms: { room_id: string; room_type: string; needs_floor_drain: boolean; needs_water_supply: boolean }[];
+    plumbing_stacks: string[][];
+    total_stacks: number;
+  };
+  electrical: {
+    power_schedule: { room_id: string; room_type: string; estimated_power_points: number; estimated_lighting_points: number }[];
+    total_power_points: number;
+    total_lighting_points: number;
+  };
+  hvac: {
+    room_loads: { room_id: string; room_type: string; area_sqm: number; estimated_tonnage_tr: number }[];
+    total_tonnage_tr: number;
+    recommended_system: 'split' | 'centralised';
+  };
+}
+
 export interface LayoutV2Response {
   success: boolean;
   total_penalty: number;
@@ -355,6 +439,12 @@ export interface LayoutV2Response {
   acoustic_buffers?: AcousticBufferReport[];
   structural_grid?: StructuralGridReport;
   sa_convergence?: SAConvergenceReport;
+  /** Space-syntax graph analysis: integration, depth, planarity */
+  space_syntax?: SpaceSyntaxData | null;
+  /** Structural engineering handoff: wall stacking, cantilevers, slab panels */
+  structural_handoff?: StructuralHandoffData | null;
+  /** MEP schedule: plumbing stacks, electrical circuits, HVAC loads */
+  mep_schedule?: MEPScheduleData | null;
 }
 
 // ============================================================================
@@ -432,6 +522,9 @@ export interface ConstraintReport {
   acousticBuffers?: AcousticBufferReport[];
   structuralGrid?: StructuralGridReport;
   saConvergence?: SAConvergenceReport;
+  spaceSyntax?: SpaceSyntaxData;
+  structuralHandoff?: StructuralHandoffData;
+  mepSchedule?: MEPScheduleData;
 }
 
 /** Full result of a single solver candidate */
@@ -910,6 +1003,83 @@ export function buildConstraintReport(response: LayoutV2Response): ConstraintRep
       });
     }
 
+    // ── Space-syntax graph analysis (Phase C) ──
+    if (response.space_syntax) {
+      const ss = response.space_syntax;
+      // Planarity check
+      violations.push({
+        domain: 'space_syntax' as ConstraintDomain,
+        label: 'Layout Planarity (Graph Theory)',
+        passed: ss.is_planar,
+        severity: ss.is_planar ? 'info' : 'warning',
+        message: ss.is_planar
+          ? `Layout graph is planar (${ss.nodes.length} nodes, ${ss.edges.length} edges) — no crossing corridors`
+          : `Layout graph is NON-PLANAR — indicates crossing circulation paths in plan`,
+        clause: 'Euler planarity: E ≤ 3V − 6',
+      });
+      // Deep rooms (>3 steps from entry)
+      if (ss.circulation_depth_rooms.length > 0) {
+        violations.push({
+          domain: 'space_syntax' as ConstraintDomain,
+          label: 'Circulation Depth (Space Syntax)',
+          passed: false,
+          severity: 'warning',
+          message: `${ss.circulation_depth_rooms.length} room(s) are >3 steps from entry: ${ss.circulation_depth_rooms.join(', ')}`,
+          roomIds: ss.circulation_depth_rooms,
+          clause: 'Hillier & Hanson integration analysis',
+          remediation: 'Add direct corridor link or reposition rooms closer to entry circulation.',
+        });
+      }
+      // Integration mean
+      violations.push({
+        domain: 'space_syntax' as ConstraintDomain,
+        label: 'Mean Integration (Space Syntax)',
+        passed: true,
+        severity: 'info',
+        message: `Mean integration: ${ss.integration_mean.toFixed(3)}, variance: ${ss.integration_variance.toFixed(4)}, mean depth: ${ss.mean_depth.toFixed(2)}`,
+        value: ss.integration_mean,
+        clause: 'Hillier & Hanson Relative Asymmetry',
+      });
+    }
+
+    // ── Structural handoff (Phase G) ──
+    if (response.structural_handoff) {
+      const sh = response.structural_handoff;
+      if (sh.cantilever_rooms.length > 0) {
+        violations.push({
+          domain: 'structural_handoff' as ConstraintDomain,
+          label: 'Cantilever Check',
+          passed: false,
+          severity: 'warning',
+          message: `${sh.cantilever_rooms.length} room(s) extend beyond site boundary`,
+          roomIds: sh.cantilever_rooms.map(c => c.room_id),
+          clause: 'IS 456 Cl. 24.1',
+          remediation: sh.cantilever_rooms.map(c => `${c.room_id}: ${c.max_overhang_m}m ${c.direction} — ${c.action}`).join('; '),
+        });
+      }
+      violations.push({
+        domain: 'structural_handoff' as ConstraintDomain,
+        label: 'Shared Load-Bearing Walls',
+        passed: true,
+        severity: 'info',
+        message: `${sh.total_shared_walls} shared wall segment(s) identified for load-path continuity`,
+        clause: 'Structural handoff analysis',
+      });
+    }
+
+    // ── MEP schedule summary (Phase G) ──
+    if (response.mep_schedule) {
+      const mep = response.mep_schedule;
+      violations.push({
+        domain: 'mep_schedule' as ConstraintDomain,
+        label: 'MEP Schedule Summary',
+        passed: true,
+        severity: 'info',
+        message: `Plumbing: ${mep.plumbing.total_stacks} stack(s), Electrical: ${mep.electrical.total_power_points} points, HVAC: ${mep.hvac.total_tonnage_tr} TR (${mep.hvac.recommended_system})`,
+        clause: 'MEP estimation schedule',
+      });
+    }
+
     const score = total > 0 ? Math.round((met / total) * 100) : 0;
 
     return {
@@ -934,6 +1104,9 @@ export function buildConstraintReport(response: LayoutV2Response): ConstraintRep
       acousticBuffers: response.acoustic_buffers,
       structuralGrid: response.structural_grid,
       saConvergence: response.sa_convergence,
+      spaceSyntax: response.space_syntax ?? undefined,
+      structuralHandoff: response.structural_handoff ?? undefined,
+      mepSchedule: response.mep_schedule ?? undefined,
     };
   }
 
@@ -1494,6 +1667,72 @@ function getRoomColor(type: RoomType): string {
     water_tank_room: '#B3E5FC',
   };
   return COLORS[type] || '#F5F5F5';
+}
+
+// ============================================================================
+// CANONICAL EXPORT SERIALIZATION  (Phase H)
+// ============================================================================
+
+/**
+ * Produce a canonical JSON payload suitable for archival, sharing, or re-import.
+ * Includes all solver domains: placements, compliance, space-syntax, structural
+ * handoff, MEP schedule, travel distances, acoustic buffers, and structural grid.
+ */
+export function serializeCanonicalReport(
+  response: LayoutV2Response,
+  report: ConstraintReport,
+): Record<string, unknown> {
+  return {
+    _schema_version: '2.0.0',
+    _generated_at: new Date().toISOString(),
+    summary: {
+      score: report.score,
+      total_penalty: report.totalPenalty,
+      constraints_met: report.constraintsMet,
+      constraints_total: report.constraintsTotal,
+      constraints_met_ratio: report.constraintsMetRatio,
+      iteration_found: report.iterationFound,
+      total_iterations: report.totalIterations,
+    },
+    fsi_analysis: response.fsi_analysis,
+    usable_boundary: response.usable_boundary,
+    placements: response.placements,
+    compliance_items: response.compliance_items ?? [],
+    constraints_detail: response.constraints_detail,
+    circulation: response.circulation,
+    egress: response.egress,
+    structural_checks: response.structural_checks,
+    solar_scores: response.solar_scores,
+    fenestration_checks: response.fenestration_checks,
+    anthropometric_issues: response.anthropometric_issues,
+    staircase: response.staircase,
+    travel_distances: response.travel_distances ?? null,
+    acoustic_buffers: response.acoustic_buffers ?? null,
+    structural_grid: response.structural_grid ?? null,
+    sa_convergence: response.sa_convergence ?? null,
+    space_syntax: response.space_syntax ?? null,
+    structural_handoff: response.structural_handoff ?? null,
+    mep_schedule: response.mep_schedule ?? null,
+  };
+}
+
+/**
+ * Download a canonical JSON report as a file.
+ */
+export function downloadCanonicalReport(
+  response: LayoutV2Response,
+  report: ConstraintReport,
+  filename = 'beamlab-layout-report.json',
+): void {
+  const canonical = serializeCanonicalReport(response, report);
+  const json = JSON.stringify(canonical, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ============================================================================

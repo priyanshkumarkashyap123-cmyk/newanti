@@ -32,12 +32,23 @@ export interface Restraints {
   mz: boolean;
 }
 
+/** Optional elastic spring stiffness at a node (kN/m for translational, kN·m/rad for rotational) */
+export interface SpringStiffness {
+  kx?: number;
+  ky?: number;
+  kz?: number;
+  kmx?: number;
+  kmy?: number;
+  kmz?: number;
+}
+
 export interface Node {
   id: string;
   x: number;
   y: number;
   z: number;
   restraints?: Restraints; // Optional: Support conditions
+  springStiffness?: SpringStiffness; // Optional: elastic spring supports
 }
 
 export interface NodeLoad {
@@ -497,4 +508,27 @@ export interface TranslationalRepeatRequest {
 export interface TranslationalRepeatResult {
   createdNodeIds: string[];
   createdMemberIds: string[];
+}
+
+export interface CircularRepeatRequest {
+  nodeIds?: string[];
+  memberIds?: string[];
+  axis: { x: number; y: number; z: number };
+  center_m: { x: number; y: number; z: number };
+  angleDeg: number;
+  steps: number;
+  linkSteps: boolean;
+  closeLoop?: boolean;
+}
+
+export interface CircularRepeatResult {
+  createdNodeIds: string[];
+  createdMemberIds: string[];
+}
+
+export interface IntersectionSplitResult {
+  createdNodeIds: string[];
+  createdMemberIds: string[];
+  deletedMemberIds: string[];
+  intersectionCount: number;
 }

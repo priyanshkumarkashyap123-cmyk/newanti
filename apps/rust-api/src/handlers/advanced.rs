@@ -910,6 +910,9 @@ pub async fn staged_construction_analysis(
                 .collect(),
             supports: req.input.supports.clone(),
             loads: req.input.loads.clone(),
+            member_loads: req.input.member_loads.clone(),
+            dof_per_node: req.input.dof_per_node,
+            options: req.input.options.clone(),
         };
 
         // Solve this stage
