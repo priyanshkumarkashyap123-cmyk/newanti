@@ -158,7 +158,9 @@ def _verify_jwt_simple(token: str) -> Optional[dict]:
     This is a defense-in-depth check for direct-to-Python requests.
     """
     if not JWT_SECRET:
-        return None  # JWT_SECRET not configured — skip verification
+        if os.getenv("ENVIRONMENT", "development").lower() == "production":
+            raise RuntimeError("FATAL: JWT_SECRET must be configured in production")
+        return None  # JWT_SECRET not configured in dev — skip verification
     try:
         import base64, json
         parts = token.split(".")

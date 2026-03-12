@@ -1,4 +1,6 @@
 #!/bin/bash
+# ⚠️ DEPRECATED: Legacy Azure App Service startup script.
+# Azure Container deployments use Dockerfile ENTRYPOINT instead.
 # Root startup script - redirect to apps/api folder
 set -e
 

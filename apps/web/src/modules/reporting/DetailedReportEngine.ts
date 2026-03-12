@@ -17,8 +17,7 @@
  * @version 3.0.0
  */
 
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import type { jsPDF as JsPDFType } from 'jspdf';
 import { format } from 'date-fns';
 
 // ============================================================================
@@ -316,15 +315,15 @@ const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
 // ============================================================================
 
 export class DetailedReportEngine {
-    private doc: jsPDF;
+    private doc!: JsPDFType;
     private data: ReportData;
     private settings: ReportSettings;
     
-    private pageWidth: number;
-    private pageHeight: number;
+    private pageWidth!: number;
+    private pageHeight!: number;
     private margins = { top: 25, bottom: 25, left: 20, right: 20 };
-    private contentWidth: number;
-    private currentY: number;
+    private contentWidth!: number;
+    private currentY!: number;
     private pageNumber: number = 0;
     private sectionNumber: number = 0;
     private tableNumber: number = 0;
@@ -333,21 +332,11 @@ export class DetailedReportEngine {
     private tocEntries: { title: string; page: number; level: number }[] = [];
     private primaryRgb: { r: number; g: number; b: number };
     private accentRgb: { r: number; g: number; b: number };
+    private autoTable!: (doc: any, options: any) => void;
 
     constructor(data: ReportData, settings: ReportSettings) {
         this.data = data;
         this.settings = settings;
-        
-        this.doc = new jsPDF({
-            orientation: settings.orientation,
-            unit: 'mm',
-            format: settings.pageSize.toLowerCase() as 'a4' | 'letter'
-        });
-        
-        this.pageWidth = this.doc.internal.pageSize.getWidth();
-        this.pageHeight = this.doc.internal.pageSize.getHeight();
-        this.contentWidth = this.pageWidth - this.margins.left - this.margins.right;
-        this.currentY = this.margins.top;
         
         this.primaryRgb = hexToRgb(settings.primaryColor);
         this.accentRgb = hexToRgb(settings.accentColor);
@@ -358,6 +347,19 @@ export class DetailedReportEngine {
     // ========================================================================
 
     async generate(): Promise<Blob> {
+        const { jsPDF } = await import('jspdf');
+        this.autoTable = (await import('jspdf-autotable')).default;
+
+        this.doc = new jsPDF({
+            orientation: this.settings.orientation,
+            unit: 'mm',
+            format: this.settings.pageSize.toLowerCase() as 'a4' | 'letter'
+        });
+        this.pageWidth = this.doc.internal.pageSize.getWidth();
+        this.pageHeight = this.doc.internal.pageSize.getHeight();
+        this.contentWidth = this.pageWidth - this.margins.left - this.margins.right;
+        this.currentY = this.margins.top;
+
         // Cover page
         this.renderCoverPage();
         
@@ -738,7 +740,7 @@ export class DetailedReportEngine {
         
         const codeTable = this.data.criteria.codes.map((code, i) => [String(i + 1), code, this.getCodeDescription(code)]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['#', 'Code', 'Description']],
             body: codeTable,
@@ -755,7 +757,7 @@ export class DetailedReportEngine {
         
         const loadFactorData = Object.entries(this.data.criteria.loadFactors).map(([load, factor]) => [load, String(factor)]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Load Type', 'Factor']],
             body: loadFactorData,
@@ -825,7 +827,7 @@ export class DetailedReportEngine {
                 String(s.density)
             ]);
             
-            autoTable(this.doc, {
+            this.autoTable(this.doc, {
                 startY: this.currentY,
                 head: [['Grade', 'fy (MPa)', 'fu (MPa)', 'E (GPa)', 'Density (kg/m³)']],
                 body: steelData,
@@ -849,7 +851,7 @@ export class DetailedReportEngine {
                 String(c.density)
             ]);
             
-            autoTable(this.doc, {
+            this.autoTable(this.doc, {
                 startY: this.currentY,
                 head: [['Grade', 'fck (MPa)', 'Ec (GPa)', 'Density (kg/m³)']],
                 body: concreteData,
@@ -868,7 +870,7 @@ export class DetailedReportEngine {
             
             const rebarData = this.data.materials.rebar.map(r => [r.grade, String(r.fy)]);
             
-            autoTable(this.doc, {
+            this.autoTable(this.doc, {
                 startY: this.currentY,
                 head: [['Grade', 'fy (MPa)']],
                 body: rebarData,
@@ -902,7 +904,7 @@ export class DetailedReportEngine {
             l.location
         ]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Description', 'Value', 'Location']],
             body: deadLoadData,
@@ -923,7 +925,7 @@ export class DetailedReportEngine {
             l.occupancy
         ]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Description', 'Value', 'Occupancy Type']],
             body: liveLoadData,
@@ -945,7 +947,7 @@ export class DetailedReportEngine {
             
             const windPressureData = wind.pressures.map(p => [p.zone, `${p.pressure.toFixed(2)} kN/m²`]);
             
-            autoTable(this.doc, {
+            this.autoTable(this.doc, {
                 startY: this.currentY,
                 head: [['Zone', 'Design Pressure']],
                 body: windPressureData,
@@ -983,7 +985,7 @@ export class DetailedReportEngine {
                 `${s.force.toFixed(1)} kN`
             ]);
             
-            autoTable(this.doc, {
+            this.autoTable(this.doc, {
                 startY: this.currentY,
                 head: [['Level', 'Height', 'Lateral Force']],
                 body: storyForceData,
@@ -1017,7 +1019,7 @@ export class DetailedReportEngine {
             ['Maximum Story Drift', `${(summary.maxDrift.value * 100).toFixed(3)}%`, summary.maxDrift.story, summary.maxDrift.loadCase],
         ];
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Parameter', 'Value', 'Location', 'Load Case']],
             body: dispData,
@@ -1039,7 +1041,7 @@ export class DetailedReportEngine {
                 ['Mode 3 (T3)', `${summary.fundamentalPeriod.T3.toFixed(3)} s`, `${(1/summary.fundamentalPeriod.T3).toFixed(2)} Hz`],
             ];
             
-            autoTable(this.doc, {
+            this.autoTable(this.doc, {
                 startY: this.currentY,
                 head: [['Mode', 'Period', 'Frequency']],
                 body: modalData,
@@ -1094,7 +1096,7 @@ export class DetailedReportEngine {
             m.overallStatus
         ]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Member', 'Type', 'Section', 'Utilization', 'Critical Check', 'Status']],
             body: memberSummary,
@@ -1105,7 +1107,7 @@ export class DetailedReportEngine {
             bodyStyles: {
                 valign: 'middle',
             },
-            didParseCell: (data) => {
+            didParseCell: (data: any) => {
                 if (data.column.index === 5 && data.section === 'body') {
                     const status = data.cell.raw as string;
                     if (status === 'PASS') {
@@ -1151,7 +1153,7 @@ export class DetailedReportEngine {
                     c.status
                 ]);
                 
-                autoTable(this.doc, {
+                this.autoTable(this.doc, {
                     startY: this.currentY,
                     head: [['Check', 'Clause', 'Capacity', 'Demand', 'Ratio', 'Status']],
                     body: checkData,
@@ -1159,7 +1161,7 @@ export class DetailedReportEngine {
                     headStyles: { fillColor: [100, 100, 100], fontSize: 8 },
                     margin: { left: this.margins.left + 5, right: this.margins.right },
                     styles: { fontSize: 8 },
-                    didParseCell: (data) => {
+                    didParseCell: (data: any) => {
                         if (data.column.index === 5 && data.section === 'body') {
                             const status = data.cell.raw as string;
                             if (status === 'PASS') {
@@ -1197,7 +1199,7 @@ export class DetailedReportEngine {
             c.overallStatus
         ]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Connection', 'Type', 'Members', 'Category', 'Status']],
             body: connSummary,
@@ -1205,7 +1207,7 @@ export class DetailedReportEngine {
             headStyles: { fillColor: [this.primaryRgb.r, this.primaryRgb.g, this.primaryRgb.b] },
             margin: { left: this.margins.left, right: this.margins.right },
             styles: { fontSize: 9 },
-            didParseCell: (data) => {
+            didParseCell: (data: any) => {
                 if (data.column.index === 4 && data.section === 'body') {
                     const status = data.cell.raw as string;
                     if (status === 'PASS') {
@@ -1243,7 +1245,7 @@ export class DetailedReportEngine {
             f.overallStatus
         ]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Footing', 'Type', 'Column', 'Size (L×W×D) m', 'Axial Load', 'Status']],
             body: foundSummary,
@@ -1251,7 +1253,7 @@ export class DetailedReportEngine {
             headStyles: { fillColor: [this.primaryRgb.r, this.primaryRgb.g, this.primaryRgb.b] },
             margin: { left: this.margins.left, right: this.margins.right },
             styles: { fontSize: 9 },
-            didParseCell: (data) => {
+            didParseCell: (data: any) => {
                 if (data.column.index === 5 && data.section === 'body') {
                     const status = data.cell.raw as string;
                     if (status === 'PASS') {
@@ -1288,7 +1290,7 @@ export class DetailedReportEngine {
             q.status
         ]);
         
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             head: [['Category', 'Item', 'Requirement', 'Actual', 'Status']],
             body: qaData,
@@ -1296,7 +1298,7 @@ export class DetailedReportEngine {
             headStyles: { fillColor: [this.primaryRgb.r, this.primaryRgb.g, this.primaryRgb.b] },
             margin: { left: this.margins.left, right: this.margins.right },
             styles: { fontSize: 8 },
-            didParseCell: (data) => {
+            didParseCell: (data: any) => {
                 if (data.column.index === 4 && data.section === 'body') {
                     const status = data.cell.raw as string;
                     if (status === 'PASS') {
@@ -1445,7 +1447,7 @@ export class DetailedReportEngine {
     }
 
     private renderKeyValueTable(data: string[][]): void {
-        autoTable(this.doc, {
+        this.autoTable(this.doc, {
             startY: this.currentY,
             body: data,
             theme: 'plain',

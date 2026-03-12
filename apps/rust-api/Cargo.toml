@@ -93,6 +93,13 @@ sentry = { version = "0.34", default-features = false, features = ["backtrace", 
 [dev-dependencies]
 tokio-test = "0.4"
 
+[features]
+# Enable CUDA/GPU-accelerated sparse solver kernels.
+# Phase A (current): stubs compile and fall back to CPU.
+# Phase B: bind cuSPARSE/cuBLAS via FFI — no code changes outside gpu_solver.rs.
+default = []
+gpu = []
+
 [profile.release]
 opt-level = 3
 lto = "fat"

@@ -1,4 +1,8 @@
 #!/bin/bash
+# ⚠️ DEPRECATED — DO NOT RUN IN PRODUCTION
+# This script modifies source files via sed and is DESTRUCTIVE.
+# Use GitHub Actions (azure-deploy.yml) for deployments.
+echo "ERROR: This script is deprecated. Use GitHub Actions instead." && exit 1
 # Fix all production deployment issues
 # Run this before triggering deployment
 

@@ -247,6 +247,8 @@ export interface PlacementResponse {
 }
 
 export interface FSIAnalysis {
+  status?: 'coming_soon';
+  message?: string;
   plot_area_sqm: number;
   fsi_limit: number;
   max_allowed_sqm: number;
@@ -256,6 +258,8 @@ export interface FSIAnalysis {
 }
 
 export interface CirculationReport {
+  status?: 'coming_soon';
+  message?: string;
   total_area_sqm: number;
   circulation_area_sqm: number;
   circulation_ratio: number;
@@ -264,6 +268,8 @@ export interface CirculationReport {
 }
 
 export interface EgressReport {
+  status?: 'coming_soon';
+  message?: string;
   max_travel_distance_m: number;
   limit_m: number;
   compliant: boolean;
@@ -1337,9 +1343,9 @@ export function buildConstraintReportFromVariant(variant: VariantResponse): Cons
   const compositeScore = variant.score?.composite_score ?? 0;
 
   // Empty stub FSI/circulation/egress — real data not returned per-variant
-  const stubFsi: FSIAnalysis = { plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true };
-  const stubCirc: CirculationReport = { total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0.15, compliant: true };
-  const stubEgress: EgressReport = { max_travel_distance_m: 0, limit_m: 22, compliant: true, rooms_beyond_limit: [] };
+  const stubFsi: FSIAnalysis = { status: 'coming_soon' as const, message: 'This feature is under development. Results shown are placeholders.', plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true };
+  const stubCirc: CirculationReport = { status: 'coming_soon' as const, message: 'This feature is under development. Results shown are placeholders.', total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0.15, compliant: true };
+  const stubEgress: EgressReport = { status: 'coming_soon' as const, message: 'This feature is under development. Results shown are placeholders.', max_travel_distance_m: 0, limit_m: 22, compliant: true, rooms_beyond_limit: [] };
   const stubConstraintsDetail: ConstraintsDetail = { fsi: true, overlap: true, min_width: true, aspect_ratio: true, exterior_wall: true, plumbing_cluster: true, acoustic_zones: true, clearance: true, grid_snap: true, circulation: true, span_limits: true, staircase: true, fenestration: true, egress: true, solar: true };
 
   if (complianceItems.length === 0) {

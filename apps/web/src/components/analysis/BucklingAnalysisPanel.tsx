@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { useModelStore } from '../../store/model';
 import { useShallow } from 'zustand/react/shallow';
-import { AdvancedAnalysisService } from '../../services/AdvancedAnalysisService';
+import { rustApi } from '../../api/rustApi';
 import type { BucklingAnalysisResult, BucklingMode } from '../../types/analysis';
 
 export function BucklingAnalysisPanel() {
@@ -34,21 +34,51 @@ export function BucklingAnalysisPanel() {
         setResults(null);
 
         try {
-            const model = { nodes, members, supports, loads };
-            // Note: Using mock buckling - real implementation would call Rust API
-            const mockModeShapes: BucklingMode[] = Array.from({ length: modes }, (_, i) => ({
-                modeNumber: i + 1,
-                eigenvalue: 1.5 + i * 0.3,
-                criticalLoad: (1.5 + i * 0.3) * 100,
-                shape: {}
-            }));
-            const analysisResults: BucklingAnalysisResult = { 
-                modes: modes,
-                buckling_loads: mockModeShapes.map(m => m.eigenvalue),
-                modeShapes: mockModeShapes,
+            const model = {
+                nodes: nodes.map(n => ({
+                    id: n.id, x: n.x, y: n.y, z: n.z || 0
+                })),
+                members: members.map(m => ({
+                    id: m.id,
+                    start_node: m.startNodeId,
+                    end_node: m.endNodeId,
+                })),
+                supports: nodes
+                    .filter(n => n.restraints)
+                    .map(n => ({
+                        node_id: n.id,
+                        dx: !!n.restraints?.fx,
+                        dy: !!n.restraints?.fy,
+                        dz: !!n.restraints?.fz,
+                        rx: !!n.restraints?.mx,
+                        ry: !!n.restraints?.my,
+                        rz: !!n.restraints?.mz,
+                    })),
+                loads: loads.map(l => ({
+                    load_type: 'point' as const,
+                    node_id: l.nodeId,
+                    values: [l.fx || 0, l.fy || 0, l.fz || 0, l.mx || 0, l.my || 0, l.mz || 0],
+                })),
+                n_modes: modes
+            };
+
+            const response = await rustApi.analyzeBuckling(model as any);
+
+            const bucklingModes: BucklingMode[] = (response.modes || []).map(
+                (m: any, i: number) => ({
+                    modeNumber: i + 1,
+                    eigenvalue: m.eigenvalue ?? m.load_factor ?? 0,
+                    criticalLoad: m.critical_load ?? (m.eigenvalue ?? 0) * 100,
+                    shape: m.shape ?? {}
+                })
+            );
+
+            const analysisResults: BucklingAnalysisResult = {
+                modes: bucklingModes.length,
+                buckling_loads: bucklingModes.map(m => m.eigenvalue),
+                modeShapes: bucklingModes,
                 success: true
             };
-            
             setResults(analysisResults);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Buckling analysis failed');

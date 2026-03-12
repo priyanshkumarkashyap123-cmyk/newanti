@@ -156,7 +156,7 @@ export const PAYMENT_CONFIG = {
   billingBypass: getBoolEnv("VITE_TEMP_UNLOCK_ALL", true),
   isPaymentEnabled:
     Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) &&
-    !getBoolEnv("VITE_TEMP_UNLOCK_ALL", true),
+    !getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),
 } as const;
 
 // ============================================

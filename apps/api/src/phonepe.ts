@@ -142,7 +142,7 @@ const PHONEPE_API_BASE = PHONEPE_ENV === "PRODUCTION"
   : "https://api-preprod.phonepe.com/apis/pg-sandbox";
 
 const FRONTEND_URL = env.FRONTEND_URL ?? "http://localhost:5173";
-const BILLING_BYPASS = process.env["TEMP_UNLOCK_ALL"] !== "false";
+const BILLING_BYPASS = process.env["TEMP_UNLOCK_ALL"] === "true";
 
 const isPhonePeConfigured = !!(PHONEPE_MERCHANT_ID && PHONEPE_SALT_KEY);
 

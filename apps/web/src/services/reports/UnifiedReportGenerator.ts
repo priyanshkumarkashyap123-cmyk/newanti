@@ -4,8 +4,7 @@
  * Generates a single structural engineering PDF from `UnifiedReportData`.
  */
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import type { jsPDF as JsPDFType } from 'jspdf';
 import type {
   ConnectionDetail,
   DesignCheck,
@@ -32,11 +31,14 @@ export class UnifiedReportGenerator {
   private readonly accentColor: [number, number, number] = [191, 155, 48];
   private readonly textColor: [number, number, number] = [33, 33, 33];
   private readonly mutedColor: [number, number, number] = [120, 120, 120];
+  private autoTable!: (doc: any, options: any) => void;
 
   async generateReport(
     reportData: UnifiedReportData,
     config: UnifiedReportConfig = {},
   ): Promise<Uint8Array> {
+    const { jsPDF } = await import('jspdf');
+    this.autoTable = (await import('jspdf-autotable')).default;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const cfg = {
       includeAnalysisSummary: true,
@@ -80,7 +82,7 @@ export class UnifiedReportGenerator {
     return new Uint8Array(doc.output('arraybuffer') as ArrayBuffer);
   }
 
-  private renderCoverPage(doc: jsPDF, metadata: ProjectMetadata, logoB64?: string): void {
+  private renderCoverPage(doc: JsPDFType, metadata: ProjectMetadata, logoB64?: string): void {
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
     const m = this.margin;
@@ -106,7 +108,7 @@ export class UnifiedReportGenerator {
     doc.setFont('helvetica', 'normal');
     doc.text(metadata.projectName, pageW / 2, 39, { align: 'center' });
 
-    autoTable(doc, {
+    this.autoTable(doc, {
       startY: 90,
       margin: { left: m, right: m },
       theme: 'grid',
@@ -130,7 +132,7 @@ export class UnifiedReportGenerator {
     doc.text('Prepared in BeamLab — values should be reviewed by the responsible engineer.', m, pageH - 20);
   }
 
-  private renderExecutiveSummary(doc: jsPDF, reportData: UnifiedReportData): void {
+  private renderExecutiveSummary(doc: JsPDFType, reportData: UnifiedReportData): void {
     const m = this.margin;
     let y = m;
 
@@ -152,7 +154,7 @@ export class UnifiedReportGenerator {
     doc.text(doc.splitTextToSize(summaryText, 180), m, y);
     y += 40;
 
-    autoTable(doc, {
+    this.autoTable(doc, {
       startY: y,
       margin: { left: m, right: m },
       theme: 'striped',
@@ -168,14 +170,14 @@ export class UnifiedReportGenerator {
     });
   }
 
-  private renderAnalysisSection(doc: jsPDF, analysis: UnifiedAnalysisResult): void {
+  private renderAnalysisSection(doc: JsPDFType, analysis: UnifiedAnalysisResult): void {
     const m = this.margin;
     let y = m;
 
     this.renderSectionTitle(doc, '2. Analysis Results', y);
     y += 12;
 
-    autoTable(doc, {
+    this.autoTable(doc, {
       startY: y,
       margin: { left: m, right: m },
       theme: 'grid',
@@ -205,7 +207,7 @@ export class UnifiedReportGenerator {
     ]);
 
     if (reactionRows.length > 0) {
-      autoTable(doc, {
+      this.autoTable(doc, {
         startY: ((doc as unknown as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ?? y) + 10,
         margin: { left: m, right: m },
         theme: 'striped',
@@ -216,14 +218,14 @@ export class UnifiedReportGenerator {
     }
   }
 
-  private renderDesignSection(doc: jsPDF, design: UnifiedDesignResult): void {
+  private renderDesignSection(doc: JsPDFType, design: UnifiedDesignResult): void {
     const m = this.margin;
     let y = m;
 
     this.renderSectionTitle(doc, '3. Design Checks', y);
     y += 12;
 
-    autoTable(doc, {
+    this.autoTable(doc, {
       startY: y,
       margin: { left: m, right: m },
       theme: 'grid',
@@ -256,7 +258,7 @@ export class UnifiedReportGenerator {
       ]);
 
     if (designRows.length > 0) {
-      autoTable(doc, {
+      this.autoTable(doc, {
         startY: ((doc as unknown as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ?? y) + 10,
         margin: { left: m, right: m },
         theme: 'striped',
@@ -267,7 +269,7 @@ export class UnifiedReportGenerator {
     }
   }
 
-  private renderDetailingSection(doc: jsPDF, detailing: UnifiedDetailingResult): void {
+  private renderDetailingSection(doc: JsPDFType, detailing: UnifiedDetailingResult): void {
     const m = this.margin;
     let y = m;
 
@@ -303,7 +305,7 @@ export class UnifiedReportGenerator {
     }
 
     if (rcRows.length > 0) {
-      autoTable(doc, {
+      this.autoTable(doc, {
         startY: y,
         margin: { left: m, right: m },
         theme: 'striped',
@@ -315,7 +317,7 @@ export class UnifiedReportGenerator {
     }
 
     if (steelRows.length > 0) {
-      autoTable(doc, {
+      this.autoTable(doc, {
         startY: y,
         margin: { left: m, right: m },
         theme: 'striped',
@@ -326,7 +328,7 @@ export class UnifiedReportGenerator {
     }
   }
 
-  private renderScheduleSection(doc: jsPDF, detailing: UnifiedDetailingResult): void {
+  private renderScheduleSection(doc: JsPDFType, detailing: UnifiedDetailingResult): void {
     const m = this.margin;
     const y = m;
 
@@ -358,7 +360,7 @@ export class UnifiedReportGenerator {
       return;
     }
 
-    autoTable(doc, {
+    this.autoTable(doc, {
       startY: y + 12,
       margin: { left: m, right: m },
       theme: 'grid',
@@ -368,7 +370,7 @@ export class UnifiedReportGenerator {
     });
   }
 
-  private renderSignatureSection(doc: jsPDF, metadata: ProjectMetadata): void {
+  private renderSignatureSection(doc: JsPDFType, metadata: ProjectMetadata): void {
     const m = this.margin;
     let y = m;
 
@@ -385,7 +387,7 @@ export class UnifiedReportGenerator {
     doc.text(certLines, m, y);
     y += 30;
 
-    autoTable(doc, {
+    this.autoTable(doc, {
       startY: y,
       margin: { left: m, right: m },
       theme: 'grid',
@@ -404,7 +406,7 @@ export class UnifiedReportGenerator {
     });
   }
 
-  private renderSectionTitle(doc: jsPDF, title: string, y: number): void {
+  private renderSectionTitle(doc: JsPDFType, title: string, y: number): void {
     const m = this.margin;
     const pageW = doc.internal.pageSize.getWidth();
     doc.setFont('helvetica', 'bold');
@@ -416,7 +418,7 @@ export class UnifiedReportGenerator {
     doc.line(m, y + 2, pageW - m, y + 2);
   }
 
-  private renderPageFooters(doc: jsPDF, projectName: string): void {
+  private renderPageFooters(doc: JsPDFType, projectName: string): void {
     const totalPages = doc.getNumberOfPages();
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();

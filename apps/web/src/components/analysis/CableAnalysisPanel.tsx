@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { useModelStore } from '../../store/model';
 import { useShallow } from 'zustand/react/shallow';
-import { AdvancedAnalysisService } from '../../services/AdvancedAnalysisService';
+import { rustApi } from '../../api/rustApi';
 
 export function CableAnalysisPanel() {
     const store = useModelStore(
@@ -38,20 +38,50 @@ export function CableAnalysisPanel() {
         setResults(null);
 
         try {
-            const model = { nodes, members, supports, loads };
-            // Note: Using mock cable analysis - real implementation would call Rust API
+            // Build cable analysis requests per member
+            const cableResults = [];
+            for (const member of members) {
+                const startNode = nodes.find(n => n.id === member.startNodeId);
+                const endNode = nodes.find(n => n.id === member.endNodeId);
+                if (!startNode || !endNode) continue;
+
+                const dx = endNode.x - startNode.x;
+                const dy = (endNode.y || 0) - (startNode.y || 0);
+                const dz = (endNode.z || 0) - (startNode.z || 0);
+                const span = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                try {
+                    const response = await rustApi.analyzeCable({
+                        span,
+                        sag: params.sag * span,
+                        loadPerMeter: 10, // default kN/m
+                        cableArea: member.A || 0.001,
+                        elasticModulus: params.cableModulus,
+                    });
+
+                    cableResults.push({
+                        id: member.id,
+                        tension: response.maxTension ?? response.horizontalTension ?? 0,
+                        sag: response.sagRatio ? response.sagRatio * span * 1000 : params.sag * span * 1000,
+                        length: response.cableLength ?? span,
+                        status: 'taut'
+                    });
+                } catch {
+                    cableResults.push({
+                        id: member.id,
+                        tension: 0,
+                        sag: 0,
+                        length: span,
+                        status: 'error'
+                    });
+                }
+            }
+
             const analysisResults = {
-                cables: members.slice(0, 5).map((m, i) => ({
-                    id: m.id,
-                    tension: 150 + i * 20,
-                    sag: params.sag * (1 + i * 0.1),
-                    length: 10 + i,
-                    status: 'taut'
-                })),
+                cables: cableResults,
                 converged: true,
                 iterations: params.iterations
             };
-            
             setResults(analysisResults);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Cable analysis failed');

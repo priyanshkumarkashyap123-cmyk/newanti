@@ -11,9 +11,6 @@
  * - Multi-language support
  */
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
 // Types and Interfaces
 export interface ReportConfig {
   title: string;
@@ -1166,6 +1163,8 @@ export class PDFReportGenerator {
    * Render sections to PDF using jsPDF + jspdf-autotable
    */
   private async renderToPDF(): Promise<Uint8Array> {
+    const { jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();

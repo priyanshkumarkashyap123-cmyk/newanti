@@ -105,7 +105,8 @@ export function generateCertificateId(): string {
 
 export function generateVerificationCode(certificateId: string, timestamp: number): string {
   // Simple verification code using timestamp and cert ID
-  const combined = `${certificateId}${timestamp}beamlab-secret`;
+  const secret = import.meta.env.VITE_CERTIFICATE_SECRET || 'dev-only-secret';
+  const combined = `${certificateId}${timestamp}${secret}`;
   let hash = 0;
   for (let i = 0; i < combined.length; i++) {
     const char = combined.charCodeAt(i);

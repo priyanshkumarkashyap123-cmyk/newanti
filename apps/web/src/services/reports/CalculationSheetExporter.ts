@@ -10,8 +10,7 @@
  *   // pdf is Uint8Array — trigger browser download
  */
 
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import type { jsPDF as JsPDFType } from 'jspdf';
 import type { MemberTraceReport, TracedCalculation, CalculationStep as TracedCalcStep } from './CalculationTraceabilityEngine';
 
 export interface CalcSheetProject {
@@ -27,6 +26,7 @@ export interface CalcSheetProject {
 export class CalculationSheetExporter {
   private readonly margin = 15;
   private readonly headerColor: [number, number, number] = [0, 51, 102];
+  private autoTable!: (doc: any, options: any) => void;
 
   /**
    * Export a single member's traced calculation report to PDF
@@ -35,6 +35,8 @@ export class CalculationSheetExporter {
     report: MemberTraceReport,
     project: CalcSheetProject
   ): Promise<Uint8Array> {
+    const { jsPDF } = await import('jspdf');
+    this.autoTable = (await import('jspdf-autotable')).default;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
     const m = this.margin;
@@ -56,7 +58,7 @@ export class CalculationSheetExporter {
 
     // ---- Project Info Grid ----
     doc.setTextColor(33, 33, 33);
-    autoTable(doc, {
+    this.autoTable(doc, {
       body: [
         ['Project:', project.projectName, 'Project No:', project.projectNumber],
         ['Client:', project.clientName, 'Date:', project.date.toLocaleDateString()],
@@ -111,6 +113,8 @@ export class CalculationSheetExporter {
     reports: MemberTraceReport[],
     project: CalcSheetProject
   ): Promise<Uint8Array> {
+    const { jsPDF } = await import('jspdf');
+    this.autoTable = (await import('jspdf-autotable')).default;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
     const m = this.margin;
@@ -149,7 +153,7 @@ export class CalculationSheetExporter {
   // ---- Internal Render ----
 
   private renderCalculation(
-    doc: jsPDF,
+    doc: JsPDFType,
     calc: TracedCalculation,
     startY: number,
     margin: number,
@@ -188,7 +192,7 @@ export class CalculationSheetExporter {
     ]);
 
     ensureSpace(rows.length * 6 + 10);
-    autoTable(doc, {
+    this.autoTable(doc, {
       head: [['Step', 'Formula', 'Values', 'Result', 'Check']],
       body: rows,
       startY: y,

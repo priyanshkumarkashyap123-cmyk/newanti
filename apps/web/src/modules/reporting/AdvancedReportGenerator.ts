@@ -16,8 +16,7 @@
  * @version 2.0.0
  */
 
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import type { jsPDF as JsPDFType } from 'jspdf';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -396,18 +395,29 @@ interface AppendixContent {
 // ============================================================================
 
 export class AdvancedReportGenerator {
-  private doc: jsPDF;
+  private doc!: JsPDFType;
   private config: ReportConfig;
   private pageNumber: number = 0;
   private tocEntries: { title: string; page: number; level: number }[] = [];
   private currentY: number = 0;
   private margins = { top: 25, bottom: 25, left: 20, right: 20 };
-  private pageWidth: number;
-  private pageHeight: number;
-  private contentWidth: number;
+  private pageWidth!: number;
+  private pageHeight!: number;
+  private contentWidth!: number;
+  private autoTable!: (doc: any, options: any) => void;
 
   constructor(config: ReportConfig) {
     this.config = config;
+  }
+
+  // --------------------------------------------------------------------------
+  // MAIN GENERATION
+  // --------------------------------------------------------------------------
+  
+  async generate(): Promise<Blob> {
+    const { jsPDF } = await import('jspdf');
+    this.autoTable = (await import('jspdf-autotable')).default;
+
     this.doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -416,13 +426,7 @@ export class AdvancedReportGenerator {
     this.pageWidth = this.doc.internal.pageSize.getWidth();
     this.pageHeight = this.doc.internal.pageSize.getHeight();
     this.contentWidth = this.pageWidth - this.margins.left - this.margins.right;
-  }
 
-  // --------------------------------------------------------------------------
-  // MAIN GENERATION
-  // --------------------------------------------------------------------------
-  
-  async generate(): Promise<Blob> {
     this.pageNumber = 0;
     this.tocEntries = [];
     
@@ -1562,7 +1566,7 @@ export class AdvancedReportGenerator {
       this.addPage();
     }
     
-    autoTable(this.doc, {
+    this.autoTable(this.doc, {
       head: [data.headers],
       body: data.rows,
       startY: this.currentY,

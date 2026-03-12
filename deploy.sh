@@ -1,4 +1,7 @@
 #!/bin/bash
+# ⚠️ DEPRECATED: This script is a legacy Kudu deployment mechanism.
+# Use GitHub Actions (azure-deploy.yml) for production deployments.
+# This file is retained only for reference. DO NOT USE IN PRODUCTION.
 
 # ----------------------
 # KUDU Deployment Script

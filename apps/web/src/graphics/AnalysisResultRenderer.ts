@@ -634,9 +634,7 @@ export class ModeShapeAnimator {
       this.modeGroup.add(mesh);
     }
 
-    // Add mode info
-    console.log(`Mode ${modeResult.modeNumber}: f=${modeResult.frequency.toFixed(2)} Hz, T=${modeResult.period.toFixed(3)} s`);
-    console.log(`Mass participation: X=${(modeResult.massParticipation.x * 100).toFixed(1)}%, Y=${(modeResult.massParticipation.y * 100).toFixed(1)}%, Z=${(modeResult.massParticipation.z * 100).toFixed(1)}%`);
+
   }
 
   /**

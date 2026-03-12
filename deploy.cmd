@@ -1,4 +1,7 @@
 @if "%SCM_TRACE_LEVEL%" NEQ "4" @echo off
+REM ⚠️ DEPRECATED: This script is a legacy Windows deployment mechanism.
+REM Use GitHub Actions (azure-deploy.yml) for production deployments.
+REM This file is retained only for reference. DO NOT USE IN PRODUCTION.
 
 :: ============================================================
 :: BeamLab Node.js API Deployment Script

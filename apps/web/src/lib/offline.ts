@@ -192,7 +192,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
         scope: '/',
       });
       
-      console.log('Service Worker registered:', registration.scope);
+      if (import.meta.env.DEV) console.log('Service Worker registered:', registration.scope);
       
       // Listen for updates
       registration.addEventListener('updatefound', () => {
@@ -200,7 +200,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              console.log('New content available, please refresh.');
+              if (import.meta.env.DEV) console.log('New content available, please refresh.');
               // Notify user about update
               dispatchEvent(new CustomEvent('sw-update-available'));
             }
@@ -210,7 +210,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       
       return registration;
     } catch (error) {
-      console.error('Service Worker registration failed:', error);
+      if (import.meta.env.DEV) console.error('Service Worker registration failed:', error);
       return null;
     }
   }

@@ -58,3 +58,81 @@ def test_build_auto_program_nodes_basic():
     # bedroom_preference=3 → master + 2 bedrooms → bed_1, bed_2 present
     assert any(n.id.startswith("bed_") for n in nodes)
 
+
+def test_auto_program_small_plot_excludes_optional_rooms_even_if_requested():
+    req = layout_v2_mod.MinimalAutoOptimizeRequest(
+        site=layout_v2_mod.SiteRequest(dimensions_m=[8.0, 8.0]),  # 64 sqm
+        bedroom_preference=2,
+        include_study=True,
+        include_guest_room=True,
+        include_parking=True,
+    )
+
+    nodes = layout_v2_mod._build_auto_program_nodes(req)
+    ids = {n.id for n in nodes}
+    assert "guest_1" not in ids
+    assert "study_1" not in ids
+    assert "parking_1" not in ids
+
+
+def test_auto_program_medium_plot_includes_parking_but_not_study_or_guest():
+    req = layout_v2_mod.MinimalAutoOptimizeRequest(
+        site=layout_v2_mod.SiteRequest(dimensions_m=[10.0, 12.0]),  # 120 sqm
+        bedroom_preference=2,
+        include_study=True,
+        include_guest_room=True,
+        include_parking=True,
+    )
+
+    nodes = layout_v2_mod._build_auto_program_nodes(req)
+    ids = {n.id for n in nodes}
+    assert "parking_1" in ids
+    # guest requires >=140, study requires >=170 by current heuristics
+    assert "guest_1" not in ids
+    assert "study_1" not in ids
+
+
+def test_auto_program_large_plot_includes_stair_guest_study_and_common_bath():
+    req = layout_v2_mod.MinimalAutoOptimizeRequest(
+        site=layout_v2_mod.SiteRequest(dimensions_m=[15.0, 12.0], num_floors=2),  # 180 sqm
+        bedroom_preference=4,
+        include_study=True,
+        include_guest_room=True,
+        include_parking=True,
+    )
+
+    nodes = layout_v2_mod._build_auto_program_nodes(req)
+    ids = {n.id for n in nodes}
+
+    assert "stair_1" in ids
+    assert "guest_1" in ids
+    assert "study_1" in ids
+    assert "parking_1" in ids
+    assert "bath_common_1" in ids
+    bedroom_ids = [n.id for n in nodes if n.id.startswith("bed_")]
+    assert len(bedroom_ids) == 3  # bedroom_preference=4 => master + 3 additional
+
+
+def test_auto_program_adjacency_has_valid_room_ids_and_no_self_loops():
+    req = layout_v2_mod.MinimalAutoOptimizeRequest(
+        site=layout_v2_mod.SiteRequest(dimensions_m=[15.0, 12.0], num_floors=2),
+        bedroom_preference=4,
+        include_study=True,
+        include_guest_room=True,
+        include_parking=True,
+    )
+
+    nodes = layout_v2_mod._build_auto_program_nodes(req)
+    ids = {n.id for n in nodes}
+    edges = layout_v2_mod._build_auto_program_adjacency(nodes)
+
+    assert len(edges) > 0
+    for e in edges:
+        assert e.node_a in ids
+        assert e.node_b in ids
+        assert e.node_a != e.node_b
+
+    pair_set = {(e.node_a, e.node_b) for e in edges}
+    assert ("entry_1", "living_1") in pair_set
+    assert ("dining_1", "kitchen_1") in pair_set
+

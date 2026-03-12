@@ -1,0 +1,46 @@
+---
+name: "🚀 GPU Integration Task"
+about: Track a GPU solver integration milestone
+title: '[GPU]: '
+labels: ['gpu', 'performance', 'solver']
+assignees: ''
+---
+
+## 📝 Task Description
+<!-- What GPU integration step does this issue cover? -->
+
+## 🎯 Objective
+<!-- What specific capability is added when this is done? -->
+
+## 🔗 Prerequisites
+- Depends on #
+
+## 🏗️ Implementation Steps
+1. 
+2. 
+3. 
+
+## ✅ Acceptance Criteria
+- [ ] Compiles with `--features gpu` and without (zero regression in `cargo test`)
+- [ ] CPU fallback path exercised when GPU is unavailable or `SPARSE_GPU_ENABLE=false`
+- [ ] Numerical parity: `||u_gpu - u_cpu|| / ||u_cpu|| < 1e-10`
+- [ ] No regression in existing `cargo test` suite
+- [ ] Benchmark comparison table included in PR
+
+## 📊 Benchmark Expectations
+
+| Metric | CPU Baseline | GPU Target |
+|--------|-------------|------------|
+| 100k DOF solve (ms) | ~520 | |
+| 60k frame-like (ms) | ~370 | |
+| 20k DOF solve (ms)  | ~132 | |
+
+## 🔧 Environment
+- CUDA version: 
+- GPU model: 
+- Driver version: 
+
+## 📝 Additional Context
+- See `docs/RUST_SOLVER_GPU_CPU_FOLLOWUPS.md`
+- Feature gate: `--features gpu`
+- Runtime enable: `SPARSE_GPU_ENABLE=true`

@@ -15,8 +15,7 @@
  * @version 2.0.0
  */
 
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import type { jsPDF as JsPDFType } from 'jspdf';
 import { format } from 'date-fns';
 
 // ============================================================================
@@ -102,14 +101,14 @@ export interface SheetSettings {
 // ============================================================================
 
 export class CalculationSheetGenerator {
-    private doc: jsPDF;
+    private doc!: JsPDFType;
     private data: CalculationSheetData;
     private settings: SheetSettings;
     
-    private pageWidth: number;
-    private pageHeight: number;
+    private pageWidth!: number;
+    private pageHeight!: number;
     private margins = { top: 35, bottom: 20, left: 15, right: 15 };
-    private contentWidth: number;
+    private contentWidth!: number;
     private currentY: number = 0;
     private pageNumber: number = 0;
     
@@ -125,16 +124,6 @@ export class CalculationSheetGenerator {
             showStepNumbers: true,
             ...settings
         };
-        
-        this.doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: this.settings.pageSize.toLowerCase() as 'a4' | 'letter'
-        });
-        
-        this.pageWidth = this.doc.internal.pageSize.getWidth();
-        this.pageHeight = this.doc.internal.pageSize.getHeight();
-        this.contentWidth = this.pageWidth - this.margins.left - this.margins.right;
         
         this.primaryRgb = this.hexToRgb(this.settings.primaryColor);
     }
@@ -153,6 +142,18 @@ export class CalculationSheetGenerator {
     // ========================================================================
 
     async generate(): Promise<Blob> {
+        const { jsPDF } = await import('jspdf');
+        await import('jspdf-autotable');
+
+        this.doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: this.settings.pageSize.toLowerCase() as 'a4' | 'letter'
+        });
+        this.pageWidth = this.doc.internal.pageSize.getWidth();
+        this.pageHeight = this.doc.internal.pageSize.getHeight();
+        this.contentWidth = this.pageWidth - this.margins.left - this.margins.right;
+
         // First page
         this.addPage();
         this.renderHeader();

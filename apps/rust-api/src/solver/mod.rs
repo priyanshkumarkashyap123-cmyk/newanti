@@ -36,6 +36,7 @@ pub mod elements;
 pub mod section_database;
 pub mod job_queue;
 pub mod ws_progress;
+pub mod gpu_solver;
 
 // Re-export key types
 pub use cable::{CableElement, CableMaterial};

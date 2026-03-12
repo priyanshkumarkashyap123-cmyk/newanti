@@ -120,9 +120,6 @@ async function loadWasm(): Promise<void> {
     // Initialize with the fetched bytes
     await importedModule.default(wasmBytes);
     wasmReady = true;
-    console.log(
-      "[StructuralSolverWorker] WASM Solver Module Loaded from public folder",
-    );
   } catch (error) {
     console.warn(
       "[StructuralSolverWorker] WASM Solver not available, using JS fallback:",

@@ -1,8 +1,530 @@
-"""\njson_handler.py - JSON Input/Output for DSM Solver
+"""
+json_handler.py - JSON Input/Output for DSM Solver
 
 Handles conversion between JSON topology (from React frontend) and
 Python structural model objects.
 
 Input JSON format (from frontend):
 {
-  \"nodes\": [{\"id\": \"N1\", \"x\": 0, \"y\": 0, \"z\": 0}, ...],\n  \"elements\": [{\"id\": \"M1\", \"startNodeId\": \"N1\", \"endNodeId\": \"N2\"}, ...],\n  \"restraints\": [{\"nodeId\": \"N1\", \"ux\": true, \"uy\": true, ...}, ...],\n  \"loads\": [{\"nodeId\": \"N2\", \"Px\": 100, \"Py\": -50, ...}, ...],\n  \"memberLoads\": [{\"memberId\": \"M1\", \"type\": \"UDL\", \"w\": 10, ...}, ...],\n  \"loadCases\": [...],\n  \"code\": \"IS 456:2000\"\n}\n\"\"\"\n\nimport json\nfrom typing import Dict, List, Any, Optional\nimport numpy as np\nfrom numpy import float64\nimport logging\n\nfrom dsm_3d_frame import (\n    Node3D, Element3D, StructuralModel,\n    DirectStiffnessMethod3D\n)\n\nlogger = logging.getLogger(__name__)\n\n\nclass JSONHandler:\n    \"\"\"Convert between JSON and DSM model objects\"\"\"\n\n    @staticmethod\n    def parse_topology_json(json_data: Dict[str, Any]) -> StructuralModel:\n        \"\"\"\n        Parse JSON topology and create StructuralModel.\n\n        Parameters\n        ----------\n        json_data : dict\n            JSON with keys: nodes, elements, restraints (optional)\n\n        Returns\n        -------\n        model : StructuralModel\n            Structural model ready for analysis\n\n        Raises\n        ------\n        ValueError\n            If JSON format is invalid\n        \"\"\"\n        nodes_dict = {}\n        elements_dict = {}\n\n        # ====================================================================\n        # PARSE NODES\n        # ====================================================================\n        try:\n            nodes_data = json_data.get('nodes', [])\n            if not nodes_data:\n                raise ValueError(\"No nodes in JSON\")\n\n            for node_data in nodes_data:\n                node_id = node_data['id']\n                x = float64(node_data['x'])\n                y = float64(node_data['y'])\n                z = float64(node_data['z'])\n\n                # Initialize empty restraints dict\n                restraints = {\n                    'ux': False, 'uy': False, 'uz': False,\n                    'rx': False, 'ry': False, 'rz': False\n                }\n\n                node = Node3D(\n                    id=node_id,\n                    x=x,\n                    y=y,\n                    z=z,\n                    restraints=restraints\n                )\n                nodes_dict[node_id] = node\n\n            logger.info(f\"Parsed {len(nodes_dict)} nodes\")\n\n        except (KeyError, ValueError) as e:\n            raise ValueError(f\"Error parsing nodes: {e}\")\n\n        # ====================================================================\n        # PARSE RESTRAINTS\n        # ====================================================================\n        restraints_data = json_data.get('restraints', [])\n        for restraint in restraints_data:\n            node_id = restraint['nodeId']\n            if node_id not in nodes_dict:\n                logger.warning(f\"Restraint on non-existent node {node_id}\")\n                continue\n\n            # Update node restraints\n            for dof in ['ux', 'uy', 'uz', 'rx', 'ry', 'rz']:\n                if dof in restraint:\n                    nodes_dict[node_id].restraints[dof] = bool(restraint[dof])\n\n        # ====================================================================\n        # PARSE ELEMENTS\n        # ====================================================================\n        try:\n            elements_data = json_data.get('elements', [])\n            if not elements_data:\n                raise ValueError(\"No elements in JSON\")\n\n            for elem_data in elements_data:\n                elem_id = elem_data['id']\n                node_i = elem_data['startNodeId']\n                node_j = elem_data['endNodeId']\n\n                # Verify nodes exist\n                if node_i not in nodes_dict or node_j not in nodes_dict:\n                    raise ValueError(f\"Element {elem_id} references non-existent node\")\n\n                # Element properties (use defaults if not specified)\n                E = float64(elem_data.get('E', 200e6))  # Steel default\n                G = float64(elem_data.get('G', 77e6))\n                A = float64(elem_data.get('A', 0.015))\n                Iy = float64(elem_data.get('Iy', 0.00008))\n                Iz = float64(elem_data.get('Iz', 0.00012))\n                J = float64(elem_data.get('J', 0.0001))\n\n                element = Element3D(\n                    id=elem_id,\n                    node_i=node_i,\n                    node_j=node_j,\n                    E=E,\n                    G=G,\n                    A=A,\n                    Iy=Iy,\n                    Iz=Iz,\n                    J=J\n                )\n                elements_dict[elem_id] = element\n\n            logger.info(f\"Parsed {len(elements_dict)} elements\")\n\n        except (KeyError, ValueError) as e:\n            raise ValueError(f\"Error parsing elements: {e}\")\n\n        # Create model\n        model = StructuralModel(\n            nodes=nodes_dict,\n            elements=elements_dict,\n            n_dofs=len(nodes_dict) * 6\n        )\n\n        return model\n\n    @staticmethod\n    def parse_loads_json(json_data: Dict[str, Any]) -> np.ndarray:\n        \"\"\"\n        Parse nodal and member loads from JSON.\n\n        Returns global load vector F for system [K]{U} = {F}.\n\n        Parameters\n        ----------\n        json_data : dict\n            JSON with keys: nodes (for node count), loads, memberLoads\n\n        Returns\n        -------\n        F : ndarray (n_dofs,)\n            Global load vector\n        \"\"\"\n        n_nodes = len(json_data.get('nodes', []))\n        n_dofs = n_nodes * 6\n        F = np.zeros(n_dofs, dtype=float64)\n\n        # Node index mapping\n        nodes_data = json_data.get('nodes', [])\n        node_list = sorted([n['id'] for n in nodes_data])\n        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}\n\n        # ====================================================================\n        # PARSE NODAL LOADS\n        # ====================================================================\n        loads_data = json_data.get('loads', [])\n        for load in loads_data:\n            node_id = load['nodeId']\n            if node_id not in node_to_index:\n                logger.warning(f\"Load on non-existent node {node_id}\")\n                continue\n\n            node_idx = node_to_index[node_id]\n            base_dof = node_idx * 6\n\n            # Force components (kN)\n            Px = float64(load.get('Px', 0))\n            Py = float64(load.get('Py', 0))\n            Pz = float64(load.get('Pz', 0))\n\n            # Moment components (kN·m)\n            Mx = float64(load.get('Mx', 0))\n            My = float64(load.get('My', 0))\n            Mz = float64(load.get('Mz', 0))\n\n            F[base_dof] += Px\n            F[base_dof + 1] += Py\n            F[base_dof + 2] += Pz\n            F[base_dof + 3] += Mx\n            F[base_dof + 4] += My\n            F[base_dof + 5] += Mz\n\n        logger.info(f\"Applied {len(loads_data)} nodal loads\")\n\n        # ====================================================================\n        # PARSE MEMBER LOADS (distributed loads)\n        # ====================================================================\n        # Note: Member loads are converted to equivalent nodal loads here\n        # For full accuracy, this should be done in element load vector generation\n        member_loads_data = json_data.get('memberLoads', [])\n        for mload in member_loads_data:\n            # TODO: Implement member load conversion to nodal loads\n            # For now, log that member loads are present\n            logger.debug(f\"Member load on {mload.get('memberId')}\")\n\n        return F\n\n\nclass OutputFormatter:\n    \"\"\"Format analysis results for JSON output\"\"\"\n\n    @staticmethod\n    def format_results(dsm: DirectStiffnessMethod3D,\n                      model: StructuralModel) -> Dict[str, Any]:\n        \"\"\"\n        Format analysis results as JSON-serializable dictionary.\n\n        Parameters\n        ----------\n        dsm : DirectStiffnessMethod3D\n            Solved DSM system\n        model : StructuralModel\n            Structural model\n\n        Returns\n        -------\n        results : dict\n            Dictionary with nodes, elements, displacements, reactions, etc.\n        \"\"\"\n        if dsm.displacements is None:\n            raise ValueError(\"System not solved\")\n\n        # Node index mapping\n        node_list = sorted(model.nodes.keys())\n        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}\n\n        # ====================================================================\n        # DISPLACEMENTS\n        # ====================================================================\n        displacements = {}\n        dof_names = ['ux', 'uy', 'uz', 'rx', 'ry', 'rz']\n\n        for node_id, node_idx in node_to_index.items():\n            base_dof = node_idx * 6\n            disp = {}\n            for offset, dof_name in enumerate(dof_names):\n                disp[dof_name] = float(dsm.displacements[base_dof + offset])\n            displacements[node_id] = disp\n\n        # ====================================================================\n        # REACTIONS\n        # ====================================================================\n        reactions = {}\n        if dsm.reactions is not None:\n            for node_id, node_idx in node_to_index.items():\n                base_dof = node_idx * 6\n                reac = {}\n                for offset, dof_name in enumerate(dof_names):\n                    reac[dof_name] = float(dsm.reactions[base_dof + offset])\n                reactions[node_id] = reac\n\n        # ====================================================================\n        # BUILD OUTPUT\n        # ====================================================================\n        output = {\n            'status': 'completed',\n            'displacements': displacements,\n            'reactions': reactions,\n            'nodes': [\n                {\n                    'id': node_id,\n                    'x': float(node.x),\n                    'y': float(node.y),\n                    'z': float(node.z),\n                    'displacement': displacements.get(node_id, {}),\n                    'reaction': reactions.get(node_id, {}\n                }\n                for node_id, node in model.nodes.items()\n            ],\n            'elements': [\n                {\n                    'id': elem_id,\n                    'startNodeId': elem.node_i,\n                    'endNodeId': elem.node_j,\n                    'properties': {\n                        'E': float(elem.E),\n                        'G': float(elem.G),\n                        'A': float(elem.A),\n                        'Iy': float(elem.Iy),\n                        'Iz': float(elem.Iz),\n                        'J': float(elem.J),\n                    }\n                }\n                for elem_id, elem in model.elements.items()\n            ],\n        }\n\n        return output\n\n    @staticmethod\n    def to_json_string(results: Dict[str, Any], indent: int = 2) -> str:\n        \"\"\"\n        Convert results dictionary to JSON string.\n\n        Parameters\n        ----------\n        results : dict\n            Results dictionary from format_results()\n        indent : int\n            JSON indentation level\n\n        Returns\n        -------\n        json_str : str\n            JSON string ready for transmission\n        \"\"\"\n        return json.dumps(results, indent=indent, default=float)\n\n\nif __name__ == \"__main__\":\n    logging.basicConfig(level=logging.INFO)\n\n    # Test with simple example\n    test_json = {\n        \"nodes\": [\n            {\"id\": \"N1\", \"x\": 0, \"y\": 0, \"z\": 0},\n            {\"id\": \"N2\", \"x\": 5, \"y\": 0, \"z\": 0},\n        ],\n        \"elements\": [\n            {\"id\": \"M1\", \"startNodeId\": \"N1\", \"endNodeId\": \"N2\"},\n        ],\n        \"restraints\": [\n            {\"nodeId\": \"N1\", \"ux\": True, \"uy\": True, \"uz\": True,\n             \"rx\": True, \"ry\": True, \"rz\": True},\n        ],\n        \"loads\": [\n            {\"nodeId\": \"N2\", \"Py\": -50},\n        ],\n    }\n\n    handler = JSONHandler()\n    model = handler.parse_topology_json(test_json)\n    print(f\"Model: {len(model.nodes)} nodes, {len(model.elements)} elements\")\n\n    F = handler.parse_loads_json(test_json)\n    print(f\"Load vector: {F}\")\n"
+  "nodes": [{"id": "N1", "x": 0, "y": 0, "z": 0}, ...],
+  "elements": [{"id": "M1", "startNodeId": "N1", "endNodeId": "N2"}, ...],
+  "restraints": [{"nodeId": "N1", "ux": true, "uy": true, ...}, ...],
+  "loads": [{"nodeId": "N2", "Px": 100, "Py": -50, ...}, ...],
+  "memberLoads": [{"memberId": "M1", "type": "UDL", "w": 10, ...}, ...],
+  "loadCases": [...],
+  "code": "IS 456:2000"
+}
+"""
+
+import json
+from typing import Dict, List, Any, Optional
+import numpy as np
+from numpy import float64
+import logging
+
+from dsm_3d_frame import (
+    Node3D, Element3D, StructuralModel,
+    DirectStiffnessMethod3D
+)
+
+logger = logging.getLogger(__name__)
+
+
+class JSONHandler:
+    """Convert between JSON and DSM model objects"""
+
+    @staticmethod
+    def parse_topology_json(json_data: Dict[str, Any]) -> StructuralModel:
+        """
+        Parse JSON topology and create StructuralModel.
+
+        Parameters
+        ----------
+        json_data : dict
+            JSON with keys: nodes, elements, restraints (optional)
+
+        Returns
+        -------
+        model : StructuralModel
+            Structural model ready for analysis
+
+        Raises
+        ------
+        ValueError
+            If JSON format is invalid
+        """
+        nodes_dict = {}
+        elements_dict = {}
+
+        # ====================================================================
+        # PARSE NODES
+        # ====================================================================
+        try:
+            nodes_data = json_data.get('nodes', [])
+            if not nodes_data:
+                raise ValueError("No nodes in JSON")
+
+            for node_data in nodes_data:
+                node_id = node_data['id']
+                x = float64(node_data['x'])
+                y = float64(node_data['y'])
+                z = float64(node_data['z'])
+
+                # Initialize empty restraints dict
+                restraints = {
+                    'ux': False, 'uy': False, 'uz': False,
+                    'rx': False, 'ry': False, 'rz': False
+                }
+
+                node = Node3D(
+                    id=node_id,
+                    x=x,
+                    y=y,
+                    z=z,
+                    restraints=restraints
+                )
+                nodes_dict[node_id] = node
+
+            logger.info(f"Parsed {len(nodes_dict)} nodes")
+
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"Error parsing nodes: {e}")
+
+        # ====================================================================
+        # PARSE RESTRAINTS
+        # ====================================================================
+        restraints_data = json_data.get('restraints', [])
+        for restraint in restraints_data:
+            node_id = restraint['nodeId']
+            if node_id not in nodes_dict:
+                logger.warning(f"Restraint on non-existent node {node_id}")
+                continue
+
+            # Update node restraints
+            for dof in ['ux', 'uy', 'uz', 'rx', 'ry', 'rz']:
+                if dof in restraint:
+                    nodes_dict[node_id].restraints[dof] = bool(restraint[dof])
+
+        # ====================================================================
+        # PARSE ELEMENTS
+        # ====================================================================
+        try:
+            elements_data = json_data.get('elements', [])
+            if not elements_data:
+                raise ValueError("No elements in JSON")
+
+            for elem_data in elements_data:
+                elem_id = elem_data['id']
+                node_i = elem_data['startNodeId']
+                node_j = elem_data['endNodeId']
+
+                # Verify nodes exist
+                if node_i not in nodes_dict or node_j not in nodes_dict:
+                    raise ValueError(f"Element {elem_id} references non-existent node")
+
+                # Element properties (use defaults if not specified)
+                E = float64(elem_data.get('E', 200e6))  # Steel default
+                G = float64(elem_data.get('G', 77e6))
+                A = float64(elem_data.get('A', 0.015))
+                Iy = float64(elem_data.get('Iy', 0.00008))
+                Iz = float64(elem_data.get('Iz', 0.00012))
+                J = float64(elem_data.get('J', 0.0001))
+
+                element = Element3D(
+                    id=elem_id,
+                    node_i=node_i,
+                    node_j=node_j,
+                    E=E,
+                    G=G,
+                    A=A,
+                    Iy=Iy,
+                    Iz=Iz,
+                    J=J
+                )
+                elements_dict[elem_id] = element
+
+            logger.info(f"Parsed {len(elements_dict)} elements")
+
+        except (KeyError, ValueError) as e:
+            raise ValueError(f"Error parsing elements: {e}")
+
+        # Create model
+        model = StructuralModel(
+            nodes=nodes_dict,
+            elements=elements_dict,
+            n_dofs=len(nodes_dict) * 6
+        )
+
+        return model
+
+    @staticmethod
+    def parse_loads_json(json_data: Dict[str, Any]) -> np.ndarray:
+        """
+        Parse nodal and member loads from JSON.
+
+        Returns global load vector F for system [K]{U} = {F}.
+
+        Parameters
+        ----------
+        json_data : dict
+            JSON with keys: nodes (for node count), loads, memberLoads
+
+        Returns
+        -------
+        F : ndarray (n_dofs,)
+            Global load vector
+        """
+        n_nodes = len(json_data.get('nodes', []))
+        n_dofs = n_nodes * 6
+        F = np.zeros(n_dofs, dtype=float64)
+
+        # Node index mapping
+        nodes_data = json_data.get('nodes', [])
+        node_list = sorted([n['id'] for n in nodes_data])
+        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}
+
+        # ====================================================================
+        # PARSE NODAL LOADS
+        # ====================================================================
+        loads_data = json_data.get('loads', [])
+        for load in loads_data:
+            node_id = load['nodeId']
+            if node_id not in node_to_index:
+                logger.warning(f"Load on non-existent node {node_id}")
+                continue
+
+            node_idx = node_to_index[node_id]
+            base_dof = node_idx * 6
+
+            # Force components (kN)
+            Px = float64(load.get('Px', 0))
+            Py = float64(load.get('Py', 0))
+            Pz = float64(load.get('Pz', 0))
+
+            # Moment components (kNÂ·m)
+            Mx = float64(load.get('Mx', 0))
+            My = float64(load.get('My', 0))
+            Mz = float64(load.get('Mz', 0))
+
+            F[base_dof] += Px
+            F[base_dof + 1] += Py
+            F[base_dof + 2] += Pz
+            F[base_dof + 3] += Mx
+            F[base_dof + 4] += My
+            F[base_dof + 5] += Mz
+
+        logger.info(f"Applied {len(loads_data)} nodal loads")
+
+        # ====================================================================
+        # PARSE MEMBER LOADS (distributed loads â equivalent nodal forces)
+        # Fixed-End Force method per standard structural analysis
+        # ====================================================================
+        member_loads_data = json_data.get('memberLoads', [])
+        elements_data = json_data.get('elements', [])
+
+        # Build element lookup: {id: {startNodeId, endNodeId, ...}}
+        elem_lookup = {}
+        for el in elements_data:
+            elem_lookup[el['id']] = el
+
+        # Build node coordinate lookup
+        node_coords = {}
+        for n in nodes_data:
+            node_coords[n['id']] = (float64(n['x']), float64(n['y']), float64(n['z']))
+
+        for mload in member_loads_data:
+            member_id = mload.get('memberId')
+            if member_id not in elem_lookup:
+                logger.warning(f"Member load on non-existent element {member_id}")
+                continue
+
+            elem = elem_lookup[member_id]
+            ni_id = elem['startNodeId']
+            nj_id = elem['endNodeId']
+
+            if ni_id not in node_to_index or nj_id not in node_to_index:
+                logger.warning(f"Member {member_id} references unknown nodes")
+                continue
+
+            # Element geometry
+            xi, yi, zi = node_coords[ni_id]
+            xj, yj, zj = node_coords[nj_id]
+            dx, dy, dz = xj - xi, yj - yi, zj - zi
+            L = float64(np.sqrt(dx*dx + dy*dy + dz*dz))
+            if L < 1e-12:
+                logger.warning(f"Zero-length member {member_id}")
+                continue
+
+            load_type = mload.get('type', 'UDL').upper()
+            direction = mload.get('direction', 'Y').upper()
+
+            # Compute Fixed-End Forces in local coordinates (12-element vector)
+            fef_local = np.zeros(12, dtype=float64)
+
+            if load_type == 'UDL':
+                w = float64(mload.get('w1', mload.get('w', 0)))
+                # Standard FEF for UDL on beam element
+                if direction == 'Y':
+                    fef_local[1] = w * L / 2.0
+                    fef_local[5] = w * L * L / 12.0
+                    fef_local[7] = w * L / 2.0
+                    fef_local[11] = -w * L * L / 12.0
+                elif direction == 'Z':
+                    fef_local[2] = w * L / 2.0
+                    fef_local[4] = -w * L * L / 12.0
+                    fef_local[8] = w * L / 2.0
+                    fef_local[10] = w * L * L / 12.0
+                elif direction == 'X':
+                    fef_local[0] = w * L / 2.0
+                    fef_local[6] = w * L / 2.0
+
+            elif load_type == 'POINT':
+                P = float64(mload.get('P', mload.get('p', 0)))
+                a_frac = float64(mload.get('a', 0.5))
+                a = a_frac * L
+                b = L - a
+                if direction == 'Y':
+                    fef_local[1] = P * b * b * (3 * a + b) / (L * L * L)
+                    fef_local[5] = P * a * b * b / (L * L)
+                    fef_local[7] = P * a * a * (a + 3 * b) / (L * L * L)
+                    fef_local[11] = -P * a * a * b / (L * L)
+                elif direction == 'Z':
+                    fef_local[2] = P * b * b * (3 * a + b) / (L * L * L)
+                    fef_local[4] = -P * a * b * b / (L * L)
+                    fef_local[8] = P * a * a * (a + 3 * b) / (L * L * L)
+                    fef_local[10] = P * a * a * b / (L * L)
+                elif direction == 'X':
+                    fef_local[0] = P * b / L
+                    fef_local[6] = P * a / L
+
+            elif load_type == 'MOMENT':
+                M = float64(mload.get('M', mload.get('m', 0)))
+                a_frac = float64(mload.get('a', 0.5))
+                a = a_frac * L
+                b = L - a
+                if direction == 'Z':
+                    fef_local[1] = 6 * M * a * b / (L * L * L)
+                    fef_local[5] = M * b * (2 * a - b) / (L * L)
+                    fef_local[7] = -6 * M * a * b / (L * L * L)
+                    fef_local[11] = M * a * (2 * b - a) / (L * L)
+
+            elif load_type in ('UVL', 'TRAPEZ', 'TRAPEZOIDAL'):
+                w1 = float64(mload.get('w1', 0))
+                w2 = float64(mload.get('w2', 0))
+                # Decompose into uniform (w1) + triangular (w2 - w1)
+                # Uniform part
+                if direction == 'Y':
+                    fef_local[1] = w1 * L / 2.0
+                    fef_local[5] = w1 * L * L / 12.0
+                    fef_local[7] = w1 * L / 2.0
+                    fef_local[11] = -w1 * L * L / 12.0
+                elif direction == 'Z':
+                    fef_local[2] = w1 * L / 2.0
+                    fef_local[4] = -w1 * L * L / 12.0
+                    fef_local[8] = w1 * L / 2.0
+                    fef_local[10] = w1 * L * L / 12.0
+
+                # Triangular part (0 at start, wt at end)
+                wt = w2 - w1
+                if abs(wt) > 1e-12:
+                    if direction == 'Y':
+                        fef_local[1] += 3 * wt * L / 20.0
+                        fef_local[5] += wt * L * L / 30.0
+                        fef_local[7] += 7 * wt * L / 20.0
+                        fef_local[11] += -wt * L * L / 20.0
+                    elif direction == 'Z':
+                        fef_local[2] += 3 * wt * L / 20.0
+                        fef_local[4] += -wt * L * L / 30.0
+                        fef_local[8] += 7 * wt * L / 20.0
+                        fef_local[10] += wt * L * L / 20.0
+
+            else:
+                logger.warning(f"Unknown member load type '{load_type}' on {member_id}")
+                continue
+
+            # Build 12x12 transformation matrix (local â global)
+            cx, cy, cz = dx / L, dy / L, dz / L
+
+            # Direction cosine matrix (3x3)
+            if abs(cx) < 1e-10 and abs(cz) < 1e-10:
+                # Vertical member â use global X as reference
+                if cy > 0:
+                    lam = np.array([
+                        [0, 1, 0],
+                        [-1, 0, 0],
+                        [0, 0, 1]
+                    ], dtype=float64)
+                else:
+                    lam = np.array([
+                        [0, -1, 0],
+                        [1, 0, 0],
+                        [0, 0, 1]
+                    ], dtype=float64)
+            else:
+                # General member
+                r = np.sqrt(cx * cx + cz * cz)
+                lam = np.array([
+                    [cx, cy, cz],
+                    [-cx * cy / r, r, -cy * cz / r],
+                    [-cz / r, 0, cx / r]
+                ], dtype=float64)
+
+            # Expand 3x3 to 12x12 block diagonal
+            T = np.zeros((12, 12), dtype=float64)
+            for blk in range(4):
+                T[blk*3:blk*3+3, blk*3:blk*3+3] = lam
+
+            # Transform FEF to global: fef_global = T^T @ fef_local
+            fef_global = T.T @ fef_local
+
+            # Assemble into global force vector
+            si = node_to_index[ni_id]
+            ei = node_to_index[nj_id]
+            for i in range(6):
+                F[si * 6 + i] += fef_global[i]
+                F[ei * 6 + i] += fef_global[i + 6]
+
+            logger.info(f"Applied {load_type} member load on {member_id} "
+                       f"(direction={direction})")
+
+        return F
+
+
+class OutputFormatter:
+    """Format analysis results for JSON output"""
+
+    @staticmethod
+    def format_results(dsm: DirectStiffnessMethod3D,
+                      model: StructuralModel) -> Dict[str, Any]:
+        """
+        Format analysis results as JSON-serializable dictionary.
+
+        Parameters
+        ----------
+        dsm : DirectStiffnessMethod3D
+            Solved DSM system
+        model : StructuralModel
+            Structural model
+
+        Returns
+        -------
+        results : dict
+            Dictionary with nodes, elements, displacements, reactions, etc.
+        """
+        if dsm.displacements is None:
+            raise ValueError("System not solved")
+
+        # Node index mapping
+        node_list = sorted(model.nodes.keys())
+        node_to_index = {nid: idx for idx, nid in enumerate(node_list)}
+
+        # ====================================================================
+        # DISPLACEMENTS
+        # ====================================================================
+        displacements = {}
+        dof_names = ['ux', 'uy', 'uz', 'rx', 'ry', 'rz']
+
+        for node_id, node_idx in node_to_index.items():
+            base_dof = node_idx * 6
+            disp = {}
+            for offset, dof_name in enumerate(dof_names):
+                disp[dof_name] = float(dsm.displacements[base_dof + offset])
+            displacements[node_id] = disp
+
+        # ====================================================================
+        # REACTIONS
+        # ====================================================================
+        reactions = {}
+        if dsm.reactions is not None:
+            for node_id, node_idx in node_to_index.items():
+                base_dof = node_idx * 6
+                reac = {}
+                for offset, dof_name in enumerate(dof_names):
+                    reac[dof_name] = float(dsm.reactions[base_dof + offset])
+                reactions[node_id] = reac
+
+        # ====================================================================
+        # BUILD OUTPUT
+        # ====================================================================
+        output = {
+            'status': 'completed',
+            'displacements': displacements,
+            'reactions': reactions,
+            'nodes': [
+                {
+                    'id': node_id,
+                    'x': float(node.x),
+                    'y': float(node.y),
+                    'z': float(node.z),
+                    'displacement': displacements.get(node_id, {}),
+                    'reaction': reactions.get(node_id, {})
+                }
+                for node_id, node in model.nodes.items()
+            ],
+            'elements': [
+                {
+                    'id': elem_id,
+                    'startNodeId': elem.node_i,
+                    'endNodeId': elem.node_j,
+                    'properties': {
+                        'E': float(elem.E),
+                        'G': float(elem.G),
+                        'A': float(elem.A),
+                        'Iy': float(elem.Iy),
+                        'Iz': float(elem.Iz),
+                        'J': float(elem.J),
+                    }
+                }
+                for elem_id, elem in model.elements.items()
+            ],
+        }
+
+        return output
+
+    @staticmethod
+    def to_json_string(results: Dict[str, Any], indent: int = 2) -> str:
+        """
+        Convert results dictionary to JSON string.
+
+        Parameters
+        ----------
+        results : dict
+            Results dictionary from format_results()
+        indent : int
+            JSON indentation level
+
+        Returns
+        -------
+        json_str : str
+            JSON string ready for transmission
+        """
+        return json.dumps(results, indent=indent, default=float)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
+    # Test with simple example
+    test_json = {
+        "nodes": [
+            {"id": "N1", "x": 0, "y": 0, "z": 0},
+            {"id": "N2", "x": 5, "y": 0, "z": 0},
+        ],
+        "elements": [
+            {"id": "M1", "startNodeId": "N1", "endNodeId": "N2"},
+        ],
+        "restraints": [
+            {"nodeId": "N1", "ux": True, "uy": True, "uz": True,
+             "rx": True, "ry": True, "rz": True},
+        ],
+        "loads": [
+            {"nodeId": "N2", "Py": -50},
+        ],
+    }
+
+    handler = JSONHandler()
+    model = handler.parse_topology_json(test_json)
+    print(f"Model: {len(model.nodes)} nodes, {len(model.elements)} elements")
+
+    F = handler.parse_loads_json(test_json)
+    print(f"Load vector: {F}")

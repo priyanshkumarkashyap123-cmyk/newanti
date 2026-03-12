@@ -301,6 +301,70 @@ impl SparseSolver {
             strategy = SolverStrategy::PreconditionedCG;
         }
 
+        // ── GPU dispatch (feature-gated, Phase A = CPU-reference stubs) ─────────
+        // Attempt the GPU path when:
+        //   1. `SPARSE_GPU_ENABLE=true` is set at runtime, AND
+        //   2. n / nnz exceed the configured thresholds, AND
+        //   3. The selected strategy is PreconditionedCG (sparse-friendly), AND
+        //   4. No boundary rows are being eliminated (unconstrained DOFs only).
+        //
+        // On any GpuError (including Unavailable when feature = "gpu" is off)
+        // we fall through silently to the CPU PCG block below.
+        #[cfg(feature = "gpu")]
+        {
+            use crate::solver::gpu_solver::{CsrDeviceBuffers, GpuConfig, gpu_pcg_solve};
+            if strategy == SolverStrategy::PreconditionedCG && constrained_dofs.is_empty() {
+                let gpu_cfg = GpuConfig::from_env();
+                if gpu_cfg.should_use_gpu(n, stats.nnz) {
+                    let solve_start = Instant::now();
+                    let max_iter   = self.effective_pcg_max_iter(n);
+                    let pcg_tol    = self.effective_pcg_tolerance(n);
+                    let buffers    = CsrDeviceBuffers::from_host(
+                        n,
+                        csr_matrix.row_offsets.clone(),
+                        csr_matrix.col_indices.clone(),
+                        csr_matrix.values.clone(),
+                        csr_matrix.diagonal.clone(),
+                    );
+                    match gpu_pcg_solve(&buffers, f_global, pcg_tol, max_iter, 1e-30) {
+                        Ok(gpu_res) => {
+                            let solve_time_ms = solve_start.elapsed().as_secs_f64() * 1000.0;
+                            let total_time_ms = total_start.elapsed().as_secs_f64() * 1000.0;
+                            return Ok(SparseResult {
+                                solution: gpu_res.solution,
+                                strategy_used: strategy,
+                                matrix_build_time_ms,
+                                factorization_time_ms: 0.0,
+                                solve_time_ms,
+                                total_time_ms,
+                                nnz: stats.nnz,
+                                bandwidth: stats.bandwidth,
+                                condition_estimate: self.estimate_condition_from_diagonal(
+                                    &csr_matrix.diagonal,
+                                ),
+                                iteration_count: Some(gpu_res.iteration_count),
+                                converged: Some(gpu_res.converged),
+                                final_residual_norm: Some(gpu_res.final_residual_norm),
+                                tolerance_used: Some(pcg_tol),
+                                max_iterations_used: Some(max_iter),
+                                preconditioner_used: Some(format!(
+                                    "GPU-Jacobi ({})",
+                                    gpu_res.device_name
+                                )),
+                                fallback_used: Some(false),
+                                fallback_strategy: None,
+                            });
+                        }
+                        Err(e) => {
+                            // Log and fall through to CPU PCG.
+                            tracing::warn!("GPU solver error, falling back to CPU PCG: {e}");
+                        }
+                    }
+                }
+            }
+        }
+        // ── CPU PCG path ─────────────────────────────────────────────────────
+
         if strategy == SolverStrategy::PreconditionedCG && constrained_dofs.is_empty() {
             let solve_start = Instant::now();
             let max_iter = self.effective_pcg_max_iter(n);

@@ -234,8 +234,6 @@ export class ComprehensiveReportService {
         // Cache the result
         this.cache.set(result.id, result);
         
-        console.log(`Report generated in ${Date.now() - startTime}ms`);
-        
         return result;
     }
 
