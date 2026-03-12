@@ -40,8 +40,15 @@ jobs:
         run: pnpm run build
 
       - name: Run database migrations
+        if: ${{ secrets.MONGODB_URI != '' }}
         working-directory: apps/api
-        run: npm run migrate || true
+        run: npm run migrate
+
+      - name: Skip database migrations (no MONGODB_URI)
+        if: ${{ secrets.MONGODB_URI == '' }}
+        run: |
+          echo "Skipping migrations because MONGODB_URI secret is not set."
+          echo "To run migrations during CI set the repository secret MONGODB_URI."
 
       - name: Prepare deployment package
         run: |
