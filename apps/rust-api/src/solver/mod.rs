@@ -364,6 +364,36 @@ impl Solver {
         Solver { dofs_per_node: 6 }
     }
 
+    /// Effective member axis geometry including optional start/end offsets.
+    /// Offsets are interpreted in global coordinates:
+    /// - start point = node_start + start_offset
+    /// - end point   = node_end - end_offset
+    fn member_effective_geometry(
+        &self,
+        member: &Member,
+        start_node: &Node,
+        end_node: &Node,
+    ) -> Option<(f64, f64, f64, f64)> {
+        let sx = start_node.x + member.start_offset.as_ref().map_or(0.0, |o| o.x);
+        let sy = start_node.y + member.start_offset.as_ref().map_or(0.0, |o| o.y);
+        let sz = start_node.z + member.start_offset.as_ref().map_or(0.0, |o| o.z);
+
+        let ex = end_node.x - member.end_offset.as_ref().map_or(0.0, |o| o.x);
+        let ey = end_node.y - member.end_offset.as_ref().map_or(0.0, |o| o.y);
+        let ez = end_node.z - member.end_offset.as_ref().map_or(0.0, |o| o.z);
+
+        let dx = ex - sx;
+        let dy = ey - sy;
+        let dz = ez - sz;
+        let length = (dx * dx + dy * dy + dz * dz).sqrt();
+
+        if length < 1e-10 {
+            return None;
+        }
+
+        Some((dx, dy, dz, length))
+    }
+
     /// Main analysis function - 3D frame analysis with 6 DOFs per node
     pub fn analyze(&self, input: &AnalysisInput) -> Result<AnalysisResult, String> {
         let total_start = Instant::now();
@@ -404,12 +434,12 @@ impl Solver {
                 let start_node = &input.nodes[*start_idx];
                 let end_node = &input.nodes[*end_idx];
                 
-                // Calculate member properties
-                let dx = end_node.x - start_node.x;
-                let dy = end_node.y - start_node.y;
-                let dz = end_node.z - start_node.z;
-                let length = (dx * dx + dy * dy + dz * dz).sqrt();
-                
+                // Calculate effective member geometry (including offsets)
+                let (dx, dy, dz, length) = match self.member_effective_geometry(member, start_node, end_node) {
+                    Some(v) => v,
+                    None => return None,
+                };
+
                 if length < 1e-10 {
                     return None;
                 }
@@ -426,6 +456,7 @@ impl Solver {
                     iy,
                     j_val,
                     iz,
+                    member.g,
                     length,
                 );
 
@@ -495,11 +526,7 @@ impl Solver {
                 ) {
                     let sn = &input.nodes[si];
                     let en = &input.nodes[ei];
-                    let dx = en.x - sn.x;
-                    let dy = en.y - sn.y;
-                    let dz = en.z - sn.z;
-                    let length = (dx * dx + dy * dy + dz * dz).sqrt();
-                    if length > 1e-10 {
+                    if let Some((dx, dy, dz, length)) = self.member_effective_geometry(member, sn, en) {
                         let fef_local = self.member_load_fef(ml, length);
                         let t = self.transformation_matrix_with_beta(dx, dy, dz, length, member.beta_angle);
                         let fef_global = t.transpose() * &fef_local;
@@ -522,12 +549,8 @@ impl Solver {
                 ) {
                     let sn = &input.nodes[si];
                     let en = &input.nodes[ei];
-                    let dx = en.x - sn.x;
-                    let dy = en.y - sn.y;
-                    let dz = en.z - sn.z;
-                    let length = (dx * dx + dy * dy + dz * dz).sqrt();
-                    if length > 1e-10 {
-                        let sw = self.self_weight_fef(member, length, dx, dy, dz);
+                    if let Some((_, _, _, length)) = self.member_effective_geometry(member, sn, en) {
+                        let sw = self.self_weight_fef(member, length);
                         for i in 0..6 {
                             f[si * 6 + i] += sw[i];
                             f[ei * 6 + i] += sw[i + 6];
@@ -660,11 +683,11 @@ impl Solver {
                 let start_node = &input.nodes[start_idx];
                 let end_node = &input.nodes[end_idx];
                 
-                let dx = end_node.x - start_node.x;
-                let dy = end_node.y - start_node.y;
-                let dz = end_node.z - start_node.z;
-                let length = (dx * dx + dy * dy + dz * dz).sqrt();
-                
+                let (dx, dy, dz, length) = match self.member_effective_geometry(member, start_node, end_node) {
+                    Some(v) => v,
+                    None => return None,
+                };
+
                 if length < 1e-10 {
                     return None;
                 }
@@ -692,13 +715,31 @@ impl Solver {
                     iy,
                     j_val,
                     iz,
+                    member.g,
                     length,
                 );
                 // Apply releases to stiffness before force computation
                 if let Some(ref rel) = member.releases {
                     self.apply_releases(&mut k_local, rel);
                 }
-                let f_local = &k_local * &d_local;
+
+                // Fixed-end-force recovery:
+                // F_member = K_local * U_local - FEF_local
+                let mut fef_local = DVector::zeros(12);
+
+                for ml in input.member_loads.iter().filter(|ml| ml.member_id == member.id) {
+                    fef_local += self.member_load_fef(ml, length);
+                }
+
+                let include_sw = input.options.as_ref().map_or(false, |o| o.include_self_weight);
+                if include_sw {
+                    let sw_global = self.self_weight_fef(member, length);
+                    // F_global = T^T F_local => F_local = T F_global
+                    let sw_local = &t * sw_global;
+                    fef_local += sw_local;
+                }
+
+                let f_local = (&k_local * &d_local) - fef_local;
 
                 Some(MemberForce {
                     member_id: member.id.clone(),
@@ -820,12 +861,12 @@ impl Solver {
                 let start_node = &input.nodes[*start_idx];
                 let end_node = &input.nodes[*end_idx];
                 
-                // Calculate member properties
-                let dx = end_node.x - start_node.x;
-                let dy = end_node.y - start_node.y;
-                let dz = end_node.z - start_node.z;
-                let length = (dx * dx + dy * dy + dz * dz).sqrt();
-                
+                // Calculate effective member geometry (including offsets)
+                let (dx, dy, dz, length) = match self.member_effective_geometry(member, start_node, end_node) {
+                    Some(v) => v,
+                    None => return None,
+                };
+
                 if length < 1e-10 {
                     return None;
                 }
@@ -842,6 +883,7 @@ impl Solver {
                     iy,
                     j_val,
                     iz,
+                    member.g,
                     length,
                 );
 
@@ -887,6 +929,7 @@ impl Solver {
         iy: f64,   // Moment of inertia about y
         j: f64,    // Torsional constant
         iz: f64,   // Moment of inertia about z
+        g_in: f64, // Shear modulus override (if provided)
         l: f64,    // Length
     ) -> DMatrix<f64> {
         let l2 = l * l;
@@ -895,10 +938,14 @@ impl Solver {
         let ea_l = e * a / l;
         let ei_y_l3 = e * iy / l3;
         let ei_z_l3 = e * iz / l3;
-        // Compute G from E using Poisson's ratio ν.
-        // Default ν=0.3 (steel). For other materials, G should be provided directly.
+        // Compute G using provided value when available.
+        // Otherwise derive from G = E / (2(1+ν)), default ν=0.3.
         let nu = 0.3_f64;
-        let g = e / (2.0 * (1.0 + nu));
+        let g = if g_in > 0.0 {
+            g_in
+        } else {
+            e / (2.0 * (1.0 + nu))
+        };
         let gj_l = g * j / l;
 
         let mut k = DMatrix::zeros(12, 12);
@@ -1131,12 +1178,7 @@ impl Solver {
 
     /// Compute self-weight as a distributed load in global -Y direction,
     /// then transform to local and return FEF.
-    fn self_weight_fef(
-        &self,
-        member: &Member,
-        length: f64,
-        dx: f64, dy: f64, dz: f64,
-    ) -> DVector<f64> {
+    fn self_weight_fef(&self, member: &Member, length: f64) -> DVector<f64> {
         // w = ρ·A·g (N/m), density in kg/m³, area in m²
         // If E is in kN/m², A is in m², density is in kg/m³
         // self-weight load = ρ * A * 9.81 (N/m) = ρ * A * 0.00981 (kN/m)
@@ -1160,24 +1202,100 @@ impl Solver {
     /// to zero and diagonal to a very small value (effectively decoupling).
     /// This is the standard condensation approach used in STAAD/SAP2000.
     fn apply_releases(&self, k: &mut DMatrix<f64>, rel: &MemberReleases) {
-        let released: &[(bool, usize)] = &[
+        // Build list of released DOFs
+        let rel_flags: Vec<(bool, usize)> = vec![
             (rel.fx_start, 0), (rel.fy_start, 1), (rel.fz_start, 2),
             (rel.mx_start, 3), (rel.my_start, 4), (rel.mz_start || rel.start_moment, 5),
             (rel.fx_end, 6),   (rel.fy_end, 7),   (rel.fz_end, 8),
             (rel.mx_end, 9),   (rel.my_end, 10),  (rel.mz_end || rel.end_moment, 11),
         ];
+
         let n = k.nrows();
-        for &(is_released, dof) in released {
-            if !is_released || dof >= n {
-                continue;
-            }
-            // Zero row and column, set diagonal to small value
-            for j in 0..n {
-                k[(dof, j)] = 0.0;
-                k[(j, dof)] = 0.0;
-            }
-            k[(dof, dof)] = 1e-10;
+        // Collect indices
+        let mut r_indices: Vec<usize> = Vec::new();
+        let mut u_indices: Vec<usize> = Vec::new();
+        for &(flag, idx) in rel_flags.iter() {
+            if idx >= n { continue; }
+            if flag { r_indices.push(idx); } else { u_indices.push(idx); }
         }
+
+        // If no releases, nothing to do
+        if r_indices.is_empty() {
+            return;
+        }
+
+        // If all DOFs are released (degenerate), fallback to tiny-diagonal approach
+        if u_indices.is_empty() {
+            for &dof in r_indices.iter() {
+                for j in 0..n {
+                    k[(dof, j)] = 0.0;
+                    k[(j, dof)] = 0.0;
+                }
+                k[(dof, dof)] = 1e-10;
+            }
+            return;
+        }
+
+        // Partition K into Kuu, Kur, Kru, Krr
+        let nu = u_indices.len();
+        let nr = r_indices.len();
+
+        let mut k_uu = DMatrix::zeros(nu, nu);
+        let mut k_ur = DMatrix::zeros(nu, nr);
+        let mut k_ru = DMatrix::zeros(nr, nu);
+        let mut k_rr = DMatrix::zeros(nr, nr);
+
+        for (i_u, &i) in u_indices.iter().enumerate() {
+            for (j_u, &j) in u_indices.iter().enumerate() {
+                k_uu[(i_u, j_u)] = k[(i, j)];
+            }
+            for (j_r, &j) in r_indices.iter().enumerate() {
+                k_ur[(i_u, j_r)] = k[(i, j)];
+            }
+        }
+        for (i_r, &i) in r_indices.iter().enumerate() {
+            for (j_u, &j) in u_indices.iter().enumerate() {
+                k_ru[(i_r, j_u)] = k[(i, j)];
+            }
+            for (j_r, &j) in r_indices.iter().enumerate() {
+                k_rr[(i_r, j_r)] = k[(i, j)];
+            }
+        }
+
+        // Try to invert Krr; if singular or ill-conditioned, fallback
+        let krr_inv_opt = k_rr.clone().try_inverse();
+        if krr_inv_opt.is_none() {
+            // Fallback: zero rows/cols and tiny diagonal
+            for &dof in r_indices.iter() {
+                for j in 0..n {
+                    k[(dof, j)] = 0.0;
+                    k[(j, dof)] = 0.0;
+                }
+                k[(dof, dof)] = 1e-10;
+            }
+            return;
+        }
+
+        let krr_inv = krr_inv_opt.unwrap();
+
+        // Schur complement: K_condensed = Kuu - Kur * Krr^{-1} * Kru
+        let temp = &k_ur * &krr_inv;
+        let k_condensed = &k_uu - &temp * &k_ru;
+
+        // Build new stiffness matrix: place condensed values into uu positions,
+        // zero-out released DOFs and set tiny diagonal for stability.
+        let mut k_new = DMatrix::zeros(n, n);
+        for (i_u, &i) in u_indices.iter().enumerate() {
+            for (j_u, &j) in u_indices.iter().enumerate() {
+                k_new[(i, j)] = k_condensed[(i_u, j_u)];
+            }
+        }
+        for &dof in r_indices.iter() {
+            k_new[(dof, dof)] = 1e-10;
+        }
+
+        // Replace original matrix
+        *k = k_new;
     }
 }
 
@@ -1305,7 +1423,7 @@ mod tests {
     #[test]
     fn test_stiffness_symmetry() {
         let solver = Solver::new();
-        let k = solver.member_stiffness_matrix(200000.0, 5000.0, 50e6, 25e6, 30e6, 3000.0);
+        let k = solver.member_stiffness_matrix(200000.0, 5000.0, 50e6, 25e6, 30e6, 0.0, 3000.0);
         for i in 0..12 {
             for j in 0..12 {
                 assert!(
@@ -1417,6 +1535,87 @@ mod tests {
         let result = solver.analyze(&input).unwrap();
         assert!(result.success);
         assert!(result.max_displacement > 0.0, "Self-weight should cause nonzero midspan displacement");
+    }
+
+    /// Validate translational spring support response in X DOF.
+    #[test]
+    fn test_elastic_spring_support_kx() {
+        let solver = Solver::new();
+
+        let input = AnalysisInput {
+            nodes: vec![Node { id: "N1".into(), x: 0.0, y: 0.0, z: 0.0 }],
+            members: vec![],
+            supports: vec![Support {
+                node_id: "N1".into(),
+                fx: false,
+                fy: true,
+                fz: true,
+                mx: true,
+                my: true,
+                mz: true,
+                kx: 1000.0,
+                ky: 0.0,
+                kz: 0.0,
+                kmx: 0.0,
+                kmy: 0.0,
+                kmz: 0.0,
+            }],
+            loads: vec![Load {
+                node_id: "N1".into(),
+                fx: 100.0,
+                fy: 0.0,
+                fz: 0.0,
+                mx: 0.0,
+                my: 0.0,
+                mz: 0.0,
+            }],
+            member_loads: vec![],
+            dof_per_node: 3,
+            options: None,
+        };
+
+        let result = solver.analyze(&input).unwrap();
+        let disp = result
+            .displacements
+            .iter()
+            .find(|d| d.node_id == "N1")
+            .expect("Node N1 displacement should exist");
+
+        // dx = F/k = 100/1000 = 0.1
+        assert!((disp.dx - 0.1).abs() < 1e-9, "Expected dx≈0.1, got {}", disp.dx);
+    }
+
+    #[test]
+    fn test_member_effective_geometry_with_offsets() {
+        let solver = Solver::new();
+
+        let member = Member {
+            id: "M1".into(),
+            start_node_id: "N1".into(),
+            end_node_id: "N2".into(),
+            e: 200000.0,
+            a: 5000.0,
+            i: 50e6,
+            j: 25e6,
+            iy: 0.0,
+            iz: 0.0,
+            g: 0.0,
+            rho: 7850.0,
+            beta_angle: 0.0,
+            property_assignment_id: None,
+            releases: None,
+            start_offset: Some(OffsetVector { x: 100.0, y: 0.0, z: 0.0 }),
+            end_offset: Some(OffsetVector { x: 100.0, y: 0.0, z: 0.0 }),
+        };
+
+        let n1 = Node { id: "N1".into(), x: 0.0, y: 0.0, z: 0.0 };
+        let n2 = Node { id: "N2".into(), x: 1000.0, y: 0.0, z: 0.0 };
+
+        let (_dx, _dy, _dz, l_eff) = solver
+            .member_effective_geometry(&member, &n1, &n2)
+            .expect("Effective geometry should be valid");
+
+        assert!((l_eff - 800.0).abs() < 1e-9, "Expected effective length 800, got {}", l_eff);
     }
 
     /// Verify member releases create pin behavior.

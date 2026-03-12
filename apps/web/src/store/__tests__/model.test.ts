@@ -318,4 +318,55 @@ describe('useModelStore', () => {
       expect(useModelStore.getState().errorElementIds.size).toBe(0);
     });
   });
+
+  // ──────────────────────────────────────────
+  // Geometry operations (repeat + auto-noding)
+  // ──────────────────────────────────────────
+
+  describe('applyCircularRepeat', () => {
+    it('creates rotational copies and link members', () => {
+      const store = useModelStore.getState();
+
+      store.addNode({ id: 'N1', x: 1, y: 0, z: 0 });
+      store.addNode({ id: 'N2', x: 2, y: 0, z: 0 });
+      store.addMember({ id: 'M1', startNodeId: 'N1', endNodeId: 'N2' });
+
+      const result = store.applyCircularRepeat({
+        nodeIds: ['N1', 'N2'],
+        memberIds: ['M1'],
+        axis: { x: 0, y: 1, z: 0 },
+        center_m: { x: 0, y: 0, z: 0 },
+        angleDeg: 90,
+        steps: 3,
+        linkSteps: true,
+        closeLoop: true,
+      });
+
+      expect(result.createdNodeIds.length).toBe(6); // 2 nodes × 3 copies
+      expect(result.createdMemberIds.length).toBe(9); // 3 clones + (2 nodes × (2 links + 1 close))
+      expect(useModelStore.getState().members.size).toBe(10); // original + created
+    });
+  });
+
+  describe('detectAndAutoNode', () => {
+    it('splits intersecting members and injects shared node', () => {
+      const store = useModelStore.getState();
+
+      store.addNode({ id: 'N1', x: 0, y: 0, z: 0 });
+      store.addNode({ id: 'N2', x: 2, y: 0, z: 0 });
+      store.addNode({ id: 'N3', x: 1, y: -1, z: 0 });
+      store.addNode({ id: 'N4', x: 1, y: 1, z: 0 });
+
+      store.addMember({ id: 'M1', startNodeId: 'N1', endNodeId: 'N2' });
+      store.addMember({ id: 'M2', startNodeId: 'N3', endNodeId: 'N4' });
+
+      const result = store.detectAndAutoNode(1e-6);
+
+      expect(result.intersectionCount).toBe(1);
+      expect(result.createdNodeIds.length).toBe(1);
+      expect(result.deletedMemberIds.length).toBe(2);
+      expect(result.createdMemberIds.length).toBe(4);
+      expect(useModelStore.getState().members.size).toBe(4);
+    });
+  });
 });
