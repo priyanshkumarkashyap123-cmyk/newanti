@@ -11,64 +11,53 @@ import type { MigrationModule } from './runner.js';
 export const description = 'Add missing performance indexes on users, projects, and tokens';
 
 export const up = async (db: mongoose.Connection): Promise<void> => {
+    // Helper to create index only when an equivalent key doesn't already exist
+    const ensureIndex = async (
+        collName: string,
+        key: Record<string, number>,
+        options: Record<string, unknown> = {}
+    ) => {
+        const existing = await db.collection(collName).listIndexes().toArray();
+        const found = existing.find((idx) => JSON.stringify(idx.key) === JSON.stringify(key));
+        if (found) {
+            // Index with same key exists (possibly with a different name) — skip
+            // Keep behavior idempotent across environments
+            // eslint-disable-next-line no-console
+            console.log(`Index on ${collName} ${JSON.stringify(key)} already exists as ${found.name}, skipping`);
+            return;
+        }
+        await db.collection(collName).createIndex(key, options);
+    };
+
     // Users – lookup by email is the most common auth query
-    await db.collection('users').createIndex(
+    await ensureIndex(
+        'users',
         { email: 1 },
         { unique: true, name: 'idx_users_email_unique' }
     );
-    await db.collection('users').createIndex(
-        { role: 1, subscriptionTier: 1 },
-        { name: 'idx_users_role_tier' }
-    );
-    await db.collection('users').createIndex(
-        { createdAt: -1 },
-        { name: 'idx_users_created_desc' }
-    );
+    await ensureIndex('users', { role: 1, subscriptionTier: 1 }, { name: 'idx_users_role_tier' });
+    await ensureIndex('users', { createdAt: -1 }, { name: 'idx_users_created_desc' });
 
     // Projects – owner lookup + sorting by last update
-    await db.collection('projects').createIndex(
-        { owner: 1, updatedAt: -1 },
-        { name: 'idx_projects_owner_updated' }
-    );
-    await db.collection('projects').createIndex(
-        { isPublic: 1, updatedAt: -1 },
-        { name: 'idx_projects_public_updated' }
-    );
+    await ensureIndex('projects', { owner: 1, updatedAt: -1 }, { name: 'idx_projects_owner_updated' });
+    await ensureIndex('projects', { isPublic: 1, updatedAt: -1 }, { name: 'idx_projects_public_updated' });
 
     // Refresh tokens – lookup by token value is hot path
-    await db.collection('refreshtokens').createIndex(
-        { token: 1 },
-        { unique: true, name: 'idx_refreshtokens_token_unique' }
-    );
-    await db.collection('refreshtokens').createIndex(
-        { userId: 1 },
-        { name: 'idx_refreshtokens_userid' }
-    );
+    await ensureIndex('refreshtokens', { token: 1 }, { unique: true, name: 'idx_refreshtokens_token_unique' });
+    await ensureIndex('refreshtokens', { userId: 1 }, { name: 'idx_refreshtokens_userid' });
     // Auto-expire stale tokens (TTL index)
-    await db.collection('refreshtokens').createIndex(
-        { expiresAt: 1 },
-        { expireAfterSeconds: 0, name: 'idx_refreshtokens_expire' }
-    );
+    await ensureIndex('refreshtokens', { expiresAt: 1 }, { expireAfterSeconds: 0, name: 'idx_refreshtokens_expire' });
 
     // Verification codes – TTL + lookup
-    await db.collection('verificationcodes').createIndex(
-        { userId: 1, type: 1 },
-        { name: 'idx_verificationcodes_user_type' }
-    );
-    await db.collection('verificationcodes').createIndex(
-        { expiresAt: 1 },
-        { expireAfterSeconds: 0, name: 'idx_verificationcodes_expire' }
-    );
+    await ensureIndex('verificationcodes', { userId: 1, type: 1 }, { name: 'idx_verificationcodes_user_type' });
+    await ensureIndex('verificationcodes', { expiresAt: 1 }, { expireAfterSeconds: 0, name: 'idx_verificationcodes_expire' });
 
     // Analysis results – fast retrieval by project
     const collections = await db.db!.listCollections().toArray();
     const collNames = collections.map((c) => c.name);
 
     if (collNames.includes('analysisresults')) {
-        await db.collection('analysisresults').createIndex(
-            { projectId: 1, createdAt: -1 },
-            { name: 'idx_analysisresults_project_created' }
-        );
+        await ensureIndex('analysisresults', { projectId: 1, createdAt: -1 }, { name: 'idx_analysisresults_project_created' });
     }
 };
 
