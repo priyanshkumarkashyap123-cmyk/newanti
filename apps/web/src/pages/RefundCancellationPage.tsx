@@ -600,10 +600,10 @@ function RefundCancellationPage() {
                     <span>
                       Contact our customer service team via email at{" "}
                       <a
-                        href="mailto:decodedoffice@gmail.com"
+                        href="mailto:support@beamlabultimate.tech"
                         className="text-blue-400 hover:underline"
                       >
-                        decodedoffice@gmail.com
+                        support@beamlabultimate.tech
                       </a>
                       .
                     </span>
@@ -671,10 +671,10 @@ function RefundCancellationPage() {
                           Email
                         </p>
                         <a
-                          href="mailto:decodedoffice@gmail.com"
+                          href="mailto:support@beamlabultimate.tech"
                           className="text-blue-400 hover:underline"
                         >
-                          decodedoffice@gmail.com
+                          support@beamlabultimate.tech
                         </a>
                       </div>
                     </div>
@@ -903,7 +903,7 @@ function RefundCancellationPage() {
                 Refund Policy
               </Link>
               <a
-                href="mailto:decodedoffice@gmail.com"
+                href="mailto:office@beamlabultimate.tech"
                 className="text-slate-900/50 dark:text-white/50 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
               >
                 Contact

@@ -80,7 +80,7 @@ export const AccountLockedPage = () => {
                                 Reset Password
                             </Button>
                         </Link>
-                        <a href="mailto:decodedoffice@gmail.com">
+                        <a href="mailto:support@beamlabultimate.tech">
                             <Button variant="outline" className="w-full">
                                 Contact Support
                             </Button>

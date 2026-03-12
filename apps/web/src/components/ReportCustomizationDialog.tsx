@@ -439,7 +439,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
                     value={customization.company_email}
                     onChange={(e) => updateCustomization('company_email', e.target.value)}
                     className="w-full px-3 py-2 bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40"
-                    placeholder="info@company.com"
+                    placeholder="office@beamlabultimate.tech"
                   />
                 </div>
               </div>

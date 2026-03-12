@@ -708,10 +708,10 @@ export const PrivacyPolicyPageNew = () => {
                           Email
                         </p>
                         <a
-                          href="mailto:decodedoffice@gmail.com"
+                          href="mailto:office@beamlabultimate.tech"
                           className="text-blue-400 hover:underline"
                         >
-                          decodedoffice@gmail.com
+                          office@beamlabultimate.tech
                         </a>
                       </div>
                     </div>
@@ -746,10 +746,10 @@ export const PrivacyPolicyPageNew = () => {
                         Email
                       </p>
                       <a
-                        href="mailto:decodedoffice@gmail.com"
+                        href="mailto:office@beamlabultimate.tech"
                         className="text-blue-400 hover:underline"
                       >
-                        decodedoffice@gmail.com
+                        office@beamlabultimate.tech
                       </a>
                     </div>
                   </div>
@@ -836,7 +836,7 @@ export const PrivacyPolicyPageNew = () => {
                 Terms and Conditions
               </Link>
               <a
-                href="mailto:decodedoffice@gmail.com"
+                href="mailto:office@beamlabultimate.tech"
                 className="text-slate-900/50 dark:text-white/50 hover:text-slate-900 dark:hover:text-white text-sm transition-colors"
               >
                 Contact

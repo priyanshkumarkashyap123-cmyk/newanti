@@ -123,10 +123,10 @@ export const ContactPage: FC = () => {
                     Our friendly team is here to help.
                   </p>
                   <a
-                    href="mailto:decodedoffice@gmail.com"
+                    href="mailto:office@beamlabultimate.tech"
                     className="text-blue-400 font-medium hover:text-blue-300 transition-colors"
                   >
-                    decodedoffice@gmail.com
+                    office@beamlabultimate.tech
                   </a>
                 </div>
               </div>

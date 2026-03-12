@@ -415,10 +415,10 @@ export const TermsOfServicePage = () => {
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900 dark:text-white">Email</p>
                                         <a 
-                                            href="mailto:decodedoffice@gmail.com" 
+                                            href="mailto:office@beamlabultimate.tech" 
                                             className="text-emerald-600 dark:text-emerald-400 hover:underline"
                                         >
-                                            decodedoffice@gmail.com
+                                            office@beamlabultimate.tech
                                         </a>
                                     </div>
                                     <div>
@@ -466,7 +466,7 @@ export const TermsOfServicePage = () => {
                             <Link to="/terms-of-service" className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                                 Terms of Service
                             </Link>
-                            <a href="mailto:decodedoffice@gmail.com" className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                            <a href="mailto:office@beamlabultimate.tech" className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                                 Contact
                             </a>
                         </div>

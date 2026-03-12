@@ -319,7 +319,7 @@ export const HelpPage = () => {
                                         <MessageCircle className="w-5 h-5" />
                                         Chat with Support
                                     </Button>
-                                    <Button variant="outline" className="py-3 px-6 w-full sm:w-auto hover:bg-slate-300 dark:hover:bg-slate-600" onClick={() => window.location.href = 'mailto:decodedoffice@gmail.com'}>
+                                    <Button variant="outline" className="py-3 px-6 w-full sm:w-auto hover:bg-slate-300 dark:hover:bg-slate-600" onClick={() => window.location.href = 'mailto:support@beamlabultimate.tech'}>
                                         <Mail className="w-5 h-5" />
                                         Email Us
                                     </Button>
