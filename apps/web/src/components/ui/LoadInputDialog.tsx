@@ -81,7 +81,8 @@ export const LoadInputDialog: FC<LoadInputDialogProps> = ({
             return;
         }
         setMagError('');
-        const mag = parsedMag * 1000; // Convert kN to N
+        // Store magnitudes in canonical store units (kN or kN/m). Do NOT convert to N here.
+        const mag = parsedMag;
         const dirConfig = getDirectionConfig();
 
         if (loadType === 'point' && targetNodeId) {
