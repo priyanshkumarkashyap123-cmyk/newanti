@@ -89,7 +89,7 @@ jobs:
           PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
           RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
           DESIGN_PRIMARY_ENGINE=rust
-          TEMP_UNLOCK_ALL=true
+          TEMP_UNLOCK_ALL=false
           SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           ENVEOF
       - name: Create API zip package
