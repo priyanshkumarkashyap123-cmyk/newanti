@@ -5,7 +5,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { requireAuth, getAuth } from '../middleware/authMiddleware.js';
+import { requireAuth, getAuth, isUsingClerk } from '../middleware/authMiddleware.js';
 import { authRateLimit } from '../middleware/security.js';
 import { UserActivityService, TIER_LIMITS } from '../services/UserActivityService.js';
 import { User, Subscription, getEffectiveTier, UserModel, isMasterUser } from '../models.js';
@@ -14,7 +14,7 @@ import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 import { logger } from '../utils/logger.js';
 
 // Check which auth mode is active
-const USE_CLERK = process.env['USE_CLERK'] === 'true';
+const USE_CLERK = isUsingClerk();
 // TEMPORARY BILLING BYPASS:
 // Defaults to false (paid-gating active). Set TEMP_UNLOCK_ALL=true to unlock all users.
 const TEMP_UNLOCK_ALL = process.env['TEMP_UNLOCK_ALL'] === 'true';

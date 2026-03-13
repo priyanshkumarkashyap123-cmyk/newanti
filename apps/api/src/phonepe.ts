@@ -24,7 +24,7 @@
 
 import { Router, Request, Response, type IRouter } from "express";
 import { createHmac } from "crypto";
-import { requireAuth, getAuth } from "./middleware/authMiddleware.js";
+import { requireAuth, getAuth, isUsingClerk } from "./middleware/authMiddleware.js";
 import { User, Subscription, UserModel } from "./models.js";
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
@@ -47,28 +47,76 @@ const log = {
 // ============================================
 
 export type PlanType = "monthly" | "yearly";
+export type PlanId = "pro" | "business";
+export type CheckoutPlanId = `${PlanId}_${PlanType}`;
 
 interface PlanConfig {
+  planId: PlanId;
+  billingCycle: PlanType;
+  checkoutPlanId: CheckoutPlanId;
   amountPaise: number;
   displayPrice: string;
   durationDays: number;
   label: string;
 }
 
-export const PLANS: Record<PlanType, PlanConfig> = {
-  monthly: {
+export const PLANS: Record<CheckoutPlanId, PlanConfig> = {
+  pro_monthly: {
+    planId: "pro",
+    billingCycle: "monthly",
+    checkoutPlanId: "pro_monthly",
     amountPaise: 99900,       // ₹999
     displayPrice: "₹999/month",
     durationDays: 30,
     label: "Pro Monthly",
   },
-  yearly: {
+  pro_yearly: {
+    planId: "pro",
+    billingCycle: "yearly",
+    checkoutPlanId: "pro_yearly",
     amountPaise: 999900,      // ₹9,999
     displayPrice: "₹9,999/year",
     durationDays: 365,
     label: "Pro Annual",
   },
+  business_monthly: {
+    planId: "business",
+    billingCycle: "monthly",
+    checkoutPlanId: "business_monthly",
+    amountPaise: 199900,
+    displayPrice: "₹1,999/month",
+    durationDays: 30,
+    label: "Business Monthly",
+  },
+  business_yearly: {
+    planId: "business",
+    billingCycle: "yearly",
+    checkoutPlanId: "business_yearly",
+    amountPaise: 1999900,
+    displayPrice: "₹19,999/year",
+    durationDays: 365,
+    label: "Business Annual",
+  },
 };
+
+function resolveCheckoutPlan(input: {
+  planType?: string;
+  planId?: string;
+  checkoutPlanId?: string;
+}): PlanConfig | null {
+  const checkoutPlanId = (input.checkoutPlanId || "").toLowerCase() as CheckoutPlanId;
+  if (checkoutPlanId && PLANS[checkoutPlanId]) {
+    return PLANS[checkoutPlanId];
+  }
+
+  const planType = (input.planType || "").toLowerCase() as PlanType;
+  const planId = ((input.planId || "pro").toLowerCase() as PlanId);
+  if ((planType === "monthly" || planType === "yearly") && (planId === "pro" || planId === "business")) {
+    return PLANS[`${planId}_${planType}` as CheckoutPlanId];
+  }
+
+  return null;
+}
 
 /** Error taxonomy for billing operations */
 class BillingError extends Error {
@@ -234,6 +282,8 @@ export class PhonePeBillingService {
     userId: string,
     email: string,
     planType: PlanType,
+    planId: PlanId = "pro",
+    checkoutPlanId?: string,
     idempotencyKey?: string,
   ): Promise<{
     merchantTransactionId: string;
@@ -258,7 +308,7 @@ export class PhonePeBillingService {
       );
     }
 
-    const plan = PLANS[planType];
+    const plan = resolveCheckoutPlan({ planType, planId, checkoutPlanId });
     if (!plan) {
       throw new BillingError("Invalid plan type", "MISSING_FIELDS");
     }
@@ -322,7 +372,9 @@ export class PhonePeBillingService {
 
       log.info("Payment initiated", {
         merchantTransactionId,
-        planType,
+        planType: plan.billingCycle,
+        planId: plan.planId,
+        checkoutPlanId: plan.checkoutPlanId,
         amount: plan.amountPaise,
       });
 
@@ -370,10 +422,9 @@ export class PhonePeBillingService {
     userId: string,
     transactionId: string,
     merchantTransactionId: string,
-    planType: PlanType,
+    plan: PlanConfig,
   ): Promise<void> {
-    const plan = PLANS[planType];
-    const USE_CLERK = process.env["USE_CLERK"] === "true";
+    const USE_CLERK = isUsingClerk();
 
     // Resolve user
     const user = USE_CLERK
@@ -403,7 +454,7 @@ export class PhonePeBillingService {
         $set: {
           phonepeTransactionId: transactionId,
           phonepeMerchantTransactionId: merchantTransactionId,
-          planType,
+          planType: plan.checkoutPlanId,
           status: "active",
           currentPeriodStart: now,
           currentPeriodEnd: periodEnd,
@@ -422,7 +473,9 @@ export class PhonePeBillingService {
 
     log.info("Subscription activated", {
       userId,
-      planType,
+      planType: plan.billingCycle,
+      planId: plan.planId,
+      checkoutPlanId: plan.checkoutPlanId,
       transactionId,
       expiresAt: periodEnd.toISOString(),
     });
@@ -520,7 +573,7 @@ billingRouter.post(
         return;
       }
 
-      const { email, planType } = req.body;
+      const { email, planType, planId, checkoutPlanId } = req.body;
       const userEmail = email || authEmail;
 
       if (!userEmail || !planType) {
@@ -561,6 +614,8 @@ billingRouter.post(
         userId,
         userEmail,
         planType as PlanType,
+        (planId as PlanId | undefined) ?? "pro",
+        checkoutPlanId as string | undefined,
         idempotencyKey,
       );
 
@@ -601,7 +656,7 @@ billingRouter.post(
         return;
       }
 
-      const { email, planType } = req.body;
+      const { email, planType, planId, checkoutPlanId } = req.body;
       const userEmail = email || authEmail;
 
       if (!userEmail || !planType) {
@@ -644,8 +699,16 @@ billingRouter.post(
         userId,
         userEmail,
         planType as PlanType,
+        (planId as PlanId | undefined) ?? "pro",
+        checkoutPlanId as string | undefined,
         idempotencyKey,
       );
+
+      const resolvedPlan = resolveCheckoutPlan({
+        planType,
+        planId,
+        checkoutPlanId,
+      });
 
       res.json({
         success: true,
@@ -654,7 +717,7 @@ billingRouter.post(
           merchantTransactionId: result.merchantTransactionId,
           redirectUrl: result.redirectUrl,
           // Backward compat shape
-          amount: PLANS[planType as PlanType]?.amountPaise,
+          amount: resolvedPlan?.amountPaise,
           currency: "INR",
         },
       });
@@ -691,7 +754,7 @@ billingRouter.post(
         return;
       }
 
-      const { merchantTransactionId, planType } = req.body;
+      const { merchantTransactionId, planType, planId, checkoutPlanId } = req.body;
 
       if (BILLING_BYPASS) {
         res.json({
@@ -734,12 +797,26 @@ billingRouter.post(
       }
 
       // Payment confirmed — activate subscription
-      const resolvedPlanType = (planType as PlanType) || "monthly";
+      const resolvedPlan = resolveCheckoutPlan({
+        planType,
+        planId,
+        checkoutPlanId,
+      }) || resolveCheckoutPlan({ planType: "monthly", planId: "pro" });
+
+      if (!resolvedPlan) {
+        res.status(400).json({
+          success: false,
+          message: "Invalid plan configuration",
+          requestId,
+        });
+        return;
+      }
+
       await PhonePeBillingService.activateSubscription(
         userId,
         statusResult.data.transactionId,
         merchantTransactionId,
-        resolvedPlanType,
+        resolvedPlan,
       );
 
       log.info("Payment verified and subscription activated", {
@@ -755,7 +832,9 @@ billingRouter.post(
         requestId,
         data: {
           tier: "pro",
-          planType: resolvedPlanType,
+          planType: resolvedPlan.billingCycle,
+          planId: resolvedPlan.planId,
+          checkoutPlanId: resolvedPlan.checkoutPlanId,
           transactionId: statusResult.data.transactionId,
         },
       });
@@ -829,7 +908,7 @@ billingRouter.get(
         return;
       }
 
-      const USE_CLERK = process.env["USE_CLERK"] === "true";
+      const USE_CLERK = isUsingClerk();
       const user = USE_CLERK
         ? await User.findOne({ clerkId: userId }).lean()
         : await UserModel.findById(userId).lean();
@@ -933,10 +1012,10 @@ billingRouter.get("/plans", (_req: Request, res: Response) => {
       plans: [
         {
           id: "pro_monthly",
-          name: PLANS.monthly.label,
-          price: PLANS.monthly.amountPaise,
+          name: PLANS.pro_monthly.label,
+          price: PLANS.pro_monthly.amountPaise,
           currency: "INR",
-          displayPrice: PLANS.monthly.displayPrice,
+          displayPrice: PLANS.pro_monthly.displayPrice,
           interval: "month",
           features: [
             "Unlimited projects",
@@ -949,16 +1028,43 @@ billingRouter.get("/plans", (_req: Request, res: Response) => {
         },
         {
           id: "pro_yearly",
-          name: PLANS.yearly.label,
-          price: PLANS.yearly.amountPaise,
+          name: PLANS.pro_yearly.label,
+          price: PLANS.pro_yearly.amountPaise,
           currency: "INR",
-          displayPrice: PLANS.yearly.displayPrice,
+          displayPrice: PLANS.pro_yearly.displayPrice,
           interval: "year",
           savings: "Save 17%",
           features: [
             "Everything in Pro Monthly",
             "2 months free",
             "Locked-in pricing",
+          ],
+        },
+        {
+          id: "business_monthly",
+          name: PLANS.business_monthly.label,
+          price: PLANS.business_monthly.amountPaise,
+          currency: "INR",
+          displayPrice: PLANS.business_monthly.displayPrice,
+          interval: "month",
+          features: [
+            "Everything in Pro",
+            "Team collaboration",
+            "Admin dashboard",
+            "Priority support",
+          ],
+        },
+        {
+          id: "business_yearly",
+          name: PLANS.business_yearly.label,
+          price: PLANS.business_yearly.amountPaise,
+          currency: "INR",
+          displayPrice: PLANS.business_yearly.displayPrice,
+          interval: "year",
+          savings: "Save 17%",
+          features: [
+            "Everything in Business Monthly",
+            "Annual billing discount",
           ],
         },
       ],

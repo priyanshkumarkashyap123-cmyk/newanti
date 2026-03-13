@@ -22,6 +22,15 @@ import { FC, useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import { useSubscription } from "../hooks/useSubscription";
 import { API_CONFIG, PAYMENT_CONFIG } from "../config/env";
+import {
+  CHECKOUT_FEATURES,
+  FEATURE_BUNDLES,
+  PRICING_INR,
+  formatINR,
+  getCheckoutPlanId,
+  type BillingCycle,
+  type PaidPlanId,
+} from "../config/pricing";
 
 // ============================================
 // RAZORPAY GLOBAL TYPE
@@ -61,7 +70,7 @@ interface RazorpayInstance {
 // TYPES
 // ============================================
 
-type PlanType = "monthly" | "yearly";
+type PlanType = BillingCycle;
 
 type PaymentState =
   | "idle"
@@ -97,7 +106,8 @@ export interface RazorpayPaymentModalProps {
   userId: string;
   email: string;
   userName?: string;
-  planType?: PlanType;
+  planId?: PaidPlanId;
+  billingCycle?: BillingCycle;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   onClose?: () => void;
@@ -112,31 +122,15 @@ const MAX_RETRIES = 3;
 const RETRY_BASE_DELAY_MS = 1000;
 const API_URL = API_CONFIG.baseUrl;
 
-const PLAN_DETAILS = {
-  monthly: {
-    label: "Monthly",
-    price: "₹999",
-    period: "/month",
-    description: "BeamLab Pro — Monthly",
-    badge: null,
-  },
-  yearly: {
-    label: "Annual",
-    price: "₹9,999",
-    period: "/year",
-    description: "BeamLab Pro — Annual",
-    badge: "Save 17%",
-  },
-} as const;
-
-const PRO_FEATURES = [
-  { icon: "📂", text: "Unlimited Projects" },
-  { icon: "🔬", text: "Advanced Analysis (Modal, Buckling, P-Delta)" },
-  { icon: "🏗️", text: "Steel & Concrete Design (IS, AISC, ACI, EC)" },
-  { icon: "📄", text: "Professional PDF Reports" },
-  { icon: "🤖", text: "AI Design Assistant" },
-  { icon: "⚡", text: "Priority Support" },
-] as const;
+function getPlanDetails(planId: PaidPlanId, billingCycle: BillingCycle) {
+  const amountInr = PRICING_INR[planId][billingCycle];
+  return {
+    label: billingCycle === "yearly" ? "Annual" : "Monthly",
+    price: formatINR(amountInr),
+    period: billingCycle === "yearly" ? "/year" : "/month",
+    description: `BeamLab ${planId === "business" ? "Business" : "Pro"} — ${billingCycle === "yearly" ? "Annual" : "Monthly"}`,
+  };
+}
 
 const STATE_LABELS: Record<PaymentState, string> = {
   idle: "Pay with Razorpay",
@@ -217,8 +211,10 @@ async function createRazorpayOrder(
   userId: string,
   token: string,
   planType: PlanType,
+  planId: PaidPlanId,
 ): Promise<CreateOrderResponse> {
   const idempotencyKey = generateIdempotencyKey(userId, planType);
+  const checkoutPlanId = getCheckoutPlanId(planId, planType);
   return fetchWithRetry<CreateOrderResponse>(
     `${API_URL}/api/billing/razorpay/create-order`,
     {
@@ -228,7 +224,7 @@ async function createRazorpayOrder(
         Authorization: `Bearer ${token}`,
         "X-Idempotency-Key": idempotencyKey,
       },
-      body: JSON.stringify({ planType }),
+      body: JSON.stringify({ planType, planId, checkoutPlanId }),
     },
   );
 }
@@ -238,8 +234,10 @@ async function verifyRazorpayPayment(
   razorpayPaymentId: string,
   razorpaySignature: string,
   planType: PlanType,
+  planId: PaidPlanId,
   token: string,
 ): Promise<VerifyPaymentResponse> {
+  const checkoutPlanId = getCheckoutPlanId(planId, planType);
   return fetchWithRetry<VerifyPaymentResponse>(
     `${API_URL}/api/billing/razorpay/verify-payment`,
     {
@@ -253,6 +251,8 @@ async function verifyRazorpayPayment(
         razorpayPaymentId,
         razorpaySignature,
         planType,
+        planId,
+        checkoutPlanId,
       }),
     },
   );
@@ -266,7 +266,8 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
   userId,
   email,
   userName,
-  planType: initialPlanType = "monthly",
+  planId = "pro",
+  billingCycle: initialPlanType = "monthly",
   onSuccess,
   onError,
   onClose,
@@ -286,7 +287,11 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
 
   const isProcessing =
     paymentState !== "idle" && paymentState !== "error" && paymentState !== "success";
-  const plan = PLAN_DETAILS[selectedPlan];
+  const plan = getPlanDetails(planId, selectedPlan);
+  const checkoutFeatures =
+    planId === "business"
+      ? FEATURE_BUNDLES.business
+      : CHECKOUT_FEATURES;
 
   // Focus trap on mount
   useEffect(() => {
@@ -336,7 +341,7 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
       if (!token) throw new Error("Please sign in to continue");
 
       // 1. Create Razorpay order on backend
-      const orderResponse = await createRazorpayOrder(userId, token, selectedPlan);
+      const orderResponse = await createRazorpayOrder(userId, token, selectedPlan, planId);
 
       if (!orderResponse.success || !orderResponse.data) {
         throw new Error(orderResponse.message || "Failed to create payment order");
@@ -380,6 +385,7 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
                 response.razorpay_payment_id,
                 response.razorpay_signature,
                 selectedPlan,
+                planId,
                 token,
               );
               if (verifyResp.success) {
@@ -421,6 +427,7 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
     email,
     userName,
     selectedPlan,
+    planId,
     plan.description,
     onSuccess,
     onError,
@@ -466,7 +473,7 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
           </div>
           <h2 id="rzp-payment-title" className="text-2xl font-bold text-white tracking-tight">
-            Upgrade to Pro
+            Upgrade to {planId === "business" ? "Business" : "Pro"}
           </h2>
           <p className="text-sm text-white/50 mt-1">Unlock the full power of BeamLab</p>
 
@@ -498,7 +505,7 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
                   }`}
                   aria-pressed={selectedPlan === p}
                 >
-                  {PLAN_DETAILS[p].label}
+                  {p === "yearly" ? "Annual" : "Monthly"}
                   {p === "yearly" && (
                     <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-green-500/20 text-green-400">
                       -17%
@@ -524,10 +531,10 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
         {/* Features */}
         <div className="mx-8 mb-5">
           <ul className="space-y-2.5" role="list">
-            {PRO_FEATURES.map((f) => (
-              <li key={f.text} className="flex items-center gap-3 text-sm text-white/80">
-                <span className="text-base flex-shrink-0" aria-hidden="true">{f.icon}</span>
-                <span>{f.text}</span>
+            {checkoutFeatures.map((feature) => (
+              <li key={feature} className="flex items-center gap-3 text-sm text-white/80">
+                <span className="text-base flex-shrink-0" aria-hidden="true">✅</span>
+                <span>{feature}</span>
               </li>
             ))}
           </ul>
@@ -554,7 +561,7 @@ export const RazorpayPaymentModal: FC<RazorpayPaymentModalProps> = ({
           >
             <div className="flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-              <span className="font-medium">Welcome to BeamLab Pro!</span>
+              <span className="font-medium">Welcome to BeamLab {planId === "business" ? "Business" : "Pro"}!</span>
             </div>
           </div>
         )}
@@ -648,7 +655,7 @@ export function useRazorpayPayment() {
         const token = await getToken();
         if (!token) throw new Error("Authentication required");
 
-        const orderResponse = await createRazorpayOrder(userId, token, planType);
+        const orderResponse = await createRazorpayOrder(userId, token, planType, "pro");
 
         if (!orderResponse.success || !orderResponse.data) {
           throw new Error(orderResponse.message || "Failed to create order");
@@ -674,7 +681,7 @@ export function useRazorpayPayment() {
             amount,
             currency,
             name: "BeamLab",
-            description: PLAN_DETAILS[planType].description,
+            description: getPlanDetails("pro", planType).description,
             order_id: orderId,
             prefill: { name: userName, email },
             theme: { color: "#3b82f6" },
@@ -686,6 +693,7 @@ export function useRazorpayPayment() {
                   response.razorpay_payment_id,
                   response.razorpay_signature,
                   planType,
+                  "pro",
                   token,
                 );
                 if (verifyResp.success) {

@@ -12,6 +12,8 @@
  * @version 3.0.0
  */
 
+import { validatePricingConfigReadiness } from './pricing';
+
 // ============================================
 // CORE ACCESSORS
 // ============================================
@@ -159,7 +161,7 @@ export const PAYMENT_CONFIG = {
   /** Temporary bypass while payment onboarding/KYC is pending */
   billingBypass: getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),
   /** Force subscription checkout path for testing (hides free/demo experience) */
-  forcePaymentTestMode: getBoolEnv("VITE_FORCE_PAYMENT_TEST_MODE", true),
+  forcePaymentTestMode: getBoolEnv("VITE_FORCE_PAYMENT_TEST_MODE", false),
   isPaymentEnabled:
     (Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) || Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID)) &&
     !getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),
@@ -242,6 +244,36 @@ export function validateEnvironment(): { valid: boolean; warnings: string[]; err
   // Environment-agnostic checks
   if (API_CONFIG.timeout < 5000) {
     warnings.push(`API timeout is very low (${API_CONFIG.timeout}ms). This may cause premature failures.`);
+  }
+
+  // Payment gateway readiness checks
+  if (PAYMENT_CONFIG.activeGateway === 'razorpay' || PAYMENT_CONFIG.activeGateway === 'both') {
+    if (!PAYMENT_CONFIG.razorpayKeyId && !PAYMENT_CONFIG.billingBypass) {
+      errors.push('Razorpay is enabled but VITE_RAZORPAY_KEY_ID is missing.');
+    }
+  }
+
+  if (PAYMENT_CONFIG.activeGateway === 'phonepe' || PAYMENT_CONFIG.activeGateway === 'both') {
+    if (!PAYMENT_CONFIG.phonePeMerchantId && !PAYMENT_CONFIG.billingBypass) {
+      errors.push('PhonePe is enabled but VITE_PHONEPE_MERCHANT_ID is missing.');
+    }
+  }
+
+  if (APP_ENV.isProd && PAYMENT_CONFIG.phonePeEnv !== 'PRODUCTION' && !PAYMENT_CONFIG.billingBypass) {
+    errors.push(`VITE_PHONEPE_ENV must be PRODUCTION in production builds. Current: ${PAYMENT_CONFIG.phonePeEnv}`);
+  }
+
+  if (APP_ENV.isProd && PAYMENT_CONFIG.razorpayKeyId?.startsWith('rzp_test_') && !PAYMENT_CONFIG.billingBypass) {
+    errors.push('Razorpay test key detected in production build (rzp_test_*).');
+  }
+
+  // Pricing/checkout mapping readiness checks
+  const pricingReadiness = validatePricingConfigReadiness();
+  if (!pricingReadiness.valid) {
+    errors.push(...pricingReadiness.errors.map((e) => `[pricing] ${e}`));
+  }
+  if (pricingReadiness.warnings.length > 0) {
+    warnings.push(...pricingReadiness.warnings.map((w) => `[pricing] ${w}`));
   }
 
   if (errors.length > 0) {

@@ -14,6 +14,7 @@ import { FC, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSubscription, type SubscriptionTier } from '../hooks/useSubscription';
 import { useAuth } from '../providers/AuthProvider';
+import { PRICING_LABELS } from '../config/pricing';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { PhonePePaymentModal } from './PhonePePayment';
@@ -324,7 +325,7 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
                         >
                             <span className="flex items-center justify-center gap-2">
                                 <span aria-hidden="true">⚡</span>
-                                Upgrade to Pro — ₹999/mo
+                                    Upgrade to Pro — {PRICING_LABELS.proMonthly}
                             </span>
                         </Button>
                         <Button

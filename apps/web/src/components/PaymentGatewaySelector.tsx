@@ -14,6 +14,7 @@ import { FC, useState, useCallback } from "react";
 import { PAYMENT_CONFIG } from "../config/env";
 import { RazorpayPaymentModal } from "./RazorpayPayment";
 import { PhonePePaymentModal } from "./PhonePePayment";
+import type { BillingCycle, PaidPlanId } from "../config/pricing";
 
 // ============================================
 // TYPES
@@ -25,7 +26,8 @@ interface PaymentGatewaySelectorProps {
   userId: string;
   email: string;
   userName?: string;
-  planType?: "monthly" | "yearly";
+  planId?: PaidPlanId;
+  billingCycle?: BillingCycle;
   onSuccess?: () => void;
   onError?: (error: string) => void;
   onClose?: () => void;
@@ -106,7 +108,8 @@ export const PaymentGatewaySelector: FC<PaymentGatewaySelectorProps> = ({
   userId,
   email,
   userName,
-  planType = "monthly",
+  planId = "pro",
+  billingCycle = "monthly",
   onSuccess,
   onError,
   onClose,
@@ -145,7 +148,8 @@ export const PaymentGatewaySelector: FC<PaymentGatewaySelectorProps> = ({
         userId={userId}
         email={email}
         userName={userName}
-        planType={planType}
+        planId={planId}
+        billingCycle={billingCycle}
         onSuccess={onSuccess}
         onError={onError}
         onClose={skipSelector ? onClose : handleBack}
@@ -160,7 +164,8 @@ export const PaymentGatewaySelector: FC<PaymentGatewaySelectorProps> = ({
         userId={userId}
         email={email}
         userName={userName}
-        planType={planType}
+        planId={planId}
+        billingCycle={billingCycle}
         onSuccess={onSuccess}
         onError={onError}
         onClose={skipSelector ? onClose : handleBack}

@@ -23,8 +23,8 @@
 
 import { Router, Request, Response, type IRouter } from "express";
 import { createHmac } from "crypto";
-import { requireAuth, getAuth } from "./middleware/authMiddleware.js";
-import { User, Subscription } from "./models.js";
+import { requireAuth, getAuth, isUsingClerk } from "./middleware/authMiddleware.js";
+import { User, Subscription, UserModel } from "./models.js";
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { createOrderUsingVendorPattern } from "./razorpay.custom.js";
@@ -47,28 +47,76 @@ const log = {
 // ============================================
 
 export type PlanType = "monthly" | "yearly";
+export type PlanId = "pro" | "business";
+export type CheckoutPlanId = `${PlanId}_${PlanType}`;
 
 interface PlanConfig {
+  planId: PlanId;
+  billingCycle: PlanType;
+  checkoutPlanId: CheckoutPlanId;
   amountPaise: number;
   displayPrice: string;
   durationDays: number;
   label: string;
 }
 
-export const RAZORPAY_PLANS: Record<PlanType, PlanConfig> = {
-  monthly: {
+export const RAZORPAY_PLANS: Record<CheckoutPlanId, PlanConfig> = {
+  pro_monthly: {
+    planId: "pro",
+    billingCycle: "monthly",
+    checkoutPlanId: "pro_monthly",
     amountPaise: 99900,        // ₹999
     displayPrice: "₹999/month",
     durationDays: 30,
     label: "Pro Monthly",
   },
-  yearly: {
+  pro_yearly: {
+    planId: "pro",
+    billingCycle: "yearly",
+    checkoutPlanId: "pro_yearly",
     amountPaise: 999900,       // ₹9,999
     displayPrice: "₹9,999/year",
     durationDays: 365,
     label: "Pro Annual",
   },
+  business_monthly: {
+    planId: "business",
+    billingCycle: "monthly",
+    checkoutPlanId: "business_monthly",
+    amountPaise: 199900,       // ₹1,999
+    displayPrice: "₹1,999/month",
+    durationDays: 30,
+    label: "Business Monthly",
+  },
+  business_yearly: {
+    planId: "business",
+    billingCycle: "yearly",
+    checkoutPlanId: "business_yearly",
+    amountPaise: 1999900,      // ₹19,999
+    displayPrice: "₹19,999/year",
+    durationDays: 365,
+    label: "Business Annual",
+  },
 };
+
+function resolveCheckoutPlan(input: {
+  planType?: string;
+  planId?: string;
+  checkoutPlanId?: string;
+}): PlanConfig | null {
+  const checkoutPlanId = (input.checkoutPlanId || "").toLowerCase() as CheckoutPlanId;
+  if (checkoutPlanId && RAZORPAY_PLANS[checkoutPlanId]) {
+    return RAZORPAY_PLANS[checkoutPlanId];
+  }
+
+  const planType = (input.planType || "").toLowerCase() as PlanType;
+  const planId = ((input.planId || "pro").toLowerCase() as PlanId);
+  if ((planType === "monthly" || planType === "yearly") && (planId === "pro" || planId === "business")) {
+    return RAZORPAY_PLANS[`${planId}_${planType}` as CheckoutPlanId];
+  }
+
+  return null;
+}
 
 class BillingError extends Error {
   constructor(
@@ -154,6 +202,8 @@ export class RazorpayBillingService {
   static async createOrder(
     userId: string,
     planType: PlanType,
+    planId: PlanId = "pro",
+    checkoutPlanId?: string,
     idempotencyKey?: string,
   ): Promise<{ orderId: string; amount: number; currency: string; keyId: string }> {
     if (idempotencyKey) {
@@ -169,7 +219,7 @@ export class RazorpayBillingService {
       throw new BillingError("Payment gateway not configured", "PAYMENT_UNAVAILABLE", 503, true);
     }
 
-    const plan = RAZORPAY_PLANS[planType];
+    const plan = resolveCheckoutPlan({ planType, planId, checkoutPlanId });
     if (!plan) {
       throw new BillingError("Invalid plan type", "MISSING_FIELDS");
     }
@@ -182,7 +232,12 @@ export class RazorpayBillingService {
         amount: plan.amountPaise, // in paise (₹999 = 99900)
         currency: "INR",
         receipt,
-        notes: { userId, planType },
+        notes: {
+          userId,
+          planType: plan.billingCycle,
+          planId: plan.planId,
+          checkoutPlanId: plan.checkoutPlanId,
+        },
       })) as RazorpayOrderResponse;
     } catch (error) {
       log.error("Razorpay order creation failed", {
@@ -197,7 +252,13 @@ export class RazorpayBillingService {
       idempotencyStore.set(idempotencyKey, { result, expiresAt: Date.now() + IDEMPOTENCY_TTL });
     }
 
-    log.info("Razorpay order created", { orderId: order.id, planType, userId: userId.slice(-6) });
+    log.info("Razorpay order created", {
+      orderId: order.id,
+      planType: plan.billingCycle,
+      planId: plan.planId,
+      checkoutPlanId: plan.checkoutPlanId,
+      userId: userId.slice(-6),
+    });
     return result;
   }
 
@@ -211,6 +272,8 @@ export class RazorpayBillingService {
     razorpayPaymentId: string,
     razorpaySignature: string,
     planType: PlanType,
+    planId: PlanId = "pro",
+    checkoutPlanId?: string,
   ): Promise<void> {
     if (!isRazorpayConfigured) {
       throw new BillingError("Payment gateway not configured", "PAYMENT_UNAVAILABLE", 503);
@@ -229,7 +292,7 @@ export class RazorpayBillingService {
       throw new BillingError("Invalid payment signature", "INVALID_SIGNATURE", 400);
     }
 
-    const plan = RAZORPAY_PLANS[planType];
+    const plan = resolveCheckoutPlan({ planType, planId, checkoutPlanId });
     if (!plan) {
       throw new BillingError("Invalid plan type", "MISSING_FIELDS");
     }
@@ -239,12 +302,14 @@ export class RazorpayBillingService {
       userId,
       razorpayPaymentId,
       razorpayOrderId,
-      planType,
+      plan,
     );
 
     log.info("Razorpay payment verified & subscription activated", {
       userId: userId.slice(-6),
-      planType,
+      planType: plan.billingCycle,
+      planId: plan.planId,
+      checkoutPlanId: plan.checkoutPlanId,
       paymentId: razorpayPaymentId,
     });
   }
@@ -256,39 +321,54 @@ export class RazorpayBillingService {
     userId: string,
     transactionId: string,
     orderId: string,
-    planType: PlanType,
+    plan: PlanConfig,
   ): Promise<void> {
-    const plan = RAZORPAY_PLANS[planType];
-    if (!plan) throw new BillingError("Invalid plan", "MISSING_FIELDS");
-
     const now = new Date();
     const expiresAt = new Date(now.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
 
-    const userDoc = await User.findOne({ clerkId: userId }).lean();
-    const mongoUserId = userDoc?._id ?? userId;
+    const USE_CLERK = isUsingClerk();
+    const userDoc = USE_CLERK
+      ? await User.findOne({ clerkId: userId }).lean()
+      : await UserModel.findById(userId).lean();
 
-    await Subscription.findOneAndUpdate(
-      { userId: mongoUserId },
+    if (!userDoc?._id) {
+      throw new BillingError("User not found", "USER_NOT_FOUND", 404);
+    }
+
+    const subscription = await Subscription.findOneAndUpdate(
+      { user: userDoc._id },
       {
         $set: {
-          userId: mongoUserId,
-          tier: "pro",
-          planType,
+          user: userDoc._id,
+          planType: plan.checkoutPlanId,
           status: "active",
-          startDate: now,
-          endDate: expiresAt,
-          transactionId,
-          orderId,
-          gateway: "razorpay",
-          updatedAt: now,
+          currentPeriodStart: now,
+          currentPeriodEnd: expiresAt,
+          cancelAtPeriodEnd: false,
+          razorpayPaymentId: transactionId,
+          razorpayOrderId: orderId,
         },
       },
       { upsert: true, new: true },
     );
 
+    if (USE_CLERK) {
+      await User.updateOne(
+        { _id: userDoc._id },
+        { $set: { tier: "pro", subscription: subscription._id } },
+      );
+    } else {
+      await UserModel.updateOne(
+        { _id: userDoc._id },
+        { $set: { subscriptionTier: "pro" } },
+      );
+    }
+
     log.info("Subscription activated via Razorpay", {
       userId: userId.slice(-6),
-      planType,
+      planType: plan.billingCycle,
+      planId: plan.planId,
+      checkoutPlanId: plan.checkoutPlanId,
       expiresAt: expiresAt.toISOString(),
     });
   }
@@ -320,7 +400,7 @@ export class RazorpayBillingService {
           entity?: {
             id: string;
             order_id: string;
-            notes?: { userId?: string; planType?: string };
+            notes?: { userId?: string; planType?: string; planId?: string; checkoutPlanId?: string };
           };
         };
       };
@@ -340,13 +420,20 @@ export class RazorpayBillingService {
       const payment = event.payload?.payment?.entity;
       if (payment) {
         const userId = payment.notes?.userId ?? "";
-        const planType = (payment.notes?.planType ?? "monthly") as PlanType;
+        const plan = resolveCheckoutPlan({
+          planType: payment.notes?.planType,
+          planId: payment.notes?.planId,
+          checkoutPlanId: payment.notes?.checkoutPlanId,
+        });
         if (userId) {
+          if (!plan) {
+            throw new BillingError("Invalid plan in webhook payload", "MISSING_FIELDS");
+          }
           await RazorpayBillingService.activateSubscription(
             userId,
             payment.id,
             payment.order_id,
-            planType,
+            plan,
           );
         }
       }
@@ -378,7 +465,11 @@ razorpayBillingRouter.post(
         return;
       }
 
-      const { planType } = req.body as { planType?: string };
+      const { planType, planId, checkoutPlanId } = req.body as {
+        planType?: string;
+        planId?: string;
+        checkoutPlanId?: string;
+      };
 
       if (!planType || !["monthly", "yearly"].includes(planType)) {
         res.status(400).json({
@@ -407,6 +498,8 @@ razorpayBillingRouter.post(
       const result = await RazorpayBillingService.createOrder(
         userId,
         planType as PlanType,
+        (planId as PlanId | undefined) ?? "pro",
+        checkoutPlanId,
         idempotencyKey,
       );
 
@@ -447,12 +540,14 @@ razorpayBillingRouter.post(
         return;
       }
 
-      const { razorpayOrderId, razorpayPaymentId, razorpaySignature, planType } =
+      const { razorpayOrderId, razorpayPaymentId, razorpaySignature, planType, planId, checkoutPlanId } =
         req.body as {
           razorpayOrderId?: string;
           razorpayPaymentId?: string;
           razorpaySignature?: string;
           planType?: string;
+          planId?: string;
+          checkoutPlanId?: string;
         };
 
       if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature || !planType) {
@@ -480,6 +575,8 @@ razorpayBillingRouter.post(
         razorpayPaymentId,
         razorpaySignature,
         planType as PlanType,
+        (planId as PlanId | undefined) ?? "pro",
+        checkoutPlanId,
       );
 
       res.json({

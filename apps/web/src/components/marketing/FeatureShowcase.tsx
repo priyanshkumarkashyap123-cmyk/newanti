@@ -395,7 +395,7 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
           Ready to modernize your<br />structural workflow?
         </h2>
         <p className="text-xl text-slate-500 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Start analyzing structures in your browser today. Free plan, no credit card required.
+          Start analyzing structures in your browser today with secure subscription checkout.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -403,15 +403,18 @@ export const CTABanner: FC<{ onGetStarted: () => void }> = ({ onGetStarted }) =>
             onClick={onGetStarted}
             className="w-full sm:w-auto px-10 py-4 rounded-full bg-white text-slate-950 font-bold text-lg hover:bg-blue-50 transition-all shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_4px_30px_rgba(59,130,246,0.15)] hover:shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_8px_40px_rgba(59,130,246,0.3)] flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
           >
-            Start Free Trial <ChevronRight className="w-5 h-5" />
+            Subscribe Now <ChevronRight className="w-5 h-5" />
           </button>
-          <button className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]">
-            Schedule Demo
+          <button
+            onClick={() => { window.location.href = '/pricing'; }}
+            className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 text-zinc-900 dark:text-white font-medium hover:bg-white/[0.04] hover:border-white/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:scale-[0.98]"
+          >
+            View Pricing
           </button>
         </div>
 
         <p className="text-slate-500 text-sm mt-8">
-          14-day Pro trial included · No credit card · Cancel anytime
+          Secure billing · GST-ready invoicing · Cancel anytime
         </p>
       </motion.div>
     </div>

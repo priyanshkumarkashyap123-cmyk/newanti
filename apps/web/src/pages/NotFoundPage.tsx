@@ -110,11 +110,11 @@ export function NotFoundPage() {
                     </Button>
                     <Button asChild variant="outline" size="lg">
                         <Link
-                            to="/demo"
+                            to="/pricing"
                             className="inline-flex items-center justify-center gap-2 no-underline"
                         >
                             <Play className="w-5 h-5" />
-                            Try Demo
+                            View Pricing
                         </Link>
                     </Button>
                 </motion.div>

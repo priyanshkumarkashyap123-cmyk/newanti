@@ -311,6 +311,7 @@ import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { useEffect } from 'react';
 import { initializeIntegration } from './core/StoreIntegration';
 import { isFullScreenRoute, isPublicRoute } from './config/appRouteMeta';
+import { PAYMENT_CONFIG } from './config/env';
 
 const ROUTE_ALIASES: Array<{ from: string; to: string }> = [
   { from: '/dashboard', to: '/stream' },
@@ -363,6 +364,8 @@ function ConditionalLayout({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const forcePaymentTestMode = PAYMENT_CONFIG.forcePaymentTestMode;
+
   // Ensure user is registered in MongoDB upon login/load
   useUserRegistration();
 
@@ -523,11 +526,11 @@ function App() {
               {/* Demo Route - Modern Modeler */}
               <Route
                 path="/demo"
-                element={
+                element={forcePaymentTestMode ? <Navigate to="/pricing" replace /> : (
                   <MobileGuard>
                     <ModernModeler />
                   </MobileGuard>
-                }
+                )}
               />
               {/* UI Component Showcase - Phase 13+ Integration Demo */}
               <Route path="/ui-showcase" element={<UIShowcase />} />

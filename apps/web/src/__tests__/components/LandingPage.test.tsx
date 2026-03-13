@@ -3,8 +3,8 @@
  *
  * Verifies that the landing page renders correctly with:
  * - Hero heading and sub-heading
- * - CTA buttons (Get Started, Demo)
- * - Navigation links (Features, Pricing, Tools, Demo)
+ * - CTA buttons (Get Started, Pricing)
+ * - Navigation links (Features, Pricing, Tools)
  * - Stats section
  * - Accessibility skip link
  * - Pricing section
@@ -113,8 +113,8 @@ describe('LandingPage', () => {
     it('should render CTA buttons in the hero section', () => {
         render(<LandingPage />);
 
-        expect(screen.getByText('Start Analyzing Free')).toBeDefined();
-        expect(screen.getByText('View Live Demo')).toBeDefined();
+        expect(screen.getAllByText('Get Started').length).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText('View Pricing').length).toBeGreaterThanOrEqual(1);
     });
 
     it('should render desktop navigation links', () => {
@@ -124,12 +124,10 @@ describe('LandingPage', () => {
         const featureLinks = screen.getAllByText('Features');
         const pricingLinks = screen.getAllByText('Pricing');
         const toolsLinks = screen.getAllByText('Tools');
-        const demoLinks = screen.getAllByText('Demo');
 
         expect(featureLinks.length).toBeGreaterThanOrEqual(1);
         expect(pricingLinks.length).toBeGreaterThanOrEqual(1);
         expect(toolsLinks.length).toBeGreaterThanOrEqual(1);
-        expect(demoLinks.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should render stats section with key metrics', () => {

@@ -47,7 +47,7 @@ import {
   CTABanner,
   PerformanceMetrics,
 } from "../components/marketing/FeatureShowcase";
-import { API_CONFIG } from "../config/env";
+import { API_CONFIG, PAYMENT_CONFIG } from "../config/env";
 import { fetchJson } from "../utils/fetchUtils";
 
 // Animation variants
@@ -70,6 +70,7 @@ const staggerContainer: Variants = {
 
 export const LandingPage: FC = () => {
   const navigate = useNavigate();
+  const forcePaymentTestMode = PAYMENT_CONFIG.forcePaymentTestMode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -269,7 +270,9 @@ export const LandingPage: FC = () => {
                   <a href="#reviews" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">{`Reviews (3)`}</a>
                 )}
                 <a href="#compare" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Compare</a>
-                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">Demo</Link>
+                <Link to="/pricing" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
+                  {forcePaymentTestMode ? 'Pricing' : 'Demo'}
+                </Link>
               </div>
             </div>
             {/* Auth - Right aligned */}
@@ -321,9 +324,9 @@ export const LandingPage: FC = () => {
                 {item.label}
               </a>
             ))}
-            <Link to="/demo" onClick={() => setMobileMenuOpen(false)}
+            <Link to="/pricing" onClick={() => setMobileMenuOpen(false)}
               className="block text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-              Demo
+              {forcePaymentTestMode ? 'Pricing' : 'Demo'}
             </Link>
             <hr className="border-white/10 my-4" aria-hidden="true" />
             <div className="space-y-3">
@@ -339,7 +342,7 @@ export const LandingPage: FC = () => {
                 size="lg"
                 className="w-full"
               >
-                Get Started Free
+                Get Started
               </Button>
             </div>
           </nav>
@@ -433,18 +436,18 @@ export const LandingPage: FC = () => {
                 className="w-full sm:w-auto group"
               >
                 <span className="flex items-center gap-2.5">
-                  Start Analyzing Free
+                  Get Started
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
               <Button
-                onClick={() => navigate("/demo")}
+                onClick={() => navigate("/pricing")}
                 variant="glass"
                 size="xl"
                 className="w-full sm:w-auto group"
               >
                 <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
-                View Live Demo
+                View Pricing
               </Button>
             </motion.div>
 
@@ -893,8 +896,8 @@ export const LandingPage: FC = () => {
             )}
 
             <div className="text-center mt-12">
-              <Button onClick={() => navigate('/demo')} variant="premium" size="lg" className="group">
-                Try Live Demo <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              <Button onClick={() => navigate('/pricing')} variant="premium" size="lg" className="group">
+                View Pricing <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
           </div>
@@ -1185,7 +1188,7 @@ export const LandingPage: FC = () => {
                 <li><a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Features</a></li>
                 <li><a href="#pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Pricing</a></li>
                 <li><Link to="/help" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Documentation</Link></li>
-                <li><Link to="/demo" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Live Demo</Link></li>
+                <li><Link to="/pricing" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Pricing</Link></li>
                 <li><Link to="/tools/print-export" className="text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors inline-block py-1.5">Downloads</Link></li>
               </ul>
             </div>
@@ -1690,11 +1693,11 @@ const FEATURES = [
 const PRICING_FAQ = [
   {
     q: 'Can I start for free without a credit card?',
-    a: 'Yes. The Academic & Hobbyist plan is completely free — no credit card required. You get up to 3 active projects and access to all core 2D analysis features and IS 456 / ACI 318 design checks.',
+    a: 'For current payment testing, paid plans use gateway checkout with test credentials. You can review plan details on the pricing page before subscribing.',
   },
   {
-    q: 'What happens at the end of my free trial?',
-    a: 'Your 14-day Professional trial automatically downgrades to the free Academic plan. Your projects and data are preserved. You can upgrade at any time without data loss.',
+    q: 'How does payment testing work?',
+    a: 'Select a paid plan and complete checkout using gateway test credentials. Your data remains in your account, and you can change plans later from billing settings.',
   },
   {
     q: 'Can I switch plans later?',
@@ -1728,7 +1731,7 @@ const PRICING_TIERS = [
       "IS 456 & ACI 318 design codes",
       "Standard PDF reports",
     ],
-    cta: "Start Learning Free",
+    cta: "Start Learning",
     popular: false,
   },
   {
@@ -1745,7 +1748,7 @@ const PRICING_TIERS = [
       "AI-powered design assistant",
       "Custom branded engineering reports",
     ],
-    cta: "Start 14-Day Free Trial",
+    cta: "Subscribe Now",
     popular: true,
   },
   {
@@ -1761,7 +1764,7 @@ const PRICING_TIERS = [
       "Centralized admin dashboard",
       "REST API access for automation",
     ],
-    cta: "Start Business Trial",
+    cta: "Subscribe Business",
     popular: false,
   },
   {

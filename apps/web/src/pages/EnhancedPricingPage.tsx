@@ -16,6 +16,7 @@ import { useAuth } from '../providers/AuthProvider';
 import { SEO } from '../components/SEO';
 import { useSubscription } from '../hooks/useSubscription';
 import { PAYMENT_CONFIG } from '../config/env';
+import { FEATURE_BUNDLES, PRICING_INR, formatINR, type BillingCycle, type PaidPlanId } from '../config/pricing';
 import {
   Check,
   X,
@@ -41,7 +42,7 @@ import {
 // ============================================
 
 interface PricingPlan {
-  id: string;
+  id: 'free' | PaidPlanId | 'enterprise';
   name: string;
   description: string;
   monthlyPrice: number | null;
@@ -64,68 +65,44 @@ const INDIA_MARKET = {
 type MarketMode = "india" | "global";
 const MARKET_OVERRIDE_KEY = "beamlab.pricing.market";
 const PENDING_CHECKOUT_KEY = "beamlab_pending_checkout_plan";
+type PendingCheckoutSelection = { planId: PaidPlanId; billingCycle: BillingCycle };
 
 const PLANS: PricingPlan[] = [
   {
     id: "free",
     name: "Academic & Hobbyist",
     description: "Perfect for students and learning the fundamentals",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
+    monthlyPrice: PRICING_INR.free.monthly,
+    yearlyPrice: PRICING_INR.free.yearly,
     icon: <GraduationCap className="w-6 h-6" />,
-    features: [
-      "Up to 3 active projects",
-      "2D beam & frame analysis",
-      "Basic load combinations",
-      "IS 456 & ACI 318 design codes",
-      "Standard PDF reports",
-      "Community forum support",
-    ],
+    features: [...FEATURE_BUNDLES.free],
     highlighted: false,
-    cta: "Unavailable in test mode",
+    cta: "Start Free",
     ctaVariant: "outline",
   },
   {
     id: "pro",
     name: "Professional",
     description: "For independent practicing structural engineers",
-    monthlyPrice: 999,
-    yearlyPrice: 799,
+    monthlyPrice: PRICING_INR.pro.monthly,
+    yearlyPrice: PRICING_INR.pro.yearly,
     icon: <Zap className="w-6 h-6" />,
-    features: [
-      "Unlimited projects & storage",
-      "Full 3D nonlinear analysis engine",
-      "All international design codes",
-      "P-Delta, buckling & modal analysis",
-      "AI-powered design assistant",
-      "Custom branded engineering reports",
-      "Priority email & chat support",
-      "Cloud backup & multi-device sync",
-      "Real-time collaboration (up to 3 users)",
-    ],
+    features: [...FEATURE_BUNDLES.pro],
     highlighted: true,
     badge: "Most Popular",
-    cta: "Subscribe with Test Payment",
+    cta: "Subscribe Now",
     ctaVariant: "primary",
   },
   {
-    id: "team",
+    id: "business",
     name: "Business",
     description: "For growing engineering firms and consultancies",
-    monthlyPrice: 1999,
-    yearlyPrice: 1599,
+    monthlyPrice: PRICING_INR.business.monthly,
+    yearlyPrice: PRICING_INR.business.yearly,
     icon: <Users className="w-6 h-6" />,
-    features: [
-      "Everything in Professional, plus:",
-      "Up to 10 team members included",
-      "Advanced team project sharing",
-      "Centralized admin dashboard",
-      "Version history (1-year retention)",
-      "REST API access for automation",
-      "Dedicated phone & priority support",
-    ],
+    features: [...FEATURE_BUNDLES.business],
     highlighted: false,
-    cta: "Subscribe with Test Payment",
+    cta: "Subscribe Now",
     ctaVariant: "secondary",
   },
   {
@@ -135,17 +112,7 @@ const PLANS: PricingPlan[] = [
     monthlyPrice: null,
     yearlyPrice: null,
     icon: <Building2 className="w-6 h-6" />,
-    features: [
-      "Everything in Business, plus:",
-      "Unlimited team members & storage",
-      "SSO, SAML & advanced security",
-      "On-premise or private cloud deployment",
-      "Custom integrations & API limits",
-      "Dedicated technical account manager",
-      "24/7 priority phone support",
-      "99.99% Uptime SLA guarantee",
-      "Custom onboarding & team training",
-    ],
+    features: [...FEATURE_BUNDLES.enterprise],
     highlighted: false,
     cta: "Contact Enterprise Sales",
     ctaVariant: "outline",
@@ -156,208 +123,52 @@ const FEATURE_MATRIX = [
   {
     category: "Analysis",
     features: [
-      {
-        name: "2D Frame Analysis",
-        free: true,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "3D Frame Analysis",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Plate/Shell Analysis",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "P-Delta Analysis",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Buckling Analysis",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Modal Analysis",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Time History",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
+      { name: "2D Frame Analysis", free: true, pro: true, business: true, enterprise: true },
+      { name: "3D Frame Analysis", free: false, pro: true, business: true, enterprise: true },
+      { name: "Plate/Shell Analysis", free: false, pro: true, business: true, enterprise: true },
+      { name: "P-Delta Analysis", free: false, pro: true, business: true, enterprise: true },
+      { name: "Buckling Analysis", free: false, pro: true, business: true, enterprise: true },
+      { name: "Modal Analysis", free: false, pro: true, business: true, enterprise: true },
+      { name: "Time History", free: false, pro: true, business: true, enterprise: true },
     ],
   },
   {
     category: "Design Codes",
     features: [
-      {
-        name: "IS 456, IS 800",
-        free: true,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "AISC 360, ACI 318",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Eurocode 2, 3, 8",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "AS 4100, AS 3600",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Custom Code Templates",
-        free: false,
-        pro: false,
-        team: true,
-        enterprise: true,
-      },
+      { name: "IS 456, IS 800", free: true, pro: true, business: true, enterprise: true },
+      { name: "AISC 360, ACI 318", free: false, pro: true, business: true, enterprise: true },
+      { name: "Eurocode 2, 3, 8", free: false, pro: true, business: true, enterprise: true },
+      { name: "AS 4100, AS 3600", free: false, pro: true, business: true, enterprise: true },
+      { name: "Custom Code Templates", free: false, pro: false, business: true, enterprise: true },
     ],
   },
   {
     category: "Collaboration",
     features: [
-      {
-        name: "Cloud Storage",
-        free: "100 MB",
-        pro: "10 GB",
-        team: "100 GB",
-        enterprise: "Unlimited",
-      },
-      {
-        name: "Real-time Collaboration",
-        free: false,
-        pro: "3 users",
-        team: "10 users",
-        enterprise: "Unlimited",
-      },
-      {
-        name: "Version History",
-        free: false,
-        pro: "30 days",
-        team: "90 days",
-        enterprise: "Unlimited",
-      },
-      {
-        name: "Team Management",
-        free: false,
-        pro: false,
-        team: true,
-        enterprise: true,
-      },
+      { name: "Cloud Storage", free: "100 MB", pro: "10 GB", business: "100 GB", enterprise: "Unlimited" },
+      { name: "Real-time Collaboration", free: false, pro: "3 users", business: "10 users", enterprise: "Unlimited" },
+      { name: "Version History", free: false, pro: "30 days", business: "90 days", enterprise: "Unlimited" },
+      { name: "Team Management", free: false, pro: false, business: true, enterprise: true },
     ],
   },
   {
     category: "AI & Advanced",
     features: [
-      {
-        name: "AI Design Assistant",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Parametric Modeling",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "AR/VR Visualization",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "BIM/IFC Import",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Optimization Engine",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
+      { name: "AI Design Assistant", free: false, pro: true, business: true, enterprise: true },
+      { name: "Parametric Modeling", free: false, pro: true, business: true, enterprise: true },
+      { name: "AR/VR Visualization", free: false, pro: true, business: true, enterprise: true },
+      { name: "BIM/IFC Import", free: false, pro: true, business: true, enterprise: true },
+      { name: "Optimization Engine", free: false, pro: true, business: true, enterprise: true },
     ],
   },
   {
     category: "Support",
     features: [
-      {
-        name: "Community Forum",
-        free: true,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Email Support",
-        free: false,
-        pro: true,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Phone Support",
-        free: false,
-        pro: false,
-        team: true,
-        enterprise: true,
-      },
-      {
-        name: "Dedicated Manager",
-        free: false,
-        pro: false,
-        team: false,
-        enterprise: true,
-      },
-      {
-        name: "Custom Training",
-        free: false,
-        pro: false,
-        team: false,
-        enterprise: true,
-      },
+      { name: "Community Forum", free: true, pro: true, business: true, enterprise: true },
+      { name: "Email Support", free: false, pro: true, business: true, enterprise: true },
+      { name: "Phone Support", free: false, pro: false, business: true, enterprise: true },
+      { name: "Dedicated Manager", free: false, pro: false, business: false, enterprise: true },
+      { name: "Custom Training", free: false, pro: false, business: false, enterprise: true },
     ],
   },
 ];
@@ -377,7 +188,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Is there a free trial for paid plans?",
-    a: "Yes, all paid plans come with a 14-day free trial. No credit card required to start. You'll only be charged if you decide to continue after the trial.",
+    a: "Paid plans are activated through secure gateway checkout (Razorpay/PhonePe).",
   },
   {
     q: "What happens to my data if I cancel?",
@@ -422,7 +233,10 @@ export const EnhancedPricingPage: FC = () => {
 
   // Payment gateway state
   const [gatewayModalOpen, setGatewayModalOpen] = useState(false);
-  const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'yearly'>('monthly');
+  const [pendingCheckout, setPendingCheckout] = useState<PendingCheckoutSelection>({
+    planId: 'pro',
+    billingCycle: 'monthly',
+  });
   const paymentLoading = false; // modal handles its own loading state
   const { isSignedIn, user } = useAuth();
   const { refreshSubscription } = useSubscription();
@@ -467,22 +281,25 @@ export const EnhancedPricingPage: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!isSignedIn || !user || !forcePaymentTestMode) return;
+    if (!isSignedIn || !user) return;
     try {
       const raw = localStorage.getItem(PENDING_CHECKOUT_KEY);
       if (!raw) return;
-      const pending = JSON.parse(raw) as { planId?: string; billingPeriod?: 'monthly' | 'yearly' };
-      if (!pending?.planId || pending.planId === 'enterprise' || pending.planId === 'free') {
+      const pending = JSON.parse(raw) as { planId?: string; billingPeriod?: BillingCycle };
+      if (pending?.planId !== 'pro' && pending?.planId !== 'business') {
         localStorage.removeItem(PENDING_CHECKOUT_KEY);
         return;
       }
-      setPendingPlanType(pending.billingPeriod || 'monthly');
+      setPendingCheckout({
+        planId: pending.planId,
+        billingCycle: pending.billingPeriod || 'monthly',
+      });
       setGatewayModalOpen(true);
       localStorage.removeItem(PENDING_CHECKOUT_KEY);
     } catch {
       localStorage.removeItem(PENDING_CHECKOUT_KEY);
     }
-  }, [isSignedIn, user, forcePaymentTestMode]);
+  }, [isSignedIn, user]);
 
   const applyMarketMode = (mode: MarketMode) => {
     setMarketMode(mode);
@@ -493,11 +310,11 @@ export const EnhancedPricingPage: FC = () => {
     }
   };
 
-  const handleGetStarted = async (planId: string) => {
+  const handleGetStarted = async (planId: PricingPlan['id']) => {
     setUpgradeError(null);
 
     if (forcePaymentTestMode && planId === 'free') {
-      setUpgradeError('Free/demo access is disabled in payment test mode. Please choose a paid plan.');
+      setUpgradeError('Free plan is currently unavailable. Please choose a paid plan.');
       return;
     }
 
@@ -506,30 +323,32 @@ export const EnhancedPricingPage: FC = () => {
       return;
     }
 
-    if (!forcePaymentTestMode && planId === "academic") {
+    if (!forcePaymentTestMode && planId === 'free') {
       // Free plan — just sign up
-      navigate('/sign-up?plan=academic');
+      navigate('/sign-up?plan=free');
       return;
     }
 
-    // Pro / Business plans — trigger PhonePe checkout
+    if (planId !== 'pro' && planId !== 'business') {
+      return;
+    }
+
+    // Pro / Business plans — trigger checkout
     if (!isSignedIn || !user) {
-      if (forcePaymentTestMode) {
-        try {
-          localStorage.setItem(
-            PENDING_CHECKOUT_KEY,
-            JSON.stringify({ planId, billingPeriod }),
-          );
-        } catch {
-          // ignore storage issues and continue
-        }
+      try {
+        localStorage.setItem(
+          PENDING_CHECKOUT_KEY,
+          JSON.stringify({ planId, billingPeriod }),
+        );
+      } catch {
+        // ignore storage issues and continue
       }
       navigate(`/sign-up?plan=${planId}`);
       return;
     }
 
     // Open payment gateway selector modal
-    setPendingPlanType(billingPeriod);
+    setPendingCheckout({ planId, billingCycle: billingPeriod });
     setGatewayModalOpen(true);
   };
 
@@ -538,11 +357,7 @@ export const EnhancedPricingPage: FC = () => {
     if (plan.monthlyPrice === 0) return "₹0";
     const price =
       billingPeriod === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price!);
+    return formatINR(price!);
   };
 
   const formatInr = (inrPrice: number) => {
@@ -658,7 +473,7 @@ export const EnhancedPricingPage: FC = () => {
             <Sparkles className="w-4 h-4" />
             {forcePaymentTestMode
               ? 'All prices in Indian Rupees (₹). Payment test mode is active (no free trial/demo).'
-              : 'All prices in Indian Rupees (₹). 14-day free trial included.'}
+              : 'All prices in Indian Rupees (₹). Subscription checkout via gateway is enabled.'}
           </motion.div>
 
           <motion.h1
@@ -763,7 +578,7 @@ export const EnhancedPricingPage: FC = () => {
                 </span>
                 {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
                   <span className="text-slate-600 dark:text-slate-400 ml-2">
-                    /month {billingPeriod === "yearly" && "(billed yearly)"}
+                    {billingPeriod === "yearly" ? '/year' : '/month'}
                   </span>
                 )}
                 {plan.monthlyPrice !== null &&
@@ -788,7 +603,7 @@ export const EnhancedPricingPage: FC = () => {
                 {paymentLoading ? 'Processing...' : plan.cta}
               </button>
 
-              {upgradeError && plan.id !== 'academic' && plan.id !== 'enterprise' && (
+              {upgradeError && plan.id !== 'free' && plan.id !== 'enterprise' && (
                 <p className="text-xs text-red-400 mb-4 text-center">{upgradeError}</p>
               )}
 
@@ -960,7 +775,7 @@ export const EnhancedPricingPage: FC = () => {
                     Professional
                   </th>
                   <th className="text-center py-4 px-4 text-slate-900 dark:text-white font-medium">
-                    Team
+                    Business
                   </th>
                   <th className="text-center py-4 px-4 text-slate-900 dark:text-white font-medium">
                     Enterprise
@@ -990,7 +805,7 @@ export const EnhancedPricingPage: FC = () => {
                           <FeatureValue value={feature.pro} highlight />
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <FeatureValue value={feature.team} />
+                          <FeatureValue value={feature.business} />
                         </td>
                         <td className="py-3 px-4 text-center">
                           <FeatureValue value={feature.enterprise} />
@@ -1177,15 +992,15 @@ export const EnhancedPricingPage: FC = () => {
           <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto">
             Join thousands of engineers who have already switched to BeamLab.
             {forcePaymentTestMode
-              ? 'For testing, subscription checkout is mandatory via Razorpay/PhonePe.'
-              : 'Start your 14-day free trial today. No credit card required.'}
+              ? ' For this rollout phase, checkout is available on paid plans via Razorpay/PhonePe.'
+              : ' Choose a plan and complete secure checkout in minutes.'}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button type="button"
               onClick={() => handleGetStarted("pro")}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/25"
             >
-              {forcePaymentTestMode ? 'Subscribe with Test Payment' : 'Start Free Trial'} <ArrowRight className="w-5 h-5" />
+              Subscribe Now <ArrowRight className="w-5 h-5" />
             </button>
             <Link
               to="/contact"
@@ -1236,7 +1051,8 @@ export const EnhancedPricingPage: FC = () => {
         userId={user.id}
         email={user.email || ''}
         userName={user.firstName || undefined}
-        planType={pendingPlanType}
+        planId={pendingCheckout.planId}
+        billingCycle={pendingCheckout.billingCycle}
         onSuccess={async () => {
           setGatewayModalOpen(false);
           await refreshSubscription();

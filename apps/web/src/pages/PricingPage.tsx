@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentGatewaySelector } from '../components/PaymentGatewaySelector';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
+import { PAYMENT_CONFIG } from '../config/env';
+import { PRICING_INR, formatINR } from '../config/pricing';
 import { CheckCircle, X, HelpCircle, ChevronRight, Menu } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Logo } from '../components/branding';
@@ -50,12 +52,12 @@ const PRICING_TIERS: PricingTier[] = [
             'AI Assistant',
             'Priority support'
         ],
-        cta: 'Get Started Free',
+        cta: 'Start Free',
         ctaLink: '/sign-up'
     },
     {
         name: 'Pro',
-        price: '₹749',
+        price: '₹999',
         period: '/month',
         description: 'For professional engineers & firms.',
         features: [
@@ -68,7 +70,7 @@ const PRICING_TIERS: PricingTier[] = [
             'Cloud project backup',
             'Up to 5 team members'
         ],
-        cta: 'Start Pro Trial',
+        cta: 'Subscribe Now',
         ctaLink: '/sign-up?plan=pro',
         popular: true,
         badge: 'Most Popular'
@@ -134,18 +136,33 @@ export const PricingPage: FC = () => {
     const paymentLoading = false; // modal handles its own loading state
     const { isSignedIn, user } = useAuth();
     const { refreshSubscription } = useSubscription();
+        const forcePaymentTestMode = PAYMENT_CONFIG.forcePaymentTestMode;
+
+        const visibleTiers = forcePaymentTestMode
+            ? PRICING_TIERS.filter((tier) => tier.name !== 'Free')
+            : PRICING_TIERS;
 
     const getPrice = (tier: PricingTier) => {
         if (tier.name === 'Free' || tier.name === 'Enterprise') return tier.price;
         if (billingPeriod === 'yearly') {
-            return '₹599'; // 20% discount
+            return formatINR(PRICING_INR.pro.yearly);
         }
-        return tier.price;
+        return formatINR(PRICING_INR.pro.monthly);
+    };
+
+    const getPeriodLabel = (tier: PricingTier) => {
+        if (tier.name !== 'Pro') return tier.period;
+        return billingPeriod === 'yearly' ? '/year' : '/month';
     };
 
     // Handle upgrade button click
     const handleUpgradeClick = async (tier: PricingTier) => {
         setUpgradeError(null);
+
+        if (forcePaymentTestMode && tier.name === 'Free') {
+            setUpgradeError('Free plan is currently unavailable. Please choose a paid plan.');
+            return;
+        }
 
         // Free plan - just navigate to sign up
         if (tier.name === 'Free') {
@@ -198,9 +215,11 @@ export const PricingPage: FC = () => {
                                 <Link to="/help" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
                                     Docs
                                 </Link>
-                                <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
-                                    Demo
-                                </Link>
+                                {!forcePaymentTestMode && (
+                                    <Link to="/demo" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-1">
+                                        Demo
+                                    </Link>
+                                )}
                             </div>
                         </div>
 
@@ -242,7 +261,9 @@ export const PricingPage: FC = () => {
                                 <Link to="/#features" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Features</Link>
                                 <Link to="/pricing" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800">Pricing</Link>
                                 <Link to="/help" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Docs</Link>
-                                <Link to="/demo" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Demo</Link>
+                                {!forcePaymentTestMode && (
+                                    <Link to="/demo" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Demo</Link>
+                                )}
                                 <hr className="border-slate-200 dark:border-slate-800 my-2" />
                                 <Link to="/sign-in" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2 rounded-lg text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Log in</Link>
                                 <Link to="/sign-up" onClick={() => setMobileMenuOpen(false)} className="block px-3 py-2.5 rounded-lg text-sm font-bold text-center bg-blue-600 text-white hover:bg-blue-500">Get Started</Link>
@@ -336,7 +357,7 @@ export const PricingPage: FC = () => {
                         </div>
                     )}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                        {PRICING_TIERS.map((tier, index) => (
+                        {visibleTiers.map((tier, index) => (
                             <motion.div
                                 key={tier.name}
                                 initial={{ opacity: 0, y: 20 }}
@@ -365,7 +386,7 @@ export const PricingPage: FC = () => {
                                 </div>
                                 <div className="mb-6 sm:mb-8">
                                     <span className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">{getPrice(tier)}</span>
-                                    {tier.period && <span className="text-slate-600 dark:text-slate-400 ml-1">{tier.period}</span>}
+                                    {tier.period && <span className="text-slate-600 dark:text-slate-400 ml-1">{getPeriodLabel(tier)}</span>}
                                 </div>
 
                                 {/* CTA Button */}
@@ -460,7 +481,8 @@ export const PricingPage: FC = () => {
                 userId={user.id}
                 email={user.email || ''}
                 userName={user.firstName || undefined}
-                planType={pendingPlanType}
+                planId="pro"
+                billingCycle={pendingPlanType}
                 onSuccess={async () => {
                     setGatewayModalOpen(false);
                     await refreshSubscription();

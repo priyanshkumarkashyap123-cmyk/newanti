@@ -3,7 +3,7 @@
  * 
  * Verifies that the 404 page renders correctly with:
  * - Proper heading and description
- * - Navigation links (home, dashboard, demo)
+ * - Navigation links (home, dashboard, pricing)
  * - Support link
  * 
  * @vitest-environment jsdom
@@ -55,7 +55,7 @@ describe('NotFoundPage', () => {
         renderWithRouter();
         expect(screen.getByText('Go Home')).toBeDefined();
         expect(screen.getByText('Dashboard')).toBeDefined();
-        expect(screen.getByText('Try Demo')).toBeDefined();
+        expect(screen.getByText('View Pricing')).toBeDefined();
     });
 
     it('should render support link', () => {
@@ -67,10 +67,10 @@ describe('NotFoundPage', () => {
         renderWithRouter();
         const homeLink = screen.getByText('Go Home').closest('a');
         const dashLink = screen.getByText('Dashboard').closest('a');
-        const demoLink = screen.getByText('Try Demo').closest('a');
+        const pricingLink = screen.getByText('View Pricing').closest('a');
 
         expect(homeLink?.getAttribute('href')).toBe('/');
         expect(dashLink?.getAttribute('href')).toBe('/stream');
-        expect(demoLink?.getAttribute('href')).toBe('/demo');
+        expect(pricingLink?.getAttribute('href')).toBe('/pricing');
     });
 });

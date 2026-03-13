@@ -243,10 +243,10 @@ export const AboutPage: FC = () => {
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Button asChild className="px-8 py-3 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-950 font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shadow-lg">
-                                <Link to="/sign-up">Start Free Trial</Link>
+                                <Link to="/pricing">Subscribe Now</Link>
                             </Button>
                             <Button asChild variant="outline" className="px-8 py-3 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-medium border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                                <Link to="/demo">View Demo</Link>
+                                <Link to="/pricing">View Pricing</Link>
                             </Button>
                         </div>
                     </div>
