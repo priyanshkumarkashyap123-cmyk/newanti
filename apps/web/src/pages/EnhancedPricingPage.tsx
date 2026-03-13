@@ -15,6 +15,7 @@ import { PaymentGatewaySelector } from '../components/PaymentGatewaySelector';
 import { useAuth } from '../providers/AuthProvider';
 import { SEO } from '../components/SEO';
 import { useSubscription } from '../hooks/useSubscription';
+import { PAYMENT_CONFIG } from '../config/env';
 import {
   Check,
   X,
@@ -62,6 +63,7 @@ const INDIA_MARKET = {
 
 type MarketMode = "india" | "global";
 const MARKET_OVERRIDE_KEY = "beamlab.pricing.market";
+const PENDING_CHECKOUT_KEY = "beamlab_pending_checkout_plan";
 
 const PLANS: PricingPlan[] = [
   {
@@ -80,7 +82,7 @@ const PLANS: PricingPlan[] = [
       "Community forum support",
     ],
     highlighted: false,
-    cta: "Start Learning Free",
+    cta: "Unavailable in test mode",
     ctaVariant: "outline",
   },
   {
@@ -103,7 +105,7 @@ const PLANS: PricingPlan[] = [
     ],
     highlighted: true,
     badge: "Most Popular",
-    cta: "Start 14-Day Free Trial",
+    cta: "Subscribe with Test Payment",
     ctaVariant: "primary",
   },
   {
@@ -123,7 +125,7 @@ const PLANS: PricingPlan[] = [
       "Dedicated phone & priority support",
     ],
     highlighted: false,
-    cta: "Start Business Trial",
+    cta: "Subscribe with Test Payment",
     ctaVariant: "secondary",
   },
   {
@@ -424,6 +426,11 @@ export const EnhancedPricingPage: FC = () => {
   const paymentLoading = false; // modal handles its own loading state
   const { isSignedIn, user } = useAuth();
   const { refreshSubscription } = useSubscription();
+  const forcePaymentTestMode = PAYMENT_CONFIG.forcePaymentTestMode;
+
+  const visiblePlans = forcePaymentTestMode
+    ? PLANS.filter((plan) => plan.id !== 'free')
+    : PLANS;
 
   useEffect(() => { document.title = 'Pricing | BeamLab'; }, []);
 
@@ -459,6 +466,24 @@ export const EnhancedPricingPage: FC = () => {
     setShowPPP(resolvedMarket === "india");
   }, []);
 
+  useEffect(() => {
+    if (!isSignedIn || !user || !forcePaymentTestMode) return;
+    try {
+      const raw = localStorage.getItem(PENDING_CHECKOUT_KEY);
+      if (!raw) return;
+      const pending = JSON.parse(raw) as { planId?: string; billingPeriod?: 'monthly' | 'yearly' };
+      if (!pending?.planId || pending.planId === 'enterprise' || pending.planId === 'free') {
+        localStorage.removeItem(PENDING_CHECKOUT_KEY);
+        return;
+      }
+      setPendingPlanType(pending.billingPeriod || 'monthly');
+      setGatewayModalOpen(true);
+      localStorage.removeItem(PENDING_CHECKOUT_KEY);
+    } catch {
+      localStorage.removeItem(PENDING_CHECKOUT_KEY);
+    }
+  }, [isSignedIn, user, forcePaymentTestMode]);
+
   const applyMarketMode = (mode: MarketMode) => {
     setMarketMode(mode);
     setShowPPP(mode === "india");
@@ -471,12 +496,17 @@ export const EnhancedPricingPage: FC = () => {
   const handleGetStarted = async (planId: string) => {
     setUpgradeError(null);
 
+    if (forcePaymentTestMode && planId === 'free') {
+      setUpgradeError('Free/demo access is disabled in payment test mode. Please choose a paid plan.');
+      return;
+    }
+
     if (planId === "enterprise") {
       navigate("/contact?subject=enterprise");
       return;
     }
 
-    if (planId === "academic") {
+    if (!forcePaymentTestMode && planId === "academic") {
       // Free plan — just sign up
       navigate('/sign-up?plan=academic');
       return;
@@ -484,6 +514,16 @@ export const EnhancedPricingPage: FC = () => {
 
     // Pro / Business plans — trigger PhonePe checkout
     if (!isSignedIn || !user) {
+      if (forcePaymentTestMode) {
+        try {
+          localStorage.setItem(
+            PENDING_CHECKOUT_KEY,
+            JSON.stringify({ planId, billingPeriod }),
+          );
+        } catch {
+          // ignore storage issues and continue
+        }
+      }
       navigate(`/sign-up?plan=${planId}`);
       return;
     }
@@ -553,12 +593,14 @@ export const EnhancedPricingPage: FC = () => {
             >
               Home
             </Link>
-            <Link
-              to="/demo"
-              className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              Demo
-            </Link>
+              {!forcePaymentTestMode && (
+                <Link
+                  to="/demo"
+                  className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                >
+                  Demo
+                </Link>
+              )}
             <Link
               to="/sign-in"
               className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
@@ -614,7 +656,9 @@ export const EnhancedPricingPage: FC = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6"
           >
             <Sparkles className="w-4 h-4" />
-            All prices in Indian Rupees (₹). 14-day free trial included.
+            {forcePaymentTestMode
+              ? 'All prices in Indian Rupees (₹). Payment test mode is active (no free trial/demo).'
+              : 'All prices in Indian Rupees (₹). 14-day free trial included.'}
           </motion.div>
 
           <motion.h1
@@ -682,7 +726,7 @@ export const EnhancedPricingPage: FC = () => {
       {/* Pricing Cards */}
       <section className="pb-20 px-4">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PLANS.map((plan, i) => (
+          {visiblePlans.map((plan, i) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 20 }}
@@ -1132,14 +1176,16 @@ export const EnhancedPricingPage: FC = () => {
           </h2>
           <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto">
             Join thousands of engineers who have already switched to BeamLab.
-            Start your 14-day free trial today. No credit card required.
+            {forcePaymentTestMode
+              ? 'For testing, subscription checkout is mandatory via Razorpay/PhonePe.'
+              : 'Start your 14-day free trial today. No credit card required.'}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button type="button"
               onClick={() => handleGetStarted("pro")}
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/25"
             >
-              Start Free Trial <ArrowRight className="w-5 h-5" />
+              {forcePaymentTestMode ? 'Subscribe with Test Payment' : 'Start Free Trial'} <ArrowRight className="w-5 h-5" />
             </button>
             <Link
               to="/contact"

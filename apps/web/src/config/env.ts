@@ -157,7 +157,9 @@ export const PAYMENT_CONFIG = {
   /** Active payment gateway: 'razorpay' | 'phonepe' | 'both' */
   activeGateway: getEnv("VITE_PAYMENT_GATEWAY", "both") as "razorpay" | "phonepe" | "both",
   /** Temporary bypass while payment onboarding/KYC is pending */
-  billingBypass: getBoolEnv("VITE_TEMP_UNLOCK_ALL", true),
+  billingBypass: getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),
+  /** Force subscription checkout path for testing (hides free/demo experience) */
+  forcePaymentTestMode: getBoolEnv("VITE_FORCE_PAYMENT_TEST_MODE", true),
   isPaymentEnabled:
     (Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) || Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID)) &&
     !getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),

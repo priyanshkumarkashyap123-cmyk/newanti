@@ -71,13 +71,13 @@ export interface SubscriptionStatus {
 // TODO(payment): Revert free tier limits after payment gateway integration
 const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
   free: {
-    maxProjects: -1,
-    pdfExport: true,
-    aiAssistant: true,
-    advancedDesignCodes: true,
-    teamMembers: -1,
-    prioritySupport: true,
-    apiAccess: true,
+    maxProjects: 3,
+    pdfExport: false,
+    aiAssistant: false,
+    advancedDesignCodes: false,
+    teamMembers: 1,
+    prioritySupport: false,
+    apiAccess: false,
   },
   pro: {
     maxProjects: -1, // unlimited
@@ -357,9 +357,14 @@ export const useSubscription = (): SubscriptionContextType => {
         expiresAt: null,
         features: TIER_FEATURES.free,
       },
-      // TODO(payment): Revert to () => false / () => true after payment gateway integration
-      canAccess: () => true,
-      requiresUpgrade: () => false,
+      canAccess: (feature) => {
+        const value = TIER_FEATURES.free[feature];
+        return typeof value === "boolean" ? value : value !== 0;
+      },
+      requiresUpgrade: (feature) => {
+        const value = TIER_FEATURES.free[feature];
+        return !(typeof value === "boolean" ? value : value !== 0);
+      },
       refreshSubscription: async () => {},
       optimisticUpgrade: () => {},
     };
