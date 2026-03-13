@@ -1005,9 +1005,35 @@ const LoadGeneratorsPanel: FC = () => {
   const [windSpeed, setWindSpeed] = useState("39");
   const [terrainCategory, setTerrainCategory] = useState("2");
   const [deadLoadEnabled, setDeadLoadEnabled] = useState(true);
+  const openModal = useUIStore((s) => s.openModal);
+  const loadCases = useModelStore((s) => s.loadCases);
+  const activeLoadCaseId = useModelStore((s) => s.activeLoadCaseId);
+
+  const activeLoadCaseName = useMemo(() => {
+    if (loadCases.length === 0) return "None";
+    if (!activeLoadCaseId) return loadCases[0]?.name ?? "None";
+    return loadCases.find((lc) => lc.id === activeLoadCaseId)?.name ?? (loadCases[0]?.name ?? "None");
+  }, [loadCases, activeLoadCaseId]);
 
   return (
     <div className="space-y-4">
+      {/* Active Load Case */}
+      <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-lg p-3 border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">Active Load Case</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{activeLoadCaseName}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => openModal("loadDialog")}
+            className="px-2.5 py-1.5 text-xs rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 transition-colors"
+          >
+            Manage
+          </button>
+        </div>
+      </div>
+
       {/* Wind Load Generator */}
       <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg p-3 space-y-2">
         <div className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -1040,7 +1066,11 @@ const LoadGeneratorsPanel: FC = () => {
             </select>
           </div>
         </div>
-        <button type="button" className="w-full bg-cyan-600/20 text-cyan-400 text-sm py-1.5 rounded hover:bg-cyan-600/30 transition-colors">
+        <button
+          type="button"
+          onClick={() => openModal("windLoadDialog")}
+          className="w-full bg-cyan-600/20 text-cyan-400 text-sm py-1.5 rounded hover:bg-cyan-600/30 transition-colors"
+        >
           Generate Wind Loads
         </button>
       </div>
@@ -1060,6 +1090,179 @@ const LoadGeneratorsPanel: FC = () => {
           />
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={() => openModal("deadLoadGenerator")}
+        className="w-full bg-amber-600/20 text-amber-400 text-sm py-2 rounded hover:bg-amber-600/30 transition-colors"
+      >
+        Open Dead Load Generator
+      </button>
+    </div>
+  );
+};
+
+const LoadCaseManagerPanel: FC = () => {
+  const loadCases = useModelStore((s) => s.loadCases);
+  const activeLoadCaseId = useModelStore((s) => s.activeLoadCaseId);
+  const addLoadCase = useModelStore((s) => s.addLoadCase);
+  const removeLoadCase = useModelStore((s) => s.removeLoadCase);
+  const updateLoadCase = useModelStore((s) => s.updateLoadCase);
+  const setActiveLoadCase = useModelStore((s) => s.setActiveLoadCase);
+  const showNotification = useUIStore((s) => s.showNotification);
+
+  const [newCaseName, setNewCaseName] = useState("");
+  const [newCaseType, setNewCaseType] = useState<
+    "dead" | "live" | "wind" | "seismic" | "snow" | "temperature" | "self_weight" | "custom"
+  >("dead");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftName, setDraftName] = useState("");
+
+  const handleAdd = () => {
+    const trimmed = newCaseName.trim();
+    if (!trimmed) {
+      showNotification("warning", "Enter a load case name");
+      return;
+    }
+
+    const id = `LC_${Date.now()}`;
+    addLoadCase({
+      id,
+      name: trimmed,
+      type: newCaseType,
+      loads: [],
+      memberLoads: [],
+      factor: 1,
+    });
+    setActiveLoadCase(id);
+    setNewCaseName("");
+    showNotification("success", `Load case created: ${trimmed}`);
+  };
+
+  const beginRename = (id: string, name: string) => {
+    setEditingId(id);
+    setDraftName(name);
+  };
+
+  const commitRename = () => {
+    if (!editingId) return;
+    const trimmed = draftName.trim();
+    if (!trimmed) {
+      showNotification("warning", "Load case name cannot be empty");
+      return;
+    }
+    updateLoadCase(editingId, { name: trimmed });
+    setEditingId(null);
+    setDraftName("");
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-2">
+        <input
+          type="text"
+          value={newCaseName}
+          onChange={(e) => setNewCaseName(e.target.value)}
+          placeholder="Case name"
+          className="col-span-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
+        />
+        <select
+          value={newCaseType}
+          onChange={(e) => setNewCaseType(e.target.value as typeof newCaseType)}
+          className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-xs text-slate-700 dark:text-slate-200"
+        >
+          <option value="dead">Dead</option>
+          <option value="live">Live</option>
+          <option value="wind">Wind</option>
+          <option value="seismic">Seismic</option>
+          <option value="snow">Snow</option>
+          <option value="temperature">Temperature</option>
+          <option value="self_weight">Self Weight</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleAdd}
+        className="w-full bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+      >
+        Add Load Case
+      </button>
+
+      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+        {loadCases.length === 0 && (
+          <div className="text-xs text-slate-500 dark:text-slate-400 italic">No load cases yet. Add one to begin.</div>
+        )}
+
+        {loadCases.map((lc) => {
+          const isActive = lc.id === activeLoadCaseId || (!activeLoadCaseId && loadCases[0]?.id === lc.id);
+          const isEditing = editingId === lc.id;
+
+          return (
+            <div
+              key={lc.id}
+              className={`rounded-lg border p-2 ${
+                isActive
+                  ? "border-blue-500/40 bg-blue-500/10"
+                  : "border-slate-200 dark:border-slate-700 bg-slate-100/40 dark:bg-slate-800/40"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveLoadCase(lc.id)}
+                  className="flex-1 text-left"
+                >
+                  {isEditing ? (
+                    <input
+                      value={draftName}
+                      onChange={(e) => setDraftName(e.target.value)}
+                      onBlur={commitRename}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") commitRename();
+                        if (e.key === "Escape") {
+                          setEditingId(null);
+                          setDraftName("");
+                        }
+                      }}
+                      autoFocus
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded px-2 py-1 text-xs text-slate-700 dark:text-slate-200"
+                    />
+                  ) : (
+                    <>
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{lc.name}</div>
+                      <div className="text-[10px] uppercase text-slate-500 dark:text-slate-400 tracking-wide">{lc.type.replace("_", " ")}</div>
+                    </>
+                  )}
+                </button>
+
+                {!isEditing && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => beginRename(lc.id, lc.name)}
+                      className="px-2 py-1 text-[10px] rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600"
+                    >
+                      Rename
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        removeLoadCase(lc.id);
+                        showNotification("info", `Removed load case: ${lc.name}`);
+                      }}
+                      className="px-2 py-1 text-[10px] rounded bg-red-600/20 text-red-400 hover:bg-red-600/30"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -1071,9 +1274,134 @@ const ManualLoadsPanel: FC = () => {
   const [moment, setMoment] = useState("0");
   const setTool = useModelStore((state) => state.setTool);
   const activeTool = useModelStore((state) => state.activeTool);
+  const selectedIds = useModelStore((state) => state.selectedIds);
+  const nodes = useModelStore((state) => state.nodes);
+  const members = useModelStore((state) => state.members);
+  const addLoad = useModelStore((state) => state.addLoad);
+  const addMemberLoad = useModelStore((state) => state.addMemberLoad);
+  const loadCases = useModelStore((state) => state.loadCases);
+  const activeLoadCaseId = useModelStore((state) => state.activeLoadCaseId);
+  const updateLoadCase = useModelStore((state) => state.updateLoadCase);
+  const showNotification = useUIStore((state) => state.showNotification);
+
+  const selectedNodeIds = useMemo(
+    () => Array.from(selectedIds).filter((id) => nodes.has(id)),
+    [selectedIds, nodes],
+  );
+
+  const selectedMemberIds = useMemo(
+    () => Array.from(selectedIds).filter((id) => members.has(id)),
+    [selectedIds, members],
+  );
+
+  const resolvedActiveLoadCaseId = useMemo(
+    () => activeLoadCaseId ?? loadCases[0]?.id ?? null,
+    [activeLoadCaseId, loadCases],
+  );
+
+  const appendNodeLoadsToActiveCase = useCallback((newLoads: Array<{ id: string; nodeId: string; fx?: number; fy?: number; fz?: number; mx?: number; my?: number; mz?: number }>) => {
+    if (!resolvedActiveLoadCaseId) return;
+    const lc = loadCases.find((c) => c.id === resolvedActiveLoadCaseId);
+    if (!lc) return;
+    updateLoadCase(resolvedActiveLoadCaseId, {
+      loads: [...lc.loads, ...newLoads],
+    });
+  }, [resolvedActiveLoadCaseId, loadCases, updateLoadCase]);
+
+  const appendMemberLoadsToActiveCase = useCallback((newLoads: Array<{ id: string; memberId: string; type: "UDL" | "point" | "moment" | "UVL"; direction: "local_y" | "local_z" | "global_x" | "global_y" | "global_z" | "axial"; w1?: number; w2?: number; P?: number; M?: number; a?: number; startPos?: number; endPos?: number }>) => {
+    if (!resolvedActiveLoadCaseId) return;
+    const lc = loadCases.find((c) => c.id === resolvedActiveLoadCaseId);
+    if (!lc) return;
+    updateLoadCase(resolvedActiveLoadCaseId, {
+      memberLoads: [...lc.memberLoads, ...newLoads],
+    });
+  }, [resolvedActiveLoadCaseId, loadCases, updateLoadCase]);
+
+  const handleApplyNodeLoads = useCallback(() => {
+    if (selectedNodeIds.length === 0) {
+      showNotification("warning", "Select at least one node to apply nodal loads");
+      return;
+    }
+
+    const fxVal = parseFloat(fx) || 0;
+    const fyVal = parseFloat(fy) || 0;
+    const fzVal = parseFloat(fz) || 0;
+    const mzVal = parseFloat(moment) || 0;
+
+    const newLoads = selectedNodeIds.map((nodeId, i) => ({
+      id: `NL_${Date.now()}_${i}`,
+      nodeId,
+      fx: fxVal,
+      fy: fyVal,
+      fz: fzVal,
+      mz: mzVal,
+    }));
+
+    newLoads.forEach((load) => addLoad(load));
+    appendNodeLoadsToActiveCase(newLoads);
+    showNotification("success", `Applied nodal load to ${selectedNodeIds.length} node(s)`);
+  }, [selectedNodeIds, fx, fy, fz, moment, addLoad, appendNodeLoadsToActiveCase, showNotification]);
+
+  const handleApplyMemberUdl = useCallback(() => {
+    if (selectedMemberIds.length === 0) {
+      showNotification("warning", "Select at least one member to apply UDL");
+      return;
+    }
+
+    const w = parseFloat(fy) || -10;
+    const newLoads = selectedMemberIds.map((memberId, i) => ({
+      id: `ML_UDL_${Date.now()}_${i}`,
+      memberId,
+      type: "UDL" as const,
+      direction: "global_y" as const,
+      w1: w,
+      w2: w,
+      startPos: 0,
+      endPos: 1,
+    }));
+
+    newLoads.forEach((load) => addMemberLoad(load));
+    appendMemberLoadsToActiveCase(newLoads);
+    showNotification("success", `Applied UDL to ${selectedMemberIds.length} member(s)`);
+  }, [selectedMemberIds, fy, addMemberLoad, appendMemberLoadsToActiveCase, showNotification]);
+
+  const handleApplyMemberPoint = useCallback(() => {
+    if (selectedMemberIds.length === 0) {
+      showNotification("warning", "Select at least one member to apply point load");
+      return;
+    }
+
+    const p = parseFloat(fy) || -10;
+    const newLoads = selectedMemberIds.map((memberId, i) => ({
+      id: `ML_PT_${Date.now()}_${i}`,
+      memberId,
+      type: "point" as const,
+      direction: "global_y" as const,
+      P: p,
+      a: 0.5,
+    }));
+
+    newLoads.forEach((load) => addMemberLoad(load));
+    appendMemberLoadsToActiveCase(newLoads);
+    showNotification("success", `Applied point load to ${selectedMemberIds.length} member(s)`);
+  }, [selectedMemberIds, fy, addMemberLoad, appendMemberLoadsToActiveCase, showNotification]);
 
   return (
     <div className="space-y-3">
+      <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/40 dark:bg-slate-800/40 p-2.5">
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="uppercase tracking-wide text-slate-500 dark:text-slate-400">Active case</span>
+          <span className="font-semibold text-slate-700 dark:text-slate-200">
+            {resolvedActiveLoadCaseId
+              ? (loadCases.find((lc) => lc.id === resolvedActiveLoadCaseId)?.name ?? "Unknown")
+              : "None"}
+          </span>
+        </div>
+        <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+          Selected: {selectedNodeIds.length} node(s), {selectedMemberIds.length} member(s)
+        </div>
+      </div>
+
       {/* Interactive Load Placement */}
       <div className="bg-gradient-to-r from-orange-600/20 to-red-600/20 border border-orange-500/30 rounded-lg p-3">
         <div className="flex items-center gap-2 mb-2">
@@ -1151,8 +1479,37 @@ const ManualLoadsPanel: FC = () => {
           className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1.5 text-sm text-slate-700 dark:text-slate-200"
         />
       </div>
-      <button type="button" className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg transition-colors">
-        Apply to Selected Node
+      <button
+        type="button"
+        onClick={handleApplyNodeLoads}
+        className="w-full bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+      >
+        Apply to Selected Node(s)
+      </button>
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={handleApplyMemberUdl}
+          className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-medium py-2 rounded-lg transition-colors"
+        >
+          Apply UDL
+        </button>
+        <button
+          type="button"
+          onClick={handleApplyMemberPoint}
+          className="bg-violet-600/20 hover:bg-violet-600/30 text-violet-400 text-xs font-medium py-2 rounded-lg transition-colors"
+        >
+          Apply Point
+        </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => useUIStore.getState().openModal("loadDialog")}
+        className="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm py-2 rounded-lg transition-colors"
+      >
+        Open Full Loading Manager
       </button>
     </div>
   );
@@ -1668,7 +2025,7 @@ export const SmartSidebar: FC = () => {
   const toolCounts: Record<string, number> = {
     MODELING: 4, // Template Bank, Draw, Edit, Advanced
     PROPERTIES: 1, // Section Picker
-    LOADING: 2, // Load Generators, Manual Loads
+    LOADING: 3, // Load Generators, Load Cases, Manual Loads
     ANALYSIS: 2, // Solver Controls, Result Toggles
     DESIGN: 2, // Design Checks, Advanced Design
     CIVIL: 2, // Civil Engineering Hub, AI & Optimization
@@ -1774,6 +2131,12 @@ export const SmartSidebar: FC = () => {
               icon={<Wind className="w-4 h-4" />}
             >
               <LoadGeneratorsPanel />
+            </AccordionItem>
+            <AccordionItem
+              title="Load Cases"
+              icon={<Layers className="w-4 h-4" />}
+            >
+              <LoadCaseManagerPanel />
             </AccordionItem>
             <AccordionItem
               title="Manual Loads"

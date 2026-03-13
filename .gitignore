@@ -133,6 +133,9 @@ venv/
 yarn-debug.log*
 yarn-error.log*
 
+# Local-only publish profiles exported from .env.deploy
+.env.publish_profiles
+
 # Copilot safety backups
 .copilot-safety-backup*/
 copilot-sync-log*.txt

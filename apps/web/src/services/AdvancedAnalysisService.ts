@@ -210,39 +210,44 @@ export class AdvancedAnalysisService {
   private analyzeUrl: string;
 
   constructor() {
-    const base = API_CONFIG.rustUrl || API_CONFIG.baseUrl;
-    this.baseUrl = `${base}/api/analysis`;
+    // Always use Node gateway for auth, rate-limits, and consistent proxying.
+    this.baseUrl = `${API_CONFIG.baseUrl}/api/analysis`;
     this.analyzeUrl = `${API_CONFIG.baseUrl}/api/analyze`;
   }
 
   private getAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {};
+
+    // Prefer Clerk token persisted by device session sync.
+    // Fallback to legacy auth_token for older flows.
     const token = typeof window !== 'undefined'
-      ? window.localStorage?.getItem('auth_token')
+      ? (window.localStorage?.getItem('beamlab_last_token') || window.localStorage?.getItem('auth_token'))
       : null;
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
+
     return headers;
   }
 
   async modalAnalysis(req: ModalAnalysisRequest): Promise<ModalAnalysisResponse> {
     return postJson<ModalAnalysisResponse>(`${this.baseUrl}/modal`, req, {
-      timeout: 30000,
+      timeout: 120000,
       headers: this.getAuthHeaders(),
     });
   }
 
   async timeHistoryAnalysis(req: TimeHistoryRequest): Promise<TimeHistoryResponse> {
     return postJson<TimeHistoryResponse>(`${this.baseUrl}/time-history`, req, {
-      timeout: 60000,
+      timeout: 120000,
       headers: this.getAuthHeaders(),
     });
   }
 
   async seismicAnalysis(req: SeismicAnalysisRequest): Promise<SeismicAnalysisResponse> {
     return postJson<SeismicAnalysisResponse>(`${this.baseUrl}/seismic`, req, {
-      timeout: 30000,
+      timeout: 120000,
       headers: this.getAuthHeaders(),
     });
   }

@@ -433,7 +433,8 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = memo(({
                         id: `ML${Date.now()}`,
                         memberId: hoveredMemberId,
                         type: 'point',
-                        P: -previewMagnitude * 1000, // Convert kN to N, negative for downward
+                        // Store in kN to match store/modelTypes (negative = downward)
+                        P: -previewMagnitude,
                         a: (startPos + endPos) / 2,
                         direction: 'global_y'
                     });
@@ -443,8 +444,9 @@ export const LoadPlacementLayer: FC<LoadPlacementLayerProps> = memo(({
                         id: `ML${Date.now()}`,
                         memberId: hoveredMemberId,
                         type: 'UDL',
-                        w1: -previewMagnitude * 1000, // Convert to N/m, negative for downward
-                        w2: -previewMagnitude * 1000,
+                        // Store intensities in kN/m (negative = downward)
+                        w1: -previewMagnitude,
+                        w2: -previewMagnitude,
                         startPos,
                         endPos,
                         direction: 'global_y'

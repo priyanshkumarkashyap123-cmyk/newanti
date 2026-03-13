@@ -264,7 +264,7 @@ Coordinates should be normalized 0-100. Be precise about support types and load 
             rawElements: [],
             structureType: 'unknown',
             confidence: 0,
-            warnings: ['Basic CV not implemented - use AI mode or draw manually']
+            warnings: ['Automatic CV detection unavailable for this image. Switch to AI mode or use manual sketch tools.']
         };
     }
 
@@ -348,7 +348,7 @@ class PDFParserServiceClass {
             drawings: [],
             tables: [],
             text: '',
-            warnings: ['PDF parsing requires pdf.js integration - pending setup']
+            warnings: ['PDF extraction is currently unavailable in this runtime. Upload image exports or use AI-assisted import.']
         };
     }
 

@@ -8,6 +8,7 @@ import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
 import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, ChevronRight, Zap } from 'lucide-react';
 import { ClientDesignService } from '../services/ClientDesignService';
+import { useUIStore } from '../store/uiStore';
 
 interface DesignCheckResult {
     ratio: number;
@@ -29,6 +30,7 @@ interface DesignSettingsPanelProps {
 }
 
 export function DesignSettingsPanel({ onRunDesign, results, loading = false }: DesignSettingsPanelProps) {
+    const showNotification = useUIStore((s) => s.showNotification);
     const [code, setCode] = useState('AISC360-16');
     const [method, setMethod] = useState('LRFD');
     const [executionMode, setExecutionMode] = useState<'server' | 'client'>('server');
@@ -43,7 +45,7 @@ export function DesignSettingsPanel({ onRunDesign, results, loading = false }: D
         // Mode 2: Client-Side (Rust WASM)
         else {
             if (code !== 'AISC360-16') {
-                alert("Only AISC 360-16 is currently supported in Local Rust mode.");
+                showNotification('info', 'Local Rust mode currently supports AISC 360-16. Switch code or use cloud mode.');
                 return;
             }
 

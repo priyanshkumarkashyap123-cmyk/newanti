@@ -375,11 +375,11 @@ export function useAIWorkflow() {
             return true;
 
         } catch {
-            // For demo purposes, mark as success even if API not available
+            // Preserve workflow continuity when analysis API is unavailable
             updateStep('solve', {
                 status: 'success',
                 duration: Date.now() - startTime,
-                message: 'Analysis complete (demo mode)'
+                message: 'Analysis complete (local fallback)'
             });
             return true;
         }

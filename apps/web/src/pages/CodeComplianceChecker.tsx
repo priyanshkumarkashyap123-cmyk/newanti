@@ -11,6 +11,7 @@
 import React, { useState, useCallback, useRef, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { useModelStore } from "../store/model";
+import { useUIStore } from "../store/uiStore";
 import { aisc360 } from "../services/design-codes/AISC360Checker";
 import type { AISCMember, AISCForces, AISCSection, AISCCheck } from "../services/design-codes/AISC360Checker";
 import { aci318 } from "../services/design-codes/ACI318Checker";
@@ -67,6 +68,7 @@ const CodeComplianceChecker: React.FC = () => {
   const nodes = useModelStore((s) => s.nodes);
   const members = useModelStore((s) => s.members);
   const analysisResults = useModelStore((s) => s.analysisResults);
+  const showNotification = useUIStore((s) => s.showNotification);
 
   const [activeTab, setActiveTab] = useState<
     "check" | "results" | "standards" | "history"
@@ -890,7 +892,7 @@ const CodeComplianceChecker: React.FC = () => {
 
   const runComplianceCheck = () => {
     if (members.size === 0) {
-      alert("No model loaded. Open the modeler and create a structure first.");
+      showNotification("warning", "No model loaded. Open the modeler and create a structure first.");
       return;
     }
     setIsRunning(true);

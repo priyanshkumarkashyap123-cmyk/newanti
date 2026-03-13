@@ -103,52 +103,9 @@ const CollaborationHub: React.FC = () => {
   // ============================================
   // REAL MULTIPLAYER CONNECTION
   // ============================================
-  const DEMO_ACTIVITIES: ProjectActivity[] = [
-    {
-      id: "demo-a1",
-      userId: "demo-1",
-      userName: "Priya Sharma",
-      action: "completed analysis on",
-      target: "Frame A — Seismic LC",
-      timestamp: "10 min ago",
-    },
-    {
-      id: "demo-a2",
-      userId: "demo-2",
-      userName: "Amit Kumar",
-      action: "updated",
-      target: "Beam B-201 reinforcement spacing",
-      timestamp: "25 min ago",
-    },
-    {
-      id: "demo-a3",
-      userId: "demo-3",
-      userName: "Neha Patel",
-      action: "commented on",
-      target: "Foundation F-03 SBC check",
-      timestamp: "1 hour ago",
-    },
-    {
-      id: "demo-a4",
-      userId: "self",
-      userName: "You",
-      action: "created version",
-      target: "v2.4.1 — Current Working",
-      timestamp: "2 hours ago",
-    },
-    {
-      id: "demo-a5",
-      userId: "demo-4",
-      userName: "Rahul Singh",
-      action: "uploaded",
-      target: "Soil Investigation Report.pdf",
-      timestamp: "Yesterday",
-    },
-  ];
   const activitiesRef = useRef<ProjectActivity[]>([]);
   const linkCopiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const [activities, setActivities] =
-    useState<ProjectActivity[]>(DEMO_ACTIVITIES);
+  const [activities, setActivities] = useState<ProjectActivity[]>([]);
 
   const {
     isConnected,
@@ -191,47 +148,7 @@ const CollaborationHub: React.FC = () => {
     [],
   );
 
-  // Demo team members shown when server is not connected
-  const DEMO_TEAM: TeamMember[] = [
-    {
-      id: "demo-1",
-      name: "Priya Sharma",
-      role: "engineer",
-      avatar: "👩‍💻",
-      status: "online",
-      lastActive: "Now",
-      department: "Structural Design",
-    },
-    {
-      id: "demo-2",
-      name: "Amit Kumar",
-      role: "engineer",
-      avatar: "👨‍💻",
-      status: "online",
-      lastActive: "5 min ago",
-      department: "Analysis",
-    },
-    {
-      id: "demo-3",
-      name: "Neha Patel",
-      role: "reviewer",
-      avatar: "👩‍🔬",
-      status: "away",
-      lastActive: "30 min ago",
-      department: "QA / Review",
-    },
-    {
-      id: "demo-4",
-      name: "Rahul Singh",
-      role: "viewer",
-      avatar: "👨‍🔧",
-      status: "offline",
-      lastActive: "2 hours ago",
-      department: "Site Engineering",
-    },
-  ];
-
-  // Derive team members from real connected users (or use demo data)
+  // Derive team members from connected users
   const teamMembers: TeamMember[] = [
     // Current user
     {
@@ -253,8 +170,6 @@ const CollaborationHub: React.FC = () => {
       lastActive: u.isActive ? "Now" : "Unknown",
       department: "Team",
     })),
-    // Show demo members when not connected to give a populated UI
-    ...(!isConnected ? DEMO_TEAM : []),
   ];
 
   const [comments, setComments] = useState<Comment[]>([
@@ -1402,7 +1317,7 @@ const CollaborationHub: React.FC = () => {
             <span className="text-sm text-slate-500">
               {isConnected
                 ? `Connected — ${teamMembers.length} user${teamMembers.length !== 1 ? "s" : ""} • v${projectVersion}`
-                : `Demo Mode — ${teamMembers.length} sample users • Connect a server for real-time collaboration`}
+                : `Disconnected — Connect a server for real-time collaboration`}
             </span>
           </div>
         </div>

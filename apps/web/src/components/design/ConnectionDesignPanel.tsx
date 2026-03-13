@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { API_CONFIG } from '../../config/env';
+import { exportRowsToCsv, exportObjectToPdf } from '../../utils/designExport';
 // Using standard UI elements
 
 interface ConnectionResult {
@@ -47,6 +48,31 @@ export const ConnectionDesignPanel: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleExportCsv = () => {
+        if (!result) return;
+        exportRowsToCsv(`connection_design_${new Date().toISOString().slice(0, 10)}.csv`, [{
+            connectionType: connType,
+            status: result.status,
+            ratio: Number(result.ratio.toFixed(4)),
+            capacity: Number(result.capacity.toFixed(3)),
+            checks: result.checks.join(' | '),
+        }]);
+    };
+
+    const handleExportPdf = async () => {
+        if (!result) return;
+        await exportObjectToPdf(
+            `connection_design_${new Date().toISOString().slice(0, 10)}.pdf`,
+            'Connection Design Results',
+            {
+                generatedAt: new Date().toISOString(),
+                connectionType: connType,
+                input: formData,
+                result,
+            },
+        );
     };
 
     return (
@@ -202,6 +228,23 @@ export const ConnectionDesignPanel: React.FC = () => {
                                         {check}
                                     </div>
                                 ))}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={handleExportCsv}
+                                    className="w-full py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 rounded-lg font-semibold transition-all"
+                                >
+                                    Export CSV
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { void handleExportPdf(); }}
+                                    className="w-full py-2 bg-orange-600 hover:bg-orange-500 rounded-lg font-semibold transition-all"
+                                >
+                                    Export PDF
+                                </button>
                             </div>
                         </div>
                     ) : (

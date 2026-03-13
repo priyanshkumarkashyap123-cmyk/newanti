@@ -46,6 +46,11 @@ const envSchema = z.object({
   PHONEPE_SALT_INDEX: z.string().optional().default("1"),
   PHONEPE_ENV: z.enum(["UAT", "PRODUCTION"]).optional().default("UAT"),
 
+  // Payments — Razorpay
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+
   // AI
   GEMINI_API_KEY: z.string().optional(),
 

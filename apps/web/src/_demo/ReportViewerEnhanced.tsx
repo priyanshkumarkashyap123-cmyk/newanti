@@ -47,11 +47,41 @@ export const ReportViewerEnhanced: FC = () => {
     };
 
     const handleDownloadPDF = () => {
-        alert('PDF download functionality would be implemented here');
+        const reportText = [
+            `Report ID: ${SAMPLE_REPORT.id}`,
+            `Project: ${SAMPLE_REPORT.projectName}`,
+            `Analysis: ${SAMPLE_REPORT.analysisType}`,
+            `Date: ${SAMPLE_REPORT.date}`,
+            `Engineer: ${SAMPLE_REPORT.engineer}`,
+            `Version: ${SAMPLE_REPORT.version}`,
+            '',
+            'Support Reactions',
+            ...REACTIONS_DATA.map((r) => `${r.node}: Fy=${r.fy} kN`),
+            '',
+            'Member Forces',
+            ...MEMBER_FORCES.map((m) => `${m.member}: M=${m.moment} kN·m, Util=${(m.utilization * 100).toFixed(1)}%`),
+        ].join('\n');
+
+        const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${SAMPLE_REPORT.id}-report.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     const handleShare = () => {
-        alert('Share functionality would be implemented here');
+        const shareText = `${SAMPLE_REPORT.projectName} (${SAMPLE_REPORT.id})`;
+        if (navigator.share) {
+            void navigator.share({
+                title: 'BeamLab Structural Report',
+                text: shareText,
+                url: window.location.href,
+            });
+            return;
+        }
+        void navigator.clipboard?.writeText(window.location.href);
     };
 
     return (

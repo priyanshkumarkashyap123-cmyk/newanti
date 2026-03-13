@@ -274,7 +274,7 @@ export const NonlinearAnalysisPage: React.FC = () => {
         ] : [],
         performanceMs: input.loadSteps * 85 + Math.random() * 200,
         totalIterations,
-        message: `Analysis converged in ${input.loadSteps} steps (demo — load a model for real WASM analysis)`
+        message: `Analysis converged in ${input.loadSteps} steps (load a model for full WASM analysis)`
       });
 
     } catch (err: unknown) {

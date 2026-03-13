@@ -18,6 +18,8 @@ import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ScrollArea } from '../ui/scroll-area';
 import { Badge } from '../ui/badge';
+import { useAuth } from '../../providers/AuthProvider';
+import { API_CONFIG } from '../../config/env';
 import {
   Activity, Check, Upload, Info, Play, Pause, Trash2, Plus, FileText,
 } from 'lucide-react';
@@ -55,6 +57,7 @@ const PRESET_RECORDS: Array<{ name: string; description: string; dt: number; pea
 
 export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'records' | 'parameters' | 'output'>('records');
+  const { getToken } = useAuth();
   
   // Ground motion records
   const [records, setRecords] = useState<GroundMotionRecord[]>([]);
@@ -162,9 +165,13 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
     setRunMessage(null);
 
     try {
-      const response = await fetch('/api/analysis/time-history', {
+      const token = await getToken();
+      const response = await fetch(`${API_CONFIG.baseUrl}/api/analysis/time-history`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
 
@@ -181,7 +188,11 @@ export const TimeHistoryDialog: React.FC<TimeHistoryDialogProps> = ({ isOpen, on
       link.click();
       URL.revokeObjectURL(url);
 
-      setRunMessage('Backend unavailable. Exported analysis config JSON for manual run.');
+      if (response.status === 401 || response.status === 403) {
+        setRunMessage('Authentication required for backend run. Exported analysis config JSON for manual run.');
+      } else {
+        setRunMessage('Backend unavailable. Exported analysis config JSON for manual run.');
+      }
     } catch {
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);

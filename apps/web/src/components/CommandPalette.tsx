@@ -65,13 +65,34 @@ interface CommandPaletteProps {
 
 const useCommands = (): Command[] => {
     const setCategory = useUIStore((s) => s.setCategory);
+    const setActiveTool = useUIStore((s) => s.setActiveTool);
     const openModal = useUIStore((s) => s.openModal);
     const showNotification = useUIStore((s) => s.showNotification);
     const setTool = useModelStore((s) => s.setTool);
     const clearModel = useModelStore((s) => s.clearModel);
     const loadStructure = useModelStore((s) => s.loadStructure);
 
-    return useMemo(() => [
+    const prettifyToolName = useCallback((toolId: string): string => {
+        return toolId
+            .toLowerCase()
+            .split('_')
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(' ');
+    }, []);
+
+    const MODELING_TOOL_BRIDGE: Record<string, Parameters<typeof setTool>[0]> = {
+        SELECT: 'select',
+        SELECT_RANGE: 'select_range',
+        DRAW_NODE: 'node',
+        DRAW_BEAM: 'member',
+        DRAW_COLUMN: 'member',
+        ASSIGN_SUPPORT: 'support',
+        ADD_POINT_LOAD: 'load',
+        ADD_UDL: 'memberLoad',
+    };
+
+    return useMemo(() => {
+        const manualCommands: Command[] = [
         // ========== QUICK ACTIONS ==========
         {
             id: 'run-analysis',
@@ -102,6 +123,16 @@ const useCommands = (): Command[] => {
             shortcut: '⌘S',
             action: () => document.dispatchEvent(new CustomEvent('trigger-save')),
             keywords: ['save', 'cloud', 'store', 'backup']
+        },
+        {
+            id: 'staad-command-explorer',
+            label: 'STAAD Command Explorer',
+            description: 'Open full command inventory with execution status (Ready / Partial / Limited)',
+            category: 'GLOBAL',
+            icon: <Search className="w-4 h-4 text-indigo-400" />,
+            shortcut: '⌘K',
+            action: () => document.dispatchEvent(new CustomEvent('open-staad-command-explorer')),
+            keywords: ['staad', 'commands', 'inventory', 'explorer', 'coverage']
         },
 
         // ========== CATEGORY SWITCHING ==========
@@ -149,6 +180,15 @@ const useCommands = (): Command[] => {
             icon: <Ruler className="w-4 h-4 text-cyan-400" />,
             action: () => setCategory('DESIGN'),
             keywords: ['design', 'check', 'code', 'report']
+        },
+        {
+            id: 'category-civil',
+            label: 'Switch to Civil Engineering',
+            description: 'Geotechnical, hydraulics, transport, and environmental tools',
+            category: 'CIVIL' as Category,
+            icon: <Building2 className="w-4 h-4 text-teal-400" />,
+            action: () => setCategory('CIVIL'),
+            keywords: ['civil', 'geotech', 'hydraulics', 'transport', 'environment', 'soil']
         },
 
         // ========== STRUCTURE TEMPLATES ==========
@@ -363,7 +403,58 @@ const useCommands = (): Command[] => {
             action: () => useModelStore.getState().deleteSelection(),
             keywords: ['delete', 'remove', 'erase']
         },
-    ], [setCategory, setTool, openModal, clearModel, loadStructure, showNotification]);
+        ];
+
+        const dynamicCoverageCommands: Command[] = [];
+
+        (Object.entries(CATEGORY_TOOLS) as [Category, string[]][]).forEach(([category, tools]) => {
+            tools.forEach((toolId) => {
+                const pretty = prettifyToolName(toolId);
+                const bridgeTool = MODELING_TOOL_BRIDGE[toolId];
+
+                dynamicCoverageCommands.push({
+                    id: `staad-cmd-${category.toLowerCase()}-${toolId.toLowerCase()}`,
+                    label: pretty,
+                    description: `STAAD-style command from ${category} tools`,
+                    category,
+                    icon: <ChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400" />,
+                    action: () => {
+                        setCategory(category);
+
+                        // Route command to UI active tool surface when available
+                        setActiveTool(toolId);
+
+                        // Bridge core modeling commands to the canvas tool state
+                        if (bridgeTool) {
+                            setTool(bridgeTool);
+                        }
+
+                        showNotification('info', `${pretty} command is available and selected`);
+                    },
+                    isPro: [
+                        'PUSHOVER', 'TIME_HISTORY', 'RESPONSE_SPECTRUM',
+                        'ADD_MOVING_LOAD', 'ADD_HYDROSTATIC', 'ADD_PRETENSION',
+                        'TIMBER_DESIGN', 'COMPOSITE_DESIGN', 'SECTION_BUILDER',
+                    ].includes(toolId),
+                    keywords: [
+                        'staad',
+                        'command',
+                        'tool',
+                        category.toLowerCase(),
+                        ...pretty.toLowerCase().split(' '),
+                    ],
+                });
+            });
+        });
+
+        const merged = [...manualCommands, ...dynamicCoverageCommands];
+        const seen = new Set<string>();
+        return merged.filter((cmd) => {
+            if (seen.has(cmd.id)) return false;
+            seen.add(cmd.id);
+            return true;
+        });
+    }, [setCategory, setActiveTool, setTool, openModal, clearModel, loadStructure, showNotification, prettifyToolName]);
 };
 
 // ============================================
@@ -473,7 +564,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
             'PROPERTIES': '🔧 Properties',
             'LOADING': '⬇️ Loading',
             'ANALYSIS': '📊 Analysis',
-            'DESIGN': '✅ Design'
+            'DESIGN': '✅ Design',
+            'CIVIL': '🏗️ Civil Engineering',
         };
 
         return {
@@ -566,7 +658,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Search all features... (e.g., 'wind load', 'modal analysis', 'burj khalifa')"
+                        placeholder="Search commands… try 'wind', 'modal', 'extrude', 'is 800'"
                         className="flex-1 bg-transparent text-slate-900 dark:text-white text-lg placeholder-slate-400 dark:placeholder-slate-500 outline-none"
                     />
                     <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded">
@@ -579,8 +671,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                     {Object.entries(groupedCommands).map(([category, cmds]) => (
                         <div key={category}>
                             {/* Category Header */}
-                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white/95 dark:bg-slate-900/95 backdrop-blur uppercase tracking-wider">
-                                {categoryLabels[category] || category}
+                            <div className="sticky top-0 px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white/95 dark:bg-slate-900/95 backdrop-blur uppercase tracking-wider flex items-center justify-between">
+                                <span>{categoryLabels[category] || category}</span>
+                                <span className="text-[10px] font-normal normal-case text-slate-400 dark:text-slate-500">{cmds.length}</span>
                             </div>
 
                             {/* Commands */}
@@ -654,7 +747,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                             Close
                         </span>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{allFlatCommands.length} commands</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {query.trim()
+                            ? `${allFlatCommands.length} of ${commands.length} matched`
+                            : `${commands.length} commands`}
+                    </span>
                 </div>
             </div>
         </div>,

@@ -175,66 +175,17 @@ const CloudStorageDashboard: React.FC = () => {
           }
         }
       } catch (err) {
-        console.warn('[CloudStorage] API fetch failed, showing demo projects:', err);
-        setProjectsError('Unable to connect to cloud storage. Showing sample projects for preview.');
+        console.warn('[CloudStorage] API fetch failed:', err);
+        setProjectsError('Unable to connect to cloud storage. Please retry after the service is reachable.');
       }
 
-      // Fallback: demo projects when API is unavailable
-      setProjects([
-        {
-          id: "p1",
-          name: "10-Story Office Building",
-          description: "Commercial office building with RCC frame, Zone IV seismic design",
-          type: "building",
-          status: "active",
-          lastModified: new Date("2025-01-29T14:30:00"),
-          created: new Date("2024-11-15T09:00:00"),
-          size: 45670000,
-          version: 23,
-          isStarred: true,
-          isShared: true,
-          collaborators: ["john@eng.com", "sarah@struct.com"],
-          syncStatus: "synced",
-          tags: ["RCC", "Seismic", "IS 1893"],
-        },
-        {
-          id: "p2",
-          name: "Highway Bridge - NH44",
-          description: "PSC Box Girder Bridge, 3 spans of 40m each",
-          type: "bridge",
-          status: "active",
-          lastModified: new Date("2025-01-28T10:15:00"),
-          created: new Date("2024-10-01T11:00:00"),
-          size: 78340000,
-          version: 45,
-          isStarred: true,
-          isShared: false,
-          collaborators: [],
-          syncStatus: "synced",
-          tags: ["PSC", "Bridge", "IRC 112"],
-        },
-        {
-          id: "p3",
-          name: "Industrial Warehouse",
-          description: "Steel portal frame, 30m clear span, PEB structure",
-          type: "industrial",
-          status: "active",
-          lastModified: new Date("2025-01-27T16:45:00"),
-          created: new Date("2024-12-01T08:30:00"),
-          size: 23450000,
-          version: 12,
-          isStarred: false,
-          isShared: true,
-          collaborators: ["mike@steel.com"],
-          syncStatus: "syncing",
-          tags: ["Steel", "PEB", "IS 800"],
-        },
-      ]);
+      // Production-safe fallback: preserve empty state rather than injecting demo data
+      setProjects([]);
       setStorageStats({
-        used: 147460000,
+        used: 0,
         total: 5000000000,
-        projects: 3,
-        backups: 9,
+        projects: 0,
+        backups: 0,
         lastSync: new Date(),
       });
       setIsLoadingProjects(false);

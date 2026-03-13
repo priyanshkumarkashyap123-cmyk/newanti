@@ -12,8 +12,9 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Home, Building2, Play, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { ArrowLeft, Home, Building2, Play, AlertTriangle, CheckCircle, Info, Download } from 'lucide-react';
 import { FloorFrequency, type FloorSystem, type VibrationResult } from '../modules/analysis/VibrationServiceabilityEngine';
+import { exportRowsToCsv, exportObjectToPdf } from '../utils/designExport';
 
 type OccupancyType = 'office' | 'residential' | 'shopping' | 'hospital' | 'gym';
 
@@ -58,6 +59,43 @@ export function FloorVibrationPage() {
     peakAccel: number; ratio: number; pass: boolean; perception: string;
     effectiveMass: number;
   } | null>(null);
+
+    const handleExportCsv = () => {
+      if (!result) return;
+      exportRowsToCsv(`floor_vibration_${new Date().toISOString().slice(0, 10)}.csv`, [
+        { parameter: 'Beam Frequency (Hz)',       value: result.beamFreq.toFixed(3) },
+        { parameter: 'Girder Frequency (Hz)',     value: result.girderFreq.toFixed(3) },
+        { parameter: 'Combined Frequency (Hz)',   value: result.combinedFreq.toFixed(3) },
+        { parameter: 'Peak Acceleration (%g)',    value: result.peakAccel.toFixed(4) },
+        { parameter: 'Allowable Acceleration (%g)', value: String(OCCUPANCY_LIMITS[occupancy].limit) },
+        { parameter: 'Demand / Capacity Ratio',   value: result.ratio.toFixed(3) },
+        { parameter: 'Perception',                value: result.perception },
+        { parameter: 'Effective Mass (kg)',        value: result.effectiveMass.toFixed(0) },
+        { parameter: 'Status',                    value: result.pass ? 'PASS' : 'FAIL' },
+      ]);
+    };
+
+    const handleExportPdf = async () => {
+      if (!result) return;
+      await exportObjectToPdf(
+        `floor_vibration_${new Date().toISOString().slice(0, 10)}.pdf`,
+        'Floor Vibration Serviceability Report — AISC DG11',
+        {
+          occupancy,
+          beamFreq_Hz:        result.beamFreq.toFixed(3),
+          girderFreq_Hz:      result.girderFreq.toFixed(3),
+          combinedFreq_Hz:    result.combinedFreq.toFixed(3),
+          peakAcceleration_pctg: result.peakAccel.toFixed(4),
+          allowableAccel_pctg: OCCUPANCY_LIMITS[occupancy].limit,
+          demandCapacityRatio: result.ratio.toFixed(3),
+          perception:         result.perception,
+          effectiveMass_kg:   result.effectiveMass.toFixed(0),
+          status:             result.pass ? 'PASS' : 'FAIL',
+          codeReference:      OCCUPANCY_LIMITS[occupancy].source,
+          generatedAt:        new Date().toISOString(),
+        },
+      );
+    };
   const [error, setError] = useState('');
 
   const runAnalysis = () => {
@@ -294,6 +332,24 @@ export function FloorVibrationPage() {
                   {result.ratio <= 0.7 && <li className="flex gap-2"><CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> Comfortable margin — floor is likely imperceptible to occupants.</li>}
                   <li className="flex gap-2"><Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" /> Damping ratio {dampingRatio} assumed ({(dampingRatio * 100).toFixed(1)}%). Bare steel: 0.01, Composite: 0.02–0.03, Fit-out: 0.03–0.05.</li>
                 </ul>
+
+                            {/* Export */}
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={handleExportCsv}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                              >
+                                <Download className="w-4 h-4" /> Export CSV
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { void handleExportPdf(); }}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium transition-colors"
+                              >
+                                <Download className="w-4 h-4" /> PDF Report
+                              </button>
+                            </div>
               </section>
             </>
           )}

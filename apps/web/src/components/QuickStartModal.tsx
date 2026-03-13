@@ -12,6 +12,7 @@ import { FC, useState, useEffect, useRef } from 'react';
 import { Plus, FileText, Bookmark, Play, Building2, Layers, Weight, RotateCcw } from 'lucide-react';
 import { ALL_SAMPLES, type SampleStructure } from '../data/SampleStructures';
 import { useModelStore, loadProjectFromStorage, getSavedProjectInfo } from '../store/model';
+import { useUIStore } from '../store/uiStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 
@@ -40,6 +41,7 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
     onOpenLoads,
     onNewProject
 }) => {
+    const showNotification = useUIStore((s) => s.showNotification);
     const [selectedSample, setSelectedSample] = useState<SampleStructure | null>(null);
     const [savedProject, setSavedProject] = useState<{ name: string; savedAt: string } | null>(null);
 
@@ -64,9 +66,9 @@ export const QuickStartModal: FC<QuickStartModalProps> = ({
           const data = JSON.parse(ev.target?.result as string);
           const loaded = useModelStore.getState().loadProject(data);
           if (loaded) onClose();
-          else alert('Could not parse the project file. Please check the format.');
+                    else showNotification('error', 'Could not parse the project file. Please check the format.');
         } catch {
-          alert('Invalid JSON file. Please select a valid .beamlab.json file.');
+                    showNotification('error', 'Invalid JSON file. Please select a valid .beamlab.json file.');
         }
       };
       reader.readAsText(file);

@@ -82,6 +82,7 @@ jobs:
           VITE_WEBSOCKET_URL: wss://beamlab-backend-node.azurewebsites.net
           VITE_USE_CLERK: "true"
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID }}
           VITE_PHONEPE_MERCHANT_ID: ${{ secrets.PHONEPE_MERCHANT_ID }}
           VITE_PHONEPE_ENV: PRODUCTION
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}

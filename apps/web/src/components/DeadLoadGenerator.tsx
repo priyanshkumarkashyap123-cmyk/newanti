@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { useUIStore } from '../store/uiStore';
 
 interface DeadLoadGeneratorProps {
     open: boolean;
@@ -22,6 +23,7 @@ interface DeadLoadGeneratorProps {
 }
 
 export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose }) => {
+    const showNotification = useUIStore((s) => s.showNotification);
     const nodes = useModelStore(state => state.nodes);
     const members = useModelStore(state => state.members);
     const selectedIds = useModelStore(state => state.selectedIds);
@@ -154,7 +156,7 @@ export const DeadLoadGenerator: FC<DeadLoadGeneratorProps> = ({ open, onClose })
             onClose();
         } catch (error) {
             console.error('[Dead Load Generator] Error:', error);
-            alert(error instanceof Error ? error.message : 'Failed to generate dead loads');
+            showNotification('error', error instanceof Error ? error.message : 'Failed to generate dead loads');
         } finally {
             setIsGenerating(false);
         }

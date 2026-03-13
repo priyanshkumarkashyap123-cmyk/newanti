@@ -84,6 +84,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
   onClose,
   onGenerateReport,
 }) => {
+  const showNotification = useUIStore((s) => s.showNotification);
   const [activeTab, setActiveTab] = useState<'ANALYSIS' | 'DESIGN' | 'DETAILING' | 'EXPORT'>('ANALYSIS');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [diagramType, setDiagramType] = useState<'SFD' | 'BMD' | 'AFD'>('BMD');
@@ -95,11 +96,11 @@ export const ResultsHub: FC<ResultsHubProps> = ({
 
   const handleRunDesign = useCallback(() => {
     if (!analysisResults || analysisResults.status !== 'complete') {
-      alert('Please run analysis first');
+      showNotification('warning', 'Please run analysis first.');
       return;
     }
     document.dispatchEvent(new CustomEvent('trigger-design-check'));
-  }, [analysisResults]);
+  }, [analysisResults, showNotification]);
 
   const handleGenerateReport = useCallback(async () => {
     if (!onGenerateReport) return;

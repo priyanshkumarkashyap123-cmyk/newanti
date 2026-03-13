@@ -7,7 +7,7 @@
 import { FC, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usePhonePePayment } from '../components/PhonePePayment';
+import { PaymentGatewaySelector } from '../components/PaymentGatewaySelector';
 import { useAuth } from '../providers/AuthProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { CheckCircle, X, HelpCircle, ChevronRight, Menu } from 'lucide-react';
@@ -128,8 +128,10 @@ export const PricingPage: FC = () => {
     const [upgradeError, setUpgradeError] = useState<string | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // PhonePe payment integration
-    const { openPayment, loading: paymentLoading } = usePhonePePayment();
+    // Payment gateway state
+    const [gatewayModalOpen, setGatewayModalOpen] = useState(false);
+    const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'yearly'>('monthly');
+    const paymentLoading = false; // modal handles its own loading state
     const { isSignedIn, user } = useAuth();
     const { refreshSubscription } = useSubscription();
 
@@ -164,25 +166,13 @@ export const PricingPage: FC = () => {
             return;
         }
 
-        try {
-            const success = await openPayment(
-                user.id,
-                user.email || '',
-                billingPeriod
-            );
-            if (success) {
-                // Payment successful - refresh subscription state and navigate
-                await refreshSubscription();
-                navigate('/stream?payment=success');
-            }
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Payment failed';
-            setUpgradeError(message);
-            console.error('Payment error:', error);
-        }
+        // Open payment gateway selector modal
+        setPendingPlanType(billingPeriod);
+        setGatewayModalOpen(true);
     };
 
     return (
+        <>
         <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans selection:bg-blue-500/30">
             <SEO
               title="Pricing"
@@ -463,6 +453,27 @@ export const PricingPage: FC = () => {
                 </div>
             </footer>
         </div>
+
+        {/* Payment Gateway Selector — rendered outside main div to avoid z-index issues */}
+        {gatewayModalOpen && isSignedIn && user && (
+            <PaymentGatewaySelector
+                userId={user.id}
+                email={user.email || ''}
+                userName={user.firstName || undefined}
+                planType={pendingPlanType}
+                onSuccess={async () => {
+                    setGatewayModalOpen(false);
+                    await refreshSubscription();
+                    navigate('/stream?payment=success');
+                }}
+                onError={(message) => {
+                    setGatewayModalOpen(false);
+                    setUpgradeError(message);
+                }}
+                onClose={() => setGatewayModalOpen(false)}
+            />
+        )}
+        </>
     );
 };
 

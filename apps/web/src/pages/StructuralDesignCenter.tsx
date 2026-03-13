@@ -248,7 +248,7 @@ export default function StructuralDesignCenter() {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['concrete']);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Recent projects — fetch from API, fallback to demo data
+  // Recent projects — fetch from API; preserve empty state if backend is unavailable
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   useEffect(() => {
     const fetchProjects = async () => {
@@ -268,14 +268,9 @@ export default function StructuralDesignCenter() {
             return;
           }
         }
-      } catch { /* fallback */ }
-      // Fallback demo data
-      const now = Date.now();
-      setRecentProjects([
-        { id: '1', name: 'Office Building Beam B1', module: 'rc-beam', timestamp: new Date(), status: 'safe' },
-        { id: '2', name: 'Basement Column C12', module: 'rc-column', timestamp: new Date(now - 3600000), status: 'warning' },
-        { id: '3', name: 'Terrace Slab S3', module: 'rc-slab', timestamp: new Date(now - 86400000), status: 'safe' },
-      ]);
+      } catch {
+        setRecentProjects([]);
+      }
     };
     fetchProjects();
   }, []);

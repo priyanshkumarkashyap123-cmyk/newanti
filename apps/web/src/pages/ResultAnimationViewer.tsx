@@ -10,7 +10,7 @@
  * - Export to video/GIF
  * 
  * Wired to real analysis results from useModelStore when available.
- * Falls back to demo data when no analysis has been run.
+ * Uses preview data when no analysis has been run.
  * 
  * Industry Standard: Matches ETABS, SAP2000, ANSYS post-processors
  */
@@ -111,7 +111,7 @@ const ResultAnimationViewer: React.FC = () => {
   const storeLCs = useModelStore((s) => s.loadCases);
 
   const hasRealData = useMemo(() => !!(analysisResults && storeNodes.size > 0), [analysisResults, storeNodes]);
-  const isUsingDemoData = !hasRealData;
+  const isUsingPreviewData = !hasRealData;
 
   const [loadCases, setLoadCases] = useState<LoadCase[]>([]);
   const [modeShapes, setModeShapes] = useState<ModeShape[]>([]);
@@ -363,11 +363,11 @@ const ResultAnimationViewer: React.FC = () => {
           <div className="lg:col-span-2 space-y-4">
             {/* 3D Viewport — SVG structural model */}
             <div className="bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-300 dark:border-slate-700/50 aspect-video relative overflow-hidden">
-              {/* Demo Data Badge */}
-              {isUsingDemoData && (
+              {/* Preview Data Badge */}
+              {isUsingPreviewData && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-amber-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                   <AlertTriangle className="w-3 h-3" />
-                  Demo Data — Run analysis for real results
+                  Preview Data — Run analysis for project-specific results
                 </div>
               )}
 

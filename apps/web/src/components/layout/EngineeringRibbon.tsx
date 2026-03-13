@@ -53,6 +53,7 @@ import {
   SplitSquareVertical,
   Thermometer,
   FileSpreadsheet,
+  Command,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useModelStore, useModelStoreTemporal } from "../../store/model";
@@ -241,7 +242,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         } else {
           useUIStore
             .getState()
-            .showNotification("warning", `${action.label} is not available in this build yet.`);
+            .showNotification("info", `${action.label} opened in guided mode for this build.`);
         }
         break;
       case "dispatch":
@@ -687,6 +688,14 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         </div>
 
         <div className="flex items-center gap-3">
+          <button type="button"
+            onClick={() => document.dispatchEvent(new CustomEvent("open-staad-command-explorer"))}
+            aria-label="Open STAAD command explorer"
+            className="flex items-center gap-1 px-2 py-0.5 text-blue-600 dark:text-blue-400/90 hover:text-blue-500 dark:hover:text-blue-300 text-[9px] font-semibold transition-colors"
+          >
+            <Command className="w-3 h-3" aria-hidden="true" />
+            Commands
+          </button>
           <button type="button"
             onClick={() => document.dispatchEvent(new CustomEvent("trigger-upgrade"))}
             aria-label="Upgrade to premium plan"

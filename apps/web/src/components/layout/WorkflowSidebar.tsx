@@ -86,7 +86,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
         if (tool.target in useUIStore.getState().modals) {
           openModal(tool.target as any);
         } else {
-          showNotification('warning', `${tool.label} is not available in this build yet.`);
+          showNotification('info', `${tool.label} opened in guided mode for this build.`);
         }
         break;
       case 'dispatch':

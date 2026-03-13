@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { construction, Activity, CostEstimate, ScheduleResult } from '../services/civil/ConstructionManagementService';
+import { useUIStore } from '../../../store/uiStore';
 
 export function ConstructionManager() {
     const [activeTab, setActiveTab] = useState<'schedule' | 'cost'>('schedule');
@@ -56,6 +57,7 @@ export function ConstructionManager() {
 // =============================================================================
 
 function SchedulePanel() {
+    const showNotification = useUIStore((s) => s.showNotification);
     const [activities, setActivities] = useState<Activity[]>([
         { id: 'A', name: 'Site Clearing', duration: 3, predecessors: [] },
         { id: 'B', name: 'Excavation', duration: 5, predecessors: ['A'] },
@@ -75,9 +77,9 @@ function SchedulePanel() {
             queueMicrotask(() => setSchedule(res));
         } catch (e) {
             const error = e instanceof Error ? e.message : 'Unknown error';
-            alert('Error calculating schedule: ' + error);
+            showNotification('error', 'Error calculating schedule: ' + error);
         }
-    }, [activities]);
+    }, [activities, showNotification]);
 
     useEffect(() => {
         // Initial calculation

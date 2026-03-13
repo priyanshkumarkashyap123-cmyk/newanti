@@ -302,6 +302,7 @@ export interface Member {
 
   // Section geometry for 3D rendering
   sectionType?: SectionType;
+  materialType?: "steel" | "concrete" | "custom";
   dimensions?: SectionDimensions;
 
   // Default properties for analysis

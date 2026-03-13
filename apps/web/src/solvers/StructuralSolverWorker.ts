@@ -183,7 +183,7 @@ function computeElementStiffness(member: Member): number[][] {
       return computeSpringStiffness(k);
     
     case 'CABLE':
-      throw new Error('CABLE elements not yet implemented (Phase 3)');
+      throw new Error('CABLE elements are currently unsupported in this solver mode.');
     
     default:
       throw new Error(`Unknown element type: ${type}`);

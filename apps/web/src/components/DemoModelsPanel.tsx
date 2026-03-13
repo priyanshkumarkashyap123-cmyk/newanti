@@ -1,6 +1,6 @@
 /**
- * DemoModelsPanel.tsx - Demo Models Library UI
- * STAAD.Pro-style demo model loader
+ * DemoModelsPanel.tsx - Example Models Library UI
+ * STAAD.Pro-style example model loader
  */
 
 import React, { useState } from 'react';
@@ -78,14 +78,14 @@ export function DemoModelsPanel({ onLoadDemo }: DemoModelsPanelProps) {
             <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
                     <BookOpen className="w-4 h-4" />
-                    Load Demo Model
+                    Load Example Model
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl">Demo Models Library</DialogTitle>
+                    <DialogTitle className="text-2xl">Example Models Library</DialogTitle>
                     <DialogDescription>
-                        Explore pre-configured structures like STAAD.Pro demos. Load, analyze, and learn from real-world examples.
+                        Explore pre-configured structures inspired by real projects. Load, analyze, and learn from practical examples.
                     </DialogDescription>
                 </DialogHeader>
 

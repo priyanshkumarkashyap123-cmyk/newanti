@@ -6,10 +6,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Loader2, Play, ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Layers,
+  Loader2, Play, ArrowLeft, CheckCircle2, XCircle, AlertTriangle, Layers, Download,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useToast } from '../components/ui/ToastSystem';
+import { exportRowsToCsv, exportObjectToPdf } from '../utils/designExport';
 import { SEO } from '../components/SEO';
 import {
   designCompositeBeam,
@@ -48,11 +49,49 @@ export default function CompositeDesignPage() {
   const [result, setResult] = useState<CompositeBeamResult | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState('');
+  const [Mu, setMu] = useState(120);   // kN·m applied factored moment
+  const [Vu, setVu] = useState(60);    // kN applied factored shear
 
   useEffect(() => { document.title = 'Composite Beam Design | BeamLab'; }, []);
 
   const set = (field: keyof CompositeBeamInput, value: number | string) =>
     setInput(prev => ({ ...prev, [field]: value }));
+
+  const handleExportCsv = () => {
+    if (!result) return;
+    exportRowsToCsv(`composite_design_${new Date().toISOString().slice(0, 10)}.csv`, [
+      { check: 'Positive Moment Capacity Mn+ (kN·m)', capacity: result.Mn_positive, demand: Mu, utilization: (Mu / result.Mn_positive).toFixed(3) },
+      { check: 'Shear Capacity Vn (kN)',              capacity: result.Vn,          demand: Vu, utilization: (Vu / result.Vn).toFixed(3)          },
+      { check: 'Composite Ratio',                    capacity: 1,                  demand: result.compositeRatio, utilization: result.compositeRatio.toFixed(3) },
+    ]);
+  };
+
+  const handleExportPdf = async () => {
+    if (!result) return;
+    await exportObjectToPdf(
+      `composite_design_${new Date().toISOString().slice(0, 10)}.pdf`,
+      'Composite Beam Design Report — AISC 360 Chapter I',
+      {
+        status: result.status,
+        governingCheck: result.governingCheck,
+        clause: result.clause,
+        appliedMoment_kNm:    Mu,
+        momentCapacity_kNm:   result.Mn_positive,
+        momentUtilization:    (Mu / result.Mn_positive).toFixed(3),
+        appliedShear_kN:      Vu,
+        shearCapacity_kN:     result.Vn,
+        shearUtilization:     (Vu / result.Vn).toFixed(3),
+        compositeRatio_pct:   (result.compositeRatio * 100).toFixed(1),
+        PNA_location:         result.PNA_location,
+        studCapacity_kN:      result.Qn_stud,
+        studsRequired:        result.studsRequired,
+        ieff_mm4:             result.Ieff,
+        deflectionLive_mm:    result.deflection_live,
+        deflectionTotal_mm:   result.deflection_total,
+        generatedAt:          new Date().toISOString(),
+      },
+    );
+  };
 
   const handleRun = () => {
     setAnalyzing(true);
@@ -168,6 +207,15 @@ export default function CompositeDesignPage() {
             </div>
           </section>
 
+          {/* Applied Loads */}
+          <section className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+            <h2 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">Applied Loads (Factored)</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <InputField label="Mu (kN·m)" value={Mu} onChange={v => setMu(+v)} />
+              <InputField label="Vu (kN)"   value={Vu} onChange={v => setVu(+v)} />
+            </div>
+          </section>
+
           {/* Run Button */}
           <Button
             onClick={handleRun}
@@ -219,6 +267,44 @@ export default function CompositeDesignPage() {
                 <ResultRow label="Ieff" value={`${(result.Ieff / 1e6).toFixed(1)} ×10⁶ mm⁴`} />
                 <ResultRow label="δ live" value={`${result.deflection_live} mm`} />
                 <ResultRow label="δ total" value={`${result.deflection_total} mm`} />
+
+                            {/* Utilization */}
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-3">
+                              <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Utilization Ratios</h3>
+                              {([
+                                { label: 'Mu / Mn+ (moment)', demand: Mu, capacity: result.Mn_positive, unit: 'kN·m' },
+                                { label: 'Vu / Vn (shear)',   demand: Vu, capacity: result.Vn,          unit: 'kN'   },
+                              ] as const).map(({ label, demand, capacity, unit }) => {
+                                const ratio = Math.min(demand / capacity, 1.5);
+                                const pct   = Math.min(ratio * 100, 100);
+                                const clr   = ratio > 1 ? 'bg-red-500' : ratio > 0.85 ? 'bg-amber-500' : 'bg-emerald-500';
+                                return (
+                                  <div key={label}>
+                                    <div className="flex justify-between text-xs mb-1">
+                                      <span className="text-gray-500 dark:text-gray-400">{label}</span>
+                                      <span className={`font-bold ${ratio > 1 ? 'text-red-500' : ratio > 0.85 ? 'text-amber-500' : 'text-emerald-600'}`}>
+                                        {(demand / capacity).toFixed(2)} ({demand}/{capacity} {unit})
+                                      </span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                      <div className={`h-full rounded-full transition-all ${clr}`} style={{ width: `${pct}%` }} />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {/* Export */}
+                            <div className="flex gap-2">
+                              <button type="button" onClick={handleExportCsv}
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <Download className="w-4 h-4" /> CSV
+                              </button>
+                              <button type="button" onClick={() => { void handleExportPdf(); }}
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors">
+                                <Download className="w-4 h-4" /> PDF Report
+                              </button>
+                            </div>
               </ResultCard>
             </>
           ) : (

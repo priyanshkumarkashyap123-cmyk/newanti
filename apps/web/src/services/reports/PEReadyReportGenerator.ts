@@ -354,7 +354,7 @@ License No: ________________
 
 
 
-[PE SEAL PLACEHOLDER]
+[PROFESSIONAL ENGINEER SEAL & SIGNATURE AREA]
 
 
 

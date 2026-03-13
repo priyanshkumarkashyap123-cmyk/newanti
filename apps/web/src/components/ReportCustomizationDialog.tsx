@@ -17,6 +17,7 @@ import { Button } from './ui/button';
 import { API_CONFIG } from '../config/env';
 import type { ReportProfile } from '../types/reportProfiles';
 import { getAllProfiles, getProfileSections, getProfileDiagrams } from '../types/reportProfiles';
+import { useUIStore } from '../store/uiStore';
 
 interface ReportCustomization {
   // Profile Selection
@@ -85,6 +86,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
   projectName = 'Structural Analysis',
   selectedLoadCaseId
 }) => {
+  const showNotification = useUIStore((s) => s.showNotification);
   const [generating, setGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'project' | 'company' | 'content' | 'style'>('profile');
   const [selectedProfile, setSelectedProfile] = useState<string | undefined>();
@@ -190,7 +192,7 @@ export const ReportCustomizationDialog: React.FC<Props> = ({
       onClose();
     } catch (error) {
       console.error('Error generating report:', error);
-      alert('Failed to generate report. Please try again.');
+      showNotification('error', 'Failed to generate report. Please try again.');
     } finally {
       setGenerating(false);
     }

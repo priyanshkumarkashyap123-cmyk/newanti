@@ -30,6 +30,7 @@ import { designFoundation, FootingRequest, FootingResult } from '../api/design';
 import { getErrorMessage } from '../lib/errorHandling';
 import { useToast } from '../components/ui/ToastSystem';
 import { FieldLabel } from '../components/ui/FieldLabel';
+import { exportRowsToCsv, exportObjectToPdf, flattenForExport } from '../utils/designExport';
 
 type FoundationType = 'isolated' | 'combined' | 'strap' | 'mat' | 'pile-cap';
 
@@ -429,6 +430,24 @@ export const FoundationDesignPage: React.FC = () => {
     setInput(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleExportCsv = () => {
+    if (!results) return;
+    exportRowsToCsv(`foundation_design_${new Date().toISOString().slice(0, 10)}.csv`, [
+      {
+        ...flattenForExport({ input, results }),
+      },
+    ]);
+  };
+
+  const handleExportPdf = async () => {
+    if (!results) return;
+    await exportObjectToPdf(
+      `foundation_design_${new Date().toISOString().slice(0, 10)}.pdf`,
+      'Foundation Design Results',
+      { generatedAt: new Date().toISOString(), input, results },
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
       {/* Header */}
@@ -754,11 +773,17 @@ export const FoundationDesignPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Download Report */}
-                  <Button type="button" className="w-full" variant="secondary" size="lg">
-                    <Download className="w-5 h-5" />
-                    Download Report
-                  </Button>
+                  {/* Export Actions */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button type="button" className="w-full" variant="outline" size="lg" onClick={handleExportCsv}>
+                      <Download className="w-5 h-5" />
+                      Export CSV
+                    </Button>
+                    <Button type="button" className="w-full" variant="secondary" size="lg" onClick={() => { void handleExportPdf(); }}>
+                      <Download className="w-5 h-5" />
+                      Export PDF
+                    </Button>
+                  </div>
                 </div>
               </div>
             ) : (

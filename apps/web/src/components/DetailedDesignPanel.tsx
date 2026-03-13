@@ -46,6 +46,7 @@ import {
 } from "../engines/DetailedSectionDesign";
 import { useModelStore } from "../store/model";
 import type { Member, MemberForceData, Node as ModelNode } from "../store/modelTypes";
+import { inferMemberMaterialType, isSteelSectionType } from '../utils/materialClassification';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 
@@ -245,10 +246,8 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
 
     // Get section dimensions from member properties
     const dim = member.dimensions || {};
-    const sType = member.sectionType || "I-BEAM";
-    const isSteel = sType === "I-BEAM" || sType === "TUBE" || sType === "C-CHANNEL" ||
-                    sType === "L-ANGLE" || sType === "PIPE" || sType === "T-SECTION" ||
-                    sType === "DOUBLE-ANGLE" || sType === "TAPERED" || sType === "BUILT-UP";
+    const sType = member.sectionType;
+    const isSteel = inferMemberMaterialType(member) === 'steel';
 
     if (isSteel) {
       // Populate steel input
@@ -256,9 +255,8 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
       setMode("steel");
       setSteelInput(prev => ({
         ...prev,
-        sectionType: sType as any,
-        depth: (dim.height || prev.depth),
-        width: (dim.width || prev.width),
+        sectionType: ((sType && isSteelSectionType(sType)) ? sType : 'I-BEAM') as any,
+        depth: (dim.height || prev.depth),        width: (dim.width || prev.width),
         tw: (dim.webThickness || prev.tw),
         tf: (dim.flangeThickness || prev.tf),
         fy: member.E ? (member.rho && member.rho > 7500 ? 250 : 415) : prev.fy,
@@ -328,9 +326,8 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
       const maxF = extractMaxForces(forces);
 
       const dim = member.dimensions || {};
-      const sType = member.sectionType || "I-BEAM";
-      const isSteel = sType === "I-BEAM" || sType === "TUBE" || sType === "C-CHANNEL" ||
-                      sType === "L-ANGLE" || sType === "PIPE" || sType === "T-SECTION";
+      const sType = member.sectionType;
+      const isSteel = inferMemberMaterialType(member) === 'steel';
 
       let result: any = null;
       let status: "pass" | "fail" | "error" = "pass";
@@ -341,7 +338,7 @@ export const DetailedDesignPanel: FC<DetailedDesignPanelProps> = ({
         if (isSteel) {
           designMode = "steel";
           const input: SteelSectionInput = {
-            sectionType: sType as any,
+            sectionType: ((sType && isSteelSectionType(sType)) ? sType : 'I-BEAM') as any,
             depth: dim.height || 500,
             width: dim.width || 200,
             tw: dim.webThickness || 10.2,

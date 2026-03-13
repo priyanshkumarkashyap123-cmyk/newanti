@@ -41,6 +41,7 @@ import { useToast } from '../components/ui/ToastSystem';
 import { FieldLabel } from '../components/ui/FieldLabel';
 import { ClauseReference } from '../components/ui/ClauseReference';
 import { SectionWiseResultsPanel } from '../components/design/section-wise';
+import { exportRowsToCsv, exportObjectToPdf, flattenForExport } from '../utils/designExport';
 
 type DesignCode = 'IS456' | 'ACI318';
 type MemberType = 'beam' | 'column' | 'slab';
@@ -1081,6 +1082,48 @@ export const ConcreteDesignPage: React.FC = () => {
     </div>
   );
 
+  const handleExportResultsCsv = () => {
+    if (!results) return;
+
+    const activeInput = memberType === 'beam'
+      ? beamInput
+      : memberType === 'column'
+        ? columnInput
+        : slabInput;
+
+    exportRowsToCsv(`concrete_design_${memberType}_${new Date().toISOString().slice(0, 10)}.csv`, [
+      flattenForExport({
+        generatedAt: new Date().toISOString(),
+        designCode,
+        memberType,
+        input: activeInput,
+        results,
+      }),
+    ]);
+  };
+
+  const handleExportResultsPdf = async () => {
+    if (!results) return;
+
+    const activeInput = memberType === 'beam'
+      ? beamInput
+      : memberType === 'column'
+        ? columnInput
+        : slabInput;
+
+    await exportObjectToPdf(
+      `concrete_design_${memberType}_${new Date().toISOString().slice(0, 10)}.pdf`,
+      `Concrete Design Results (${memberType.toUpperCase()})`,
+      {
+        generatedAt: new Date().toISOString(),
+        designCode,
+        memberType,
+        input: activeInput,
+        results,
+      },
+    );
+  };
+
   const renderResults = () => {
     if (!results) return null;
 
@@ -1217,37 +1260,27 @@ export const ConcreteDesignPage: React.FC = () => {
             </div>
           )}
 
-          {/* Download Report */}
-          <Button
-            variant="secondary"
-            className="w-full"
-            size="lg"
-            onClick={async () => {
-              try {
-                const normalizedBase = (await import('../config/env')).API_CONFIG.pythonUrl.replace(/\/$/, '');
-                const resp = await (await import('../lib/api/client')).apiClient.post(
-                  `${normalizedBase}/design/report`,
-                  {
-                    project: { name: 'Untitled Project', engineer: '—', checker: '—' },
-                    input: { memberType, designCode, ...(memberType === 'beam' ? beamInput : memberType === 'column' ? columnInput : slabInput) },
-                    results
-                  }
-                );
-                const blob = new Blob([JSON.stringify(resp.data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `design_report_${memberType}_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-              } catch (err) {
-                console.error('Report download failed:', err);
-              }
-            }}
-          >
-            <Download className="w-5 h-5" />
-            Download Detailed Report
-          </Button>
+          {/* Export Actions */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              size="lg"
+              onClick={handleExportResultsCsv}
+            >
+              <Download className="w-5 h-5" />
+              Export CSV
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full"
+              size="lg"
+              onClick={() => { void handleExportResultsPdf(); }}
+            >
+              <Download className="w-5 h-5" />
+              Export PDF
+            </Button>
+          </div>
         </div>
       </div>
     );

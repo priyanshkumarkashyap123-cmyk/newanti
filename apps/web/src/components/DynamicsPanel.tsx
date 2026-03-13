@@ -7,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Activity, Play, Pause, Waves, Calculator } from 'lucide-react';
 import { useModelStore } from '../store/model';
+import { useUIStore } from '../store/uiStore';
 import { ClientDesignService } from '../services/ClientDesignService';
 
 export function DynamicsPanel() {
     const nodes = useModelStore(state => state.nodes);
     const members = useModelStore(state => state.members);
+    const showNotification = useUIStore(state => state.showNotification);
 
     // Modal Analysis State
     const [numModes, setNumModes] = useState(3);
@@ -40,11 +42,11 @@ export function DynamicsPanel() {
                 setResults(res);
                 setSeismicResult(null); // Reset seismic results on new modal run
             } else {
-                alert("Analysis failed: " + (res?.error || "Unknown error"));
+                showNotification('error', `Analysis failed: ${res?.error || 'Unknown error'}`);
             }
         } catch (e) {
             console.error(e);
-            alert("Failed to run dynamic analysis");
+            showNotification('error', 'Failed to run dynamic analysis');
         } finally {
             setLoading(false);
         }
@@ -58,9 +60,11 @@ export function DynamicsPanel() {
             });
             if (res && res.success) {
                 setSeismicResult(res);
+                showNotification('success', 'Response spectrum results updated');
             }
         } catch (e) {
             console.warn(e);
+            showNotification('error', 'Failed to compute response spectrum');
         }
     };
 

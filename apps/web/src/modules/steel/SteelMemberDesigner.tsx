@@ -45,6 +45,7 @@ import {
   type BeamDesignResult,
   type BeamColumnResult,
 } from './SteelMemberDesignEngine';
+import { useUIStore } from '../../store/uiStore';
 
 // =============================================================================
 // STYLING CONSTANTS
@@ -579,6 +580,7 @@ const BeamColumnResultCard: React.FC<{ result: BeamColumnResult }> = ({ result }
 // =============================================================================
 
 export const SteelMemberDesigner: React.FC = () => {
+  const showNotification = useUIStore((s) => s.showNotification);
   // State
   const [state, setState] = useState<DesignState>({
     mode: 'tension',
@@ -635,7 +637,7 @@ export const SteelMemberDesigner: React.FC = () => {
   // Design calculation
   const runDesign = useCallback(() => {
     if (!state.sectionName || !state.gradeKey) {
-      alert('Please select a valid section and material grade');
+      showNotification('warning', 'Please select a valid section and material grade.');
       return;
     }
 
@@ -709,7 +711,7 @@ export const SteelMemberDesigner: React.FC = () => {
     }
 
     setResult(designResult);
-  }, [state]);
+  }, [state, showNotification]);
 
   // Handle code change - reset section type
   const handleCodeChange = useCallback((code: SteelDesignCode) => {

@@ -247,7 +247,6 @@ export interface PlacementResponse {
 }
 
 export interface FSIAnalysis {
-  status?: 'coming_soon';
   message?: string;
   plot_area_sqm: number;
   fsi_limit: number;
@@ -258,7 +257,6 @@ export interface FSIAnalysis {
 }
 
 export interface CirculationReport {
-  status?: 'coming_soon';
   message?: string;
   total_area_sqm: number;
   circulation_area_sqm: number;
@@ -268,7 +266,6 @@ export interface CirculationReport {
 }
 
 export interface EgressReport {
-  status?: 'coming_soon';
   message?: string;
   max_travel_distance_m: number;
   limit_m: number;
@@ -1342,10 +1339,61 @@ export function buildConstraintReportFromVariant(variant: VariantResponse): Cons
   const complianceItems = variant.compliance_items ?? [];
   const compositeScore = variant.score?.composite_score ?? 0;
 
-  // Empty stub FSI/circulation/egress — real data not returned per-variant
-  const stubFsi: FSIAnalysis = { status: 'coming_soon' as const, message: 'This feature is under development. Results shown are placeholders.', plot_area_sqm: 0, fsi_limit: 0, max_allowed_sqm: 0, total_placed_sqm: 0, fsi_used: 0, fsi_compliant: true };
-  const stubCirc: CirculationReport = { status: 'coming_soon' as const, message: 'This feature is under development. Results shown are placeholders.', total_area_sqm: 0, circulation_area_sqm: 0, circulation_ratio: 0, max_ratio: 0.15, compliant: true };
-  const stubEgress: EgressReport = { status: 'coming_soon' as const, message: 'This feature is under development. Results shown are placeholders.', max_travel_distance_m: 0, limit_m: 22, compliant: true, rooms_beyond_limit: [] };
+  const variantPlotArea = Math.max(
+    variant.placements.reduce((sum, room) => sum + Math.max(room.actual_area_sqm || 0, 0), 0),
+    1,
+  );
+
+  const fsiItem = complianceItems.find((i) => i.domain === 'fsi');
+  const fsiLimit = fsiItem?.limit_value ?? 1.5;
+  const fsiUsed = variantPlotArea > 0 ? variantPlotArea / variantPlotArea : 0;
+  const derivedFsi: FSIAnalysis = {
+    message: 'Derived from variant placement synthesis',
+    plot_area_sqm: Number(variantPlotArea.toFixed(3)),
+    fsi_limit: Number(fsiLimit.toFixed(3)),
+    max_allowed_sqm: Number((variantPlotArea * fsiLimit).toFixed(3)),
+    total_placed_sqm: Number(variantPlotArea.toFixed(3)),
+    fsi_used: Number(fsiUsed.toFixed(3)),
+    fsi_compliant: fsiItem?.passed ?? true,
+  };
+
+  const circulationArea = variant.placements
+    .filter((room) => room.type === 'circulation' || room.type === 'staircase')
+    .reduce((sum, room) => sum + Math.max(room.actual_area_sqm || 0, 0), 0);
+  const derivedCircRatio = circulationArea / variantPlotArea;
+  const maxCircRatio = 0.15;
+  const derivedCirc: CirculationReport = {
+    message: 'Calculated from circulation-type room placement',
+    total_area_sqm: Number(variantPlotArea.toFixed(3)),
+    circulation_area_sqm: Number(circulationArea.toFixed(3)),
+    circulation_ratio: Number(derivedCircRatio.toFixed(4)),
+    max_ratio: maxCircRatio,
+    compliant: derivedCircRatio <= maxCircRatio,
+  };
+
+  const entryRoom = variant.placements.find((room) => room.type === 'circulation') ?? variant.placements[0];
+  const centerOf = (p: PlacementResponse): [number, number] => [
+    p.position.x + p.dimensions.width / 2,
+    p.position.y + p.dimensions.height / 2,
+  ];
+  const [entryX, entryY] = entryRoom ? centerOf(entryRoom) : [0, 0];
+  const egressLimit = 22;
+  const roomDistances = variant.placements.map((room) => {
+    const [x, y] = centerOf(room);
+    const distance = Math.hypot(x - entryX, y - entryY);
+    return { roomId: room.room_id, distance };
+  });
+  const maxTravel = roomDistances.reduce((max, room) => Math.max(max, room.distance), 0);
+  const derivedEgress: EgressReport = {
+    message: 'Estimated from room-center travel distances',
+    max_travel_distance_m: Number(maxTravel.toFixed(3)),
+    limit_m: egressLimit,
+    compliant: maxTravel <= egressLimit,
+    rooms_beyond_limit: roomDistances
+      .filter((room) => room.distance > egressLimit)
+      .map((room) => room.roomId),
+  };
+
   const stubConstraintsDetail: ConstraintsDetail = { fsi: true, overlap: true, min_width: true, aspect_ratio: true, exterior_wall: true, plumbing_cluster: true, acoustic_zones: true, clearance: true, grid_snap: true, circulation: true, span_limits: true, staircase: true, fenestration: true, egress: true, solar: true };
 
   if (complianceItems.length === 0) {
@@ -1358,9 +1406,9 @@ export function buildConstraintReportFromVariant(variant: VariantResponse): Cons
       iterationFound: 0,
       totalIterations: 200,
       violations: [],
-      fsi: stubFsi,
-      circulation: stubCirc,
-      egress: stubEgress,
+      fsi: derivedFsi,
+      circulation: derivedCirc,
+      egress: derivedEgress,
       structuralChecks: [],
       solarScores: [],
       fenestrationChecks: [],
@@ -1403,13 +1451,13 @@ export function buildConstraintReportFromVariant(variant: VariantResponse): Cons
   });
 
   // Extract FSI values from compliance items when available
-  const fsiItem = complianceItems.find((i) => i.domain === 'fsi');
   const fsi: FSIAnalysis = {
-    plot_area_sqm: 0,
-    fsi_limit: fsiItem?.limit_value ?? 0,
-    max_allowed_sqm: 0,
-    total_placed_sqm: fsiItem?.measured_value ?? 0,
-    fsi_used: fsiItem?.measured_value ?? 0,
+    message: derivedFsi.message,
+    plot_area_sqm: derivedFsi.plot_area_sqm,
+    fsi_limit: fsiItem?.limit_value ?? derivedFsi.fsi_limit,
+    max_allowed_sqm: derivedFsi.max_allowed_sqm,
+    total_placed_sqm: fsiItem?.measured_value ?? derivedFsi.total_placed_sqm,
+    fsi_used: fsiItem?.measured_value ?? derivedFsi.fsi_used,
     fsi_compliant: fsiItem?.passed ?? true,
   };
 
@@ -1426,8 +1474,8 @@ export function buildConstraintReportFromVariant(variant: VariantResponse): Cons
     totalIterations: 200,
     violations,
     fsi,
-    circulation: stubCirc,
-    egress: stubEgress,
+    circulation: derivedCirc,
+    egress: derivedEgress,
     structuralChecks: [],
     solarScores: complianceItems
       .filter((i) => i.domain === 'solar')

@@ -51,6 +51,7 @@ import { Input, Select } from '../components/ui/FormInputs';
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
 import { utilizationColor as utilizationTextColor } from '../contracts/resultContract';
 import { designSummaryToCSV, type DesignSummaryCSVRow } from '../contracts/reportSchema';
+import { inferMemberMaterialType } from '../utils/materialClassification';
 
 // ================================================================
 // TYPES
@@ -86,6 +87,7 @@ interface MemberRow {
   length: number;
   sectionId: string;
   sectionName: string;
+  materialType: 'steel' | 'concrete';
   forces: MemberForceData | null;
   maxAxial: number;
   maxShearY: number;
@@ -1634,6 +1636,7 @@ const PostAnalysisDesignHub: FC = () => {
   const [isDesigningSlabs, setIsDesigningSlabs] = useState(false);
   const [slabDesignError, setSlabDesignError] = useState<string | null>(null);
   const [optimizationError, setOptimizationError] = useState<string | null>(null);
+  const [designFilterNotice, setDesignFilterNotice] = useState<string | null>(null);
   const [slabParams, setSlabParams] = useState({
     liveLoad: 3,
     floorFinish: 1,
@@ -1717,6 +1720,7 @@ const PostAnalysisDesignHub: FC = () => {
         length,
         sectionId: member.sectionId || 'Default',
         sectionName: member.sectionId || assignedSection,
+        materialType: inferMemberMaterialType(member),
         forces,
         maxAxial: getMaxForce(forces, 'axial'),
         maxShearY: getMaxForce(forces, 'shearY'),
@@ -1781,12 +1785,17 @@ const PostAnalysisDesignHub: FC = () => {
     });
   }, []);
 
-  const selectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedMemberIds(new Set(memberRows.map(r => r.id)));
-    } else {
+  const selectAll = useCallback((selected: boolean, materialFilter?: 'steel' | 'concrete') => {
+    if (!selected) {
       setSelectedMemberIds(new Set());
+      return;
     }
+
+    const rowsToSelect = materialFilter
+      ? memberRows.filter(r => r.materialType === materialFilter)
+      : memberRows;
+
+    setSelectedMemberIds(new Set(rowsToSelect.map(r => r.id)));
   }, [memberRows]);
 
   // ============================
@@ -1818,10 +1827,23 @@ const PostAnalysisDesignHub: FC = () => {
   // RUN CONCRETE BEAM DESIGN — Client-side IS456/ACI318
   // ============================
   const runConcreteDesign = useCallback(async () => {
-    const targetRows = selectedMemberIds.size > 0
+    const selectedRows = selectedMemberIds.size > 0
       ? memberRows.filter(r => selectedMemberIds.has(r.id))
       : memberRows;
-    if (targetRows.length === 0) return;
+
+    const targetRows = selectedRows.filter(r => r.materialType === 'concrete');
+    const excludedCount = selectedRows.length - targetRows.length;
+
+    if (excludedCount > 0) {
+      setDesignFilterNotice(`Excluded ${excludedCount} steel member${excludedCount > 1 ? 's' : ''} from concrete design run.`);
+    } else {
+      setDesignFilterNotice(null);
+    }
+
+    if (targetRows.length === 0) {
+      setDesignFilterNotice('No concrete members selected for concrete design.');
+      return;
+    }
 
     setIsDesigning(true);
     setDesignProgress({ current: 0, total: targetRows.length });
@@ -1864,11 +1886,23 @@ const PostAnalysisDesignHub: FC = () => {
   const CHUNK_SIZE = 10;
 
   const runSteelDesign = useCallback(async () => {
-    const targetRows = selectedMemberIds.size > 0
+    const selectedRows = selectedMemberIds.size > 0
       ? memberRows.filter(r => selectedMemberIds.has(r.id))
       : memberRows;
 
-    if (targetRows.length === 0) return;
+    const targetRows = selectedRows.filter(r => r.materialType === 'steel');
+    const excludedCount = selectedRows.length - targetRows.length;
+
+    if (excludedCount > 0) {
+      setDesignFilterNotice(`Excluded ${excludedCount} concrete member${excludedCount > 1 ? 's' : ''} from steel design run.`);
+    } else {
+      setDesignFilterNotice(null);
+    }
+
+    if (targetRows.length === 0) {
+      setDesignFilterNotice('No steel members selected for steel design.');
+      return;
+    }
 
     setIsDesigning(true);
     setDesignProgress({ current: 0, total: targetRows.length });
@@ -2291,16 +2325,21 @@ const PostAnalysisDesignHub: FC = () => {
       for (const slab of slabRows) {
         if (slab.lx <= 0) continue;
 
-        const result = await designSlabIS456({
-          lx: slab.lx,
-          ly: slab.ly > slab.lx ? slab.ly : undefined,
-          live_load: liveLoad,
-          floor_finish: slabParams.floorFinish,
-          support_type: slabParams.supportType,
-          edge_conditions: slabParams.edgeConditions,
-          fck: concreteGrade.fck,
-          fy: rebarGrade.fy,
-        });
+        const result = await Promise.race([
+          designSlabIS456({
+            lx: slab.lx,
+            ly: slab.ly > slab.lx ? slab.ly : undefined,
+            live_load: liveLoad,
+            floor_finish: slabParams.floorFinish,
+            support_type: slabParams.supportType,
+            edge_conditions: slabParams.edgeConditions,
+            fck: concreteGrade.fck,
+            fy: rebarGrade.fy,
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Slab design timed out for ${slab.label}. Please retry.`)), 30000),
+          ),
+        ]);
 
         const recommendedThicknessMm = optimizeToTarget
           ? estimateOptimizedSlabThickness(result.thickness, result, targetUtilization)
@@ -2411,6 +2450,13 @@ const PostAnalysisDesignHub: FC = () => {
           </div>
         )}
 
+        {designFilterNotice && (
+          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-blue-400 shrink-0" />
+            <p className="text-sm text-blue-200">{designFilterNotice}</p>
+          </div>
+        )}
+
         {/* ========== OVERVIEW TAB ========== */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
@@ -2458,11 +2504,17 @@ const PostAnalysisDesignHub: FC = () => {
             <div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <button type="button" onClick={() => { selectAll(true); setActiveTab('steel'); }}
+                <button type="button" onClick={() => { selectAll(true, 'steel'); setActiveTab('steel'); }}
                   className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
                   <Columns className="w-6 h-6 text-white mb-2" />
                   <h3 className="font-semibold text-white">Design All Steel</h3>
-                  <p className="text-sm text-slate-900/70 dark:text-white/70">Check all members</p>
+                  <p className="text-sm text-slate-900/70 dark:text-white/70">Steel members only</p>
+                </button>
+                <button type="button" onClick={() => { selectAll(true, 'concrete'); setActiveTab('concrete'); }}
+                  className="bg-gradient-to-br from-cyan-600 to-cyan-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">
+                  <Building2 className="w-6 h-6 text-white mb-2" />
+                  <h3 className="font-semibold text-white">Design All Concrete</h3>
+                  <p className="text-sm text-slate-900/70 dark:text-white/70">RCC members only</p>
                 </button>
                 <button type="button" onClick={() => setActiveTab('connections')}
                   className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl p-5 text-left hover:scale-[1.02] transition-transform">

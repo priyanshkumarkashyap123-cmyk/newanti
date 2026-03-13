@@ -6,10 +6,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Loader2, Play, ArrowLeft, CheckCircle2, XCircle, AlertTriangle, TreePine,
+  Loader2, Play, ArrowLeft, CheckCircle2, XCircle, AlertTriangle, TreePine, Download,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useToast } from '../components/ui/ToastSystem';
+import { exportRowsToCsv, exportObjectToPdf } from '../utils/designExport';
 import { SEO } from '../components/SEO';
 import {
   designTimberBeam,
@@ -45,6 +46,55 @@ export default function TimberDesignPage() {
   const [result, setResult] = useState<TimberBeamResult | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState('');
+  // Serviceability: unfactored UDL for deflection (kN/m)
+  const [wL, setWL] = useState(5);   // live load UDL
+  const [wD, setWD] = useState(3);   // dead load UDL
+
+  const handleExportCsv = () => {
+    if (!result) return;
+    const span_mm = input.length * 1000;
+    const I_mm4 = (input.width * input.depth ** 3) / 12;
+    const E_adj = result.E_adj;
+    const delta_live  = (5 * (wL / 1000) * span_mm ** 4) / (384 * E_adj * I_mm4);
+    const delta_total = (5 * ((wL + wD) / 1000) * span_mm ** 4) / (384 * E_adj * I_mm4);
+    exportRowsToCsv(`timber_design_${new Date().toISOString().slice(0, 10)}.csv`, [
+      { check: 'Bending Mu/Mn', demand: loads.Mu, capacity: result.M_capacity, utilization: (loads.Mu / result.M_capacity).toFixed(3) },
+      { check: 'Shear Vu/Vn',  demand: loads.Vu, capacity: result.V_capacity, utilization: (loads.Vu / result.V_capacity).toFixed(3) },
+      { check: 'Deflection Live (mm)',  demand: Number(delta_live.toFixed(2)),  limit: Number((span_mm / 360).toFixed(2)), utilization: (delta_live / (span_mm / 360)).toFixed(3) },
+      { check: 'Deflection Total (mm)', demand: Number(delta_total.toFixed(2)), limit: Number((span_mm / 240).toFixed(2)), utilization: (delta_total / (span_mm / 240)).toFixed(3) },
+    ]);
+  };
+
+  const handleExportPdf = async () => {
+    if (!result) return;
+    const span_mm = input.length * 1000;
+    const I_mm4 = (input.width * input.depth ** 3) / 12;
+    const delta_live  = (5 * (wL / 1000) * span_mm ** 4) / (384 * result.E_adj * I_mm4);
+    const delta_total = (5 * ((wL + wD) / 1000) * span_mm ** 4) / (384 * result.E_adj * I_mm4);
+    await exportObjectToPdf(
+      `timber_design_${new Date().toISOString().slice(0, 10)}.pdf`,
+      'Timber Beam Design Report — NDS 2018',
+      {
+        status:              result.status,
+        governingCheck:      result.governingCheck,
+        clause:              result.clause,
+        appliedMoment_kNm:   loads.Mu,
+        momentCapacity_kNm:  result.M_capacity,
+        momentUtilization:   (loads.Mu / result.M_capacity).toFixed(3),
+        appliedShear_kN:     loads.Vu,
+        shearCapacity_kN:    result.V_capacity,
+        shearUtilization:    (loads.Vu / result.V_capacity).toFixed(3),
+        deflectionLive_mm:   delta_live.toFixed(2),
+        deflectionLimit_L360: (span_mm / 360).toFixed(1),
+        deflectionTotal_mm:  delta_total.toFixed(2),
+        deflectionLimit_L240: (span_mm / 240).toFixed(1),
+        Fb_adj_MPa:          result.Fb_adj,
+        Fv_adj_MPa:          result.Fv_adj,
+        E_adj_MPa:           result.E_adj,
+        generatedAt:         new Date().toISOString(),
+      },
+    );
+  };
 
   useEffect(() => { document.title = 'Timber Design | BeamLab'; }, []);
 
@@ -157,11 +207,14 @@ export default function TimberDesignPage() {
 
           {/* Applied Loads */}
           <section className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-            <h2 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">Applied Loads (Factored)</h2>
+            <h2 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">Applied Loads</h2>
             <div className="grid grid-cols-2 gap-3">
-              <InputField label="Mu (kN·m)" value={loads.Mu} onChange={v => setLoads(p => ({ ...p, Mu: +v }))} />
-              <InputField label="Vu (kN)" value={loads.Vu} onChange={v => setLoads(p => ({ ...p, Vu: +v }))} />
+              <InputField label="Mu factored (kN·m)" value={loads.Mu} onChange={v => setLoads(p => ({ ...p, Mu: +v }))} />
+              <InputField label="Vu factored (kN)"   value={loads.Vu} onChange={v => setLoads(p => ({ ...p, Vu: +v }))} />
+              <InputField label="wL unfactored UDL (kN/m)" value={wL} onChange={v => setWL(+v)} />
+              <InputField label="wD unfactored UDL (kN/m)" value={wD} onChange={v => setWD(+v)} />
             </div>
+            <p className="text-xs text-gray-400 mt-2">wL / wD used for deflection serviceability (NDS Cl. 3.5)</p>
           </section>
 
           {/* Run Button */}
@@ -216,6 +269,54 @@ export default function TimberDesignPage() {
                 <ResultRow label="CL (beam stability)" value={`${result.adjustmentFactors.CL}`} />
                 <ResultRow label="CF (size)" value={`${result.adjustmentFactors.CF}`} />
                 <ResultRow label="Cr (repetitive)" value={`${result.adjustmentFactors.Cr}`} />
+
+                            {/* Utilization Ratios */}
+                            {(() => {
+                              const span_mm = input.length * 1000;
+                              const I_mm4   = (input.width * input.depth ** 3) / 12;
+                              const delta_live  = (5 * (wL / 1000) * span_mm ** 4) / (384 * result.E_adj * I_mm4);
+                              const delta_total = (5 * ((wL + wD) / 1000) * span_mm ** 4) / (384 * result.E_adj * I_mm4);
+                              const checks = [
+                                { label: 'Mu / Mn (bending)',      ratio: loads.Mu / result.M_capacity },
+                                { label: 'Vu / Vn (shear)',        ratio: loads.Vu / result.V_capacity },
+                                { label: `δL / (L/360) — live (${delta_live.toFixed(1)}/${(span_mm/360).toFixed(1)} mm)`, ratio: delta_live / (span_mm / 360) },
+                                { label: `δT / (L/240) — total (${delta_total.toFixed(1)}/${(span_mm/240).toFixed(1)} mm)`, ratio: delta_total / (span_mm / 240) },
+                              ];
+                              return (
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm space-y-3">
+                                  <h3 className="font-semibold text-sm text-gray-700 dark:text-gray-300">Utilization Ratios</h3>
+                                  {checks.map(({ label, ratio }) => {
+                                    const pct = Math.min(ratio * 100, 100);
+                                    const clr = ratio > 1 ? 'bg-red-500' : ratio > 0.85 ? 'bg-amber-500' : 'bg-emerald-500';
+                                    return (
+                                      <div key={label}>
+                                        <div className="flex justify-between text-xs mb-1">
+                                          <span className="text-gray-500 dark:text-gray-400 truncate mr-2">{label}</span>
+                                          <span className={`font-bold shrink-0 ${ratio > 1 ? 'text-red-500' : ratio > 0.85 ? 'text-amber-500' : 'text-emerald-600'}`}>
+                                            {ratio.toFixed(2)}
+                                          </span>
+                                        </div>
+                                        <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                          <div className={`h-full rounded-full transition-all ${clr}`} style={{ width: `${pct}%` }} />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+
+                            {/* Export */}
+                            <div className="flex gap-2">
+                              <button type="button" onClick={handleExportCsv}
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <Download className="w-4 h-4" /> CSV
+                              </button>
+                              <button type="button" onClick={() => { void handleExportPdf(); }}
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium transition-colors">
+                                <Download className="w-4 h-4" /> PDF Report
+                              </button>
+                            </div>
               </ResultCard>
             </>
           ) : (

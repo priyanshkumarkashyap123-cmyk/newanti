@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { useUIStore } from '../store/uiStore';
 
 // ============================================
 // TYPES
@@ -127,6 +128,7 @@ const LOAD_CATEGORIES = [
 // ============================================
 
 export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, targetMemberId }) => {
+    const showNotification = useUIStore((s) => s.showNotification);
     const addMemberLoad = useModelStore((s) => s.addMemberLoad);
     const selectedIds = useModelStore((s) => s.selectedIds);
     const members = useModelStore((s) => s.members);
@@ -198,7 +200,7 @@ export const IS875LoadDialog: FC<IS875LoadDialogProps> = ({ isOpen, onClose, tar
         const memberId = targetMemberId || (selectedIds.size > 0 ? Array.from(selectedIds)[0] : null);
 
         if (!memberId || !members.has(memberId)) {
-            alert('Please select a member to apply the load');
+            showNotification('warning', 'Select a valid member before applying IS 875 load.');
             return;
         }
 

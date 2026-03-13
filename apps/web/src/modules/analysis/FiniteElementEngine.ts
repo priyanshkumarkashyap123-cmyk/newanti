@@ -857,7 +857,7 @@ export class FEModel {
       }
       
       default:
-        throw new Error(`Element type ${element.type} not yet implemented`);
+        throw new Error(`Element type ${element.type} is currently unsupported`);
     }
   }
   

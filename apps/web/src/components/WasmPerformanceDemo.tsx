@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { analyzeStructure, initSolver, isSolverReady, Node, Element } from '../services/wasmSolverService';
+import { useUIStore } from '../store/uiStore';
 
 /**
  * WASM Performance Demo Component
@@ -18,6 +19,7 @@ interface BenchmarkResult {
 }
 
 export function WasmPerformanceDemo() {
+    const showNotification = useUIStore((s) => s.showNotification);
     const [isInitialized, setIsInitialized] = useState(false);
     const [isRunning, setIsRunning] = useState(false);
     const [results, setResults] = useState<BenchmarkResult[]>([]);
@@ -29,7 +31,7 @@ export function WasmPerformanceDemo() {
             setIsInitialized(true);
         } catch (error) {
             console.error('WASM initialization failed:', error);
-            alert('WebGPU not available. Falling back to server-side analysis.');
+            showNotification('warning', 'Local accelerator unavailable. You can continue with server-side analysis.');
         }
     };
 

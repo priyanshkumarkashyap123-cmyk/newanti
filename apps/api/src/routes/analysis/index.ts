@@ -222,11 +222,53 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
     }
 }
 
+async function forwardAnalysisToRust(
+    rustPath: string,
+    body: unknown,
+    res: Response,
+    label: string,
+    timeoutMs = 120_000,
+): Promise<void> {
+    const result = await rustProxy("POST", rustPath, body, undefined, timeoutMs);
+    if (result.success) {
+        res.json(result.data);
+        return;
+    }
+
+    logger.error({ err: result.error }, `[Analysis/${label}] Rust API error`);
+    res.status(result.status || 500).json({
+        success: false,
+        error: result.error || `${label} failed`,
+        service: "rust-api",
+    });
+}
+
 /**
  * POST /analyze - Run structural analysis via Rust API
  */
 router.post("/", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
 router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
+
+/**
+ * POST /analysis/modal - Matrix-based modal analysis
+ */
+router.post("/modal", asyncHandler(async (req: Request, res: Response) => {
+    await forwardAnalysisToRust("/api/analysis/modal", req.body, res, "Modal", 120_000);
+}));
+
+/**
+ * POST /analysis/time-history - Matrix-based time history analysis
+ */
+router.post("/time-history", asyncHandler(async (req: Request, res: Response) => {
+    await forwardAnalysisToRust("/api/analysis/time-history", req.body, res, "TimeHistory", 180_000);
+}));
+
+/**
+ * POST /analysis/seismic - Matrix-based seismic response analysis
+ */
+router.post("/seismic", asyncHandler(async (req: Request, res: Response) => {
+    await forwardAnalysisToRust("/api/analysis/seismic", req.body, res, "Seismic", 120_000);
+}));
 
 /**
  * GET /analyze/job/:jobId - Poll for async job status

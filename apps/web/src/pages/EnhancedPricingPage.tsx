@@ -11,7 +11,7 @@
 import React, { FC, memo, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { usePhonePePayment } from '../components/PhonePePayment';
+import { PaymentGatewaySelector } from '../components/PaymentGatewaySelector';
 import { useAuth } from '../providers/AuthProvider';
 import { SEO } from '../components/SEO';
 import { useSubscription } from '../hooks/useSubscription';
@@ -418,8 +418,10 @@ export const EnhancedPricingPage: FC = () => {
   const [showPPP, setShowPPP] = useState(false);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
 
-  // Payment integration
-  const { openPayment, loading: paymentLoading } = usePhonePePayment();
+  // Payment gateway state
+  const [gatewayModalOpen, setGatewayModalOpen] = useState(false);
+  const [pendingPlanType, setPendingPlanType] = useState<'monthly' | 'yearly'>('monthly');
+  const paymentLoading = false; // modal handles its own loading state
   const { isSignedIn, user } = useAuth();
   const { refreshSubscription } = useSubscription();
 
@@ -486,21 +488,9 @@ export const EnhancedPricingPage: FC = () => {
       return;
     }
 
-    try {
-      const success = await openPayment(
-        user.id,
-        user.email || '',
-        billingPeriod
-      );
-      if (success) {
-        await refreshSubscription();
-        navigate('/stream?payment=success');
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Payment failed. Please try again.';
-      setUpgradeError(message);
-      console.error('[Pricing] Payment error:', error);
-    }
+    // Open payment gateway selector modal
+    setPendingPlanType(billingPeriod);
+    setGatewayModalOpen(true);
   };
 
   const formatPrice = (plan: PricingPlan) => {
@@ -540,6 +530,7 @@ export const EnhancedPricingPage: FC = () => {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <SEO
         title="Pricing"
@@ -1192,6 +1183,27 @@ export const EnhancedPricingPage: FC = () => {
         </div>
       </footer>
     </div>
+
+    {/* Payment Gateway Selector — shown as overlay when user clicks upgrade */}
+    {gatewayModalOpen && isSignedIn && user && (
+      <PaymentGatewaySelector
+        userId={user.id}
+        email={user.email || ''}
+        userName={user.firstName || undefined}
+        planType={pendingPlanType}
+        onSuccess={async () => {
+          setGatewayModalOpen(false);
+          await refreshSubscription();
+          navigate('/stream?payment=success');
+        }}
+        onError={(message) => {
+          setGatewayModalOpen(false);
+          setUpgradeError(message);
+        }}
+        onClose={() => setGatewayModalOpen(false)}
+      />
+    )}
+    </>
   );
 };
 

@@ -85,6 +85,7 @@ import { modelerLogger, uiLogger } from "../utils/logger";
 
 // Command Palette for quick feature access (Cmd+K)
 import { CommandPalette, useCommandPalette } from "./CommandPalette";
+import { StaadCommandExplorer } from "./StaadCommandExplorer";
 
 // Quick Commands and Context Menu (STAAD Pro style)
 import {
@@ -320,6 +321,7 @@ export const ModernModeler: FC = () => {
   const [showCloudManager, setShowCloudManager] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const [showAIArchitect, setShowAIArchitect] = useState(false);
+  const [showStaadCommandExplorer, setShowStaadCommandExplorer] = useState(false);
 
   // ============================================
   // CLOUD PROJECT MANAGEMENT
@@ -422,15 +424,18 @@ export const ModernModeler: FC = () => {
     const onSave = () => handleCloudSave();
     const onOpen = () => setShowCloudManager(true);
     const onToggleAI = () => setShowAIArchitect(prev => !prev);
+    const onOpenStaadCommands = () => setShowStaadCommandExplorer(true);
 
     document.addEventListener("trigger-save", onSave);
     document.addEventListener("trigger-cloud-open", onOpen);
     document.addEventListener("toggle-ai-architect", onToggleAI);
+    document.addEventListener("open-staad-command-explorer", onOpenStaadCommands);
 
     return () => {
       document.removeEventListener("trigger-save", onSave);
       document.removeEventListener("trigger-cloud-open", onOpen);
       document.removeEventListener("toggle-ai-architect", onToggleAI);
+      document.removeEventListener("open-staad-command-explorer", onOpenStaadCommands);
     };
   }, [handleCloudSave]);
 
@@ -1164,7 +1169,7 @@ export const ModernModeler: FC = () => {
                     getEmptyContextMenuItems({
                       onAddNodeHere: () =>
                         useModelStore.getState().setTool("node"),
-                      onPaste: () => showNotification("info", "Paste from context menu is coming next — use ⌘V for now."),
+                      onPaste: () => showNotification("info", "Use ⌘V / Ctrl+V to paste the current clipboard selection."),
                       onFitView: () =>
                         document.dispatchEvent(new CustomEvent("fit-view")),
                       onToggleGrid: () =>
@@ -1607,6 +1612,11 @@ export const ModernModeler: FC = () => {
         <CommandPalette
           isOpen={commandPalette.isOpen}
           onClose={commandPalette.close}
+        />
+
+        <StaadCommandExplorer
+          isOpen={showStaadCommandExplorer}
+          onClose={() => setShowStaadCommandExplorer(false)}
         />
         {/* End of Main UI */}
       </div>

@@ -550,7 +550,7 @@ export function performCalculation(
       break;
     
     default:
-      throw new Error(`Calculation type ${type} with code ${code} not yet implemented`);
+      throw new Error(`Calculation type ${type} with code ${code} is currently unsupported`);
   }
   
   throw new Error(`Unsupported calculation: ${type} with ${code}`);

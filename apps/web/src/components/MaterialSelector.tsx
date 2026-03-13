@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import axios from 'axios';
 import { API_CONFIG } from '../config/env';
 import { useAuth } from '../providers/AuthProvider';
+import { useUIStore } from '../store/uiStore';
 
 interface MaterialSelectorProps {
     onMaterialSelect: (materialId: string) => void;
@@ -16,6 +17,7 @@ interface MaterialSelectorProps {
 
 export function MaterialSelector({ onMaterialSelect, className }: MaterialSelectorProps) {
     const { getToken } = useAuth();
+    const showNotification = useUIStore((s) => s.showNotification);
     const [materialType, setMaterialType] = useState<'steel' | 'concrete'>('steel');
     const [createdMaterials, setCreatedMaterials] = useState<Array<{ id: string, name: string }>>([]);
     const [selectedMaterialId, setSelectedMaterialId] = useState<string>('');
@@ -66,7 +68,7 @@ export function MaterialSelector({ onMaterialSelect, className }: MaterialSelect
             }
         } catch (error) {
             console.error('Failed to create material:', error);
-            alert('Failed to create material. Ensure backend is running.');
+            showNotification('error', 'Failed to create material. Ensure backend is running and reachable.');
         }
     };
 

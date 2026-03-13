@@ -5,9 +5,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Play, AlertTriangle, Box, ArrowLeft, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Play, AlertTriangle, Box, ArrowLeft, CheckCircle2, XCircle, Download } from 'lucide-react';
 import { useToast } from '../components/ui/ToastSystem';
 import { FieldLabel } from '../components/ui/FieldLabel';
+import { Button } from '../components/ui/button';
 import { Select, NumberInput } from '../components/ui/FormInputs';
 import { useModelStore } from '../store/model';
 import { useShallow } from 'zustand/react/shallow';
@@ -20,6 +21,7 @@ import {
 } from '../services/SteelDesignService';
 import { getSectionById, Material } from '../data/SectionDatabase';
 import { VirtualTable } from '../components/ui/VirtualScroll';
+import { exportRowsToCsv, exportObjectToPdf } from '../utils/designExport';
 
 export function SteelDesignPage() {
     const navigate = useNavigate();
@@ -170,6 +172,33 @@ export function SteelDesignPage() {
         }
     };
 
+    const handleExportCsv = () => {
+        if (!results.length) return;
+        const rows = results.map((r) => ({
+            memberId: r.memberId,
+            section: r.section.name,
+            overallStatus: r.overallStatus,
+            criticalRatio: Number(r.criticalRatio.toFixed(4)),
+            governingCheck: r.governingCheck,
+            code: designCode,
+        }));
+        exportRowsToCsv(`steel_design_${new Date().toISOString().slice(0, 10)}.csv`, rows);
+    };
+
+    const handleExportPdf = async () => {
+        if (!results.length) return;
+        await exportObjectToPdf(
+            `steel_design_${new Date().toISOString().slice(0, 10)}.pdf`,
+            'Steel Design Results',
+            {
+                code: designCode,
+                summary: resultSummary,
+                generatedAt: new Date().toISOString(),
+                results,
+            },
+        );
+    };
+
     return (
         <div className="steel-design-page p-5 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen">
             <header className="mb-8">
@@ -286,7 +315,19 @@ export function SteelDesignPage() {
             {/* Results Display */}
             {results.length > 0 ? (
                 <div className="bg-white dark:bg-slate-800 p-5 rounded-lg border border-slate-200 dark:border-slate-700">
-                    <h3 className="mb-5 font-semibold">Design Check Results</h3>
+                    <div className="mb-5 flex items-center justify-between gap-3">
+                        <h3 className="font-semibold">Design Check Results</h3>
+                        <div className="flex items-center gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={handleExportCsv}>
+                                <Download className="w-4 h-4" />
+                                Export CSV
+                            </Button>
+                            <Button type="button" variant="secondary" size="sm" onClick={() => { void handleExportPdf(); }}>
+                                <Download className="w-4 h-4" />
+                                Export PDF
+                            </Button>
+                        </div>
+                    </div>
                     
                     <VirtualTable
                         items={results}

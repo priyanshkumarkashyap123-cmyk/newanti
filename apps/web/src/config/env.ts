@@ -152,10 +152,14 @@ export const PAYMENT_CONFIG = {
   phonePeMerchantId: getEnv("VITE_PHONEPE_MERCHANT_ID"),
   /** PhonePe environment: UAT (sandbox) or PRODUCTION */
   phonePeEnv: getEnv("VITE_PHONEPE_ENV") || "UAT",
+  /** Razorpay public key ID (starts with rzp_test_ or rzp_live_) */
+  razorpayKeyId: getEnv("VITE_RAZORPAY_KEY_ID"),
+  /** Active payment gateway: 'razorpay' | 'phonepe' | 'both' */
+  activeGateway: getEnv("VITE_PAYMENT_GATEWAY", "both") as "razorpay" | "phonepe" | "both",
   /** Temporary bypass while payment onboarding/KYC is pending */
   billingBypass: getBoolEnv("VITE_TEMP_UNLOCK_ALL", true),
   isPaymentEnabled:
-    Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) &&
+    (Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) || Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID)) &&
     !getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),
 } as const;
 

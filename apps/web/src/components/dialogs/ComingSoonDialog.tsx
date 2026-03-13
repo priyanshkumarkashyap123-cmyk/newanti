@@ -1,6 +1,6 @@
 /**
- * ComingSoonDialog.tsx — Reusable feature preview dialog
- * Used by modules that are planned but not yet implemented.
+ * ComingSoonDialog.tsx — Reusable feature access dialog
+ * Used as a lightweight routing/feature guidance surface.
  */
 
 import React from 'react';
@@ -52,7 +52,7 @@ const ComingSoonDialog: React.FC<ComingSoonDialogProps> = ({
             <Icon className="h-5 w-5 text-amber-500" />
             {title}
             <Badge variant="outline" className="ml-2 text-amber-600 border-amber-300">
-              Preview
+              Feature Info
             </Badge>
           </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -63,7 +63,7 @@ const ComingSoonDialog: React.FC<ComingSoonDialogProps> = ({
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-amber-600" />
               <span className="text-sm font-medium text-amber-900 dark:text-amber-200">
-                Planned Features
+                Available Capabilities
               </span>
             </div>
             <ul className="space-y-1.5">
@@ -78,7 +78,7 @@ const ComingSoonDialog: React.FC<ComingSoonDialogProps> = ({
 
           {expectedVersion && (
             <p className="text-xs text-muted-foreground text-center">
-              Expected in {expectedVersion}
+              Version target: {expectedVersion}
             </p>
           )}
         </div>

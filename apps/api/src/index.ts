@@ -30,6 +30,7 @@ import feedbackRoutes from "./routes/feedback/index.js";
 import sessionRoutes from "./routes/sessionRoutes.js";
 import usageRoutes from "./routes/usageRoutes.js";
 import { billingRouter } from "./phonepe.js";
+import { razorpayBillingRouter } from "./razorpay.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
 import {
@@ -457,6 +458,10 @@ app.use("/api/usage", crudRateLimit, usageRoutes);
 // PhonePe Billing API (rate limited: 5/min)
 app.use("/api/v1/billing", billingRateLimit, billingRouter);
 app.use("/api/billing", billingRateLimit, billingRouter);
+
+// Razorpay Billing API (rate limited: 5/min)
+app.use("/api/v1/billing/razorpay", billingRateLimit, razorpayBillingRouter);
+app.use("/api/billing/razorpay", billingRateLimit, razorpayBillingRouter);
 
 // ============================================
 // PROTECTED ROUTES (require authentication)

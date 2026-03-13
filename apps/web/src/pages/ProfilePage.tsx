@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserButton, useUser } from '@clerk/clerk-react';
 
 const DESIGN_CODES = ['IS 456', 'IS 800', 'ACI 318', 'AISC 360', 'EC2', 'EC3', 'NDS 2018'];
@@ -12,6 +12,22 @@ export const ProfilePage = () => {
   const [preferredCode, setPreferredCode] = useState('IS 456');
   const [unitSystem, setUnitSystem] = useState('SI (kN, m, MPa)');
   const [saved, setSaved] = useState(false);
+
+  // Load any previously saved preferences on first mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('beamlab-profile-prefs');
+      if (stored) {
+        const { firm: f, designation: d, preferredCode: pc, unitSystem: us } = JSON.parse(stored) as {
+          firm?: string; designation?: string; preferredCode?: string; unitSystem?: string;
+        };
+        if (f)  setFirm(f);
+        if (d)  setDesignation(d);
+        if (pc) setPreferredCode(pc);
+        if (us) setUnitSystem(us);
+      }
+    } catch { /* corrupt storage — silently ignore */ }
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
