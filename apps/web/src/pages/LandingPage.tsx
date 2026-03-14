@@ -49,6 +49,7 @@ import {
 } from "../components/marketing/FeatureShowcase";
 import { API_CONFIG, PAYMENT_CONFIG } from "../config/env";
 import { fetchJson } from "../utils/fetchUtils";
+import { APP_FEATURE_CATEGORIES } from "../config/appRouteMeta";
 
 // Animation variants
 const fadeInUp: Variants = {
@@ -156,7 +157,7 @@ export const LandingPage: FC = () => {
 
   const handleGetStarted = useCallback(() => {
     if (isSignedIn) {
-      navigate("/app");
+      navigate("/stream");
     } else {
       navigate("/sign-up");
     }
@@ -169,12 +170,12 @@ export const LandingPage: FC = () => {
       return (
         <div className="flex items-center gap-4">
           <Button
-            onClick={() => navigate("/app")}
+            onClick={() => navigate("/stream")}
             variant="default"
             size="sm"
             className="hidden md:flex gap-2"
           >
-            Go to App <ArrowRight className="w-4 h-4" />
+            Open Dashboard <ArrowRight className="w-4 h-4" />
           </Button>
           {isClerkEnabled ? (
             <UserButton afterSignOutUrl="/" />
@@ -330,20 +331,49 @@ export const LandingPage: FC = () => {
             </Link>
             <hr className="border-white/10 my-4" aria-hidden="true" />
             <div className="space-y-3">
-              <Link
-                to="/sign-in"
-                className="block text-center text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-              >
-                Log in
-              </Link>
-              <Button
-                onClick={handleGetStarted}
-                variant="premium"
-                size="lg"
-                className="w-full"
-              >
-                Get Started
-              </Button>
+              {isLoaded && isSignedIn ? (
+                <>
+                  <Button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate('/stream');
+                    }}
+                    variant="premium"
+                    size="lg"
+                    className="w-full"
+                  >
+                    Open Dashboard
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate('/app');
+                    }}
+                    variant="glass"
+                    size="lg"
+                    className="w-full"
+                  >
+                    Open 3D Workspace
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/sign-in"
+                    className="block text-center text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white text-base font-medium py-3 px-4 rounded-lg hover:bg-slate-100 dark:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  >
+                    Log in
+                  </Link>
+                  <Button
+                    onClick={handleGetStarted}
+                    variant="premium"
+                    size="lg"
+                    className="w-full"
+                  >
+                    Get Started
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         )}
@@ -436,18 +466,18 @@ export const LandingPage: FC = () => {
                 className="w-full sm:w-auto group"
               >
                 <span className="flex items-center gap-2.5">
-                  Get Started
+                  {isSignedIn ? 'Open Dashboard' : 'Get Started'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Button>
               <Button
-                onClick={() => navigate("/pricing")}
+                onClick={() => navigate(isSignedIn ? '/app' : '/pricing')}
                 variant="glass"
                 size="xl"
                 className="w-full sm:w-auto group"
               >
                 <Play className="w-4 h-4 fill-current group-hover:scale-110 transition-transform" />
-                View Pricing
+                {isSignedIn ? 'Open 3D Workspace' : 'View Pricing'}
               </Button>
             </motion.div>
 
@@ -753,6 +783,80 @@ export const LandingPage: FC = () => {
                 </div>
               </motion.div>
             </div>
+          </div>
+        </section>
+
+        {/* ===== Browse by Workflow ===== */}
+        <section id="workflows" className="py-20 sm:py-28 bg-slate-50 dark:bg-slate-900/50 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+                className="inline-block text-violet-400 text-xs font-semibold uppercase tracking-[0.2em] mb-4">
+                Browse by Workflow
+              </motion.span>
+              <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
+                One Platform, Every Workflow
+              </motion.h2>
+              <motion.p initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="mt-4 text-slate-600 dark:text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
+                From first load to final report — BeamLab connects every step of structural engineering in a single workspace.
+              </motion.p>
+            </div>
+
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+            >
+              {APP_FEATURE_CATEGORIES.filter((c) =>
+                ['workspace', 'analysis', 'design', 'review', 'tools', 'ai'].includes(c.id)
+              ).map((category) => (
+                <motion.button
+                  key={category.id}
+                  type="button"
+                  variants={fadeInUp}
+                  onClick={() => navigate(isSignedIn ? (category.features[0]?.path ?? '/stream') : '/sign-up')}
+                  className="group text-left rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-6 transition-all hover:border-blue-500/40 dark:hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-500/5"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                      {category.label}
+                    </h3>
+                    {category.planRequired && (
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                        category.planRequired === 'enterprise'
+                          ? 'bg-indigo-500/15 text-indigo-400'
+                          : 'bg-amber-500/15 text-amber-400'
+                      }`}>
+                        {category.planRequired === 'enterprise' ? '✦ Enterprise' : '⚡ Pro'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                    {category.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {category.features.slice(0, 4).map((f) => (
+                      <span key={f.id} className="rounded-full bg-slate-100 dark:bg-white/[0.05] px-2.5 py-1 text-[10px] text-slate-600 dark:text-slate-400">
+                        {f.label}
+                      </span>
+                    ))}
+                    {category.features.length > 4 && (
+                      <span className="rounded-full bg-slate-100 dark:bg-white/[0.05] px-2.5 py-1 text-[10px] text-slate-500">
+                        +{category.features.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                  <span className="inline-flex items-center text-xs font-medium text-blue-500 dark:text-blue-400 group-hover:gap-1 transition-all gap-0.5">
+                    {isSignedIn ? 'Open' : 'Get started'}
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </motion.button>
+              ))}
+            </motion.div>
           </div>
         </section>
 

@@ -8,7 +8,6 @@
 import React from 'react';
 import { FC, useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, 
   ArrowLeft, 
@@ -53,7 +52,6 @@ interface OnboardingFlowProps {
 // ============================================
 
 export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) => {
-  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [preferences, setPreferences] = useState<UserPreferences>({
     role: null,
@@ -225,7 +223,7 @@ export const OnboardingFlow: FC<OnboardingFlowProps> = ({ onComplete, onSkip }) 
             className="flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold hover:opacity-90 transition-all shadow-lg shadow-blue-500/25"
           >
             {currentStep === steps.length - 1 ? (
-              <>Launch App <Sparkles className="w-4 h-4" /></>
+              <>Open Dashboard <Sparkles className="w-4 h-4" /></>
             ) : (
               <>Continue <ArrowRight className="w-4 h-4" /></>
             )}
@@ -456,7 +454,7 @@ const ReadyStep: FC = () => (
     </motion.div>
     
     <div className="space-y-2">
-      <p className="text-slate-600 dark:text-slate-300">Your workspace is configured and ready.</p>
+      <p className="text-slate-600 dark:text-slate-300">Your dashboard is configured and ready.</p>
       <p className="text-slate-500 dark:text-slate-400 text-sm">You can always change these settings later.</p>
     </div>
 

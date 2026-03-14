@@ -5,7 +5,7 @@
  * - Collapsible sidebar with FeatureNavigation (all 46+ features)
  * - Top bar with breadcrumbs, search (⌘K), notifications, user menu
  * - Smooth page transitions via <Outlet>
- * - "Back to Workspace" quick action
+ * - "Open 3D Workspace" quick action
  *
  * NOT used for:
  * - Landing page (/)
@@ -202,7 +202,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
           </div>
         )}
 
-        {/* Sidebar Footer — Open Workspace CTA */}
+        {/* Sidebar Footer — Open 3D Workspace CTA */}
         {sidebarOpen && (
           <div className="p-3 border-t border-slate-200 dark:border-slate-800 flex-shrink-0">
             <Link
@@ -210,7 +210,7 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
             >
               <BoxIcon className="w-4 h-4" />
-              Open Workspace
+              Open 3D Workspace
             </Link>
           </div>
         )}
@@ -279,14 +279,14 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
               </kbd>
             </button>
 
-            {/* Back to Workspace Quick Button */}
+            {/* Open 3D Workspace Quick Button */}
             {location.pathname !== '/app' && location.pathname !== '/stream' && (
               <Link
                 to="/app"
                 className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                Workspace
+                3D Workspace
               </Link>
             )}
 
@@ -330,8 +330,8 @@ export const AppShell: FC<{ children?: React.ReactNode }> = ({ children }) => {
           <OnboardingFlow
             onComplete={(preferences) => {
               handleOnboardingComplete();
-              // Navigate to workspace after onboarding
-              navigate('/app');
+              // Dashboard-first entry after onboarding
+              navigate('/stream');
             }}
             onSkip={handleOnboardingComplete}
           />

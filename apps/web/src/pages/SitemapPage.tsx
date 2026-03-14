@@ -120,6 +120,8 @@ const PAGE_SECTIONS: PageSection[] = [
     description: 'Specialized modules',
     icon: <Building2 className="w-5 h-5" />,
     pages: [
+      { title: 'Civil Library', path: '/civil-engineering/library', description: 'Civil engineering suite landing' },
+      { title: 'Civil Book Interface', path: '/civil-engineering/book', description: 'Book-style civil engineering workspace' },
       { title: 'Hydraulics Designer', path: '/civil/hydraulics', description: 'Hydraulic system design' },
       { title: 'Transportation Designer', path: '/civil/transportation', description: 'Road & highway design' },
       { title: 'Construction Manager', path: '/civil/construction', description: 'Construction planning' },
@@ -143,6 +145,7 @@ const PAGE_SECTIONS: PageSection[] = [
     icon: <BookOpen className="w-5 h-5" />,
     pages: [
       { title: 'Learning Center', path: '/learning', description: 'Tutorials and courses' },
+      { title: 'Engineering Blog', path: '/blog', description: 'Product updates and engineering insights' },
       { title: 'Help Center', path: '/help', description: 'FAQs and support' },
       { title: 'About', path: '/about', description: 'Company information' },
       { title: 'Contact', path: '/contact', description: 'Contact form and info' },
@@ -155,6 +158,8 @@ const PAGE_SECTIONS: PageSection[] = [
     icon: <Cog className="w-5 h-5" />,
     pages: [
       { title: 'Settings', path: '/settings', description: 'User settings' },
+      { title: 'Notifications', path: '/notifications', description: 'Project and platform alerts' },
+      { title: 'Profile', path: '/profile', description: 'Manage account and profile information' },
       { title: 'Settings (Enhanced)', path: '/settings-enhanced', description: 'Enhanced settings interface' },
       { title: 'Advanced Settings', path: '/settings/advanced', description: 'Analysis configuration' },
     ],

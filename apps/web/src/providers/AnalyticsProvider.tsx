@@ -83,6 +83,19 @@ export const ANALYTICS_EVENTS = {
   SUBSCRIPTION_DOWNGRADED: "subscription_downgraded",
   SUBSCRIPTION_CANCELLED: "subscription_cancelled",
 
+  // Discovery & Navigation
+  BUNDLE_CARD_OPENED: "bundle_card_opened",
+  FEATURE_DEEP_LINK_CLICKED: "feature_deep_link_clicked",
+  PRICING_CTA_CLICKED: "pricing_cta_clicked",
+  PRICING_DEEP_LINK_CLICKED: "pricing_deep_link_clicked",
+  UPGRADE_PROMPT_SHOWN: "upgrade_prompt_shown",
+  UPGRADE_PROMPT_CLICKED: "upgrade_prompt_clicked",
+  POST_UPGRADE_BANNER_SEEN: "post_upgrade_banner_seen",
+  WELCOME_WORKFLOW_CLICKED: "welcome_workflow_clicked",
+  LOCKED_FEATURE_ENCOUNTERED: "locked_feature_encountered",
+  FIRST_ANALYSIS_RUN: "first_analysis_run",
+  FIRST_REPORT_GENERATED: "first_report_generated",
+
   // Engagement
   TOUR_STARTED: "tour_started",
   TOUR_COMPLETED: "tour_completed",

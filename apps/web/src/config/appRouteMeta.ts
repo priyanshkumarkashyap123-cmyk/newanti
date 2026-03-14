@@ -51,6 +51,9 @@ export interface AppFeatureCategory {
   id: string;
   label: string;
   description?: string;
+  prominence?: 'primary' | 'secondary' | 'advanced';
+  /** Minimum plan tier required to access this category's features */
+  planRequired?: 'pro' | 'enterprise';
   features: AppFeatureItem[];
 }
 
@@ -65,6 +68,7 @@ export const PUBLIC_PATHS: string[] = [
   '/sign-up',
   '/pricing',
   '/pricing-old',
+  '/blog',
   '/forgot-password',
   '/reset-password',
   '/privacy-policy',
@@ -97,21 +101,23 @@ export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
   {
     id: 'workspace',
     label: 'Workspace',
-    description: 'Core modeling and analysis tools',
+    description: 'Project hub, modeler, and core entry points',
+    prominence: 'primary',
     features: [
       {
         id: 'dashboard',
         label: 'Dashboard',
         path: '/stream',
-        description: 'Project management & overview',
+        description: 'Command center for projects, bundles, and recent work',
         iconKey: 'layout',
         category: 'workspace',
+        badge: 'Start Here',
       },
       {
         id: 'modeler',
         label: '3D Modeler',
         path: '/app',
-        description: 'Interactive structural modeling',
+        description: 'Full-screen structural modeling workspace',
         iconKey: 'building2',
         category: 'workspace',
         badge: 'Core',
@@ -130,12 +136,15 @@ export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
     id: 'analysis',
     label: 'Analysis',
     description: 'Structural analysis & simulation',
+    prominence: 'primary',
     features: [
       { id: 'modal', label: 'Modal Analysis', path: '/analysis/modal', description: 'Dynamic modal analysis', iconKey: 'activity', category: 'analysis' },
       { id: 'time-history', label: 'Time History', path: '/analysis/time-history', description: 'Earthquake time-history analysis', iconKey: 'clock', category: 'analysis' },
       { id: 'seismic', label: 'Seismic Analysis', path: '/analysis/seismic', description: 'Seismic design analysis', iconKey: 'zap', category: 'analysis' },
       { id: 'buckling', label: 'Buckling', path: '/analysis/buckling', description: 'Elastic/inelastic buckling analysis', iconKey: 'trendingUp', category: 'analysis' },
-      { id: 'pdelta', label: 'P-Delta & Nonlinear', path: '/analysis/pdelta', description: 'Second-order & nonlinear analysis', iconKey: 'pieChart', category: 'analysis' },
+      { id: 'pdelta', label: 'P-Delta', path: '/analysis/pdelta', description: 'Second-order geometric nonlinear analysis', iconKey: 'pieChart', category: 'analysis' },
+      { id: 'nonlinear', label: 'Nonlinear Analysis', path: '/analysis/nonlinear', description: 'Material and geometric nonlinear workflows', iconKey: 'network', category: 'analysis' },
+      { id: 'dynamic', label: 'Dynamic Analysis', path: '/analysis/dynamic', description: 'Dynamic load and response workflows', iconKey: 'activity', category: 'analysis' },
       { id: 'pushover', label: 'Pushover Analysis', path: '/analysis/pushover', description: 'Nonlinear static pushover', iconKey: 'barChart3', category: 'analysis' },
       { id: 'cable', label: 'Cable Analysis', path: '/analysis/cable', description: 'Cable structure analysis', iconKey: 'cable', category: 'analysis' },
       { id: 'plate-shell', label: 'Plate & Shell FEM', path: '/analysis/plate-shell', description: '2D plate/shell finite element analysis', iconKey: 'grid3x3', category: 'analysis', badge: 'New' },
@@ -146,61 +155,71 @@ export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
     id: 'design',
     label: 'Design',
     description: 'Structural member & connection design',
+    prominence: 'primary',
     features: [
+      { id: 'design-center', label: 'Design Center', path: '/design-center', description: 'Unified landing for all design workflows', iconKey: 'compass', category: 'design', badge: 'Start Here' },
       { id: 'concrete', label: 'RC Design', path: '/design/concrete', description: 'IS 456/ACI 318 reinforced concrete', iconKey: 'columns', category: 'design' },
-      { id: 'foundation', label: 'Foundation Design', path: '/design/foundation', description: 'Footing & foundation design', iconKey: 'mountain', category: 'design' },
       { id: 'steel', label: 'Steel Design', path: '/design/steel', description: 'AISC/IS 800 steel members', iconKey: 'box', category: 'design' },
+      { id: 'foundation', label: 'Foundation Design', path: '/design/foundation', description: 'Footing & foundation design', iconKey: 'mountain', category: 'design' },
+      { id: 'composite', label: 'Composite Design', path: '/design/composite', description: 'Steel-concrete composite member design', iconKey: 'workflow', category: 'design', badge: 'New' },
+      { id: 'timber', label: 'Timber Design', path: '/design/timber', description: 'Timber beam design and checks', iconKey: 'box', category: 'design', badge: 'New' },
       { id: 'connections', label: 'Connection Design', path: '/design/connections', description: 'Bolted & welded connections', iconKey: 'grid3x3', category: 'design' },
       { id: 'reinforcement', label: 'Reinforcement', path: '/design/reinforcement', description: 'Stirrups & development length', iconKey: 'workflow', category: 'design' },
       { id: 'detailing', label: 'RC Detailing', path: '/design/detailing', description: 'Detailed reinforcement drawings', iconKey: 'code2', category: 'design' },
-      { id: 'design-center', label: 'Design Center', path: '/design-center', description: 'Unified design interface', iconKey: 'compass', category: 'design' },
       { id: 'design-hub', label: 'Post-Analysis Hub', path: '/design-hub', description: 'STAAD.Pro workflow', iconKey: 'workflow', category: 'design' },
     ],
   },
   {
+    id: 'review',
+    label: 'Reports & Review',
+    description: 'Reports, visualization, exports, and deliverable review',
+    prominence: 'primary',
+    features: [
+      { id: 'reports', label: 'Reports', path: '/reports', description: 'Report management and generated outputs', iconKey: 'fileText', category: 'review' },
+      { id: 'report-builder', label: 'Report Builder', path: '/reports/builder', description: 'Custom report builder', iconKey: 'fileText', category: 'review' },
+      { id: 'professional-reports', label: 'Professional Reports', path: '/reports/professional', description: 'Industry-standard engineering reports', iconKey: 'fileText', category: 'review', badge: 'Featured' },
+      { id: 'print-export', label: 'Print & Export', path: '/tools/print-export', description: 'Generate and export deliverables', iconKey: 'fileText', category: 'review' },
+      { id: 'visualization-hub', label: 'Visualization Hub', path: '/visualization', description: 'Visualization tools and presentation workflows', iconKey: 'building2', category: 'review' },
+      { id: 'visualization', label: '3D Visualization', path: '/visualization/3d-engine', description: 'Advanced 3D rendering and review', iconKey: 'building2', category: 'review' },
+      { id: 'animation', label: 'Result Animation', path: '/visualization/result-animation', description: 'Animation playback viewer', iconKey: 'activity', category: 'review' },
+    ],
+  },
+  {
     id: 'tools',
-    label: 'Tools & Utilities',
-    description: 'Engineering calculators and databases',
+    label: 'Libraries & Tools',
+    description: 'Engineering databases, generators, and specialist utilities',
+    prominence: 'secondary',
     features: [
       { id: 'load-combinations', label: 'Load Combinations', path: '/tools/load-combinations', description: 'IS 1893/ASCE 7 combinations', iconKey: 'barChart3', category: 'tools' },
       { id: 'section-database', label: 'Section Database', path: '/tools/section-database', description: 'ISMB/AISC/IPE properties', iconKey: 'database', category: 'tools' },
+      { id: 'materials', label: 'Materials Database', path: '/materials/database', description: 'Material properties library', iconKey: 'database', category: 'tools' },
+      { id: 'connection-database', label: 'Connection Database', path: '/connections/database', description: 'Reference connection details and design data', iconKey: 'grid3x3', category: 'tools' },
       { id: 'bar-bending', label: 'Bar Bending Schedule', path: '/tools/bar-bending', description: 'IS 2502 BBS generator', iconKey: 'fileText', category: 'tools', badge: 'New' },
-      { id: 'meshing', label: 'Advanced Meshing', path: '/tools/advanced-meshing', description: 'Mesh generation & control', iconKey: 'grid3x3', category: 'tools' },
-      { id: 'print-export', label: 'Print & Export', path: '/tools/print-export', description: 'Generate & export reports', iconKey: 'fileText', category: 'tools' },
-      { id: 'space-planning', label: 'Space Planning', path: '/space-planning', description: 'House & facility layout', iconKey: 'mapPin', category: 'tools', badge: 'New' },
-      { id: 'room-planner', label: 'Room Planner', path: '/room-planner', description: 'Interactive room layout with furniture validation', iconKey: 'home', category: 'tools', badge: 'New' },
+      { id: 'meshing', label: 'Advanced Meshing', path: '/tools/advanced-meshing', description: 'Mesh generation and control', iconKey: 'grid3x3', category: 'tools' },
     ],
   },
   {
-    id: 'enterprise',
-    label: 'Enterprise Features',
-    description: 'Team collaboration & integration',
+    id: 'ai',
+    label: 'AI & Planning',
+    description: 'AI copilots, planning, and generative workflows',
+    prominence: 'primary',
+    planRequired: 'pro',
     features: [
-      { id: 'collaboration', label: 'Collaboration Hub', path: '/collaboration', description: 'Team workspace & projects', iconKey: 'users', category: 'enterprise' },
-      { id: 'bim', label: 'BIM Integration', path: '/bim', description: 'BIM import/export', iconKey: 'building2', category: 'enterprise' },
-      { id: 'cad', label: 'CAD Integration', path: '/cad/integration', description: 'CAD file integration', iconKey: 'code2', category: 'enterprise' },
-      { id: 'api', label: 'API Integration', path: '/integrations/api-dashboard', description: 'API connections & webhooks', iconKey: 'network', category: 'enterprise' },
-      { id: 'materials', label: 'Materials Database', path: '/materials/database', description: 'Material properties library', iconKey: 'database', category: 'enterprise' },
-      { id: 'compliance', label: 'Code Compliance', path: '/compliance/checker', description: 'Design code validation', iconKey: 'shield', category: 'enterprise' },
-    ],
-  },
-  {
-    id: 'reports',
-    label: 'Reports & Documentation',
-    description: 'Report generation and export',
-    features: [
-      { id: 'reports', label: 'Reports', path: '/reports', description: 'Report management', iconKey: 'fileText', category: 'reports' },
-      { id: 'report-builder', label: 'Report Builder', path: '/reports/builder', description: 'Custom report builder', iconKey: 'fileText', category: 'reports' },
-      { id: 'professional-reports', label: 'Professional Reports', path: '/reports/professional', description: 'Industry-standard reports', iconKey: 'fileText', category: 'reports' },
-      { id: 'visualization', label: '3D Visualization', path: '/visualization/3d-engine', description: 'Advanced 3D rendering', iconKey: 'building2', category: 'reports' },
-      { id: 'animation', label: 'Result Animation', path: '/visualization/result-animation', description: 'Animation playback viewer', iconKey: 'activity', category: 'reports' },
+      { id: 'ai-dashboard', label: 'AI Dashboard', path: '/ai-dashboard', description: 'AI command center and insights', iconKey: 'zap', category: 'ai', badge: 'New' },
+      { id: 'ai-power', label: 'AI Power Panel', path: '/ai-power', description: 'Advanced AI interface and generation tools', iconKey: 'zap', category: 'ai', badge: 'New' },
+      { id: 'space-planning', label: 'Space Planning', path: '/space-planning', description: 'Facility and house layout planning', iconKey: 'mapPin', category: 'ai', badge: 'New' },
+      { id: 'room-planner', label: 'Room Planner', path: '/room-planner', description: 'Interactive room layouts with validation', iconKey: 'home', category: 'ai', badge: 'New' },
     ],
   },
   {
     id: 'civil',
-    label: 'Civil Engineering',
+    label: 'Civil Suite',
     description: 'Specialized civil modules',
+    prominence: 'secondary',
     features: [
+      { id: 'civil-library', label: 'Civil Library', path: '/civil-engineering/library', description: 'Civil engineering suite entry point', iconKey: 'bookOpen', category: 'civil', badge: 'Suite' },
+      { id: 'civil-book', label: 'Civil Book Interface', path: '/civil-engineering/book', description: 'Book-style civil engineering experience', iconKey: 'bookOpen', category: 'civil' },
+      { id: 'civil-book-realistic', label: 'Civil Book (Realistic)', path: '/civil-engineering/book/realistic', description: 'Realistic civil engineering book mode', iconKey: 'bookOpen', category: 'civil' },
       { id: 'hydraulics', label: 'Hydraulics Designer', path: '/civil/hydraulics', description: 'Hydraulic system design', iconKey: 'activity', category: 'civil' },
       { id: 'transportation', label: 'Transportation Designer', path: '/civil/transportation', description: 'Road & highway design', iconKey: 'database', category: 'civil' },
       { id: 'construction', label: 'Construction Manager', path: '/civil/construction', description: 'Construction planning', iconKey: 'building2', category: 'civil' },
@@ -208,27 +227,51 @@ export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
     ],
   },
   {
-    id: 'ai',
-    label: 'AI Features',
-    description: 'Artificial intelligence tools',
+    id: 'account',
+    label: 'Account & Workspace',
+    description: 'Profile, alerts, and workspace preferences',
+    prominence: 'secondary',
     features: [
-      { id: 'ai-dashboard', label: 'AI Dashboard', path: '/ai-dashboard', description: 'C-suite AI analytics', iconKey: 'zap', category: 'ai', badge: 'New' },
-      { id: 'ai-power', label: 'AI Power Panel', path: '/ai-power', description: 'Next-gen AI interface', iconKey: 'zap', category: 'ai', badge: 'New' },
+      { id: 'settings', label: 'Settings', path: '/settings', description: 'Workspace and account settings', iconKey: 'users', category: 'account' },
+      { id: 'notifications', label: 'Notifications', path: '/notifications', description: 'Review platform and project notifications', iconKey: 'activity', category: 'account' },
+      { id: 'profile', label: 'Profile', path: '/profile', description: 'Manage your profile and identity details', iconKey: 'users', category: 'account' },
+    ],
+  },
+  {
+    id: 'enterprise',
+    label: 'Enterprise & Integrations',
+    description: 'Team collaboration, integrations, and operational tooling',
+    prominence: 'advanced',
+    planRequired: 'enterprise',
+    features: [
+      { id: 'collaboration', label: 'Collaboration Hub', path: '/collaboration', description: 'Team workspace and project collaboration', iconKey: 'users', category: 'enterprise' },
+      { id: 'bim', label: 'BIM Integration', path: '/bim', description: 'BIM import and export workflows', iconKey: 'building2', category: 'enterprise' },
+      { id: 'bim-export-enhanced', label: 'Enhanced BIM Export', path: '/bim/export-enhanced', description: 'Advanced BIM export options', iconKey: 'building2', category: 'enterprise' },
+      { id: 'cad', label: 'CAD Integration', path: '/cad/integration', description: 'CAD file integration and exchange', iconKey: 'code2', category: 'enterprise' },
+      { id: 'api', label: 'API Integration', path: '/integrations/api-dashboard', description: 'API connections and webhooks', iconKey: 'network', category: 'enterprise' },
+      { id: 'compliance', label: 'Code Compliance', path: '/compliance/checker', description: 'Design code validation and checking', iconKey: 'shield', category: 'enterprise' },
+      { id: 'cloud-storage', label: 'Cloud Storage', path: '/cloud-storage', description: 'Project storage and cloud workspace assets', iconKey: 'database', category: 'enterprise' },
+      { id: 'digital-twin', label: 'Digital Twin', path: '/digital-twin', description: 'Operational twin and live asset monitoring', iconKey: 'network', category: 'enterprise' },
+      { id: 'performance-monitor', label: 'Performance Monitor', path: '/performance/monitor', description: 'Runtime and platform performance monitoring', iconKey: 'activity', category: 'enterprise' },
     ],
   },
   {
     id: 'learning',
-    label: 'Learning & Support',
+    label: 'Learn & Support',
     description: 'Documentation and tutorials',
+    prominence: 'secondary',
     features: [
       { id: 'learning-center', label: 'Learning Center', path: '/learning', description: 'Tutorials and courses', iconKey: 'bookOpen', category: 'learning' },
+      { id: 'blog', label: 'Engineering Blog', path: '/blog', description: 'Product updates and engineering insights', iconKey: 'fileText', category: 'learning' },
       { id: 'help', label: 'Help Center', path: '/help', description: 'FAQs and support', iconKey: 'bookOpen', category: 'learning' },
+      { id: 'sitemap', label: 'Site Map', path: '/sitemap', description: 'Browse all major product areas', iconKey: 'compass', category: 'learning' },
     ],
   },
 ];
 
 const APP_SEARCH_ACTION_ITEMS: SearchRouteItem[] = [
-  { type: 'action', label: 'Open Workspace', path: '/app', shortcut: '⌘⇧W' },
+  { type: 'action', label: 'Open Dashboard', path: '/stream', shortcut: '⌘⇧D' },
+  { type: 'action', label: 'Open 3D Workspace', path: '/app', shortcut: '⌘⇧W' },
   { type: 'action', label: 'Create New Project', path: '/stream', shortcut: '⌘N' },
 ];
 
@@ -333,8 +376,10 @@ const FEATURE_ROUTE_TITLES: Record<string, string> = APP_FEATURE_CATEGORIES
 const CATEGORY_BREADCRUMB_LABEL_OVERRIDES: Record<string, string> = {
   tools: 'Tools',
   enterprise: 'Enterprise',
-  reports: 'Reports',
+  review: 'Reports',
   ai: 'AI',
+  civil: 'Civil',
+  account: 'Account',
 };
 
 const CATEGORY_BREADCRUMB_PATH_OVERRIDES: Record<string, string> = {
@@ -406,6 +451,12 @@ const EXACT_ROUTE_TITLE_OVERRIDES: Record<string, string> = {
   '/analysis/nonlinear': 'Nonlinear Analysis',
   '/analysis/dynamic': 'Dynamic Analysis',
   '/analysis/sensitivity-optimization': 'Optimization',
+  '/connections/database': 'Connection Database',
+  '/cloud-storage': 'Cloud Storage',
+  '/digital-twin': 'Digital Twin',
+  '/performance/monitor': 'Performance Monitor',
+  '/space-planning': 'Space Planning',
+  '/room-planner': 'Room Planner',
   '/visualization/3d-engine': '3D Engine',
   '/settings-enhanced': 'Enhanced Settings',
   '/settings/advanced': 'Advanced Settings',
@@ -451,7 +502,7 @@ const PREFIX_ROUTE_TITLES: RoutePrefixTitle[] = [
 const ROUTE_BREADCRUMB_OVERRIDES: Record<string, BreadcrumbItem[]> = {
   '/app': [
     { label: 'Dashboard', path: '/stream' },
-    { label: '3D Workspace', path: '/app', current: true },
+    { label: '3D Modeler', path: '/app', current: true },
   ],
 
   '/settings': [

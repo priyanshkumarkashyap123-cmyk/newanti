@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { PaymentGatewaySelector } from '../components/PaymentGatewaySelector';
 import { useAuth } from '../providers/AuthProvider';
+import { useAnalytics, ANALYTICS_EVENTS } from '../providers/AnalyticsProvider';
 import { SEO } from '../components/SEO';
 import { useSubscription } from '../hooks/useSubscription';
 import { PAYMENT_CONFIG } from '../config/env';
@@ -53,6 +54,12 @@ interface PricingPlan {
   icon: React.ReactNode;
   cta: string;
   ctaVariant: "primary" | "secondary" | "outline";
+}
+
+interface PlanDeepLink {
+  label: string;
+  path: string;
+  authRequired?: boolean;
 }
 
 const INDIA_MARKET = {
@@ -118,6 +125,29 @@ const PLANS: PricingPlan[] = [
     ctaVariant: "outline",
   },
 ];
+
+const PLAN_DEEP_LINKS: Record<PricingPlan['id'], PlanDeepLink[]> = {
+  free: [
+    { label: 'Try load combinations', path: '/tools/load-combinations', authRequired: true },
+    { label: 'Browse Learning Center', path: '/learning' },
+    { label: 'Generate starter reports', path: '/reports', authRequired: true },
+  ],
+  pro: [
+    { label: 'Run P-Delta analysis', path: '/analysis/pdelta', authRequired: true },
+    { label: 'Open AI Dashboard', path: '/ai-dashboard', authRequired: true },
+    { label: 'Build professional reports', path: '/reports/professional', authRequired: true },
+  ],
+  business: [
+    { label: 'Use Collaboration Hub', path: '/collaboration', authRequired: true },
+    { label: 'Connect via API dashboard', path: '/integrations/api-dashboard', authRequired: true },
+    { label: 'Monitor operations', path: '/performance/monitor', authRequired: true },
+  ],
+  enterprise: [
+    { label: 'Review BIM integration', path: '/bim', authRequired: true },
+    { label: 'Check compliance tooling', path: '/compliance/checker', authRequired: true },
+    { label: 'Talk to enterprise sales', path: '/contact?subject=enterprise' },
+  ],
+};
 
 const FEATURE_MATRIX = [
   {
@@ -239,7 +269,8 @@ export const EnhancedPricingPage: FC = () => {
   });
   const paymentLoading = false; // modal handles its own loading state
   const { isSignedIn, user } = useAuth();
-  const { refreshSubscription } = useSubscription();
+  const { refreshSubscription, subscription } = useSubscription();
+  const { track } = useAnalytics();
   const forcePaymentTestMode = PAYMENT_CONFIG.forcePaymentTestMode;
 
   const visiblePlans = forcePaymentTestMode
@@ -312,6 +343,7 @@ export const EnhancedPricingPage: FC = () => {
 
   const handleGetStarted = async (planId: PricingPlan['id']) => {
     setUpgradeError(null);
+    track(ANALYTICS_EVENTS.PRICING_CTA_CLICKED, { plan: planId, billing: billingPeriod, tier: subscription.tier });
 
     if (forcePaymentTestMode && planId === 'free') {
       setUpgradeError('Free plan is currently unavailable. Please choose a paid plan.');
@@ -324,7 +356,12 @@ export const EnhancedPricingPage: FC = () => {
     }
 
     if (!forcePaymentTestMode && planId === 'free') {
-      // Free plan — just sign up
+      if (isSignedIn) {
+        navigate('/stream?source=pricing&plan=free');
+        return;
+      }
+
+      // Free plan — sign up for new users
       navigate('/sign-up?plan=free');
       return;
     }
@@ -384,6 +421,14 @@ export const EnhancedPricingPage: FC = () => {
     return formatInr(discountedUsdPrice);
   };
 
+  const getDeepLinkTarget = (link: PlanDeepLink): string => {
+    if (link.authRequired && !isSignedIn) {
+      return `/sign-up?intent=${encodeURIComponent(link.path)}`;
+    }
+
+    return link.path;
+  };
+
   return (
     <>
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
@@ -417,10 +462,10 @@ export const EnhancedPricingPage: FC = () => {
                 </Link>
               )}
             <Link
-              to="/sign-in"
+              to={isSignedIn ? '/stream' : '/sign-in'}
               className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             >
-              Sign In
+              {isSignedIn ? 'Open Dashboard' : 'Sign In'}
             </Link>
           </div>
         </div>
@@ -619,6 +664,25 @@ export const EnhancedPricingPage: FC = () => {
                   </li>
                 ))}
               </ul>
+
+              <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <p className="text-[11px] uppercase tracking-wide text-slate-500 mb-2">
+                  Explore included workflows
+                </p>
+                <div className="space-y-1.5">
+                  {PLAN_DEEP_LINKS[plan.id].map((link) => (
+                    <Link
+                      key={`${plan.id}-${link.path}`}
+                      to={getDeepLinkTarget(link)}
+                      onClick={() => track(ANALYTICS_EVENTS.PRICING_DEEP_LINK_CLICKED, { plan: plan.id, label: link.label, path: link.path })}
+                      className="group inline-flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                    >
+                      <span>{link.label}</span>
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>

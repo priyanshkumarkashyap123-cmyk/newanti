@@ -18,7 +18,7 @@ import {
   useDeferredValue,
   memo,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -40,14 +40,29 @@ import {
   Cpu,
   Activity as ActivityIcon,
   Sparkles,
+  Wrench,
+  FileText,
+  Users,
+  BookOpen,
+  Crown,
+  Lock,
+  X as XIcon,
+  CheckCircle,
+  GraduationCap,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
+import { useAnalytics, ANALYTICS_EVENTS } from "../providers/AnalyticsProvider";
+import { useSubscription } from "../hooks/useSubscription";
 import { useConfirm } from "../components/ui/ConfirmDialog";
 import {
   ProjectService,
   Project as APIProject,
 } from "../services/ProjectService";
 import { TemplateExplorer } from "../components/learning/TemplateExplorer";
+import {
+  APP_FEATURE_CATEGORIES,
+  type AppFeatureCategory,
+} from "../config/appRouteMeta";
 
 // ============================================
 // TYPES
@@ -80,6 +95,11 @@ interface Template {
   name: string;
   type: string;
   icon: React.ReactNode;
+}
+
+interface BundleCardMeta {
+  icon: React.ReactNode;
+  accent: string;
 }
 
 // ============================================
@@ -201,7 +221,54 @@ const QUICK_ACTIONS: QuickAction[] = [
     route: "/app?tool=import",
     accent: "group-hover:text-orange-400",
   },
+  {
+    id: "learn",
+    title: "Learn",
+    subtitle: "Tutorials & guides",
+    icon: <GraduationCap className="w-5 h-5" />,
+    route: "/learning",
+    accent: "group-hover:text-lime-400",
+  },
 ];
+
+const BUNDLE_META: Record<string, BundleCardMeta> = {
+  workspace: {
+    icon: <Layers className="w-5 h-5" />,
+    accent: "from-blue-500/15 to-cyan-500/10 text-blue-600 dark:text-blue-400",
+  },
+  analysis: {
+    icon: <BarChart3 className="w-5 h-5" />,
+    accent: "from-violet-500/15 to-purple-500/10 text-violet-600 dark:text-violet-400",
+  },
+  design: {
+    icon: <Building2 className="w-5 h-5" />,
+    accent: "from-emerald-500/15 to-teal-500/10 text-emerald-600 dark:text-emerald-400",
+  },
+  review: {
+    icon: <FileText className="w-5 h-5" />,
+    accent: "from-amber-500/15 to-orange-500/10 text-amber-600 dark:text-amber-400",
+  },
+  tools: {
+    icon: <Wrench className="w-5 h-5" />,
+    accent: "from-slate-500/15 to-slate-400/10 text-slate-600 dark:text-slate-300",
+  },
+  ai: {
+    icon: <Sparkles className="w-5 h-5" />,
+    accent: "from-fuchsia-500/15 to-pink-500/10 text-fuchsia-600 dark:text-fuchsia-400",
+  },
+  civil: {
+    icon: <Columns className="w-5 h-5" />,
+    accent: "from-cyan-500/15 to-sky-500/10 text-cyan-600 dark:text-cyan-400",
+  },
+  enterprise: {
+    icon: <Users className="w-5 h-5" />,
+    accent: "from-indigo-500/15 to-blue-500/10 text-indigo-600 dark:text-indigo-400",
+  },
+  learning: {
+    icon: <BookOpen className="w-5 h-5" />,
+    accent: "from-lime-500/15 to-emerald-500/10 text-lime-600 dark:text-lime-400",
+  },
+};
 
 const TEMPLATES: Template[] = [
   {
@@ -253,6 +320,61 @@ const StatPill: FC<{
   </div>
 ));
 StatPill.displayName = "StatPill";
+
+const BundleCard: FC<{
+  category: AppFeatureCategory;
+  onOpen: () => void;
+}> = memo(({ category, onOpen }) => {
+  const meta = BUNDLE_META[category.id] ?? BUNDLE_META.workspace;
+  const preview = category.features.slice(0, 3);
+  const planBadge = category.planRequired === 'enterprise'
+    ? { label: 'Enterprise', bg: 'bg-indigo-500/20', text: 'text-indigo-400', icon: <Crown className="w-3 h-3" /> }
+    : category.planRequired === 'pro'
+      ? { label: 'Pro', bg: 'bg-amber-500/20', text: 'text-amber-400', icon: <Zap className="w-3 h-3" /> }
+      : null;
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group rounded-xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] p-4 text-left transition-all hover:border-slate-300 dark:hover:border-white/[0.12] hover:bg-slate-50 dark:hover:bg-white/[0.04] shadow-sm dark:shadow-none"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${meta.accent}`}>
+            {meta.icon}
+          </div>
+          <div className="mt-3 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              {category.label}
+            </h3>
+            {planBadge && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${planBadge.bg} ${planBadge.text}`}>
+                {planBadge.icon}
+                {planBadge.label}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            {category.description}
+          </p>
+        </div>
+        <ChevronRight className="mt-1 h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5" />
+      </div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {preview.map((feature) => (
+          <span
+            key={feature.id}
+            className="rounded-full bg-slate-100 dark:bg-white/[0.05] px-2.5 py-1 text-[10px] font-medium text-slate-600 dark:text-slate-300"
+          >
+            {feature.label}
+          </span>
+        ))}
+      </div>
+    </button>
+  );
+});
+BundleCard.displayName = "BundleCard";
 
 /* ---- Project Card ---- */
 const ProjectCard: FC<{
@@ -350,6 +472,55 @@ const ProjectCard: FC<{
 ProjectCard.displayName = "ProjectCard";
 
 // ============================================
+// ONBOARDING PREFS HELPER
+// ============================================
+
+interface UserPrefs {
+  role?: 'student' | 'professional' | 'enterprise' | null;
+  experience?: 'beginner' | 'intermediate' | 'expert' | null;
+  primaryUse?: string[];
+  designCodes?: string[];
+}
+
+interface PersonalizedNudge {
+  headline: string;
+  description: string;
+  ctas: { label: string; path: string }[];
+}
+
+const getPersonalizedNudge = (prefs: UserPrefs): PersonalizedNudge => {
+  if (prefs.role === 'student' || prefs.experience === 'beginner') {
+    return {
+      headline: 'New to structural analysis?',
+      description: 'Start with hands-on tutorials and pre-built templates — no blank-canvas anxiety.',
+      ctas: [
+        { label: 'Learning Center', path: '/learning' },
+        { label: 'Template Gallery', path: '/app?panel=templates' },
+      ],
+    };
+  }
+  if (prefs.role === 'enterprise') {
+    return {
+      headline: 'Ready to collaborate?',
+      description: 'Set up team workspaces, BIM integrations, and API connections.',
+      ctas: [
+        { label: 'Collaboration Hub', path: '/collaboration' },
+        { label: 'Enterprise Integrations', path: '/integrations/api-dashboard' },
+      ],
+    };
+  }
+  // default professional
+  return {
+    headline: 'Your workspace is ready',
+    description: 'Jump straight into advanced 3D analysis, design codes, and PDF reports.',
+    ctas: [
+      { label: 'Start 3D Analysis', path: '/app' },
+      { label: 'Design Codes', path: '/design' },
+    ],
+  };
+};
+
+// ============================================
 // MAIN COMPONENT
 // ============================================
 
@@ -357,9 +528,36 @@ export const UnifiedDashboard: FC<{
   onLaunchModule?: (m: string) => void;
 }> = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const confirm = useConfirm();
+  const { track } = useAnalytics();
+  const { subscription } = useSubscription();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  // Post-upgrade welcome banner
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(
+    () => searchParams.get('upgraded') === 'true',
+  );
+
+  // Personalized onboarding nudge (shown once per session if onboarding complete)
+  const [personalizedNudge] = useState<PersonalizedNudge | null>(() => {
+    try {
+      const done = localStorage.getItem('beamlab_onboarding_complete');
+      const dismissed = sessionStorage.getItem('beamlab_prefs_nudge_dismissed');
+      if (!done || dismissed) return null;
+      const raw = localStorage.getItem('beamlab_user_preferences');
+      if (!raw) return null;
+      const prefs: UserPrefs = JSON.parse(raw);
+      return getPersonalizedNudge(prefs);
+    } catch {
+      return null;
+    }
+  });
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const dismissNudge = useCallback(() => {
+    setNudgeDismissed(true);
+    try { sessionStorage.setItem('beamlab_prefs_nudge_dismissed', '1'); } catch { /* ignore */ }
+  }, []);
 
   // Project state
   const [projects, setProjects] = useState<Project[]>([]);
@@ -368,9 +566,28 @@ export const UnifiedDashboard: FC<{
 
   useEffect(() => { document.title = 'Dashboard | BeamLab'; }, []);
 
+  // Fire analytics event and strip query param once banner is shown
+  useEffect(() => {
+    if (showUpgradeBanner) {
+      track(ANALYTICS_EVENTS.POST_UPGRADE_BANNER_SEEN, { tier: subscription.tier });
+      const next = new URLSearchParams(searchParams);
+      next.delete('upgraded');
+      setSearchParams(next, { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showUpgradeBanner]);
+
   const { isSignedIn, user, getToken } = useAuth();
   const userName = isSignedIn && user?.firstName ? user.firstName : "Engineer";
   const deferredSearchQuery = useDeferredValue(searchQuery);
+  const primaryBundles = useMemo(
+    () => APP_FEATURE_CATEGORIES.filter((category) => category.prominence === 'primary'),
+    [],
+  );
+  const secondaryBundles = useMemo(
+    () => APP_FEATURE_CATEGORIES.filter((category) => category.prominence === 'secondary' || category.prominence === 'advanced'),
+    [],
+  );
 
   // Fetch projects
   const fetchProjects = useCallback(async () => {
@@ -465,6 +682,89 @@ export const UnifiedDashboard: FC<{
     <div className="text-slate-700 dark:text-slate-200">
       {/* ======== MAIN ======== */}
       <main className="mx-auto max-w-[1360px] px-6 py-8 space-y-8 relative">
+
+        {/* ---- Post-upgrade Welcome Banner ---- */}
+        {showUpgradeBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative flex items-start gap-4 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] px-5 py-4 pr-10"
+          >
+            <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-emerald-300">
+                {subscription.tier === 'enterprise' ? 'Welcome to Enterprise!' : `Welcome to ${subscription.tier === 'pro' ? 'Pro' : 'BeamLab'}!`}
+                {' '}Your plan is now active.
+              </p>
+              <p className="mt-1 text-xs text-slate-400">
+                Unlock advanced workflows below — AI planning, 3D analysis, advanced design codes, and more.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  { label: '3D Analysis', path: '/app' },
+                  { label: 'AI Dashboard', path: '/ai-dashboard' },
+                  { label: 'Export Reports', path: '/reports' },
+                ].map((item) => (
+                  <button
+                    key={item.path}
+                    type="button"
+                    onClick={() => {
+                      track(ANALYTICS_EVENTS.WELCOME_WORKFLOW_CLICKED, { path: item.path, tier: subscription.tier });
+                      navigate(item.path);
+                    }}
+                    className="rounded-lg border border-emerald-500/30 px-3 py-1 text-xs text-emerald-300 hover:bg-emerald-500/10 transition-colors"
+                  >
+                    {item.label} →
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowUpgradeBanner(false)}
+              className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
+              aria-label="Dismiss"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+
+        {/* ---- Personalized profile nudge ---- */}
+        {personalizedNudge && !nudgeDismissed && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative flex items-start gap-4 rounded-xl border border-blue-500/20 bg-blue-500/[0.06] px-5 py-4 pr-10"
+          >
+            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-blue-300">{personalizedNudge.headline}</p>
+              <p className="mt-0.5 text-xs text-slate-400">{personalizedNudge.description}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {personalizedNudge.ctas.map((cta) => (
+                  <button
+                    key={cta.path}
+                    type="button"
+                    onClick={() => { dismissNudge(); navigate(cta.path); }}
+                    className="rounded-lg border border-blue-500/30 px-3 py-1 text-xs text-blue-300 hover:bg-blue-500/10 transition-colors"
+                  >
+                    {cta.label} →
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={dismissNudge}
+              className="absolute right-3 top-3 rounded-md p-1 text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
+              aria-label="Dismiss"
+            >
+              <XIcon className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+
         {/* ---- Welcome Row ---- */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
@@ -516,7 +816,7 @@ export const UnifiedDashboard: FC<{
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {QUICK_ACTIONS.map((a) => (
               <button type="button"
                 key={a.id}
@@ -547,6 +847,42 @@ export const UnifiedDashboard: FC<{
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors shrink-0" />
               </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Explore by Workflow
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {primaryBundles.map((category) => (
+              <BundleCard
+                key={category.id}
+                category={category}
+                onOpen={() => {
+                  track(ANALYTICS_EVENTS.BUNDLE_CARD_OPENED, { categoryId: category.id, prominence: 'primary' });
+                  navigate(category.features[0]?.path ?? '/stream');
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Specialist Suites
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            {secondaryBundles.map((category) => (
+              <BundleCard
+                key={category.id}
+                category={category}
+                onOpen={() => {
+                  track(ANALYTICS_EVENTS.BUNDLE_CARD_OPENED, { categoryId: category.id, prominence: 'secondary' });
+                  navigate(category.features[0]?.path ?? '/stream');
+                }}
+              />
             ))}
           </div>
         </div>
