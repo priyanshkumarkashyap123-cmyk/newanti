@@ -57,14 +57,15 @@ jobs:
         run: |
           mkdir -p deploy-api
           cp -r apps/api/dist deploy-api/
+          cp apps/api/dist/index.js deploy-api/dist/index.cjs
           cp apps/api/web.config deploy-api/
           # Create a deployment-specific package.json without build script
           node -e "
             const pkg = require('./apps/api/package.json');
             delete pkg.scripts.build;
             delete pkg.devDependencies;
-            pkg.scripts.start = 'node --env-file=.env dist/index.js';
-            pkg.main = 'dist/index.js';
+            pkg.scripts.start = 'node --env-file=.env dist/index.cjs';
+            pkg.main = 'dist/index.cjs';
             pkg.type = 'commonjs';
             console.log(JSON.stringify(pkg, null, 2));
           " > deploy-api/package.json
