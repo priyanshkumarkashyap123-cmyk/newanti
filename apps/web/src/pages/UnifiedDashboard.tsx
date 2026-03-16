@@ -60,7 +60,7 @@ import {
 } from "../services/ProjectService";
 import { TemplateExplorer } from "../components/learning/TemplateExplorer";
 import {
-  APP_FEATURE_CATEGORIES,
+  getBundleCollections,
   type AppFeatureCategory,
 } from "../config/appRouteMeta";
 
@@ -580,14 +580,16 @@ export const UnifiedDashboard: FC<{
   const { isSignedIn, user, getToken } = useAuth();
   const userName = isSignedIn && user?.firstName ? user.firstName : "Engineer";
   const deferredSearchQuery = useDeferredValue(searchQuery);
-  const primaryBundles = useMemo(
-    () => APP_FEATURE_CATEGORIES.filter((category) => category.prominence === 'primary'),
-    [],
+  const bundleCollections = useMemo(
+    () =>
+      getBundleCollections({
+        tier: subscription.tier,
+        includeLocked: true,
+      }),
+    [subscription.tier],
   );
-  const secondaryBundles = useMemo(
-    () => APP_FEATURE_CATEGORIES.filter((category) => category.prominence === 'secondary' || category.prominence === 'advanced'),
-    [],
-  );
+  const primaryBundles = bundleCollections.primary;
+  const secondaryBundles = [...bundleCollections.secondary, ...bundleCollections.advanced];
 
   // Fetch projects
   const fetchProjects = useCallback(async () => {

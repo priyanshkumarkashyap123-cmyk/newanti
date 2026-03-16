@@ -34,12 +34,28 @@ export const DEFAULT_ORIGINS = [
 export const normalizeOrigin = (origin: string): string =>
   origin.trim().replace(/\/+$/, "").toLowerCase();
 
+function isUnsafeConfiguredOrigin(origin: string): boolean {
+  const normalized = normalizeOrigin(origin);
+  return (
+    normalized === "*" ||
+    /localhost|127\.0\.0\.1/i.test(normalized) ||
+    (isProduction && !normalized.startsWith("https://"))
+  );
+}
+
+export function sanitizeConfiguredOrigins(origins: string[]): string[] {
+  return origins
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .filter((origin) => !isUnsafeConfiguredOrigin(origin))
+    .map(normalizeOrigin);
+}
+
 /** Build the full set of allowed origins from defaults + env vars */
 export function getAllowedOrigins(): string[] {
-  const configuredOrigins = (env.CORS_ALLOWED_ORIGINS ?? "")
+  const configuredOrigins = sanitizeConfiguredOrigins((env.CORS_ALLOWED_ORIGINS ?? "")
     .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  );
 
   const base = isProduction
     ? [env.FRONTEND_URL].filter(Boolean)

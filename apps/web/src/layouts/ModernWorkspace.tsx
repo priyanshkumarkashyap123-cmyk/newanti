@@ -59,11 +59,11 @@ interface TabConfig {
 
 // Static color maps for Tailwind JIT (dynamic class names like `bg-${color}-600/20` don't work)
 const TAB_ACTIVE_STYLES: Record<string, string> = {
-    blue:   'bg-blue-600/20 text-blue-400 border border-blue-500/30',
+    blue: 'bg-blue-600/20 text-blue-400 border border-blue-500/30',
     purple: 'bg-purple-600/20 text-purple-400 border border-purple-500/30',
     orange: 'bg-orange-600/20 text-orange-400 border border-orange-500/30',
-    green:  'bg-green-600/20 text-green-400 border border-green-500/30',
-    red:    'bg-red-600/20 text-red-400 border border-red-500/30',
+    green: 'bg-green-600/20 text-green-400 border border-green-500/30',
+    red: 'bg-red-600/20 text-red-400 border border-red-500/30',
     yellow: 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30',
 };
 
@@ -78,9 +78,15 @@ interface ModernWorkspaceProps {
     children: ReactNode;
 }
 
+import {
+    Anchor,
+    Lock as LockIcon,
+} from 'lucide-react';
+
 const UMBRELLA_TABS: TabConfig[] = [
     { id: 'MODELING', label: 'Modeling', icon: <Box className="w-4 h-4" />, color: 'blue' },
     { id: 'PROPERTIES', label: 'Properties', icon: <Layers className="w-4 h-4" />, color: 'purple' },
+    { id: 'SUPPORTS', label: 'Supports', icon: <Anchor className="w-4 h-4" />, color: 'blue' },
     { id: 'LOADING', label: 'Loading', icon: <Download className="w-4 h-4" />, color: 'orange' },
     { id: 'ANALYSIS', label: 'Analysis', icon: <BarChart3 className="w-4 h-4" />, color: 'green' },
     { id: 'DESIGN', label: 'Design', icon: <Ruler className="w-4 h-4" />, color: 'red' },
@@ -102,6 +108,14 @@ const SIDEBAR_CONTENT: Record<Category, SidebarItem[]> = {
         { id: 'materials', label: 'Material Library', icon: <Box className="w-4 h-4" /> },
         { id: 'releases', label: 'Member Releases', icon: <Settings className="w-4 h-4" /> },
         { id: 'offsets', label: 'Member Offsets', icon: <Ruler className="w-4 h-4" /> }
+    ],
+    SUPPORTS: [
+        { id: 'fixed', label: 'Fixed Support', icon: <LockIcon className="w-4 h-4" /> },
+        { id: 'pinned', label: 'Pinned Support', icon: <Anchor className="w-4 h-4" /> },
+        { id: 'roller', label: 'Roller Support', icon: <Target className="w-4 h-4" /> },
+        { id: 'custom', label: 'Custom DOF', icon: <Settings className="w-4 h-4" /> },
+        { id: 'spring', label: 'Spring Support', icon: <Zap className="w-4 h-4" /> },
+        { id: 'boundary', label: 'Boundary Conditions', icon: <Anchor className="w-4 h-4" /> }
     ],
     LOADING: [
         { id: 'wind_load', label: 'Wind Load Generator', icon: <Wind className="w-4 h-4" /> },
@@ -140,7 +154,7 @@ const SIDEBAR_CONTENT: Record<Category, SidebarItem[]> = {
 
 const UmbrellaSwitcher: FC = memo(() => {
     const { activeCategory, setCategory } = useUIStore(
-      useShallow((s) => ({ activeCategory: s.activeCategory, setCategory: s.setCategory }))
+        useShallow((s) => ({ activeCategory: s.activeCategory, setCategory: s.setCategory }))
     );
 
     return (
@@ -178,13 +192,13 @@ UmbrellaSwitcher.displayName = 'UmbrellaSwitcher';
 
 const ContextSidebar: FC = memo(() => {
     const { activeCategory, activeTool, setActiveTool, sidebarMode, toggleSidebar } = useUIStore(
-      useShallow((s) => ({
-        activeCategory: s.activeCategory,
-        activeTool: s.activeTool,
-        setActiveTool: s.setActiveTool,
-        sidebarMode: s.sidebarMode,
-        toggleSidebar: s.toggleSidebar,
-      }))
+        useShallow((s) => ({
+            activeCategory: s.activeCategory,
+            activeTool: s.activeTool,
+            setActiveTool: s.setActiveTool,
+            sidebarMode: s.sidebarMode,
+            toggleSidebar: s.toggleSidebar,
+        }))
     );
     const items = SIDEBAR_CONTENT[activeCategory];
     const isExpanded = sidebarMode === 'EXPANDED';
@@ -327,7 +341,7 @@ const InspectorPanel: FC<InspectorPanelProps> = ({ collapsed, onToggle }) => {
 
 const StatusBar: FC = memo(() => {
     const { showGrid, snapToGrid, gridSize } = useUIStore(
-      useShallow((s) => ({ showGrid: s.showGrid, snapToGrid: s.snapToGrid, gridSize: s.gridSize }))
+        useShallow((s) => ({ showGrid: s.showGrid, snapToGrid: s.snapToGrid, gridSize: s.gridSize }))
     );
 
     return (
@@ -382,11 +396,11 @@ const ResizeHandle: FC<{ direction: 'horizontal' | 'vertical' }> = ({ direction 
 
 export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
     const { propertiesPanelOpen, togglePropertiesPanel, activeCategory } = useUIStore(
-      useShallow((s) => ({
-        propertiesPanelOpen: s.propertiesPanelOpen,
-        togglePropertiesPanel: s.togglePropertiesPanel,
-        activeCategory: s.activeCategory,
-      }))
+        useShallow((s) => ({
+            propertiesPanelOpen: s.propertiesPanelOpen,
+            togglePropertiesPanel: s.togglePropertiesPanel,
+            activeCategory: s.activeCategory,
+        }))
     );
 
     return (
@@ -446,7 +460,7 @@ export const ModernWorkspace: FC<ModernWorkspaceProps> = ({ children }) => {
                         collapsible
                     >
                         {activeCategory === 'CIVIL' ? (
-                            <Suspense fallback={<div className="h-full bg-white dark:bg-slate-900 flex items-center justify-center" role="status" aria-live="polite"><svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg><span className="sr-only">Loading panel…</span></div>}>
+                            <Suspense fallback={<div className="h-full bg-white dark:bg-slate-900 flex items-center justify-center" role="status" aria-live="polite"><svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg><span className="sr-only">Loading panel…</span></div>}>
                                 <div className="h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800">
                                     <CivilPanel />
                                 </div>

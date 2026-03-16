@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  APP_FEATURE_CATEGORIES,
   findFeatureByPath,
+  getBundleCollections,
   getBreadcrumbsForPath,
+  getFeatureCategories,
   getRouteTitle,
   getSearchItems,
   isFullScreenRoute,
+  isCategoryAccessibleForTier,
   isPublicRoute,
 } from '../appRouteMeta';
 
@@ -91,5 +95,46 @@ describe('appRouteMeta helpers', () => {
 
     const searchResults = getSearchItems('geotech');
     expect(searchResults.some((item) => item.path === '/design/geotechnical')).toBe(true);
+  });
+
+  it('keeps feature ids and paths unique across categories', () => {
+    const ids = APP_FEATURE_CATEGORIES.flatMap((category) =>
+      category.features.map((feature) => feature.id),
+    );
+    const paths = APP_FEATURE_CATEGORIES.flatMap((category) =>
+      category.features.map((feature) => feature.path),
+    );
+    const duplicatePaths = paths.filter((path, index) => paths.indexOf(path) !== index);
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect([...new Set(duplicatePaths)]).toEqual(['/stream']);
+  });
+
+  it('supports plan-aware category filtering for intelligent bundling', () => {
+    const freePrimary = getFeatureCategories({
+      prominence: 'primary',
+      tier: 'free',
+      includeLocked: false,
+    });
+
+    expect(freePrimary.some((category) => category.id === 'ai')).toBe(false);
+    expect(freePrimary.every((category) => isCategoryAccessibleForTier(category, 'free'))).toBe(true);
+
+    const proPrimary = getFeatureCategories({
+      prominence: 'primary',
+      tier: 'pro',
+      includeLocked: false,
+    });
+    expect(proPrimary.some((category) => category.id === 'ai')).toBe(true);
+  });
+
+  it('returns prominence-based bundle collections', () => {
+    const bundles = getBundleCollections({ tier: 'free', includeLocked: true });
+
+    expect(bundles.primary.every((category) => category.prominence === 'primary')).toBe(true);
+    expect(bundles.secondary.every((category) => category.prominence === 'secondary')).toBe(true);
+    expect(bundles.advanced.every((category) => category.prominence === 'advanced')).toBe(true);
+    expect(bundles.primary.some((category) => category.id === 'workspace')).toBe(true);
+    expect(bundles.advanced.some((category) => category.id === 'enterprise')).toBe(true);
   });
 });

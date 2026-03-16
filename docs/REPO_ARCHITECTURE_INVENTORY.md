@@ -155,7 +155,19 @@ Desktop currently appears to be a Tauri wrapper around the web application rathe
 
 ### 2.6 `apps/backend-rust`
 
-This app exists as a top-level folder and should be included in future repo audits, but it was not part of the main runtime path verified during this architecture pass.
+This app exists as a top-level Rust crate and is currently structured as a **library/WASM package**, not a standalone HTTP runtime service.
+
+Verified from [`../apps/backend-rust/Cargo.toml`](../apps/backend-rust/Cargo.toml):
+
+- `[lib]` is defined with `crate-type = ["cdylib", "rlib"]`
+- no `[[bin]]` target is declared
+- no `src/main.rs` file is present
+- primary crate entrypoint is [`../apps/backend-rust/src/lib.rs`](../apps/backend-rust/src/lib.rs)
+
+Interpretation for architecture mapping:
+
+- treat `apps/backend-rust` as an engine/library artifact (including WASM-facing exports),
+- treat `apps/rust-api` as the Rust HTTP runtime service entrypoint.
 
 ## 3. Shared packages (`packages/`)
 
@@ -240,7 +252,6 @@ Recommended order:
 
 ## 8. Gaps to document in future audits
 
-- exact role of `apps/backend-rust`
 - exact ownership of shared packages under `packages/`
 - more detailed package-level export graphs
 - route-to-file mapping for every single frontend page

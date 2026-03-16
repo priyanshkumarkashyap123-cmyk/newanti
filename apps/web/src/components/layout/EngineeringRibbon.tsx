@@ -54,6 +54,30 @@ import {
   Thermometer,
   FileSpreadsheet,
   Command,
+  // ── NEW ICONS for parity ──
+  Cable,
+  CircleDot,
+  Repeat,
+  Repeat2,
+  AlignVerticalJustifyCenter,
+  Import,
+  FileUp,
+  Triangle,
+  Hexagon,
+  PanelTopClose,
+  Scan,
+  Navigation,
+  Gauge,
+  Snowflake,
+  BookOpen,
+  ListOrdered,
+  Shapes,
+  Waves,
+  Lock,
+  Unlock,
+  ArrowUpDown,
+  TreePine,
+  LayoutGrid,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useModelStore, useModelStoreTemporal } from "../../store/model";
@@ -113,11 +137,11 @@ const ToolButton = memo<ToolButtonProps>(
                   hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:border-slate-300/50 dark:hover:border-slate-600/30
                   active:scale-[0.96] active:bg-slate-200 dark:active:bg-slate-700/70
                   ${isActive
-                    ? "bg-blue-600/15 border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-sm shadow-blue-500/5"
-                    : accent
-                      ? `${accent}`
-                      : "text-slate-500 hover:text-slate-700 dark:text-slate-200"
-                  }
+              ? "bg-blue-600/15 border-blue-500/30 text-blue-600 dark:text-blue-300 shadow-sm shadow-blue-500/5"
+              : accent
+                ? `${accent}`
+                : "text-slate-500 hover:text-slate-700 dark:text-slate-200"
+            }
                   ${disabled ? "opacity-40 cursor-not-allowed active:scale-100" : "cursor-pointer"}
                   ${sizeClasses[size]}
                   ${className}
@@ -181,6 +205,7 @@ MiniButton.displayName = "MiniButton";
 const RIBBON_TABS: { id: Category; label: string; color: string }[] = [
   { id: "MODELING", label: "Geometry", color: "blue" },
   { id: "PROPERTIES", label: "Properties", color: "purple" },
+  { id: "SUPPORTS", label: "Supports", color: "cyan" },
   { id: "LOADING", label: "Loading", color: "orange" },
   { id: "ANALYSIS", label: "Analysis", color: "emerald" },
   { id: "DESIGN", label: "Design", color: "rose" },
@@ -190,6 +215,7 @@ const RIBBON_TABS: { id: Category; label: string; color: string }[] = [
 const TAB_ACTIVE_COLORS: Record<string, string> = {
   blue: "bg-blue-50 dark:bg-slate-800/60 text-blue-600 dark:text-blue-400 border-t-2 border-t-blue-500",
   purple: "bg-purple-50 dark:bg-slate-800/60 text-purple-600 dark:text-purple-400 border-t-2 border-t-purple-500",
+  cyan: "bg-cyan-50 dark:bg-slate-800/60 text-cyan-600 dark:text-cyan-400 border-t-2 border-t-cyan-500",
   orange: "bg-orange-50 dark:bg-slate-800/60 text-orange-600 dark:text-orange-400 border-t-2 border-t-orange-500",
   emerald: "bg-emerald-50 dark:bg-slate-800/60 text-emerald-600 dark:text-emerald-400 border-t-2 border-t-emerald-500",
   rose: "bg-rose-50 dark:bg-slate-800/60 text-rose-600 dark:text-rose-400 border-t-2 border-t-rose-500",
@@ -215,6 +241,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
   const setCategory = useUIStore((s) => s.setCategory);
   const setDesignCodePreset = useUIStore((s) => s.setDesignCodePreset);
   const setDesignTabPreset = useUIStore((s) => s.setDesignTabPreset);
+  const workflowCompletion = useUIStore((s) => s.workflowCompletion);
   const { undo, redo } = useModelStoreTemporal.getState();
 
   const executeSharedAction = useCallback((actionId: string) => {
@@ -369,8 +396,57 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           tooltip="Assign Supports — Fixed, Pinned, Roller, Custom"
         />
       </ToolGroup>
+
+      <ToolGroup label="Generators">
+        <StackedButtons>
+          <MiniButton icon={Triangle} label="Truss" onClick={() => openModal("trussGenerator")} />
+          <MiniButton icon={Spline} label="Arch" onClick={() => openModal("archGenerator")} />
+        </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={Building2} label="Frame" onClick={() => openModal("frameGenerator")} />
+          <MiniButton icon={Cable} label="Cable" onClick={() => openModal("cablePatternGenerator")} />
+        </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={Navigation} label="Tower" onClick={() => openModal("towerGenerator")} />
+          <MiniButton icon={Building2} label="Staircase" onClick={() => openModal("staircaseGenerator")} />
+        </StackedButtons>
+      </ToolGroup>
+
+      <ToolGroup label="Array">
+        <StackedButtons>
+          <MiniButton icon={Repeat} label="Linear" onClick={() => openModal("linearArrayDialog")} />
+          <MiniButton icon={Repeat2} label="Polar" onClick={() => openModal("polarArrayDialog")} />
+        </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={Maximize2} label="Scale" onClick={() => executeSharedAction("scale")} />
+          <MiniButton icon={ArrowUpDown} label="Extrude" onClick={() => executeSharedAction("extrude")} />
+        </StackedButtons>
+      </ToolGroup>
+
+      <ToolGroup label="Advanced Draw">
+        <StackedButtons>
+          <MiniButton icon={Cable} label="Cable" onClick={() => { setTool("member"); openModal("curvedStructure"); }} />
+          <MiniButton icon={Spline} label="Arch" onClick={() => openModal("curvedStructure")} />
+        </StackedButtons>
+        <MiniButton icon={Link2} label="Rigid Link" onClick={() => setTool("member")} />
+      </ToolGroup>
+
+      <ToolGroup label="Measure">
+        <StackedButtons>
+          <MiniButton icon={Ruler} label="Distance" onClick={() => openModal("measureDistanceDialog")} />
+          <MiniButton icon={Scan} label="Angle" onClick={() => openModal("measureAngleDialog")} />
+        </StackedButtons>
+        <MiniButton icon={SquareStack} label="Area" onClick={() => openModal("measureAreaDialog")} />
+      </ToolGroup>
+
+      <ToolGroup label="Import">
+        <StackedButtons>
+          <MiniButton icon={FileUp} label="DXF" onClick={() => openModal("importDxfDialog")} />
+          <MiniButton icon={Import} label="IFC/BIM" onClick={() => openModal("importIfcDialog")} />
+        </StackedButtons>
+      </ToolGroup>
     </>
-  ), [activeTool, executeSharedAction, openModal, undo, redo]);
+  ), [activeTool, executeSharedAction, openModal, undo, redo, setTool]);
 
   const renderPropertiesTab = useMemo(() => (
     <>
@@ -404,8 +480,29 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         <ToolButton icon={Link2} label="Releases" onClick={() => executeSharedAction("releases")} tooltip="Member End Releases — Pinned, Partial" />
         <ToolButton icon={Ruler} label="Offsets" onClick={() => executeSharedAction("offsets")} tooltip="Member End Offsets" />
       </ToolGroup>
+      <ToolGroup label="Plate">
+        <ToolButton icon={LayoutGrid} label="Thickness" onClick={() => openModal("plateThicknessDialog")} tooltip="Assign Plate Element Thickness" />
+        <MiniButton icon={Grid} label="Meshing" onClick={() => openModal("meshing")} />
+      </ToolGroup>
+      <ToolGroup label="Advanced Section">
+        <StackedButtons>
+          <MiniButton icon={TrendingUp} label="Tapered" onClick={() => openModal("taperedSectionDialog")} />
+          <MiniButton icon={Layers} label="Composite" onClick={() => openModal("compositeSectionDialog")} />
+        </StackedButtons>
+        <MiniButton icon={FileUp} label="Import Table" onClick={() => openModal("importSectionTableDialog")} />
+      </ToolGroup>
+      <ToolGroup label="Advanced Props">
+        <StackedButtons>
+          <MiniButton icon={Cable} label="Cable Props" onClick={() => openModal("cablePropsDialog")} />
+          <MiniButton icon={Activity} label="Spring" onClick={() => openModal("springConstantsDialog")} />
+        </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={Weight} label="Mass" onClick={() => openModal("lumpedMassDialog")} />
+          <MiniButton icon={CircleDot} label="Hinge" onClick={() => openModal("memberHingesDialog")} />
+        </StackedButtons>
+      </ToolGroup>
     </>
-  ), [executeSharedAction]);
+  ), [executeSharedAction, openModal]);
 
   const renderLoadingTab = useMemo(() => (
     <>
@@ -522,6 +619,30 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           tooltip="Temperature Load — Uniform ΔT / Gradient"
         />
       </ToolGroup>
+      <ToolGroup label="Advanced">
+        <ToolButton
+          icon={Move}
+          label="Moving"
+          onClick={() => openModal("movingLoadDialog")}
+          tooltip="Moving / Vehicle Load — Define load path"
+        />
+        <ToolButton
+          icon={Snowflake}
+          label="Snow"
+          onClick={() => openModal("snowLoadDialog")}
+          tooltip="Snow Load Generator by Code"
+        />
+      </ToolGroup>
+      <ToolGroup label="Load Mgmt">
+        <StackedButtons>
+          <MiniButton icon={BookOpen} label="Reference" onClick={() => openModal("referenceLoadsDialog")} />
+          <MiniButton icon={Shapes} label="Envelopes" onClick={() => openModal("loadEnvelopesDialog")} />
+        </StackedButtons>
+        <StackedButtons>
+          <MiniButton icon={ArrowDown} label="Notional" onClick={() => openModal("notionalLoadsDialog")} />
+          <MiniButton icon={ListOrdered} label="Manager" onClick={() => openModal("loadCaseManagerDialog")} />
+        </StackedButtons>
+      </ToolGroup>
     </>
   ), [activeTool, executeSharedAction, setTool, openModal]);
 
@@ -624,6 +745,26 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           tooltip="Export Results to PDF / CSV / Excel / DXF"
         />
       </ToolGroup>
+      <ToolGroup label="Additional">
+        <ToolButton
+          icon={Cable}
+          label="Cable"
+          onClick={() => openModal("cableAnalysisDialog")}
+          tooltip="Nonlinear Cable / Catenary Analysis"
+        />
+        <ToolButton
+          icon={Hexagon}
+          label="Stress Map"
+          onClick={() => openModal("stressContourDialog")}
+          tooltip="Plate/Shell Stress Contour Visualization"
+        />
+        <ToolButton
+          icon={Gauge}
+          label="Steady-State"
+          onClick={() => openModal("steadyStateDialog")}
+          tooltip="Steady-State Dynamic / Vibration Analysis"
+        />
+      </ToolGroup>
     </>
   ), [isAnalyzing, executeSharedAction, openModal, hasResults]);
 
@@ -645,18 +786,18 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
           >
             <Menu className="w-4 h-4" />
           </button>
-        <Link
-          to="/stream"
-          className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
-        >
-          <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[4px] flex items-center justify-center shadow-sm shadow-blue-500/20">
-            <Cpu className="w-3 h-3 text-white" />
-          </div>
-          <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200 tracking-tight">BeamLab</span>
-          <span className="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded flex items-center gap-1">
-            ULTIMATE
-          </span>
-        </Link>
+          <Link
+            to="/stream"
+            className="flex items-center gap-2 group hover:opacity-90 transition-opacity"
+          >
+            <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[4px] flex items-center justify-center shadow-sm shadow-blue-500/20">
+              <Cpu className="w-3 h-3 text-white" />
+            </div>
+            <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200 tracking-tight">BeamLab</span>
+            <span className="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded flex items-center gap-1">
+              ULTIMATE
+            </span>
+          </Link>
         </div>
 
         {/* Category Tabs */}
@@ -667,6 +808,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
         >
           {RIBBON_TABS.map((tab) => {
             const isActive = activeCategory === tab.id;
+            const isComplete = workflowCompletion[tab.id];
             return (
               <button type="button"
                 key={tab.id}
@@ -674,7 +816,7 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 aria-selected={isActive}
                 onClick={() => setCategory(tab.id)}
                 className={`
-                  px-3 py-1 rounded-md text-[13px] font-medium tracking-normal transition-all duration-150 border whitespace-nowrap flex-shrink-0
+                  px-3 py-1 rounded-md text-[13px] font-medium tracking-normal transition-all duration-150 border whitespace-nowrap flex-shrink-0 relative
                   ${isActive
                     ? `${TAB_ACTIVE_COLORS[tab.color]} shadow-sm`
                     : "text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 border-transparent"
@@ -682,6 +824,9 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 `}
               >
                 {tab.label.toUpperCase()}
+                {isComplete && !isActive && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border border-white dark:border-slate-900" title="Step completed" />
+                )}
               </button>
             );
           })}
@@ -719,6 +864,96 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
       >
         {activeCategory === "MODELING" && renderGeometryTab}
         {activeCategory === "PROPERTIES" && renderPropertiesTab}
+        {activeCategory === "SUPPORTS" && (
+          <>
+            <ToolGroup label="Standard">
+              <ToolButton
+                icon={Lock}
+                label="Fixed"
+                onClick={() => openModal("fixedSupportDialog")}
+                tooltip="Fixed Support — All DOFs restrained"
+                size="large"
+              />
+              <ToolButton
+                icon={CircleDot}
+                label="Pinned"
+                onClick={() => openModal("pinnedSupportDialog")}
+                tooltip="Pinned Support — Translations restrained, rotations free"
+                size="large"
+              />
+              <ToolButton
+                icon={Move}
+                label="Roller"
+                onClick={() => openModal("rollerSupportDialog")}
+                tooltip="Roller Support — One translation free"
+                size="large"
+              />
+            </ToolGroup>
+            <ToolGroup label="Custom">
+              <ToolButton
+                icon={Settings}
+                label="Custom DOF"
+                onClick={() => openModal("customSupportDialog")}
+                tooltip="Custom Support — Select individual DOFs to restrain"
+              />
+              <ToolButton
+                icon={Unlock}
+                label="Fixed+Release"
+                onClick={() => openModal("fixedWithReleasesDialog")}
+                tooltip="Fixed with Releases — Fixed support with specific DOFs released"
+              />
+              <ToolButton
+                icon={Navigation}
+                label="Inclined"
+                onClick={() => openModal("inclinedSupportDialog")}
+                tooltip="Inclined Support — Support at angle to global axes"
+              />
+            </ToolGroup>
+            <ToolGroup label="Spring">
+              <ToolButton
+                icon={Activity}
+                label="Trans. Spring"
+                onClick={() => openModal("translationalSpringDialog")}
+                tooltip="Translational Spring — Kx, Ky, Kz (force/displacement)"
+              />
+              <ToolButton
+                icon={RotateCcw}
+                label="Rot. Spring"
+                onClick={() => openModal("rotationalSpringDialog")}
+                tooltip="Rotational Spring — KRx, KRy, KRz (moment/rotation)"
+              />
+              <ToolButton
+                icon={Waves}
+                label="Multi-linear"
+                onClick={() => openModal("multilinearSpringDialog")}
+                tooltip="Multi-linear Spring — Non-linear soil spring (force-displacement curve)"
+              />
+            </ToolGroup>
+            <ToolGroup label="Foundation">
+              <ToolButton
+                icon={Landmark}
+                label="Elastic Found."
+                onClick={() => openModal("elasticFoundationDialog")}
+                tooltip="Elastic Foundation / Winkler Model — Mat foundation on elastic soil"
+                size="large"
+              />
+            </ToolGroup>
+            <ToolGroup label="Assign">
+              <ToolButton
+                icon={Anchor}
+                label="Boundary"
+                onClick={() => openModal("boundaryConditionsDialog")}
+                tooltip="Full Boundary Conditions Dialog"
+              />
+              <ToolButton
+                icon={CheckSquare}
+                label="Batch Assign"
+                onClick={() => openModal("batchSupportAssignDialog")}
+                tooltip="Assign Support to All / Selected Nodes"
+              />
+            </ToolGroup>
+          </>
+        )}
         {activeCategory === "LOADING" && renderLoadingTab}
         {activeCategory === "ANALYSIS" && renderAnalysisTab}
         {activeCategory === "DESIGN" && (
@@ -808,6 +1043,26 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
                 label="Optimize"
                 onClick={() => executeSharedAction("section-optimize")}
                 tooltip="Auto-Optimize Sections for Weight/Cost"
+              />
+            </ToolGroup>
+            <ToolGroup label="Additional Design">
+              <ToolButton
+                icon={TreePine}
+                label="Timber"
+                onClick={() => openModal("timberDesignDialog")}
+                tooltip="Timber Design — NDS / EC5 / IS 883"
+              />
+              <ToolButton
+                icon={Layers}
+                label="Composite"
+                onClick={() => openModal("compositeDesignDialog")}
+                tooltip="Composite Steel-Concrete Design"
+              />
+              <ToolButton
+                icon={Hexagon}
+                label="Aluminum"
+                onClick={() => openModal("aluminumDesignDialog")}
+                tooltip="Aluminum Design — ADM / EC9"
               />
             </ToolGroup>
             <ToolGroup label="Reports">

@@ -12,6 +12,8 @@ import { User, Subscription, getEffectiveTier, UserModel, isMasterUser } from '.
 import { validateBody, userLoginSchema, recordAnalysisSchema, checkModelLimitsSchema, recordExportSchema, adminUpgradeSchema } from '../middleware/validation.js';
 import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 import { logger } from '../utils/logger.js';
+import { QuotaService } from '../services/quotaService.js';
+import { TIER_CONFIG } from '../config/tierConfig.js';
 
 // Check which auth mode is active
 const USE_CLERK = isUsingClerk();
@@ -341,6 +343,46 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
     }
 
     return res.ok({ email, tier, message: `User ${email} upgraded to ${tier}` });
+}));
+
+// ============================================
+// GET /user/quota - Get current user's quota status
+// ============================================
+
+router.get('/quota', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId } = getAuth(req);
+    if (!userId) throw new HttpError(401, 'Unauthorized');
+
+    // Look up user to get MongoDB _id and tier
+    const user = await User.findOne({ clerkId: userId }).select('_id tier email').lean();
+    if (!user) throw new HttpError(404, 'User not found');
+
+    const effectiveTier = getEffectiveTier(user.email, user.tier);
+    const tierCfg = TIER_CONFIG[effectiveTier];
+
+    // Get today's quota record
+    const quota = await QuotaService.get(userId, user._id.toString());
+
+    const projectsRemaining = tierCfg.maxProjectsPerDay === Infinity
+        ? null
+        : Math.max(0, tierCfg.maxProjectsPerDay - quota.projectsCreated);
+
+    const computeUnitsRemaining = tierCfg.maxComputeUnitsPerDay === Infinity
+        ? null
+        : Math.max(0, tierCfg.maxComputeUnitsPerDay - quota.computeUnitsUsed);
+
+    // localComputeAvailable is set by the client via a header or query param
+    // The client sends X-WebGPU-Available: true/false header
+    const localComputeAvailable = req.headers['x-webgpu-available'] === 'true';
+
+    return res.ok({
+        tier: effectiveTier,
+        projectsRemaining,
+        computeUnitsRemaining,
+        projectsCreated: quota.projectsCreated,
+        computeUnitsUsed: quota.computeUnitsUsed,
+        localComputeAvailable,
+    });
 }));
 
 export default router;

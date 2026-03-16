@@ -95,6 +95,7 @@ export interface AIResponse {
   actions?: AIAction[];
   model?: StructuralModel;
   plan?: AIPlan;
+  validation?: ModelValidation;
   metadata?: {
     intent: string;
     confidence: number;
@@ -135,6 +136,34 @@ export interface DiagnosisIssue {
   message: string;
   affectedElements: string[];
   suggestedFix?: string;
+}
+
+export interface ModelValidationIssue {
+  severity: 'error' | 'warning';
+  type: 'structure' | 'connectivity' | 'support' | 'section' | 'geometry';
+  message: string;
+  fixable: boolean;
+  affectedElements?: string[];
+}
+
+export interface ModelValidation {
+  valid: boolean;
+  totalIssues: number;
+  errors: number;
+  warnings: number;
+  issues: ModelValidationIssue[];
+  checks: {
+    nodesExist: boolean;
+    membersExist: boolean;
+    uniqueNodeIds: boolean;
+    uniqueMemberIds: boolean;
+    validMemberReferences: boolean;
+    validNodePairs: boolean;
+    zeroLengthMembers: boolean;
+    supportsExist: boolean;
+    knownSections: boolean;
+    spanSectionSanity: boolean;
+  };
 }
 
 export interface OptimizationResult {
@@ -645,8 +674,8 @@ export class AIArchitectEngine {
     try {
       // Try Gemini first
       if (this.model) {
-        const result = await this.generateViaGemini(prompt, constraints);
-        if (result.success) {
+        const result = this.enforceGenerationSafety(await this.generateViaGemini(prompt, constraints));
+        if (result.success || (result.validation?.errors ?? 0) > 0) {
           result.metadata = {
             intent: 'create_structure',
             confidence: 0.9,
@@ -658,7 +687,7 @@ export class AIArchitectEngine {
       }
 
       // Fallback to local generation
-      const localResult = this.generateLocally(prompt);
+      const localResult = this.enforceGenerationSafety(this.generateLocally(prompt));
       localResult.metadata = {
         intent: 'create_structure',
         confidence: 0.7,
@@ -671,7 +700,7 @@ export class AIArchitectEngine {
       logger.error({ err: error }, '[AIArchitectEngine] Generate error');
 
       // Final fallback
-      const fallback = this.generateLocally(prompt);
+      const fallback = this.enforceGenerationSafety(this.generateLocally(prompt));
       fallback.metadata = {
         intent: 'create_structure',
         confidence: 0.5,
@@ -701,19 +730,25 @@ export class AIArchitectEngine {
       .trim();
 
     const model = JSON.parse(cleanedText) as StructuralModel;
-
-    // Validate
-    const validation = this.validateModel(model);
-
-    // Normalize
     const normalized = this.normalizeModel(model);
+    const validation = this.validateModel(normalized);
+
+    if (!validation.valid) {
+      return {
+        success: false,
+        response: `❌ Generated model is unsafe and failed validation with ${validation.errors} critical issue(s).`,
+        model: normalized,
+        validation,
+      };
+    }
 
     return {
       success: true,
       response: `✅ Generated a ${normalized.nodes.length}-node, ${normalized.members.length}-member structure based on your description.${
-        validation.issues.length > 0 ? `\n\n⚠️ Notes:\n${validation.issues.map(i => `- ${i}`).join('\n')}` : ''
+        validation.warnings > 0 ? `\n\n⚠️ Validation warnings:\n${validation.issues.filter(i => i.severity === 'warning').map(i => `- ${i.message}`).join('\n')}` : ''
       }`,
       model: normalized,
+      validation,
       actions: [{ type: 'applyModel', params: { model: normalized }, description: 'Apply generated model' }],
     };
   }
@@ -1782,30 +1817,207 @@ User question: "${message}"`;
   // UTILITY METHODS
   // ============================================
 
-  private validateModel(model: StructuralModel): { valid: boolean; issues: string[] } {
-    const issues: string[] = [];
+  private validateModel(model: StructuralModel): ModelValidation {
+    const issues: ModelValidationIssue[] = [];
+    const checks: ModelValidation['checks'] = {
+      nodesExist: false,
+      membersExist: false,
+      uniqueNodeIds: false,
+      uniqueMemberIds: false,
+      validMemberReferences: false,
+      validNodePairs: false,
+      zeroLengthMembers: false,
+      supportsExist: false,
+      knownSections: false,
+      spanSectionSanity: false,
+    };
 
-    if (!model.nodes || !Array.isArray(model.nodes) || model.nodes.length === 0) {
-      issues.push('Missing or empty nodes array');
-    }
-    if (!model.members || !Array.isArray(model.members) || model.members.length === 0) {
-      issues.push('Missing or empty members array');
+    if (Array.isArray(model.nodes) && model.nodes.length > 0) {
+      checks.nodesExist = true;
+    } else {
+      issues.push({ severity: 'error', type: 'structure', message: 'Missing or empty nodes array', fixable: false });
     }
 
-    if (model.nodes && model.members) {
-      const nodeIds = new Set(model.nodes.map(n => n.id));
-      for (const member of model.members) {
-        if (!nodeIds.has(member.s)) issues.push(`Member ${member.id}: invalid start node "${member.s}"`);
-        if (!nodeIds.has(member.e)) issues.push(`Member ${member.id}: invalid end node "${member.e}"`);
-        if (member.s === member.e) issues.push(`Member ${member.id}: start and end node are the same`);
+    if (Array.isArray(model.members) && model.members.length > 0) {
+      checks.membersExist = true;
+    } else {
+      issues.push({ severity: 'error', type: 'structure', message: 'Missing or empty members array', fixable: false });
+    }
+
+    if (!checks.nodesExist || !checks.membersExist) {
+      const errors = issues.filter(i => i.severity === 'error').length;
+      const warnings = issues.filter(i => i.severity === 'warning').length;
+      return { valid: false, totalIssues: issues.length, errors, warnings, issues, checks };
+    }
+
+    const nodeIds = model.nodes.map(n => n.id);
+    const uniqueNodeIds = new Set(nodeIds);
+    if (uniqueNodeIds.size === nodeIds.length) {
+      checks.uniqueNodeIds = true;
+    } else {
+      issues.push({ severity: 'error', type: 'structure', message: 'Duplicate node IDs found', fixable: true });
+    }
+
+    const memberIds = model.members.map(m => m.id);
+    const uniqueMemberIds = new Set(memberIds);
+    if (uniqueMemberIds.size === memberIds.length) {
+      checks.uniqueMemberIds = true;
+    } else {
+      issues.push({ severity: 'error', type: 'structure', message: 'Duplicate member IDs found', fixable: true });
+    }
+
+    const existingNodes = new Set(model.nodes.map(n => n.id));
+    const invalidRefs: string[] = [];
+    const sameNodeMembers: string[] = [];
+    const zeroLengthMembers: string[] = [];
+    const unknownSections: string[] = [];
+    const spanSectionWarnings: string[] = [];
+
+    for (const member of model.members) {
+      if (!existingNodes.has(member.s)) invalidRefs.push(`${member.id}: start node ${member.s}`);
+      if (!existingNodes.has(member.e)) invalidRefs.push(`${member.id}: end node ${member.e}`);
+      if (member.s === member.e) sameNodeMembers.push(member.id);
+
+      const startNode = model.nodes.find(n => n.id === member.s);
+      const endNode = model.nodes.find(n => n.id === member.e);
+
+      if (startNode && endNode) {
+        const dx = endNode.x - startNode.x;
+        const dy = endNode.y - startNode.y;
+        const dz = endNode.z - startNode.z;
+        const length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (length < 0.001) zeroLengthMembers.push(member.id);
+
+        const isBeamLike = Math.abs(dy) <= 0.6 * (length || 1);
+        const secDepthM = this.estimateSectionDepthMeters(member.section || '');
+        if (isBeamLike && secDepthM) {
+          const ratio = length / secDepthM;
+          if (ratio > 35 || ratio < 8) {
+            spanSectionWarnings.push(`${member.id} (span/depth≈${ratio.toFixed(1)})`);
+          }
+        }
       }
 
-      // Check for supports
-      const hasSupport = model.nodes.some(n => n.isSupport);
-      if (!hasSupport) issues.push('No supports defined — structure will be unstable');
+      const sectionName = (member.section || '').toUpperCase();
+      if (sectionName && !IS_SECTIONS[sectionName]) {
+        unknownSections.push(`${member.id}:${sectionName}`);
+      }
     }
 
-    return { valid: issues.length === 0, issues };
+    if (invalidRefs.length === 0) {
+      checks.validMemberReferences = true;
+    } else {
+      issues.push({
+        severity: 'error',
+        type: 'connectivity',
+        message: `Invalid member node references found: ${invalidRefs.slice(0, 5).join(', ')}${invalidRefs.length > 5 ? '…' : ''}`,
+        fixable: true,
+      });
+    }
+
+    if (sameNodeMembers.length === 0) {
+      checks.validNodePairs = true;
+    } else {
+      issues.push({
+        severity: 'error',
+        type: 'geometry',
+        message: `Members with same start/end node: ${sameNodeMembers.join(', ')}`,
+        fixable: true,
+        affectedElements: sameNodeMembers,
+      });
+    }
+
+    if (zeroLengthMembers.length === 0) {
+      checks.zeroLengthMembers = true;
+    } else {
+      issues.push({
+        severity: 'error',
+        type: 'geometry',
+        message: `Zero-length members detected: ${zeroLengthMembers.join(', ')}`,
+        fixable: true,
+        affectedElements: zeroLengthMembers,
+      });
+    }
+
+    const hasSupport = model.nodes.some(n => n.isSupport || !!(n.restraints?.fx || n.restraints?.fy || n.restraints?.fz));
+    if (hasSupport) {
+      checks.supportsExist = true;
+    } else {
+      issues.push({ severity: 'error', type: 'support', message: 'No supports defined — structure is unstable', fixable: true });
+    }
+
+    if (unknownSections.length === 0) {
+      checks.knownSections = true;
+    } else {
+      issues.push({
+        severity: 'warning',
+        type: 'section',
+        message: `Unknown sections detected: ${unknownSections.slice(0, 5).join(', ')}${unknownSections.length > 5 ? '…' : ''}`,
+        fixable: true,
+      });
+    }
+
+    if (spanSectionWarnings.length === 0) {
+      checks.spanSectionSanity = true;
+    } else {
+      issues.push({
+        severity: 'warning',
+        type: 'section',
+        message: `Potential span/section mismatches: ${spanSectionWarnings.slice(0, 4).join(', ')}${spanSectionWarnings.length > 4 ? '…' : ''}`,
+        fixable: true,
+      });
+    }
+
+    const errors = issues.filter(i => i.severity === 'error').length;
+    const warnings = issues.filter(i => i.severity === 'warning').length;
+    return {
+      valid: errors === 0,
+      totalIssues: issues.length,
+      errors,
+      warnings,
+      issues,
+      checks,
+    };
+  }
+
+  private estimateSectionDepthMeters(section: string): number | undefined {
+    const normalized = section.toUpperCase();
+    const match = normalized.match(/(?:ISMB|ISHB|ISMC)(\d{2,3})/);
+    if (!match) return undefined;
+    const depthMm = Number(match[1]);
+    if (!Number.isFinite(depthMm) || depthMm <= 0) return undefined;
+    return depthMm / 1000;
+  }
+
+  private enforceGenerationSafety(result: AIResponse): AIResponse {
+    if (!result.model) return result;
+
+    const normalized = this.normalizeModel(result.model);
+    const validation = result.validation || this.validateModel(normalized);
+    const response = { ...result, model: normalized, validation };
+
+    if (validation.errors > 0) {
+      return {
+        ...response,
+        success: false,
+        response: `❌ Generated model failed safety validation (${validation.errors} error(s), ${validation.warnings} warning(s)). ${response.response}`,
+      };
+    }
+
+    if (validation.warnings > 0) {
+      return {
+        ...response,
+        response: `${response.response}\n\n⚠️ Validation warnings: ${validation.warnings}`,
+      };
+    }
+
+    return response;
+  }
+
+  public validateStructuralModel(model: StructuralModel): { model: StructuralModel; validation: ModelValidation } {
+    const normalized = this.normalizeModel(model);
+    const validation = this.validateModel(normalized);
+    return { model: normalized, validation };
   }
 
   private normalizeModel(model: StructuralModel): StructuralModel {
@@ -1826,7 +2038,7 @@ User question: "${message}"`;
         id: member.id,
         s: member.s,
         e: member.e,
-        section: member.section || 'ISMB300',
+        section: (member.section || 'ISMB300').toUpperCase(),
         material: member.material || 'Fe410',
       })),
       loads: model.loads || [],

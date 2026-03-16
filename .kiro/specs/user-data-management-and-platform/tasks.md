@@ -1,0 +1,299 @@
+# Implementation Plan: User Data Management and Platform
+
+## Overview
+
+Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API (Express 5) with auth/user/project/quota/collaboration/subscription endpoints, Quota_Service with compute-aware weighting, Rate_Limiter middleware, Subscription_Provider React context, and Analysis_Router hook with WebGPU detection. All 17 correctness properties are covered by fast-check property-based tests (min 100 iterations each).
+
+## Tasks
+
+- [x] 1. Database schema and migrations
+  - Create SQL migration file with all five tables: `users`, `projects`, `project_states`, `quota_records`, `collaboration_invites`
+  - Add all CHECK constraints, foreign keys with ON DELETE CASCADE, and UNIQUE constraints as specified in the design
+  - Add indexes: `idx_projects_owner`, `idx_quota_user_date`, `idx_collab_project`, `idx_collab_invitee`
+  - Create a migration runner script (or integrate with existing migration tooling in the repo)
+  - _Requirements: 1.1, 1.4, 2.1, 3.1, 5.1_
+
+- [x] 2. Quota_Service implementation
+  - [x] 2.1 Implement `Quota_Service` module with `get`, `deductComputeUnits`, `incrementProjects`, `reset`, and `computeWeight`
+    - `computeWeight(nodeCount, memberCount)` must implement `Math.max(1, Math.ceil(nodeCount / 50) + Math.ceil(memberCount / 100))`
+    - `get` must use `INSERT ... ON CONFLICT DO UPDATE` to lazily create today's quota row
+    - `deductComputeUnits` and `incrementProjects` must be atomic (single UPDATE with WHERE clause)
+    - _Requirements: 3.1, 4.1, 4.2_
+  - [ ]* 2.2 Write property test for `computeWeight` formula consistency (Property 9)
+    - **Property 9: Compute Weight Formula Consistency**
+    - **Validates: Requirements 4.1, 4.4**
+    - `// Feature: user-data-management-and-platform, Property 9: Compute weight formula consistency`
+    - Use `fc.integer({ min: 0, max: 10000 })` for both nodeCount and memberCount, 100 iterations
+  - [ ]* 2.3 Write unit tests for `Quota_Service` edge cases
+    - Test `computeWeight(0, 0)` returns 1, `computeWeight(50, 100)` returns 2, `computeWeight(1, 1)` returns 1
+    - Test `get` creates a new row on first call for a given date
+    - Test `deductComputeUnits` reduces `compute_units_used` correctly
+    - _Requirements: 3.1, 4.1_
+
+- [x] 3. TIER_CONFIG constant and feature-gating middleware
+  - [x] 3.1 Define `TIER_CONFIG` constant in a shared server module
+    - Free: `maxProjectsPerDay: 3`, `maxComputeUnitsPerDay: 5`, all feature flags false
+    - Pro: `maxProjectsPerDay: Infinity`, `maxComputeUnitsPerDay: 100`, collaboration/pdfExport/aiAssistant/advancedDesignCodes true, apiAccess false
+    - Enterprise: all limits Infinity, all feature flags true
+    - _Requirements: 3.4, 6.1, 6.3_
+  - [x] 3.2 Implement `requireFeature(feature: keyof FeatureFlags)` middleware
+    - Read `req.user.tier`, look up `TIER_CONFIG[tier][feature]`; if false return HTTP 403 with `FEATURE_NOT_IN_TIER` error envelope
+    - _Requirements: 6.2, 6.5_
+  - [ ]* 3.3 Write property test for feature gating enforcement (Property 14)
+    - **Property 14: Feature Gating Enforced Server-Side**
+    - **Validates: Requirements 6.2, 6.5**
+    - `// Feature: user-data-management-and-platform, Property 14: Feature gating enforced server-side`
+    - Generate arbitrary (tier, feature) pairs where `TIER_CONFIG[tier][feature] === false`; assert HTTP 403 is returned
+  - [ ]* 3.4 Write unit tests for `requireFeature` middleware
+    - Test each tier × each feature flag combination
+    - Verify error envelope shape matches design spec
+    - _Requirements: 6.2, 6.5_
+
+- [x] 4. Rate_Limiter middleware
+  - [x] 4.1 Implement `rateLimiter` middleware for project-creation and analysis routes
+    - Pro/Enterprise users bypass immediately (`if (user.tier !== 'free') return next()`)
+    - For free users: call `QuotaService.get(user.id)`, compare against `TIER_CONFIG.free.maxProjectsPerDay` / `maxComputeUnitsPerDay`
+    - Return HTTP 429 with appropriate message and `PROJECT_QUOTA_EXCEEDED` / `COMPUTE_QUOTA_EXCEEDED` error code
+    - _Requirements: 3.2, 3.3, 3.7, 4.3_
+  - [ ]* 4.2 Write property test for quota enforcement at limit (Property 7)
+    - **Property 7: Quota Enforcement Rejects at Limit**
+    - **Validates: Requirements 3.2, 3.3, 4.3**
+    - `// Feature: user-data-management-and-platform, Property 7: Quota enforcement rejects at limit`
+    - Generate free-tier users at or above limit; assert HTTP 429 and counters unchanged after rejection
+  - [ ]* 4.3 Write property test for Pro/Enterprise bypass (Property 8)
+    - **Property 8: Pro and Enterprise Users Bypass Quota**
+    - **Validates: Requirements 3.7**
+    - `// Feature: user-data-management-and-platform, Property 8: Pro and Enterprise users bypass quota`
+    - Generate pro/enterprise users with arbitrary usage; assert Rate_Limiter never returns HTTP 429
+  - [ ]* 4.4 Write unit tests for `rateLimiter` middleware
+    - Test free user at exactly the limit (rejected), one below limit (allowed)
+    - Test pro user with usage exceeding free limit (allowed)
+    - _Requirements: 3.2, 3.3, 3.7_
+
+- [-] 5. Auth and user account endpoints
+  - [ ] 5.1 Implement `POST /api/auth/register` and `POST /api/auth/login` handlers
+    - Register: insert into `users`, return JWT; on duplicate email return HTTP 409 with `USER_ALREADY_EXISTS`
+    - Login: verify credentials, return JWT with `{ userId, tier }` payload
+    - _Requirements: 1.1, 1.3_
+  - [ ] 5.2 Implement `GET /api/user/profile` and `GET /api/user/quota` handlers
+    - Profile: return `{ id, displayName, createdAt }` for authenticated user
+    - Quota: call `QuotaService.get`, compute remaining values from `TIER_CONFIG`, include `localComputeAvailable` boolean
+    - _Requirements: 1.2, 3.6, 9.3_
+  - [ ]* 5.3 Write property test for user registration round-trip (Property 1)
+    - **Property 1: User Registration Round-Trip**
+    - **Validates: Requirements 1.1, 1.2**
+    - `// Feature: user-data-management-and-platform, Property 1: User registration round-trip`
+    - Generate valid registration payloads; assert profile fetch returns same displayName and non-null createdAt
+  - [ ]* 5.4 Write property test for duplicate registration rejection (Property 2)
+    - **Property 2: Duplicate Registration Rejected**
+    - **Validates: Requirements 1.3**
+    - `// Feature: user-data-management-and-platform, Property 2: Duplicate registration rejected`
+    - Register a user, attempt second registration with same email; assert HTTP 409 and user count unchanged
+  - [ ]* 5.5 Write property test for foreign key association invariant (Property 3)
+    - **Property 3: Foreign Key Association Invariant**
+    - **Validates: Requirements 1.4**
+    - `// Feature: user-data-management-and-platform, Property 3: Foreign key association invariant`
+    - Create projects/invites/quota records; assert all `owner_id`/`user_id` fields equal the creating user's ID
+  - [ ]* 5.6 Write unit tests for auth endpoints
+    - Test register returns JWT, login returns JWT, duplicate returns 409
+    - Test quota endpoint returns correct remaining values for free/pro/enterprise tiers
+    - _Requirements: 1.1, 1.2, 1.3, 3.6_
+
+- [ ] 6. Checkpoint — ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [~] 7. Project CRUD endpoints and auto-save
+  - [ ] 7.1 Implement `POST /api/projects`, `GET /api/projects`, `GET /api/projects/:id`, `PUT /api/projects/:id`, `DELETE /api/projects/:id`
+    - POST: apply `rateLimiter`, insert into `projects`, call `QuotaService.incrementProjects`
+    - GET list: return all projects owned by `req.user.id` (no state blob)
+    - GET single: join `project_states`, return full state; authorize owner or accepted collaborator
+    - PUT: upsert `project_states`, update `projects.updated_at`; authorize owner or accepted collaborator
+    - DELETE: cascade handled by FK; authorize owner only
+    - _Requirements: 2.1, 2.2, 2.4, 2.6, 3.2_
+  - [ ]* 7.2 Write property test for project state round-trip (Property 4)
+    - **Property 4: Project State Round-Trip for Any Authorized Accessor**
+    - **Validates: Requirements 2.1, 2.6, 5.3, 5.7**
+    - `// Feature: user-data-management-and-platform, Property 4: Project state round-trip for any authorized accessor`
+    - Generate arbitrary project state objects; save via PUT, fetch via GET; assert deep equality for owner and accepted collaborator
+  - [ ]* 7.3 Write property test for `updatedAt` advancement on save (Property 5)
+    - **Property 5: updatedAt Advances on Save**
+    - **Validates: Requirements 2.4**
+    - `// Feature: user-data-management-and-platform, Property 5: updatedAt advances on save`
+    - Record `updatedAt` before save, perform PUT, assert response `updatedAt >= pre-save value`
+  - [ ]* 7.4 Write unit tests for project CRUD endpoints
+    - Test GET list returns only owner's projects
+    - Test GET single returns full state blob
+    - Test PUT acknowledges within 3 s and updates timestamp
+    - Test DELETE removes project and cascades to state
+    - _Requirements: 2.1, 2.2, 2.4_
+
+- [~] 8. localStorage fallback and auto-save retry logic (client-side)
+  - [ ] 8.1 Implement auto-save interval in the project editor (≤60 s) that calls `PUT /api/projects/:id`
+    - On network failure, write state to `localStorage` under key `beamlab:unsaved:{projectId}`
+    - _Requirements: 2.3, 2.5_
+  - [ ] 8.2 Implement exponential backoff retry loop (1 s, 2 s, 4 s, max 30 s) that flushes `localStorage` on reconnect
+    - On successful flush, remove the `localStorage` entry
+    - _Requirements: 2.5_
+  - [ ]* 8.3 Write unit tests for localStorage fallback
+    - Mock fetch to fail; assert state written to localStorage
+    - Mock fetch to succeed on retry; assert localStorage entry cleared
+    - _Requirements: 2.5_
+
+- [~] 9. Collaboration endpoints
+  - [ ] 9.1 Implement `POST /api/projects/:id/collaborators` (send invite)
+    - Look up invitee by email; if not found return HTTP 404 with `USER_NOT_FOUND`
+    - Insert into `collaboration_invites` with status `pending`; enforce owner-only via middleware
+    - _Requirements: 5.1, 5.5, 5.6_
+  - [ ] 9.2 Implement `GET /api/projects/:id/collaborators`, `PATCH .../accept`, `DELETE .../:userId`
+    - GET: return list of collaborators with status; authorize owner
+    - PATCH accept: update status to `accepted`; authorize invitee only
+    - DELETE: update status to `revoked`; authorize owner only; access revoked within 5 s
+    - _Requirements: 5.2, 5.4, 5.6, 5.8_
+  - [ ]* 9.3 Write property test for collaboration access control (Property 11)
+    - **Property 11: Collaboration Access Control**
+    - **Validates: Requirements 5.2, 5.4**
+    - `// Feature: user-data-management-and-platform, Property 11: Collaboration access control`
+    - Accept invite → assert GET returns 200; revoke → assert GET returns 403
+  - [ ]* 9.4 Write property test for owner-only invite management (Property 12)
+    - **Property 12: Only Owner Can Manage Invites**
+    - **Validates: Requirements 5.6**
+    - `// Feature: user-data-management-and-platform, Property 12: Only owner can manage invites`
+    - Generate non-owner users; assert POST/PATCH/DELETE invite endpoints return HTTP 403
+  - [ ]* 9.5 Write property test for invite to unknown email (Property 13)
+    - **Property 13: Invite to Unknown Email Returns 404**
+    - **Validates: Requirements 5.5**
+    - `// Feature: user-data-management-and-platform, Property 13: Invite to unknown email returns 404`
+    - Generate email addresses not in the database; assert HTTP 404 and no invite row created
+  - [ ]* 9.6 Write unit tests for collaboration lifecycle
+    - Test pending → accepted → revoked state transitions
+    - Test collaborator can read/write project after acceptance
+    - Test collaborator blocked after revocation
+    - _Requirements: 5.1, 5.2, 5.4_
+
+- [~] 10. Subscription endpoints
+  - [ ] 10.1 Implement `GET /api/subscription` and `POST /api/subscription/upgrade`
+    - GET: return `{ tier, features: TIER_CONFIG[tier] }` for authenticated user
+    - POST upgrade: update `users.tier`, return updated subscription object
+    - _Requirements: 6.1, 6.4_
+  - [ ]* 10.2 Write unit tests for subscription endpoints
+    - Test GET returns correct feature flags per tier
+    - Test POST upgrade updates tier and reflects in subsequent GET
+    - _Requirements: 6.1, 6.4_
+
+- [ ] 11. Checkpoint — ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [~] 12. Quota tracking accuracy and reset
+  - [ ] 12.1 Wire `QuotaService.deductComputeUnits` into `POST /api/analysis/run` after job completion
+    - Deduction must happen only on successful job completion, not on rejection
+    - _Requirements: 3.1, 4.2_
+  - [ ]* 12.2 Write property test for quota tracking accuracy (Property 6)
+    - **Property 6: Quota Tracking Accuracy**
+    - **Validates: Requirements 3.1, 3.6, 4.2, 9.2**
+    - `// Feature: user-data-management-and-platform, Property 6: Quota tracking accuracy`
+    - Generate sequences of project creations and analysis jobs with known weights; assert `GET /api/user/quota` returns correct remaining values
+  - [ ] 12.3 Implement quota reset cron job (`0 0 * * *` UTC)
+    - Execute `UPDATE quota_records SET projects_created = 0, compute_units_used = 0 WHERE window_date < CURRENT_DATE`
+    - _Requirements: 3.5_
+  - [ ]* 12.4 Write unit tests for quota reset
+    - Test cron SQL resets rows with past dates and leaves today's row unchanged
+    - _Requirements: 3.5_
+
+- [~] 13. Analysis preflight and run endpoints
+  - [ ] 13.1 Implement `POST /api/analysis/preflight`
+    - Accept `{ nodeCount, memberCount }`, call `QuotaService.computeWeight`, return `{ weight, remaining }`
+    - _Requirements: 4.4_
+  - [ ] 13.2 Implement `POST /api/analysis/run`
+    - Apply `rateLimiter` (compute units check), forward job to Rust_API/Python_API, deduct quota on success
+    - Return `AnalysisResult` envelope with `computeMode: 'server'` and `computeUnitsCharged`
+    - _Requirements: 4.2, 4.3, 9.2_
+  - [ ]* 13.3 Write unit tests for analysis endpoints
+    - Test preflight returns correct weight and remaining
+    - Test run deducts quota and returns result
+    - Test run rejected when quota insufficient (HTTP 429 with weight and remaining in body)
+    - _Requirements: 4.3, 4.4_
+
+- [~] 14. Subscription_Provider React context
+  - [ ] 14.1 Implement `SubscriptionProvider` component and `useSubscription` hook
+    - On mount: fetch `/api/subscription` and `/api/user/quota` in parallel
+    - While loading: serve last cached tier from `localStorage` key `beamlab:tier-cache` to prevent layout shift
+    - Expose `{ tier, features, quota, webGpuAvailable, isLoading, canAccess, refreshTier }`
+    - `canAccess(feature)` returns `TIER_CONFIG[tier][feature]`
+    - _Requirements: 6.2, 6.4, 7.1, 7.2, 7.3, 7.6_
+  - [ ] 14.2 Implement adaptive UI components that consume `useSubscription`
+    - Render gated feature controls as disabled/hidden for free tier; show upgrade modal on interaction
+    - Do not make API calls for features where `canAccess(feature) === false`
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
+  - [ ]* 14.3 Write unit tests for `Subscription_Provider`
+    - Test `canAccess` returns false for free-tier gated features
+    - Test cached tier is served during loading state (no layout shift)
+    - Test `refreshTier` re-fetches without logout
+    - _Requirements: 6.2, 7.6_
+
+- [~] 15. Analysis_Router hook with WebGPU detection
+  - [ ] 15.1 Implement `useAnalysisRouter` hook with WebGPU detection on mount
+    - Call `navigator.gpu.requestAdapter()` once; cache result in module-level variable and in `SubscriptionProvider` context
+    - If WebGPU unavailable, set `webGpuAvailable: false` and default to server mode
+    - _Requirements: 8.1, 8.5_
+  - [ ] 15.2 Implement `runAnalysis` dispatch logic
+    - For `computeMode: 'local'`: execute via WebGPU_Runtime, return `AnalysisResult` with `computeMode: 'local'` and `computeUnitsCharged: 0`; do NOT call Node_API quota endpoints
+    - For `computeMode: 'server'`: call `POST /api/analysis/preflight`, show cost to user, on confirm call `POST /api/analysis/run`
+    - _Requirements: 8.3, 8.4, 9.1_
+  - [ ] 15.3 Implement memory preflight check for local compute mode
+    - Estimate model memory footprint; compare against GPU adapter's reported available memory
+    - If footprint exceeds available memory, warn user and offer server fallback before proceeding
+    - _Requirements: 8.6, 8.7_
+  - [ ]* 15.4 Write property test for analysis routing by compute mode (Property 15)
+    - **Property 15: Analysis Routing by Compute Mode**
+    - **Validates: Requirements 8.3, 8.4**
+    - `// Feature: user-data-management-and-platform, Property 15: Analysis routing by compute mode`
+    - Mock HTTP client; assert local mode makes zero HTTP calls to Rust_API/Python_API; server mode makes exactly one
+  - [ ]* 15.5 Write property test for memory preflight warning (Property 16)
+    - **Property 16: Memory Preflight Warns When Over GPU Limit**
+    - **Validates: Requirements 8.6, 8.7**
+    - `// Feature: user-data-management-and-platform, Property 16: Memory preflight warns when over GPU limit`
+    - Generate models whose estimated footprint exceeds mocked GPU memory; assert warning returned and analysis not executed
+  - [ ]* 15.6 Write property test for local analysis result shape (Property 17)
+    - **Property 17: Local Analysis Result Has Correct Compute Mode**
+    - **Validates: Requirements 8.8, 9.1**
+    - `// Feature: user-data-management-and-platform, Property 17: Local analysis result has correct compute mode`
+    - Generate successful local analysis jobs; assert `computeMode === 'local'` and `computeUnitsCharged === 0`
+  - [ ]* 15.7 Write property test for local compute quota exemption (Property 10)
+    - **Property 10: Local Compute Does Not Consume Server Quota**
+    - **Validates: Requirements 4.5, 9.1**
+    - `// Feature: user-data-management-and-platform, Property 10: Local compute does not consume server quota`
+    - Record quota before local job; run local analysis; assert `computeUnitsRemaining` unchanged after job
+  - [ ]* 15.8 Write unit tests for `useAnalysisRouter`
+    - Test WebGPU detection with mocked `navigator.gpu` (available and unavailable)
+    - Test local mode does not call server quota endpoints
+    - Test server mode calls preflight then run
+    - Test WebGPU runtime error surfaces error result and offers server fallback
+    - _Requirements: 8.1, 8.5, 8.9_
+
+- [ ] 16. Final checkpoint — ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [~] 17. Integration tests
+  - [ ] 17.1 Write integration tests for the full quota lifecycle
+    - Register free user → create 3 projects (all succeed) → create 4th project (HTTP 429) → verify quota endpoint
+    - Run analysis jobs until compute units exhausted → verify HTTP 429 with weight and remaining in body
+    - _Requirements: 3.1, 3.2, 3.3, 4.3_
+  - [ ] 17.2 Write integration tests for the collaboration workflow
+    - Owner creates project → invites collaborator → collaborator accepts → collaborator saves state → owner revokes → collaborator blocked
+    - _Requirements: 5.1, 5.2, 5.3, 5.4_
+  - [ ] 17.3 Write integration tests for tier upgrade flow
+    - Free user hits quota → upgrade to Pro → verify quota limits updated → verify gated features now accessible
+    - _Requirements: 6.3, 6.4_
+  - [ ] 17.4 Wire all Express routes together in the main app entry point
+    - Mount auth, user, project, collaboration, analysis, and subscription routers
+    - Apply `authenticate` JWT middleware globally to all `/api/*` routes except register/login
+    - Apply `requireFeature` middleware to collaboration and other gated routes
+    - _Requirements: 1.1, 2.1, 3.2, 5.1, 6.2_
+
+## Notes
+
+- Tasks marked with `*` are optional and can be skipped for a faster MVP
+- Each task references specific requirements for traceability
+- Property tests use fast-check with `numRuns: 100` minimum
+- Each property test must include the comment tag: `// Feature: user-data-management-and-platform, Property N: <text>`
+- Checkpoints at tasks 6, 11, and 16 ensure incremental validation before moving to the next phase

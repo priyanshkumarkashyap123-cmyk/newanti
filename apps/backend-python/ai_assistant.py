@@ -8,6 +8,17 @@ import json
 from typing import Optional, Dict, Any, List, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from ai_resilience import LLMResilienceGuard
+
+
+_ASSISTANT_LLM_GUARD = LLMResilienceGuard(
+    key="ai_assistant_llm",
+    timeout_seconds=12.0,
+    max_retries=2,
+    retry_backoff_seconds=0.35,
+    circuit_failure_threshold=3,
+    circuit_reset_seconds=45.0,
+)
 
 # ============================================
 # DATA CLASSES
@@ -851,8 +862,21 @@ Analyze the command and return ONLY valid JSON in this format:
 }}
 
 Only respond with valid JSON, no markdown or explanation outside the JSON."""
-            
-            response = model.generate_content(prompt)
+
+            result = _ASSISTANT_LLM_GUARD.execute(
+                lambda: model.generate_content(prompt)
+            )
+            if not result.success or result.value is None:
+                return {
+                    'success': False,
+                    'message': (
+                        "Gemini call failed after safeguards "
+                        f"(attempts={result.attempts}, timeout={result.timed_out}, "
+                        f"circuit_open={result.circuit_open}, error={result.error})"
+                    )
+                }
+
+            response = result.value
             raw_text = response.text.strip()
             
             # Clean JSON response

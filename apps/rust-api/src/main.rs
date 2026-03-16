@@ -363,6 +363,7 @@ async fn main() -> anyhow::Result<()> {
     let app = public_routes
         .merge(protected_routes)
         // Global middleware (applied to all routes)
+        .layer(axum::middleware::from_fn(middleware::rate_limit::logging_middleware))
         .layer(axum::middleware::from_fn(middleware::security_headers_middleware))
         .layer(axum::middleware::from_fn(middleware::rate_limit::rate_limit_middleware))
         .layer(TraceLayer::new_for_http())

@@ -49,7 +49,7 @@ import {
 } from "../components/marketing/FeatureShowcase";
 import { API_CONFIG, PAYMENT_CONFIG } from "../config/env";
 import { fetchJson } from "../utils/fetchUtils";
-import { APP_FEATURE_CATEGORIES } from "../config/appRouteMeta";
+import { getFeatureCategories } from "../config/appRouteMeta";
 
 // Animation variants
 const fadeInUp: Variants = {
@@ -74,6 +74,10 @@ export const LandingPage: FC = () => {
   const forcePaymentTestMode = PAYMENT_CONFIG.forcePaymentTestMode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const workflowBundles = getFeatureCategories({
+    prominence: 'primary',
+    includeLocked: true,
+  }).filter((category) => ['workspace', 'analysis', 'design', 'review', 'tools', 'ai'].includes(category.id));
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const REVIEW_DISPLAY_COUNT = 3;
     const SHOW_REVIEWS = false; // temporarily hide reviews section and nav
@@ -811,9 +815,7 @@ export const LandingPage: FC = () => {
               viewport={{ once: true }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
             >
-              {APP_FEATURE_CATEGORIES.filter((c) =>
-                ['workspace', 'analysis', 'design', 'review', 'tools', 'ai'].includes(c.id)
-              ).map((category) => (
+              {workflowBundles.map((category) => (
                 <motion.button
                   key={category.id}
                   type="button"

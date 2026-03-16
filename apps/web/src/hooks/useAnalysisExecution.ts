@@ -140,6 +140,7 @@ export function useAnalysisExecution(
 
   // ── Refs ──
   const analysisAbortRef = useRef<AbortController | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const progressUiStateRef = useRef<{ stage: AnalysisStage; progress: number; at: number }>({
     stage: "validating",
     progress: 0,
@@ -268,14 +269,19 @@ export function useAnalysisExecution(
   // CANCEL ANALYSIS
   // ══════════════════════════════════════════
   const cancelAnalysis = useCallback(() => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
     if (analysisAbortRef.current) {
       analysisAbortRef.current.abort();
+      analysisAbortRef.current = null;
     }
     setIsAnalyzingLocal(false);
     useModelStore.getState().setIsAnalyzing(false);
     setShowProgressModal(false);
     commitAnalysisProgress("validating", 0, { force: true });
-  }, []);
+  }, [commitAnalysisProgress]);
 
   // ══════════════════════════════════════════
   // EXECUTE ANALYSIS
@@ -303,6 +309,7 @@ export function useAnalysisExecution(
       let current = from;
       const step = (to - from) / (durationMs / 50);
       progressInterval = setInterval(() => {
+        progressIntervalRef.current = progressInterval;
         current = Math.min(current + step, to);
         commitAnalysisProgress(progressUiStateRef.current.stage, current);
         if (current >= to && progressInterval) clearInterval(progressInterval);
@@ -1262,11 +1269,22 @@ export function useAnalysisExecution(
       }
     } catch (err) {
       if (progressInterval) clearInterval(progressInterval);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
       commitAnalysisProgress("error" as AnalysisStage, progressUiStateRef.current.progress, { force: true });
       setAnalysisError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       if (progressInterval) clearInterval(progressInterval);
-      analysisAbortRef.current = null;
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (analysisAbortRef.current) {
+        analysisAbortRef.current.abort();
+        analysisAbortRef.current = null;
+      }
       setIsAnalyzingLocal(false);
       useModelStore.getState().setIsAnalyzing(false);
 
@@ -1401,6 +1419,14 @@ export function useAnalysisExecution(
   // Clean up analysis worker when component using this hook unmounts
   useEffect(() => {
     return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      if (analysisAbortRef.current) {
+        analysisAbortRef.current.abort();
+        analysisAbortRef.current = null;
+      }
       getAnalysisService()
         .then((m) => m.analysisService.dispose())
         .catch(() => { /* Worker already disposed or failed to load */ });

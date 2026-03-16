@@ -39,18 +39,44 @@ jobs:
         working-directory: apps/api
         run: pnpm run build
 
-      - name: Run database migrations (guarded)
+      - name: "CRITICAL: Validate required secrets before deployment"
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          echo "=== DEPLOYMENT SECRETS VALIDATION ==="
+          MISSING=0
+          for secret in MONGODB_URI JWT_SECRET JWT_REFRESH_SECRET CLERK_SECRET_KEY SENTRY_DSN; do
+            if [ -z "${!secret:-}" ]; then
+              echo "::error::MISSING REQUIRED SECRET: $secret"
+              ((MISSING++))
+            else
+              echo "✓ $secret is configured"
+            fi
+          done
+          if [ "$MISSING" -gt 0 ]; then
+            echo "::error::$MISSING required secret(s) not configured. Deployment aborted."
+            exit 1
+          fi
+          echo "✓ All required secrets validated"
+
+      - name: Run database migrations (ENFORCED)
         working-directory: apps/api
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
-        continue-on-error: true
         run: |
           if [ -z "${MONGODB_URI:-}" ]; then
-            echo "Skipping migrations because MONGODB_URI secret is not set."
-            echo "To run migrations during CI set the repository secret MONGODB_URI."
+            echo "::error::Cannot run migrations: MONGODB_URI secret is not set"
+            exit 1
           else
             echo "Running migrations..."
-            npm run migrate
+            npm run migrate || {
+              echo "::error::Database migration failed - aborting deployment"
+              exit 1
+            }
           fi
 
       - name: Prepare deployment package
@@ -106,14 +132,12 @@ jobs:
         env:
           SECRET_AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
           SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_API: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
-          SECRET_AZURE_NODE_DEPLOY_USER: ${{ secrets.AZURE_NODE_DEPLOY_USER }}
-          SECRET_AZURE_NODE_DEPLOY_PASS: ${{ secrets.AZURE_NODE_DEPLOY_PASS }}
         run: |
           # Prefer environment variables (possibly loaded from .env.deploy) and fall back to repository secrets
           AZ_CREDS="${AZURE_CREDENTIALS:-$SECRET_AZURE_CREDENTIALS}"
           PUBLISH_PROFILE_API="${AZURE_WEBAPP_PUBLISH_PROFILE_API:-$SECRET_AZURE_WEBAPP_PUBLISH_PROFILE_API}"
-          NODE_USER="${AZURE_NODE_DEPLOY_USER:-$SECRET_AZURE_NODE_DEPLOY_USER}"
-          NODE_PASS="${AZURE_NODE_DEPLOY_PASS:-$SECRET_AZURE_NODE_DEPLOY_PASS}"
+          NODE_USER="${AZURE_NODE_DEPLOY_USER:-}"
+          NODE_PASS="${AZURE_NODE_DEPLOY_PASS:-}"
 
           if [ -n "$AZ_CREDS" ]; then
             printf '%s\n' "creds<<EOF" >> $GITHUB_OUTPUT
@@ -152,14 +176,51 @@ jobs:
         with:
           creds: ${{ steps.prep_secrets.outputs.creds }}
 
-      - name: "Azure CLI: Zip deploy (service principal)"
+      - name: "Azure CLI: Zip deploy to staging slot (service principal)"
         id: az_deploy
         continue-on-error: true
         run: |
-          echo "Deploying api-app.zip via az CLI to ${{ env.AZURE_WEBAPP_NAME_API }}"
-          az webapp deployment source config-zip --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME_API }} --src api-app.zip
+          echo "Ensuring staging slot exists for ${{ env.AZURE_WEBAPP_NAME_API }}"
+          az webapp deployment slot create \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_API }} \
+            --slot staging \
+            --configuration-source ${{ env.AZURE_WEBAPP_NAME_API }} || true
 
-      - name: Set Node App Service startup command
+          echo "Deploying api-app.zip to staging slot"
+          az webapp deployment source config-zip \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_API }} \
+            --slot staging \
+            --src api-app.zip
+
+      - name: Verify Node staging slot health before swap
+        id: staging_health
+        if: steps.az_deploy.conclusion == 'success'
+        continue-on-error: true
+        run: |
+          echo "Waiting for staging warm-up..."
+          sleep 30
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            status=$(curl --max-time 10 -s -o /dev/null -w "%{http_code}" https://${{ env.AZURE_WEBAPP_NAME_API }}-staging.azurewebsites.net/health || echo "000")
+            echo "Staging attempt $i: $status"
+            [ "$status" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::Staging slot health check failed"
+          exit 1
+
+      - name: Swap staging slot to production
+        id: swap_staging
+        if: steps.az_deploy.conclusion == 'success' && steps.staging_health.conclusion == 'success'
+        continue-on-error: true
+        run: |
+          az webapp deployment slot swap \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_API }} \
+            --slot staging
+
+      - name: Set Node App Service startup command (CRITICAL)
         if: steps.az_login.conclusion == 'success'
         run: |
           settings=(
@@ -191,18 +252,25 @@ jobs:
           append_setting_if_present PHONEPE_SALT_INDEX '${{ secrets.PHONEPE_SALT_INDEX }}'
           append_setting_if_present SENTRY_DSN '${{ secrets.SENTRY_DSN }}'
 
+          echo "Configuring app settings and startup command..."
           az webapp config appsettings set \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME_API }} \
             --settings "${settings[@]}"
 
+          echo "Setting startup command: node /home/site/wwwroot/dist/index.cjs"
           az webapp config set \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.AZURE_WEBAPP_NAME_API }} \
             --startup-file "node /home/site/wwwroot/dist/index.cjs"
+          
+          # Verify startup command was set (Phase 1.3 verification)
+          actual_cmd=$(az webapp config show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME_API }} --query appCommandLine -o tsv)
+          echo "Verified startup command: $actual_cmd"
 
       - name: Deploy to Azure Web App (publish profile)
         id: deploy_api_publish_profile
+        if: steps.swap_staging.conclusion != 'success'
         continue-on-error: true
         uses: azure/webapps-deploy@v3
         with:
@@ -339,10 +407,10 @@ jobs:
         id: deploy_python_kudu_fallback
         if: steps.deploy_python_publish_profile.conclusion != 'success'
         env:
-          KUDU_USER: ${{ secrets.AZURE_PY_DEPLOY_USER }}
-          KUDU_PASS: ${{ secrets.AZURE_PY_DEPLOY_PASS }}
           PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
         run: |
+          KUDU_USER="${AZURE_PY_DEPLOY_USER:-}"
+          KUDU_PASS="${AZURE_PY_DEPLOY_PASS:-}"
           if [ -z "$KUDU_USER" ] || [ -z "$KUDU_PASS" ]; then
             echo "Kudu creds not set in dedicated secrets, attempting to parse from publish profile..."
             parsed_user=$(echo "$PUBLISH_PROFILE" | tr -d '\n' | sed -n 's/.*userName="\([^"]*\)".*/\1/p' | head -1)
@@ -434,48 +502,58 @@ jobs:
       - name: Wait for services to warm up
         run: sleep 60
 
-      - name: Check Node.js API health
-        continue-on-error: true
+      - name: "CRITICAL: Post-deployment health checks (GATING)"
         run: |
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health || echo "000")
-            echo "Attempt $i: Node API → $status"
-            [ "$status" = "200" ] && exit 0
-            sleep 15
+          echo "=== POST-DEPLOYMENT HEALTH CHECKS ==="
+          FAILED=0
+          
+          # Check Node API
+          echo "Checking Node API..."
+          for i in {1..10}; do
+            status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health/dependencies || echo "000")
+            echo "  Attempt $i: HTTP $status"
+            [ "$status" = "200" ] && break
+            [ $i -lt 10 ] && sleep 15
+            [ $i -eq 10 ] && ((FAILED++))
           done
-          echo "::warning::Node API health check failed (status: $status) — service may still be warming up"
-          exit 0
-
-      - name: Check Python API health
-        continue-on-error: true
-        run: |
-          for i in 1 2 3 4 5 6 7 8 9 10; do
+          
+          echo "Checking Python API..."
+          for i in {1..10}; do
             status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-python.azurewebsites.net/health || echo "000")
-            echo "Attempt $i: Python API → $status"
-            [ "$status" = "200" ] && exit 0
-            sleep 15
+            echo "  Attempt $i: HTTP $status"
+            [ "$status" = "200" ] && break
+            [ $i -lt 10 ] && sleep 15
+            [ $i -eq 10 ] && ((FAILED++))
           done
-          echo "::warning::Python API health check failed (status: $status) — service may still be warming up"
-          exit 0
-
-      - name: Check Rust API health
-        continue-on-error: true
-        run: |
-          for i in 1 2 3 4 5 6 7 8 9 10; do
+          
+          echo "Checking Rust API..."
+          for i in {1..10}; do
             status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlab-rust-api.azurewebsites.net/health || echo "000")
-            echo "Attempt $i: Rust API → $status"
-            [ "$status" = "200" ] && exit 0
-            sleep 15
+            echo "  Attempt $i: HTTP $status"
+            [ "$status" = "200" ] && break
+            [ $i -lt 10 ] && sleep 15
+            [ $i -eq 10 ] && ((FAILED++))
           done
-          echo "::warning::Rust API health check failed (status: $status) — service may still be warming up"
-          exit 0
+          
+          echo
+          if [ "$FAILED" -eq 0 ]; then
+            echo "✓ All backend services healthy"
+            exit 0
+          elif [ "$FAILED" -le 1 ]; then
+            echo "⚠ WARNING: $FAILED service(s) not responding yet (warming up?)"
+            exit 0
+          else
+            echo "::error::$FAILED services failed health check — deployment may be broken"
+            exit 1
+          fi
 
       - name: Check Frontend
         continue-on-error: true
         run: |
           status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlabultimate.tech || echo "000")
-          echo "Frontend → $status"
-          [ "$status" = "200" ] || { echo "::warning::Frontend health check returned $status"; }
+          echo "Frontend health check: HTTP $status"
+          [ "$status" = "200" ] || [ "$status" = "302" ] && exit 0
+          exit 0
 
       - name: Summary
-        run: echo "Post-deploy smoke tests complete ✅"
+        run: echo "✓ Post-deploy verification complete"

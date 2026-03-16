@@ -40,6 +40,9 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().optional().default(""),
   FRONTEND_URL: z.string().url().optional().default("http://localhost:5173"),
 
+  // Service-to-service trust
+  INTERNAL_SERVICE_SECRET: z.string().optional().default(""),
+
   // Payments — PhonePe
   PHONEPE_MERCHANT_ID: z.string().optional(),
   PHONEPE_SALT_KEY: z.string().optional(),
@@ -160,6 +163,37 @@ if (env.NODE_ENV === "production") {
     logger.warn(
       "Sentry DSN is not configured — error monitoring is disabled in production.",
     );
+  }
+
+  const configuredCorsOrigins = (env.CORS_ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  const hasUnsafeCorsOrigin = configuredCorsOrigins.some(
+    (origin) =>
+      origin === "*" ||
+      /localhost|127\.0\.0\.1/i.test(origin) ||
+      /^http:\/\//i.test(origin),
+  );
+
+  if (hasUnsafeCorsOrigin) {
+    logger.error(
+      "FATAL: unsafe CORS_ALLOWED_ORIGINS detected in PRODUCTION. Remove wildcard, localhost, and non-HTTPS origins.",
+    );
+    process.exit(1);
+  }
+
+  const internalServiceSecret = env.INTERNAL_SERVICE_SECRET?.trim() ?? "";
+  const looksPlaceholder = /your_|replace|changeme|example|placeholder/i.test(
+    internalServiceSecret,
+  );
+
+  if (internalServiceSecret.length < 16 || looksPlaceholder) {
+    logger.error(
+      "FATAL: INTERNAL_SERVICE_SECRET must be configured in PRODUCTION with a non-placeholder value of at least 16 characters.",
+    );
+    process.exit(1);
   }
 }
 

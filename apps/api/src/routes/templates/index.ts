@@ -10,8 +10,14 @@ import { rustProxy } from "../../services/serviceProxy.js";
 import { requireAuth } from "../../middleware/authMiddleware.js";
 import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
+import { assertProxyObjectPayload } from "../../utils/proxyContracts.js";
 
 const router: Router = express.Router();
+
+function getRequestId(req: Request, res: Response): string | undefined {
+  const rid = res.locals.requestId || req.get("x-request-id");
+  return typeof rid === "string" && rid.length > 0 ? rid : undefined;
+}
 
 // All template routes require authentication
 router.use(requireAuth());
@@ -23,12 +29,26 @@ router.use(requireAuth());
 async function forwardToRust(
   rustPath: string,
   query: Record<string, string>,
+  req: Request,
   res: Response,
   label: string,
 ): Promise<void> {
   try {
-    const result = await rustProxy("GET", rustPath, undefined, query);
+    const requestId = getRequestId(req, res);
+    const result = await rustProxy("GET", rustPath, undefined, query, undefined, requestId);
     if (result.success) {
+      const guard = assertProxyObjectPayload(result.data, `Templates/${label}`);
+      if (!guard.ok) {
+        logger.error({ reason: guard.reason, requestId }, `[Templates/${label}] Invalid upstream payload`);
+        res.status(502).json({
+          success: false,
+          error: "Invalid templates payload from upstream service",
+          code: "UPSTREAM_CONTRACT_ERROR",
+          requestId,
+        });
+        return;
+      }
+
       res.json(result.data);
     } else {
       res.status(result.status || 500).json({
@@ -61,7 +81,7 @@ router.get("/:type", asyncHandler(async (req: Request, res: Response) => {
   for (const [k, v] of Object.entries(req.query)) {
     if (typeof v === "string") query[k] = v;
   }
-  await forwardToRust(`/api/templates/${type}`, query, res, type);
+  await forwardToRust(`/api/templates/${type}`, query, req, res, type);
 }));
 
 // ============================================
@@ -101,7 +121,7 @@ router.post("/generate", asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
-  await forwardToRust(`/api/templates/${rustType}`, query, res, rustType);
+  await forwardToRust(`/api/templates/${rustType}`, query, req, res, rustType);
 }));
 
 export default router;

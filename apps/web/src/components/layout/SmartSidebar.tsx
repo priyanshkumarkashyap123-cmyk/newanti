@@ -191,7 +191,7 @@ const TemplateBankPanel: FC = () => {
           });
         }
 
-// console.log(`✓ Loaded template: ${template.name}`);
+        // console.log(`✓ Loaded template: ${template.name}`);
       } catch (error) {
         console.error("Template load error:", error);
       } finally {
@@ -304,11 +304,10 @@ const TemplateBankPanel: FC = () => {
             onClick={() => setSelectedCategory(cat)}
             className={`
                             px-2 py-1 text-xs rounded-md transition-colors capitalize
-                            ${
-                              selectedCategory === cat
-                                ? "bg-blue-600 text-white"
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-                            }
+                            ${selectedCategory === cat
+                ? "bg-blue-600 text-white"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+              }
                         `}
           >
             {cat}
@@ -326,11 +325,10 @@ const TemplateBankPanel: FC = () => {
             className={`
                             w-full flex items-center justify-between gap-2 px-3 py-2.5
                             text-sm text-left rounded-lg transition-all
-                            ${
-                              loading === key
-                                ? "bg-blue-600/20 text-blue-400"
-                                : "text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-                            }
+                            ${loading === key
+                ? "bg-blue-600/20 text-blue-400"
+                : "text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+              }
                         `}
           >
             <span className="flex items-center gap-2">
@@ -393,11 +391,10 @@ const DrawToolsPanel: FC = () => {
             onClick={() => setActiveTool(tool.id)}
             className={`
                             w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all
-                            ${
-                              activeTool === tool.id
-                                ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                                : "text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-                            }
+                            ${activeTool === tool.id
+                ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
+                : "text-slate-600 dark:text-slate-300 bg-slate-100/50 dark:bg-slate-800/50 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+              }
                         `}
           >
             {tool.icon}
@@ -455,11 +452,10 @@ const EditToolsPanel: FC = () => {
             <button type="button"
               onClick={() => deleteSelection()}
               disabled={!hasSelection}
-              className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
-                hasSelection
+              className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                   ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
                   : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
-              }`}
+                }`}
             >
               <Trash2 className="w-4 h-4" />
               Delete
@@ -479,11 +475,10 @@ const EditToolsPanel: FC = () => {
               useUIStore.getState().openModal("boundaryConditionsDialog")
             }
             disabled={!hasSelection}
-            className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
-              hasSelection
+            className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                 ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30"
                 : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed border border-transparent"
-            }`}
+              }`}
           >
             <svg
               className="w-4 h-4"
@@ -528,11 +523,10 @@ const EditToolsPanel: FC = () => {
           <button type="button"
             onClick={() => copySelection()}
             disabled={!hasSelection}
-            className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
-              hasSelection
+            className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
                 ? "text-blue-400 bg-blue-500/10 hover:bg-blue-500/20"
                 : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
-            }`}
+              }`}
           >
             <Copy className="w-4 h-4" />
             Copy
@@ -540,11 +534,10 @@ const EditToolsPanel: FC = () => {
           <button type="button"
             onClick={() => pasteClipboard()}
             disabled={!clipboard}
-            className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
-              clipboard
+            className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${clipboard
                 ? "text-green-400 bg-green-500/10 hover:bg-green-500/20"
                 : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
-            }`}
+              }`}
           >
             <Clipboard className="w-4 h-4" />
             Paste
@@ -552,11 +545,10 @@ const EditToolsPanel: FC = () => {
           <button type="button"
             onClick={() => duplicateSelection()}
             disabled={!hasSelection}
-            className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${
-              hasSelection
+            className={`flex flex-col items-center gap-1 px-2 py-2 text-xs rounded-lg ${hasSelection
                 ? "text-purple-400 bg-purple-500/10 hover:bg-purple-500/20"
                 : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
-            }`}
+              }`}
           >
             <Plus className="w-4 h-4" />
             Duplicate
@@ -573,11 +565,10 @@ const EditToolsPanel: FC = () => {
           <button type="button"
             onClick={() => setShowMoveDialog(!showMoveDialog)}
             disabled={!hasSelection}
-            className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
-              hasSelection
+            className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${hasSelection
                 ? "text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20"
                 : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
-            }`}
+              }`}
           >
             <Move className="w-4 h-4" />
             Move Selection
@@ -654,11 +645,10 @@ const EditToolsPanel: FC = () => {
         <button type="button"
           onClick={() => setShowSplitDialog(!showSplitDialog)}
           disabled={!selectedMemberId}
-          className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${
-            selectedMemberId
+          className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg ${selectedMemberId
               ? "text-orange-400 bg-orange-500/10 hover:bg-orange-500/20"
               : "text-slate-500 dark:text-slate-400 bg-slate-100/30 dark:bg-slate-800/30 cursor-not-allowed"
-          }`}
+            }`}
         >
           <Scissors className="w-4 h-4" />
           Split Member
@@ -834,19 +824,19 @@ const AdvancedToolsPanel: FC = () => {
           onClick={() =>
             openModal(
               tool.id as
-                | "deadLoadGenerator"
-                | "structureWizard"
-                | "geometryTools"
-                | "interoperability"
-                | "railwayBridge"
-                | "loadDialog"
-                | "meshing"
-                | "windLoadDialog"
-                | "seismicLoadDialog"
-                | "movingLoadDialog"
-                | "asce7SeismicDialog"
-                | "asce7WindDialog"
-                | "loadCombinationsDialog",
+              | "deadLoadGenerator"
+              | "structureWizard"
+              | "geometryTools"
+              | "interoperability"
+              | "railwayBridge"
+              | "loadDialog"
+              | "meshing"
+              | "windLoadDialog"
+              | "seismicLoadDialog"
+              | "movingLoadDialog"
+              | "asce7SeismicDialog"
+              | "asce7WindDialog"
+              | "loadCombinationsDialog",
             )
           }
           className={`
@@ -918,13 +908,12 @@ const SectionPickerPanel: FC = () => {
                 onClick={() => handleCodeChange(code.id)}
                 className={`
                                     w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-colors
-                                    ${
-                                      selectedCode === code.id && !isLocked
-                                        ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                                        : isLocked
-                                          ? "bg-slate-100/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 cursor-not-allowed"
-                                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                                    }
+                                    ${selectedCode === code.id && !isLocked
+                    ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
+                    : isLocked
+                      ? "bg-slate-100/30 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                  }
                                 `}
               >
                 <span>{code.label}</span>
@@ -976,11 +965,10 @@ const SectionPickerPanel: FC = () => {
               onClick={() => setSelectedSection(section)}
               className={`
                                 w-full text-left px-2 py-1.5 text-sm rounded transition-colors
-                                ${
-                                  selectedSection === section
-                                    ? "bg-blue-600/20 text-blue-400"
-                                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-                                }
+                                ${selectedSection === section
+                  ? "bg-blue-600/20 text-blue-400"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                }
                             `}
             >
               {section}
@@ -1202,11 +1190,10 @@ const LoadCaseManagerPanel: FC = () => {
           return (
             <div
               key={lc.id}
-              className={`rounded-lg border p-2 ${
-                isActive
+              className={`rounded-lg border p-2 ${isActive
                   ? "border-blue-500/40 bg-blue-500/10"
                   : "border-slate-200 dark:border-slate-700 bg-slate-100/40 dark:bg-slate-800/40"
-              }`}
+                }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <button
@@ -1419,11 +1406,10 @@ const ManualLoadsPanel: FC = () => {
           }
           className={`
                         w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all
-                        ${
-                          activeTool === "memberLoad"
-                            ? "bg-orange-600 text-white ring-2 ring-orange-400 ring-offset-2 ring-offset-slate-900"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                        }
+                        ${activeTool === "memberLoad"
+              ? "bg-orange-600 text-white ring-2 ring-orange-400 ring-offset-2 ring-offset-slate-900"
+              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+            }
                     `}
         >
           {activeTool === "memberLoad" ? (
@@ -1545,11 +1531,10 @@ const SolverControlsPanel: FC = () => {
         disabled={isRunning}
         className={`
                     w-full flex items-center justify-center gap-2 py-4 text-lg font-bold rounded-lg transition-all
-                    ${
-                      isRunning
-                        ? "bg-green-600/50 text-green-300 cursor-wait"
-                        : "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-600/30"
-                    }
+                    ${isRunning
+            ? "bg-green-600/50 text-green-300 cursor-wait"
+            : "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-600/30"
+          }
                 `}
       >
         {isRunning ? (
@@ -1656,12 +1641,11 @@ const ResultTogglesPanel: FC = () => {
           onClick={() => toggle.toggle(!toggle.checked)}
           className={`
                         w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                        ${
-                          toggle.checked
-                            ? TOGGLE_COLOR_STYLES[toggle.color] ||
-                              "bg-blue-600/20 text-blue-400 border border-blue-500/30"
-                            : "bg-slate-100/50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
-                        }
+                        ${toggle.checked
+              ? TOGGLE_COLOR_STYLES[toggle.color] ||
+              "bg-blue-600/20 text-blue-400 border border-blue-500/30"
+              : "bg-slate-100/50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+            }
                     `}
         >
           {toggle.checked ? (
@@ -2025,6 +2009,7 @@ export const SmartSidebar: FC = () => {
   const toolCounts: Record<string, number> = {
     MODELING: 4, // Template Bank, Draw, Edit, Advanced
     PROPERTIES: 1, // Section Picker
+    SUPPORTS: 1, // Boundary Conditions
     LOADING: 3, // Load Generators, Load Cases, Manual Loads
     ANALYSIS: 2, // Solver Controls, Result Toggles
     DESIGN: 2, // Design Checks, Advanced Design
@@ -2119,6 +2104,18 @@ export const SmartSidebar: FC = () => {
               icon={<Settings className="w-4 h-4" />}
             >
               <SectionPickerPanel />
+            </AccordionItem>
+          </>
+        )}
+
+        {/* SUPPORTS */}
+        {activeCategory === "SUPPORTS" && (
+          <>
+            <AccordionItem
+              title="Boundary Conditions"
+              icon={<CheckSquare className="w-4 h-4" />}
+            >
+              <EditToolsPanel />
             </AccordionItem>
           </>
         )}

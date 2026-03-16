@@ -21,6 +21,7 @@ const envSchema = z.object({
     CLERK_PUBLISHABLE_KEY: z.string().optional(),
     CORS_ALLOWED_ORIGINS: z.string().optional().default(''),
     FRONTEND_URL: z.string().url().optional().default('http://localhost:5173'),
+    INTERNAL_SERVICE_SECRET: z.string().optional().default(''),
     // Stripe
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
@@ -48,6 +49,17 @@ describe('API env schema', () => {
             expect(result.data.PORT).toBe(3001);
             expect(result.data.MONGODB_URI).toBe('mongodb://localhost:27017/beamlab');
             expect(result.data.FRONTEND_URL).toBe('http://localhost:5173');
+            expect(result.data.INTERNAL_SERVICE_SECRET).toBe('');
+        }
+    });
+
+    it('accepts internal service secret when provided', () => {
+        const result = envSchema.safeParse({
+            INTERNAL_SERVICE_SECRET: 'super-secure-internal-secret',
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+            expect(result.data.INTERNAL_SERVICE_SECRET).toBe('super-secure-internal-secret');
         }
     });
 

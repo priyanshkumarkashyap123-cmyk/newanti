@@ -50,7 +50,7 @@ export const WorkflowSidebar: FC<WorkflowSidebarProps> = ({
     switch (id) {
       case "MODELING": category = "MODELING"; break;
       case "PROPERTIES": category = "PROPERTIES"; break;
-      case "SUPPORTS": category = "PROPERTIES"; break;
+      case "SUPPORTS": category = "SUPPORTS"; break;
       case "LOADING": category = "LOADING"; break;
       case "ANALYSIS": category = "ANALYSIS"; break;
       case "DESIGN": category = "DESIGN"; break;

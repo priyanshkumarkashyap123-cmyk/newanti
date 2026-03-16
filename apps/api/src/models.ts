@@ -1244,9 +1244,129 @@ export async function disconnectDB(): Promise<void> {
     logger.info('MongoDB disconnected');
 }
 
+// ============================================
+// QUOTA RECORD SCHEMA
+// ============================================
+// Tracks per-user daily usage (projects created + compute units consumed).
+// One document per user per UTC date.
+
+export interface IQuotaRecord extends Document {
+    userId: Types.ObjectId;
+    clerkId: string;
+    windowDate: string;         // UTC date string 'YYYY-MM-DD'
+    projectsCreated: number;
+    computeUnitsUsed: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const QuotaRecordSchema = new Schema<IQuotaRecord>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    clerkId: {
+        type: String,
+        required: true,
+    },
+    windowDate: {
+        type: String,
+        required: true,
+    },
+    projectsCreated: {
+        type: Number,
+        default: 0,
+    },
+    computeUnitsUsed: {
+        type: Number,
+        default: 0,
+    },
+}, {
+    timestamps: true,
+});
+
+// Unique compound index: one record per user per day
+QuotaRecordSchema.index({ clerkId: 1, windowDate: 1 }, { unique: true });
+QuotaRecordSchema.index({ userId: 1, windowDate: 1 });
+
+export const QuotaRecord = mongoose.model<IQuotaRecord>('QuotaRecord', QuotaRecordSchema);
+
+
+// ============================================
+// COLLABORATION INVITE SCHEMA
+// ============================================
+// Tracks project sharing invites between users.
+
+export interface ICollaborationInvite extends Document {
+    projectId: Types.ObjectId;
+    inviterId: Types.ObjectId;
+    inviterClerkId: string;
+    inviteeId: Types.ObjectId;
+    inviteeClerkId: string;
+    inviteeEmail: string;
+    status: 'pending' | 'accepted' | 'revoked';
+    accessLevel: 'read' | 'write';
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const CollaborationInviteSchema = new Schema<ICollaborationInvite>({
+    projectId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Project',
+        required: true,
+    },
+    inviterId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    inviterClerkId: {
+        type: String,
+        required: true,
+    },
+    inviteeId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    inviteeClerkId: {
+        type: String,
+        required: true,
+    },
+    inviteeEmail: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'accepted', 'revoked'],
+        default: 'pending',
+    },
+    accessLevel: {
+        type: String,
+        enum: ['read', 'write'],
+        default: 'write',
+    },
+}, {
+    timestamps: true,
+});
+
+// Unique compound index: one invite per project per invitee
+CollaborationInviteSchema.index({ projectId: 1, inviteeId: 1 }, { unique: true });
+CollaborationInviteSchema.index({ projectId: 1 });
+CollaborationInviteSchema.index({ inviteeClerkId: 1, status: 1 });
+
+export const CollaborationInvite = mongoose.model<ICollaborationInvite>('CollaborationInvite', CollaborationInviteSchema);
+
+
 export default {
     User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel,
     Consent, AISession, AnalysisJob,
     DeviceSession, AnalysisResult, ReportGeneration, UsageLog,
+    QuotaRecord, CollaborationInvite,
     connectDB, disconnectDB
 };

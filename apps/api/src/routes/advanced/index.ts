@@ -18,8 +18,14 @@ import {
 } from "../../middleware/validation.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
+import { assertProxyObjectPayload } from "../../utils/proxyContracts.js";
 
 const router: Router = express.Router();
+
+function getRequestId(req: Request, res: Response): string | undefined {
+    const rid = res.locals.requestId || req.get("x-request-id");
+    return typeof rid === "string" && rid.length > 0 ? rid : undefined;
+}
 
 // ============================================
 // Helper: Forward to Rust API and handle response
@@ -28,13 +34,27 @@ const router: Router = express.Router();
 async function forwardToRust(
     rustPath: string,
     body: unknown,
+    req: Request,
     res: Response,
     label: string,
     timeoutMs = 120_000,
 ): Promise<void> {
     try {
-        const result = await rustProxy("POST", rustPath, body, undefined, timeoutMs);
+        const requestId = getRequestId(req, res);
+        const result = await rustProxy("POST", rustPath, body, undefined, timeoutMs, requestId);
         if (result.success) {
+            const guard = assertProxyObjectPayload(result.data, `Advanced/${label}`);
+            if (!guard.ok) {
+                logger.error({ reason: guard.reason, requestId }, `[Advanced/${label}] Invalid upstream payload`);
+                res.status(502).json({
+                    success: false,
+                    error: "Invalid advanced analysis payload from upstream service",
+                    code: "UPSTREAM_CONTRACT_ERROR",
+                    requestId,
+                });
+                return;
+            }
+
             res.json({ success: true, ...result.data as object });
         } else {
             logger.error({ err: result.error }, `[Advanced/${label}] Rust API error`);
@@ -58,7 +78,7 @@ async function forwardToRust(
 // ============================================
 
 router.post("/pdelta", validateBody(pDeltaSchema), asyncHandler(async (req: Request, res: Response) => {
-    await forwardToRust("/api/advanced/pdelta", req.body, res, "PDelta");
+    await forwardToRust("/api/advanced/pdelta", req.body, req, res, "PDelta");
 }));
 
 // ============================================
@@ -66,7 +86,7 @@ router.post("/pdelta", validateBody(pDeltaSchema), asyncHandler(async (req: Requ
 // ============================================
 
 router.post("/modal", validateBody(modalSchema), asyncHandler(async (req: Request, res: Response) => {
-    await forwardToRust("/api/advanced/modal", req.body, res, "Modal");
+    await forwardToRust("/api/advanced/modal", req.body, req, res, "Modal");
 }));
 
 // ============================================
@@ -74,7 +94,7 @@ router.post("/modal", validateBody(modalSchema), asyncHandler(async (req: Reques
 // ============================================
 
 router.post("/spectrum", validateBody(spectrumSchema), asyncHandler(async (req: Request, res: Response) => {
-    await forwardToRust("/api/advanced/spectrum", req.body, res, "Spectrum", 180_000);
+    await forwardToRust("/api/advanced/spectrum", req.body, req, res, "Spectrum", 180_000);
 }));
 
 // ============================================
@@ -82,7 +102,7 @@ router.post("/spectrum", validateBody(spectrumSchema), asyncHandler(async (req: 
 // ============================================
 
 router.post("/buckling", validateBody(bucklingSchema), asyncHandler(async (req: Request, res: Response) => {
-    await forwardToRust("/api/advanced/buckling", req.body, res, "Buckling");
+    await forwardToRust("/api/advanced/buckling", req.body, req, res, "Buckling");
 }));
 
 // ============================================
@@ -90,7 +110,7 @@ router.post("/buckling", validateBody(bucklingSchema), asyncHandler(async (req: 
 // ============================================
 
 router.post("/cable", validateBody(cableSchema), asyncHandler(async (req: Request, res: Response) => {
-    await forwardToRust("/api/advanced/cable", req.body, res, "Cable");
+    await forwardToRust("/api/advanced/cable", req.body, req, res, "Cable");
 }));
 
 // ============================================

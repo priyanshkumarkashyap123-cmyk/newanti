@@ -109,6 +109,7 @@ router.post('/generate', asyncHandler(async (req: Request, res: Response) => {
   return res.json({
     success: result.success,
     model: result.model,
+    validation: result.validation,
     response: result.response,
     actions: result.actions,
     metadata: result.metadata,
@@ -126,32 +127,39 @@ router.post('/validate', asyncHandler(async (req: Request, res: Response) => {
     throw new HttpError(400, 'Invalid model structure. Required: { nodes: [], members: [] }');
   }
 
-  // Convert to ModelContext for diagnosis
-  const context = {
-    nodes: model.nodes.map((n: RawNodeInput) => ({
+  const normalizedInput = {
+    nodes: (model.nodes || []).map((n: RawNodeInput) => ({
       id: n.id,
       x: n.x,
       y: n.y,
       z: n.z || 0,
-      hasSupport: n.isSupport || (n.restraints && (n.restraints.fy || n.restraints.fx)),
+      isSupport: n.isSupport,
+      restraints: n.restraints,
     })),
-    members: model.members.map((m: RawMemberInput) => ({
+    members: (model.members || []).map((m: RawMemberInput) => ({
       id: m.id,
-      startNode: m.s || m.startNode || m.startNodeId,
-      endNode: m.e || m.endNode || m.endNodeId,
+      s: m.s || m.startNode || m.startNodeId,
+      e: m.e || m.endNode || m.endNodeId,
       section: m.section,
     })),
     loads: model.loads || [],
+    materials: model.materials || [],
+    sections: model.sections || [],
   };
 
-  const diagnosis = await aiArchitectEngine.diagnoseModel(context);
+  const validationResult = aiArchitectEngine.validateStructuralModel(normalizedInput);
+  const validation = validationResult.validation;
+  const health: 'good' | 'warning' | 'critical' =
+    validation.errors > 0 ? 'critical' : validation.warnings > 0 ? 'warning' : 'good';
 
   return res.json({
     success: true,
-    valid: diagnosis.overallHealth === 'good',
-    health: diagnosis.overallHealth,
-    issues: diagnosis.issues,
-    suggestions: diagnosis.suggestions,
+    valid: validation.valid,
+    health,
+    model: validationResult.model,
+    validation,
+    issues: validation.issues,
+    suggestions: validation.issues.filter(i => i.fixable).map(i => i.message),
   });
 }));
 

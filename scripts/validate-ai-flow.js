@@ -30,6 +30,41 @@ class AIArchitectMock {
             bays: baysMatch ? parseInt(baysMatch[1]) : undefined
         };
     }
+
+    static validateModel(model) {
+        const issues = [];
+
+        if (!Array.isArray(model.nodes) || model.nodes.length === 0) {
+            issues.push('Missing or empty nodes array');
+        }
+
+        if (!Array.isArray(model.members) || model.members.length === 0) {
+            issues.push('Missing or empty members array');
+        }
+
+        if (Array.isArray(model.nodes) && Array.isArray(model.members)) {
+            const nodeIds = new Set(model.nodes.map(n => n.id));
+            const hasSupport = model.nodes.some(n => n.isSupport || n.restraints?.fy || n.restraints?.fx || n.restraints?.fz);
+
+            for (const member of model.members) {
+                if (!nodeIds.has(member.s)) {
+                    issues.push(`Member ${member.id} has invalid start node ${member.s}`);
+                }
+                if (!nodeIds.has(member.e)) {
+                    issues.push(`Member ${member.id} has invalid end node ${member.e}`);
+                }
+            }
+
+            if (!hasSupport) {
+                issues.push('No supports defined');
+            }
+        }
+
+        return {
+            valid: issues.length === 0,
+            issues,
+        };
+    }
 }
 
 function testAIFlow() {
@@ -76,6 +111,50 @@ function testAIFlow() {
         const panels = intent1.bays || 10;
         console.log(`Dispatching to: generateWarrenBridge(span=${span}, height=${height}, panels=${panels})`);
         console.log("PASS: Dispatch logic correct.");
+    }
+
+    console.log('\n' + '='.repeat(60));
+    console.log('TEST 4: Deterministic Validation - Invalid Node Reference');
+    console.log('='.repeat(60));
+
+    const invalidRefModel = {
+        nodes: [
+            { id: 'n1', x: 0, y: 0, z: 0, isSupport: true },
+            { id: 'n2', x: 6, y: 0, z: 0 }
+        ],
+        members: [
+            { id: 'm1', s: 'n1', e: 'n3', section: 'ISMB300' }
+        ]
+    };
+
+    const invalidRefValidation = AIArchitectMock.validateModel(invalidRefModel);
+    console.log('Validation:', invalidRefValidation);
+    if (!invalidRefValidation.valid && invalidRefValidation.issues.some(i => i.includes('invalid end node'))) {
+        console.log('PASS: Invalid member node reference detected.');
+    } else {
+        console.log('FAIL: Invalid member node reference was not detected.');
+    }
+
+    console.log('\n' + '='.repeat(60));
+    console.log('TEST 5: Deterministic Validation - Missing Supports');
+    console.log('='.repeat(60));
+
+    const noSupportModel = {
+        nodes: [
+            { id: 'n1', x: 0, y: 0, z: 0 },
+            { id: 'n2', x: 6, y: 0, z: 0 }
+        ],
+        members: [
+            { id: 'm1', s: 'n1', e: 'n2', section: 'ISMB300' }
+        ]
+    };
+
+    const noSupportValidation = AIArchitectMock.validateModel(noSupportModel);
+    console.log('Validation:', noSupportValidation);
+    if (!noSupportValidation.valid && noSupportValidation.issues.includes('No supports defined')) {
+        console.log('PASS: Missing supports detected.');
+    } else {
+        console.log('FAIL: Missing supports were not detected.');
     }
 }
 

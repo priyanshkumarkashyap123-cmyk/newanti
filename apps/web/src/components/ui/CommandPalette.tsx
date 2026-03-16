@@ -13,7 +13,11 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent } from './dialog';
-import { APP_SEARCH_ITEMS } from '../../config/appRouteMeta';
+import {
+    APP_SEARCH_ITEMS,
+    getFeatureCategoryById,
+    findFeatureByPath,
+} from '../../config/appRouteMeta';
 
 // ============================================
 // Types
@@ -56,7 +60,7 @@ const createDefaultCommands = (navigate: (path: string) => void, onClose: () => 
         description: 'View your projects and stats',
         icon: <Folder className="w-4 h-4" />,
         shortcut: '⌘D',
-        action: () => { navigate('/app'); onClose(); },
+        action: () => { navigate('/stream'); onClose(); },
         category: 'Navigation',
     },
     {
@@ -85,7 +89,7 @@ const createDefaultCommands = (navigate: (path: string) => void, onClose: () => 
         description: 'Start a new structural analysis',
         icon: <Plus className="w-4 h-4" />,
         shortcut: '⌘N',
-        action: () => { navigate('/demo'); onClose(); },
+        action: () => { navigate('/app'); onClose(); },
         category: 'Actions',
     },
     {
@@ -142,6 +146,8 @@ const createRouteCommands = (
             return true;
         })
         .map((item): CommandItem => {
+            const feature = findFeatureByPath(item.path);
+            const featureCategory = feature ? getFeatureCategoryById(feature.category) : undefined;
             const category = item.type === 'help'
                 ? 'Help'
                 : item.type === 'action'
@@ -157,7 +163,9 @@ const createRouteCommands = (
             return {
                 id: `route-${item.type}-${item.path}`,
                 label: item.label,
-                description: `Open ${item.path}`,
+                description: featureCategory
+                    ? `${featureCategory.label}${featureCategory.planRequired ? ` • ${featureCategory.planRequired}` : ''}`
+                    : `Open ${item.path}`,
                 icon,
                 shortcut: item.shortcut,
                 category,

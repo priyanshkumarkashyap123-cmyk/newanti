@@ -28,6 +28,7 @@ import {
 } from "../../middleware/validation.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
+import { assertDesignPayload } from "../../utils/proxyContracts.js";
 
 const router: Router = express.Router();
 
@@ -40,20 +41,27 @@ const DESIGN_PRIMARY_ENGINE =
 
 type BackendService = "rust" | "python";
 
+function getRequestId(req: Request, res: Response): string | undefined {
+  const rid = res.locals.requestId || req.get("x-request-id");
+  return typeof rid === "string" && rid.length > 0 ? rid : undefined;
+}
+
 async function callBackend(
   service: BackendService,
   path: string,
   body: unknown,
   timeoutMs: number,
+  requestId?: string,
 ) {
   if (service === "rust") {
-    return rustProxy("POST", path, body, undefined, timeoutMs);
+    return rustProxy("POST", path, body, undefined, timeoutMs, requestId);
   }
-  return pythonProxy("POST", path, body, undefined, timeoutMs);
+  return pythonProxy("POST", path, body, undefined, timeoutMs, requestId);
 }
 
 async function forwardDesign(
   options: {
+    req: Request;
     rustPath?: string;
     pythonPath?: string;
     body: unknown;
@@ -62,7 +70,8 @@ async function forwardDesign(
     timeoutMs?: number;
   },
 ): Promise<void> {
-  const { rustPath, pythonPath, body, res, label, timeoutMs = 30_000 } = options;
+  const { req, rustPath, pythonPath, body, res, label, timeoutMs = 30_000 } = options;
+  const requestId = getRequestId(req, res);
 
   const preferRust = DESIGN_PRIMARY_ENGINE !== "python";
   const order: Array<{ service: BackendService; path: string }> = preferRust
@@ -88,8 +97,21 @@ async function forwardDesign(
   let lastStatus = 500;
 
   for (const target of order) {
-    const result = await callBackend(target.service, target.path, body, timeoutMs);
+    const result = await callBackend(target.service, target.path, body, timeoutMs, requestId);
     if (result.success) {
+      const guard = assertDesignPayload(result.data, `Design/${label}`);
+      if (!guard.ok) {
+        logger.error({ reason: guard.reason, requestId }, `[Design/${label}] Invalid upstream payload`);
+        res.status(502).json({
+          success: false,
+          error: "Invalid design payload from upstream service",
+          code: "UPSTREAM_CONTRACT_ERROR",
+          requestId,
+          service: target.service,
+        });
+        return;
+      }
+
       res.json({
         success: true,
         result: result.data,
@@ -134,6 +156,7 @@ router.post(
   validateBody(steelDesignSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath:
         req.body?.code === "AISC360"
           ? "/api/design/aisc360/bending"
@@ -155,6 +178,7 @@ router.post(
   validateBody(concreteBeamSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/is456/flexural-capacity",
       pythonPath: "/design/concrete/check",
       body: { ...req.body, element_type: "beam", code: "IS456" },
@@ -173,6 +197,7 @@ router.post(
   validateBody(concreteColumnSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/is456/biaxial-column",
       pythonPath: "/design/concrete/check",
       body: { ...req.body, element_type: "column", code: "IS456" },
@@ -191,6 +216,7 @@ router.post(
   validateBody(connectionDesignSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: mapConnectionRustPath(req.body),
       pythonPath: "/design/connection/check",
       body: req.body,
@@ -210,6 +236,7 @@ router.post(
   asyncHandler(async (req: Request, res: Response) => {
     // Rust endpoint parity for foundation design is not complete yet.
     await forwardDesign({
+      req,
       pythonPath: "/design/foundation/check",
       body: req.body,
       res,
@@ -225,6 +252,7 @@ router.post(
 
 router.post("/aisc", asyncHandler(async (req: Request, res: Response) => {
   await forwardDesign({
+    req,
     rustPath: "/api/design/aisc360/bending",
     pythonPath: "/design/steel/check",
     body: { ...req.body, code: "AISC360" },
@@ -235,6 +263,7 @@ router.post("/aisc", asyncHandler(async (req: Request, res: Response) => {
 
 router.post("/is800", asyncHandler(async (req: Request, res: Response) => {
   await forwardDesign({
+    req,
     rustPath: "/api/design/is800/auto-select",
     pythonPath: "/design/steel/check",
     body: { ...req.body, code: "IS800" },
@@ -245,6 +274,7 @@ router.post("/is800", asyncHandler(async (req: Request, res: Response) => {
 
 router.post("/steel/check", asyncHandler(async (req: Request, res: Response) => {
   await forwardDesign({
+    req,
     rustPath:
       req.body?.code === "AISC360"
         ? "/api/design/aisc360/bending"
@@ -258,6 +288,7 @@ router.post("/steel/check", asyncHandler(async (req: Request, res: Response) => 
 
 router.post("/concrete/check", asyncHandler(async (req: Request, res: Response) => {
   await forwardDesign({
+    req,
     rustPath:
       req.body?.element_type === "column"
         ? "/api/design/is456/biaxial-column"
@@ -271,6 +302,7 @@ router.post("/concrete/check", asyncHandler(async (req: Request, res: Response) 
 
 router.post("/optimize", asyncHandler(async (req: Request, res: Response) => {
   await forwardDesign({
+    req,
     rustPath: "/api/optimization/auto-select",
     pythonPath: "/design/optimize",
     body: req.body,
@@ -289,6 +321,7 @@ router.post(
   validateBody(geotechSptSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/spt-correlation",
       body: req.body,
       res,
@@ -302,6 +335,7 @@ router.post(
   validateBody(geotechInfiniteSlopeSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/slope/infinite",
       body: req.body,
       res,
@@ -315,6 +349,7 @@ router.post(
   validateBody(geotechBearingCapacitySchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/foundation/bearing-capacity",
       body: req.body,
       res,
@@ -328,6 +363,7 @@ router.post(
   validateBody(geotechRetainingWallSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/retaining-wall/stability",
       body: req.body,
       res,
@@ -341,6 +377,7 @@ router.post(
   validateBody(geotechSettlementSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/settlement/consolidation",
       body: req.body,
       res,
@@ -354,6 +391,7 @@ router.post(
   validateBody(geotechLiquefactionSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/liquefaction/screening",
       body: req.body,
       res,
@@ -367,6 +405,7 @@ router.post(
   validateBody(geotechPileAxialSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/foundation/pile-axial-capacity",
       body: req.body,
       res,
@@ -380,6 +419,7 @@ router.post(
   validateBody(geotechRankineSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/earth-pressure/rankine",
       body: req.body,
       res,
@@ -393,6 +433,7 @@ router.post(
   validateBody(geotechSeismicEarthPressureSchema),
   asyncHandler(async (req: Request, res: Response) => {
     await forwardDesign({
+      req,
       rustPath: "/api/design/geotech/earth-pressure/seismic",
       body: req.body,
       res,

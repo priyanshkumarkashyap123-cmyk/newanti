@@ -166,6 +166,7 @@ describe('Design geotechnical gateway routes (Rust-first)', () => {
       payload,
       undefined,
       30000,
+      undefined,
     );
     expect(pythonProxyMock).not.toHaveBeenCalled();
   });

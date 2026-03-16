@@ -68,6 +68,6 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             if request.url.path not in ("/", "/health", "/docs", "/openapi.json", "/redoc"):
                 logger.info(f"{request.method} {request.url.path} {status} ({duration_ms}ms)", extra=log_extra)
 
-        # Pass request_id downstream in response headers
-        response.headers["X-Request-Id"] = request_id
+        # Pass request_id downstream in response headers (canonical casing)
+        response.headers["X-Request-ID"] = request_id
         return response

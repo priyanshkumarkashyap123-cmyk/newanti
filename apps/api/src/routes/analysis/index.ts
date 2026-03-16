@@ -17,8 +17,14 @@ import { requireAuth, getAuth } from "../../middleware/authMiddleware.js";
 import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
 import { cacheKey, getCachedResult, setCachedResult } from "../../utils/resultCache.js";
+import { assertAnalysisPayload } from "../../utils/proxyContracts.js";
 
 const router: Router = express.Router();
+
+function getRequestId(req: Request, res: Response): string | undefined {
+    const rid = res.locals.requestId || req.get("x-request-id");
+    return typeof rid === "string" && rid.length > 0 ? rid : undefined;
+}
 
 // SECURITY: All analysis routes require authentication
 router.use(requireAuth());
@@ -204,8 +210,21 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
         return;
     }
 
-    const result = await rustProxy("POST", "/api/analyze", model, undefined, 120_000);
+    const requestId = getRequestId(req, res);
+    const result = await rustProxy("POST", "/api/analyze", model, undefined, 120_000, requestId);
     if (result.success) {
+        const guard = assertAnalysisPayload(result.data, "Analysis");
+        if (!guard.ok) {
+            logger.error({ reason: guard.reason, requestId }, "[Analysis] Invalid upstream payload");
+            res.status(502).json({
+                success: false,
+                error: "Invalid analysis payload from upstream service",
+                code: "UPSTREAM_CONTRACT_ERROR",
+                requestId,
+            });
+            return;
+        }
+
         setCachedResult(key, result.data);
         res.setHeader("X-Analysis-Cache", "MISS");
         res.json(result.data);
@@ -225,12 +244,26 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
 async function forwardAnalysisToRust(
     rustPath: string,
     body: unknown,
+    req: Request,
     res: Response,
     label: string,
     timeoutMs = 120_000,
 ): Promise<void> {
-    const result = await rustProxy("POST", rustPath, body, undefined, timeoutMs);
+    const requestId = getRequestId(req, res);
+    const result = await rustProxy("POST", rustPath, body, undefined, timeoutMs, requestId);
     if (result.success) {
+        const guard = assertAnalysisPayload(result.data, `Analysis/${label}`);
+        if (!guard.ok) {
+            logger.error({ reason: guard.reason, requestId }, `[Analysis/${label}] Invalid upstream payload`);
+            res.status(502).json({
+                success: false,
+                error: "Invalid analysis payload from upstream service",
+                code: "UPSTREAM_CONTRACT_ERROR",
+                requestId,
+            });
+            return;
+        }
+
         res.json(result.data);
         return;
     }
@@ -253,21 +286,21 @@ router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(handleAna
  * POST /analysis/modal - Matrix-based modal analysis
  */
 router.post("/modal", asyncHandler(async (req: Request, res: Response) => {
-    await forwardAnalysisToRust("/api/analysis/modal", req.body, res, "Modal", 120_000);
+    await forwardAnalysisToRust("/api/analysis/modal", req.body, req, res, "Modal", 120_000);
 }));
 
 /**
  * POST /analysis/time-history - Matrix-based time history analysis
  */
 router.post("/time-history", asyncHandler(async (req: Request, res: Response) => {
-    await forwardAnalysisToRust("/api/analysis/time-history", req.body, res, "TimeHistory", 180_000);
+    await forwardAnalysisToRust("/api/analysis/time-history", req.body, req, res, "TimeHistory", 180_000);
 }));
 
 /**
  * POST /analysis/seismic - Matrix-based seismic response analysis
  */
 router.post("/seismic", asyncHandler(async (req: Request, res: Response) => {
-    await forwardAnalysisToRust("/api/analysis/seismic", req.body, res, "Seismic", 120_000);
+    await forwardAnalysisToRust("/api/analysis/seismic", req.body, req, res, "Seismic", 120_000);
 }));
 
 /**

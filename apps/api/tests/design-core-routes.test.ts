@@ -105,6 +105,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.any(Object),
       undefined,
       30000,
+      undefined,
     );
   });
 
@@ -121,6 +122,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.objectContaining({ code: 'AISC360' }),
       undefined,
       30000,
+      undefined,
     );
   });
 
@@ -147,6 +149,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.any(Object),
       undefined,
       30000,
+      undefined,
     );
   });
 
@@ -162,6 +165,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.objectContaining({ element_type: 'beam', code: 'IS456' }),
       undefined,
       30000,
+      undefined,
     );
 
     expect(rustProxyMock).toHaveBeenCalledWith(
@@ -170,6 +174,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.objectContaining({ element_type: 'column', code: 'IS456' }),
       undefined,
       30000,
+      undefined,
     );
   });
 
@@ -200,6 +205,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.any(Object),
       undefined,
       30000,
+      undefined,
     );
     expect(rustProxyMock).toHaveBeenCalledWith(
       'POST',
@@ -207,6 +213,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.any(Object),
       undefined,
       30000,
+      undefined,
     );
     expect(rustProxyMock).toHaveBeenCalledWith(
       'POST',
@@ -214,6 +221,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.any(Object),
       undefined,
       30000,
+      undefined,
     );
   });
 
@@ -238,6 +246,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.any(Object),
       undefined,
       30000,
+      undefined,
     );
   });
 
@@ -249,9 +258,9 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
     await request(app).post('/api/design/steel/check').send({ code: 'AISC360' });
     await request(app).post('/api/design/concrete/check').send({ element_type: 'column' });
 
-    expect(rustProxyMock).toHaveBeenCalledWith('POST', '/api/design/aisc360/bending', expect.any(Object), undefined, 30000);
-    expect(rustProxyMock).toHaveBeenCalledWith('POST', '/api/design/is800/auto-select', expect.any(Object), undefined, 30000);
-    expect(rustProxyMock).toHaveBeenCalledWith('POST', '/api/design/is456/biaxial-column', expect.any(Object), undefined, 30000);
+    expect(rustProxyMock).toHaveBeenCalledWith('POST', '/api/design/aisc360/bending', expect.any(Object), undefined, 30000, undefined);
+    expect(rustProxyMock).toHaveBeenCalledWith('POST', '/api/design/is800/auto-select', expect.any(Object), undefined, 30000, undefined);
+    expect(rustProxyMock).toHaveBeenCalledWith('POST', '/api/design/is456/biaxial-column', expect.any(Object), undefined, 30000, undefined);
   });
 
   it('uses 60s timeout for /optimize route forwarding', async () => {
@@ -265,6 +274,7 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
       expect.any(Object),
       undefined,
       60000,
+      undefined,
     );
   });
 
@@ -277,5 +287,22 @@ describe('Design core gateway routes (Rust + Python fallback)', () => {
     expect(response.body.error).toBe('Validation failed');
     expect(rustProxyMock).not.toHaveBeenCalled();
     expect(pythonProxyMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 502 when upstream design payload violates contract', async () => {
+    rustProxyMock.mockResolvedValueOnce({
+      success: true,
+      status: 200,
+      data: { foo: 'bar' },
+      service: 'rust',
+      latencyMs: 2,
+    });
+
+    const app = makeApp();
+    const response = await request(app).post('/api/design/steel').send(validSteelPayload);
+
+    expect(response.status).toBe(502);
+    expect(response.body.success).toBe(false);
+    expect(response.body.code).toBe('UPSTREAM_CONTRACT_ERROR');
   });
 });

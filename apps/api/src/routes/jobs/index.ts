@@ -9,8 +9,14 @@ import express, { Router, Request, Response } from "express";
 import { pythonProxy } from "../../services/serviceProxy.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
+import { assertProxyObjectPayload } from "../../utils/proxyContracts.js";
 
 const router: Router = express.Router();
+
+function getRequestId(req: Request, res: Response): string | undefined {
+  const rid = res.locals.requestId || req.get("x-request-id");
+  return typeof rid === "string" && rid.length > 0 ? rid : undefined;
+}
 
 // ============================================
 // Helper: Forward to Python
@@ -20,19 +26,34 @@ async function forwardToPython(
   method: "GET" | "POST" | "DELETE",
   pythonPath: string,
   body: unknown | undefined,
+  req: Request,
   res: Response,
   label: string,
   timeoutMs = 30_000,
 ): Promise<void> {
   try {
+    const requestId = getRequestId(req, res);
     const result = await pythonProxy(
       method,
       pythonPath,
       body,
       undefined,
       timeoutMs,
+      requestId,
     );
     if (result.success) {
+      const guard = assertProxyObjectPayload(result.data, `Jobs/${label}`);
+      if (!guard.ok) {
+        logger.error({ reason: guard.reason, requestId }, `[Jobs/${label}] Invalid upstream payload`);
+        res.status(502).json({
+          success: false,
+          error: "Invalid jobs payload from upstream service",
+          code: "UPSTREAM_CONTRACT_ERROR",
+          requestId,
+        });
+        return;
+      }
+
       res.json(result.data);
     } else {
       res.status(result.status || 500).json({
@@ -55,22 +76,23 @@ async function forwardToPython(
 // ============================================
 
 router.post("/", asyncHandler(async (req: Request, res: Response) => {
-  await forwardToPython("POST", "/api/jobs/submit", req.body, res, "Submit");
+  await forwardToPython("POST", "/api/jobs/submit", req.body, req, res, "Submit");
 }));
 
 router.post("/submit", asyncHandler(async (req: Request, res: Response) => {
-  await forwardToPython("POST", "/api/jobs/submit", req.body, res, "Submit");
+  await forwardToPython("POST", "/api/jobs/submit", req.body, req, res, "Submit");
 }));
 
 // ============================================
 // GET /jobs/queue/status - Queue statistics
 // ============================================
 
-router.get("/queue/status", asyncHandler(async (_req: Request, res: Response) => {
+router.get("/queue/status", asyncHandler(async (req: Request, res: Response) => {
   await forwardToPython(
     "GET",
     "/api/jobs/queue/status",
     undefined,
+    req,
     res,
     "QueueStatus",
   );
@@ -82,7 +104,7 @@ router.get("/queue/status", asyncHandler(async (_req: Request, res: Response) =>
 
 router.get("/:id", asyncHandler(async (req: Request, res: Response) => {
   const jobId = req.params["id"] ?? "";
-  await forwardToPython("GET", `/api/jobs/${jobId}`, undefined, res, "Status");
+  await forwardToPython("GET", `/api/jobs/${jobId}`, undefined, req, res, "Status");
 }));
 
 // ============================================
@@ -95,6 +117,7 @@ router.delete("/:id", asyncHandler(async (req: Request, res: Response) => {
     "DELETE",
     `/api/jobs/${jobId}`,
     undefined,
+    req,
     res,
     "Cancel",
   );

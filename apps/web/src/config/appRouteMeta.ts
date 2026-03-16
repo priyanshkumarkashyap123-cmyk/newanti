@@ -57,6 +57,21 @@ export interface AppFeatureCategory {
   features: AppFeatureItem[];
 }
 
+export type FeatureAudienceTier = 'free' | 'pro' | 'enterprise';
+
+export interface FeatureCategoryQueryOptions {
+  query?: string;
+  prominence?: AppFeatureCategory['prominence'] | AppFeatureCategory['prominence'][];
+  tier?: FeatureAudienceTier;
+  includeLocked?: boolean;
+}
+
+export interface FeatureBundleCollections {
+  primary: AppFeatureCategory[];
+  secondary: AppFeatureCategory[];
+  advanced: AppFeatureCategory[];
+}
+
 interface RoutePrefixTitle {
   prefix: string;
   title: string;
@@ -307,6 +322,18 @@ export const APP_FEATURE_ITEMS: AppFeatureItem[] = APP_FEATURE_CATEGORIES.flatMa
   (category) => category.features,
 );
 
+const PROMINENCE_ORDER: Record<NonNullable<AppFeatureCategory['prominence']>, number> = {
+  primary: 0,
+  secondary: 1,
+  advanced: 2,
+};
+
+const TIER_ORDER: Record<FeatureAudienceTier, number> = {
+  free: 0,
+  pro: 1,
+  enterprise: 2,
+};
+
 const FEATURE_BY_PATH: Record<string, AppFeatureItem> = APP_FEATURE_ITEMS.reduce<
   Record<string, AppFeatureItem>
 >((acc, feature) => {
@@ -336,21 +363,93 @@ export function getFeatureCategoryById(
   return APP_FEATURE_CATEGORIES.find((category) => category.id === categoryId);
 }
 
-export function getFeatureCategories(query?: string): AppFeatureCategory[] {
-  const normalized = query?.trim().toLowerCase();
-  if (!normalized) return APP_FEATURE_CATEGORIES;
+export function isCategoryAccessibleForTier(
+  category: AppFeatureCategory,
+  tier: FeatureAudienceTier = 'free',
+): boolean {
+  if (!category.planRequired) return true;
+  return TIER_ORDER[tier] >= TIER_ORDER[category.planRequired];
+}
 
-  return APP_FEATURE_CATEGORIES.map((category) => ({
-    ...category,
-    features: category.features.filter((feature) => {
-      return (
-        feature.label.toLowerCase().includes(normalized) ||
-        feature.description?.toLowerCase().includes(normalized) ||
-        feature.id.toLowerCase().includes(normalized) ||
-        feature.path.toLowerCase().includes(normalized)
-      );
-    }),
-  })).filter((category) => category.features.length > 0);
+export function getFeatureCategories(
+  queryOrOptions?: string | FeatureCategoryQueryOptions,
+): AppFeatureCategory[] {
+  const options: FeatureCategoryQueryOptions =
+    typeof queryOrOptions === 'string' ? { query: queryOrOptions } : queryOrOptions ?? {};
+
+  const normalized = options.query?.trim().toLowerCase();
+  const prominenceFilter = options.prominence
+    ? Array.isArray(options.prominence)
+      ? options.prominence
+      : [options.prominence]
+    : null;
+  const tier = options.tier ?? 'free';
+  const includeLocked = options.includeLocked ?? true;
+
+  return APP_FEATURE_CATEGORIES
+    .filter((category) => {
+      if (prominenceFilter && !prominenceFilter.includes(category.prominence)) {
+        return false;
+      }
+
+      if (!includeLocked && !isCategoryAccessibleForTier(category, tier)) {
+        return false;
+      }
+
+      return true;
+    })
+    .map((category) => ({
+      ...category,
+      features: normalized
+        ? category.features.filter((feature) => {
+            return (
+              feature.label.toLowerCase().includes(normalized) ||
+              feature.description?.toLowerCase().includes(normalized) ||
+              feature.id.toLowerCase().includes(normalized) ||
+              feature.path.toLowerCase().includes(normalized) ||
+              category.label.toLowerCase().includes(normalized)
+            );
+          })
+        : category.features,
+    }))
+    .filter((category) => category.features.length > 0)
+    .sort((a, b) => {
+      const accessibilityDelta =
+        Number(isCategoryAccessibleForTier(b, tier)) - Number(isCategoryAccessibleForTier(a, tier));
+      if (accessibilityDelta !== 0) return accessibilityDelta;
+
+      const prominenceDelta =
+        PROMINENCE_ORDER[a.prominence ?? 'secondary'] -
+        PROMINENCE_ORDER[b.prominence ?? 'secondary'];
+      if (prominenceDelta !== 0) return prominenceDelta;
+
+      return a.label.localeCompare(b.label);
+    });
+}
+
+export function getBundleCollections(
+  options?: Omit<FeatureCategoryQueryOptions, 'prominence'>,
+): FeatureBundleCollections {
+  return {
+    primary: getFeatureCategories({ ...options, prominence: 'primary' }),
+    secondary: getFeatureCategories({ ...options, prominence: 'secondary' }),
+    advanced: getFeatureCategories({ ...options, prominence: 'advanced' }),
+  };
+}
+
+export function getFeatureContextByPath(pathname: string): {
+  feature?: AppFeatureItem;
+  category?: AppFeatureCategory;
+  accessible: boolean;
+} {
+  const feature = findFeatureByPath(pathname);
+  const category = feature ? getFeatureCategoryById(feature.category) : undefined;
+
+  return {
+    feature,
+    category,
+    accessible: category ? isCategoryAccessibleForTier(category, 'free') : true,
+  };
 }
 
 export function getSearchItems(query?: string): SearchRouteItem[] {

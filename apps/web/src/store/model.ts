@@ -164,14 +164,14 @@ interface ModelState {
 
   // Tools
   activeTool:
-    | "select"
-    | "node"
-    | "member"
-    | "support"
-    | "load"
-    | "memberLoad"
-    | "select_range"
-    | null;
+  | "select"
+  | "node"
+  | "member"
+  | "support"
+  | "load"
+  | "memberLoad"
+  | "select_range"
+  | null;
   setTool: (
     tool:
       | "select"
@@ -350,9 +350,9 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
     activeLoadCaseId: null,
     projectInfo: data.projectInfo
       ? {
-          ...data.projectInfo,
-          date: data.projectInfo.date ? new Date(data.projectInfo.date) : new Date(),
-        }
+        ...data.projectInfo,
+        date: data.projectInfo.date ? new Date(data.projectInfo.date) : new Date(),
+      }
       : undefined,
     selectedIds: new Set(),
     analysisResults: null,
@@ -384,7 +384,7 @@ function hydrateProjectData(data: SavedProjectData): Partial<ModelState> | null 
 // Only enable devtools in development to avoid expensive serialization in production
 const withDevtools = <T,>(fn: T): T => {
   if (import.meta.env.DEV) {
-     
+
     return devtools(fn as any, { name: 'ModelStore', serialize: { options: { map: true } } }) as unknown as T;
   }
   return fn;
@@ -1291,7 +1291,7 @@ export const useModelStore = create<ModelState>()(
               showDeflectedShape: false,
             },
           };
-          
+
           const profileConfig = profiles[profile] || profiles['FULL_REPORT'];
           set(profileConfig);
         },
@@ -1705,7 +1705,7 @@ export const useModelStore = create<ModelState>()(
           );
 
           // Clear selection after 4s so highlighting is transient
-          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
 
           return { createdNodeIds, createdMemberIds };
         },
@@ -1781,7 +1781,7 @@ export const useModelStore = create<ModelState>()(
             'success',
             `Created ${createdNodeIds.length} nodes and ${createdMemberIds.length} members`
           );
-          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
 
           return { createdNodeIds, createdMemberIds };
         },
@@ -1837,7 +1837,7 @@ export const useModelStore = create<ModelState>()(
             'success',
             `Auto-noded ${createdNodeIds.length} intersections, created ${createdMemberIds.length} members`
           );
-          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
+          try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
 
           return { createdNodeIds, createdMemberIds, deletedMemberIds, intersectionCount: createdNodeIds.length };
         },
@@ -1911,10 +1911,10 @@ export const useModelStore = create<ModelState>()(
                 'success',
                 `Inserted node ${newNodeId} and split into ${createdMemberIds.length} members`
               );
-            } catch (e) {}
+            } catch (e) { }
 
             set(() => ({ selectedIds: new Set<string>([...createdNodeIds, ...createdMemberIds]) }));
-            try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) {}
+            try { setTimeout(() => set(() => ({ selectedIds: new Set<string>() })), 4000); } catch (e) { }
 
             return {
               nodes: newNodes,
@@ -2127,7 +2127,7 @@ export const useModelStore = create<ModelState>()(
             return { civilData: newCivilData };
           }),
       }),
-      { 
+      {
         limit: 25, // Limit undo history
         // Only track structural data in undo history — exclude volatile UI/analysis state
         partialize: (state) => ({
@@ -2164,6 +2164,10 @@ export const useModelStore = create<ModelState>()(
     ),
   ),
 );
+
+// Expose the store on globalThis so uiStore validation can lazy-bind without circular imports
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).__beamlab_model_store__ = useModelStore;
 
 // Re-export with temporal type that is erased by the withDevtools any wrapper
 export const useModelStoreTemporal = (useModelStore as unknown as {

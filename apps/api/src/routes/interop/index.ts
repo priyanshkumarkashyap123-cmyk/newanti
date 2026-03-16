@@ -11,8 +11,14 @@ import { pythonProxy } from "../../services/serviceProxy.js";
 import { requireAuth } from "../../middleware/authMiddleware.js";
 import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
+import { assertProxyObjectPayload } from "../../utils/proxyContracts.js";
 
 const router: IRouter = Router();
+
+function getRequestId(req: Request, res: Response): string | undefined {
+    const rid = res.locals.requestId || req.get("x-request-id");
+    return typeof rid === "string" && rid.length > 0 ? rid : undefined;
+}
 
 // All interop routes require authentication
 router.use(requireAuth());
@@ -24,13 +30,27 @@ router.use(requireAuth());
 async function forwardToPython(
     pythonPath: string,
     body: unknown,
+    req: Request,
     res: Response,
     label: string,
     timeoutMs = 30_000,
 ): Promise<void> {
     try {
-        const result = await pythonProxy("POST", pythonPath, body, undefined, timeoutMs);
+        const requestId = getRequestId(req, res);
+        const result = await pythonProxy("POST", pythonPath, body, undefined, timeoutMs, requestId);
         if (result.success) {
+            const guard = assertProxyObjectPayload(result.data, `Interop/${label}`);
+            if (!guard.ok) {
+                logger.error({ reason: guard.reason, requestId }, `[Interop/${label}] Invalid upstream payload`);
+                res.status(502).json({
+                    success: false,
+                    error: "Invalid interop payload from upstream service",
+                    code: "UPSTREAM_CONTRACT_ERROR",
+                    requestId,
+                });
+                return;
+            }
+
             res.json(result.data);
         } else {
             res.status(result.status || 500).json({
@@ -56,7 +76,7 @@ router.post("/staad/import", asyncHandler(async (req: Request, res: Response) =>
     if (!content) {
         throw new HttpError(400, "Missing file content");
     }
-    await forwardToPython("/interop/staad/import", { content }, res, "STAAD Import");
+    await forwardToPython("/interop/staad/import", { content }, req, res, "STAAD Import");
 }));
 
 // ============================================
@@ -68,7 +88,7 @@ router.post("/staad/export", asyncHandler(async (req: Request, res: Response) =>
     if (!model) {
         throw new HttpError(400, "Missing model data");
     }
-    await forwardToPython("/interop/staad/export", { model }, res, "STAAD Export");
+    await forwardToPython("/interop/staad/export", { model }, req, res, "STAAD Export");
 }));
 
 // ============================================
@@ -80,7 +100,7 @@ router.post("/dxf/import", asyncHandler(async (req: Request, res: Response) => {
     if (!content) {
         throw new HttpError(400, "Missing file content");
     }
-    await forwardToPython("/interop/dxf/import", { content }, res, "DXF Import");
+    await forwardToPython("/interop/dxf/import", { content }, req, res, "DXF Import");
 }));
 
 // ============================================
@@ -95,6 +115,7 @@ router.post("/report/generate", asyncHandler(async (req: Request, res: Response)
     await forwardToPython(
         "/reports/generate",
         { model, results, options },
+        req,
         res,
         "Report Gen",
         60_000, // Reports can take longer

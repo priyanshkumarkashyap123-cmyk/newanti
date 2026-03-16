@@ -265,55 +265,118 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // Health check (public — must be before auth middleware)
+// CRITICAL: Returns 503 if dependencies (MongoDB) are not healthy.
+// Azure health probe uses this to decide whether to restart the container.
 app.get("/health", async (_req: Request, res: Response) => {
   let dbStatus = "unknown";
+  let isHealthy = false;
+  
   try {
     const mongoose = await import("mongoose");
-    dbStatus =
-      mongoose.default.connection.readyState === 1
+    const readyState = mongoose.default.connection.readyState;
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    dbStatus = 
+      readyState === 1
         ? "connected"
-        : "disconnected";
-  } catch {
+        : readyState === 0
+        ? "disconnected"
+        : "transitioning";
+    isHealthy = readyState === 1;
+  } catch (err) {
     dbStatus = "error";
+    isHealthy = false;
   }
 
-  let circuitBreakers: Record<string, unknown> = {};
-  try {
-    const { getAllCircuitStats } = await import("./utils/circuitBreaker.js");
-    circuitBreakers = getAllCircuitStats();
-  } catch {
-    /* not critical */
-  }
+  // Return 503 if not healthy so Azure health probe triggers restart
+  const statusCode = isHealthy ? 200 : 503;
+  const status = isHealthy ? "healthy" : "degraded";
 
-  let analysisCache: Record<string, unknown> = {};
-  try {
-    const { getCacheStats } = await import("./utils/resultCache.js");
-    analysisCache = getCacheStats();
-  } catch {
-    /* not critical */
-  }
-
-  const status = dbStatus === "connected" ? "ok" : "degraded";
-
-  const isDev = process.env["NODE_ENV"] !== "production";
-
-  // Always return 200 so Azure health probes don't restart the container.
-  // The actual dependency status is reported in the JSON body.
-  res.status(200).json({
+  res.status(statusCode).json({
     status,
     service: "BeamLab Ultimate API",
     timestamp: new Date().toISOString(),
-    ...(isDev && {
-      version: process.env.npm_package_version || "1.0.0",
-      uptime: Math.floor(process.uptime()),
-      websocket: true,
-      authProvider: isUsingClerk() ? "clerk" : "inhouse",
-      dependencies: { mongodb: dbStatus },
-      circuitBreakers,
-      analysisCache,
-    }),
+    dependencies: { mongodb: dbStatus },
   });
 });
+
+app.get("/health/dependencies", async (_req: Request, res: Response) => {
+  let mongo = { healthy: false, status: "unknown" as "connected" | "disconnected" | "error" | "unknown" };
+  let rust = { healthy: false, latencyMs: 0 };
+  let python = { healthy: false, latencyMs: 0 };
+  let circuitBreakers: Record<string, unknown> = {};
+
+  try {
+    const mongoose = await import("mongoose");
+    const readyState = mongoose.default.connection.readyState;
+    mongo = {
+      healthy: readyState === 1,
+      status: readyState === 1 ? "connected" : "disconnected",
+    };
+  } catch {
+    mongo = { healthy: false, status: "error" };
+  }
+
+  try {
+    const { checkBackendHealth, getServiceCircuitStats } = await import("./services/serviceProxy.js");
+    const backendHealth = await checkBackendHealth();
+    rust = backendHealth.rust;
+    python = backendHealth.python;
+    circuitBreakers = getServiceCircuitStats();
+  } catch {
+    // keep defaults if service proxy health checks are unavailable
+  }
+
+  const allHealthy = mongo.healthy && rust.healthy && python.healthy;
+  const status = allHealthy ? "ok" : "degraded";
+
+  res.status(allHealthy ? 200 : 503).json({
+    status,
+    service: "BeamLab Ultimate API",
+    timestamp: new Date().toISOString(),
+    dependencies: {
+      mongodb: mongo,
+      rustApi: rust,
+      pythonApi: python,
+    },
+    circuitBreakers,
+  });
+});
+
+app.get("/health/ready", async (_req: Request, res: Response) => {
+  let mongoHealthy = false;
+  let rustHealthy = false;
+  let pythonHealthy = false;
+
+  try {
+    const mongoose = await import("mongoose");
+    mongoHealthy = mongoose.default.connection.readyState === 1;
+  } catch {
+    mongoHealthy = false;
+  }
+
+  try {
+    const { checkBackendHealth } = await import("./services/serviceProxy.js");
+    const backendHealth = await checkBackendHealth();
+    rustHealthy = backendHealth.rust.healthy;
+    pythonHealthy = backendHealth.python.healthy;
+  } catch {
+    rustHealthy = false;
+    pythonHealthy = false;
+  }
+
+  const ready = mongoHealthy && rustHealthy && pythonHealthy;
+  res.status(ready ? 200 : 503).json({
+    ready,
+    service: "BeamLab Ultimate API",
+    timestamp: new Date().toISOString(),
+    details: {
+      mongodb: mongoHealthy,
+      rustApi: rustHealthy,
+      pythonApi: pythonHealthy,
+    },
+  });
+});
+
 app.get("/api/health", (_req: Request, res: Response) => {
   res.redirect("/health");
 });

@@ -55,7 +55,15 @@ const MIGRATIONS: MigrationEntry[] = [
         name: '20260302000000_add_master_db_collections',
         module: () => import('./20260302000000_add_master_db_collections.js'),
     },
+    {
+        name: '20260316000000_add_quota_and_collaboration',
+        module: () => import('./20260316000000_add_quota_and_collaboration.js'),
+    },
 ];
+
+export function getRegisteredMigrationNames(): string[] {
+    return MIGRATIONS.map((m) => m.name);
+}
 
 // ============================================
 // MIGRATION COLLECTION SCHEMA

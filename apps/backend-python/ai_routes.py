@@ -40,6 +40,26 @@ def get_ai_assistant():
 def get_enhanced_brain():
     return get_ai_brain()
 
+
+def _record_ai_metric(start_time: float, success: bool, query_type: str) -> None:
+    """Best-effort metrics capture for AI route execution."""
+    try:
+        response_time_ms = (time.time() - start_time) * 1000
+        ai_power_engine.metrics.record_query(
+            response_time=response_time_ms,
+            was_successful=success,
+            confidence=100.0 if success else 0.0,
+            query_type=query_type,
+        )
+    except Exception:
+        # Metrics must never break API flow.
+        pass
+
+
+def _raise_internal_error(exc: Exception, route_name: str) -> None:
+    """Raise a consistent internal error for AI routes."""
+    raise HTTPException(status_code=500, detail=f"{route_name} failed: {str(exc)}")
+
 @router.get("/status")
 async def ai_status():
     """
@@ -81,31 +101,51 @@ async def diagnose_model(request: DiagnoseRequest, assistant: AIModelAssistant =
     """
     Diagnose issues in a structural model.
     """
+    start_time = time.time()
     try:
-        return assistant.diagnose(request.model)
+        result = assistant.diagnose(request.model)
+        _record_ai_metric(start_time, True, "diagnose")
+        return result
+    except ValueError as e:
+        _record_ai_metric(start_time, False, "diagnose")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _record_ai_metric(start_time, False, "diagnose")
+        _raise_internal_error(e, "Diagnose")
 
 @router.post("/fix")
 async def fix_model(request: FixRequest, assistant: AIModelAssistant = Depends(get_ai_assistant)):
     """
     Attempt to auto-fix issues in a structural model.
     """
+    start_time = time.time()
     try:
-        return assistant.fix(request.model)
+        result = assistant.fix(request.model)
+        _record_ai_metric(start_time, bool(result.get("success", True)), "fix")
+        return result
+    except ValueError as e:
+        _record_ai_metric(start_time, False, "fix")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _record_ai_metric(start_time, False, "fix")
+        _raise_internal_error(e, "Fix")
 
 @router.post("/modify")
 async def modify_model(request: ModifyRequest, assistant: AIModelAssistant = Depends(get_ai_assistant)):
     """
     Modify a structural model using natural language commands (legacy).
     """
+    start_time = time.time()
     try:
         result = assistant.modify(request.model, request.command)
+        _record_ai_metric(start_time, bool(result.get("success", True)), "modify")
         return result
+    except ValueError as e:
+        _record_ai_metric(start_time, False, "modify")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _record_ai_metric(start_time, False, "modify")
+        _raise_internal_error(e, "Modify")
 
 @router.post("/smart-modify")
 async def smart_modify_model(request: SmartModifyRequest, brain: EnhancedAIBrain = Depends(get_enhanced_brain)):
@@ -119,6 +159,7 @@ async def smart_modify_model(request: SmartModifyRequest, brain: EnhancedAIBrain
     - Context-aware modifications
     - Helpful suggestions
     """
+    start_time = time.time()
     try:
         # Set model context for better understanding
         brain.set_model_context(request.model)
@@ -139,13 +180,18 @@ async def smart_modify_model(request: SmartModifyRequest, brain: EnhancedAIBrain
             'confidence': parsed.confidence,
             'entities': parsed.entities
         }
+
+        _record_ai_metric(start_time, bool(result.get("success", True)), "smart_modify")
         
         return result
-        
+    except ValueError as e:
+        _record_ai_metric(start_time, False, "smart_modify")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        _record_ai_metric(start_time, False, "smart_modify")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        _raise_internal_error(e, "Smart modify")
 
 @router.post("/parse-command")
 async def parse_command(request: ModifyRequest, brain: EnhancedAIBrain = Depends(get_enhanced_brain)):
@@ -153,9 +199,11 @@ async def parse_command(request: ModifyRequest, brain: EnhancedAIBrain = Depends
     Parse a natural language command without executing it.
     Useful for previewing what the AI understood.
     """
+    start_time = time.time()
     try:
         brain.set_model_context(request.model)
         parsed = brain.parse_command(request.command)
+        _record_ai_metric(start_time, True, "parse_command")
         
         return {
             "success": True,
@@ -165,25 +213,35 @@ async def parse_command(request: ModifyRequest, brain: EnhancedAIBrain = Depends
             "suggestions": parsed.suggestions,
             "raw_text": parsed.raw_text
         }
+    except ValueError as e:
+        _record_ai_metric(start_time, False, "parse_command")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        _record_ai_metric(start_time, False, "parse_command")
+        _raise_internal_error(e, "Parse command")
 
 @router.post("/suggest")
 async def suggest_improvements(request: SuggestionRequest, brain: EnhancedAIBrain = Depends(get_enhanced_brain)):
     """
     Generate intelligent design suggestions for the model.
     """
+    start_time = time.time()
     try:
         suggestions = brain.generate_suggestions(
             model=request.model,
             step=request.step,
             analysis_results=request.analysis_results
         )
+        _record_ai_metric(start_time, True, "suggest")
         return {"success": True, "suggestions": suggestions}
+    except ValueError as e:
+        _record_ai_metric(start_time, False, "suggest")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        _record_ai_metric(start_time, False, "suggest")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        _raise_internal_error(e, "Suggest")
 
 
 # ============================================

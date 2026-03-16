@@ -214,6 +214,9 @@ jobs:
       - name: Web design contract tests
         run: pnpm --dir apps/web exec vitest run src/__tests__/pages/GeotechnicalDesignPage.test.tsx src/config/__tests__/appRouteMeta.test.ts
 
+      - name: Web route metadata parity guard
+        run: pnpm --dir apps/web test:route-parity
+
       - name: Web type-check
         run: pnpm --dir apps/web type-check
 

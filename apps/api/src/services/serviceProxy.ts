@@ -16,6 +16,10 @@
  */
 
 import { env } from '../config/env.js';
+import {
+    assertServiceTrustConfigured,
+    getInternalServiceHeaders,
+} from '../config/serviceTrust.js';
 import { logger } from '../utils/logger.js';
 
 // ============================================
@@ -90,6 +94,8 @@ export interface ProxyOptions {
     timeoutMs?: number;
     /** Number of retries on failure (default: 1) */
     retries?: number;
+    /** Upstream request correlation ID */
+    requestId?: string;
 }
 
 export interface ProxyResult<T = unknown> {
@@ -114,6 +120,7 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
         query,
         timeoutMs = 60_000,
         retries = 1,
+        requestId,
     } = options;
 
     const baseUrl = service === 'rust' ? RUST_API_URL : PYTHON_API_URL;
@@ -150,19 +157,22 @@ export async function proxyRequest<T = unknown>(options: ProxyOptions): Promise<
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+            const serviceTrust = assertServiceTrustConfigured();
+            if (!serviceTrust.ok) {
+                return {
+                    success: false,
+                    status: 503,
+                    error: `Internal service trust misconfigured: ${serviceTrust.reason}`,
+                    service,
+                    latencyMs: Date.now() - start,
+                };
+            }
+
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-Forwarded-By': 'beamlab-node-gateway',
+                ...getInternalServiceHeaders(requestId),
             };
-
-            // Add internal service auth for Python API (bypass JWT verification)
-            if (service === 'python') {
-                const internalSecret = process.env['INTERNAL_SERVICE_SECRET'] || '';
-                if (internalSecret) {
-                    headers['X-Internal-Service'] = internalSecret;
-                }
-            }
 
             const fetchOptions: RequestInit = {
                 method,
@@ -242,8 +252,9 @@ export async function rustProxy<T = unknown>(
     body?: unknown,
     query?: Record<string, string | number | undefined>,
     timeoutMs?: number,
+    requestId?: string,
 ): Promise<ProxyResult<T>> {
-    return proxyRequest<T>({ service: 'rust', method, path, body, query, timeoutMs });
+    return proxyRequest<T>({ service: 'rust', method, path, body, query, timeoutMs, requestId });
 }
 
 /** Proxy to Python backend (design, AI, reports, interop) */
@@ -253,8 +264,9 @@ export async function pythonProxy<T = unknown>(
     body?: unknown,
     query?: Record<string, string | number | undefined>,
     timeoutMs?: number,
+    requestId?: string,
 ): Promise<ProxyResult<T>> {
-    return proxyRequest<T>({ service: 'python', method, path, body, query, timeoutMs });
+    return proxyRequest<T>({ service: 'python', method, path, body, query, timeoutMs, requestId });
 }
 
 /** Health check for both backends */

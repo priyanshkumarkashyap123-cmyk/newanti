@@ -8,6 +8,17 @@ import json
 from typing import Optional, Dict, Any, Tuple, List
 from dataclasses import dataclass
 from enum import Enum
+from ai_resilience import LLMResilienceGuard
+
+
+_ARCHITECT_LLM_GUARD = LLMResilienceGuard(
+    key="ai_architect_llm",
+    timeout_seconds=12.0,
+    max_retries=2,
+    retry_backoff_seconds=0.35,
+    circuit_failure_threshold=3,
+    circuit_reset_seconds=45.0,
+)
 
 class StructureType(Enum):
     SIMPLE_BEAM = "simple_beam"
@@ -581,8 +592,19 @@ USER REQUEST: {prompt}
 
 Generate a complete structural model JSON:
 """
-            
-            response = model.generate_content(enhanced_prompt)
+
+            result = _ARCHITECT_LLM_GUARD.execute(
+                lambda: model.generate_content(enhanced_prompt)
+            )
+            if not result.success or result.value is None:
+                print(
+                    "[AI Architect] LLM guarded call failed "
+                    f"(attempts={result.attempts}, timeout={result.timed_out}, "
+                    f"circuit_open={result.circuit_open}, error={result.error})"
+                )
+                return None
+
+            response = result.value
             raw_text = response.text
             
             # Clean and parse JSON

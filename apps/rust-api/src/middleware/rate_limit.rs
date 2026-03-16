@@ -11,6 +11,7 @@ use governor::{Quota, RateLimiter, clock::DefaultClock, state::keyed::DashMapSta
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use serde::{Deserialize, Serialize};
 use std::{num::NonZeroU32, sync::Arc, time::Instant, net::IpAddr};
+use uuid::Uuid;
 use tracing::{info, warn, error};
 
 // ─────────────────────────────────────────────────────────────
@@ -194,14 +195,29 @@ pub async fn logging_middleware(
         .and_then(|v| v.to_str().ok())
         .unwrap_or("unknown");
     
+    let request_id = headers
+        .get("x-request-id")
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| Uuid::new_v4().to_string());
+
     info!(
         method = %method,
         path = %uri,
         user_agent = %user_agent,
+        request_id = %request_id,
         "Incoming request"
     );
-    
-    next.run(request).await
+
+    let mut response = next.run(request).await;
+    if let Ok(v) = request_id.parse() {
+        response.headers_mut().insert(
+            header::HeaderName::from_static("x-request-id"),
+            v,
+        );
+    }
+
+    response
 }
 
 /// JWT authentication middleware

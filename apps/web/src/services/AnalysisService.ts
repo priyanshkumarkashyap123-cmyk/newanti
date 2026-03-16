@@ -162,6 +162,8 @@ export interface ProgressCallback {
 const CONFIG = {
   LOCAL_THRESHOLD: 3000, // Use local WASM solver for models up to 3000 nodes
   LARGE_MODEL_THRESHOLD: 5000, // Use Python sparse solver for 5k+ nodes
+  LOCAL_WORKER_TIMEOUT_MS: 45_000,
+  CLOUD_WORKER_TIMEOUT_MS: 120_000,
   // Python backend for high-performance large model analysis
   PYTHON_API_URL: API_CONFIG.pythonUrl,
   // Node.js API for auth/payments
@@ -298,7 +300,8 @@ class AnalysisService {
           errorLower.includes("exceeds") ||
           errorLower.includes("error 5") ||
           errorLower.includes("crashed") ||
-          errorLower.includes("oom");
+          errorLower.includes("oom") ||
+          errorLower.includes("timeout");
 
         if (shouldFallback && token) {
           analysisLogger.warn(
@@ -350,7 +353,16 @@ class AnalysisService {
     const worker = await this.workerPool.acquire();
 
     return new Promise<AnalysisResult>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        resolve({
+          success: false,
+          error: `Local worker timeout after ${Math.round(CONFIG.LOCAL_WORKER_TIMEOUT_MS / 1000)}s`,
+        });
+      }, CONFIG.LOCAL_WORKER_TIMEOUT_MS);
+
       const cleanup = () => {
+        clearTimeout(timeoutId);
         worker.removeEventListener("message", handleMessage);
         worker.removeEventListener("error", handleError);
         this.workerPool.release(worker);
@@ -543,7 +555,13 @@ class AnalysisService {
         });
       };
 
-      sendToWorker();
+      sendToWorker().catch((err) => {
+        cleanup();
+        resolve({
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      });
     });
   }
 
@@ -560,8 +578,17 @@ class AnalysisService {
 
     return new Promise<AnalysisResult>((resolve) => {
       const requestId = `cloud-${Date.now()}`;
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        resolve({
+          success: false,
+          error: `Cloud worker timeout after ${Math.round(CONFIG.CLOUD_WORKER_TIMEOUT_MS / 1000)}s`,
+          errorCode: "SOLVER_TIMEOUT",
+        });
+      }, CONFIG.CLOUD_WORKER_TIMEOUT_MS);
 
       const cleanup = () => {
+        clearTimeout(timeoutId);
         worker.removeEventListener("message", progressHandler);
         worker.removeEventListener("message", resultHandler);
         this.workerPool.release(worker);

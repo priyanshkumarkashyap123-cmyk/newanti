@@ -7,8 +7,18 @@ from pydantic import BaseModel
 from typing import Optional, List
 import os
 import asyncio
+from ai_resilience import LLMResilienceGuard
 
 router = APIRouter(tags=["AI Generation"])
+
+_CHAT_LLM_GUARD = LLMResilienceGuard(
+    key="ai_chat_router",
+    timeout_seconds=12.0,
+    max_retries=2,
+    retry_backoff_seconds=0.35,
+    circuit_failure_threshold=3,
+    circuit_reset_seconds=45.0,
+)
 
 
 # ── Config ──
@@ -182,7 +192,14 @@ and 2D/3D structural modeling. Keep responses concise but informative."""
             full_prompt += f"{entry.get('role', 'user').upper()}: {entry.get('content', '')}\n"
         full_prompt += f"\nUSER: {message}\n\nASSISTANT:"
 
-        response = model.generate_content(full_prompt)
+        guarded = _CHAT_LLM_GUARD.execute(
+            lambda: model.generate_content(full_prompt)
+        )
+        if not guarded.success or guarded.value is None:
+            response_text = _get_engineering_response(message, context)
+            return AIChatResponse(success=True, response=response_text)
+
+        response = guarded.value
         return AIChatResponse(success=True, response=response.text.strip())
 
     except Exception as e:

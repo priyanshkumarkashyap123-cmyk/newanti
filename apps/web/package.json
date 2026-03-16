@@ -17,6 +17,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:regression": "node ./tests/regression/run.cjs",
+    "test:route-parity": "vitest run src/config/__tests__/routeParity.test.ts",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "check:budget": "cd ../.. && npx tsx scripts/check-budget.ts",
