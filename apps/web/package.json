@@ -83,7 +83,7 @@
     "@axe-core/playwright": "^4.8.0",
     "@axe-core/react": "^4.8.0",
     "@babel/plugin-transform-react-jsx": "^7.27.1",
-    "@chromatic-com/storybook": "^1.0.0",
+    "@chromatic-com/storybook": "^5.0.1",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.41.0",
     "@sentry/vite-plugin": "^2.22.0",
