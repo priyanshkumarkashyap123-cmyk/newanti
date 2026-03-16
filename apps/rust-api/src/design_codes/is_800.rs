@@ -11,6 +11,19 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// IS 800 code version selector.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IS800Version {
+    /// IS 800:2007 (production)
+    V2007,
+    /// Draft IS 800:2025 (research/sandbox)
+    V2025Draft,
+}
+
+/// Banner warning required for draft outputs.
+pub const DRAFT_WARNING_IS800_2025: &str =
+    "DRAFT — IS 800:2025 has NOT been notified and is NOT legally binding. IS 800:2007 remains enforceable.";
+
 pub const GAMMA_M0: f64 = 1.10;  // Yielding / instability (public export)
 const GAMMA_M1: f64 = 1.25;  // Ultimate stress / fracture
 const GAMMA_MB: f64 = 1.25;  // Bolts (bearing type)
@@ -401,6 +414,95 @@ pub fn auto_select_section(
     }
 }
 
+// ── Version-aware wrappers (Draft toggle) ──
+
+/// Design shear capacity per IS 800 Cl. 8.4 with version toggle.
+pub fn design_shear_with_version(
+    d_web: f64,
+    tw: f64,
+    fy: f64,
+    vu_kn: f64,
+    version: IS800Version,
+) -> ShearResult {
+    let mut result = design_shear(d_web, tw, fy, vu_kn);
+    if matches!(version, IS800Version::V2025Draft)
+        && !result.message.contains("DRAFT")
+    {
+        result.message = format!("{} [{}]", result.message, DRAFT_WARNING_IS800_2025);
+    }
+    result
+}
+
+/// Design bearing-type bolts per IS 800 Cl. 10.3 with version toggle.
+#[allow(clippy::too_many_arguments)]
+pub fn design_bolt_bearing_with_version(
+    bolt_dia: f64,
+    grade: &str,
+    plate_fu: f64,
+    plate_thk: f64,
+    n_bolts: usize,
+    n_shear_planes: usize,
+    edge_dist: f64,
+    pitch: f64,
+    _version: IS800Version,
+) -> Result<BoltBearingResult, String> {
+    design_bolt_bearing(
+        bolt_dia,
+        grade,
+        plate_fu,
+        plate_thk,
+        n_bolts,
+        n_shear_planes,
+        edge_dist,
+        pitch,
+    )
+}
+
+/// Design HSFG bolts per IS 800 Cl. 10.4 with version toggle.
+pub fn design_bolt_hsfg_with_version(
+    bolt_dia: f64,
+    grade: &str,
+    n_bolts: usize,
+    n_effective_interfaces: usize,
+    mu_f: f64,
+    kh: f64,
+    _version: IS800Version,
+) -> Result<BoltHsfgResult, String> {
+    design_bolt_hsfg(bolt_dia, grade, n_bolts, n_effective_interfaces, mu_f, kh)
+}
+
+/// Design fillet weld per IS 800 Cl. 10.5.7 with version toggle.
+pub fn design_fillet_weld_with_version(
+    weld_size: f64,
+    weld_length: f64,
+    weld_fu: f64,
+    load_kn: f64,
+    weld_type: &str,
+    _version: IS800Version,
+) -> WeldResult {
+    design_fillet_weld(weld_size, weld_length, weld_fu, load_kn, weld_type)
+}
+
+/// Auto-select section with IS 800 version toggle.
+pub fn auto_select_section_with_version(
+    fy: f64,
+    pu_kn: f64,
+    mux_knm: f64,
+    muy_knm: f64,
+    vu_kn: f64,
+    lx_mm: f64,
+    ly_mm: f64,
+    version: IS800Version,
+) -> AutoSelectResult {
+    let mut result = auto_select_section(fy, pu_kn, mux_knm, muy_knm, vu_kn, lx_mm, ly_mm);
+    if matches!(version, IS800Version::V2025Draft)
+        && !result.message.contains("DRAFT")
+    {
+        result.message = format!("{} [{}]", result.message, DRAFT_WARNING_IS800_2025);
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -424,6 +526,35 @@ mod tests {
         let r = design_fillet_weld(6.0, 150.0, 410.0, 100.0, "shop");
         assert!(r.passed);
         assert!(r.utilization < 1.0);
+    }
+
+    #[test]
+    fn test_design_shear_with_version_draft() {
+        let r = design_shear_with_version(
+            350.0 - 2.0 * 14.2,
+            8.1,
+            250.0,
+            250.0,
+            IS800Version::V2025Draft,
+        );
+        assert!(r.passed, "Shear should pass");
+        assert!(r.message.contains("DRAFT"), "Draft warning should be present");
+    }
+
+    #[test]
+    fn test_auto_select_with_version_draft() {
+        let r = auto_select_section_with_version(
+            250.0,
+            0.0,
+            200.0,
+            0.0,
+            100.0,
+            6000.0,
+            6000.0,
+            IS800Version::V2025Draft,
+        );
+        assert_ne!(r.selected, "NONE");
+        assert!(r.message.contains("DRAFT"), "Draft warning should be present");
     }
 
     #[test]

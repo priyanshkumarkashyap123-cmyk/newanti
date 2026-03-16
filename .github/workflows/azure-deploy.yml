@@ -64,35 +64,16 @@ jobs:
             const pkg = require('./apps/api/package.json');
             delete pkg.scripts.build;
             delete pkg.devDependencies;
-            pkg.scripts.start = 'node --env-file=.env dist/index.cjs';
+            pkg.scripts.start = 'node dist/index.cjs';
             pkg.main = 'dist/index.cjs';
             pkg.type = 'commonjs';
             console.log(JSON.stringify(pkg, null, 2));
           " > deploy-api/package.json
           cd deploy-api && npm install --omit=dev --ignore-scripts
 
-      - name: Create environment file
+      - name: Use Azure App Service settings for runtime configuration
         run: |
-          cat > deploy-api/.env <<'ENVEOF'
-          PHONEPE_MERCHANT_ID=${{ secrets.PHONEPE_MERCHANT_ID }}
-          PHONEPE_SALT_KEY=${{ secrets.PHONEPE_SALT_KEY }}
-          PHONEPE_SALT_INDEX=${{ secrets.PHONEPE_SALT_INDEX }}
-          PHONEPE_ENV=PRODUCTION
-          NODE_ENV=production
-          USE_CLERK=true
-          FRONTEND_URL=https://beamlabultimate.tech
-          CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net
-          MONGODB_URI=${{ secrets.MONGODB_URI }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
-          CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
-          PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
-          RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
-          DESIGN_PRIMARY_ENGINE=rust
-          TEMP_UNLOCK_ALL=false
-          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-          ENVEOF
+          echo "Runtime configuration will be supplied via Azure App Service application settings."
 
       - name: Create API zip package
         run: |
@@ -177,6 +158,48 @@ jobs:
         run: |
           echo "Deploying api-app.zip via az CLI to ${{ env.AZURE_WEBAPP_NAME_API }}"
           az webapp deployment source config-zip --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_WEBAPP_NAME_API }} --src api-app.zip
+
+      - name: Set Node App Service startup command
+        if: steps.az_login.conclusion == 'success'
+        run: |
+          settings=(
+            NODE_ENV=production
+            USE_CLERK=true
+            TEMP_UNLOCK_ALL=false
+            PHONEPE_ENV=PRODUCTION
+            FRONTEND_URL=https://beamlabultimate.tech
+            CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net
+            PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net
+            RUST_API_URL=https://beamlab-rust-api.azurewebsites.net
+          )
+
+          append_setting_if_present() {
+            key="$1"
+            value="$2"
+            if [ -n "$value" ]; then
+              settings+=("$key=$value")
+            fi
+          }
+
+          append_setting_if_present MONGODB_URI '${{ secrets.MONGODB_URI }}'
+          append_setting_if_present JWT_SECRET '${{ secrets.JWT_SECRET }}'
+          append_setting_if_present JWT_REFRESH_SECRET '${{ secrets.JWT_REFRESH_SECRET }}'
+          append_setting_if_present CLERK_SECRET_KEY '${{ secrets.CLERK_SECRET_KEY }}'
+          append_setting_if_present CLERK_PUBLISHABLE_KEY '${{ secrets.CLERK_PUBLISHABLE_KEY }}'
+          append_setting_if_present PHONEPE_MERCHANT_ID '${{ secrets.PHONEPE_MERCHANT_ID }}'
+          append_setting_if_present PHONEPE_SALT_KEY '${{ secrets.PHONEPE_SALT_KEY }}'
+          append_setting_if_present PHONEPE_SALT_INDEX '${{ secrets.PHONEPE_SALT_INDEX }}'
+          append_setting_if_present SENTRY_DSN '${{ secrets.SENTRY_DSN }}'
+
+          az webapp config appsettings set \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_API }} \
+            --settings "${settings[@]}"
+
+          az webapp config set \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME_API }} \
+            --startup-file "node /home/site/wwwroot/dist/index.cjs"
 
       - name: Deploy to Azure Web App (publish profile)
         id: deploy_api_publish_profile

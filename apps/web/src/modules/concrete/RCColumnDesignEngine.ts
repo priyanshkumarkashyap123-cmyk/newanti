@@ -34,6 +34,13 @@ import {
   getSteelGrades,
   getRebarByDiameter,
   selectBars,
+  getIS456ConcreteGrades,
+  DRAFT_WARNING_IS456_2025,
+} from './RCDesignConstants';
+import type {
+  IS456Version,
+  CementType,
+  IS456_2025_PerformanceCriteria,
 } from './RCDesignConstants';
 
 // =============================================================================
@@ -72,6 +79,10 @@ export interface ColumnMaterials {
   steelGrade: SteelGrade;
   tieGrade?: SteelGrade;
   code: DesignCode;
+  /** Selects IS 456:2000 (production) vs Draft IS 456:2025 (research only). Defaults to IS456_2000. */
+  codeVersion?: IS456Version;
+  /** Cement type per IS 456 Table 1 / Amendment No. 6 (June 2024). */
+  cementType?: CementType;
 }
 
 export interface ReinforcementLayout {
@@ -129,6 +140,10 @@ export interface ColumnDesignResult {
   };
   messages: string[];
   calculations: Record<string, number>;
+  /** IS 456:2025 Draft six performance criteria — populated only when codeVersion = 'IS456_2025_DRAFT'. */
+  performanceCriteria?: IS456_2025_PerformanceCriteria;
+  /** Present only for IS 456:2025 Draft mode; must be surfaced in UI. */
+  draftWarning?: string;
 }
 
 // =============================================================================
@@ -190,7 +205,51 @@ export class RCColumnDesignEngine {
         result = this.designColumn_IS456(slenderness);
     }
 
-    return result;
+    const isDraftIS456 = this.code === 'IS456' && this.codeVersion === 'IS456_2025_DRAFT';
+    if (!isDraftIS456) {
+      return result;
+    }
+
+    const validDraftGrades = getIS456ConcreteGrades('IS456_2025_DRAFT').map((grade) => grade.fck);
+    const fck = this.materials.concreteGrade.fck;
+    if (!validDraftGrades.includes(fck)) {
+      result.messages.push(
+        `IS 456:2025 Draft concrete grade table does not include M${fck}; verify input grade selection.`,
+      );
+    }
+
+    return {
+      ...result,
+      draftWarning: DRAFT_WARNING_IS456_2025,
+      performanceCriteria: this.evaluateIS456_2025Performance(result),
+    };
+  }
+
+  private get codeVersion(): IS456Version {
+    return this.materials.codeVersion ?? 'IS456_2000';
+  }
+
+  /** Builds IS 456:2025 Draft six-performance-criteria evaluation from column check results. */
+  private evaluateIS456_2025Performance(result: ColumnDesignResult): IS456_2025_PerformanceCriteria {
+    // Strength / Integrity based on interaction utilization at ULS
+    const strength = result.status !== 'unsafe' && result.interactionRatio <= 1.0;
+    const integrity = result.interactionRatio <= 1.0;
+
+    // Serviceability proxy for this engine: not slender with large magnification demand
+    const serviceability =
+      !result.slenderness.isSlender ||
+      ((result.slenderness.momentMagnifier_X ?? 1) <= 1.4 && (result.slenderness.momentMagnifier_Y ?? 1) <= 1.4);
+
+    // Durability proxy: column cover and cement type provided
+    const durability = this.geometry.cover >= 40 && this.materials.cementType !== undefined;
+
+    // Robustness: reinforcement ratio in practical ductile range
+    const robustness = result.reinforcement.steelRatio >= 0.8 && result.reinforcement.steelRatio <= 6.0;
+
+    // Restorability: no severe overstress and no unsafe status
+    const restorability = result.utilizationRatio <= 1.0 && result.status !== 'unsafe';
+
+    return { strength, serviceability, durability, robustness, integrity, restorability };
   }
 
   // ===========================================================================

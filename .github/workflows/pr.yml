@@ -90,11 +90,34 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust/WASM build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            apps/backend-rust
+            packages/solver-wasm
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build Backend Rust WASM
+        working-directory: apps/backend-rust
+        run: wasm-pack build --target web --out-dir ./pkg --release
+
+      - name: Build Solver WASM
+        working-directory: packages/solver-wasm
+        run: wasm-pack build --target web --out-dir ./pkg --release
+
       - name: Build
-        run: pnpm build
+        run: pnpm --dir apps/web build
         env:
           VITE_CLERK_PUBLISHABLE_KEY: pk_test_mock_key_for_ci_build
           VITE_API_URL: https://beamlab-backend-node.azurewebsites.net
@@ -102,7 +125,7 @@ jobs:
           VITE_USE_CLERK: 'true'
 
       - name: Check bundle size
-        run: node scripts/check-budget.js
+        run: npx tsx scripts/check-budget.ts
 
   # ============================================================================
   # Dependency Audit
@@ -152,6 +175,51 @@ jobs:
         continue-on-error: true
       - name: Cargo test
         run: cargo test --all-features
+
+  # ============================================================================
+  # Design Contract Gate
+  # Enforces gateway + UI route contracts for design flows.
+  # ============================================================================
+  design-contract-gate:
+    name: Design Contract Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/rust-api
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: API design contract tests
+        run: pnpm --dir apps/api exec vitest run tests/design-core-routes.test.ts tests/design-geotech-routes.test.ts tests/validation.test.ts
+
+      - name: Web design contract tests
+        run: pnpm --dir apps/web exec vitest run src/__tests__/pages/GeotechnicalDesignPage.test.tsx src/config/__tests__/appRouteMeta.test.ts
+
+      - name: Web type-check
+        run: pnpm --dir apps/web type-check
+
+      - name: Rust API lib tests
+        working-directory: ./apps/rust-api
+        run: cargo test --lib
 
   # ============================================================================
   # Commit Message Validation

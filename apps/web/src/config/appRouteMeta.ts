@@ -161,6 +161,7 @@ export const APP_FEATURE_CATEGORIES: AppFeatureCategory[] = [
       { id: 'concrete', label: 'RC Design', path: '/design/concrete', description: 'IS 456/ACI 318 reinforced concrete', iconKey: 'columns', category: 'design' },
       { id: 'steel', label: 'Steel Design', path: '/design/steel', description: 'AISC/IS 800 steel members', iconKey: 'box', category: 'design' },
       { id: 'foundation', label: 'Foundation Design', path: '/design/foundation', description: 'Footing & foundation design', iconKey: 'mountain', category: 'design' },
+      { id: 'geotechnical', label: 'Geotechnical Design', path: '/design/geotechnical', description: 'Soil, slope, bearing, settlement, and liquefaction checks', iconKey: 'mountain', category: 'design', badge: 'New' },
       { id: 'composite', label: 'Composite Design', path: '/design/composite', description: 'Steel-concrete composite member design', iconKey: 'workflow', category: 'design', badge: 'New' },
       { id: 'timber', label: 'Timber Design', path: '/design/timber', description: 'Timber beam design and checks', iconKey: 'box', category: 'design', badge: 'New' },
       { id: 'connections', label: 'Connection Design', path: '/design/connections', description: 'Bolted & welded connections', iconKey: 'grid3x3', category: 'design' },

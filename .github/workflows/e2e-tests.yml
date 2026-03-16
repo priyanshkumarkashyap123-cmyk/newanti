@@ -7,6 +7,15 @@ on:
       - 'apps/web/**'
       - 'packages/**'
   workflow_dispatch:
+    inputs:
+      test_user_email:
+        description: 'Optional test user email for authenticated E2E flows'
+        required: false
+        type: string
+      test_user_password:
+        description: 'Optional test user password for authenticated E2E flows'
+        required: false
+        type: string
   schedule:
     - cron: '0 2 * * 0'  # Weekly Sunday 2 AM UTC
 
@@ -71,6 +80,11 @@ jobs:
         working-directory: apps/web
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:4173
+          # Prefer repository secrets (CI/PR runs); fall back to dispatch inputs (manual runs).
+          # Tests that require auth use test.skip(!HAS_E2E_AUTH, ...) so they degrade gracefully
+          # when neither is set.
+          TEST_USER_EMAIL: ${{ github.event.inputs.test_user_email }}
+          TEST_USER_PASSWORD: ${{ github.event.inputs.test_user_password }}
           
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
@@ -117,7 +131,12 @@ jobs:
           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_placeholder' }}
           
       - name: Analyze bundle
-        run: node scripts/analyze-bundle.js || true
+        run: node scripts/analyze-bundle.js
+
+      - name: Generate visual bundle report
+        run: pnpm --dir apps/web analyze:visual
+        env:
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_placeholder' }}
         
       - name: Upload bundle stats
         uses: actions/upload-artifact@v4
@@ -125,6 +144,13 @@ jobs:
           name: bundle-stats
           path: apps/web/dist/
           retention-days: 7
+
+      - name: Upload bundle visualizer report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-visualizer
+          path: apps/web/dist/stats.html
+          retention-days: 14
 
   # ============================================================================
   # Accessibility Audit

@@ -41,6 +41,17 @@ pub enum SoilType {
     Soft,   // Type III — Soft soil
 }
 
+// ── Versioning / Sandbox flag ───────────────────────────────────────────────
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IS1893Version {
+    V2016,
+    V2025Sandbox,
+}
+
+pub const SANDBOX_WARNING_IS1893_2025: &str =
+    "IS 1893:2025 is sandbox-only and non-enforceable; results are for exploratory use.";
+
 // ── Spectral Acceleration ──
 
 /// Spectral acceleration coefficient Sa/g per IS 1893:2016 Cl. 6.4.2
@@ -120,6 +131,10 @@ pub struct BaseShearResult {
     pub sa_g: f64,
     pub period_s: f64,
     pub w_total_kn: f64,
+    #[serde(default)]
+    pub code_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sandbox_warning: Option<String>,
 }
 
 pub fn calculate_base_shear(
@@ -140,6 +155,8 @@ pub fn calculate_base_shear(
         sa_g,
         period_s: period,
         w_total_kn: w_total,
+        code_version: "IS1893_2016".to_string(),
+        sandbox_warning: None,
     }
 }
 
@@ -181,6 +198,10 @@ pub struct DriftCheckResult {
     pub limit: f64,
     pub passed: bool,
     pub message: String,
+    #[serde(default)]
+    pub code_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sandbox_warning: Option<String>,
 }
 
 /// Check storey drift per IS 1893 Cl. 7.11.1
@@ -209,6 +230,8 @@ pub fn check_storey_drift(
             "Storey {storey_number}: drift = {ratio:.4} ({actual:.2} mm / {storey_height_mm:.0} mm) vs 0.004 → {}",
             if passed { "OK" } else { "FAIL" }
         ),
+        code_version: "IS1893_2016".to_string(),
+        sandbox_warning: None,
     }
 }
 
@@ -288,6 +311,10 @@ pub struct EqForceResult {
     pub ah: f64,
     pub period_s: f64,
     pub w_total_kn: f64,
+    #[serde(default)]
+    pub code_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sandbox_warning: Option<String>,
 }
 
 /// Generate equivalent lateral forces for entire building
@@ -333,7 +360,91 @@ pub fn generate_equivalent_lateral_forces(
         ah: (bs.ah * 1_000_000.0).round() / 1_000_000.0,
         period_s: (period * 10000.0).round() / 10000.0,
         w_total_kn: (w_total * 1000.0).round() / 1000.0,
+        code_version: "IS1893_2016".to_string(),
+        sandbox_warning: None,
     }
+}
+
+// ── Version-aware wrappers ────────────────────────────────────────────────
+
+pub fn calculate_base_shear_with_version(
+    w_total: f64,
+    period: f64,
+    zone: SeismicZone,
+    soil: SoilType,
+    importance_factor: f64,
+    response_reduction: f64,
+    version: IS1893Version,
+) -> BaseShearResult {
+    let mut result = calculate_base_shear(
+        w_total, period, zone, soil, importance_factor, response_reduction,
+    );
+
+    match version {
+        IS1893Version::V2016 => {
+            result.code_version = "IS1893_2016".to_string();
+            result.sandbox_warning = None;
+        }
+        IS1893Version::V2025Sandbox => {
+            result.code_version = "IS1893_2025_SANDBOX".to_string();
+            result.sandbox_warning = Some(SANDBOX_WARNING_IS1893_2025.to_string());
+        }
+    }
+
+    result
+}
+
+pub fn check_storey_drift_with_version(
+    storey_height_mm: f64,
+    elastic_drift_mm: f64,
+    response_reduction: f64,
+    storey_number: usize,
+    version: IS1893Version,
+) -> DriftCheckResult {
+    let mut result = check_storey_drift(storey_height_mm, elastic_drift_mm, response_reduction, storey_number);
+
+    match version {
+        IS1893Version::V2016 => {
+            result.code_version = "IS1893_2016".to_string();
+            result.sandbox_warning = None;
+        }
+        IS1893Version::V2025Sandbox => {
+            result.code_version = "IS1893_2025_SANDBOX".to_string();
+            result.sandbox_warning = Some(SANDBOX_WARNING_IS1893_2025.to_string());
+            result.message = format!("{} [{}]", result.message, SANDBOX_WARNING_IS1893_2025);
+        }
+    }
+
+    result
+}
+
+pub fn generate_equivalent_lateral_forces_with_version(
+    node_weights: &[NodeWeight],
+    zone: SeismicZone,
+    soil: SoilType,
+    importance_factor: f64,
+    response_reduction: f64,
+    building_type: &str,
+    base_dimension: f64,
+    direction: &str,
+    version: IS1893Version,
+) -> EqForceResult {
+    let mut result = generate_equivalent_lateral_forces(
+        node_weights, zone, soil, importance_factor, response_reduction, building_type, base_dimension, direction,
+    );
+
+    match version {
+        IS1893Version::V2016 => {
+            result.code_version = "IS1893_2016".to_string();
+            result.sandbox_warning = None;
+        }
+        IS1893Version::V2025Sandbox => {
+            result.code_version = "IS1893_2025_SANDBOX".to_string();
+            result.sandbox_warning = Some(SANDBOX_WARNING_IS1893_2025.to_string());
+        }
+    }
+
+    result
 }
 
 // ── Torsion Provisions (Cl. 7.9) ──
@@ -695,5 +806,50 @@ mod tests {
         assert_eq!(result.design_eccentricity_m, 3.25);
         assert_eq!(result.torsional_moment_knm, 1625.0);
         assert_eq!(result.direction, "X");
+    }
+
+    #[test]
+    fn test_base_shear_with_version_sandbox_warning() {
+        let r = calculate_base_shear_with_version(
+            1300.0,
+            0.961,
+            SeismicZone::IV,
+            SoilType::Medium,
+            1.5,
+            5.0,
+            IS1893Version::V2025Sandbox,
+        );
+        assert_eq!(r.code_version, "IS1893_2025_SANDBOX");
+        assert!(r.sandbox_warning.is_some());
+    }
+
+    #[test]
+    fn test_eq_forces_with_version_sandbox_warning() {
+        let nodes = vec![
+            NodeWeight {
+                node_id: "N1".to_string(),
+                weight_kn: 500.0,
+                height_m: 3.5,
+            },
+            NodeWeight {
+                node_id: "N2".to_string(),
+                weight_kn: 500.0,
+                height_m: 7.0,
+            },
+        ];
+
+        let r = generate_equivalent_lateral_forces_with_version(
+            &nodes,
+            SeismicZone::III,
+            SoilType::Medium,
+            1.0,
+            5.0,
+            "rc_frame",
+            20.0,
+            "x",
+            IS1893Version::V2025Sandbox,
+        );
+        assert_eq!(r.code_version, "IS1893_2025_SANDBOX");
+        assert!(r.sandbox_warning.is_some());
     }
 }

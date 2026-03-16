@@ -1,0 +1,16 @@
+export const ROUTE_ALIASES: Array<{ from: string; to: string }> = [
+  { from: '/dashboard', to: '/stream' },
+  { from: '/dashboard-enhanced', to: '/stream' },
+  { from: '/privacy', to: '/privacy-policy' },
+  { from: '/terms', to: '/terms-and-conditions' },
+  { from: '/docs', to: '/help' },
+  { from: '/login', to: '/sign-in' },
+  { from: '/analysis/modal-page', to: '/analysis/modal' },
+  { from: '/analysis/time-history-page', to: '/analysis/time-history' },
+  { from: '/analysis/nonlinear-page', to: '/analysis/nonlinear' },
+  { from: '/design/welded-connections', to: '/design/connections' },
+  { from: '/load-combination-page', to: '/tools/load-combinations' },
+  { from: '/section-database-page', to: '/tools/section-database' },
+  { from: '/tools/load-combination', to: '/tools/load-combinations' },
+  { from: '/reports/generator', to: '/reports/professional' },
+];

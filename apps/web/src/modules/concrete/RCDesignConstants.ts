@@ -21,6 +21,43 @@
 // =============================================================================
 
 export type DesignCode = 'IS456' | 'ACI318' | 'EN1992' | 'AS3600';
+
+/**
+ * IS 456 code version selector.
+ * - IS456_2000  : Legally binding production code (reaffirmed 2021, Amendment 6 June 2024)
+ * - IS456_2025_DRAFT : BIS Draft IS 456:2025 circulated for review — NOT YET IN FORCE.
+ *   Use only for research / comparative analysis.
+ */
+export type IS456Version = 'IS456_2000' | 'IS456_2025_DRAFT';
+
+/**
+ * Cement types introduced / confirmed under IS 456:2000 Amendment No. 6 (June 2024).
+ * - OPC          : Ordinary Portland Cement (IS 269)
+ * - PPC          : Portland Pozzolana Cement (IS 1489)
+ * - PSC          : Portland Slag Cement (IS 455)
+ * - PCC          : Portland Composite Cement (IS 16415) — added by Amendment 6
+ * - PCCLC        : Portland Calcined Clay Limestone Cement (IS 18189) — added by Amendment 6
+ */
+export type CementType = 'OPC' | 'PPC' | 'PSC' | 'PCC_IS16415' | 'PCCLC_IS18189';
+
+/**
+ * Six design criteria introduced in Draft IS 456:2025 (performance-based design philosophy).
+ * These are evaluated in addition to the normal strength/serviceability limits.
+ */
+export interface IS456_2025_PerformanceCriteria {
+  strength: boolean;       // Ultimate limit state checks passed
+  serviceability: boolean; // Deflection, crack width within limits
+  durability: boolean;     // Cover, cement type, water/cement ratio requirements met
+  robustness: boolean;     // Continuity, ductility, tying provisions checked
+  integrity: boolean;      // Progressive collapse resistance considered
+  restorability: boolean;  // Post-event repair feasibility flag (informational)
+}
+
+/** Banner text required whenever Draft IS 456:2025 results are displayed in the UI. */
+export const DRAFT_WARNING_IS456_2025 =
+  'DRAFT — IS 456:2025 has NOT been notified in the Official Gazette and is NOT legally binding. ' +
+  'IS 456:2000 (Amendment No. 6, June 2024) remains the enforceable standard. ' +
+  'Use these results for research and comparative analysis only.';
 export type ExposureClass = 'mild' | 'moderate' | 'severe' | 'very-severe' | 'extreme';
 export type ConcreteType = 'normal' | 'lightweight' | 'high-strength';
 export type SteelType = 'mild' | 'high-yield' | 'prestressing';
@@ -105,6 +142,43 @@ export const CONCRETE_GRADES_IS456: ConcreteGrade[] = [
   { grade: 'M55', fck: 55, fcm: 63, fctm: 4.3, fctk005: 3.0, fctk095: 5.6, Ecm: 36000, epsilon_cu: 0.0035, code: 'IS456' },
   { grade: 'M60', fck: 60, fcm: 68, fctm: 4.5, fctk005: 3.2, fctk095: 5.9, Ecm: 37000, epsilon_cu: 0.0035, code: 'IS456' },
 ];
+
+// =============================================================================
+// CONCRETE GRADES - IS 456:2025 DRAFT (M15–M100)
+// High-strength grades M65–M100 are new in the 2025 draft.
+// epsilon_cu is reduced for M65+ per high-strength concrete behaviour
+// (parabolic-rectangular stress-strain curve change).
+// E = 5000*sqrt(fck) per IS 456 Cl. 6.2.3.1
+// fctm ≈ 0.7*sqrt(fck) per IS 456 Cl. 6.2.2 with grade factor
+// =============================================================================
+
+export const CONCRETE_GRADES_IS456_2025_DRAFT: ConcreteGrade[] = [
+  // Re-confirm existing grades with IS 456:2000 values (unchanged in draft)
+  { grade: 'M15', fck: 15, fcm: 23, fctm: 1.6, fctk005: 1.1, fctk095: 2.0, Ecm: 19365, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M20', fck: 20, fcm: 28, fctm: 2.2, fctk005: 1.5, fctk095: 2.9, Ecm: 22361, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M25', fck: 25, fcm: 33, fctm: 2.6, fctk005: 1.8, fctk095: 3.3, Ecm: 25000, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M30', fck: 30, fcm: 38, fctm: 2.9, fctk005: 2.0, fctk095: 3.8, Ecm: 27386, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M35', fck: 35, fcm: 43, fctm: 3.2, fctk005: 2.2, fctk095: 4.2, Ecm: 29580, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M40', fck: 40, fcm: 48, fctm: 3.5, fctk005: 2.5, fctk095: 4.6, Ecm: 31623, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M45', fck: 45, fcm: 53, fctm: 3.8, fctk005: 2.7, fctk095: 5.0, Ecm: 33541, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M50', fck: 50, fcm: 58, fctm: 4.1, fctk005: 2.9, fctk095: 5.3, Ecm: 35355, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M55', fck: 55, fcm: 63, fctm: 4.3, fctk005: 3.0, fctk095: 5.6, Ecm: 37081, epsilon_cu: 0.0035, code: 'IS456' },
+  { grade: 'M60', fck: 60, fcm: 68, fctm: 4.5, fctk005: 3.2, fctk095: 5.9, Ecm: 38730, epsilon_cu: 0.0035, code: 'IS456' },
+  // High-strength grades (new in IS 456:2025 Draft)
+  { grade: 'M65', fck: 65, fcm: 73, fctm: 4.7, fctk005: 3.3, fctk095: 6.1, Ecm: 40311, epsilon_cu: 0.0032, code: 'IS456' },
+  { grade: 'M70', fck: 70, fcm: 78, fctm: 4.9, fctk005: 3.5, fctk095: 6.4, Ecm: 41833, epsilon_cu: 0.0031, code: 'IS456' },
+  { grade: 'M75', fck: 75, fcm: 83, fctm: 5.1, fctk005: 3.6, fctk095: 6.6, Ecm: 43301, epsilon_cu: 0.0030, code: 'IS456' },
+  { grade: 'M80', fck: 80, fcm: 88, fctm: 5.3, fctk005: 3.7, fctk095: 6.8, Ecm: 44721, epsilon_cu: 0.0029, code: 'IS456' },
+  { grade: 'M85', fck: 85, fcm: 93, fctm: 5.4, fctk005: 3.8, fctk095: 7.0, Ecm: 46098, epsilon_cu: 0.0028, code: 'IS456' },
+  { grade: 'M90', fck: 90, fcm: 98, fctm: 5.6, fctk005: 4.0, fctk095: 7.3, Ecm: 47434, epsilon_cu: 0.0027, code: 'IS456' },
+  { grade: 'M95', fck: 95, fcm: 103, fctm: 5.8, fctk005: 4.1, fctk095: 7.5, Ecm: 48734, epsilon_cu: 0.0026, code: 'IS456' },
+  { grade: 'M100', fck: 100, fcm: 108, fctm: 6.0, fctk005: 4.2, fctk095: 7.7, Ecm: 50000, epsilon_cu: 0.0026, code: 'IS456' },
+];
+
+/** Lookup the correct concrete grade array based on IS 456 version.  */
+export function getIS456ConcreteGrades(version: IS456Version = 'IS456_2000'): ConcreteGrade[] {
+  return version === 'IS456_2025_DRAFT' ? CONCRETE_GRADES_IS456_2025_DRAFT : CONCRETE_GRADES_IS456;
+}
 
 // =============================================================================
 // CONCRETE GRADES - ACI 318-19
@@ -271,6 +345,51 @@ export const STRESS_BLOCK = {
     epsilonCu2: (fck: number) => fck <= 50 ? 0.0035 : 0.0026 + 0.035 * Math.pow((90 - fck) / 100, 4),
     epsilonCu3: (fck: number) => fck <= 50 ? 0.0035 : 0.0026 + 0.035 * Math.pow((90 - fck) / 100, 4),
   },
+};
+
+/**
+ * Version-aware IS 456 stress block parameters.
+ *
+ * IS 456:2000 (all grades M15–M60):
+ *   - Rectangular stress block: C = 0.36 fck b xu  (IS 456 Cl. 38.1)
+ *   - Lever arm factor       : a = 0.42 xu
+ *   - epsilon_cu             : 0.0035 (constant)
+ *
+ * Draft IS 456:2025 (M65–M100, high-strength):
+ *   - alpha (compression resultant factor) reduces slightly for M65+
+ *   - beta  (lever arm factor 0.42 → lower) reduces for M65+
+ *   - epsilon_cu decreases with grade (bilinear/parabolic-rectangular curve change)
+ *   Source: Draft IS 456:2025 Cl. 6.2 / Annex G (preliminary, subject to final notification)
+ */
+export function getIS456StressBlockParams(fck: number, version: IS456Version = 'IS456_2000'): {
+  alpha: number;   // C = alpha * fck * b * xu
+  beta: number;    // lever arm = d - beta * xu
+  epsilonCu: number;
+} {
+  if (version === 'IS456_2025_DRAFT' && fck > 60) {
+    // Linearly interpolate draft values for M65–M100
+    // alpha: 0.36 at M60 → 0.34 at M100
+    const alpha = 0.36 - 0.02 * (fck - 60) / 40;
+    // beta: 0.42 at M60 → 0.39 at M100
+    const beta = 0.42 - 0.03 * (fck - 60) / 40;
+    // epsilon_cu: 0.0032 at M65, 0.0026 at M95–M100
+    const epsilonCu = Math.max(0.0026, 0.0035 - 0.0009 * (fck - 60) / 40);
+    return { alpha, beta, epsilonCu };
+  }
+  // IS 456:2000 default
+  return { alpha: 0.36, beta: 0.42, epsilonCu: 0.0035 };
+}
+
+/**
+ * Cement type descriptions — Amendment No. 6 (June 2024) metadata.
+ * Used to populate UI dropdowns and validate cement content limits per Table 5 of IS 456.
+ */
+export const CEMENT_TYPE_LABELS: Record<CementType, string> = {
+  OPC:            'Ordinary Portland Cement (IS 269)',
+  PPC:            'Portland Pozzolana Cement (IS 1489)',
+  PSC:            'Portland Slag Cement (IS 455)',
+  PCC_IS16415:    'Portland Composite Cement (IS 16415) — Amendment 6, June 2024',
+  PCCLC_IS18189:  'Portland Calcined Clay Limestone Cement (IS 18189) — Amendment 6, June 2024',
 };
 
 // =============================================================================

@@ -21,6 +21,58 @@ const GAMMA_C: f64 = 1.5;   // Partial safety factor for concrete
 const GAMMA_S: f64 = 1.15;  // Partial safety factor for steel
 const EPSILON_CU: f64 = 0.0035; // Ultimate strain in concrete
 
+/// IS 456 version selector for research toggles.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum IS456Version {
+    /// IS 456:2000 (production)
+    V2000,
+    /// Draft IS 456:2025 (research/sandbox)
+    V2025Draft,
+}
+
+/// Version-aware concrete stress block parameters for flexure checks.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct IS456ConcreteParams {
+    /// Rectangular stress block coefficient (equivalent to 0.36 in IS 456:2000)
+    pub alpha: f64,
+    /// Lever arm block coefficient (equivalent to 0.42 in IS 456:2000)
+    pub beta: f64,
+    /// Ultimate concrete compressive strain at extreme fibre
+    pub epsilon_cu: f64,
+    /// Limiting neutral axis depth ratio xu_max/d
+    pub xu_max_ratio: f64,
+}
+
+impl IS456ConcreteParams {
+    /// Returns version-aware stress block parameters.
+    ///
+    /// - IS 456:2000 baseline: α=0.36, β=0.42, εcu=0.0035
+    /// - Draft IS 456:2025 (HSC M65+): α=0.34, β=0.39, εcu=0.0026
+    pub fn from_grade(fck: f64, fy: f64, version: IS456Version) -> Self {
+        let xu = xu_max_ratio(fy);
+        match version {
+            IS456Version::V2000 => Self {
+                alpha: 0.36,
+                beta: 0.42,
+                epsilon_cu: 0.0035,
+                xu_max_ratio: xu,
+            },
+            IS456Version::V2025Draft if fck >= 65.0 => Self {
+                alpha: 0.34,
+                beta: 0.39,
+                epsilon_cu: 0.0026,
+                xu_max_ratio: xu,
+            },
+            IS456Version::V2025Draft => Self {
+                alpha: 0.36,
+                beta: 0.42,
+                epsilon_cu: 0.0035,
+                xu_max_ratio: xu,
+            },
+        }
+    }
+}
+
 // ── Table 19 Data ──
 
 /// IS 456 Table 19: τc anchor points for M20 concrete
@@ -94,15 +146,29 @@ pub fn xu_max_ratio(fy: f64) -> f64 {
 /// Singly reinforced beam flexural capacity Mu (kN·m)
 /// Per IS 456 Cl. 38.1
 pub fn flexural_capacity_singly(b: f64, d: f64, fck: f64, fy: f64, ast: f64) -> f64 {
-    let xu = (0.87 * fy * ast) / (0.36 * fck * b);
-    let xu_max = xu_max_ratio(fy) * d;
+    flexural_capacity_singly_with_version(b, d, fck, fy, ast, IS456Version::V2000)
+}
+
+/// Singly reinforced beam flexural capacity Mu (kN·m)
+/// Per IS 456 Cl. 38.1, with optional draft-2025 stress block parameters.
+pub fn flexural_capacity_singly_with_version(
+    b: f64,
+    d: f64,
+    fck: f64,
+    fy: f64,
+    ast: f64,
+    version: IS456Version,
+) -> f64 {
+    let params = IS456ConcreteParams::from_grade(fck, fy, version);
+    let xu = (0.87 * fy * ast) / (params.alpha * fck * b);
+    let xu_max = params.xu_max_ratio * d;
 
     if xu <= xu_max {
         // Under-reinforced
-        0.87 * fy * ast * (d - 0.42 * xu) / 1e6
+        0.87 * fy * ast * (d - params.beta * xu) / 1e6
     } else {
         // Over-reinforced — limit to xu_max
-        0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6
+        params.alpha * fck * b * xu_max * (d - params.beta * xu_max) / 1e6
     }
 }
 
@@ -110,11 +176,27 @@ pub fn flexural_capacity_singly(b: f64, d: f64, fck: f64, fy: f64, ast: f64) -> 
 pub fn flexural_capacity_doubly(
     b: f64, d: f64, d_prime: f64, fck: f64, fy: f64, ast: f64, asc: f64,
 ) -> f64 {
-    let xu_max = xu_max_ratio(fy) * d;
-    let mu_lim = 0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6;
+    flexural_capacity_doubly_with_version(b, d, d_prime, fck, fy, ast, asc, IS456Version::V2000)
+}
+
+/// Doubly reinforced beam flexural capacity Mu (kN·m)
+/// Per IS 456 Cl. 38.2/38.3, with optional draft-2025 stress block parameters.
+pub fn flexural_capacity_doubly_with_version(
+    b: f64,
+    d: f64,
+    d_prime: f64,
+    fck: f64,
+    fy: f64,
+    ast: f64,
+    asc: f64,
+    version: IS456Version,
+) -> f64 {
+    let params = IS456ConcreteParams::from_grade(fck, fy, version);
+    let xu_max = params.xu_max_ratio * d;
+    let mu_lim = params.alpha * fck * b * xu_max * (d - params.beta * xu_max) / 1e6;
 
     // Compression steel stress
-    let epsilon_sc = EPSILON_CU * (1.0 - d_prime / xu_max);
+    let epsilon_sc = params.epsilon_cu * (1.0 - d_prime / xu_max);
     let fsc = (epsilon_sc * 200000.0).min(0.87 * fy);
     let _ = ast; // tension steel used for determining xu
 
@@ -720,10 +802,23 @@ pub struct LimitingMomentResult {
 
 /// Calculate limiting moment of resistance per IS 456 Cl. 38.1
 pub fn limiting_moment(b: f64, d: f64, fck: f64, fy: f64) -> LimitingMomentResult {
-    let xu_ratio = xu_max_ratio(fy);
+    limiting_moment_with_version(b, d, fck, fy, IS456Version::V2000)
+}
+
+/// Calculate limiting moment of resistance per IS 456 Cl. 38.1
+/// with optional draft-2025 stress block parameters.
+pub fn limiting_moment_with_version(
+    b: f64,
+    d: f64,
+    fck: f64,
+    fy: f64,
+    version: IS456Version,
+) -> LimitingMomentResult {
+    let params = IS456ConcreteParams::from_grade(fck, fy, version);
+    let xu_ratio = params.xu_max_ratio;
     let xu_lim = xu_ratio * d;
-    let z_lim = d - 0.42 * xu_lim;
-    let mu_lim = 0.36 * fck * b * xu_lim * z_lim / 1e6;
+    let z_lim = d - params.beta * xu_lim;
+    let mu_lim = params.alpha * fck * b * xu_lim * z_lim / 1e6;
     let r_lim = mu_lim * 1e6 / (b * d * d);
 
     LimitingMomentResult {
@@ -874,6 +969,33 @@ mod tests {
         
         // Expected: ~170-190 kN·m for this section
         assert!(mu > 150.0 && mu < 200.0, "Mu should be 150-200 kN·m, got {}", mu);
+    }
+
+    #[test]
+    fn test_flexural_capacity_hsc_draft_2025_reduces_capacity() {
+        // For high-strength concrete (M80), compare at an over-reinforced state
+        // where xu is capped at xu,max in both versions.
+        // Draft 2025 uses a reduced concrete stress block (alpha/beta), so capacity
+        // should not exceed the IS 456:2000 baseline.
+        let ast = 5000.0;
+        let mu_2000 = flexural_capacity_singly_with_version(
+            300.0,
+            450.0,
+            80.0,
+            500.0,
+            ast,
+            IS456Version::V2000,
+        );
+        let mu_2025 = flexural_capacity_singly_with_version(
+            300.0,
+            450.0,
+            80.0,
+            500.0,
+            ast,
+            IS456Version::V2025Draft,
+        );
+
+        assert!(mu_2025 <= mu_2000, "Draft 2025 HSC capacity should not exceed 2000 model");
     }
 
     #[test]

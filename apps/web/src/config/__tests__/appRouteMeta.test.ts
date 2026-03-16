@@ -77,4 +77,19 @@ describe('appRouteMeta helpers', () => {
     expect(errorReportCrumbs[1]?.path).toBe('/error-report');
     expect(errorReportCrumbs[1]?.current).toBe(true);
   });
+
+  it('keeps geotechnical design route discoverable in titles, breadcrumbs, and search', () => {
+    expect(getRouteTitle('/design/geotechnical')).toBe('Geotechnical Design');
+
+    const crumbs = getBreadcrumbsForPath('/design/geotechnical');
+    expect(crumbs.map((crumb) => crumb.label)).toEqual([
+      'Dashboard',
+      'Design',
+      'Geotechnical Design',
+    ]);
+    expect(crumbs[2]?.current).toBe(true);
+
+    const searchResults = getSearchItems('geotech');
+    expect(searchResults.some((item) => item.path === '/design/geotechnical')).toBe(true);
+  });
 });

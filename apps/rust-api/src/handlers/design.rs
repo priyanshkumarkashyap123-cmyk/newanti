@@ -8,7 +8,7 @@ use axum::Json;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::design_codes::{is_456, is_800, is_1893, is_875, serviceability};
+use crate::design_codes::{is_456, is_800, is_1893, is_875, serviceability, spt_correlations, slope_stability, bearing_capacity, retaining_wall, settlement, liquefaction, pile_capacity, earth_pressure, seismic_earth_pressure};
 use crate::design_codes::{composite_beam, base_plate, ductile_detailing, aisc_360, eurocode3, eurocode2, aci_318, nds_2018};
 use crate::error::{ApiError, ApiResult};
 use axum::extract::State;
@@ -143,15 +143,25 @@ pub struct BoltBearingReq {
     pub n_shear_planes: usize,
     pub edge_dist: f64,
     pub pitch: f64,
+    #[serde(default)]
+    pub code_version: Option<String>,
 }
 fn default_one_usize() -> usize { 1 }
+
+fn parse_is800_version(s: Option<&str>) -> is_800::IS800Version {
+    match s.unwrap_or("IS800_2007").to_lowercase().as_str() {
+        "is800_2025_draft" | "2025" | "draft" | "is800draft" => is_800::IS800Version::V2025Draft,
+        _ => is_800::IS800Version::V2007,
+    }
+}
 
 pub async fn bolt_bearing(
     Json(req): Json<BoltBearingReq>,
 ) -> ApiResult<Json<is_800::BoltBearingResult>> {
-    match is_800::design_bolt_bearing(
+    let version = parse_is800_version(req.code_version.as_deref());
+    match is_800::design_bolt_bearing_with_version(
         req.bolt_dia, &req.grade, req.plate_fu, req.plate_thk,
-        req.n_bolts, req.n_shear_planes, req.edge_dist, req.pitch,
+        req.n_bolts, req.n_shear_planes, req.edge_dist, req.pitch, version,
     ) {
         Ok(result) => Ok(Json(result)),
         Err(e) => Err(ApiError::BadRequest(e)),
@@ -167,15 +177,18 @@ pub struct BoltHsfgReq {
     pub mu_f: f64,
     #[serde(default = "default_one_f64")]
     pub kh: f64,
+    #[serde(default)]
+    pub code_version: Option<String>,
 }
 fn default_one_f64() -> f64 { 1.0 }
 
 pub async fn bolt_hsfg(
     Json(req): Json<BoltHsfgReq>,
 ) -> ApiResult<Json<is_800::BoltHsfgResult>> {
-    match is_800::design_bolt_hsfg(
+    let version = parse_is800_version(req.code_version.as_deref());
+    match is_800::design_bolt_hsfg_with_version(
         req.bolt_dia, &req.grade, req.n_bolts,
-        req.n_effective_interfaces, req.mu_f, req.kh,
+        req.n_effective_interfaces, req.mu_f, req.kh, version,
     ) {
         Ok(result) => Ok(Json(result)),
         Err(e) => Err(ApiError::BadRequest(e)),
@@ -190,6 +203,8 @@ pub struct FilletWeldReq {
     pub load_kn: f64,
     #[serde(default = "default_weld_type")]
     pub weld_type: String,
+    #[serde(default)]
+    pub code_version: Option<String>,
 }
 
 fn default_weld_type() -> String { "shop".to_string() }
@@ -197,8 +212,14 @@ fn default_weld_type() -> String { "shop".to_string() }
 pub async fn fillet_weld(
     Json(req): Json<FilletWeldReq>,
 ) -> ApiResult<Json<is_800::WeldResult>> {
-    let result = is_800::design_fillet_weld(
-        req.weld_size, req.weld_length, req.weld_fu, req.load_kn, &req.weld_type,
+    let version = parse_is800_version(req.code_version.as_deref());
+    let result = is_800::design_fillet_weld_with_version(
+        req.weld_size,
+        req.weld_length,
+        req.weld_fu,
+        req.load_kn,
+        &req.weld_type,
+        version,
     );
     Ok(Json(result))
 }
@@ -214,14 +235,17 @@ pub struct AutoSelectReq {
     pub vu_kn: f64,
     pub lx_mm: f64,
     pub ly_mm: f64,
+    #[serde(default)]
+    pub code_version: Option<String>,
 }
 
 pub async fn auto_select(
     Json(req): Json<AutoSelectReq>,
 ) -> ApiResult<Json<is_800::AutoSelectResult>> {
-    let result = is_800::auto_select_section(
+    let version = parse_is800_version(req.code_version.as_deref());
+    let result = is_800::auto_select_section_with_version(
         req.fy, req.pu_kn, req.mux_knm, req.muy_knm,
-        req.vu_kn, req.lx_mm, req.ly_mm,
+        req.vu_kn, req.lx_mm, req.ly_mm, version,
     );
     Ok(Json(result))
 }
@@ -236,6 +260,8 @@ pub struct BaseShearReq {
     pub response_reduction: f64,
     pub period: f64,
     pub seismic_weight_kn: f64,
+    #[serde(default)]
+    pub code_version: Option<String>,
 }
 
 pub async fn base_shear(
@@ -243,9 +269,11 @@ pub async fn base_shear(
 ) -> ApiResult<Json<is_1893::BaseShearResult>> {
     let zone = parse_zone(&req.zone)?;
     let soil = parse_soil(&req.soil)?;
-    let result = is_1893::calculate_base_shear(
+    let version = parse_is1893_version(req.code_version.as_deref());
+    let result = is_1893::calculate_base_shear_with_version(
         req.seismic_weight_kn, req.period,
         zone, soil, req.importance, req.response_reduction,
+        version,
     );
     Ok(Json(result))
 }
@@ -261,6 +289,8 @@ pub struct EqForcesReq {
     #[serde(default = "default_x_dir")]
     pub direction: String,
     pub node_weights: Vec<is_1893::NodeWeight>,
+    #[serde(default)]
+    pub code_version: Option<String>,
 }
 fn default_x_dir() -> String { "x".into() }
 
@@ -269,10 +299,12 @@ pub async fn eq_forces(
 ) -> ApiResult<Json<is_1893::EqForceResult>> {
     let zone = parse_zone(&req.zone)?;
     let soil = parse_soil(&req.soil)?;
-    let result = is_1893::generate_equivalent_lateral_forces(
+    let version = parse_is1893_version(req.code_version.as_deref());
+    let result = is_1893::generate_equivalent_lateral_forces_with_version(
         &req.node_weights, zone, soil,
         req.importance, req.response_reduction,
         &req.building_type, req.base_dimension, &req.direction,
+        version,
     );
     Ok(Json(result))
 }
@@ -284,15 +316,18 @@ pub struct DriftCheckReq {
     pub response_reduction: f64,
     #[serde(default = "default_storey_1")]
     pub storey_number: usize,
+    #[serde(default)]
+    pub code_version: Option<String>,
 }
 fn default_storey_1() -> usize { 1 }
 
 pub async fn drift_check(
     Json(req): Json<DriftCheckReq>,
 ) -> ApiResult<Json<is_1893::DriftCheckResult>> {
-    let result = is_1893::check_storey_drift(
+    let version = parse_is1893_version(req.code_version.as_deref());
+    let result = is_1893::check_storey_drift_with_version(
         req.storey_height_mm, req.elastic_drift_mm,
-        req.response_reduction, req.storey_number,
+        req.response_reduction, req.storey_number, version,
     );
     Ok(Json(result))
 }
@@ -313,6 +348,15 @@ fn parse_soil(s: &str) -> Result<is_1893::SoilType, ApiError> {
         "medium" => Ok(is_1893::SoilType::Medium),
         "soft" => Ok(is_1893::SoilType::Soft),
         _ => Err(ApiError::BadRequest(format!("Invalid soil: {s}"))),
+    }
+}
+
+fn parse_is1893_version(s: Option<&str>) -> is_1893::IS1893Version {
+    match s.unwrap_or("IS1893_2016").to_lowercase().as_str() {
+        "is1893_2025_sandbox" | "2025" | "sandbox" | "draft" | "is1893sandbox" => {
+            is_1893::IS1893Version::V2025Sandbox
+        }
+        _ => is_1893::IS1893Version::V2016,
     }
 }
 
@@ -399,6 +443,297 @@ pub async fn live_load_reduction(
     Ok(Json(LiveLoadReductionResp {
         reduction_factor: rf,
     }))
+}
+
+// ── Geotechnical (SPT Correlations) ─────────────────────────────────────────
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SptCorrelationReq {
+    /// Corrected SPT blow count N60 (blows/300 mm)
+    pub n60: f64,
+    /// Fines content (%)
+    #[serde(default)]
+    pub fines_percent: Option<f64>,
+    /// Groundwater depth below ground level (m)
+    #[serde(default)]
+    pub groundwater_depth_m: Option<f64>,
+}
+
+pub async fn spt_correlation(
+    Json(req): Json<SptCorrelationReq>,
+) -> ApiResult<Json<spt_correlations::SptCorrelationResult>> {
+    let input = spt_correlations::SptCorrelationInput {
+        n60: req.n60,
+        fines_percent: req.fines_percent,
+        groundwater_depth_m: req.groundwater_depth_m,
+    };
+
+    match spt_correlations::correlate_sandy_soil(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct InfiniteSlopeReq {
+    /// Slope angle β (deg)
+    pub slope_angle_deg: f64,
+    /// Effective friction angle φ' (deg)
+    pub friction_angle_deg: f64,
+    /// Effective cohesion c' (kPa)
+    pub cohesion_kpa: f64,
+    /// Soil unit weight γ (kN/m³)
+    pub unit_weight_kn_m3: f64,
+    /// Failure plane depth z (m)
+    pub depth_m: f64,
+    /// Pore pressure ratio ru = u/(γ z cos²β)
+    #[serde(default)]
+    pub ru: Option<f64>,
+    /// Required minimum FS (default 1.50)
+    #[serde(default)]
+    pub required_fs: Option<f64>,
+}
+
+pub async fn infinite_slope_stability(
+    Json(req): Json<InfiniteSlopeReq>,
+) -> ApiResult<Json<slope_stability::InfiniteSlopeResult>> {
+    let input = slope_stability::InfiniteSlopeInput {
+        slope_angle_deg: req.slope_angle_deg,
+        friction_angle_deg: req.friction_angle_deg,
+        cohesion_kpa: req.cohesion_kpa,
+        unit_weight_kn_m3: req.unit_weight_kn_m3,
+        depth_m: req.depth_m,
+        ru: req.ru,
+        required_fs: req.required_fs,
+    };
+
+    match slope_stability::check_infinite_slope(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct BearingCapacityStripReq {
+    pub cohesion_kpa: f64,
+    pub friction_angle_deg: f64,
+    pub unit_weight_kn_m3: f64,
+    pub footing_width_m: f64,
+    pub embedment_depth_m: f64,
+    pub applied_pressure_kpa: f64,
+    #[serde(default)]
+    pub safety_factor: Option<f64>,
+}
+
+pub async fn bearing_capacity_strip(
+    Json(req): Json<BearingCapacityStripReq>,
+) -> ApiResult<Json<bearing_capacity::TerzaghiStripResult>> {
+    let input = bearing_capacity::TerzaghiStripInput {
+        cohesion_kpa: req.cohesion_kpa,
+        friction_angle_deg: req.friction_angle_deg,
+        unit_weight_kn_m3: req.unit_weight_kn_m3,
+        footing_width_m: req.footing_width_m,
+        embedment_depth_m: req.embedment_depth_m,
+        applied_pressure_kpa: req.applied_pressure_kpa,
+        safety_factor: req.safety_factor,
+    };
+
+    match bearing_capacity::check_terzaghi_strip(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RetainingWallStabilityReq {
+    pub wall_height_m: f64,
+    pub backfill_unit_weight_kn_m3: f64,
+    pub backfill_friction_angle_deg: f64,
+    #[serde(default)]
+    pub surcharge_kpa: f64,
+    pub base_width_m: f64,
+    pub total_vertical_load_kn_per_m: f64,
+    pub stabilizing_moment_knm_per_m: f64,
+    pub base_friction_coeff: f64,
+    pub allowable_bearing_kpa: f64,
+    #[serde(default)]
+    pub required_fs_overturning: Option<f64>,
+    #[serde(default)]
+    pub required_fs_sliding: Option<f64>,
+}
+
+pub async fn retaining_wall_stability(
+    Json(req): Json<RetainingWallStabilityReq>,
+) -> ApiResult<Json<retaining_wall::RetainingWallResult>> {
+    let input = retaining_wall::RetainingWallInput {
+        wall_height_m: req.wall_height_m,
+        backfill_unit_weight_kn_m3: req.backfill_unit_weight_kn_m3,
+        backfill_friction_angle_deg: req.backfill_friction_angle_deg,
+        surcharge_kpa: req.surcharge_kpa,
+        base_width_m: req.base_width_m,
+        total_vertical_load_kn_per_m: req.total_vertical_load_kn_per_m,
+        stabilizing_moment_knm_per_m: req.stabilizing_moment_knm_per_m,
+        base_friction_coeff: req.base_friction_coeff,
+        allowable_bearing_kpa: req.allowable_bearing_kpa,
+        required_fs_overturning: req.required_fs_overturning,
+        required_fs_sliding: req.required_fs_sliding,
+    };
+
+    match retaining_wall::check_retaining_wall(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ConsolidationSettlementReq {
+    pub layer_thickness_m: f64,
+    pub initial_void_ratio: f64,
+    pub compression_index: f64,
+    pub initial_effective_stress_kpa: f64,
+    pub stress_increment_kpa: f64,
+    pub drainage_path_m: f64,
+    pub cv_m2_per_year: f64,
+    pub time_years: f64,
+    #[serde(default)]
+    pub required_max_settlement_mm: Option<f64>,
+}
+
+pub async fn consolidation_settlement(
+    Json(req): Json<ConsolidationSettlementReq>,
+) -> ApiResult<Json<settlement::ConsolidationSettlementResult>> {
+    let input = settlement::ConsolidationSettlementInput {
+        layer_thickness_m: req.layer_thickness_m,
+        initial_void_ratio: req.initial_void_ratio,
+        compression_index: req.compression_index,
+        initial_effective_stress_kpa: req.initial_effective_stress_kpa,
+        stress_increment_kpa: req.stress_increment_kpa,
+        drainage_path_m: req.drainage_path_m,
+        cv_m2_per_year: req.cv_m2_per_year,
+        time_years: req.time_years,
+        required_max_settlement_mm: req.required_max_settlement_mm,
+    };
+
+    match settlement::check_consolidation_settlement(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct LiquefactionReq {
+    #[serde(default)]
+    pub magnitude_mw: Option<f64>,
+    pub pga_g: f64,
+    pub depth_m: f64,
+    pub total_stress_kpa: f64,
+    pub effective_stress_kpa: f64,
+    pub n1_60cs: f64,
+    #[serde(default)]
+    pub rd: Option<f64>,
+    #[serde(default)]
+    pub required_fs: Option<f64>,
+}
+
+pub async fn liquefaction_screening(
+    Json(req): Json<LiquefactionReq>,
+) -> ApiResult<Json<liquefaction::LiquefactionResult>> {
+    let input = liquefaction::LiquefactionInput {
+        magnitude_mw: req.magnitude_mw,
+        pga_g: req.pga_g,
+        depth_m: req.depth_m,
+        total_stress_kpa: req.total_stress_kpa,
+        effective_stress_kpa: req.effective_stress_kpa,
+        n1_60cs: req.n1_60cs,
+        rd: req.rd,
+        required_fs: req.required_fs,
+    };
+
+    match liquefaction::check_liquefaction(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct PileAxialCapacityReq {
+    pub diameter_m: f64,
+    pub length_m: f64,
+    pub unit_skin_friction_kpa: f64,
+    pub unit_end_bearing_kpa: f64,
+    pub applied_load_kn: f64,
+    #[serde(default)]
+    pub safety_factor: Option<f64>,
+}
+
+pub async fn pile_axial_capacity(
+    Json(req): Json<PileAxialCapacityReq>,
+) -> ApiResult<Json<pile_capacity::PileAxialCapacityResult>> {
+    let input = pile_capacity::PileAxialCapacityInput {
+        diameter_m: req.diameter_m,
+        length_m: req.length_m,
+        unit_skin_friction_kpa: req.unit_skin_friction_kpa,
+        unit_end_bearing_kpa: req.unit_end_bearing_kpa,
+        applied_load_kn: req.applied_load_kn,
+        safety_factor: req.safety_factor,
+    };
+
+    match pile_capacity::check_pile_axial_capacity(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RankineEarthPressureReq {
+    pub friction_angle_deg: f64,
+    pub unit_weight_kn_m3: f64,
+    pub retained_height_m: f64,
+    #[serde(default)]
+    pub surcharge_kpa: Option<f64>,
+}
+
+pub async fn rankine_earth_pressure(
+    Json(req): Json<RankineEarthPressureReq>,
+) -> ApiResult<Json<earth_pressure::RankineEarthPressureResult>> {
+    let input = earth_pressure::RankineEarthPressureInput {
+        friction_angle_deg: req.friction_angle_deg,
+        unit_weight_kn_m3: req.unit_weight_kn_m3,
+        retained_height_m: req.retained_height_m,
+        surcharge_kpa: req.surcharge_kpa,
+    };
+
+    match earth_pressure::compute_rankine_earth_pressure(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SeismicEarthPressureReq {
+    pub unit_weight_kn_m3: f64,
+    pub retained_height_m: f64,
+    pub kh: f64,
+    #[serde(default)]
+    pub kv: Option<f64>,
+    pub static_active_thrust_kn_per_m: f64,
+}
+
+pub async fn seismic_earth_pressure(
+    Json(req): Json<SeismicEarthPressureReq>,
+) -> ApiResult<Json<seismic_earth_pressure::SeismicEarthPressureResult>> {
+    let input = seismic_earth_pressure::SeismicEarthPressureInput {
+        unit_weight_kn_m3: req.unit_weight_kn_m3,
+        retained_height_m: req.retained_height_m,
+        kh: req.kh,
+        kv: req.kv,
+        static_active_thrust_kn_per_m: req.static_active_thrust_kn_per_m,
+    };
+
+    match seismic_earth_pressure::check_seismic_earth_pressure(&input) {
+        Ok(result) => Ok(Json(result)),
+        Err(e) => Err(ApiError::BadRequest(e)),
+    }
 }
 
 fn parse_terrain(s: &str) -> Result<is_875::TerrainCategory, ApiError> {
@@ -899,6 +1234,15 @@ pub async fn section_wise_from_analysis(
         PressureCoefficients { req: PressureCoeffReq },
         LiveLoad { req: LiveLoadReq },
         LiveLoadReduction { req: LiveLoadReductionReq },
+        SptCorrelation { req: SptCorrelationReq },
+        InfiniteSlope { req: InfiniteSlopeReq },
+        BearingCapacityStrip { req: BearingCapacityStripReq },
+        RetainingWallStability { req: RetainingWallStabilityReq },
+        ConsolidationSettlement { req: ConsolidationSettlementReq },
+        LiquefactionScreening { req: LiquefactionReq },
+        PileAxialCapacity { req: PileAxialCapacityReq },
+        RankineEarthPressure { req: RankineEarthPressureReq },
+        SeismicEarthPressure { req: SeismicEarthPressureReq },
         Deflection { req: DeflectionCheckReq },
         Vibration { req: VibrationCheckReq },
         CrackWidth { req: CrackWidthReq },
@@ -1054,6 +1398,81 @@ pub async fn section_wise_from_analysis(
             DesignCheckType::Deflection { req } => {
                 if req.span_mm <= 0.0 { return Err("span_mm must be > 0".into()); }
             }
+            DesignCheckType::SptCorrelation { req } => {
+                if req.n60 <= 0.0 { return Err("n60 must be > 0".into()); }
+            }
+            DesignCheckType::InfiniteSlope { req } => {
+                if req.slope_angle_deg <= 0.0 || req.slope_angle_deg >= 89.0 {
+                    return Err("slope_angle_deg must be > 0 and < 89".into());
+                }
+                if req.friction_angle_deg <= 0.0 || req.friction_angle_deg >= 60.0 {
+                    return Err("friction_angle_deg must be > 0 and < 60".into());
+                }
+                if req.unit_weight_kn_m3 <= 0.0 { return Err("unit_weight_kn_m3 must be > 0".into()); }
+                if req.depth_m <= 0.0 { return Err("depth_m must be > 0".into()); }
+            }
+            DesignCheckType::BearingCapacityStrip { req } => {
+                if req.cohesion_kpa < 0.0 { return Err("cohesion_kpa must be >= 0".into()); }
+                if req.friction_angle_deg < 0.0 || req.friction_angle_deg > 50.0 {
+                    return Err("friction_angle_deg must be in [0, 50]".into());
+                }
+                if req.unit_weight_kn_m3 <= 0.0 { return Err("unit_weight_kn_m3 must be > 0".into()); }
+                if req.footing_width_m <= 0.0 { return Err("footing_width_m must be > 0".into()); }
+                if req.applied_pressure_kpa < 0.0 { return Err("applied_pressure_kpa must be >= 0".into()); }
+            }
+            DesignCheckType::RetainingWallStability { req } => {
+                if req.wall_height_m <= 0.0 { return Err("wall_height_m must be > 0".into()); }
+                if req.backfill_unit_weight_kn_m3 <= 0.0 { return Err("backfill_unit_weight_kn_m3 must be > 0".into()); }
+                if req.backfill_friction_angle_deg <= 0.0 || req.backfill_friction_angle_deg >= 50.0 {
+                    return Err("backfill_friction_angle_deg must be > 0 and < 50".into());
+                }
+                if req.base_width_m <= 0.0 { return Err("base_width_m must be > 0".into()); }
+                if req.total_vertical_load_kn_per_m <= 0.0 { return Err("total_vertical_load_kn_per_m must be > 0".into()); }
+                if req.allowable_bearing_kpa <= 0.0 { return Err("allowable_bearing_kpa must be > 0".into()); }
+            }
+            DesignCheckType::ConsolidationSettlement { req } => {
+                if req.layer_thickness_m <= 0.0 { return Err("layer_thickness_m must be > 0".into()); }
+                if req.initial_void_ratio <= 0.0 { return Err("initial_void_ratio must be > 0".into()); }
+                if req.compression_index <= 0.0 { return Err("compression_index must be > 0".into()); }
+                if req.initial_effective_stress_kpa <= 0.0 { return Err("initial_effective_stress_kpa must be > 0".into()); }
+                if req.stress_increment_kpa <= 0.0 { return Err("stress_increment_kpa must be > 0".into()); }
+                if req.drainage_path_m <= 0.0 { return Err("drainage_path_m must be > 0".into()); }
+                if req.cv_m2_per_year <= 0.0 { return Err("cv_m2_per_year must be > 0".into()); }
+            }
+            DesignCheckType::LiquefactionScreening { req } => {
+                if req.pga_g <= 0.0 || req.pga_g > 1.5 { return Err("pga_g must be > 0 and <= 1.5".into()); }
+                if req.depth_m <= 0.0 || req.depth_m > 30.0 { return Err("depth_m must be > 0 and <= 30".into()); }
+                if req.total_stress_kpa <= 0.0 { return Err("total_stress_kpa must be > 0".into()); }
+                if req.effective_stress_kpa <= 0.0 { return Err("effective_stress_kpa must be > 0".into()); }
+                if req.total_stress_kpa < req.effective_stress_kpa {
+                    return Err("total_stress_kpa must be >= effective_stress_kpa".into());
+                }
+                if req.n1_60cs <= 0.0 || req.n1_60cs > 50.0 {
+                    return Err("n1_60cs must be > 0 and <= 50".into());
+                }
+            }
+            DesignCheckType::PileAxialCapacity { req } => {
+                if req.diameter_m <= 0.0 { return Err("diameter_m must be > 0".into()); }
+                if req.length_m <= 0.0 { return Err("length_m must be > 0".into()); }
+                if req.unit_skin_friction_kpa <= 0.0 { return Err("unit_skin_friction_kpa must be > 0".into()); }
+                if req.unit_end_bearing_kpa <= 0.0 { return Err("unit_end_bearing_kpa must be > 0".into()); }
+                if req.applied_load_kn < 0.0 { return Err("applied_load_kn must be >= 0".into()); }
+            }
+            DesignCheckType::RankineEarthPressure { req } => {
+                if req.friction_angle_deg <= 0.0 || req.friction_angle_deg >= 50.0 {
+                    return Err("friction_angle_deg must be > 0 and < 50".into());
+                }
+                if req.unit_weight_kn_m3 <= 0.0 { return Err("unit_weight_kn_m3 must be > 0".into()); }
+                if req.retained_height_m <= 0.0 { return Err("retained_height_m must be > 0".into()); }
+            }
+            DesignCheckType::SeismicEarthPressure { req } => {
+                if req.unit_weight_kn_m3 <= 0.0 { return Err("unit_weight_kn_m3 must be > 0".into()); }
+                if req.retained_height_m <= 0.0 { return Err("retained_height_m must be > 0".into()); }
+                if req.kh < 0.0 || req.kh > 0.6 { return Err("kh must be in [0, 0.6]".into()); }
+                if req.static_active_thrust_kn_per_m < 0.0 {
+                    return Err("static_active_thrust_kn_per_m must be >= 0".into());
+                }
+            }
             DesignCheckType::CrackWidth { req } => {
                 if req.b <= 0.0 || req.d <= 0.0 { return Err("b and d must be > 0".into()); }
                 if req.bar_dia <= 0.0 { return Err("bar_dia must be > 0".into()); }
@@ -1123,33 +1542,42 @@ pub async fn section_wise_from_analysis(
                 ("deflection_is456".to_string(), to_json(&result))
             },
             DesignCheckType::BoltBearing { req } => {
-                match is_800::design_bolt_bearing(
+                let version = parse_is800_version(req.code_version.as_deref());
+                match is_800::design_bolt_bearing_with_version(
                     req.bolt_dia, &req.grade, req.plate_fu, req.plate_thk,
-                    req.n_bolts, req.n_shear_planes, req.edge_dist, req.pitch,
+                    req.n_bolts, req.n_shear_planes, req.edge_dist, req.pitch, version,
                 ) {
                     Ok(result) => ("bolt_bearing".to_string(), to_json(&result)),
                     Err(e) => ("bolt_bearing".to_string(), Err(e)),
                 }
             },
             DesignCheckType::BoltHsfg { req } => {
-                match is_800::design_bolt_hsfg(
+                let version = parse_is800_version(req.code_version.as_deref());
+                match is_800::design_bolt_hsfg_with_version(
                     req.bolt_dia, &req.grade, req.n_bolts,
-                    req.n_effective_interfaces, req.mu_f, req.kh,
+                    req.n_effective_interfaces, req.mu_f, req.kh, version,
                 ) {
                     Ok(result) => ("bolt_hsfg".to_string(), to_json(&result)),
                     Err(e) => ("bolt_hsfg".to_string(), Err(e)),
                 }
             },
             DesignCheckType::FilletWeld { req } => {
-                let result = is_800::design_fillet_weld(
-                    req.weld_size, req.weld_length, req.weld_fu, req.load_kn, &req.weld_type,
+                let version = parse_is800_version(req.code_version.as_deref());
+                let result = is_800::design_fillet_weld_with_version(
+                    req.weld_size,
+                    req.weld_length,
+                    req.weld_fu,
+                    req.load_kn,
+                    &req.weld_type,
+                    version,
                 );
                 ("fillet_weld".to_string(), to_json(&result))
             },
             DesignCheckType::AutoSelect { req } => {
-                let result = is_800::auto_select_section(
+                let version = parse_is800_version(req.code_version.as_deref());
+                let result = is_800::auto_select_section_with_version(
                     req.fy, req.pu_kn, req.mux_knm, req.muy_knm,
-                    req.vu_kn, req.lx_mm, req.ly_mm,
+                    req.vu_kn, req.lx_mm, req.ly_mm, version,
                 );
                 ("auto_select".to_string(), to_json(&result))
             },
@@ -1158,9 +1586,11 @@ pub async fn section_wise_from_analysis(
                     Ok(zone) => {
                         match parse_soil(&req.soil) {
                             Ok(soil) => {
-                                let result = is_1893::calculate_base_shear(
+                                let version = parse_is1893_version(req.code_version.as_deref());
+                                let result = is_1893::calculate_base_shear_with_version(
                                     req.seismic_weight_kn, req.period,
                                     zone, soil, req.importance, req.response_reduction,
+                                    version,
                                 );
                                 ("base_shear".to_string(), to_json(&result))
                             }
@@ -1173,10 +1603,12 @@ pub async fn section_wise_from_analysis(
             DesignCheckType::EqForces { req } => {
                 match (parse_zone(&req.zone), parse_soil(&req.soil)) {
                     (Ok(zone), Ok(soil)) => {
-                        let result = is_1893::generate_equivalent_lateral_forces(
+                        let version = parse_is1893_version(req.code_version.as_deref());
+                        let result = is_1893::generate_equivalent_lateral_forces_with_version(
                             &req.node_weights, zone, soil,
                             req.importance, req.response_reduction,
                             &req.building_type, req.base_dimension, &req.direction,
+                            version,
                         );
                         ("eq_forces".to_string(), to_json(&result))
                     }
@@ -1184,9 +1616,10 @@ pub async fn section_wise_from_analysis(
                 }
             },
             DesignCheckType::DriftCheck { req } => {
-                let result = is_1893::check_storey_drift(
+                let version = parse_is1893_version(req.code_version.as_deref());
+                let result = is_1893::check_storey_drift_with_version(
                     req.storey_height_mm, req.elastic_drift_mm,
-                    req.response_reduction, req.storey_number,
+                    req.response_reduction, req.storey_number, version,
                 );
                 ("drift_check".to_string(), to_json(&result))
             },
@@ -1222,6 +1655,138 @@ pub async fn section_wise_from_analysis(
                     reduction_factor: rf,
                 };
                 ("live_load_reduction".to_string(), to_json(&resp))
+            },
+            DesignCheckType::SptCorrelation { req } => {
+                let input = spt_correlations::SptCorrelationInput {
+                    n60: req.n60,
+                    fines_percent: req.fines_percent,
+                    groundwater_depth_m: req.groundwater_depth_m,
+                };
+                match spt_correlations::correlate_sandy_soil(&input) {
+                    Ok(result) => ("spt_correlation".to_string(), to_json(&result)),
+                    Err(e) => ("spt_correlation".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::InfiniteSlope { req } => {
+                let input = slope_stability::InfiniteSlopeInput {
+                    slope_angle_deg: req.slope_angle_deg,
+                    friction_angle_deg: req.friction_angle_deg,
+                    cohesion_kpa: req.cohesion_kpa,
+                    unit_weight_kn_m3: req.unit_weight_kn_m3,
+                    depth_m: req.depth_m,
+                    ru: req.ru,
+                    required_fs: req.required_fs,
+                };
+                match slope_stability::check_infinite_slope(&input) {
+                    Ok(result) => ("infinite_slope".to_string(), to_json(&result)),
+                    Err(e) => ("infinite_slope".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::BearingCapacityStrip { req } => {
+                let input = bearing_capacity::TerzaghiStripInput {
+                    cohesion_kpa: req.cohesion_kpa,
+                    friction_angle_deg: req.friction_angle_deg,
+                    unit_weight_kn_m3: req.unit_weight_kn_m3,
+                    footing_width_m: req.footing_width_m,
+                    embedment_depth_m: req.embedment_depth_m,
+                    applied_pressure_kpa: req.applied_pressure_kpa,
+                    safety_factor: req.safety_factor,
+                };
+                match bearing_capacity::check_terzaghi_strip(&input) {
+                    Ok(result) => ("bearing_capacity_strip".to_string(), to_json(&result)),
+                    Err(e) => ("bearing_capacity_strip".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::RetainingWallStability { req } => {
+                let input = retaining_wall::RetainingWallInput {
+                    wall_height_m: req.wall_height_m,
+                    backfill_unit_weight_kn_m3: req.backfill_unit_weight_kn_m3,
+                    backfill_friction_angle_deg: req.backfill_friction_angle_deg,
+                    surcharge_kpa: req.surcharge_kpa,
+                    base_width_m: req.base_width_m,
+                    total_vertical_load_kn_per_m: req.total_vertical_load_kn_per_m,
+                    stabilizing_moment_knm_per_m: req.stabilizing_moment_knm_per_m,
+                    base_friction_coeff: req.base_friction_coeff,
+                    allowable_bearing_kpa: req.allowable_bearing_kpa,
+                    required_fs_overturning: req.required_fs_overturning,
+                    required_fs_sliding: req.required_fs_sliding,
+                };
+                match retaining_wall::check_retaining_wall(&input) {
+                    Ok(result) => ("retaining_wall_stability".to_string(), to_json(&result)),
+                    Err(e) => ("retaining_wall_stability".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::ConsolidationSettlement { req } => {
+                let input = settlement::ConsolidationSettlementInput {
+                    layer_thickness_m: req.layer_thickness_m,
+                    initial_void_ratio: req.initial_void_ratio,
+                    compression_index: req.compression_index,
+                    initial_effective_stress_kpa: req.initial_effective_stress_kpa,
+                    stress_increment_kpa: req.stress_increment_kpa,
+                    drainage_path_m: req.drainage_path_m,
+                    cv_m2_per_year: req.cv_m2_per_year,
+                    time_years: req.time_years,
+                    required_max_settlement_mm: req.required_max_settlement_mm,
+                };
+                match settlement::check_consolidation_settlement(&input) {
+                    Ok(result) => ("consolidation_settlement".to_string(), to_json(&result)),
+                    Err(e) => ("consolidation_settlement".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::LiquefactionScreening { req } => {
+                let input = liquefaction::LiquefactionInput {
+                    magnitude_mw: req.magnitude_mw,
+                    pga_g: req.pga_g,
+                    depth_m: req.depth_m,
+                    total_stress_kpa: req.total_stress_kpa,
+                    effective_stress_kpa: req.effective_stress_kpa,
+                    n1_60cs: req.n1_60cs,
+                    rd: req.rd,
+                    required_fs: req.required_fs,
+                };
+                match liquefaction::check_liquefaction(&input) {
+                    Ok(result) => ("liquefaction_screening".to_string(), to_json(&result)),
+                    Err(e) => ("liquefaction_screening".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::PileAxialCapacity { req } => {
+                let input = pile_capacity::PileAxialCapacityInput {
+                    diameter_m: req.diameter_m,
+                    length_m: req.length_m,
+                    unit_skin_friction_kpa: req.unit_skin_friction_kpa,
+                    unit_end_bearing_kpa: req.unit_end_bearing_kpa,
+                    applied_load_kn: req.applied_load_kn,
+                    safety_factor: req.safety_factor,
+                };
+                match pile_capacity::check_pile_axial_capacity(&input) {
+                    Ok(result) => ("pile_axial_capacity".to_string(), to_json(&result)),
+                    Err(e) => ("pile_axial_capacity".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::RankineEarthPressure { req } => {
+                let input = earth_pressure::RankineEarthPressureInput {
+                    friction_angle_deg: req.friction_angle_deg,
+                    unit_weight_kn_m3: req.unit_weight_kn_m3,
+                    retained_height_m: req.retained_height_m,
+                    surcharge_kpa: req.surcharge_kpa,
+                };
+                match earth_pressure::compute_rankine_earth_pressure(&input) {
+                    Ok(result) => ("rankine_earth_pressure".to_string(), to_json(&result)),
+                    Err(e) => ("rankine_earth_pressure".to_string(), Err(e)),
+                }
+            },
+            DesignCheckType::SeismicEarthPressure { req } => {
+                let input = seismic_earth_pressure::SeismicEarthPressureInput {
+                    unit_weight_kn_m3: req.unit_weight_kn_m3,
+                    retained_height_m: req.retained_height_m,
+                    kh: req.kh,
+                    kv: req.kv,
+                    static_active_thrust_kn_per_m: req.static_active_thrust_kn_per_m,
+                };
+                match seismic_earth_pressure::check_seismic_earth_pressure(&input) {
+                    Ok(result) => ("seismic_earth_pressure".to_string(), to_json(&result)),
+                    Err(e) => ("seismic_earth_pressure".to_string(), Err(e)),
+                }
             },
             DesignCheckType::Deflection { req } => {
                 let result = serviceability::check_deflection(
@@ -1720,6 +2285,7 @@ mod tests {
                     response_reduction: 5.0,
                     period: 0.5,
                     seismic_weight_kn: 10000.0,
+                    code_version: None,
                 },
             },
         };
@@ -1758,6 +2324,88 @@ mod tests {
         match req.checks[0].check {
             DesignCheckType::Deflection { .. } => {}
             _ => panic!("expected deflection check type"),
+        }
+    }
+
+    #[test]
+    fn batch_design_base_shear_sandbox_returns_warning_metadata() {
+        let input = DesignCheckInput {
+            id: "seismic-sandbox-1".to_string(),
+            check: DesignCheckType::BaseShear {
+                req: BaseShearReq {
+                    zone: "IV".to_string(),
+                    soil: "medium".to_string(),
+                    importance: 1.0,
+                    response_reduction: 5.0,
+                    period: 0.8,
+                    seismic_weight_kn: 12000.0,
+                    code_version: Some("is1893_2025_sandbox".to_string()),
+                },
+            },
+        };
+
+        let result = process_design_check(&input);
+        assert!(result.success, "expected sandbox base shear to succeed");
+
+        let payload = result.result.expect("expected serialized result payload");
+        assert_eq!(payload.get("code_version").and_then(|v| v.as_str()), Some("IS1893_2025_SANDBOX"));
+        assert!(payload.get("sandbox_warning").and_then(|v| v.as_str()).is_some());
+    }
+
+    #[test]
+    fn batch_request_deserializes_geotech_phase2_types() {
+        let payload = serde_json::json!({
+            "checks": [
+                {
+                    "id": "pile-1",
+                    "type": "pile_axial_capacity",
+                    "req": {
+                        "diameter_m": 0.6,
+                        "length_m": 18.0,
+                        "unit_skin_friction_kpa": 65.0,
+                        "unit_end_bearing_kpa": 2500.0,
+                        "applied_load_kn": 2000.0,
+                        "safety_factor": 2.5
+                    }
+                },
+                {
+                    "id": "ep-1",
+                    "type": "rankine_earth_pressure",
+                    "req": {
+                        "friction_angle_deg": 30.0,
+                        "unit_weight_kn_m3": 18.0,
+                        "retained_height_m": 6.0,
+                        "surcharge_kpa": 10.0
+                    }
+                },
+                {
+                    "id": "sep-1",
+                    "type": "seismic_earth_pressure",
+                    "req": {
+                        "unit_weight_kn_m3": 18.0,
+                        "retained_height_m": 6.0,
+                        "kh": 0.15,
+                        "kv": 0.05,
+                        "static_active_thrust_kn_per_m": 120.0
+                    }
+                }
+            ]
+        });
+
+        let req: BatchDesignRequest = serde_json::from_value(payload).expect("payload should deserialize");
+        assert_eq!(req.checks.len(), 3);
+
+        match &req.checks[0].check {
+            DesignCheckType::PileAxialCapacity { .. } => {}
+            _ => panic!("expected pile_axial_capacity check type"),
+        }
+        match &req.checks[1].check {
+            DesignCheckType::RankineEarthPressure { .. } => {}
+            _ => panic!("expected rankine_earth_pressure check type"),
+        }
+        match &req.checks[2].check {
+            DesignCheckType::SeismicEarthPressure { .. } => {}
+            _ => panic!("expected seismic_earth_pressure check type"),
         }
     }
 }

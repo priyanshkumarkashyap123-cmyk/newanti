@@ -143,6 +143,34 @@ apply_app_settings "$NODE_APP" JWT_SECRET JWT_REFRESH_SECRET SESSION_SECRET MONG
 apply_app_settings "$PY_APP" JWT_SECRET GEMINI_API_KEY MONGODB_URI INTERNAL_SERVICE_SECRET SENTRY_DSN
 apply_app_settings "$RUST_APP" JWT_SECRET MONGODB_URI INTERNAL_SERVICE_SECRET
 
+echo "Applying stable Node runtime defaults"
+az webapp config appsettings set \
+  --resource-group "$RG" \
+  --name "$NODE_APP" \
+  --settings \
+  NODE_ENV=production \
+  USE_CLERK=true \
+  TEMP_UNLOCK_ALL=false \
+  PHONEPE_ENV=PRODUCTION \
+  FRONTEND_URL=https://beamlabultimate.tech \
+  CORS_ALLOWED_ORIGINS=https://beamlabultimate.tech,https://www.beamlabultimate.tech,https://brave-mushroom-0eae8ec00.4.azurestaticapps.net \
+  PYTHON_API_URL=https://beamlab-backend-python.azurewebsites.net \
+  RUST_API_URL=https://beamlab-rust-api.azurewebsites.net >/dev/null || echo "Failed to apply runtime defaults for $NODE_APP"
+
+echo "Removing optional blank Sentry DSN from Node app settings when not provided"
+if ! find_var SENTRY_DSN >/dev/null 2>&1; then
+  az webapp config appsettings delete \
+    --resource-group "$RG" \
+    --name "$NODE_APP" \
+    --setting-names SENTRY_DSN >/dev/null 2>&1 || true
+fi
+
+echo "Setting Node App Service startup command to CommonJS entrypoint"
+az webapp config set \
+  --resource-group "$RG" \
+  --name "$NODE_APP" \
+  --startup-file "node /home/site/wwwroot/dist/index.cjs" >/dev/null || echo "Failed to update startup command for $NODE_APP"
+
 echo "Triggering workflows"
 if gh workflow run azure-deploy.yml --repo "$REPO"; then echo "Triggered azure-deploy.yml"; else echo "Failed to trigger azure-deploy.yml"; fi
 if gh workflow run azure-static-web-apps-brave-mushroom-0eae8ec00.yml --repo "$REPO"; then echo "Triggered frontend workflow"; else echo "Failed to trigger frontend workflow"; fi

@@ -17,6 +17,10 @@ import {
     pDeltaSchema,
     modalSchema,
     bucklingSchema,
+    geotechSptSchema,
+    geotechInfiniteSlopeSchema,
+    geotechLiquefactionSchema,
+    geotechSeismicEarthPressureSchema,
 } from '../src/middleware/validation.js';
 
 // ============================================
@@ -360,5 +364,53 @@ describe('bucklingSchema', () => {
             loads: [],
         });
         expect(result.success).toBe(false);
+    });
+});
+
+// ============================================
+// Geotechnical Schemas
+// ============================================
+
+describe('geotechnical schemas', () => {
+    it('should accept valid SPT correlation input', () => {
+        const result = geotechSptSchema.safeParse({
+            n60: 18,
+            fines_percent: 22,
+            groundwater_depth_m: 2.5,
+        });
+        expect(result.success).toBe(true);
+    });
+
+    it('should reject invalid infinite slope angle bounds', () => {
+        const result = geotechInfiniteSlopeSchema.safeParse({
+            slope_angle_deg: 90,
+            friction_angle_deg: 32,
+            cohesion_kpa: 10,
+            unit_weight_kn_m3: 18,
+            depth_m: 3,
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it('should reject liquefaction payload when total stress is lower than effective stress', () => {
+        const result = geotechLiquefactionSchema.safeParse({
+            pga_g: 0.25,
+            depth_m: 6,
+            total_stress_kpa: 60,
+            effective_stress_kpa: 80,
+            n1_60cs: 18,
+        });
+        expect(result.success).toBe(false);
+    });
+
+    it('should accept valid seismic earth pressure payload with kv in range', () => {
+        const result = geotechSeismicEarthPressureSchema.safeParse({
+            unit_weight_kn_m3: 19,
+            retained_height_m: 5,
+            kh: 0.15,
+            kv: -0.1,
+            static_active_thrust_kn_per_m: 120,
+        });
+        expect(result.success).toBe(true);
     });
 });

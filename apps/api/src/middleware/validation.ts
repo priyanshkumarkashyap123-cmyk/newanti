@@ -529,6 +529,100 @@ export const foundationDesignSchema = z.object({
 });
 
 // ============================================
+// GEOTECHNICAL DESIGN SCHEMAS
+// ============================================
+
+export const geotechSptSchema = z.object({
+    n60: z.number().positive(),
+    fines_percent: z.number().min(0).max(100).optional(),
+    groundwater_depth_m: z.number().nonnegative().optional(),
+});
+
+export const geotechInfiniteSlopeSchema = z.object({
+    slope_angle_deg: z.number().gt(0).lt(89),
+    friction_angle_deg: z.number().gt(0).lt(60),
+    cohesion_kpa: z.number().min(0),
+    unit_weight_kn_m3: z.number().positive(),
+    depth_m: z.number().positive(),
+    ru: z.number().min(0).lt(1).optional(),
+    required_fs: z.number().positive().optional(),
+});
+
+export const geotechBearingCapacitySchema = z.object({
+    cohesion_kpa: z.number().min(0),
+    friction_angle_deg: z.number().min(0).max(50),
+    unit_weight_kn_m3: z.number().positive(),
+    footing_width_m: z.number().positive(),
+    embedment_depth_m: z.number().min(0),
+    applied_pressure_kpa: z.number().min(0),
+    safety_factor: z.number().gt(1).optional(),
+});
+
+export const geotechRetainingWallSchema = z.object({
+    wall_height_m: z.number().positive(),
+    backfill_unit_weight_kn_m3: z.number().positive(),
+    backfill_friction_angle_deg: z.number().gt(0).lt(50),
+    surcharge_kpa: z.number().min(0).optional(),
+    base_width_m: z.number().positive(),
+    total_vertical_load_kn_per_m: z.number().positive(),
+    stabilizing_moment_knm_per_m: z.number().positive(),
+    base_friction_coeff: z.number().positive(),
+    allowable_bearing_kpa: z.number().positive(),
+    required_fs_overturning: z.number().positive().optional(),
+    required_fs_sliding: z.number().positive().optional(),
+});
+
+export const geotechSettlementSchema = z.object({
+    layer_thickness_m: z.number().positive(),
+    initial_void_ratio: z.number().positive(),
+    compression_index: z.number().positive(),
+    initial_effective_stress_kpa: z.number().positive(),
+    stress_increment_kpa: z.number().positive(),
+    drainage_path_m: z.number().positive(),
+    cv_m2_per_year: z.number().positive(),
+    time_years: z.number().min(0),
+    required_max_settlement_mm: z.number().positive().optional(),
+});
+
+export const geotechLiquefactionSchema = z.object({
+    magnitude_mw: z.number().min(5).max(9).optional(),
+    pga_g: z.number().gt(0).max(1.5),
+    depth_m: z.number().gt(0).max(30),
+    total_stress_kpa: z.number().positive(),
+    effective_stress_kpa: z.number().positive(),
+    n1_60cs: z.number().gt(0).max(50),
+    rd: z.number().min(0.3).max(1.0).optional(),
+    required_fs: z.number().positive().optional(),
+}).refine((data) => data.total_stress_kpa >= data.effective_stress_kpa, {
+    message: 'total_stress_kpa must be >= effective_stress_kpa',
+    path: ['total_stress_kpa'],
+});
+
+export const geotechPileAxialSchema = z.object({
+    diameter_m: z.number().positive(),
+    length_m: z.number().positive(),
+    unit_skin_friction_kpa: z.number().positive(),
+    unit_end_bearing_kpa: z.number().positive(),
+    applied_load_kn: z.number().min(0),
+    safety_factor: z.number().gt(1).optional(),
+});
+
+export const geotechRankineSchema = z.object({
+    friction_angle_deg: z.number().gt(0).lt(50),
+    unit_weight_kn_m3: z.number().positive(),
+    retained_height_m: z.number().positive(),
+    surcharge_kpa: z.number().min(0).optional(),
+});
+
+export const geotechSeismicEarthPressureSchema = z.object({
+    unit_weight_kn_m3: z.number().positive(),
+    retained_height_m: z.number().positive(),
+    kh: z.number().min(0).max(0.6),
+    kv: z.number().min(-0.5).max(0.5).optional(),
+    static_active_thrust_kn_per_m: z.number().min(0),
+});
+
+// ============================================
 // ADVANCED ANALYSIS SCHEMAS
 // ============================================
 

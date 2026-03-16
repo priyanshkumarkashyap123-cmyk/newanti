@@ -25,17 +25,11 @@ test.describe('Accessibility', () => {
 
   test('should have proper heading hierarchy', async ({ page }) => {
     await page.goto('/');
-    
-    // Get all headings
-    const headings = await page.evaluate(() => {
-      const h1s = document.querySelectorAll('h1').length;
-      const h2s = document.querySelectorAll('h2').length;
-      const h3s = document.querySelectorAll('h3').length;
-      return { h1s, h2s, h3s };
-    });
-    
-    // Should have at least one heading
-    expect(headings.h1s + headings.h2s + headings.h3s).toBeGreaterThan(0);
+
+    // Firefox can render headings slightly later on heavy routes.
+    await expect
+      .poll(async () => page.locator('h1, h2, h3').count(), { timeout: 5000 })
+      .toBeGreaterThan(0);
   });
 
   test('should have accessible images', async ({ page }) => {

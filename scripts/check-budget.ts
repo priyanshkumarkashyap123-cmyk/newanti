@@ -12,6 +12,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join, extname } from 'path';
 import { gzipSync, brotliCompressSync } from 'zlib';
+import { pathToFileURL } from 'url';
 
 // ============================================================================
 // Types
@@ -307,7 +308,11 @@ export function formatReportAsMarkdown(report: BudgetReport): string {
 // CLI Execution
 // ============================================================================
 
-if (require.main === module) {
+const isMain = process.argv[1]
+  ? import.meta.url === pathToFileURL(process.argv[1]).href
+  : false;
+
+if (isMain) {
   try {
     const report = checkBudget();
     console.log(formatReportAsTable(report));

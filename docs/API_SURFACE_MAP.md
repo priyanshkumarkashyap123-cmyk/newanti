@@ -124,6 +124,43 @@ Verified gateway file:
 | `/api/design/ductile-detailing` | Detailing checks |
 | `/api/design/batch` | Batch design requests |
 
+### Core design gateway contract behavior (non-geotechnical)
+
+For `steel`, `concrete`, `connection`, aliases, and optimization routes mounted under `/api/design/*`:
+
+- Node performs request validation on canonical routes (`/steel`, `/concrete/beam`, `/concrete/column`, `/connection`, `/foundation`) before any proxy call.
+- Validation failures return HTTP `400` with `success: false` and structured `details`.
+- Forwarding strategy is Rust-first with Python fallback when both targets are configured.
+- `/foundation` is currently Python-targeted only in gateway mapping.
+- Successful proxy responses are wrapped by gateway as:
+	- `success: true`
+	- `engine: "rust" | "python"`
+	- `result: <backend payload>`
+- `/optimize` uses an extended timeout window (60s) due heavier optimization workloads.
+
+### Geotechnical design endpoints (Rust via Node gateway)
+
+All geotechnical checks are exposed through Node ingress (`/api/design/geotech/*`) and forwarded Rust-first to `/api/design/geotech/*` on the Rust API.
+
+| Gateway path | Rust target | Purpose |
+|---|---|---|
+| `/api/design/geotech/spt-correlation` | `/api/design/geotech/spt-correlation` | SPT-based sandy soil correlation (φ, Es, Dr estimates) |
+| `/api/design/geotech/slope/infinite` | `/api/design/geotech/slope/infinite` | Infinite slope factor-of-safety screening |
+| `/api/design/geotech/foundation/bearing-capacity` | `/api/design/geotech/foundation/bearing-capacity` | Terzaghi strip footing bearing-capacity check |
+| `/api/design/geotech/retaining-wall/stability` | `/api/design/geotech/retaining-wall/stability` | External stability checks (sliding/overturning/bearing) |
+| `/api/design/geotech/settlement/consolidation` | `/api/design/geotech/settlement/consolidation` | 1D consolidation settlement and time-rate estimate |
+| `/api/design/geotech/liquefaction/screening` | `/api/design/geotech/liquefaction/screening` | SPT-based liquefaction screening (CSR/CRR/MSF) |
+| `/api/design/geotech/foundation/pile-axial-capacity` | `/api/design/geotech/foundation/pile-axial-capacity` | Static axial pile compression capacity (shaft + base) |
+| `/api/design/geotech/earth-pressure/rankine` | `/api/design/geotech/earth-pressure/rankine` | Rankine/Jaky earth pressure coefficients and thrusts |
+| `/api/design/geotech/earth-pressure/seismic` | `/api/design/geotech/earth-pressure/seismic` | Pseudo-static seismic increment to active thrust |
+
+Gateway contract notes (verified in tests):
+
+- Request body validation occurs at Node ingress before proxying.
+- Invalid payloads return `400` with `success: false` and no backend call.
+- Successful proxy responses return `success: true`, `engine: "rust"`, and `result` payload.
+- Geotech routes are Rust-only (no Python fallback route targets configured).
+
 ### Python design families
 
 Observed registrations:

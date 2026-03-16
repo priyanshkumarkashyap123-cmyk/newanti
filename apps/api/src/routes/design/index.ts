@@ -16,6 +16,15 @@ import {
   concreteColumnSchema,
   connectionDesignSchema,
   foundationDesignSchema,
+  geotechSptSchema,
+  geotechInfiniteSlopeSchema,
+  geotechBearingCapacitySchema,
+  geotechRetainingWallSchema,
+  geotechSettlementSchema,
+  geotechLiquefactionSchema,
+  geotechPileAxialSchema,
+  geotechRankineSchema,
+  geotechSeismicEarthPressureSchema,
 } from "../../middleware/validation.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
@@ -46,7 +55,7 @@ async function callBackend(
 async function forwardDesign(
   options: {
     rustPath?: string;
-    pythonPath: string;
+    pythonPath?: string;
     body: unknown;
     res: Response;
     label: string;
@@ -59,12 +68,21 @@ async function forwardDesign(
   const order: Array<{ service: BackendService; path: string }> = preferRust
     ? [
         ...(rustPath ? [{ service: "rust" as const, path: rustPath }] : []),
-        { service: "python" as const, path: pythonPath },
+        ...(pythonPath ? [{ service: "python" as const, path: pythonPath }] : []),
       ]
     : [
-        { service: "python" as const, path: pythonPath },
+        ...(pythonPath ? [{ service: "python" as const, path: pythonPath }] : []),
         ...(rustPath ? [{ service: "rust" as const, path: rustPath }] : []),
       ];
+
+  if (order.length === 0) {
+    res.status(500).json({
+      success: false,
+      error: `${label} route misconfigured: no backend target defined`,
+      service: "design-gateway",
+    });
+    return;
+  }
 
   let lastError = `${label} failed`;
   let lastStatus = 500;
@@ -261,6 +279,127 @@ router.post("/optimize", asyncHandler(async (req: Request, res: Response) => {
     timeoutMs: 60_000,
   });
 }));
+
+// ============================================
+// Geotechnical Design Routes (Rust-first)
+// ============================================
+
+router.post(
+  "/geotech/spt-correlation",
+  validateBody(geotechSptSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/spt-correlation",
+      body: req.body,
+      res,
+      label: "Geotech/SPT",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/slope/infinite",
+  validateBody(geotechInfiniteSlopeSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/slope/infinite",
+      body: req.body,
+      res,
+      label: "Geotech/InfiniteSlope",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/foundation/bearing-capacity",
+  validateBody(geotechBearingCapacitySchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/foundation/bearing-capacity",
+      body: req.body,
+      res,
+      label: "Geotech/BearingCapacity",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/retaining-wall/stability",
+  validateBody(geotechRetainingWallSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/retaining-wall/stability",
+      body: req.body,
+      res,
+      label: "Geotech/RetainingWall",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/settlement/consolidation",
+  validateBody(geotechSettlementSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/settlement/consolidation",
+      body: req.body,
+      res,
+      label: "Geotech/Settlement",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/liquefaction/screening",
+  validateBody(geotechLiquefactionSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/liquefaction/screening",
+      body: req.body,
+      res,
+      label: "Geotech/Liquefaction",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/foundation/pile-axial-capacity",
+  validateBody(geotechPileAxialSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/foundation/pile-axial-capacity",
+      body: req.body,
+      res,
+      label: "Geotech/PileAxial",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/earth-pressure/rankine",
+  validateBody(geotechRankineSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/earth-pressure/rankine",
+      body: req.body,
+      res,
+      label: "Geotech/EarthPressureRankine",
+    });
+  }),
+);
+
+router.post(
+  "/geotech/earth-pressure/seismic",
+  validateBody(geotechSeismicEarthPressureSchema),
+  asyncHandler(async (req: Request, res: Response) => {
+    await forwardDesign({
+      rustPath: "/api/design/geotech/earth-pressure/seismic",
+      body: req.body,
+      res,
+      label: "Geotech/EarthPressureSeismic",
+    });
+  }),
+);
 
 // ============================================
 // GET /design/codes - Available Design Codes (static)

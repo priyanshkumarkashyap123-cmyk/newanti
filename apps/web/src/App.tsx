@@ -3,9 +3,10 @@
  * Routes between Landing, Dashboard, and Workspace
  */
 
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 import { ScrollToTop } from './components/ScrollToTop';
+import { RouteMetaTags } from './components/RouteMetaTags';
 
 // Lazy-load components that use framer-motion to avoid loading ~45KB on every page
 const BackToTopButton = lazy(() =>
@@ -87,13 +88,6 @@ const HydraulicsDesigner = lazy(() =>
   })),
 );
 
-// Structural Design (Lazy Loaded)
-const SteelDesignPage = lazy(() =>
-  import('./pages/SteelDesignPage').then((module) => ({
-    default: module.SteelDesignPage,
-  })),
-);
-const StructuralDesignCenter = lazy(() => import('./pages/StructuralDesignCenter')); // Default export
 const ModernModeler = lazy(() =>
   import('./components/ModernModeler').then((module) => ({
     default: module.ModernModeler,
@@ -132,55 +126,16 @@ const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const WorkerValidation = lazy(() => import('./components/WorkerValidation'));
 
-// Phase 12 Design Modules
-const ConnectionDesignPage = lazy(() => import('./pages/ConnectionDesignPage'));
-const DetailingDesignPage = lazy(() => import('./pages/DetailingDesignPage'));
-const ReinforcementDesignPage = lazy(() => import('./pages/DetailingDesignPage')); // Reusing Detailing Page
-
-// New Complete Design Pages (CEO Gap Closure - Phase 13)
-const ConcreteDesignPage = lazy(() => import('./pages/ConcreteDesignPage'));
-const FoundationDesignPage = lazy(() => import('./pages/FoundationDesignPage'));
-const LoadCombinationPage = lazy(() => import('./pages/LoadCombinationPage'));
-const SectionDatabasePage = lazy(() => import('./pages/SectionDatabasePage'));
-const PushoverAnalysisPage = lazy(() => import('./pages/PushoverAnalysisPage'));
-
-// Composite & Timber Design Pages
-const CompositeDesignPage = lazy(() => import('./pages/CompositeDesignPage'));
-const TimberDesignPage = lazy(() => import('./pages/TimberDesignPage'));
-
 // New Feature Pages (Phase 17: BBS Engine + Plate/Shell FEM)
-const BarBendingSchedulePage = lazy(() => import('./pages/BarBendingSchedulePage'));
-const PlateShellAnalysisPage = lazy(() => import('./pages/PlateShellAnalysisPage'));
 
 // Enhanced Analysis Pages (CEO Industry Gap Closure - Phase 14)
-const TimeHistoryAnalysisPage = lazy(() => import('./pages/TimeHistoryAnalysisPage'));
-const ModalAnalysisPage = lazy(() => import('./pages/ModalAnalysisPage'));
-const NonlinearAnalysisPage = lazy(() => import('./pages/NonlinearAnalysisPage'));
-const DynamicAnalysisPage = lazy(() => import('./pages/DynamicAnalysisPage'));
 
 // New core pages (Phase 1 implementation)
 const BlogPage = lazy(() => import('./pages/BlogPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
-// Phase 15: Professional Tools (Industry Parity)
-const ProfessionalReportGenerator = lazy(() => import('./pages/ProfessionalReportGenerator'));
-const ConnectionDesignDatabase = lazy(() => import('./pages/ConnectionDesignDatabase'));
-const PerformanceMonitorDashboard = lazy(() => import('./pages/PerformanceMonitorDashboard'));
-
-// Phase 16: Enterprise Features (Industry Parity Complete)
-const BIMExportEnhanced = lazy(() => import('./pages/BIMExportEnhanced'));
-const CADIntegrationHub = lazy(() => import('./pages/CADIntegrationHub'));
-const CollaborationHub = lazy(() => import('./pages/CollaborationHub'));
-const APIIntegrationDashboard = lazy(() => import('./pages/APIIntegrationDashboard'));
-const MaterialsDatabasePage = lazy(() => import('./pages/MaterialsDatabasePage'));
-const CodeComplianceChecker = lazy(() => import('./pages/CodeComplianceChecker'));
-
-// Gap-closure UI shells (Phase 1)
-const BIMIntegrationPage = lazy(() => import('./pages/BIMIntegrationPage'));
-const QuantitySurveyPage = lazy(() => import('./pages/QuantitySurveyPage'));
-const ReportBuilderPage = lazy(() => import('./pages/ReportBuilderPage'));
-const VisualizationHubPage = lazy(() => import('./pages/VisualizationHubPage'));
+// Phase 15/16 and gap-closure route pages moved to app/routes/FeatureRoutes.tsx
 
 // AI Power Dashboard (Lazy Loaded)
 const AIPowerDashboard = lazy(() =>
@@ -200,66 +155,9 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 // Shared layout shell for authenticated pages (sidebar, topbar, search, breadcrumbs)
 const AppShell = lazy(() => import('./layouts/AppShell'));
 
-// Post-Analysis Design Hub (STAAD.Pro-style workflow)
-const PostAnalysisDesignHub = lazy(() => import('./pages/PostAnalysisDesignHub'));
-
 // Phase 18: Missing pages (audit gap closure)
-const AdvancedMeshingDashboard = lazy(() => import('./pages/AdvancedMeshingDashboard'));
-const CloudStorageDashboard = lazy(() => import('./pages/CloudStorageDashboard'));
-const PrintExportCenter = lazy(() => import('./pages/PrintExportCenter'));
-const SensitivityOptimizationDashboard = lazy(
-  () => import('./pages/SensitivityOptimizationDashboard'),
-);
-const OAuthCallbackPage = lazy(() => import('./pages/OAuthCallbackPage'));
-const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
 const AccountLockedPage = lazy(() => import('./pages/AccountLockedPage'));
 const LinkExpiredPage = lazy(() => import('./pages/LinkExpiredPage'));
-const Visualization3DEngine = lazy(() => import('./pages/Visualization3DEngine'));
-const ResultAnimationViewer = lazy(() => import('./pages/ResultAnimationViewer'));
-const DigitalTwinDashboard = lazy(() => import('./pages/DigitalTwinDashboard'));
-const SpacePlanningPage = lazy(() => import('./pages/SpacePlanningPage'));
-const RoomPlannerPage = lazy(() => import('./pages/room-planner'));
-const LearningCenter = lazy(() => import('./pages/LearningCenter'));
-const SitemapPage = lazy(() => import('./pages/SitemapPage'));
-
-// Analysis Panels (Lazy Loaded)
-const ModalAnalysisPanel = lazy(() =>
-  import('./components/analysis/ModalAnalysisPanel').then((module) => ({
-    default: module.ModalAnalysisPanel,
-  })),
-);
-
-// Wrapper to provide navigateBack as onClose for ModalAnalysisPanel route
-function ModalAnalysisRouteWrapper() {
-  const navigate = useNavigate();
-  return <ModalAnalysisPanel isOpen={true} onClose={() => navigate(-1)} />;
-}
-
-const TimeHistoryPanel = lazy(() =>
-  import('./components/analysis/TimeHistoryPanel').then((module) => ({
-    default: module.TimeHistoryPanel,
-  })),
-);
-const SeismicAnalysisPanel = lazy(() =>
-  import('./components/analysis/SeismicAnalysisPanel').then((module) => ({
-    default: module.SeismicAnalysisPanel,
-  })),
-);
-const BucklingAnalysisPanel = lazy(() =>
-  import('./components/analysis/BucklingAnalysisPanel').then((module) => ({
-    default: module.BucklingAnalysisPanel,
-  })),
-);
-const CableAnalysisPanel = lazy(() =>
-  import('./components/analysis/CableAnalysisPanel').then((module) => ({
-    default: module.CableAnalysisPanel,
-  })),
-);
-const PDeltaAnalysisPanel = lazy(() =>
-  import('./components/analysis/PDeltaAnalysisPanel').then((module) => ({
-    default: module.PDeltaAnalysisPanel,
-  })),
-);
 
 // Analytics Provider — sends events to POST /api/analytics/batch
 import { AnalyticsProvider } from './providers/AnalyticsProvider';
@@ -312,23 +210,10 @@ import { useEffect } from 'react';
 import { initializeIntegration } from './core/StoreIntegration';
 import { isFullScreenRoute, isPublicRoute } from './config/appRouteMeta';
 import { PAYMENT_CONFIG } from './config/env';
-
-const ROUTE_ALIASES: Array<{ from: string; to: string }> = [
-  { from: '/dashboard', to: '/stream' },
-  { from: '/dashboard-enhanced', to: '/stream' },
-  { from: '/privacy', to: '/privacy-policy' },
-  { from: '/terms', to: '/terms-and-conditions' },
-  { from: '/docs', to: '/help' },
-  { from: '/login', to: '/sign-in' },
-  { from: '/analysis/modal-page', to: '/analysis/modal' },
-  { from: '/analysis/time-history-page', to: '/analysis/time-history' },
-  { from: '/analysis/nonlinear-page', to: '/analysis/nonlinear' },
-  { from: '/design/welded-connections', to: '/design/connections' },
-  { from: '/load-combination-page', to: '/tools/load-combinations' },
-  { from: '/section-database-page', to: '/tools/section-database' },
-  { from: '/tools/load-combination', to: '/tools/load-combinations' },
-  { from: '/reports/generator', to: '/reports/professional' },
-];
+import { ROUTE_ALIASES } from './app/routes/routeAliases';
+import { DesignRoutes } from './app/routes/DesignRoutes';
+import { AnalysisRoutes } from './app/routes/AnalysisRoutes';
+import { FeatureRoutes } from './app/routes/FeatureRoutes';
 
 // ============================================
 // CONDITIONAL LAYOUT — wraps authenticated pages in AppShell
@@ -388,6 +273,7 @@ function App() {
       <AnalyticsProvider>
         <Suspense fallback={<PageLoader />}>
           <ScrollToTop />
+          <RouteMetaTags />
           <ConditionalLayout>
             <Routes>
               {/* Landing Page */}
@@ -560,465 +446,12 @@ function App() {
               <Route path="/nafems-benchmarks" element={<NafemsBenchmarkPage />} />
               {/* Worker Validation Route */}
               <Route path="/worker-test" element={<WorkerValidation />} />
-              {/* Advanced Analysis Panels (Rust-powered, 20-100x faster) */}
-              <Route
-                path="/analysis/modal"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <ModalAnalysisRouteWrapper />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/time-history"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <TimeHistoryPanel />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/seismic"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <SeismicAnalysisPanel />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/buckling"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <BucklingAnalysisPanel />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/cable"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <CableAnalysisPanel />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/pdelta"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <PDeltaAnalysisPanel />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/nonlinear"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <NonlinearAnalysisPage />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/dynamic"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <DynamicAnalysisPage />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Pushover Analysis - Nonlinear Static for Performance-Based Design */}
-              <Route
-                path="/analysis/pushover"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <PushoverAnalysisPage />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Design Modules (Rust-powered, 10x faster) */}
-              <Route
-                path="/design/steel"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <SteelDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Connection Design Module - Professional bolted/welded connection design */}
-              <Route
-                path="/design/connections"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <ConnectionDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Legacy route handled by ROUTE_ALIASES: /design/welded-connections -> /design/connections */}
-              {/* Reinforcement Design Module - Stirrups, Development Length, Lap Splices */}
-              <Route
-                path="/design/reinforcement"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <ReinforcementDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* RC Detailing Design Module - Foundations, Columns, Beams, Slabs, Walls */}
-              <Route
-                path="/design/detailing"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <DetailingDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Concrete Design Module - Complete IS 456/ACI 318 RC Beam/Column/Slab Design */}
-              <Route
-                path="/design/concrete"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <ConcreteDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Foundation Design Module - Isolated/Combined/Strap/Mat Footings per IS 456/ACI 318 */}
-              <Route
-                path="/design/foundation"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <FoundationDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Composite Steel-Concrete Beam Design - AISC 360 Ch I / EN 1994 / IS 11384 */}
-              <Route
-                path="/design/composite"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <CompositeDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Timber Beam Design - NDS 2018 / EN 1995 / IS 883 */}
-              <Route
-                path="/design/timber"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <Suspense fallback={<DesignPageSkeleton />}>
-                        <TimberDesignPage />
-                      </Suspense>
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Load Combination Generator - Auto-generate IS 1893/ASCE 7/Eurocode combinations */}
-              <Route
-                path="/tools/load-combinations"
-                element={
-                  <RequireAuth>
-                    <LoadCombinationPage />
-                  </RequireAuth>
-                }
-              />
-              {/* Section Database Browser - ISMB/AISC/IPE/UB section properties */}
-              <Route
-                path="/tools/section-database"
-                element={
-                  <RequireAuth>
-                    <SectionDatabasePage />
-                  </RequireAuth>
-                }
-              />
-              {/* Bar Bending Schedule - IS 2502 compliant BBS generator */}
-              <Route
-                path="/tools/bar-bending"
-                element={
-                  <RequireAuth>
-                    <BarBendingSchedulePage />
-                  </RequireAuth>
-                }
-              />
-              {/* Plate & Shell FEM Analysis - Mindlin-Reissner / Kirchhoff */}
-              <Route
-                path="/analysis/plate-shell"
-                element={
-                  <RequireAuth>
-                    <MobileGuard>
-                      <PlateShellAnalysisPage />
-                    </MobileGuard>
-                  </RequireAuth>
-                }
-              />
-              {/* Gap closure: BIM, QS, Reports, Visualization hubs */}
-              <Route
-                path="/bim"
-                element={
-                  <RequireAuth>
-                    <BIMIntegrationPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/quantity"
-                element={
-                  <RequireAuth>
-                    <QuantitySurveyPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/reports/builder"
-                element={
-                  <RequireAuth>
-                    <ReportBuilderPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/visualization"
-                element={
-                  <RequireAuth>
-                    <VisualizationHubPage />
-                  </RequireAuth>
-                }
-              />
-              {/* Structural Design Center - Complete RC/Steel/Bridge/Foundation Design */}
-              <Route
-                path="/design-center"
-                element={
-                  <RequireAuth>
-                    <StructuralDesignCenter />
-                  </RequireAuth>
-                }
-              />
-              {/* Post-Analysis Design Hub (STAAD.Pro-style workflow) */}
-              <Route
-                path="/design-hub"
-                element={
-                  <RequireAuth>
-                    <PostAnalysisDesignHub />
-                  </RequireAuth>
-                }
-              />
-              {/* Phase 15: Professional Tools - Industry Parity */}
-              <Route
-                path="/reports/professional"
-                element={
-                  <RequireAuth>
-                    <ProfessionalReportGenerator />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/connections/database"
-                element={
-                  <RequireAuth>
-                    <ConnectionDesignDatabase />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/performance/monitor"
-                element={
-                  <RequireAuth>
-                    <PerformanceMonitorDashboard />
-                  </RequireAuth>
-                }
-              />
-              {/* Phase 16: Enterprise Features - Industry Parity Complete */}
-              <Route
-                path="/bim/export-enhanced"
-                element={
-                  <RequireAuth>
-                    <BIMExportEnhanced />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/cad/integration"
-                element={
-                  <RequireAuth>
-                    <CADIntegrationHub />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/collaboration"
-                element={
-                  <RequireAuth>
-                    <CollaborationHub />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/integrations/api-dashboard"
-                element={
-                  <RequireAuth>
-                    <APIIntegrationDashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/materials/database"
-                element={
-                  <RequireAuth>
-                    <MaterialsDatabasePage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/compliance/checker"
-                element={
-                  <RequireAuth>
-                    <CodeComplianceChecker />
-                  </RequireAuth>
-                }
-              />
-              {/* Workspace Routes */}
-              {/* Workspace Routes */}
-              <Route
-                path="/workspace/:moduleType"
-                element={
-                  <RequireAuth>
-                    <WorkspacePageWrapper />
-                  </RequireAuth>
-                }
-              />
-              {/* Phase 18: Auth Flow Pages (public) */}
-              <Route path="/auth/callback/:provider" element={<OAuthCallbackPage />} />
-              <Route path="/verify-email" element={<VerifyEmailPage />} />
-              {/* Phase 18: Advanced Tools & Visualization */}
-              <Route
-                path="/tools/advanced-meshing"
-                element={
-                  <RequireAuth>
-                    <AdvancedMeshingDashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/tools/print-export"
-                element={
-                  <RequireAuth>
-                    <PrintExportCenter />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/cloud-storage"
-                element={
-                  <RequireAuth>
-                    <CloudStorageDashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/analysis/sensitivity-optimization"
-                element={
-                  <RequireAuth>
-                    <SensitivityOptimizationDashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/visualization/3d-engine"
-                element={
-                  <RequireAuth>
-                    <SectionErrorBoundary section="3D Visualization">
-                      <Visualization3DEngine />
-                    </SectionErrorBoundary>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/visualization/result-animation"
-                element={
-                  <RequireAuth>
-                    <SectionErrorBoundary section="Result Animation">
-                      <ResultAnimationViewer />
-                    </SectionErrorBoundary>
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/digital-twin"
-                element={
-                  <RequireAuth>
-                    <DigitalTwinDashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/space-planning"
-                element={
-                  <RequireAuth>
-                    <SpacePlanningPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/room-planner"
-                element={
-                  <RequireAuth>
-                    <RoomPlannerPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/learning"
-                element={<LearningCenter />}
-              />
-              {/* Sitemap & Navigation Discovery */}
-              <Route
-                path="/sitemap"
-                element={<SitemapPage />}
-              />
+              {/* Analysis domain routes */}
+              {AnalysisRoutes()}
+              {/* Design domain routes */}
+              {DesignRoutes()}
+              {/* Feature domain routes (tools, enterprise, workspace, advanced visualization) */}
+              {FeatureRoutes()}
               {/* Fallback - Show proper 404 page */}
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
@@ -1028,16 +461,6 @@ function App() {
         </Suspense>
       </AnalyticsProvider>
     </ErrorBoundary>
-  );
-}
-
-// Helper to extract moduleType param - Now uses ModernModeler
-function WorkspacePageWrapper() {
-  // All workspace routes now use ModernModeler with all new UI improvements
-  return (
-    <MobileGuard>
-      <ModernModeler />
-    </MobileGuard>
   );
 }
 

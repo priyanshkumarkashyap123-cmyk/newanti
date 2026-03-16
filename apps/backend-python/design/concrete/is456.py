@@ -31,6 +31,27 @@ class ConcreteGrade(Enum):
     M50 = 50
     M55 = 55
     M60 = 60
+    M65 = 65
+    M70 = 70
+    M75 = 75
+    M80 = 80
+    M90 = 90
+    M100 = 100
+
+
+class IS456Version(Enum):
+    """IS 456 edition selector"""
+    V2000 = 'IS456_2000'
+    V2025_DRAFT = 'IS456_2025_DRAFT'
+
+
+class CementType(Enum):
+    """Cement type labels aligned with IS 456 Table 1 / Amendment No. 6 (June 2024)"""
+    OPC = 'OPC'
+    PPC = 'PPC'
+    PSC = 'PSC'
+    PCC_IS16415 = 'PCC_IS16415'
+    PCCLC_IS18189 = 'PCCLC_IS18189'
 
 
 class RebarGrade(Enum):
@@ -82,6 +103,8 @@ class BeamDesignResult:
     Vu_capacity: float        # kN
     status: str
     checks: List[str]
+    performance_criteria: Optional['IS456PerformanceCriteria'] = None
+    draft_warning: Optional[str] = None
 
 
 @dataclass
@@ -95,6 +118,19 @@ class ColumnDesignResult:
     interaction_ratio: float
     status: str
     checks: List[str]
+    performance_criteria: Optional['IS456PerformanceCriteria'] = None
+    draft_warning: Optional[str] = None
+
+
+@dataclass
+class IS456PerformanceCriteria:
+    """IS 456:2025 Draft six-performance-criteria evaluation"""
+    strength: bool
+    serviceability: bool
+    durability: bool
+    robustness: bool
+    integrity: bool
+    restorability: bool
 
 
 # ============================================
@@ -113,10 +149,14 @@ class IS456Designer:
     def __init__(
         self,
         fck: float = 25,   # Characteristic concrete strength (MPa)
-        fy: float = 500    # Yield strength of steel (MPa)
+        fy: float = 500,   # Yield strength of steel (MPa)
+        code_version: IS456Version = IS456Version.V2000,
+        cement_type: Optional[CementType] = None,
     ):
         self.fck = fck
         self.fy = fy
+        self.code_version = code_version
+        self.cement_type = cement_type
         
         # Design strengths
         self.fcd = 0.67 * fck / self.GAMMA_C  # Design compressive strength
@@ -124,6 +164,40 @@ class IS456Designer:
         
         # Stress block parameters (IS 456 Clause 38.1)
         self.xu_max_ratio = self._get_xu_max_ratio()
+        self.alpha, self.beta, self.epsilon_cu = self._get_stress_block_params()
+
+    def _get_stress_block_params(self) -> Tuple[float, float, float]:
+        """
+        Stress block parameters for IS 456 Clause 38.1.
+        Draft 2025 (research): for M65+ use alpha=0.34, beta=0.39, epsilon_cu=0.0026.
+        """
+        if self.code_version == IS456Version.V2025_DRAFT and self.fck >= 65:
+            return 0.34, 0.39, 0.0026
+        return 0.36, 0.42, 0.0035
+
+    def _evaluate_performance_criteria(
+        self,
+        status: str,
+        utilization: float,
+        checks: List[str],
+        cover_mm: float,
+        steel_ratio_percent: float,
+    ) -> IS456PerformanceCriteria:
+        """Builds IS 456:2025 Draft Cl. 3.2 six-performance-criteria summary."""
+        strength = status == 'PASS' and utilization <= 1.0
+        serviceability = status == 'PASS' and utilization <= 1.0
+        durability = cover_mm >= 20 and self.cement_type is not None
+        robustness = 0.8 <= steel_ratio_percent <= 6.0
+        integrity = status == 'PASS'
+        restorability = ('FAIL' not in status) and utilization <= 1.0
+        return IS456PerformanceCriteria(
+            strength=strength,
+            serviceability=serviceability,
+            durability=durability,
+            robustness=robustness,
+            integrity=integrity,
+            restorability=restorability,
+        )
     
     def _get_xu_max_ratio(self) -> float:
         """Get limiting xu/d ratio per IS 456 Clause 38.1"""
@@ -156,7 +230,7 @@ class IS456Designer:
         
         # Limiting moment capacity (singly reinforced)
         xu_max = self.xu_max_ratio * d
-        Mu_lim = 0.36 * self.fck * b * xu_max * (d - 0.42 * xu_max) / 1e6  # kNm
+        Mu_lim = self.alpha * self.fck * b * xu_max * (d - self.beta * xu_max) / 1e6  # kNm
         
         if Mu <= Mu_lim:
             # Singly reinforced section
@@ -402,14 +476,14 @@ class IS456Designer:
         xu = 0.5 * D
         
         # Compression force in concrete
-        Cc = 0.36 * self.fck * b * xu / 1000  # kN
+        Cc = self.alpha * self.fck * b * xu / 1000  # kN
         
         # Steel contribution (half in compression, half in tension)
         Cs = 0.67 * self.fy * (Asc / 2) / 1000  # kN
         Ts = 0.87 * self.fy * (Asc / 2) / 1000  # kN
         
         # Moment about centroid
-        lever_c = D / 2 - 0.42 * xu
+        lever_c = D / 2 - self.beta * xu
         lever_s = (D / 2 - d_prime)
         
         Mu = (Cc * lever_c + Cs * lever_s + Ts * lever_s) / 1000  # kNm
@@ -594,8 +668,8 @@ class IS456Designer:
         
         # Moment capacity
         Ast = tension.area
-        xu = 0.87 * self.fy * Ast / (0.36 * self.fck * b)
-        Mu_cap = 0.87 * self.fy * Ast * (d - 0.42 * xu) / 1e6
+        xu = 0.87 * self.fy * Ast / (self.alpha * self.fck * b)
+        Mu_cap = 0.87 * self.fy * Ast * (d - self.beta * xu) / 1e6
         
         # Shear capacity
         pt = 100 * Ast / (b * d)
@@ -613,6 +687,14 @@ class IS456Designer:
         
         status = 'PASS' if Mu_cap >= Mu and Vu_cap >= Vu else 'FAIL'
         
+        utilization = max(Mu / Mu_cap if Mu_cap > 0 else 9.9, Vu / Vu_cap if Vu_cap > 0 else 9.9)
+        perf = None
+        warning = None
+        if self.code_version == IS456Version.V2025_DRAFT:
+            warning = '⚠️ IS 456:2025 Draft mode (research only) — do not use for regulatory submissions.'
+            steel_ratio = 100 * Ast / (b * d) if b * d > 0 else 0.0
+            perf = self._evaluate_performance_criteria(status, utilization, checks, section.cover, steel_ratio)
+
         return BeamDesignResult(
             tension_steel=tension,
             compression_steel=compression,
@@ -620,5 +702,7 @@ class IS456Designer:
             Mu_capacity=Mu_cap,
             Vu_capacity=Vu_cap,
             status=status,
-            checks=checks
+            checks=checks,
+            performance_criteria=perf,
+            draft_warning=warning,
         )

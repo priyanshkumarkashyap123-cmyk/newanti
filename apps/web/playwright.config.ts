@@ -109,6 +109,11 @@ export default defineConfig({
   webServer: {
     command: process.env.CI ? 'pnpm preview --port 4173' : 'pnpm dev',
     url: process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173',
+    env: {
+      ...process.env,
+      VITE_TEMP_UNLOCK_ALL: process.env.VITE_TEMP_UNLOCK_ALL || 'true',
+      VITE_PAYMENT_GATEWAY: process.env.VITE_PAYMENT_GATEWAY || 'both',
+    },
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

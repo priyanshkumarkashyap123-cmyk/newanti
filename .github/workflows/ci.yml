@@ -243,12 +243,49 @@ jobs:
         echo "✅ All required tags present"
 
   # =========================================================================
+  # DESIGN CONTRACT GATE
+  # Enforces gateway and UI contract behavior for design flows.
+  # =========================================================================
+  design-contract-gate:
+    name: Design Contract Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'pnpm'
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache Rust
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: apps/rust-api
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: API design contract tests
+      run: pnpm --dir apps/api exec vitest run tests/design-core-routes.test.ts tests/design-geotech-routes.test.ts tests/validation.test.ts
+
+    - name: Web design contract tests
+      run: pnpm --dir apps/web exec vitest run src/__tests__/pages/GeotechnicalDesignPage.test.tsx src/config/__tests__/appRouteMeta.test.ts
+
+    - name: Web type-check
+      run: pnpm --dir apps/web type-check
+
+    - name: Rust API lib tests
+      working-directory: ./apps/rust-api
+      run: cargo test --lib
+
+  # =========================================================================
   # CI STATUS SUMMARY
   # =========================================================================
   ci-status:
     name: CI Status
     runs-on: ubuntu-latest
-    needs: [typecheck, lint, web-browser-compat, web-build-and-test, regression, rust-check, backend-build, contract-validation]
+    needs: [typecheck, lint, web-browser-compat, web-build-and-test, regression, rust-check, backend-build, contract-validation, design-contract-gate]
     if: always()
     steps:
     - name: Check Results
@@ -260,7 +297,8 @@ jobs:
               "${{ needs.regression.result }}" == "failure" || \
               "${{ needs.rust-check.result }}" == "failure" || \
               "${{ needs.backend-build.result }}" == "failure" || \
-              "${{ needs.contract-validation.result }}" == "failure" ]]; then
+              "${{ needs.contract-validation.result }}" == "failure" || \
+              "${{ needs.design-contract-gate.result }}" == "failure" ]]; then
           echo "CI Pipeline Failed"
           exit 1
         else

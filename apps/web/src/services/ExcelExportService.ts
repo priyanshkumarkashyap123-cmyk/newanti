@@ -4,7 +4,7 @@
  * ============================================================================
  *
  * Industry-standard Excel export for structural engineering data.
- * Uses xlsx library for real Excel files (not just CSV).
+ * Uses exceljs library for real Excel files (not just CSV).
  *
  * Features:
  * - Multi-sheet workbooks
@@ -18,18 +18,17 @@
  * @author BeamLab Engineering Team
  */
 
-// xlsx loaded on-demand (~300KB) — only fetched when user triggers export
-// NOTE: xlsx has known CVEs (CVE-2024-22363, CVE-2023-30533) in the
-// *parsing* path. BeamLab only uses the write/export path (`aoa_to_sheet`,
-// `book_new`, `write`) so these are not exploitable here. Never pass
-// untrusted user-uploaded files to xlsx.utils.read/xlsx.readFile.
-let _xlsxPromise: Promise<typeof import('xlsx')> | null = null;
-function getXLSX() {
-  if (!_xlsxPromise) _xlsxPromise = import('xlsx');
-  return _xlsxPromise;
+// exceljs loaded on-demand — only fetched when user triggers export
+let _exceljsPromise: Promise<typeof import('exceljs')> | null = null;
+function getExcelJS() {
+    if (!_exceljsPromise) _exceljsPromise = import('exceljs');
+    return _exceljsPromise;
 }
 import { AnalysisResults } from "../store/model";
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
+
+type ExcelJsWorkbook = import('exceljs').Workbook;
+type ExcelJsWorksheet = import('exceljs').Worksheet;
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -67,39 +66,48 @@ interface DesignCheck {
  * Create a styled worksheet with headers
  */
 function createStyledWorksheet(
-    xlsxMod: typeof import('xlsx'),
+    workbook: ExcelJsWorkbook,
+    sheetName: string,
     headers: string[],
     data: (string | number)[][],
     title: string | undefined = undefined
 ) {
-    const wsData: (string | number)[][] = [];
+    const ws = workbook.addWorksheet(sheetName);
 
-    // Add title row if provided
     if (title) {
-        wsData.push([title]);
-        wsData.push([]); // Empty row
+        ws.addRow([title]);
+        ws.addRow([]);
     }
 
-    // Add headers
-    wsData.push(headers);
+    const headerRow = ws.addRow(headers);
+    headerRow.font = { bold: true };
 
-    // Add data
-    wsData.push(...data);
+    data.forEach((row) => ws.addRow(row));
 
-    const ws = xlsxMod.utils.aoa_to_sheet(wsData);
-
-    // Set column widths
-    const colWidths = headers.map((h, i) => {
+    headers.forEach((header, i) => {
         const maxDataWidth = Math.max(
-            h.length,
-            ...data.map(row => String(row[i] ?? '').length)
+            header.length,
+            ...data.map((row) => String(row[i] ?? '').length)
         );
-        return { wch: Math.min(maxDataWidth + 2, 30) };
+        ws.getColumn(i + 1).width = Math.min(maxDataWidth + 2, 30);
     });
-    ws['!cols'] = colWidths;
 
     return ws;
 }
+
+const downloadExcelBuffer = (buffer: ArrayBuffer, filename: string): void => {
+    const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
 
 /**
  * Format number for display
@@ -173,8 +181,8 @@ export const exportToExcel = async (
         },
     } = options;
 
-    const XLSX = await getXLSX();
-    const wb = XLSX.utils.book_new();
+    const ExcelJS = await getExcelJS();
+    const wb = new ExcelJS.Workbook();
 
     // ========================================
     // 1. SUMMARY SHEET
@@ -244,17 +252,15 @@ export const exportToExcel = async (
             );
         }
 
-        const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-        summaryWs['!cols'] = [{ wch: 25 }, { wch: 30 }];
-        XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
+        const summaryWs = wb.addWorksheet('Summary');
+        summaryData.forEach((row) => summaryWs.addRow(row));
+        summaryWs.getColumn(1).width = 25;
+        summaryWs.getColumn(2).width = 30;
 
-            // Append branded disclaimer at the bottom of the summary
-            const footerRow = summaryData.length + 2;
-            XLSX.utils.sheet_add_aoa(summaryWs, [
-                [],
-                [BEAMLAB_COMPANY.generatedByLine],
-                [BEAMLAB_COMPANY.disclaimer],
-            ], { origin: { r: footerRow, c: 0 } });
+        // Append branded disclaimer at the bottom of the summary
+        summaryWs.addRow([]);
+        summaryWs.addRow([BEAMLAB_COMPANY.generatedByLine]);
+        summaryWs.addRow([BEAMLAB_COMPANY.disclaimer]);
         }
 
     // ========================================
@@ -280,8 +286,7 @@ export const exportToExcel = async (
             n.restraints?.mz ? 'Yes' : 'No'
         ]);
         
-        const nodesWs = createStyledWorksheet(XLSX, nodesHeaders, nodesData, 'Node Coordinates');
-        XLSX.utils.book_append_sheet(wb, nodesWs, 'Nodes');
+        createStyledWorksheet(wb, 'Nodes', nodesHeaders, nodesData, 'Node Coordinates');
     }
 
     // ========================================
@@ -321,8 +326,7 @@ export const exportToExcel = async (
             ];
         });
         
-        const membersWs = createStyledWorksheet(XLSX, membersHeaders, membersData, 'Member Properties');
-        XLSX.utils.book_append_sheet(wb, membersWs, 'Members');
+        createStyledWorksheet(wb, 'Members', membersHeaders, membersData, 'Member Properties');
     }
 
     // ========================================
@@ -354,8 +358,7 @@ export const exportToExcel = async (
             ];
         });
         
-        const dispWs = createStyledWorksheet(XLSX, dispHeaders, dispData, 'Nodal Displacements');
-        XLSX.utils.book_append_sheet(wb, dispWs, 'Displacements');
+        createStyledWorksheet(wb, 'Displacements', dispHeaders, dispData, 'Nodal Displacements');
     }
 
     // ========================================
@@ -380,8 +383,7 @@ export const exportToExcel = async (
             formatNumber(forces.torsion || 0, 2)
         ]);
         
-        const forcesWs = createStyledWorksheet(XLSX, forcesHeaders, forcesData, 'Member Forces');
-        XLSX.utils.book_append_sheet(wb, forcesWs, 'Forces');
+        createStyledWorksheet(wb, 'Forces', forcesHeaders, forcesData, 'Member Forces');
     }
 
     // ========================================
@@ -404,8 +406,7 @@ export const exportToExcel = async (
             formatNumber(react.mz || 0, 2)
         ]);
         
-        const reactionsWs = createStyledWorksheet(XLSX, reactionsHeaders, reactionsData, 'Support Reactions');
-        XLSX.utils.book_append_sheet(wb, reactionsWs, 'Reactions');
+        createStyledWorksheet(wb, 'Reactions', reactionsHeaders, reactionsData, 'Support Reactions');
     }
 
     // ========================================
@@ -426,15 +427,15 @@ export const exportToExcel = async (
             check.governingCase
         ]);
         
-        const checksWs = createStyledWorksheet(XLSX, checksHeaders, checksData, 'Design Checks - IS 800:2007');
-        XLSX.utils.book_append_sheet(wb, checksWs, 'Design Checks');
+        createStyledWorksheet(wb, 'Design Checks', checksHeaders, checksData, 'Design Checks - IS 800:2007');
     }
 
     // ========================================
     // GENERATE AND DOWNLOAD
     // ========================================
     const filename = `${projectInfo.name.replace(/\s+/g, '_')}_${projectInfo.date}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    const buffer = await wb.xlsx.writeBuffer();
+    downloadExcelBuffer(buffer as ArrayBuffer, filename);
 };
 
 /**
@@ -447,8 +448,8 @@ export const exportComparisonToExcel = async (
         parameters: Record<string, any>;
     }>
 ): Promise<void> => {
-    const XLSX = await getXLSX();
-    const wb = XLSX.utils.book_new();
+    const ExcelJS = await getExcelJS();
+    const wb = new ExcelJS.Workbook();
 
     // Create comparison summary
     const summaryHeaders = ['Parameter', ...comparisons.map(c => c.name)];
@@ -464,8 +465,7 @@ export const exportComparisonToExcel = async (
         summaryData.push(row);
     });
 
-    const summaryWs = createStyledWorksheet(XLSX, summaryHeaders, summaryData, 'Parameter Comparison');
-    XLSX.utils.book_append_sheet(wb, summaryWs, 'Comparison');
+    createStyledWorksheet(wb, 'Comparison', summaryHeaders, summaryData, 'Parameter Comparison');
 
     // Add individual result sheets
     comparisons.forEach((comp, idx) => {
@@ -477,11 +477,12 @@ export const exportComparisonToExcel = async (
             formatNumber(forces.shearY || forces.shearZ || 0, 2)
         ]);
         
-        const forcesWs = createStyledWorksheet(XLSX, forcesHeaders, forcesData);
-        XLSX.utils.book_append_sheet(wb, forcesWs, `Case ${idx + 1}`);
+        createStyledWorksheet(wb, `Case ${idx + 1}`, forcesHeaders, forcesData);
     });
 
-    XLSX.writeFile(wb, `BeamLab_Comparison_${new Date().toISOString().split('T')[0]}.xlsx`);
+    const filename = `BeamLab_Comparison_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const buffer = await wb.xlsx.writeBuffer();
+    downloadExcelBuffer(buffer as ArrayBuffer, filename);
 };
 
 /**

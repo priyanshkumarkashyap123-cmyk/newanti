@@ -4,6 +4,7 @@ import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 import { VitePWA } from "vite-plugin-pwa";
 import { compression } from "vite-plugin-compression2";
+import { visualizer } from "rollup-plugin-visualizer";
 import path from "path";
 
 // ============================================
@@ -87,6 +88,7 @@ validateBuildEnv();
 // This prevents stale SW caches from serving outdated app shells/chunks.
 // Re-enable explicitly with: VITE_ENABLE_PWA=true
 const enablePWA = process.env.VITE_ENABLE_PWA === "true";
+const enableBundleVisualizer = process.env.ANALYZE === "true";
 
 export default defineConfig({
   plugins: [
@@ -157,6 +159,13 @@ export default defineConfig({
       algorithms: ['gzip', 'brotliCompress'],
       threshold: 1024,     // Only compress files > 1KB
       exclude: [/\.(br|gz)$/],
+    }),
+    enableBundleVisualizer && visualizer({
+      filename: 'dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap',
     }),
   ].filter(Boolean),
   resolve: {
@@ -235,6 +244,9 @@ export default defineConfig({
           "animation-vendor": ["framer-motion"],
           "chart-vendor": ["recharts"],
           "clerk-vendor": ["@clerk/clerk-react"],
+          "reports-vendor": ["jspdf", "jspdf-autotable", "xlsx"],
+          "monaco-vendor": ["@monaco-editor/react"],
+          "math-vendor": ["mathjs"],
           "ui-vendor": [
             "@radix-ui/react-dialog",
             "@radix-ui/react-select",
@@ -246,7 +258,7 @@ export default defineConfig({
             "@radix-ui/react-scroll-area",
           ],
           "state-vendor": ["zustand"],
-          // Phase 5: Split calculation engines into lazy-loaded chunks
+          // Co-locate high-use structural engines into dedicated shared chunks.
           "structural-engines": [
             "./src/components/structural/ColumnDesignEngine",
             "./src/components/structural/SlabDesignEngine",
@@ -259,8 +271,8 @@ export default defineConfig({
           "seismic-engines": [
             "./src/components/structural/SeismicAnalysisEngine",
           ],
-          // lucide-react, mathjs, jspdf, xlsx, monaco removed from manual chunks
-          // to enable tree-shaking and let them code-split into lazy routes
+          // lucide-react intentionally remains out of manual chunks to maximize
+          // tree-shaking and keep route-level code-splitting effective.
         },
         // Smaller hash for shorter filenames → less memory in browser cache index
         chunkFileNames: 'assets/[name]-[hash:8].js',

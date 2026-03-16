@@ -42,6 +42,16 @@ import {
   getDesignYieldStrength,
   selectBars,
 } from './RCDesignConstants';
+import type {
+  IS456Version,
+  CementType,
+  IS456_2025_PerformanceCriteria,
+} from './RCDesignConstants';
+import {
+  getIS456StressBlockParams,
+  getIS456ConcreteGrades,
+  DRAFT_WARNING_IS456_2025,
+} from './RCDesignConstants';
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -78,6 +88,10 @@ export interface BeamMaterials {
   steelGrade: SteelGrade;
   stirrupGrade?: SteelGrade;
   code: DesignCode;
+  /** Selects IS 456:2000 (production) vs Draft IS 456:2025 (research only). Defaults to IS456_2000. */
+  codeVersion?: IS456Version;
+  /** Cement type per IS 456:2000 Table 1 / Amendment No. 6 (June 2024). Required for durability checks. */
+  cementType?: CementType;
 }
 
 export interface FlexuralDesignResult {
@@ -156,6 +170,10 @@ export interface BeamDesignResult {
     warnings: string[];
     recommendations: string[];
   };
+  /** IS 456:2025 Draft six performance criteria — populated only when codeVersion = 'IS456_2025_DRAFT'. */
+  performanceCriteria?: IS456_2025_PerformanceCriteria;
+  /** Present when codeVersion = 'IS456_2025_DRAFT'. Must be surfaced in the UI. */
+  draftWarning?: string;
 }
 
 // =============================================================================
@@ -193,11 +211,12 @@ export class RCBeamDesignEngine {
     const shear = this.designForShear();
     const torsion = this.loading.Tu ? this.designForTorsion() : undefined;
     const deflection = this.checkDeflection(flexure.Ast_required);
-    const crackWidth = this.loading.Mservice 
-      ? this.calculateCrackWidth(flexure.Ast_required) 
+    const crackWidth = this.loading.Mservice
+      ? this.calculateCrackWidth(flexure.Ast_required)
       : undefined;
 
     const summary = this.generateSummary(flexure, shear, torsion, deflection, crackWidth);
+    const isDraft = this.materials.codeVersion === 'IS456_2025_DRAFT';
 
     return {
       geometry: this.geometry,
@@ -209,7 +228,42 @@ export class RCBeamDesignEngine {
       deflection,
       crackWidth,
       summary,
+      ...(isDraft && {
+        draftWarning: DRAFT_WARNING_IS456_2025,
+        performanceCriteria: this.evaluateIS456_2025Performance(flexure, shear, deflection, crackWidth),
+      }),
     };
+  }
+
+  private get codeVersion(): IS456Version {
+    return this.materials.codeVersion ?? 'IS456_2000';
+  }
+
+  /** Builds IS 456:2025 Draft six-performance-criteria evaluation from existing check results.
+   *  IS 456:2025 Draft Cl. 3.2 (Performance Framework) — research use only.
+   */
+  private evaluateIS456_2025Performance(
+    flexure: FlexuralDesignResult,
+    shear: ShearDesignResult,
+    deflection: DeflectionCheckResult,
+    crackWidth?: CrackWidthResult,
+  ): IS456_2025_PerformanceCriteria {
+    // Cl. 3.2.1 Strength — all load-bearing elements pass their ULS checks
+    const strength = flexure.status !== 'unsafe' && shear.status !== 'unsafe';
+    // Cl. 3.2.2 Serviceability — deflection and crack width within SLS limits
+    const serviceability =
+      deflection.status === 'pass' && (!crackWidth || crackWidth.status === 'pass');
+    // Cl. 3.2.3 Durability — adequate cover ≥ 20 mm + approved cement type per IS 456 Table 1
+    const durability =
+      this.geometry.cover >= 20 && this.materials.cementType !== undefined;
+    // Cl. 3.2.4 Robustness — section not over-reinforced (can redistribute moments)
+    const robustness = flexure.sectionType !== 'over-reinforced';
+    // Cl. 3.2.5 Integrity — neutral axis ≤ limiting depth (IS 456 Cl. 38.1)
+    const integrity = flexure.xu <= flexure.xu_max;
+    // Cl. 3.2.6 Restorability — crack width ≤ allowable (IS 456 Cl. 35.3.2)
+    const restorability =
+      !crackWidth || crackWidth.crackWidth <= crackWidth.allowableCrackWidth;
+    return { strength, serviceability, durability, robustness, integrity, restorability };
   }
 
   // ===========================================================================
@@ -263,6 +317,7 @@ export class RCBeamDesignEngine {
   ): FlexuralDesignResult {
     const messages: string[] = [];
     const calculations: Record<string, number> = {};
+    const { alpha, beta, epsilonCu } = getIS456StressBlockParams(fck, this.codeVersion);
 
     // Material properties
     const fcd = 0.446 * fck;  // Design compressive strength
@@ -273,12 +328,15 @@ export class RCBeamDesignEngine {
     const xu_max = xuMaxRatio * d;
     
     // Moment capacity for balanced section
-    const Mu_lim = 0.36 * fck * b * xu_max * (d - 0.42 * xu_max) / 1e6; // kN-m
+    const Mu_lim = alpha * fck * b * xu_max * (d - beta * xu_max) / 1e6; // kN-m
     
     calculations['fcd'] = fcd;
     calculations['fyd'] = fyd;
     calculations['xu_max'] = xu_max;
     calculations['Mu_lim'] = Mu_lim;
+    calculations['alpha'] = alpha;
+    calculations['beta'] = beta;
+    calculations['epsilon_cu'] = epsilonCu;
 
     let Ast_required: number;
     let Asc_required = 0;
@@ -292,17 +350,17 @@ export class RCBeamDesignEngine {
       messages.push('Section designed as singly reinforced beam');
 
       // Calculate neutral axis depth from equilibrium
-      // Mu = 0.36 * fck * b * xu * (d - 0.42 * xu)
-      // Rearranging: 0.1512 * fck * b * xu² - 0.36 * fck * b * d * xu + Mu * 1e6 = 0
-      const a = 0.1512 * fck * b;
-      const bCoeff = -0.36 * fck * b * d;
+      // Mu = alpha * fck * b * xu * (d - beta * xu)
+      // Rearranging: (alpha*beta) * fck * b * xu² - alpha * fck * b * d * xu + Mu * 1e6 = 0
+      const a = (alpha * beta) * fck * b;
+      const bCoeff = -alpha * fck * b * d;
       const c = Mu * 1e6;
       
       const discriminant = bCoeff * bCoeff - 4 * a * c;
       xu = (-bCoeff - Math.sqrt(discriminant)) / (2 * a);
       
       // Calculate required steel
-      Ast_required = (0.36 * fck * b * xu) / fyd;
+      Ast_required = (alpha * fck * b * xu) / fyd;
       Mu_capacity = Mu_lim; // Conservative for singly reinforced
 
       calculations['xu'] = xu;
@@ -320,7 +378,7 @@ export class RCBeamDesignEngine {
       const d_prime = this.geometry.cover + 12; // Assumed compression steel cover
       
       // Compression steel stress (check if yielded)
-      const epsilon_sc = 0.0035 * (xu - d_prime) / xu;
+      const epsilon_sc = epsilonCu * (xu - d_prime) / xu;
       const Es = 200000; // Modulus of elasticity for steel (MPa)
       const fsc = Math.min(fyd, Es * epsilon_sc);
       
@@ -328,7 +386,7 @@ export class RCBeamDesignEngine {
       Asc_required = (Mu2 * 1e6) / (fsc * (d - d_prime));
       
       // Tension steel for balanced section + additional for Mu2
-      const Ast_balanced = (0.36 * fck * b * xu_max) / fyd;
+      const Ast_balanced = (alpha * fck * b * xu_max) / fyd;
       const Ast_additional = (Mu2 * 1e6) / (fyd * (d - d_prime));
       Ast_required = Ast_balanced + Ast_additional;
       
