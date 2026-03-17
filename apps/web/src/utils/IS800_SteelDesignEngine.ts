@@ -343,33 +343,48 @@ export class IS800_SteelDesignEngine {
         const Md_plastic_x = (βb * section.Zpx * fy) / (this.γm0 * 1e6);  // kN·m
         const Md_plastic_y = (βb * section.Zpy * fy) / (this.γm0 * 1e6);  // kN·m
 
-        // Check for Lateral-Torsional Buckling (8.2.2)
+        // Check for Lateral-Torsional Buckling (IS 800:2007 Cl. 8.2.2 / AISC 360-16 F2)
         const Lb = props.Lb;
-
-        // Critical moment for LTB (simplified)
         const ry_eff = section.ry;
-        const hf = section.D - section.tf;
+        const ho = section.D - section.tf;  // Distance between flange centroids
 
-        // Limiting lengths (approximate)
+        // Lp = 1.76 * ry * sqrt(E/fy)  (IS 800 Cl. 8.2.2 / AISC F2-5)
         const Lp = 1.76 * ry_eff * Math.sqrt(E / fy);
-        const Lr = Lp * 3;  // Simplified
+
+        // Lr — use proper formula when torsional properties available, else conservative fallback
+        // rts² = sqrt(Iy * Cw) / Sx  (AISC F2)
+        // Lr = 1.95 * rts * (E/(0.7*fy)) * sqrt(J*c/(Sx*ho) + sqrt((J*c/(Sx*ho))² + 6.76*(0.7*fy/E)²))
+        // For IS sections without Cw/J data, use Lr = 1.95 * ry * sqrt(E/(0.7*fy)) as conservative estimate
+        let Lr: number;
+        // Approximate rts ≈ ry (conservative when Cw not available)
+        const rts = ry_eff;
+        // Approximate J for I-section: J ≈ (2*B*tf³ + (D-2tf)*tw³) / 3
+        const J_approx = (2 * section.B * Math.pow(section.tf, 3) + (section.D - 2 * section.tf) * Math.pow(section.tw, 3)) / 3;
+        const Sx = section.Zex;  // Elastic section modulus (mm³)
+        const jc_sxho = J_approx / (Sx * ho);
+        const term = jc_sxho + Math.sqrt(jc_sxho * jc_sxho + 6.76 * Math.pow(0.7 * fy / E, 2));
+        Lr = 1.95 * rts * (E / (0.7 * fy)) * Math.sqrt(term);
 
         let Md_x: number;
         let zone: 'plastic' | 'inelastic' | 'elastic';
 
         if (Lb <= Lp) {
-            // Plastic zone - no LTB
+            // Plastic zone — no LTB
             Md_x = Md_plastic_x;
             zone = 'plastic';
         } else if (Lb <= Lr) {
-            // Inelastic LTB
+            // Inelastic LTB (IS 800 Cl. 8.2.2 / AISC F2-2)
             Md_x = Md_plastic_x * (1 - 0.3 * (Lb - Lp) / (Lr - Lp));
             zone = 'inelastic';
         } else {
-            // Elastic LTB
-            const Mcr = (Math.PI * Math.PI * E * section.Iy * hf) / (Lb * Lb * 1e6);
+            // Elastic LTB — AISC 360-16 Eq. F2-4 with warping term
+            // Fcr = π²E/(Lb/rts)² * sqrt(1 + 0.078*J*c/(Sx*ho) * (Lb/rts)²)
+            const lb_rts = Lb / rts;
+            const Fcr = (Math.PI * Math.PI * E / (lb_rts * lb_rts)) *
+                        Math.sqrt(1 + 0.078 * jc_sxho * lb_rts * lb_rts);
+            const Mcr = Fcr * Sx / 1e6;  // kN·m
             const lambdaLT = Math.sqrt(Md_plastic_x / Mcr);
-            const chiLT = 1 / (0.5 + Math.sqrt(0.25 + lambdaLT * lambdaLT));
+            const chiLT = Math.min(1.0, 1 / (0.5 + Math.sqrt(0.25 + lambdaLT * lambdaLT)));
             Md_x = chiLT * Md_plastic_x;
             zone = 'elastic';
         }
@@ -509,8 +524,8 @@ export class IS800_SteelDesignEngine {
         },
         'ISMB 200': {
             name: 'ISMB 200', type: 'ISMB',
-            A: 2541, D: 200, B: 100, tf: 10.8, tw: 5.7,
-            Ix: 2235.4e4, Iy: 150e4, rx: 81.6, ry: 24.3,
+            A: 3233, D: 200, B: 100, tf: 10.8, tw: 5.7,
+            Ix: 2235.4e4, Iy: 150e4, rx: 83.1, ry: 21.5,
             Zex: 223.5e3, Zey: 30.0e3, Zpx: 254.4e3, Zpy: 45.5e3
         },
         'ISMB 250': {
@@ -521,9 +536,9 @@ export class IS800_SteelDesignEngine {
         },
         'ISMB 300': {
             name: 'ISMB 300', type: 'ISMB',
-            A: 4657, D: 300, B: 140, tf: 12.4, tw: 7.5,
-            Ix: 8603.6e4, Iy: 453.9e4, rx: 124.1, ry: 31.2,
-            Zex: 573.6e3, Zey: 64.8e3, Zpx: 653.4e3, Zpy: 98.3e3
+            A: 5626, D: 300, B: 140, tf: 12.4, tw: 7.5,
+            Ix: 8603.6e4, Iy: 453.9e4, rx: 123.6, ry: 28.4,
+            Zex: 616.8e3, Zey: 64.8e3, Zpx: 653.4e3, Zpy: 98.3e3
         },
     };
 }

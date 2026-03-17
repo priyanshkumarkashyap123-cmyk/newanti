@@ -18,6 +18,9 @@ import { asyncHandler, HttpError } from "../../utils/asyncHandler.js";
 import { logger } from "../../utils/logger.js";
 import { cacheKey, getCachedResult, setCachedResult } from "../../utils/resultCache.js";
 import { assertAnalysisPayload } from "../../utils/proxyContracts.js";
+import { QuotaService } from "../../services/quotaService.js";
+import { User } from "../../models.js";
+import { analysisRateLimiter } from "../../middleware/quotaRateLimiter.js";
 
 const router: Router = express.Router();
 
@@ -225,6 +228,21 @@ async function handleAnalysisRequest(req: Request, res: Response): Promise<void>
             return;
         }
 
+        // Deduct compute units from quota on successful analysis
+        try {
+            const auth = getAuth(req);
+            if (auth.userId) {
+                const user = await User.findOne({ clerkId: auth.userId }).select('_id').lean();
+                if (user) {
+                    const weight = QuotaService.computeWeight(nodeCount, memberCount);
+                    await QuotaService.deductComputeUnits(auth.userId, user._id.toString(), weight);
+                }
+            }
+        } catch (quotaErr) {
+            // Non-fatal: log but don't fail the response
+            logger.warn({ err: quotaErr }, "[Analysis] Failed to deduct quota after successful analysis");
+        }
+
         setCachedResult(key, result.data);
         res.setHeader("X-Analysis-Cache", "MISS");
         res.json(result.data);
@@ -281,6 +299,52 @@ async function forwardAnalysisToRust(
  */
 router.post("/", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
 router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
+
+/**
+ * POST /analysis/run - Quota-gated analysis run (returns spec envelope with computeMode/computeUnitsCharged)
+ * Requirements: 4.2, 4.3, 9.2
+ */
+router.post("/run", analysisRateLimiter(), validateBody(analyzeRequestSchema), asyncHandler(async (req: Request, res: Response) => {
+    const model = req.body as AnalyzeRequest;
+    const nodeCount = model.nodes?.length || 0;
+    const memberCount = model.members?.length || 0;
+    const weight = QuotaService.computeWeight(nodeCount, memberCount);
+
+    const requestId = getRequestId(req, res);
+    const result = await rustProxy("POST", "/api/analyze", model, undefined, 120_000, requestId);
+
+    if (!result.success) {
+        const errorMsg = result.error || "Analysis failed";
+        const { errorCode, details } = parseAnalysisError(errorMsg, model);
+        res.status(result.status || 500).json({
+            success: false,
+            error: errorMsg,
+            errorCode,
+            errorDetails: details,
+            service: "rust-api",
+        });
+        return;
+    }
+
+    // Deduct quota on success
+    try {
+        const auth = getAuth(req);
+        if (auth.userId) {
+            const user = await User.findOne({ clerkId: auth.userId }).select('_id').lean();
+            if (user) {
+                await QuotaService.deductComputeUnits(auth.userId, user._id.toString(), weight);
+            }
+        }
+    } catch (quotaErr) {
+        logger.warn({ err: quotaErr }, "[Analysis/run] Failed to deduct quota");
+    }
+
+    res.json({
+        ...result.data,
+        computeMode: 'server',
+        computeUnitsCharged: weight,
+    });
+}));
 
 /**
  * POST /analysis/modal - Matrix-based modal analysis
@@ -351,6 +415,38 @@ router.get("/jobs", asyncHandler(async (req: Request, res: Response) => {
         .lean();
 
     res.json({ success: true, jobs });
+}));
+
+/**
+ * POST /analysis/preflight - Compute weight preview before running analysis
+ * Requirements: 4.4
+ */
+router.post("/preflight", asyncHandler(async (req: Request, res: Response) => {
+    const { nodeCount = 0, memberCount = 0 } = req.body as { nodeCount?: number; memberCount?: number };
+
+    let userId: string | undefined;
+    try {
+        const auth = getAuth(req);
+        userId = auth.userId ?? undefined;
+    } catch { /* anonymous */ }
+
+    const weight = QuotaService.computeWeight(nodeCount, memberCount);
+
+    let remaining: number | null = null;
+    if (userId) {
+        try {
+            const user = await User.findOne({ clerkId: userId }).select('_id tier').lean();
+            if (user) {
+                const { TIER_CONFIG } = await import("../../config/tierConfig.js");
+                const tier = (user.tier ?? 'free') as keyof typeof TIER_CONFIG;
+                const quota = await QuotaService.get(userId, user._id.toString());
+                const max = TIER_CONFIG[tier].maxComputeUnitsPerDay;
+                remaining = max === Infinity ? null : Math.max(0, max - quota.computeUnitsUsed);
+            }
+        } catch { /* non-fatal */ }
+    }
+
+    return res.ok({ weight, remaining });
 }));
 
 /**

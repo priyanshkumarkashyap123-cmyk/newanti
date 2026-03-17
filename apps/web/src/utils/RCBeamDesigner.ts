@@ -154,8 +154,12 @@ export class RCBeamDesigner {
         }
 
         // Minimum steel (ACI 318-19 §9.6.1.2)
+        // SI: As_min = max(0.25*sqrt(fc)*b*d/fy, 1.4*b*d/fy)
+        // US: As_min = max(3*sqrt(fc)*b*d/fy, 200*b*d/fy)  [fc in psi, 200 psi constant]
         const As_min1 = (3 * Math.sqrt(fc) * b * d) / fy;
-        const As_min2 = (200 * b * d) / fy;  // For US units adjust
+        const As_min2 = units === 'SI'
+            ? (1.4 * b * d) / fy       // ACI 318-19 §9.6.1.2 SI
+            : (200 * b * d) / fy;      // ACI 318-19 §9.6.1.2 US customary (fc in psi)
         const As_min = Math.max(As_min1, As_min2);
 
         // Maximum steel (balanced condition)

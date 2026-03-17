@@ -207,20 +207,21 @@ class BeamSolver:
                 
             elif load.type == LoadType.UVL:
                 w1 = load.magnitude
-                w2 = load.end_magnitude or 0
+                w2 = load.end_magnitude if load.end_magnitude is not None else 0
                 start = load.position
                 end = load.end_position or L
                 length = end - start
-                # Triangular load: W = 0.5 * w * L, centroid at L/3 from max
-                W = 0.5 * max(w1, w2) * length
-                if w1 > w2:
-                    centroid = start + length / 3
+                # General trapezoidal load: W = (w1 + w2) / 2 * L
+                # Centroid from start = L * (w1 + 2*w2) / (3 * (w1 + w2))
+                W = (w1 + w2) / 2.0 * length
+                if abs(w1 + w2) > 1e-12:
+                    centroid = start + length * (w1 + 2 * w2) / (3 * (w1 + w2))
                 else:
-                    centroid = start + 2 * length / 3
+                    centroid = start + length / 2.0
                 total_load += W
                 moment_about_a += W * centroid
-                self.add_step(f"UVL: w = 0 to {max(w1, w2)}kN/m over {length}m")
-                self.add_step(f"  Equivalent load W = 0.5 × {max(w1, w2)} × {length} = {W}kN")
+                self.add_step(f"UVL: w = {w1} to {w2}kN/m over {length}m")
+                self.add_step(f"  Equivalent load W = ({w1}+{w2})/2 × {length} = {W:.2f}kN at centroid x = {centroid:.2f}m")
         
         # Calculate reactions
         # Sum of moments about A = 0: Rb * L = moment_about_a
@@ -254,11 +255,25 @@ class BeamSolver:
                     start = load.position
                     end = load.end_position or L
                     if x > start:
-                        # Length of UDL up to point x
                         effective_length = min(x, end) - start
                         if effective_length > 0:
                             V -= load.magnitude * effective_length
-                            
+
+                elif load.type == LoadType.UVL:
+                    w1 = load.magnitude
+                    w2 = load.end_magnitude if load.end_magnitude is not None else 0
+                    start = load.position
+                    end = load.end_position or L
+                    length = end - start
+                    if x > start and length > 1e-12:
+                        t = min(x - start, length) / length  # 0..1
+                        # Intensity at position x: w(t) = w1 + (w2-w1)*t
+                        # Shear contribution = integral of w(t) from 0 to t*length
+                        # = w1*t*L + (w2-w1)*t²*L/2
+                        eff_len = min(x - start, length)
+                        t_eff = eff_len / length
+                        V -= (w1 * t_eff + (w2 - w1) * t_eff ** 2 / 2) * length
+
             shear_vals.append(round(V, 4))
         
         # ============================================
@@ -307,30 +322,43 @@ class BeamSolver:
         self.add_step(f"Maximum Moment: M_max = {max_moment:.2f}kN·m at x = {max_moment_location:.2f}m")
         
         # ============================================
-        # STEP 6: Calculate Deflection (simplified)
+        # STEP 6: Calculate Deflection (double integration of M/EI)
         # ============================================
-        self.add_step("Calculating deflection using double integration method")
-        
-        # Simplified deflection for UDL: δ_max = 5wL⁴ / (384EI)
-        # For point load at center: δ_max = PL³ / (48EI)
+        self.add_step("Calculating deflection via numerical double integration of M(x)/EI")
+        self.add_step("EI·y'' = M(x)  →  integrate twice with y(0)=0, y(L)=0")
+
+        EI = self.E * self.I  # kN·m²
+        dx = x_vals[1] - x_vals[0]
+
+        # First integration: slope θ(x) = ∫M/EI dx  (constant of integration C1 determined by BC)
+        # Second integration: deflection y(x) = ∫θ dx  (C2 = 0 from y(0)=0)
+        # BC y(L)=0 gives C1 = -∫₀ᴸ ∫₀ˣ M/EI dx dx / L
+
+        # Curvature array
+        curvature = [m / EI for m in moment_vals]
+
+        # First integration (slope, without C1)
+        slope_no_c1 = [0.0] * self.num_points
+        for i in range(1, self.num_points):
+            slope_no_c1[i] = slope_no_c1[i - 1] + 0.5 * (curvature[i - 1] + curvature[i]) * dx
+
+        # Second integration (deflection, without C1 contribution)
+        defl_no_c1 = [0.0] * self.num_points
+        for i in range(1, self.num_points):
+            defl_no_c1[i] = defl_no_c1[i - 1] + 0.5 * (slope_no_c1[i - 1] + slope_no_c1[i]) * dx
+
+        # Apply BC y(L)=0: C1 = -defl_no_c1[-1] / L
+        C1 = -defl_no_c1[-1] / L
+
         deflection_vals = []
-        
         for i, x in enumerate(x_vals):
-            # Approximate deflection by integrating moment curve
-            # δ = M / (E*I) integrated twice (simplified approach)
-            if i == 0:
-                deflection_vals.append(0)
-            else:
-                # Simple numerical integration
-                dx = x_vals[1] - x_vals[0]
-                # Deflection proportional to moment integral
-                approx_deflection = -moment_vals[i] * (x * (L - x)) / (self.E * self.I * 2)
-                deflection_vals.append(round(approx_deflection * 1000, 4))  # Convert to mm
-        
+            y = defl_no_c1[i] + C1 * x  # metres
+            deflection_vals.append(round(y * 1000, 4))  # convert to mm
+
         max_deflection = max(abs(min(deflection_vals)), abs(max(deflection_vals)))
         max_deflection_idx = np.argmax(np.abs(deflection_vals))
         max_deflection_location = x_vals[max_deflection_idx]
-        
+
         self.add_step(f"Maximum Deflection: δ_max = {max_deflection:.4f}mm at x = {max_deflection_location:.2f}m")
         
         # ============================================
@@ -430,9 +458,26 @@ class BeamSolver:
         self.add_step(f"Maximum Shear at fixed end: V_max = {max_shear:.2f}kN")
         self.add_step(f"Maximum Moment at fixed end: M_max = {max_moment:.2f}kN·m")
         
-        # Simplified deflection
-        deflection_vals = [0] * self.num_points
-        max_deflection = 0
+        # Deflection via double integration: EI·y'' = M(x), BC: y(0)=0, y'(0)=0
+        self.add_step("Calculating cantilever deflection via double integration: EI·y''=M(x), y(0)=0, y'(0)=0")
+        EI = self.E * self.I
+        dx_val = x_vals[1] - x_vals[0]
+
+        # First integration: slope θ(x) = ∫M/EI dx, θ(0)=0
+        slope_vals = [0.0] * self.num_points
+        for i in range(1, self.num_points):
+            slope_vals[i] = slope_vals[i - 1] + 0.5 * (moment_vals[i - 1] + moment_vals[i]) / EI * dx_val
+
+        # Second integration: deflection y(x) = ∫θ dx, y(0)=0
+        deflection_vals_m = [0.0] * self.num_points
+        for i in range(1, self.num_points):
+            deflection_vals_m[i] = deflection_vals_m[i - 1] + 0.5 * (slope_vals[i - 1] + slope_vals[i]) * dx_val
+
+        deflection_vals = [round(y * 1000, 4) for y in deflection_vals_m]  # mm
+        max_deflection = max(abs(min(deflection_vals)), abs(max(deflection_vals)))
+        max_deflection_idx = int(np.argmax(np.abs(deflection_vals)))
+        max_deflection_location = float(x_vals[max_deflection_idx])
+        self.add_step(f"Maximum Deflection: δ_max = {max_deflection:.4f}mm at x = {max_deflection_location:.2f}m")
         
         diagram = DiagramData(
             x_values=[round(x, 4) for x in x_vals.tolist()],
@@ -445,10 +490,10 @@ class BeamSolver:
             reactions=reactions,
             max_shear=round(max_shear, 3),
             max_moment=round(max_moment, 3),
-            max_deflection=0,
+            max_deflection=round(max_deflection, 4),
             max_shear_location=0,
             max_moment_location=0,
-            max_deflection_location=L,
+            max_deflection_location=round(max_deflection_location, 3),
             steps=self.steps,
             diagram=diagram,
             success=True

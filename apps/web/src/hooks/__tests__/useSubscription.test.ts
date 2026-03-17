@@ -1,184 +1,149 @@
 /**
- * Tests for Subscription Tier Feature Logic
- *
- * Tests the pure business logic for subscription features
- * without needing to render React components.
+ * Tests for SubscriptionProvider and useSubscription hook
+ * Feature: user-data-management-and-platform
  */
-import { describe, it, expect } from 'vitest';
 
-// Test the tier feature mapping directly
-// (Extracted from useSubscription.tsx - same structure)
-const TIER_FEATURES = {
-  free: {
-    maxProjects: 3,
-    pdfExport: false,
-    aiAssistant: false,
-    advancedDesignCodes: false,
-    teamMembers: 1,
-    prioritySupport: false,
-    apiAccess: false,
-  },
-  pro: {
-    maxProjects: -1, // unlimited
-    pdfExport: true,
-    aiAssistant: true,
-    advancedDesignCodes: true,
-    teamMembers: 5,
-    prioritySupport: true,
-    apiAccess: false,
-  },
-  enterprise: {
-    maxProjects: -1,
-    pdfExport: true,
-    aiAssistant: true,
-    advancedDesignCodes: true,
-    teamMembers: -1, // unlimited
-    prioritySupport: true,
-    apiAccess: true,
-  },
-} as const;
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import React from 'react';
+import { SubscriptionProvider, useSubscription } from '../useSubscription';
 
-type SubscriptionTier = keyof typeof TIER_FEATURES;
-type FeatureKey = keyof typeof TIER_FEATURES.free;
+// Declare global for TypeScript
+declare const global: any;
 
-function canAccess(tier: SubscriptionTier, feature: FeatureKey): boolean {
-  const features = TIER_FEATURES[tier];
-  const value: boolean | number = features[feature];
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return value !== 0;
-  return false;
+// Mock fetch
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+// Mock localStorage
+const localStorageMock = (() => {
+    let store: Record<string, string> = {};
+    return {
+        getItem: (key: string) => store[key] ?? null,
+        setItem: (key: string, value: string) => { store[key] = value; },
+        removeItem: (key: string) => { delete store[key]; },
+        clear: () => { store = {}; },
+    };
+})();
+Object.defineProperty(global, 'localStorage', { value: localStorageMock });
+
+function makeSubResponse(tier: string) {
+    return {
+        ok: true,
+        json: async () => ({
+            data: {
+                tier,
+                features: {
+                    maxProjectsPerDay: tier === 'free' ? 3 : null,
+                    maxComputeUnitsPerDay: tier === 'free' ? 5 : null,
+                    features: {
+                        collaboration: tier !== 'free',
+                        pdfExport: tier !== 'free',
+                        aiAssistant: tier !== 'free',
+                        advancedDesignCodes: tier !== 'free',
+                        apiAccess: tier === 'enterprise',
+                    },
+                },
+            },
+        }),
+    };
 }
 
-function requiresUpgrade(tier: SubscriptionTier, feature: FeatureKey): boolean {
-  return !canAccess(tier, feature);
+function makeQuotaResponse() {
+    return {
+        ok: true,
+        json: async () => ({
+            data: {
+                projectsRemaining: 2,
+                computeUnitsRemaining: 3,
+                projectsCreated: 1,
+                computeUnitsUsed: 2,
+                localComputeAvailable: false,
+            },
+        }),
+    };
 }
 
-describe('Subscription Tier Features', () => {
-  describe('Free tier', () => {
-    it('limits maxProjects to 3', () => {
-      expect(TIER_FEATURES.free.maxProjects).toBe(3);
+function wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(SubscriptionProvider, null, children);
+}
+
+describe('useSubscription', () => {
+    beforeEach(() => {
+        localStorageMock.clear();
+        vi.clearAllMocks();
     });
 
-    it('denies PDF export', () => {
-      expect(canAccess('free', 'pdfExport')).toBe(false);
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
-    it('denies AI assistant', () => {
-      expect(canAccess('free', 'aiAssistant')).toBe(false);
+    it('canAccess returns false for free-tier gated features', async () => {
+        mockFetch
+            .mockResolvedValueOnce(makeSubResponse('free'))
+            .mockResolvedValueOnce(makeQuotaResponse());
+
+        const { result } = renderHook(() => useSubscription(), { wrapper });
+
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+        expect(result.current.canAccess('collaboration')).toBe(false);
+        expect(result.current.canAccess('pdfExport')).toBe(false);
+        expect(result.current.canAccess('aiAssistant')).toBe(false);
     });
 
-    it('denies advanced design codes', () => {
-      expect(canAccess('free', 'advancedDesignCodes')).toBe(false);
+    it('canAccess returns true for pro-tier features', async () => {
+        mockFetch
+            .mockResolvedValueOnce(makeSubResponse('pro'))
+            .mockResolvedValueOnce(makeQuotaResponse());
+
+        const { result } = renderHook(() => useSubscription(), { wrapper });
+
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+        expect(result.current.canAccess('collaboration')).toBe(true);
+        expect(result.current.canAccess('pdfExport')).toBe(true);
     });
 
-    it('limits team members to 1', () => {
-      expect(TIER_FEATURES.free.teamMembers).toBe(1);
+    it('serves cached tier during loading state (no layout shift)', () => {
+        localStorageMock.setItem('beamlab:tier-cache', 'pro');
+
+        // Don't resolve fetch yet
+        mockFetch.mockReturnValue(new Promise(() => {}));
+
+        const { result } = renderHook(() => useSubscription(), { wrapper });
+
+        // While loading, should serve cached tier
+        expect(result.current.isLoading).toBe(true);
+        expect(result.current.tier).toBe('pro');
     });
 
-    it('denies priority support', () => {
-      expect(canAccess('free', 'prioritySupport')).toBe(false);
+    it('refreshTier re-fetches without logout', async () => {
+        mockFetch
+            .mockResolvedValueOnce(makeSubResponse('free'))
+            .mockResolvedValueOnce(makeQuotaResponse())
+            .mockResolvedValueOnce(makeSubResponse('pro'))
+            .mockResolvedValueOnce(makeQuotaResponse());
+
+        const { result } = renderHook(() => useSubscription(), { wrapper });
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        expect(result.current.tier).toBe('free');
+
+        await act(async () => {
+            await result.current.refreshTier();
+        });
+
+        expect(result.current.tier).toBe('pro');
+        expect(mockFetch).toHaveBeenCalledTimes(4);
     });
 
-    it('denies API access', () => {
-      expect(canAccess('free', 'apiAccess')).toBe(false);
-    });
+    it('falls back to cached tier on network error', async () => {
+        localStorageMock.setItem('beamlab:tier-cache', 'enterprise');
+        mockFetch.mockRejectedValue(new Error('Network error'));
 
-    it('requires upgrade for PDF export', () => {
-      expect(requiresUpgrade('free', 'pdfExport')).toBe(true);
-    });
-  });
+        const { result } = renderHook(() => useSubscription(), { wrapper });
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-  describe('Pro tier', () => {
-    it('allows unlimited projects', () => {
-      expect(TIER_FEATURES.pro.maxProjects).toBe(-1);
+        expect(result.current.tier).toBe('enterprise');
     });
-
-    it('allows PDF export', () => {
-      expect(canAccess('pro', 'pdfExport')).toBe(true);
-    });
-
-    it('allows AI assistant', () => {
-      expect(canAccess('pro', 'aiAssistant')).toBe(true);
-    });
-
-    it('allows advanced design codes', () => {
-      expect(canAccess('pro', 'advancedDesignCodes')).toBe(true);
-    });
-
-    it('limits team members to 5', () => {
-      expect(TIER_FEATURES.pro.teamMembers).toBe(5);
-    });
-
-    it('allows priority support', () => {
-      expect(canAccess('pro', 'prioritySupport')).toBe(true);
-    });
-
-    it('still denies API access', () => {
-      expect(canAccess('pro', 'apiAccess')).toBe(false);
-    });
-
-    it('does not require upgrade for PDF', () => {
-      expect(requiresUpgrade('pro', 'pdfExport')).toBe(false);
-    });
-  });
-
-  describe('Enterprise tier', () => {
-    it('allows unlimited projects', () => {
-      expect(TIER_FEATURES.enterprise.maxProjects).toBe(-1);
-    });
-
-    it('allows unlimited team members', () => {
-      expect(TIER_FEATURES.enterprise.teamMembers).toBe(-1);
-    });
-
-    it('allows API access', () => {
-      expect(canAccess('enterprise', 'apiAccess')).toBe(true);
-    });
-
-    it('allows all features', () => {
-      const features: FeatureKey[] = [
-        'pdfExport', 'aiAssistant', 'advancedDesignCodes',
-        'prioritySupport', 'apiAccess',
-      ];
-      for (const f of features) {
-        expect(canAccess('enterprise', f)).toBe(true);
-      }
-    });
-
-    it('never requires upgrade', () => {
-      const features: FeatureKey[] = [
-        'pdfExport', 'aiAssistant', 'advancedDesignCodes',
-        'prioritySupport', 'apiAccess',
-      ];
-      for (const f of features) {
-        expect(requiresUpgrade('enterprise', f)).toBe(false);
-      }
-    });
-  });
-
-  describe('Tier hierarchy is strictly ordered', () => {
-    it('enterprise has >= features than pro', () => {
-      const booleanFeatures: FeatureKey[] = [
-        'pdfExport', 'aiAssistant', 'advancedDesignCodes',
-        'prioritySupport', 'apiAccess',
-      ];
-      for (const f of booleanFeatures) {
-        if (canAccess('pro', f)) {
-          expect(canAccess('enterprise', f)).toBe(true);
-        }
-      }
-    });
-
-    it('pro has >= features than free', () => {
-      const booleanFeatures: FeatureKey[] = [
-        'pdfExport', 'aiAssistant', 'advancedDesignCodes',
-        'prioritySupport', 'apiAccess',
-      ];
-      for (const f of booleanFeatures) {
-        if (canAccess('free', f)) {
-          expect(canAccess('pro', f)).toBe(true);
-        }
-      }
-    });
-  });
 });

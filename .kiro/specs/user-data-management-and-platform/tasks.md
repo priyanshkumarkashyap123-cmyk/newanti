@@ -70,12 +70,12 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test pro user with usage exceeding free limit (allowed)
     - _Requirements: 3.2, 3.3, 3.7_
 
-- [-] 5. Auth and user account endpoints
-  - [ ] 5.1 Implement `POST /api/auth/register` and `POST /api/auth/login` handlers
+- [x] 5. Auth and user account endpoints
+  - [x] 5.1 Implement `POST /api/auth/register` and `POST /api/auth/login` handlers
     - Register: insert into `users`, return JWT; on duplicate email return HTTP 409 with `USER_ALREADY_EXISTS`
     - Login: verify credentials, return JWT with `{ userId, tier }` payload
     - _Requirements: 1.1, 1.3_
-  - [ ] 5.2 Implement `GET /api/user/profile` and `GET /api/user/quota` handlers
+  - [x] 5.2 Implement `GET /api/user/profile` and `GET /api/user/quota` handlers
     - Profile: return `{ id, displayName, createdAt }` for authenticated user
     - Quota: call `QuotaService.get`, compute remaining values from `TIER_CONFIG`, include `localComputeAvailable` boolean
     - _Requirements: 1.2, 3.6, 9.3_
@@ -99,11 +99,11 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test quota endpoint returns correct remaining values for free/pro/enterprise tiers
     - _Requirements: 1.1, 1.2, 1.3, 3.6_
 
-- [ ] 6. Checkpoint — ensure all tests pass
+- [x] 6. Checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 7. Project CRUD endpoints and auto-save
-  - [ ] 7.1 Implement `POST /api/projects`, `GET /api/projects`, `GET /api/projects/:id`, `PUT /api/projects/:id`, `DELETE /api/projects/:id`
+- [x] 7. Project CRUD endpoints and auto-save
+  - [x] 7.1 Implement `POST /api/projects`, `GET /api/projects`, `GET /api/projects/:id`, `PUT /api/projects/:id`, `DELETE /api/projects/:id`
     - POST: apply `rateLimiter`, insert into `projects`, call `QuotaService.incrementProjects`
     - GET list: return all projects owned by `req.user.id` (no state blob)
     - GET single: join `project_states`, return full state; authorize owner or accepted collaborator
@@ -127,11 +127,11 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test DELETE removes project and cascades to state
     - _Requirements: 2.1, 2.2, 2.4_
 
-- [~] 8. localStorage fallback and auto-save retry logic (client-side)
-  - [ ] 8.1 Implement auto-save interval in the project editor (≤60 s) that calls `PUT /api/projects/:id`
+- [x] 8. localStorage fallback and auto-save retry logic (client-side)
+  - [x] 8.1 Implement auto-save interval in the project editor (≤60 s) that calls `PUT /api/projects/:id`
     - On network failure, write state to `localStorage` under key `beamlab:unsaved:{projectId}`
     - _Requirements: 2.3, 2.5_
-  - [ ] 8.2 Implement exponential backoff retry loop (1 s, 2 s, 4 s, max 30 s) that flushes `localStorage` on reconnect
+  - [x] 8.2 Implement exponential backoff retry loop (1 s, 2 s, 4 s, max 30 s) that flushes `localStorage` on reconnect
     - On successful flush, remove the `localStorage` entry
     - _Requirements: 2.5_
   - [ ]* 8.3 Write unit tests for localStorage fallback
@@ -139,12 +139,12 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Mock fetch to succeed on retry; assert localStorage entry cleared
     - _Requirements: 2.5_
 
-- [~] 9. Collaboration endpoints
-  - [ ] 9.1 Implement `POST /api/projects/:id/collaborators` (send invite)
+- [-] 9. Collaboration endpoints
+  - [x] 9.1 Implement `POST /api/projects/:id/collaborators` (send invite)
     - Look up invitee by email; if not found return HTTP 404 with `USER_NOT_FOUND`
     - Insert into `collaboration_invites` with status `pending`; enforce owner-only via middleware
     - _Requirements: 5.1, 5.5, 5.6_
-  - [ ] 9.2 Implement `GET /api/projects/:id/collaborators`, `PATCH .../accept`, `DELETE .../:userId`
+  - [x] 9.2 Implement `GET /api/projects/:id/collaborators`, `PATCH .../accept`, `DELETE .../:userId`
     - GET: return list of collaborators with status; authorize owner
     - PATCH accept: update status to `accepted`; authorize invitee only
     - DELETE: update status to `revoked`; authorize owner only; access revoked within 5 s
@@ -170,8 +170,8 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test collaborator blocked after revocation
     - _Requirements: 5.1, 5.2, 5.4_
 
-- [~] 10. Subscription endpoints
-  - [ ] 10.1 Implement `GET /api/subscription` and `POST /api/subscription/upgrade`
+- [x] 10. Subscription endpoints
+  - [x] 10.1 Implement `GET /api/subscription` and `POST /api/subscription/upgrade`
     - GET: return `{ tier, features: TIER_CONFIG[tier] }` for authenticated user
     - POST upgrade: update `users.tier`, return updated subscription object
     - _Requirements: 6.1, 6.4_
@@ -180,11 +180,11 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test POST upgrade updates tier and reflects in subsequent GET
     - _Requirements: 6.1, 6.4_
 
-- [ ] 11. Checkpoint — ensure all tests pass
+- [x] 11. Checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 12. Quota tracking accuracy and reset
-  - [ ] 12.1 Wire `QuotaService.deductComputeUnits` into `POST /api/analysis/run` after job completion
+- [x] 12. Quota tracking accuracy and reset
+  - [x] 12.1 Wire `QuotaService.deductComputeUnits` into `POST /api/analysis/run` after job completion
     - Deduction must happen only on successful job completion, not on rejection
     - _Requirements: 3.1, 4.2_
   - [ ]* 12.2 Write property test for quota tracking accuracy (Property 6)
@@ -192,18 +192,18 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - **Validates: Requirements 3.1, 3.6, 4.2, 9.2**
     - `// Feature: user-data-management-and-platform, Property 6: Quota tracking accuracy`
     - Generate sequences of project creations and analysis jobs with known weights; assert `GET /api/user/quota` returns correct remaining values
-  - [ ] 12.3 Implement quota reset cron job (`0 0 * * *` UTC)
+  - [x] 12.3 Implement quota reset cron job (`0 0 * * *` UTC)
     - Execute `UPDATE quota_records SET projects_created = 0, compute_units_used = 0 WHERE window_date < CURRENT_DATE`
     - _Requirements: 3.5_
   - [ ]* 12.4 Write unit tests for quota reset
     - Test cron SQL resets rows with past dates and leaves today's row unchanged
     - _Requirements: 3.5_
 
-- [~] 13. Analysis preflight and run endpoints
-  - [ ] 13.1 Implement `POST /api/analysis/preflight`
+- [x] 13. Analysis preflight and run endpoints
+  - [x] 13.1 Implement `POST /api/analysis/preflight`
     - Accept `{ nodeCount, memberCount }`, call `QuotaService.computeWeight`, return `{ weight, remaining }`
     - _Requirements: 4.4_
-  - [ ] 13.2 Implement `POST /api/analysis/run`
+  - [x] 13.2 Implement `POST /api/analysis/run`
     - Apply `rateLimiter` (compute units check), forward job to Rust_API/Python_API, deduct quota on success
     - Return `AnalysisResult` envelope with `computeMode: 'server'` and `computeUnitsCharged`
     - _Requirements: 4.2, 4.3, 9.2_
@@ -213,14 +213,14 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test run rejected when quota insufficient (HTTP 429 with weight and remaining in body)
     - _Requirements: 4.3, 4.4_
 
-- [~] 14. Subscription_Provider React context
-  - [ ] 14.1 Implement `SubscriptionProvider` component and `useSubscription` hook
+- [x] 14. Subscription_Provider React context
+  - [x] 14.1 Implement `SubscriptionProvider` component and `useSubscription` hook
     - On mount: fetch `/api/subscription` and `/api/user/quota` in parallel
     - While loading: serve last cached tier from `localStorage` key `beamlab:tier-cache` to prevent layout shift
     - Expose `{ tier, features, quota, webGpuAvailable, isLoading, canAccess, refreshTier }`
     - `canAccess(feature)` returns `TIER_CONFIG[tier][feature]`
     - _Requirements: 6.2, 6.4, 7.1, 7.2, 7.3, 7.6_
-  - [ ] 14.2 Implement adaptive UI components that consume `useSubscription`
+  - [x] 14.2 Implement adaptive UI components that consume `useSubscription`
     - Render gated feature controls as disabled/hidden for free tier; show upgrade modal on interaction
     - Do not make API calls for features where `canAccess(feature) === false`
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
@@ -230,16 +230,16 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test `refreshTier` re-fetches without logout
     - _Requirements: 6.2, 7.6_
 
-- [~] 15. Analysis_Router hook with WebGPU detection
-  - [ ] 15.1 Implement `useAnalysisRouter` hook with WebGPU detection on mount
+- [x] 15. Analysis_Router hook with WebGPU detection
+  - [x] 15.1 Implement `useAnalysisRouter` hook with WebGPU detection on mount
     - Call `navigator.gpu.requestAdapter()` once; cache result in module-level variable and in `SubscriptionProvider` context
     - If WebGPU unavailable, set `webGpuAvailable: false` and default to server mode
     - _Requirements: 8.1, 8.5_
-  - [ ] 15.2 Implement `runAnalysis` dispatch logic
+  - [x] 15.2 Implement `runAnalysis` dispatch logic
     - For `computeMode: 'local'`: execute via WebGPU_Runtime, return `AnalysisResult` with `computeMode: 'local'` and `computeUnitsCharged: 0`; do NOT call Node_API quota endpoints
     - For `computeMode: 'server'`: call `POST /api/analysis/preflight`, show cost to user, on confirm call `POST /api/analysis/run`
     - _Requirements: 8.3, 8.4, 9.1_
-  - [ ] 15.3 Implement memory preflight check for local compute mode
+  - [x] 15.3 Implement memory preflight check for local compute mode
     - Estimate model memory footprint; compare against GPU adapter's reported available memory
     - If footprint exceeds available memory, warn user and offer server fallback before proceeding
     - _Requirements: 8.6, 8.7_
@@ -270,21 +270,21 @@ Implement BeamLab's multi-tier SaaS platform layer: PostgreSQL schema, Node_API 
     - Test WebGPU runtime error surfaces error result and offers server fallback
     - _Requirements: 8.1, 8.5, 8.9_
 
-- [ ] 16. Final checkpoint — ensure all tests pass
+- [x] 16. Final checkpoint — ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 17. Integration tests
-  - [ ] 17.1 Write integration tests for the full quota lifecycle
+- [x] 17. Integration tests
+  - [x] 17.1 Write integration tests for the full quota lifecycle
     - Register free user → create 3 projects (all succeed) → create 4th project (HTTP 429) → verify quota endpoint
     - Run analysis jobs until compute units exhausted → verify HTTP 429 with weight and remaining in body
     - _Requirements: 3.1, 3.2, 3.3, 4.3_
-  - [ ] 17.2 Write integration tests for the collaboration workflow
+  - [x] 17.2 Write integration tests for the collaboration workflow
     - Owner creates project → invites collaborator → collaborator accepts → collaborator saves state → owner revokes → collaborator blocked
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
-  - [ ] 17.3 Write integration tests for tier upgrade flow
+  - [x] 17.3 Write integration tests for tier upgrade flow
     - Free user hits quota → upgrade to Pro → verify quota limits updated → verify gated features now accessible
     - _Requirements: 6.3, 6.4_
-  - [ ] 17.4 Wire all Express routes together in the main app entry point
+  - [x] 17.4 Wire all Express routes together in the main app entry point
     - Mount auth, user, project, collaboration, analysis, and subscription routers
     - Apply `authenticate` JWT middleware globally to all `/api/*` routes except register/login
     - Apply `requireFeature` middleware to collaboration and other gated routes

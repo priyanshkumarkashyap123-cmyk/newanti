@@ -574,7 +574,10 @@ class EnhancedAIArchitect:
             from analysis.ai_prompts import SYSTEM_PROMPT_v2
             
             genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-pro')
+            model = genai.GenerativeModel(
+                'gemini-1.5-flash',
+                generation_config={"response_mime_type": "application/json"}
+            )
             
             # Add extracted parameters to help the LLM
             enhanced_prompt = f"""

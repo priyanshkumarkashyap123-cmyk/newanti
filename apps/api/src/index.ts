@@ -21,6 +21,9 @@ import publicLandingRoutes from "./routes/publicLandingRoutes.js";
 import authRouter from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
+import collaborationRoutes from "./routes/collaborationRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
+import { startQuotaResetCron } from "./jobs/quotaResetCron.js";
 import consentRoutes from "./routes/consentRoutes.js";
 import auditRoutes from "./routes/audit/index.js";
 import analyticsRouter from "./routes/analytics/index.js";
@@ -478,6 +481,10 @@ app.use("/api/billing", requireDbReady);
 app.use("/api/session", requireDbReady);
 app.use("/api/usage", requireDbReady);
 
+// Collaboration routes (nested under projects)
+app.use("/api/v1/projects", requireDbReady);
+app.use("/api/projects", requireDbReady);
+
 const authRequired = requireAuth();
 
 // Structural Analysis API (rate limited: 10/min, auth required)
@@ -538,6 +545,14 @@ app.use("/api/billing/razorpay", billingRateLimit, razorpayBillingRouter);
 app.use("/api/v1/project", crudRateLimit, projectRoutes);
 app.use("/api/project", crudRateLimit, projectRoutes);
 
+// Collaboration API (nested under projects)
+app.use("/api/v1/projects/:id/collaborators", crudRateLimit, collaborationRoutes);
+app.use("/api/projects/:id/collaborators", crudRateLimit, collaborationRoutes);
+
+// Subscription API
+app.use("/api/v1/subscription", crudRateLimit, subscriptionRoutes);
+app.use("/api/subscription", crudRateLimit, subscriptionRoutes);
+
 // Legal Consent API
 app.use("/api/v1/consent", crudRateLimit, consentRoutes);
 app.use("/api/consent", crudRateLimit, consentRoutes);
@@ -595,6 +610,7 @@ httpServer.listen(PORT, () => {
       .then(() => {
         dbReady = true;
         logger.info("MongoDB connected successfully — API routes are now live");
+        startQuotaResetCron();
       })
       .catch((err) => {
         logger.error({ err, attempt }, `Failed to connect to MongoDB (attempt ${attempt}/${maxAttempts})`);

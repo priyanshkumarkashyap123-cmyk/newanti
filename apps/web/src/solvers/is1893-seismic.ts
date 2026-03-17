@@ -261,9 +261,10 @@ export function computeAh(params: SeismicParams, T: number): {
 
   let Ah = (Z / 2) * (I / R) * Sa_g;
 
-  // Minimum Ah (IS 1893:2016 footnotes to Table 3)
-  // The code specifies Sa/g values capped by soil period, effectively giving minimum
-  const Ah_min = (Z / 2) * (I / R) * 0.25; // At T=4s, Soil I gives Sa/g=0.25
+  // Minimum Ah per IS 1893:2016 — soil-type-specific floor Sa/g value
+  // Soil I: Sa/g floor = 0.25 (at T=4s), Soil II: 0.34, Soil III: 0.42
+  const SA_G_FLOOR: Record<SoilType, number> = { 'I': 0.25, 'II': 0.34, 'III': 0.42 };
+  const Ah_min = (Z / 2) * (I / R) * SA_G_FLOOR[params.soilType];
 
   if (Ah < Ah_min) {
     warnings.push(`Ah=${Ah.toFixed(4)} increased to minimum ${Ah_min.toFixed(4)}`);

@@ -1,10 +1,12 @@
 import express, { Request, Response, Router } from "express";
 import { requireAuth, getAuth } from "../middleware/authMiddleware.js";
 import { crudRateLimit } from "../middleware/security.js";
-import { Project, User, UserModel, IUser } from "../models.js";
+import { Project, User, UserModel, IUser, CollaborationInvite } from "../models.js";
 import mongoose from "mongoose";
 import { validateBody, createProjectSchema, updateProjectSchema } from "../middleware/validation.js";
 import { asyncHandler, HttpError } from "../utils/asyncHandler.js";
+import { QuotaService } from "../services/quotaService.js";
+import { projectCreationRateLimiter } from "../middleware/quotaRateLimiter.js";
 
 const router: Router = express.Router();
 
@@ -84,20 +86,34 @@ router.get("/:id", authRequired, asyncHandler(async (req: Request, res: Response
     throw new HttpError(404, 'User not found');
   }
 
-  const project = await Project.findOne({
-    _id: projectId,
-    $or: [{ owner: user._id }, { collaborators: user._id }],
-  }).lean();
+  // Check if user is owner or has an accepted collaboration invite
+  const [project, collaborationInvite] = await Promise.all([
+    Project.findOne({
+      _id: projectId,
+      $or: [{ owner: user._id }, { collaborators: user._id }],
+    }).lean(),
+    CollaborationInvite.findOne({
+      projectId,
+      inviteeId: user._id,
+      status: 'accepted',
+    }).lean(),
+  ]);
 
-  if (!project) {
+  if (!project && !collaborationInvite) {
     throw new HttpError(404, 'Project not found');
   }
 
-  return res.ok({ project });
+  // If only found via collaboration invite, fetch the project directly
+  const finalProject = project ?? await Project.findById(projectId).lean();
+  if (!finalProject) {
+    throw new HttpError(404, 'Project not found');
+  }
+
+  return res.ok({ project: finalProject });
 }));
 
 // POST / - Create new project
-router.post("/", authRequired, validateBody(createProjectSchema), asyncHandler(async (req: Request, res: Response) => {
+router.post("/", authRequired, projectCreationRateLimiter(), validateBody(createProjectSchema), asyncHandler(async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   // Note: Clerk sometimes provides details in session claims, but we might rely on the DB
   // For JIT creation we assume the user already exists or we need email.
@@ -123,6 +139,9 @@ router.post("/", authRequired, validateBody(createProjectSchema), asyncHandler(a
     isPublic: false,
   });
 
+  // Increment quota counter for project creation
+  await QuotaService.incrementProjects(userId!);
+
   // Add to user's project list
   await User.findByIdAndUpdate(user._id, {
     $push: { projects: project._id },
@@ -146,9 +165,20 @@ router.put("/:id", authRequired, validateBody(updateProjectSchema), asyncHandler
     throw new HttpError(404, 'User not found');
   }
 
+  // Check if user is owner or accepted collaborator
+  const collaborationInvite = await CollaborationInvite.findOne({
+    projectId,
+    inviteeId: user._id,
+    status: 'accepted',
+  }).lean();
+
+  const query = collaborationInvite
+    ? { _id: projectId } // collaborator can update any project they have accepted invite for
+    : { _id: projectId, owner: user._id }; // owner-only check
+
   // Find and update
   const project = await Project.findOneAndUpdate(
-    { _id: projectId, owner: user._id },
+    query,
     {
       $set: {
         ...(name && { name }),
