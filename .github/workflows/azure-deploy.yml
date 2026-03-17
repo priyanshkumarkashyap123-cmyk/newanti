@@ -223,7 +223,7 @@ jobs:
 
       - name: Swap staging slot to production
         id: swap_staging
-        if: steps.az_deploy.conclusion == 'success' && steps.staging_health.conclusion == 'success'
+        if: steps.az_deploy.outcome == 'success' && steps.staging_health.outcome == 'success'
         continue-on-error: true
         run: |
           az webapp deployment slot swap \
@@ -231,8 +231,14 @@ jobs:
             --name ${{ env.AZURE_WEBAPP_NAME_API }} \
             --slot staging
 
+      - name: Re-authenticate Azure CLI before app settings
+        if: steps.swap_staging.outcome == 'success'
+        uses: azure/login@v1
+        with:
+          creds: ${{ steps.prep_secrets.outputs.creds }}
+
       - name: Set Node App Service startup command (CRITICAL)
-        if: steps.az_login.conclusion == 'success'
+        if: steps.az_login.conclusion == 'success' && steps.swap_staging.outcome == 'success'
         run: |
           settings=(
             NODE_ENV=production
@@ -457,7 +463,7 @@ jobs:
 
       - name: Deploy Python via Kudu ZIP fallback
         id: deploy_python_kudu_fallback
-        if: steps.deploy_python_publish_profile.conclusion != 'success'
+        if: steps.deploy_python_azcli.conclusion != 'success' && steps.deploy_python_publish_profile.conclusion != 'success' && steps.deploy_python_publish_profile.conclusion != 'skipped'
         env:
           PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PYTHON }}
         run: |
@@ -511,6 +517,7 @@ jobs:
   # Build and deploy Rust API (Container)
   deploy-rust:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 
@@ -554,6 +561,8 @@ jobs:
           echo "$REGISTRY_PASSWORD" | docker login beamlabregistry.azurecr.io -u "$REGISTRY_USERNAME" --password-stdin
 
       - name: Build and push Docker image
+        id: build_push_rust
+        continue-on-error: true
         run: |
           docker build \
             -t beamlabregistry.azurecr.io/beamlab-rust:latest \
@@ -563,11 +572,18 @@ jobs:
           docker push beamlabregistry.azurecr.io/beamlab-rust:${{ github.sha }}
             
       - name: Deploy to Azure Web App
+        if: steps.build_push_rust.outcome == 'success'
         uses: azure/webapps-deploy@v3
         with:
           app-name: beamlab-rust-api
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE_RUST }}
           images: 'beamlabregistry.azurecr.io/beamlab-rust:latest'
+
+      - name: Rust deploy warning (non-blocking)
+        if: steps.build_push_rust.outcome != 'success'
+        run: |
+          echo "::warning::Rust image push failed (likely ACR permission issue)."
+          echo "::warning::Node/Python deploys continue; Rust remains on previous image."
 
   # =========================================================================
   # POST-DEPLOY SMOKE TEST
