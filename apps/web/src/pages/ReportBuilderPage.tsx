@@ -5,6 +5,7 @@ import { Input, TextArea, Switch } from '@/components/ui/FormInputs';
 import { useModelStore } from '@/store/model';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useToast } from '@/components/ui/ToastSystem';
+import { generateBasicPDFReport } from '@/services/PDFReportService';
 
 interface ReportSection {
   id: string;
@@ -180,6 +181,28 @@ export default function ReportBuilderPage() {
     setSections(autoSections);
   }, [nodes, members, analysisResults, config.projectName]);
 
+  const downloadReportAsPDF = useCallback(async () => {
+    try {
+      const memberList = Array.from(members.values());
+      const nodeList = Array.from(nodes.values());
+      await generateBasicPDFReport(
+        {
+          name: config.projectName ?? 'Untitled Project',
+          engineer: config.engineer ?? 'Engineer',
+          date: config.date ?? new Date().toLocaleDateString(),
+          description: config.title ?? 'Structural Design Report',
+        },
+        memberList,
+        nodeList,
+        analysisResults ?? null,
+        new Map()
+      );
+      toast.success('PDF report downloaded');
+    } catch {
+      toast.error('Failed to generate PDF report');
+    }
+  }, [config, members, nodes, analysisResults, toast]);
+
   const downloadReport = useCallback((format: 'markdown' | 'html') => {
     const updatedConfig: ReportConfig = { 
       ...config, 
@@ -243,6 +266,10 @@ export default function ReportBuilderPage() {
             <button type="button" onClick={() => downloadReport('html')} className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors">
               <Download className="w-4 h-4" />
               HTML
+            </button>
+            <button type="button" onClick={downloadReportAsPDF} className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+              <Download className="w-4 h-4" />
+              PDF
             </button>
           </div>
         </header>

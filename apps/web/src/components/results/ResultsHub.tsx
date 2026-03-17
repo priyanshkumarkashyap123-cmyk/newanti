@@ -31,6 +31,7 @@ import { useModelStore } from '../../store/model';
 import { useUIStore } from '../../store/uiStore';
 import { UnifiedAnalysisResult, UnifiedDesignResult, UnifiedDetailingResult, UnifiedReportData } from '../../data/UnifiedResultsModel';
 import { Tooltip } from '../ui/Tooltip';
+import { AnalysisSkeleton } from '../ui/AnalysisSkeleton';
 
 // ============================================================
 // ANALYSIS SUMMARY CARDS
@@ -75,6 +76,8 @@ interface ResultsHubProps {
   detailingResults?: UnifiedDetailingResult;
   onClose?: () => void;
   onGenerateReport?: () => Promise<void>;
+  isLoading?: boolean;
+  progress?: import('../../hooks/useAnalysis').AnalysisProgressStep[];
 }
 
 export const ResultsHub: FC<ResultsHubProps> = ({
@@ -83,6 +86,8 @@ export const ResultsHub: FC<ResultsHubProps> = ({
   detailingResults,
   onClose,
   onGenerateReport,
+  isLoading = false,
+  progress = [],
 }) => {
   const showNotification = useUIStore((s) => s.showNotification);
   const [activeTab, setActiveTab] = useState<'ANALYSIS' | 'DESIGN' | 'DETAILING' | 'EXPORT'>('ANALYSIS');
@@ -164,8 +169,15 @@ export const ResultsHub: FC<ResultsHubProps> = ({
           </button>
         </div>
 
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div className="flex-1 overflow-auto">
+            <AnalysisSkeleton steps={progress} />
+          </div>
+        )}
+
         {/* Tab Navigation */}
-        <div className="flex gap-1 px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+        {!isLoading && <div className="flex gap-1 px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
           {(['ANALYSIS', 'DESIGN', 'DETAILING', 'EXPORT'] as const).map((tab) => {
             const isActive = activeTab === tab;
             return (
@@ -183,10 +195,10 @@ export const ResultsHub: FC<ResultsHubProps> = ({
               </button>
             );
           })}
-        </div>
+        </div>}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {!isLoading && <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* ANALYSIS TAB */}
           {activeTab === 'ANALYSIS' && (
             <div className="space-y-6">
@@ -406,7 +418,7 @@ export const ResultsHub: FC<ResultsHubProps> = ({
               </div>
             </div>
           )}
-        </div>
+        </div>}
       </div>
     </div>
   );

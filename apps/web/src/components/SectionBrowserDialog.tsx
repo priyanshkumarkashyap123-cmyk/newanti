@@ -29,6 +29,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useModelStore } from '@/store/model';
 import { useShallow } from 'zustand/react/shallow';
 import { useSteelSections } from '@/hooks/useRustAnalysis';
+import { TierGate } from './TierGate';
 
 const STANDARDS = [
     { value: 'is', label: 'Indian Standard (IS)' },
@@ -166,6 +167,7 @@ const SectionBrowserDialog: React.FC = () => {
                 )}
 
                 {/* Table */}
+                <TierGate feature="advancedDesignCodes">
                 <ScrollArea className="flex-1 border rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                         <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10">
@@ -238,6 +240,7 @@ const SectionBrowserDialog: React.FC = () => {
                         </tbody>
                     </table>
                 </ScrollArea>
+                </TierGate>
 
                 {/* Selected Section Detail */}
                 {selectedSection && (

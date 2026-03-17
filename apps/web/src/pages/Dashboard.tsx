@@ -66,6 +66,164 @@ import { useModelStore } from "../store/model";
 import { useConfirm } from "../components/ui/ConfirmDialog";
 
 // ============================================
+// FAVORITES TAB COMPONENT
+// ============================================
+
+interface FavoritesTabProps {
+  isSignedIn: boolean;
+  getToken: () => Promise<string | null>;
+  onOpenProject: (id: string) => void;
+  onToggleFavorite: (id: string) => Promise<void>;
+}
+
+const FavoritesTab: FC<FavoritesTabProps> = ({ isSignedIn, getToken, onOpenProject, onToggleFavorite }) => {
+  const [favorites, setFavorites] = useState<CloudProject[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    setIsLoading(true);
+    getToken().then((token) => {
+      if (!token) return;
+      return ProjectService.listFavoriteProjects(token);
+    }).then((projects) => {
+      if (projects) setFavorites(projects);
+    }).catch(() => {}).finally(() => setIsLoading(false));
+  }, [isSignedIn, getToken]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (favorites.length === 0) {
+    return (
+      <EmptyState
+        title="No favorite projects yet"
+        description="Star your most-used projects for quick access. Click the star icon on any project card."
+        icon={<Star className="w-8 h-8" />}
+      />
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {favorites.map((project) => (
+        <motion.div
+          layout
+          key={project._id}
+          onClick={() => onOpenProject(project._id)}
+          className="group bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500/20 hover:shadow-lg transition-all duration-300"
+        >
+          <div className="aspect-[4/3] bg-white dark:bg-slate-950 relative grid-pattern flex items-center justify-center">
+            <span className="material-symbols-outlined text-5xl text-slate-800 group-hover:text-yellow-500/40 transition-colors">
+              architecture
+            </span>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(project._id); setFavorites((prev) => prev.filter((p) => p._id !== project._id)); }}
+              className="absolute top-3 right-3 text-yellow-400 hover:text-yellow-300"
+              title="Remove from favorites"
+            >
+              <Star className="w-4 h-4 fill-current" />
+            </button>
+          </div>
+          <div className="p-4">
+            <h3 className="font-bold text-slate-900 dark:text-white truncate mb-1 group-hover:text-yellow-400 transition-colors">
+              {project.name}
+            </h3>
+            <p className="text-xs text-slate-500">{timeAgo(project.updatedAt)}</p>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// ============================================
+// TRASH TAB COMPONENT
+// ============================================
+
+interface TrashTabProps {
+  isSignedIn: boolean;
+  getToken: () => Promise<string | null>;
+  onPermanentDelete: (id: string) => Promise<void>;
+}
+
+const TrashTab: FC<TrashTabProps> = ({ isSignedIn, getToken, onPermanentDelete }) => {
+  const [trashProjects, setTrashProjects] = useState<CloudProject[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    setIsLoading(true);
+    getToken().then((token) => {
+      if (!token) return;
+      return ProjectService.listDeletedProjects(token);
+    }).then((projects) => {
+      if (projects) setTrashProjects(projects);
+    }).catch(() => {}).finally(() => setIsLoading(false));
+  }, [isSignedIn, getToken]);
+
+  const handlePermanentDelete = async (projectId: string) => {
+    await onPermanentDelete(projectId);
+    setTrashProjects((prev) => prev.filter((p) => p._id !== projectId));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (trashProjects.length === 0) {
+    return (
+      <EmptyState
+        title="Trash is empty"
+        description="Deleted projects will appear here. You can restore them within 30 days."
+        icon={<Trash2 className="w-8 h-8" />}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+        Projects in trash will be permanently deleted after 30 days.
+      </p>
+      {trashProjects.map((project) => (
+        <div
+          key={project._id}
+          className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-white/[0.06] rounded-xl"
+        >
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-2xl text-slate-400">architecture</span>
+            <div>
+              <p className="font-medium text-slate-900 dark:text-white">{project.name}</p>
+              <p className="text-xs text-slate-500">Deleted {project.deletedAt ? timeAgo(project.deletedAt) : 'recently'}</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handlePermanentDelete(project._id)}
+            className="text-red-500 hover:text-red-400 hover:bg-red-500/10 gap-1.5"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete permanently
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// ============================================
 // TYPES
 // ============================================
 
@@ -995,19 +1153,39 @@ export const Dashboard: FC<DashboardProps> = ({ onLaunchModule }) => {
 
           {/* Favorites - shows favorite projects */}
           <TabPanel isActive={activeTab === "favorites"}>
-            <EmptyState
-              title="No favorite projects yet"
-              description="Star your most-used projects for quick access. Click the star icon on any project card."
-              icon={<Star className="w-8 h-8" />}
+            <FavoritesTab
+              isSignedIn={isSignedIn}
+              getToken={getToken}
+              onOpenProject={handleOpenProject}
+              onToggleFavorite={async (projectId) => {
+                try {
+                  const token = await getToken();
+                  if (token) {
+                    await ProjectService.toggleFavorite(projectId, token);
+                    fetchProjects();
+                  }
+                } catch (err) {
+                  logger.error("[Dashboard] Toggle favorite failed", { error: err instanceof Error ? err.message : String(err) });
+                }
+              }}
             />
           </TabPanel>
 
           {/* Trash - shows deleted projects */}
           <TabPanel isActive={activeTab === "trash"}>
-            <EmptyState
-              title="Trash is empty"
-              description="Deleted projects will appear here. You can restore them within 30 days."
-              icon={<Trash2 className="w-8 h-8" />}
+            <TrashTab
+              isSignedIn={isSignedIn}
+              getToken={getToken}
+              onPermanentDelete={async (projectId) => {
+                try {
+                  const token = await getToken();
+                  if (token) {
+                    await ProjectService.permanentlyDeleteProject(projectId, token);
+                  }
+                } catch (err) {
+                  logger.error("[Dashboard] Permanent delete failed", { error: err instanceof Error ? err.message : String(err) });
+                }
+              }}
             />
           </TabPanel>
         </PageTransition>

@@ -34,6 +34,7 @@ import sessionRoutes from "./routes/sessionRoutes.js";
 import usageRoutes from "./routes/usageRoutes.js";
 import { billingRouter } from "./phonepe.js";
 import { razorpayBillingRouter } from "./razorpay.js";
+import gpuJobsRouter from "./routes/gpujobs/index.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB } from "./models.js";
 import {
@@ -319,6 +320,8 @@ app.get("/health/dependencies", async (_req: Request, res: Response) => {
     mongo = { healthy: false, status: "error" };
   }
 
+  let gpuFleet = { healthy: false, activeWorkers: 0, queueDepth: 0, latencyMs: 0, configured: false };
+
   try {
     const { checkBackendHealth, getServiceCircuitStats } = await import("./services/serviceProxy.js");
     const backendHealth = await checkBackendHealth();
@@ -327,6 +330,19 @@ app.get("/health/dependencies", async (_req: Request, res: Response) => {
     circuitBreakers = getServiceCircuitStats();
   } catch {
     // keep defaults if service proxy health checks are unavailable
+  }
+
+  try {
+    const { checkVmHealth, isVmOrchestratorConfigured, getCircuitStats } = await import("./services/vmOrchestrator.js");
+    const vmHealth = await checkVmHealth();
+    const vmCircuit = getCircuitStats();
+    gpuFleet = {
+      ...vmHealth,
+      configured: isVmOrchestratorConfigured(),
+    };
+    (circuitBreakers as Record<string, unknown>)["gpuFleet"] = { open: vmCircuit.isOpen, failures: vmCircuit.failures };
+  } catch {
+    // GPU fleet health is non-critical — keep defaults
   }
 
   const allHealthy = mongo.healthy && rust.healthy && python.healthy;
@@ -340,6 +356,7 @@ app.get("/health/dependencies", async (_req: Request, res: Response) => {
       mongodb: mongo,
       rustApi: rust,
       pythonApi: python,
+      gpuFleet,
     },
     circuitBreakers,
   });
@@ -513,6 +530,10 @@ app.use("/api/templates", authRequired, analysisRateLimit, templateRouter);
 app.use("/api/v1/jobs", authRequired, analysisRateLimit, jobsRouter);
 app.use("/api/jobs", authRequired, analysisRateLimit, jobsRouter);
 
+// GPU-accelerated job queue (auth required; high cost-weight)
+app.use("/api/v1/gpu-jobs", authRequired, analysisRateLimit, costWeightedRateLimit(15), gpuJobsRouter);
+app.use("/api/gpu-jobs", authRequired, analysisRateLimit, costWeightedRateLimit(15), gpuJobsRouter);
+
 // User Activity API (protected)
 app.use("/api/v1/user", crudRateLimit, userRoutes);
 app.use("/api/user", crudRateLimit, userRoutes);
@@ -526,12 +547,12 @@ app.use("/api/v1/usage", crudRateLimit, usageRoutes);
 app.use("/api/usage", crudRateLimit, usageRoutes);
 
 // PhonePe Billing API (rate limited: 5/min)
-app.use("/api/v1/billing", billingRateLimit, billingRouter);
-app.use("/api/billing", billingRateLimit, billingRouter);
+app.use("/api/v1/billing", billingRateLimit, costWeightedRateLimit(2), billingRouter);
+app.use("/api/billing", billingRateLimit, costWeightedRateLimit(2), billingRouter);
 
 // Razorpay Billing API (rate limited: 5/min)
-app.use("/api/v1/billing/razorpay", billingRateLimit, razorpayBillingRouter);
-app.use("/api/billing/razorpay", billingRateLimit, razorpayBillingRouter);
+app.use("/api/v1/billing/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayBillingRouter);
+app.use("/api/billing/razorpay", billingRateLimit, costWeightedRateLimit(2), razorpayBillingRouter);
 
 // ============================================
 // PROTECTED ROUTES (require authentication)

@@ -12,7 +12,7 @@
 
 import { FC, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSubscription, type Tier } from '../hooks/useSubscription';
+import { useSubscription, type SubscriptionTier } from '../hooks/useSubscription';
 import { useAuth } from '../providers/AuthProvider';
 import { PRICING_LABELS } from '../config/pricing';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
@@ -29,7 +29,7 @@ interface FeatureInfo {
     description: string;
     /** Emoji icon (no external icon font dependency) */
     icon: string;
-    requiredTier: Tier;
+    requiredTier: SubscriptionTier;
     /** Value proposition — what changes after upgrade */
     valueProposition?: string;
 }
@@ -159,7 +159,7 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
     const valueProposition = featureInfo?.valueProposition;
 
     const tierLabel = useMemo(() => {
-        const labels: Record<Tier, string> = {
+        const labels: Record<SubscriptionTier, string> = {
             free: 'Free',
             pro: 'Pro',
             enterprise: 'Enterprise',

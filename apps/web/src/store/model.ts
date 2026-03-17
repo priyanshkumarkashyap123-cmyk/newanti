@@ -13,6 +13,9 @@ export type {
   ModeShape, ModalResult, CivilResult, SavedProjectData,
   PropertyAssignmentScopeMode, MaterialFamily, PropertyReductionFactors,
   SectionMechanics,
+  DiaphragmSpec, DiaphragmType, DiaphragmPlane,
+  BuiltUpComponent, BuiltUpSectionDef,
+  PartialReleaseDOF, PartialReleaseEndSpec,
 } from './modelTypes';
 export type { SpringStiffness } from './modelTypes';
 export type { CircularRepeatRequest, CircularRepeatResult, IntersectionSplitResult } from './modelTypes';
@@ -23,6 +26,7 @@ import type {
   AnalysisResults, ModalResult, CivilResult, SavedProjectData,
   PropertyAssignmentPayload, MemberGroup,
   TranslationalRepeatRequest, TranslationalRepeatResult,
+  DiaphragmSpec,
 } from './modelTypes';
 import type { CircularRepeatRequest, CircularRepeatResult, IntersectionSplitResult } from './modelTypes';
 import { extrudeGeometry, rotateCopy, autoNodeIntersections } from '../core/geometry_engine';
@@ -86,6 +90,13 @@ interface ModelState {
   activeModeIndex: number; // Which mode to visualize (0-based)
   modeAmplitude: number; // Amplitude scale for mode shape animation
   isAnimating: boolean; // Play/pause animation
+
+  // Diaphragm definitions (STAAD.Pro parity)
+  diaphragms: DiaphragmSpec[];
+  addDiaphragm: (d: DiaphragmSpec) => void;
+  removeDiaphragm: (id: string) => void;
+  // Center of rigidity results (computed post-analysis)
+  centerOfRigidity: Map<string, { x: number; z: number; y: number }>; // diaphragmId → CR coords
 
   // 3. Actions
   setProjectInfo: (info: Partial<ProjectInfo>) => void; // NEW
@@ -537,6 +548,16 @@ export const useModelStore = create<ModelState>()(
         activeModeIndex: 0,
         modeAmplitude: 1.0,
         isAnimating: false,
+
+        // Diaphragm definitions (STAAD.Pro parity)
+        diaphragms: [],
+        centerOfRigidity: new Map(),
+
+        addDiaphragm: (d) =>
+          set((state) => ({ diaphragms: [...state.diaphragms, d] })),
+
+        removeDiaphragm: (id) =>
+          set((state) => ({ diaphragms: state.diaphragms.filter((d) => d.id !== id) })),
 
         setProjectInfo: (info) =>
           set((state) => ({ projectInfo: { ...state.projectInfo, ...info } })),

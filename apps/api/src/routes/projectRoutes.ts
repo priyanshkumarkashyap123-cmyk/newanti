@@ -58,15 +58,35 @@ router.get("/", authRequired, asyncHandler(async (req: Request, res: Response) =
     return res.ok({ projects: [], total: 0, page, pageSize });
   }
 
+  // Support filtering by deleted/favorited
+  const showDeleted = req.query['deleted'] === 'true';
+  const showFavorited = req.query['favorited'] === 'true';
+
+  const baseFilter: Record<string, unknown> = {
+    $or: [{ owner: user._id }, { collaborators: user._id }],
+  };
+
+  if (showDeleted) {
+    // Trash tab: only soft-deleted projects
+    baseFilter['deletedAt'] = { $ne: null };
+  } else if (showFavorited) {
+    // Favorites tab: only favorited, non-deleted projects
+    baseFilter['isFavorited'] = true;
+    baseFilter['deletedAt'] = null;
+  } else {
+    // Default: exclude soft-deleted projects
+    baseFilter['deletedAt'] = null;
+  }
+
   // Find projects owned by or shared with this user
   const [projects, total] = await Promise.all([
-    Project.find({ $or: [{ owner: user._id }, { collaborators: user._id }] })
-      .select("name description thumbnail updatedAt createdAt isPublic")
+    Project.find(baseFilter)
+      .select("name description thumbnail updatedAt createdAt isPublic isFavorited deletedAt")
       .sort({ updatedAt: -1 })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .lean(),
-    Project.countDocuments({ $or: [{ owner: user._id }, { collaborators: user._id }] }),
+    Project.countDocuments(baseFilter),
   ]);
 
   return res.ok({ projects, total, page, pageSize, totalPages: Math.max(1, Math.ceil(total / pageSize)) });
@@ -198,7 +218,7 @@ router.put("/:id", authRequired, validateBody(updateProjectSchema), asyncHandler
   return res.ok({ project });
 }));
 
-// DELETE /:id - Delete project
+// DELETE /:id - Soft-delete project (sets deletedAt)
 router.delete("/:id", authRequired, asyncHandler(async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   const projectId = req.params.id;
@@ -212,14 +232,45 @@ router.delete("/:id", authRequired, asyncHandler(async (req: Request, res: Respo
     throw new HttpError(404, 'User not found');
   }
 
-  const project = await Project.findOneAndDelete({
-    _id: projectId,
-    owner: user._id,
-  });
+  const project = await Project.findOneAndUpdate(
+    { _id: projectId, owner: user._id, deletedAt: null },
+    { $set: { deletedAt: new Date() } },
+    { new: true },
+  );
 
   if (!project) {
     throw new HttpError(404, 'Project not found');
   }
+
+  return res.ok({ id: projectId, deletedAt: project.deletedAt });
+}));
+
+// DELETE /:id/permanent - Permanently delete a soft-deleted project
+router.delete("/:id/permanent", authRequired, asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const projectId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new HttpError(400, 'Invalid project ID');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  // Only allow permanent delete of already soft-deleted projects
+  const project = await Project.findOne({
+    _id: projectId,
+    owner: user._id,
+    deletedAt: { $ne: null },
+  });
+
+  if (!project) {
+    throw new HttpError(404, 'Project not found or not in trash');
+  }
+
+  await Project.deleteOne({ _id: projectId });
 
   // Remove from user's list
   await User.findByIdAndUpdate(user._id, {
@@ -227,6 +278,41 @@ router.delete("/:id", authRequired, asyncHandler(async (req: Request, res: Respo
   });
 
   return res.ok({ id: projectId });
+}));
+
+// PATCH /:id/favorite - Toggle isFavorited on a project
+router.patch("/:id/favorite", authRequired, asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = getAuth(req);
+  const projectId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new HttpError(400, 'Invalid project ID');
+  }
+
+  const user = await resolveUser(userId!);
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  // Find the project to get current isFavorited value
+  const project = await Project.findOne({
+    _id: projectId,
+    owner: user._id,
+    deletedAt: null,
+  });
+
+  if (!project) {
+    throw new HttpError(404, 'Project not found');
+  }
+
+  // Toggle isFavorited
+  const updated = await Project.findByIdAndUpdate(
+    projectId,
+    { $set: { isFavorited: !project.isFavorited } },
+    { new: true },
+  );
+
+  return res.ok({ id: projectId, isFavorited: updated?.isFavorited });
 }));
 
 export default router;

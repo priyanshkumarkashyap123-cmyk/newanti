@@ -871,6 +871,49 @@ export const adminUpgradeSchema = z.object({
 });
 
 // ============================================
+// BILLING SCHEMAS
+// ============================================
+
+const billingPlanCycleSchema = z.enum(['monthly', 'yearly']);
+const billingPlanIdSchema = z.enum(['pro', 'business']);
+const checkoutPlanIdSchema = z.enum([
+    'pro_monthly',
+    'pro_yearly',
+    'business_monthly',
+    'business_yearly',
+]);
+
+export const billingInitiateSchema = z.object({
+    email: z.string().email('Valid email is required').transform((e) => e.toLowerCase().trim()),
+    planType: billingPlanCycleSchema,
+    planId: billingPlanIdSchema.optional(),
+    checkoutPlanId: checkoutPlanIdSchema.optional(),
+});
+
+export const billingCreateOrderSchema = z.object({
+    email: z.string().email('Valid email is required').transform((e) => e.toLowerCase().trim()).optional(),
+    planType: billingPlanCycleSchema,
+    planId: billingPlanIdSchema.optional(),
+    checkoutPlanId: checkoutPlanIdSchema.optional(),
+});
+
+export const billingVerifySchema = z.object({
+    merchantTransactionId: z.string().min(1, 'merchantTransactionId is required'),
+    planType: billingPlanCycleSchema.optional(),
+    planId: billingPlanIdSchema.optional(),
+    checkoutPlanId: checkoutPlanIdSchema.optional(),
+});
+
+export const razorpayVerifySchema = z.object({
+    razorpayOrderId: z.string().min(1, 'razorpayOrderId is required'),
+    razorpayPaymentId: z.string().min(1, 'razorpayPaymentId is required'),
+    razorpaySignature: z.string().min(1, 'razorpaySignature is required'),
+    planType: billingPlanCycleSchema,
+    planId: billingPlanIdSchema.optional(),
+    checkoutPlanId: checkoutPlanIdSchema.optional(),
+});
+
+// ============================================
 // CONSENT SCHEMA
 // ============================================
 

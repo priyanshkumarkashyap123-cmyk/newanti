@@ -57,6 +57,7 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
             <thead className="sticky top-0 bg-white dark:bg-slate-900">
               <tr className="border-b border-slate-200 dark:border-slate-700">
                 <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">Member</th>
+                <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">Material</th>
                 <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">Length (m)</th>
                 <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">D/C Ratio</th>
                 <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">Stress (MPa)</th>
@@ -81,6 +82,11 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
                     const mRatio = Mcap > 0 ? Math.abs(m.maxMoment) / Mcap : 0;
                     const nRatio = Ncap > 0 ? Math.abs(m.maxAxial) / Ncap : 0;
                     const vRatio = Vcap > 0 ? Math.abs(m.maxShear) / Vcap : 0;
+                    if (m.materialType === 'concrete') {
+                      if (mRatio >= nRatio && mRatio >= vRatio) return "Flexure + Axial (RC)";
+                      if (vRatio >= nRatio) return "Shear";
+                      return "Bending";
+                    }
                     if (mRatio >= nRatio && mRatio >= vRatio) return "Bending";
                     if (vRatio >= nRatio) return "Shear";
                     return "Axial";
@@ -92,6 +98,11 @@ const DCRatioView: React.FC<DCRatioViewProps> = React.memo(({ members, nodes, on
                       className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer"
                     >
                       <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">M{m.id}</td>
+                      <td className="px-3 py-1.5">
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${m.materialType === 'concrete' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                          {m.materialType === 'concrete' ? 'RC' : 'Steel'}
+                        </span>
+                      </td>
                       <td className="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-300">{formatNumber(m.length)}</td>
                       <td className="px-3 py-1.5">
                         <div className="flex items-center gap-2">

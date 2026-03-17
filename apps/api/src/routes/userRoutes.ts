@@ -14,12 +14,24 @@ import { asyncHandler, HttpError } from '../utils/asyncHandler.js';
 import { logger } from '../utils/logger.js';
 import { QuotaService } from '../services/quotaService.js';
 import { TIER_CONFIG } from '../config/tierConfig.js';
+import { TierChangeLog } from '../models.js';
+import { logTierChange } from '../utils/tierChangeLog.js';
 
 // Check which auth mode is active
 const USE_CLERK = isUsingClerk();
-// TEMPORARY BILLING BYPASS:
-// Defaults to false (paid-gating active). Set TEMP_UNLOCK_ALL=true to unlock all users.
-const TEMP_UNLOCK_ALL = process.env['TEMP_UNLOCK_ALL'] === 'true';
+
+function toLegacyFeatures(tier: 'free' | 'pro' | 'enterprise') {
+    const cfg = TIER_CONFIG[tier];
+    return {
+        maxProjects: Number.isFinite(cfg.maxProjectsPerDay) ? cfg.maxProjectsPerDay : -1,
+        pdfExport: cfg.features.pdfExport,
+        aiAssistant: cfg.features.aiAssistant,
+        advancedDesignCodes: cfg.features.advancedDesignCodes,
+        teamMembers: tier === 'enterprise' ? -1 : tier === 'pro' ? 3 : 1,
+        prioritySupport: tier !== 'free',
+        apiAccess: cfg.features.apiAccess,
+    };
+}
 
 const router: Router = Router();
 
@@ -87,10 +99,9 @@ router.get('/limits', requireAuth(), asyncHandler(async (req: Request, res: Resp
     }
 
     const tier = getEffectiveTier(userEmail, dbTier);
-    const accessTier = TEMP_UNLOCK_ALL ? 'enterprise' : tier;
-    const limits = TIER_LIMITS[accessTier];
+    const limits = TIER_LIMITS[tier];
 
-    return res.ok({ tier: accessTier, limits });
+    return res.ok({ tier, limits });
 }));
 
 // ============================================
@@ -100,23 +111,14 @@ router.get('/limits', requireAuth(), asyncHandler(async (req: Request, res: Resp
 router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
     const { userId, email: authEmail } = getAuth(req);
     if (!userId) {
-        // TODO(payment): Revert to restricted free-tier features after payment gateway integration
-        // TEMPORARY: All features unlocked for beta/testing
+        const tier: 'free' = 'free';
         return res.ok({
-            tier: TEMP_UNLOCK_ALL ? 'enterprise' : 'free',
+            tier,
             isLoading: false,
             expiresAt: null,
             subscription: null,
-            features: {
-                maxProjects: -1,
-                pdfExport: true,
-                aiAssistant: true,
-                advancedDesignCodes: true,
-                teamMembers: -1,
-                prioritySupport: true,
-                apiAccess: true
-            },
-            limits: TIER_LIMITS[TEMP_UNLOCK_ALL ? 'enterprise' : 'free']
+            features: toLegacyFeatures(tier),
+            limits: TIER_LIMITS[tier]
         });
     }
 
@@ -159,25 +161,13 @@ router.get('/subscription', requireAuth(), asyncHandler(async (req: Request, res
 
     // Use getEffectiveTier to check for master user elevation
     const tier = getEffectiveTier(userEmail, dbTier);
-    const accessTier = TEMP_UNLOCK_ALL ? 'enterprise' : tier;
-    logger.info(`[Subscription] userId=${userId}, dbTier=${dbTier}, effectiveTier=${tier}, accessTier=${accessTier}`);
+    logger.info(`[Subscription] userId=${userId}, dbTier=${dbTier}, effectiveTier=${tier}`);
 
-    const limits = TIER_LIMITS[accessTier];
-
-    // TODO(payment): Revert to tier-based feature gating after payment gateway integration
-    // TEMPORARY: All features unlocked for beta/testing
-    const features = {
-        maxProjects: -1,
-        pdfExport: true,
-        aiAssistant: true,
-        advancedDesignCodes: true,
-        teamMembers: -1,
-        prioritySupport: true,
-        apiAccess: true
-    };
+    const limits = TIER_LIMITS[tier];
+    const features = toLegacyFeatures(tier);
 
     return res.ok({
-        tier: accessTier,
+        tier,
         isLoading: false,
         expiresAt: subscriptionData?.currentPeriodEnd || null,
         subscription: subscriptionData,
@@ -323,8 +313,12 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
 
     // Try Clerk user first
     let updated = false;
+    let previousTier = 'free';
+    let targetUserId = null;
     const clerkUser = await User.findOne({ email: email.toLowerCase() }).lean();
     if (clerkUser) {
+        previousTier = clerkUser.tier || 'free';
+        targetUserId = clerkUser._id;
         await User.updateOne({ _id: clerkUser._id }, { $set: { tier } });
         updated = true;
         logger.info(`[Admin] Updated Clerk user to tier: ${tier}`);
@@ -333,6 +327,7 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
     // Try in-house user
     const inHouseUser = await UserModel.findOne({ email: email.toLowerCase() }).lean();
     if (inHouseUser) {
+        if (!targetUserId) previousTier = inHouseUser.subscriptionTier || 'free';
         await UserModel.updateOne({ _id: inHouseUser._id }, { $set: { subscriptionTier: tier } });
         updated = true;
         logger.info(`[Admin] Updated in-house user to tier: ${tier}`);
@@ -342,7 +337,36 @@ router.put('/admin/upgrade', authRateLimit, requireAuth(), validateBody(adminUpg
         throw new HttpError(404, 'User not found');
     }
 
+    // Log tier change for audit trail
+    if (targetUserId) {
+        await logTierChange(targetUserId, previousTier, tier, 'admin');
+    }
+
     return res.ok({ email, tier, message: `User ${email} upgraded to ${tier}` });
+}));
+
+// ============================================
+// GET /user/admin/users/:id/tier-history - Get tier change history for a user
+// ============================================
+
+router.get('/admin/users/:id/tier-history', requireAuth(), asyncHandler(async (req: Request, res: Response) => {
+    const { userId: adminUserId } = getAuth(req);
+    if (!adminUserId) throw new HttpError(401, 'Unauthorized');
+
+    // Check admin access
+    const adminUser = await User.findOne({ clerkId: adminUserId }).lean();
+    const adminEmail = adminUser?.email || null;
+    if (!isMasterUser(adminEmail)) {
+        throw new HttpError(403, 'Admin access required');
+    }
+
+    const targetUserId = req.params.id;
+    const history = await TierChangeLog.find({ userId: targetUserId })
+        .sort({ timestamp: -1 })
+        .limit(100)
+        .lean();
+
+    return res.ok({ userId: targetUserId, history });
 }));
 
 // ============================================

@@ -11,6 +11,7 @@
 import React, { useState, useCallback, useRef, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { useMultiplayer, RemoteUser } from "../hooks/useMultiplayer";
+import { TierGate } from "../components/TierGate";
 
 // Types
 interface TeamMember {
@@ -1295,6 +1296,7 @@ const CollaborationHub: React.FC = () => {
   );
 
   return (
+    <TierGate feature="teamMembers">
     <div className="min-h-screen bg-slate-50 dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -1354,6 +1356,7 @@ const CollaborationHub: React.FC = () => {
         {activeTab === "sharing" && renderSharing()}
       </motion.div>
     </div>
+    </TierGate>
   );
 };
 

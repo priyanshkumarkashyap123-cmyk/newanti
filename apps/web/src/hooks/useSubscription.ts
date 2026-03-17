@@ -40,9 +40,6 @@ export interface SubscriptionContextValue {
     isLoading: boolean;
     canAccess: (feature: keyof FeatureFlags) => boolean;
     refreshTier: () => Promise<void>;
-    // Backward compatibility for components expecting subscription object
-    subscription: { tier: Tier; isLoading: boolean; features: TierFeatures | null };
-    refreshSubscription: () => Promise<void>;
 }
 
 const TIER_CACHE_KEY = 'beamlab:tier-cache';
@@ -55,8 +52,6 @@ const defaultContext: SubscriptionContextValue = {
     isLoading: true,
     canAccess: () => false,
     refreshTier: async () => {},
-    subscription: { tier: 'free', isLoading: true, features: null },
-    refreshSubscription: async () => {},
 };
 
 const SubscriptionContext = createContext<SubscriptionContextValue>(defaultContext);
@@ -130,9 +125,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
     const value: SubscriptionContextValue = {
         tier, features, quota, webGpuAvailable, isLoading, canAccess, refreshTier,
-        // Backward compatibility
-        subscription: { tier, isLoading, features },
-        refreshSubscription: refreshTier,
     };
 
     return React.createElement(SubscriptionContext.Provider, { value }, children);

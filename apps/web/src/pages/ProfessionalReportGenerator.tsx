@@ -7,6 +7,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { sanitizeHTML } from '../lib/sanitize';
 import { BEAMLAB_COMPANY } from '../constants/BrandingConstants';
+import { useModelStore } from '../store/model';
 import {
   FileText,
   Download,
@@ -229,9 +230,26 @@ const SECTION_DEFINITIONS: Record<SectionType, {
 };
 
 export default function ProfessionalReportGenerator() {
-  // Project Information
-  const [projectInfo, setProjectInfo] = useState({
-    projectName: 'Multi-Storey Commercial Building',
+  // Live model data from store (Bug Condition C3 fix)
+  const storeNodes = useModelStore((s) => s.nodes);
+  const storeMembers = useModelStore((s) => s.members);
+  const storeProjectInfo = useModelStore((s) => s.projectInfo);
+
+  // Derived geometry summary from live store
+  const geometrySummary = useMemo(() => {
+    const nodeCount = storeNodes.size;
+    const memberCount = storeMembers.size;
+    const supportCount = Array.from(storeNodes.values()).filter(
+      (n) => n.restraints && Object.values(n.restraints).some(Boolean)
+    ).length;
+    // Estimate total height from max Y coordinate
+    const maxY = Array.from(storeNodes.values()).reduce((m, n) => Math.max(m, n.y ?? 0), 0);
+    return { nodeCount, memberCount, supportCount, totalHeight: maxY };
+  }, [storeNodes, storeMembers]);
+
+  // Project Information — initialize from store when available
+  const [projectInfo, setProjectInfo] = useState(() => ({
+    projectName: storeProjectInfo?.name ?? 'Multi-Storey Commercial Building',
     projectNumber: 'PRJ-2026-001',
     client: 'ABC Infrastructure Ltd.',
     location: 'Mumbai, Maharashtra',
@@ -242,7 +260,7 @@ export default function ProfessionalReportGenerator() {
     revision: 'R0',
     companyName: BEAMLAB_COMPANY.name,
     companyLogo: '/branding/logo.png'
-  });
+  }));
 
   // Report Configuration
   const [selectedTemplate, setSelectedTemplate] = useState<string>('structural-design');
@@ -464,23 +482,23 @@ export default function ProfessionalReportGenerator() {
               <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid ${SLATE_200}; border-radius: 4px;">
                 <tr>
                   <td style="${tableCellStyle} font-weight: 700;">Total Nodes</td>
-                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">156</td>
+                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">${geometrySummary.nodeCount}</td>
                 </tr>
                 <tr>
                   <td style="${tableCellAltStyle} font-weight: 700;">Total Members</td>
-                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">312</td>
+                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">${geometrySummary.memberCount}</td>
                 </tr>
                 <tr>
                   <td style="${tableCellStyle} font-weight: 700;">Total Supports</td>
-                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">24</td>
+                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">${geometrySummary.supportCount}</td>
                 </tr>
                 <tr>
                   <td style="${tableCellAltStyle} font-weight: 700;">Number of Storeys</td>
-                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">G + 8</td>
+                  <td style="${tableCellAltStyle} text-align: right; ${monoStyle}">—</td>
                 </tr>
                 <tr>
                   <td style="${tableCellStyle} font-weight: 700;">Total Height</td>
-                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">28.0 m</td>
+                  <td style="${tableCellStyle} text-align: right; ${monoStyle}">${geometrySummary.totalHeight.toFixed(1)} m</td>
                 </tr>
               </table>
               
@@ -639,7 +657,7 @@ export default function ProfessionalReportGenerator() {
 
     html += '</div>';
     return html;
-  }, [sections, projectInfo]);
+  }, [sections, projectInfo, geometrySummary]);
 
   // Generate and download report
   const generateReport = useCallback(async () => {

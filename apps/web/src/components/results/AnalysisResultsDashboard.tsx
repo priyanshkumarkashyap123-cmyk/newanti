@@ -70,6 +70,7 @@ import {
   STATUS_COLORS,
   DIAGRAM_COLORS,
 } from "./dashboardTypes";
+import { AnalysisSkeleton } from '../ui/AnalysisSkeleton';
 
 const MEMBERS_PER_PAGE = 12;
 
@@ -1393,6 +1394,8 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
   onClose,
   onExport,
   onMemberSelect,
+  isLoading = false,
+  progress = [],
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [selectedDiagramType, setSelectedDiagramType] =
@@ -1437,7 +1440,11 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fadeIn h-full flex flex-col">
+      {/* Loading skeleton */}
+      {isLoading && <AnalysisSkeleton steps={progress} />}
+
       {/* Header */}
+      {!isLoading && (
       <div className="flex items-center justify-between px-6 py-4 bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-4">
           <div
@@ -1503,6 +1510,7 @@ export const AnalysisResultsDashboard: FC<AnalysisResultsDashboardProps> = ({
           )}
         </div>
       </div>
+      )}
 
       {/* View Mode Tabs */}
       <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-100/30 dark:bg-slate-800/30" role="tablist">

@@ -11,7 +11,7 @@ import { LoadPlacementLayer } from "./viewer/LoadPlacementLayer";
 import PlateRenderer from "./viewer/PlateRenderer";
 import { StressColorOverlay } from "./results";
 import AnimatedDeflection from "./results/AnimatedDeflection";
-import { RemoteCursors } from "./collaborators/RemoteCursors";
+import { RemoteCursors } from "./collaboration/RemoteCursors";
 import { RemoteUser } from "../hooks/useMultiplayer";
 import { useModelStore } from "../store/model";
 import { useShallow } from "zustand/react/shallow";

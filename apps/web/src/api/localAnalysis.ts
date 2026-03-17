@@ -1,4 +1,7 @@
 /**
+ * @deprecated Use `useAnalysis` hook from `apps/web/src/hooks/useAnalysis.ts` instead.
+ * This module will be removed after all callers are migrated.
+ *
  * Local structural analysis using the Rust WASM Solver
  * No backend required - runs entirely in the browser using WebAssembly
  */

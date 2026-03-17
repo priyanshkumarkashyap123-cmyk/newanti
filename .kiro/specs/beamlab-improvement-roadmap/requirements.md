@@ -203,3 +203,107 @@ BeamLab Ultimate is a professional structural engineering SaaS platform. This do
 3. THE `UserModel_Schema` `tier` virtual field SHALL remain in sync with `subscriptionTier` at all times — WHEN `subscriptionTier` is updated via a direct MongoDB write, THE System SHALL also update the `tier` alias field.
 4. WHEN a new user authenticates via Clerk for the first time, THE Node_API SHALL NOT create a duplicate `UserModel_Schema` record for that user.
 
+
+---
+
+### Requirement 14 [P1]: Add Request Body Validation to Express Routes
+
+**User Story:** As a developer, I want all Express POST/PATCH routes to validate their request bodies so that malformed payloads are rejected with descriptive errors rather than causing unhandled exceptions or silent data corruption.
+
+#### Acceptance Criteria
+
+1. ALL POST and PATCH routes in `apps/api/src/routes/` SHALL validate `req.body` against a Zod schema before executing handler logic.
+2. WHEN a request body fails validation, THE Node_API SHALL return HTTP 400 with a JSON body containing `{ error: 'VALIDATION_ERROR', fields: [...] }` listing each invalid field and its error message.
+3. THE payment initiation route SHALL validate that `planId` is one of the four known plan IDs before calling `resolvePlan()`.
+4. THE project creation route SHALL validate that `name` is a non-empty string with a maximum length of 200 characters.
+5. THE user registration route SHALL validate that `email` is a valid email address format and `displayName` is a non-empty string.
+
+---
+
+### Requirement 15 [P0]: Enforce Payment Webhook Idempotency
+
+**User Story:** As a business owner, I want PhonePe webhook deliveries to be idempotent so that a user is never upgraded multiple times or billed twice due to duplicate webhook delivery.
+
+#### Acceptance Criteria
+
+1. WHEN a PhonePe webhook is received, THE Node_API SHALL check whether a `Subscription` document with the same `phonepeMerchantTransactionId` already exists before processing.
+2. IF a duplicate `phonepeMerchantTransactionId` is detected, THE Node_API SHALL return HTTP 200 (to prevent PhonePe retries) without modifying any user or subscription record.
+3. THE Node_API SHALL use a MongoDB `findOneAndUpdate` with `upsert: false` (or equivalent atomic operation) to prevent race conditions when two webhook deliveries arrive simultaneously for the same transaction.
+4. THE `phonepeMerchantTransactionId` field in `SubscriptionSchema` SHALL have a unique sparse index to enforce uniqueness at the database level.
+
+---
+
+### Requirement 16 [P0]: Verify Payment Amount Server-Side
+
+**User Story:** As a business owner, I want the payment amount derived exclusively from the server-side billing config so that a user cannot manipulate the checkout amount by modifying the frontend request.
+
+#### Acceptance Criteria
+
+1. THE PhonePe checkout initiation route SHALL derive the `amount` field exclusively from `BILLING_PLANS[planId].amountPaise` and SHALL NOT accept an `amount` field from the client request body.
+2. IF the client request includes an `amount` field, THE Node_API SHALL ignore it and use the server-derived value.
+3. THE checkout initiation route SHALL log a warning when the client-provided amount (if present) differs from the server-derived amount.
+
+---
+
+### Requirement 17 [P2]: Add Tier Change Audit Log
+
+**User Story:** As a developer, I want every tier change recorded in an audit log so that billing disputes can be investigated with a complete history of upgrades, downgrades, and expirations.
+
+#### Acceptance Criteria
+
+1. WHEN a user's tier changes for any reason (PhonePe webhook, manual admin update, subscription expiry), THE Node_API SHALL write a record to a `TierChangeLog` collection containing: `userId`, `fromTier`, `toTier`, `reason` (e.g., `'phonepe_webhook'`, `'admin'`, `'expiry'`), `timestamp`, and `transactionId` (if applicable).
+2. THE `TierChangeLog` collection SHALL be append-only — records SHALL NOT be updated or deleted.
+3. THE Node_API SHALL expose a `GET /api/admin/users/:id/tier-history` endpoint (admin-only, protected by an `isAdmin` middleware check) that returns the full tier change history for a user.
+
+---
+
+### Requirement 18 [P2]: Add Health Check Endpoints to All Backend Services
+
+**User Story:** As a DevOps engineer, I want health check endpoints on all backend services so that load balancers and container orchestrators can verify service liveness and readiness.
+
+#### Acceptance Criteria
+
+1. THE Rust_API SHALL expose a `GET /health` endpoint returning `{ "status": "ok", "version": "<semver>" }` with HTTP 200.
+2. THE Python_API SHALL expose a `GET /health` endpoint returning `{ "status": "ok", "version": "<semver>" }` with HTTP 200.
+3. THE Node_API SHALL expose a `GET /health` endpoint returning `{ "status": "ok", "version": "<semver>", "db": "connected" | "disconnected" }` with HTTP 200 when healthy and HTTP 503 when the database is unreachable.
+4. WHEN any health check endpoint is called, THE System SHALL NOT require authentication.
+
+---
+
+### Requirement 19 [P2]: Fix Rust API Compiler Warnings
+
+**User Story:** As a developer, I want the Rust API to compile with zero warnings so that real issues are not masked by noise and CI pipelines remain clean.
+
+#### Acceptance Criteria
+
+1. THE Rust_API SHALL compile with zero warnings when built with `cargo build --release`.
+2. THE `apps/rust-api/src/lib.rs` SHALL include `#![deny(warnings)]` to prevent future warning accumulation.
+3. All snake_case naming warnings SHALL be resolved by renaming the offending identifiers or adding `#[allow(non_snake_case)]` with a justification comment where renaming would break an external API contract.
+
+---
+
+### Requirement 20 [P1]: Add FastAPI Input Validation on Analysis Endpoints
+
+**User Story:** As a developer, I want the Python analysis endpoints to validate incoming structural models so that malformed inputs are rejected before reaching the FEA solver, preventing crashes and OOM errors.
+
+#### Acceptance Criteria
+
+1. THE Python_API analysis endpoints SHALL validate all incoming `StructuralModel` payloads using Pydantic `@validator` decorators before passing them to the FEA solver.
+2. THE validation SHALL reject models where any node coordinate exceeds ±10,000 m, returning HTTP 422 with a field-level error.
+3. THE validation SHALL reject models where any load magnitude exceeds 1×10⁹ kN, returning HTTP 422 with a field-level error.
+4. THE validation SHALL reject models where a member references a node ID that does not exist in the `nodes` list, returning HTTP 422 with a field-level error.
+5. THE validation SHALL reject models where an unknown section profile name is provided, returning HTTP 422 listing the unknown profile name.
+6. THE Node_API analysis proxy SHALL enforce a per-tier model size limit before forwarding to the Python_API: free tier ≤ 100 nodes, pro tier ≤ 2,000 nodes, enterprise tier ≤ 10,000 nodes; exceeding the limit returns HTTP 400 with `MODEL_TOO_LARGE`.
+
+---
+
+### Requirement 21 [P2]: Fix FastAPI CORS Configuration for Production
+
+**User Story:** As a security engineer, I want the FastAPI CORS policy restricted to the production frontend domain so that cross-origin requests from unauthorized origins are blocked in production.
+
+#### Acceptance Criteria
+
+1. THE Python_API SHALL read allowed origins from an `ALLOWED_ORIGINS` environment variable rather than using a hardcoded wildcard `"*"`.
+2. WHEN `ALLOWED_ORIGINS` is not set, THE Python_API SHALL default to `["http://localhost:5173"]` for local development only.
+3. THE production deployment configuration SHALL set `ALLOWED_ORIGINS` to the production frontend domain.
+

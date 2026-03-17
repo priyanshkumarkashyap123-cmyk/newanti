@@ -58,6 +58,8 @@ import { AutonomousAIAgent, AIArchitectPanel } from "./ai";
 import { LoadInputDialog } from "./ui/LoadInputDialog";
 // TutorialOverlay deferred to Phase 2
 import { validateStructure } from "../utils/structuralValidation";
+import { TierGate } from "./TierGate";
+import { PanelErrorBoundary, CanvasFallback, PanelFallback } from "./ui/PanelErrorBoundary";
 
 // ---- Lazy-loaded dialogs & panels (extracted to modeler/lazyDialogs.ts) ----
 // Only import dialogs that need COMPLEX props/callbacks and cannot be in ModalPortal
@@ -103,12 +105,11 @@ import { usePhonePePayment } from "./PhonePePayment";
 import { useTierAccess } from "../hooks/useTierAccess";
 import { ProjectService, Project } from "../services/ProjectService";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import { PAYMENT_CONFIG } from "../config/env";
 
 // Multiplayer
 import {
   MultiplayerProvider,
-} from "./collaborators/MultiplayerContext";
+} from "./collaboration/MultiplayerContext";
 import { ServerUpdate } from "../hooks/useMultiplayer";
 
 // Extracted sub-components
@@ -116,7 +117,7 @@ import { CategorySwitcher } from "./modeler/CategorySwitcher";
 import { InspectorPanel } from "./modeler/InspectorPanel";
 import { StatusBar } from "./modeler/StatusBar";
 import { MultiplayerUI } from "./modeler/MultiplayerUI";
-
+import { StaadProDialogStubs } from "./modeler/StaadProDialogStubs";
 // Analysis execution hook (extracted ~1,800 lines)
 import { useAnalysisExecution } from "../hooks/useAnalysisExecution";
 import {
@@ -136,7 +137,6 @@ export const ModernModeler: FC = () => {
   const { subscription, refreshSubscription } = useSubscription();
   const { openPayment } = usePhonePePayment();
   const { isFree } = useTierAccess();
-  const billingBypass = PAYMENT_CONFIG.billingBypass;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Warn before leaving with unsaved changes
@@ -144,18 +144,6 @@ export const ModernModeler: FC = () => {
 
   // Auto-trigger upgrade if requested via URL
   useEffect(() => {
-    if (billingBypass) {
-      // Remove stale upgrade query param when billing is bypassed
-      if (searchParams.get("upgrade") === "pro") {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          newParams.delete("upgrade");
-          return newParams;
-        });
-      }
-      return;
-    }
-
     const upgrade = searchParams.get("upgrade");
     if (upgrade === "pro" && isFree && userId && user?.email) {
       (async () => {
@@ -176,7 +164,6 @@ export const ModernModeler: FC = () => {
       });
     }
   }, [
-    billingBypass,
     searchParams,
     isFree,
     userId,
@@ -188,8 +175,6 @@ export const ModernModeler: FC = () => {
 
   // Listen for manual upgrade trigger from Ribbon
   useEffect(() => {
-    if (billingBypass) return;
-
     const handleUpgradeTrigger = async () => {
       if (userId && user?.email) {
         const success = await openPayment(userId, user.email, "monthly");
@@ -201,7 +186,7 @@ export const ModernModeler: FC = () => {
     document.addEventListener("trigger-upgrade", handleUpgradeTrigger);
     return () =>
       document.removeEventListener("trigger-upgrade", handleUpgradeTrigger);
-  }, [billingBypass, userId, user, openPayment, refreshSubscription]);
+  }, [userId, user, openPayment, refreshSubscription]);
 
   const {
     projectInfo, nodes, members, plates, loads, memberLoads, floorLoads,
@@ -316,6 +301,107 @@ export const ModernModeler: FC = () => {
       setActiveTool("SELECT");
     }
   }, [activeTool, openModal, setActiveTool, setGeometryToolPreset]);
+
+  // ── STAAD.Pro parity: Wire new tool activations ──
+  useEffect(() => {
+    if (!activeTool) return;
+
+    // Tools that require completed analysis results
+    const requiresAnalysis = [
+      'PDELTA_ANALYSIS', 'BUCKLING_ANALYSIS', 'TIME_HISTORY_ANALYSIS',
+      'NONLINEAR_ANALYSIS', 'DYNAMICS_PANEL', 'PLATE_STRESS_CONTOUR',
+      'VIEW_STORY_DRIFT', 'VIEW_FORCE_ENVELOPE', 'VIEW_SECTION_FORCES',
+      'ANIMATE_MODE_SHAPE',
+    ];
+
+    if (requiresAnalysis.includes(activeTool)) {
+      const results = useModelStore.getState().analysisResults;
+      if (!results?.completed) {
+        showNotification('warning', 'Run analysis first before viewing results.');
+        setActiveTool('SELECT');
+        return;
+      }
+    }
+
+    // Analysis tool → modal key mapping
+    const analysisModalMap: Record<string, keyof ReturnType<typeof useUIStore.getState>['modals']> = {
+      PDELTA_ANALYSIS: 'pDeltaAnalysisPanel',
+      BUCKLING_ANALYSIS: 'bucklingAnalysisPanel',
+      TIME_HISTORY_ANALYSIS: 'timeHistoryPanel',
+      NONLINEAR_ANALYSIS: 'nonLinearAnalysisPanel',
+      DYNAMICS_PANEL: 'dynamicsPanel',
+      PLATE_STRESS_CONTOUR: 'plateResultsVisualization',
+      RESPONSE_SPECTRUM_ANALYSIS: 'responseSpectrumDialog',
+      PUSHOVER_ANALYSIS: 'pushoverAnalysisDialog',
+      STEADY_STATE_ANALYSIS: 'steadyStateDialog',
+      IMPERFECTION_ANALYSIS: 'imperfectionAnalysisDialog',
+      VIEW_STORY_DRIFT: 'storyDriftPanel',
+      VIEW_FORCE_ENVELOPE: 'forceEnvelopePanel',
+      VIEW_SECTION_FORCES: 'sectionForcesPanel',
+      ANIMATE_MODE_SHAPE: 'modeShapeAnimationPanel',
+    };
+
+    // Properties tool → modal key mapping
+    const propertiesModalMap: Record<string, keyof ReturnType<typeof useUIStore.getState>['modals']> = {
+      ASSIGN_PARTIAL_RELEASE: 'partialReleaseDialog',
+      ASSIGN_INACTIVE: 'inactiveMemberDialog',
+      ASSIGN_DIAPHRAGM: 'diaphragmAssignmentDialog',
+      ASSIGN_MASTER_SLAVE: 'masterSlaveDialog',
+      ASSIGN_PROPERTY_REDUCTION: 'propertyReductionDialog',
+    };
+
+    // Loading tool → modal key mapping
+    const loadingModalMap: Record<string, keyof ReturnType<typeof useUIStore.getState>['modals']> = {
+      ADD_FLOOR_LOAD: 'floorLoadDialog',
+      ADD_AREA_LOAD: 'areaLoadDialog',
+      ADD_SNOW_LOAD: 'snowLoadDialog',
+    };
+
+    if (analysisModalMap[activeTool]) {
+      openModal(analysisModalMap[activeTool]);
+      setActiveTool('SELECT');
+      return;
+    }
+
+    if (propertiesModalMap[activeTool]) {
+      // Selection-count guards
+      if (activeTool === 'ASSIGN_MASTER_SLAVE' || activeTool === 'ASSIGN_DIAPHRAGM') {
+        const selectedNodes = Array.from(useModelStore.getState().selectedIds).filter(
+          (id) => useModelStore.getState().nodes.has(id)
+        );
+        if (selectedNodes.length < 2) {
+          showNotification('error', `Select at least 2 nodes before using ${activeTool === 'ASSIGN_MASTER_SLAVE' ? 'Master/Slave' : 'Diaphragm'} tool.`);
+          setActiveTool('SELECT');
+          return;
+        }
+      }
+      openModal(propertiesModalMap[activeTool]);
+      setActiveTool('SELECT');
+      return;
+    }
+
+    // Tension-only / compression-only: immediate store update, no dialog
+    if (activeTool === 'ASSIGN_TENSION_ONLY' || activeTool === 'ASSIGN_COMPRESSION_ONLY') {
+      const behavior = activeTool === 'ASSIGN_TENSION_ONLY' ? 'tension-only' : 'compression-only';
+      const store = useModelStore.getState();
+      const selectedMembers = Array.from(store.selectedIds).filter((id) => store.members.has(id));
+      if (selectedMembers.length === 0) {
+        showNotification('warning', 'Select one or more members first.');
+        setActiveTool('SELECT');
+        return;
+      }
+      selectedMembers.forEach((id) => store.updateMember(id, { axialBehavior: behavior }));
+      showNotification('success', `${selectedMembers.length} member(s) marked as ${behavior}.`);
+      setActiveTool('SELECT');
+      return;
+    }
+
+    if (loadingModalMap[activeTool]) {
+      openModal(loadingModalMap[activeTool]);
+      setActiveTool('SELECT');
+      return;
+    }
+  }, [activeTool, openModal, setActiveTool, showNotification]);
 
   const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
   const [showCloudManager, setShowCloudManager] = useState(false);
@@ -1184,9 +1270,10 @@ export const ModernModeler: FC = () => {
               <div className="absolute top-4 left-4 z-30">
                 <ModelingToolbar />
               </div>
-              <ViewportManager />
+              <PanelErrorBoundary fallback={<CanvasFallback onReload={() => window.location.reload()} />}>
+                <ViewportManager />
+              </PanelErrorBoundary>
 
-              {/* Empty workspace guidance overlay */}
               {nodes.size === 0 && members.size === 0 && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
                   <div className="pointer-events-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl p-8 max-w-md text-center shadow-lg">
@@ -1507,10 +1594,12 @@ export const ModernModeler: FC = () => {
           <ModalControls />
 
           {/* Modal Analysis Panel */}
+          <TierGate feature="advancedAnalysis">
           <ModalAnalysisPanel
             isOpen={showModalAnalysis}
             onClose={() => setShowModalAnalysis(false)}
           />
+          </TierGate>
 
           {/* Cloud Project Manager */}
           <CloudProjectManager
@@ -1523,7 +1612,9 @@ export const ModernModeler: FC = () => {
           <AutonomousAIAgent />
           {showAIArchitect && (
             <div className="fixed right-0 top-0 bottom-0 w-[380px] z-[45] shadow-2xl">
-              <AIArchitectPanel />
+              <PanelErrorBoundary fallback={<PanelFallback name="AI Architect" />}>
+                <AIArchitectPanel />
+              </PanelErrorBoundary>
               <button type="button"
                 onClick={() => setShowAIArchitect(false)}
                 className="absolute top-3 right-3 p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100/80 dark:bg-slate-800/80 rounded-lg z-50"
@@ -1607,6 +1698,9 @@ export const ModernModeler: FC = () => {
             Zustand subscriptions. Zero cascade re-renders.
             ══════════════════════════════════════════════════════ */}
         <ModalPortal />
+
+        {/* ── STAAD.Pro parity dialog stubs ── */}
+        <StaadProDialogStubs />
 
         {/* Command Palette - Quick Access (Cmd+K) */}
         <CommandPalette

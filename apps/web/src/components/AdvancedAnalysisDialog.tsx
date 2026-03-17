@@ -43,6 +43,7 @@ import { PDeltaAnalysisPanel } from './PDeltaAnalysisPanel';
 import { ModalAnalysisPanel } from './ModalAnalysisPanel';
 import { BucklingAnalysisPanel } from './BucklingAnalysisPanel';
 import { TimeHistoryPanel } from './TimeHistoryPanel';
+import { TierGate } from './TierGate';
 
 /** Safely format a number, returning 'N/A' for null/undefined/NaN */
 function safeFixed(val: unknown, decimals: number = 2): string {
@@ -713,17 +714,17 @@ export const AdvancedAnalysisDialog: FC<AdvancedAnalysisDialogProps> = ({
 
         switch (activeTab) {
             case 'pdelta':
-                return <PDeltaAnalysisPanel isPro={isPro} />;
+                return <TierGate feature="advancedAnalysis"><PDeltaAnalysisPanel isPro={isPro} /></TierGate>;
             case 'modal':
-                return <ModalAnalysisPanel isPro={isPro} />;
+                return <TierGate feature="advancedAnalysis"><ModalAnalysisPanel isPro={isPro} /></TierGate>;
             case 'timehistory':
-                return <TimeHistoryPanel isPro={isPro} />;
+                return <TierGate feature="advancedAnalysis"><TimeHistoryPanel isPro={isPro} /></TierGate>;
             case 'spectrum':
-                return <ResponseSpectrumPanel isPro={isPro} />;
+                return <TierGate feature="advancedAnalysis"><ResponseSpectrumPanel isPro={isPro} /></TierGate>;
             case 'buckling':
-                return <BucklingAnalysisPanel isPro={isPro} />;
+                return <TierGate feature="advancedAnalysis"><BucklingAnalysisPanel isPro={isPro} /></TierGate>;
             case 'cable':
-                return <CableAnalysisPanel isPro={isPro} />;
+                return <TierGate feature="advancedAnalysis"><CableAnalysisPanel isPro={isPro} /></TierGate>;
             default:
                 return null;
         }

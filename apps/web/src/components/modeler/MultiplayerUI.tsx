@@ -3,8 +3,8 @@
  * Extracted from ModernModeler.tsx to avoid re-creation every render.
  */
 import { FC, memo } from "react";
-import { useMultiplayerContextSafe } from "../collaborators/MultiplayerContext";
-import { Collaborators } from "../collaborators/Collaborators";
+import { useMultiplayerContextSafe } from "../collaboration/MultiplayerContext";
+import { Collaborators } from "../collaboration/Collaborators";
 
 export const MultiplayerUI: FC = memo(() => {
   const mp = useMultiplayerContextSafe();

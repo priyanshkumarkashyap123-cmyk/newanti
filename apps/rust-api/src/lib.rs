@@ -2,6 +2,8 @@
 //! 
 //! High-performance structural analysis library
 
+#![deny(warnings)]
+
 pub mod cache;
 pub mod solver;
 pub mod config;

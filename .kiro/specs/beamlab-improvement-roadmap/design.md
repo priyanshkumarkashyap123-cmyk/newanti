@@ -740,3 +740,335 @@ The migration script is tested with a seeded in-memory MongoDB instance (using `
 - Verify `LegacyPaymentData` records are created for all subscriptions with non-null legacy fields.
 - Verify the migration is idempotent (running twice produces the same result).
 - Verify subscriptions with no legacy fields are not touched.
+
+---
+
+## Additional Components and Interfaces
+
+### 6. Request Body Validation
+
+#### `validateBody` Middleware Factory
+
+```typescript
+// apps/api/src/middleware/validateBody.ts
+import { ZodSchema, ZodError } from 'zod';
+import { Request, Response, NextFunction } from 'express';
+
+export function validateBody<T>(schema: ZodSchema<T>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      const fields = (result.error as ZodError).errors.map(e => ({
+        field: e.path.join('.'),
+        message: e.message,
+      }));
+      return res.status(400).json({ error: 'VALIDATION_ERROR', fields });
+    }
+    req.body = result.data; // replace with parsed/coerced data
+    next();
+  };
+}
+```
+
+#### Route Schemas
+
+```typescript
+// Payment initiation
+const initiateCheckoutSchema = z.object({
+  planId: z.enum(['pro_monthly', 'pro_yearly', 'business_monthly', 'business_yearly']),
+});
+
+// Project creation
+const createProjectSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+});
+
+// User registration
+const registerSchema = z.object({
+  email: z.string().email(),
+  displayName: z.string().min(1).max(100),
+  password: z.string().min(8),
+});
+```
+
+---
+
+### 7. Payment Webhook Idempotency
+
+#### Idempotency Check Pattern
+
+```typescript
+// In PhonePe webhook handler
+async function handlePhonePeWebhook(req, res) {
+  const { merchantTransactionId, status } = req.body;
+
+  // Idempotency: check if already processed
+  const existing = await Subscription.findOne({
+    phonepeMerchantTransactionId: merchantTransactionId,
+  });
+  if (existing) {
+    // Already processed — return 200 to prevent PhonePe retries
+    return res.status(200).json({ status: 'already_processed' });
+  }
+
+  // Atomic upsert to handle race conditions
+  const sub = await Subscription.findOneAndUpdate(
+    { phonepeMerchantTransactionId: merchantTransactionId },
+    { $setOnInsert: { /* new subscription fields */ } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  // Update user tier
+  await User.findByIdAndUpdate(sub.user, { tier: resolvePlan(sub.planType).tier });
+  await logTierChange(sub.user, previousTier, newTier, 'phonepe_webhook', merchantTransactionId);
+
+  res.status(200).json({ status: 'processed' });
+}
+```
+
+#### Schema Index Addition
+
+```typescript
+// In SubscriptionSchema
+phonepeMerchantTransactionId: {
+  type: String,
+  sparse: true,
+  unique: true,  // enforce idempotency at DB level
+}
+```
+
+---
+
+### 8. Tier Change Audit Log
+
+#### `ITierChangeLog` Interface
+
+```typescript
+// apps/api/src/models.ts
+export interface ITierChangeLog extends Document {
+  userId: Types.ObjectId;
+  fromTier: 'free' | 'pro' | 'enterprise';
+  toTier: 'free' | 'pro' | 'enterprise';
+  reason: 'phonepe_webhook' | 'admin' | 'expiry' | 'manual';
+  timestamp: Date;
+  transactionId?: string;
+}
+
+const TierChangeLogSchema = new Schema<ITierChangeLog>({
+  userId:        { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  fromTier:      { type: String, enum: ['free', 'pro', 'enterprise'], required: true },
+  toTier:        { type: String, enum: ['free', 'pro', 'enterprise'], required: true },
+  reason:        { type: String, enum: ['phonepe_webhook', 'admin', 'expiry', 'manual'], required: true },
+  timestamp:     { type: Date, default: Date.now, required: true },
+  transactionId: { type: String, sparse: true },
+}, { timestamps: false }); // append-only, no updatedAt
+```
+
+#### `logTierChange` Helper
+
+```typescript
+// apps/api/src/utils/tierChangeLog.ts
+export async function logTierChange(
+  userId: Types.ObjectId,
+  fromTier: string,
+  toTier: string,
+  reason: string,
+  transactionId?: string
+): Promise<void> {
+  await TierChangeLog.create({ userId, fromTier, toTier, reason, timestamp: new Date(), transactionId });
+}
+```
+
+---
+
+### 9. Health Check Endpoints
+
+#### Node_API Health Route
+
+```typescript
+// apps/api/src/routes/healthRoutes.ts
+router.get('/health', async (req, res) => {
+  const dbState = mongoose.connection.readyState; // 1 = connected
+  const status = dbState === 1 ? 'ok' : 'degraded';
+  const httpStatus = dbState === 1 ? 200 : 503;
+  res.status(httpStatus).json({
+    status,
+    version: process.env.npm_package_version ?? 'unknown',
+    db: dbState === 1 ? 'connected' : 'disconnected',
+  });
+});
+```
+
+#### Rust_API Health Route
+
+```rust
+// apps/rust-api/src/routes/health.rs
+pub async fn health() -> impl IntoResponse {
+    Json(serde_json::json!({
+        "status": "ok",
+        "version": env!("CARGO_PKG_VERSION")
+    }))
+}
+```
+
+#### Python_API Health Route
+
+```python
+# apps/backend-python/routes/health.py
+from fastapi import APIRouter
+import importlib.metadata
+
+router = APIRouter()
+
+@router.get("/health")
+async def health():
+    return {"status": "ok", "version": importlib.metadata.version("beamlab-python")}
+```
+
+---
+
+### 10. Model Size Limits Middleware
+
+```typescript
+// apps/api/src/middleware/modelSizeLimiter.ts
+const MODEL_SIZE_LIMITS = {
+  free:       100,
+  pro:        2000,
+  enterprise: 10000,
+};
+
+export function modelSizeLimiter(req: Request, res: Response, next: NextFunction) {
+  const nodeCount: number = req.body?.nodes?.length ?? req.body?.nodeCount ?? 0;
+  const tier = req.user?.tier ?? 'free';
+  const limit = MODEL_SIZE_LIMITS[tier] ?? MODEL_SIZE_LIMITS.free;
+
+  if (nodeCount > limit) {
+    return res.status(400).json({
+      error: 'MODEL_TOO_LARGE',
+      message: `Your ${tier} plan supports up to ${limit} nodes. This model has ${nodeCount} nodes.`,
+      limit,
+      nodeCount,
+    });
+  }
+  next();
+}
+```
+
+Apply to `POST /api/analysis/run` and `POST /api/analysis/preflight`.
+
+---
+
+### 11. FastAPI CORS Fix
+
+```python
+# apps/backend-python/main.py
+import os
+from fastapi.middleware.cors import CORSMiddleware
+
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,   # replaces allow_origins=["*"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+---
+
+### 12. FastAPI Pydantic Input Validation
+
+```python
+# apps/backend-python/models/structural_model.py
+from pydantic import BaseModel, validator
+from typing import List, Dict
+
+class Node(BaseModel):
+    id: str
+    x: float
+    y: float
+    z: float = 0.0
+
+    @validator('x', 'y', 'z')
+    def coordinate_range(cls, v):
+        if abs(v) > 10_000:
+            raise ValueError('Node coordinate must be within ±10,000 m')
+        return v
+
+class Member(BaseModel):
+    id: str
+    startNodeId: str
+    endNodeId: str
+    sectionProfile: str
+
+class Load(BaseModel):
+    nodeId: str
+    fx: float = 0.0
+    fy: float = 0.0
+    fz: float = 0.0
+
+    @validator('fx', 'fy', 'fz')
+    def load_magnitude(cls, v):
+        if abs(v) > 1e9:
+            raise ValueError('Load magnitude must not exceed 1×10⁹ kN')
+        return v
+
+class StructuralModel(BaseModel):
+    nodes: List[Node]
+    members: List[Member]
+    loads: List[Load] = []
+
+    @validator('members', each_item=True)
+    def member_nodes_exist(cls, member, values):
+        node_ids = {n.id for n in values.get('nodes', [])}
+        if member.startNodeId not in node_ids:
+            raise ValueError(f'Member {member.id}: startNodeId {member.startNodeId!r} not found in nodes')
+        if member.endNodeId not in node_ids:
+            raise ValueError(f'Member {member.id}: endNodeId {member.endNodeId!r} not found in nodes')
+        return member
+
+    @validator('members', each_item=True)
+    def section_profile_known(cls, member):
+        from section_database import SECTION_DATABASE
+        if member.sectionProfile not in SECTION_DATABASE:
+            raise ValueError(f'Unknown section profile: {member.sectionProfile!r}')
+        return member
+```
+
+---
+
+## Additional Correctness Properties
+
+### Property 11: Webhook idempotency — duplicate transaction rejected
+
+*For any* `phonepeMerchantTransactionId` T that already exists in the `Subscription` collection, a second webhook delivery with the same T SHALL return HTTP 200 without creating a new subscription record or changing the user's tier.
+
+**Validates: Requirements 15.1, 15.2, 15.3**
+
+---
+
+### Property 12: Payment amount is server-derived
+
+*For any* checkout initiation request, the `amountPaise` used to create the PhonePe order SHALL equal `BILLING_PLANS[planId].amountPaise` regardless of any `amount` field present in the request body.
+
+**Validates: Requirements 16.1, 16.2**
+
+---
+
+### Property 13: Model size limit enforced per tier
+
+*For any* analysis request where `nodeCount > MODEL_SIZE_LIMITS[user.tier]`, the Node_API SHALL return HTTP 400 with `MODEL_TOO_LARGE` and SHALL NOT forward the request to the Rust_API or Python_API.
+
+**Validates: Requirements 20.6**
+
+---
+
+### Property 14: Request validation rejects malformed bodies
+
+*For any* POST/PATCH request body that fails the Zod schema for that route, the Node_API SHALL return HTTP 400 with `VALIDATION_ERROR` and a non-empty `fields` array, and SHALL NOT execute the route handler.
+
+**Validates: Requirements 14.1, 14.2**
+

@@ -1,4 +1,7 @@
 /**
+ * @deprecated Use `useAnalysis` hook from `apps/web/src/hooks/useAnalysis.ts` instead.
+ * This module will be removed after all callers are migrated.
+ *
  * advancedAnalysis.ts - Frontend API for Advanced Structural Analysis
  */
 

@@ -59,6 +59,10 @@ const MIGRATIONS: MigrationEntry[] = [
         name: '20260316000000_add_quota_and_collaboration',
         module: () => import('./20260316000000_add_quota_and_collaboration.js'),
     },
+    {
+        name: '20260317010000_harden_billing_idempotency',
+        module: () => import('./20260317010000_harden_billing_idempotency.js'),
+    },
 ];
 
 export function getRegisteredMigrationNames(): string[] {

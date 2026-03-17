@@ -10,6 +10,7 @@ interface ProjectInfo {
     engineer: string;
     date: string;
     description: string;
+    licenseNumber?: string;
 }
 
 // Re-export so callers can type project info without a separate import
@@ -24,6 +25,49 @@ const _CO_DISCLAIMER = BEAMLAB_COMPANY.disclaimer;
 void _CO_NAME; void _CO_WEBSITE; void _CO_EMAIL; void _CO_DISCLAIMER;
 
 const PYTHON_API_URL = API_CONFIG.pythonUrl;
+
+// ============================================
+// GOVERNING CHECK LABELS & CLAUSE REFERENCES
+// ============================================
+
+export const GOVERNING_CHECK_LABELS: Record<string, string> = {
+    COMPRESSION_FLEXURE_COMBINED: 'Combined Compression + Flexure (AISC H1-1)',
+    TENSION_FLEXURE_COMBINED: 'Combined Tension + Flexure (AISC H1-2)',
+    SHEAR_CHECK: 'Shear Capacity Check',
+    AXIAL_COMPRESSION: 'Axial Compression (Column Buckling)',
+    AXIAL_TENSION: 'Axial Tension (Gross/Net Section)',
+    FLEXURE_MAJOR: 'Flexure — Major Axis Bending',
+    FLEXURE_MINOR: 'Flexure — Minor Axis Bending',
+    LATERAL_TORSIONAL_BUCKLING: 'Lateral-Torsional Buckling',
+    LOCAL_FLANGE_BUCKLING: 'Local Flange Buckling',
+    LOCAL_WEB_BUCKLING: 'Local Web Buckling',
+    DEFLECTION_CHECK: 'Deflection Serviceability Check',
+    // IS 800:2007 equivalents
+    IS800_COMPRESSION_FLEXURE: 'Combined Compression + Flexure (IS 800 §9.3.1)',
+    IS800_TENSION_FLEXURE: 'Combined Tension + Flexure (IS 800 §9.3.2)',
+    IS800_SHEAR: 'Shear Capacity (IS 800 §8.4)',
+    IS800_FLEXURE: 'Flexure Capacity (IS 800 §8.2)',
+    IS800_LTB: 'Lateral-Torsional Buckling (IS 800 §8.2.2)',
+};
+
+export const CHECK_CLAUSE_REFS: Record<string, string> = {
+    COMPRESSION_FLEXURE_COMBINED: 'AISC 360-16 §H1-1',
+    TENSION_FLEXURE_COMBINED: 'AISC 360-16 §H1-2',
+    SHEAR_CHECK: 'AISC 360-16 §G2',
+    AXIAL_COMPRESSION: 'AISC 360-16 §E3',
+    AXIAL_TENSION: 'AISC 360-16 §D2',
+    FLEXURE_MAJOR: 'AISC 360-16 §F2',
+    FLEXURE_MINOR: 'AISC 360-16 §F6',
+    LATERAL_TORSIONAL_BUCKLING: 'AISC 360-16 §F2-2',
+    LOCAL_FLANGE_BUCKLING: 'AISC 360-16 §F3',
+    LOCAL_WEB_BUCKLING: 'AISC 360-16 §F4',
+    DEFLECTION_CHECK: 'AISC 360-16 §L3',
+    IS800_COMPRESSION_FLEXURE: 'IS 800:2007 §9.3.1',
+    IS800_TENSION_FLEXURE: 'IS 800:2007 §9.3.2',
+    IS800_SHEAR: 'IS 800:2007 §8.4',
+    IS800_FLEXURE: 'IS 800:2007 §8.2',
+    IS800_LTB: 'IS 800:2007 §8.2.2',
+};
 
 export const generateProfessionalReport = async (
     project: ProjectInfo,
@@ -68,14 +112,22 @@ export const generateProfessionalReport = async (
                 dispDict[nodeId] = { dx: disp.dx, dy: disp.dy, dz: disp.dz };
             });
 
-            const forcesDict: Record<string, { moment: number[]; shear: number[]; axial: number }> = {};
+            const forcesDict: Record<string, {
+                momentY_start: number; momentY_end: number;
+                momentZ_start: number; momentZ_end: number;
+                shear: number[]; axial: number
+            }> = {};
             analysisResults.memberForces.forEach((forces: { momentY?: number; momentZ?: number; shearY?: number; shearZ?: number; axial: number }, memberId: string) => {
                 maxMoment = Math.max(maxMoment, Math.abs(forces.momentY || 0), Math.abs(forces.momentZ || 0));
                 maxShear = Math.max(maxShear, Math.abs(forces.shearY || 0), Math.abs(forces.shearZ || 0));
                 maxAxial = Math.max(maxAxial, Math.abs(forces.axial || 0));
+                // Preserve signed values and both-end distribution (Bug Condition C2 fix)
                 forcesDict[memberId] = {
-                    moment: [0, Math.max(Math.abs(forces.momentZ || 0), Math.abs(forces.momentY || 0))], // Simplify for now
-                    shear: [0, Math.max(Math.abs(forces.shearZ || 0), Math.abs(forces.shearY || 0))],
+                    momentY_start: forces.momentY || 0,
+                    momentY_end: -(forces.momentY || 0), // equal-and-opposite end moment for simple beam
+                    momentZ_start: forces.momentZ || 0,
+                    momentZ_end: -(forces.momentZ || 0),
+                    shear: [forces.shearY || 0, forces.shearZ || 0],
                     axial: forces.axial
                 };
             });
@@ -294,6 +346,24 @@ export const generateBasicPDFReport = async (
         }
     });
 
+    // PE Stamp block — after document control table
+    autoTable(doc, {
+        startY: (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 4,
+        margin: { left: 20, right: 20 },
+        head: [['Engineer of Record', 'License No.', 'Date', 'Signature']],
+        body: [[
+            project.engineer || '_______________',
+            project.licenseNumber ?? '_______________',
+            dateStr,
+            '_______________',
+        ]],
+        theme: 'plain',
+        headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+        bodyStyles: { fontSize: 9, textColor: SLATE_700, cellPadding: 5 },
+        tableLineColor: SLATE_200,
+        tableLineWidth: 0.3,
+    });
+
     // Bottom accent bar
     doc.setFillColor(...NAVY);
     doc.rect(0, pageHeight - 6, pageWidth, 6, 'F');
@@ -378,7 +448,8 @@ export const generateBasicPDFReport = async (
             maxShear = Math.max(maxShear, Math.abs(f.shearY ?? 0), Math.abs(f.shearZ ?? 0));
         });
         analysisResults.displacements?.forEach((d: { dx: number; dy: number; dz: number }) => {
-            maxDisp = Math.max(maxDisp, Math.abs(d.dx ?? 0), Math.abs(d.dy ?? 0), Math.abs(d.dz ?? 0));
+            // Convert from meters to mm (* 1000) — Bug Condition C2 fix
+            maxDisp = Math.max(maxDisp, Math.abs(d.dx ?? 0) * 1000, Math.abs(d.dy ?? 0) * 1000, Math.abs(d.dz ?? 0) * 1000);
         });
 
         addSectionHeading('2.0', 'Analysis Results \u2014 Summary', finalY);
@@ -426,6 +497,103 @@ export const generateBasicPDFReport = async (
             styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3, halign: 'right' },
             columnStyles: { 0: { halign: 'left', fontStyle: 'bold', font: 'courier' } },
         });
+
+        // ============================================
+        // LOAD CASES SECTION
+        // ============================================
+        finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
+        if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
+        addSectionHeading('3.1', 'Load Cases', finalY);
+
+        const loadCasesBody = analysisResults.loadCases && analysisResults.loadCases.length > 0
+            ? analysisResults.loadCases.map((lc: { id: string; name: string; type?: string }) => [lc.id, lc.name, lc.type ?? 'Static'])
+            : [['—', 'No load cases defined', '—']];
+
+        autoTable(doc, {
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
+            head: [['ID', 'Name', 'Type']],
+            body: loadCasesBody,
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8, textColor: SLATE_700 },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3 },
+        });
+
+        // ============================================
+        // SUPPORT REACTIONS SECTION
+        // ============================================
+        finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
+        if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
+        addSectionHeading('3.2', 'Support Reactions', finalY);
+
+        const reactionsBody = analysisResults.reactions && analysisResults.reactions.size > 0
+            ? Array.from(analysisResults.reactions.entries()).map(([nodeId, r]: [string, { fx?: number; fy?: number; fz?: number; mx?: number; my?: number; mz?: number }]) => [
+                nodeId,
+                formatNumber(r.fx ?? 0),
+                formatNumber(r.fy ?? 0),
+                formatNumber(r.fz ?? 0),
+                formatNumber(r.mx ?? 0),
+                formatNumber(r.my ?? 0),
+                formatNumber(r.mz ?? 0),
+            ])
+            : [['—', '—', '—', '—', '—', '—', '—']];
+
+        autoTable(doc, {
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
+            head: [['Node', 'Fx (kN)', 'Fy (kN)', 'Fz (kN)', 'Mx (kN\u00b7m)', 'My (kN\u00b7m)', 'Mz (kN\u00b7m)']],
+            body: reactionsBody,
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8, textColor: SLATE_700, font: 'courier' },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3, halign: 'right' },
+            columnStyles: { 0: { halign: 'left', fontStyle: 'bold', font: 'courier' } },
+        });
+    }
+
+    // ============================================
+    // NODE COORDINATE TABLE
+    // ============================================
+    {
+        let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 12;
+        if (finalY > 240) { doc.addPage(); addRunningHeader(); finalY = 20; }
+        addSectionHeading('3.3', 'Node Coordinates', finalY);
+
+        const getSupportCondition = (n: Node): string => {
+            if (!n.restraints) return 'Free';
+            const r = n.restraints;
+            const dofs = [r.dx, r.dy, r.dz, r.rx, r.ry, r.rz];
+            const fixedCount = dofs.filter(Boolean).length;
+            if (fixedCount === 6) return 'Fixed';
+            if (fixedCount === 3 && r.dx && r.dy && r.dz) return 'Pinned';
+            if (fixedCount === 1 && r.dy) return 'Roller';
+            if (fixedCount > 0) return 'Partial';
+            return 'Free';
+        };
+
+        const nodeBody = nodes.map((n: Node) => [
+            n.id,
+            formatNumber(n.x ?? 0, 3),
+            formatNumber(n.y ?? 0, 3),
+            formatNumber(n.z ?? 0, 3),
+            getSupportCondition(n),
+        ]);
+
+        autoTable(doc, {
+            startY: finalY + 7,
+            margin: { left: 14, right: 14 },
+            head: [['Node ID', 'X (m)', 'Y (m)', 'Z (m)', 'Support']],
+            body: nodeBody,
+            theme: 'plain',
+            headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+            bodyStyles: { fontSize: 8, textColor: SLATE_700, font: 'courier' },
+            alternateRowStyles: { fillColor: SLATE_50 },
+            styles: { cellPadding: 3, lineColor: SLATE_200, lineWidth: 0.3, halign: 'right' },
+            columnStyles: { 0: { halign: 'left', fontStyle: 'bold', font: 'courier' }, 4: { halign: 'left' } },
+        });
     }
 
     // ============================================
@@ -442,13 +610,14 @@ export const generateBasicPDFReport = async (
             r.section.name,
             formatNumber(r.criticalRatio, 3),
             r.overallStatus,
-            r.governingCheck
+            GOVERNING_CHECK_LABELS[r.governingCheck] ?? r.governingCheck,
+            CHECK_CLAUSE_REFS[r.governingCheck] ?? '—',
         ]);
 
         autoTable(doc, {
             startY: finalY + 7,
             margin: { left: 14, right: 14 },
-            head: [['Member', 'Section', 'D/C Ratio', 'Status', 'Governing Check']],
+            head: [['Member', 'Section', 'D/C Ratio', 'Status', 'Governing Check', 'Clause']],
             body: designBody,
             theme: 'plain',
             headStyles: { fillColor: NAVY, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },

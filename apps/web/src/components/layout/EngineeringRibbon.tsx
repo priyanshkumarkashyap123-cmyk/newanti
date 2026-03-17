@@ -84,6 +84,7 @@ import { useModelStore, useModelStoreTemporal } from "../../store/model";
 import { useUIStore, Category } from "../../store/uiStore";
 import { Tooltip } from "../ui/Tooltip";
 import { MODELING_ACTIONS } from "../../data/modelingActionRegistry";
+import { TierGate } from "../TierGate";
 
 /* ─── Stable sub-components (extracted to avoid re-mounting every render) ─── */
 
@@ -1093,12 +1094,14 @@ export const EngineeringRibbon: FC<RibbonProps> = memo(({ activeCategory, isSide
               />
             </ToolGroup>
             <ToolGroup label="Advanced AI">
+              <TierGate feature="aiAssistant">
               <ToolButton
                 icon={Sparkles}
                 label="AI Architect"
                 onClick={() => document.dispatchEvent(new CustomEvent("toggle-ai-architect"))}
                 tooltip="AI Architect — Create, modify & analyze structures with AI"
               />
+              </TierGate>
               <ToolButton
                 icon={Sparkles}
                 label="Generative"

@@ -21,12 +21,22 @@ export type TabId =
   | "section"
   | "deflection";
 
+export interface IS800DesignResult {
+  checks: Array<{ name: string; utilization: number; status: 'PASS' | 'FAIL' | 'WARNING'; description?: string }>;
+  governingCheck: string;
+  utilization: number;
+}
+
 export interface MemberDesignRow {
   id: string;
   label: string;
   length: number;
   materialType: "steel" | "concrete" | "custom";
   sectionType: string;
+  /** Design code used for primary checks */
+  designCode?: 'AISC360' | 'IS800' | 'EC3';
+  /** IS 800:2007 design results when available from Python backend */
+  is800Result?: IS800DesignResult;
   // forces (max envelope)
   maxAxial: number;
   maxShearY: number;

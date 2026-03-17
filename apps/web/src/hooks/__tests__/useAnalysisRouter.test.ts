@@ -8,9 +8,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import * as fc from 'fast-check';
 
-// Declare global for TypeScript
-declare const global: any;
-
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -91,7 +88,7 @@ describe('useAnalysisRouter', () => {
 
         // No fetch calls to /api/analysis/run or /api/analysis/preflight
         const analysisCalls = mockFetch.mock.calls.filter(
-            (call: any) => typeof call[0] === 'string' && call[0].includes('/api/analysis')
+            ([url]: [string]) => typeof url === 'string' && url.includes('/api/analysis')
         );
         expect(analysisCalls.length).toBe(0);
     });
@@ -159,7 +156,7 @@ describe('useAnalysisRouter', () => {
         await result.current.runAnalysis(makeModel(), 'local');
 
         const quotaCalls = mockFetch.mock.calls.filter(
-            (call: any) => typeof call[0] === 'string' && (call[0].includes('/quota') || call[0].includes('/analysis/run'))
+            ([url]: [string]) => typeof url === 'string' && (url.includes('/quota') || url.includes('/analysis/run'))
         );
         expect(quotaCalls.length).toBe(0);
     });

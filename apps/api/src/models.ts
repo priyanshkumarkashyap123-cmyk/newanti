@@ -35,10 +35,6 @@ export function isMasterUser(email: string | null | undefined): boolean {
  * Get effective tier for a user (master users get 'enterprise')
  */
 export function getEffectiveTier(email: string | null | undefined, actualTier: 'free' | 'pro' | 'enterprise'): 'free' | 'pro' | 'enterprise' {
-    const tempUnlockAll = process.env['TEMP_UNLOCK_ALL'] === 'true';
-    if (tempUnlockAll) {
-        return 'enterprise';
-    }
     if (isMasterUser(email)) {
         return 'enterprise';
     }
@@ -269,6 +265,8 @@ export interface IProject extends Document {
     owner: Types.ObjectId;
     collaborators?: Types.ObjectId[];
     isPublic: boolean;
+    isFavorited: boolean;      // new: user can mark projects as favorites
+    deletedAt: Date | null;    // new: soft-delete timestamp (null = active)
     createdAt: Date;
     updatedAt: Date;
 }
@@ -307,6 +305,14 @@ const ProjectSchema = new Schema<IProject>({
     isPublic: {
         type: Boolean,
         default: false
+    },
+    isFavorited: {
+        type: Boolean,
+        default: false
+    },
+    deletedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true
@@ -314,6 +320,7 @@ const ProjectSchema = new Schema<IProject>({
 
 // Indexes
 ProjectSchema.index({ owner: 1, createdAt: -1 });
+ProjectSchema.index({ owner: 1, deletedAt: 1 }); // efficient soft-delete queries
 ProjectSchema.index({ name: 'text', description: 'text' });
 
 export const Project = mongoose.model<IProject>('Project', ProjectSchema);
@@ -324,8 +331,8 @@ export const Project = mongoose.model<IProject>('Project', ProjectSchema);
 
 export interface ISubscription extends Document {
     user: Types.ObjectId;
-    phonepeTransactionId: string;
-    phonepeMerchantTransactionId?: string;
+    phonepeTransactionId?: string;          // optional (sparse)
+    phonepeMerchantTransactionId?: string;  // optional (sparse)
     planType?: string;
     /** @deprecated Legacy Stripe field. Kept for data migration compatibility. */
     stripeCustomerId?: string;
@@ -355,11 +362,13 @@ const SubscriptionSchema = new Schema<ISubscription>({
     phonepeTransactionId: {
         type: String,
         sparse: true,
+        unique: true,
         index: true
     },
     phonepeMerchantTransactionId: {
         type: String,
         sparse: true,
+        unique: true,
         index: true
     },
     planType: {
@@ -369,8 +378,8 @@ const SubscriptionSchema = new Schema<ISubscription>({
     stripeCustomerId: { type: String, sparse: true, index: true },
     stripeSubscriptionId: { type: String, sparse: true },
     stripePriceId: { type: String },
-    razorpayPaymentId: { type: String, sparse: true },
-    razorpayOrderId: { type: String, sparse: true },
+    razorpayPaymentId: { type: String, sparse: true, unique: true },
+    razorpayOrderId: { type: String, sparse: true, unique: true },
     status: {
         type: String,
         enum: ['active', 'canceled', 'past_due', 'trialing', 'incomplete', 'expired'],
@@ -1212,6 +1221,152 @@ export const UsageLog = mongoose.model<IUsageLog>('UsageLog', UsageLogSchema);
 
 
 // ============================================
+// PAYMENT WEBHOOK EVENT LOCK SCHEMA
+// ============================================
+// Persistent idempotency lock for payment webhooks (PhonePe/Razorpay).
+
+export interface IPaymentWebhookEvent extends Document {
+    gateway: 'phonepe' | 'razorpay';
+    eventKey: string;
+    status: 'processing' | 'processed' | 'failed';
+    metadata?: Record<string, unknown>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const PaymentWebhookEventSchema = new Schema<IPaymentWebhookEvent>({
+    gateway: {
+        type: String,
+        enum: ['phonepe', 'razorpay'],
+        required: true,
+        index: true,
+    },
+    eventKey: {
+        type: String,
+        required: true,
+        index: true,
+    },
+    status: {
+        type: String,
+        enum: ['processing', 'processed', 'failed'],
+        default: 'processing',
+        index: true,
+    },
+    metadata: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+}, {
+    timestamps: true,
+});
+
+PaymentWebhookEventSchema.index({ gateway: 1, eventKey: 1 }, { unique: true });
+
+export const PaymentWebhookEvent = mongoose.model<IPaymentWebhookEvent>(
+    'PaymentWebhookEvent',
+    PaymentWebhookEventSchema,
+);
+
+
+// ============================================
+// LEGACY PAYMENT DATA ARCHIVE SCHEMA
+// ============================================
+// Stores deprecated Stripe/Razorpay fields after migration from Subscription.
+// Created by scripts/migrate-legacy-payment-data.ts
+
+export interface ILegacyPaymentData extends Document {
+    originalSubscriptionId: Types.ObjectId;
+    userId: Types.ObjectId;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    stripePriceId?: string;
+    razorpayPaymentId?: string;
+    razorpayOrderId?: string;
+    migratedAt: Date;
+}
+
+const LegacyPaymentDataSchema = new Schema<ILegacyPaymentData>({
+    originalSubscriptionId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        unique: true,
+        index: true,
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true,
+    },
+    stripeCustomerId: { type: String, sparse: true },
+    stripeSubscriptionId: { type: String, sparse: true },
+    stripePriceId: { type: String },
+    razorpayPaymentId: { type: String, sparse: true },
+    razorpayOrderId: { type: String, sparse: true },
+    migratedAt: { type: Date, default: Date.now },
+}, {
+    timestamps: false,
+    collection: 'legacypaymentdata',
+});
+
+export const LegacyPaymentData = mongoose.model<ILegacyPaymentData>('LegacyPaymentData', LegacyPaymentDataSchema);
+
+
+// ============================================
+// TIER CHANGE LOG SCHEMA
+// ============================================
+// Append-only audit log for every tier change.
+
+export interface ITierChangeLog extends Document {
+    userId: Types.ObjectId;
+    fromTier: 'free' | 'pro' | 'enterprise';
+    toTier: 'free' | 'pro' | 'enterprise';
+    reason: 'phonepe_webhook' | 'admin' | 'expiry' | 'manual';
+    timestamp: Date;
+    transactionId?: string;
+}
+
+const TierChangeLogSchema = new Schema<ITierChangeLog>({
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true,
+    },
+    fromTier: {
+        type: String,
+        enum: ['free', 'pro', 'enterprise'],
+        required: true,
+    },
+    toTier: {
+        type: String,
+        enum: ['free', 'pro', 'enterprise'],
+        required: true,
+    },
+    reason: {
+        type: String,
+        enum: ['phonepe_webhook', 'admin', 'expiry', 'manual'],
+        required: true,
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now,
+        required: true,
+    },
+    transactionId: {
+        type: String,
+        sparse: true,
+    },
+}, {
+    timestamps: false, // append-only, no updatedAt
+});
+
+TierChangeLogSchema.index({ userId: 1, timestamp: -1 });
+
+export const TierChangeLog = mongoose.model<ITierChangeLog>('TierChangeLog', TierChangeLogSchema);
+
+
+// ============================================
 // DATABASE CONNECTION
 // ============================================
 
@@ -1367,6 +1522,6 @@ export default {
     User, Project, Subscription, UserModel, RefreshTokenModel, VerificationCodeModel,
     Consent, AISession, AnalysisJob,
     DeviceSession, AnalysisResult, ReportGeneration, UsageLog,
-    QuotaRecord, CollaborationInvite,
+    PaymentWebhookEvent, QuotaRecord, CollaborationInvite,
     connectDB, disconnectDB
 };

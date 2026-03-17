@@ -12,6 +12,7 @@
 import { FC, useState, useMemo, useCallback } from 'react';
 import * as Tabs from '@radix-ui/react-tabs';
 import { useModelStore, AnalysisResults, Member } from '../store/model';
+import { useUser } from '../store/authStore';
 import {
     MATERIALS_DATABASE,
     STEEL_SECTIONS,
@@ -31,6 +32,7 @@ import { generateDesignReport } from '../services/PDFReportService';
 import { generateDXF, downloadDXF } from '../services/DXFExportService';
 import { generateIFC, downloadIFC } from '../services/IFCExportService';
 import { StatusBadge } from './ui/StatusBadge';
+import { PanelErrorBoundary, PanelFallback } from './ui/PanelErrorBoundary';
 
 // ============================================
 // TYPES
@@ -63,6 +65,8 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
     const members = useModelStore((s) => s.members);
     const nodes = useModelStore((s) => s.nodes);
     const selectedIds = useModelStore((s) => s.selectedIds);
+    const projectInfo = useModelStore((s) => s.projectInfo);
+    const user = useUser();
 
     const [activeTab, setActiveTab] = useState('forces');
     const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
@@ -202,11 +206,11 @@ export const AnalysisDesignPanel: FC<AnalysisDesignPanelProps> = ({
 
         generateDesignReport(
             {
-                // Project metadata — user name and project name are populated from the active session when available
-                name: "BeamLab Project",
-                engineer: "Engineer",
+                // Bug Condition C3 fix: read from store/auth instead of hardcoded strings
+                name: projectInfo?.name ?? 'Untitled Project',
+                engineer: (user as { fullName?: string; email?: string } | null)?.fullName ?? (user as { fullName?: string; email?: string } | null)?.email ?? 'Engineer',
                 date: new Date().toLocaleDateString(),
-                description: "Automated Design Report"
+                description: projectInfo?.description ?? 'Automated Design Report',
             },
             memberList,
             nodeList,
@@ -721,4 +725,11 @@ const EmptyState: FC<{ message: string; icon: string }> = ({ message, icon }) =>
     </div>
 );
 
-export default AnalysisDesignPanel;
+/** Wrapped export — consumers get error boundary for free */
+const AnalysisDesignPanelWithBoundary: FC<AnalysisDesignPanelProps> = (props) => (
+    <PanelErrorBoundary fallback={<PanelFallback name="Analysis & Design" />}>
+        <AnalysisDesignPanel {...props} />
+    </PanelErrorBoundary>
+);
+
+export default AnalysisDesignPanelWithBoundary;

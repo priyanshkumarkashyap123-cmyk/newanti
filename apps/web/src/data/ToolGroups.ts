@@ -26,7 +26,10 @@ import {
     ListTree, Tag, Search, Globe, Sparkles,
     Diff, Group, Ungroup, Lock, Unlock,
     PanelTop, History, Undo2, Redo2, Aperture,
-    MoveHorizontal, MoveVertical, Move3D, LayoutGrid
+    MoveHorizontal, MoveVertical, Move3D, LayoutGrid,
+    TrendingUp, Activity, Radio, AlertTriangle,
+    BarChart2, BarChart, Sliders, ArrowUp,
+    Percent, Snowflake
 } from 'lucide-react';
 
 // ============================================
@@ -994,7 +997,195 @@ export const TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
         tooltip: 'Create PDF calculation report',
         icon: FileText,
         category: 'DESIGN'
-    }
+    },
+
+    // ========== NEW ANALYSIS TOOLS (STAAD.Pro parity) ==========
+    PDELTA_ANALYSIS: {
+        id: 'PDELTA_ANALYSIS',
+        label: 'P-Delta',
+        tooltip: 'P-Delta second-order geometric nonlinear analysis',
+        icon: TrendingUp,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    BUCKLING_ANALYSIS: {
+        id: 'BUCKLING_ANALYSIS',
+        label: 'Buckling',
+        tooltip: 'Linear buckling analysis — critical load factors',
+        icon: Layers,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    TIME_HISTORY_ANALYSIS: {
+        id: 'TIME_HISTORY_ANALYSIS',
+        label: 'Time History',
+        tooltip: 'Time-history dynamic analysis',
+        icon: Activity,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    NONLINEAR_ANALYSIS: {
+        id: 'NONLINEAR_ANALYSIS',
+        label: 'Nonlinear',
+        tooltip: 'Nonlinear static analysis',
+        icon: Workflow,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    DYNAMICS_PANEL: {
+        id: 'DYNAMICS_PANEL',
+        label: 'Dynamics',
+        tooltip: 'Dynamics analysis panel',
+        icon: Waves,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    PLATE_STRESS_CONTOUR: {
+        id: 'PLATE_STRESS_CONTOUR',
+        label: 'Plate Stress',
+        tooltip: 'Plate/shell stress contour visualization',
+        icon: Grid,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    RESPONSE_SPECTRUM_ANALYSIS: {
+        id: 'RESPONSE_SPECTRUM_ANALYSIS',
+        label: 'Response Spectrum',
+        tooltip: 'Response spectrum analysis (SRSS/CQC modal combination)',
+        icon: BarChart2,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    PUSHOVER_ANALYSIS: {
+        id: 'PUSHOVER_ANALYSIS',
+        label: 'Pushover',
+        tooltip: 'Nonlinear static pushover analysis',
+        icon: TrendingUp,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    STEADY_STATE_ANALYSIS: {
+        id: 'STEADY_STATE_ANALYSIS',
+        label: 'Steady State',
+        tooltip: 'Steady-state harmonic response analysis',
+        icon: Radio,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    IMPERFECTION_ANALYSIS: {
+        id: 'IMPERFECTION_ANALYSIS',
+        label: 'Imperfection',
+        tooltip: 'Direct analysis method with notional loads (AISC 360 Ch. C)',
+        icon: AlertTriangle,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    VIEW_STORY_DRIFT: {
+        id: 'VIEW_STORY_DRIFT',
+        label: 'Story Drift',
+        tooltip: 'View inter-story drift ratios',
+        icon: Building,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    VIEW_FORCE_ENVELOPE: {
+        id: 'VIEW_FORCE_ENVELOPE',
+        label: 'Force Envelope',
+        tooltip: 'View force envelopes across all load combinations',
+        icon: BarChart,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    VIEW_SECTION_FORCES: {
+        id: 'VIEW_SECTION_FORCES',
+        label: 'Section Forces',
+        tooltip: 'View internal forces at fractional positions along member',
+        icon: Scissors,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+    ANIMATE_MODE_SHAPE: {
+        id: 'ANIMATE_MODE_SHAPE',
+        label: 'Mode Shape',
+        tooltip: 'Animate mode shapes from modal analysis',
+        icon: Play,
+        category: 'ANALYSIS',
+        group: 'analysis'
+    },
+
+    // ========== NEW PROPERTIES TOOLS (STAAD.Pro parity) ==========
+    ASSIGN_PARTIAL_RELEASE: {
+        id: 'ASSIGN_PARTIAL_RELEASE',
+        label: 'Partial Release',
+        tooltip: 'Assign partial moment releases to member ends',
+        icon: Sliders,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_TENSION_ONLY: {
+        id: 'ASSIGN_TENSION_ONLY',
+        label: 'Tension Only',
+        tooltip: 'Mark members as tension-only (bracing)',
+        icon: ArrowUp,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_COMPRESSION_ONLY: {
+        id: 'ASSIGN_COMPRESSION_ONLY',
+        label: 'Compression Only',
+        tooltip: 'Mark members as compression-only (struts)',
+        icon: ArrowDown,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_INACTIVE: {
+        id: 'ASSIGN_INACTIVE',
+        label: 'Inactive',
+        tooltip: 'Mark members as inactive for selected load cases',
+        icon: EyeOff,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_DIAPHRAGM: {
+        id: 'ASSIGN_DIAPHRAGM',
+        label: 'Diaphragm',
+        tooltip: 'Assign rigid/semi-rigid/flexible diaphragm to floor nodes',
+        icon: LayoutGrid,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_MASTER_SLAVE: {
+        id: 'ASSIGN_MASTER_SLAVE',
+        label: 'Master/Slave',
+        tooltip: 'Define master/slave joint constraints',
+        icon: Link2,
+        category: 'PROPERTIES'
+    },
+    ASSIGN_PROPERTY_REDUCTION: {
+        id: 'ASSIGN_PROPERTY_REDUCTION',
+        label: 'Prop. Reduction',
+        tooltip: 'Apply property reduction factors (cracked section)',
+        icon: Percent,
+        category: 'PROPERTIES'
+    },
+
+    // ========== NEW LOADING TOOLS (STAAD.Pro parity) ==========
+    ADD_FLOOR_LOAD: {
+        id: 'ADD_FLOOR_LOAD',
+        label: 'Floor Load',
+        tooltip: 'Generate floor loads using two-way yield-line distribution',
+        icon: Layers,
+        category: 'LOADING'
+    },
+    ADD_AREA_LOAD: {
+        id: 'ADD_AREA_LOAD',
+        label: 'Area Load',
+        tooltip: 'Generate one-way tributary area loads on beams',
+        icon: Square,
+        category: 'LOADING'
+    },
+    ADD_SNOW_LOAD: {
+        id: 'ADD_SNOW_LOAD',
+        label: 'Snow Load',
+        tooltip: 'Generate snow loads per ASCE 7 or IS 875 Part 4',
+        icon: Snowflake,
+        category: 'LOADING'
+    },
 };
 
 // ============================================

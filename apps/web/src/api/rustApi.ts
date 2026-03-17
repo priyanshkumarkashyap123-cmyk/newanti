@@ -584,6 +584,11 @@ class RustApiService {
    * Small models (<500 nodes) -> WASM (in-browser, zero latency)
    * Medium models (500-5000 nodes) -> Rust backend (10x faster)
    * Rust unavailable -> Python fallback
+   *
+   * @param model - The structural analysis model
+   * @param analysisType - Type of analysis to perform
+   * @param options - Options including an optional `wasmRunner` injected dependency.
+   *   Pass `wasmRunner` to avoid dynamic imports of localAnalysis (eliminates circular dep risk).
    */
   async smartAnalyze(
     model: AnalysisModel,
@@ -593,7 +598,7 @@ class RustApiService {
       | "pdelta"
       | "buckling"
       | "spectrum" = "static",
-    options: Record<string, unknown> = {},
+    options: { wasmRunner?: () => Promise<unknown>; [key: string]: unknown } = {},
   ): Promise<{
     result: unknown;
     backend: "wasm" | "rust" | "python";
@@ -602,12 +607,18 @@ class RustApiService {
     const nodeCount = model.nodes.length;
     const start = performance.now();
 
-    // Small models: try WASM first
+    // Small models: try WASM first (via injected wasmRunner or dynamic import fallback)
     if (nodeCount < 500 && analysisType === "static") {
       try {
-        // WASM solver import (if available)
-        const { runLocalAnalysis } = await import("./localAnalysis");
-        const result = await runLocalAnalysis();
+        let result: unknown;
+        if (options.wasmRunner) {
+          // Use injected wasmRunner (preferred — no circular dep)
+          result = await options.wasmRunner();
+        } else {
+          // Fallback: dynamic import (legacy path)
+          const { runLocalAnalysis } = await import("./localAnalysis");
+          result = await runLocalAnalysis();
+        }
         return {
           result,
           backend: "wasm",

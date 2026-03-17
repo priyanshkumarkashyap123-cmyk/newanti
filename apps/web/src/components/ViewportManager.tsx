@@ -20,7 +20,7 @@ import { SafeCanvasWrapper } from "./viewer/SafeCanvasWrapper";
 import { CameraFitController } from "./viewer/CameraFitController";
 import { useUIStore } from "../store/uiStore";
 import { useShallow } from "zustand/react/shallow";
-import { useMultiplayerContextSafe } from "./collaborators/MultiplayerContext";
+import { useMultiplayerContextSafe } from "./collaboration/MultiplayerContext";
 import { Cpu, Zap, Box, GitBranch, Square, Rotate3d } from "lucide-react";
 
 type ViewportLayout = "SINGLE" | "QUAD";

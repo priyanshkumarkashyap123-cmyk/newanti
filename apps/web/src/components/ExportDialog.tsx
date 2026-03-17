@@ -7,6 +7,7 @@ import { useUIStore } from '../store/uiStore';
 import { ReportingService } from '../services/ReportingService';
 import { SteelDesignResults } from '../services/SteelDesignService';
 import { FileText, TableProperties, Check, Loader2, AlertCircle } from 'lucide-react';
+import { TierGate } from './TierGate';
 
 /**
  * ExportDialog - Modal for exporting analysis results
@@ -113,6 +114,7 @@ export const ExportDialog: FC<{
                             <div className="flex flex-col gap-4">
                                 <h3 className="text-sm font-medium text-slate-900 dark:text-white">Generate Reports</h3>
                                 <div className="grid grid-cols-2 gap-4">
+                                    <TierGate feature="pdfExport">
                                     <button type="button"
                                         onClick={() => {
                                             if (projectInfo && nodes && members) {
@@ -150,6 +152,7 @@ export const ExportDialog: FC<{
                                             <div className="text-xs text-slate-500 dark:text-slate-400">PDF Report</div>
                                         </div>
                                     </button>
+                                    </TierGate>
 
                                     <button type="button"
                                         onClick={() => {

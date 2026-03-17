@@ -50,6 +50,8 @@ export interface MemberResult {
   endNodeId: string;
   length: number;
   sectionType?: string;
+  /** Material type for DC ratio display — steel uses Rust/WASM, concrete uses Python */
+  materialType?: 'steel' | 'concrete';
   maxShear: number;
   minShear: number;
   maxMoment: number;
@@ -138,6 +140,8 @@ export interface AnalysisResultsDashboardProps {
   onClose?: () => void;
   onExport?: (format: "pdf" | "excel" | "json") => void;
   onMemberSelect?: (memberId: string) => void;
+  isLoading?: boolean;
+  progress?: import('../../hooks/useAnalysis').AnalysisProgressStep[];
 }
 
 // ============================================

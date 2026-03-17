@@ -92,6 +92,14 @@ const envSchema = z.object({
 
   // Cost-weighted rate limiting
   RATE_LIMIT_COST_BUDGET: z.coerce.number().int().positive().optional().default(200),
+
+  // Azure VM GPU Orchestrator (optional — falls back to Python when absent)
+  AZURE_VM_ORCHESTRATOR_URL: z.string().url().optional(),
+  AZURE_VM_ORCHESTRATOR_API_KEY: z.string().optional(),
+  AZURE_VM_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(30_000),
+  AZURE_VM_CIRCUIT_THRESHOLD: z.coerce.number().int().positive().optional().default(5),
+  AZURE_VM_CIRCUIT_RESET_MS: z.coerce.number().int().positive().optional().default(60_000),
+  AZURE_VM_SUBMIT_MAX_RETRIES: z.coerce.number().int().positive().optional().default(3),
 });
 
 // ============================================

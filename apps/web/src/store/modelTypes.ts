@@ -49,6 +49,14 @@ export interface Node {
   z: number;
   restraints?: Restraints; // Optional: Support conditions
   springStiffness?: SpringStiffness; // Optional: elastic spring supports
+
+  // Master/slave constraint
+  masterSlaveConstraint?: {
+    role: 'master' | 'slave';
+    masterNodeId?: string; // set on slave nodes
+    coupledDOFs: { fx: boolean; fy: boolean; fz: boolean;
+                   mx: boolean; my: boolean; mz: boolean; };
+  };
 }
 
 export interface NodeLoad {
@@ -290,6 +298,56 @@ export interface SectionDimensions {
   builtUpBotFlangeThickness?: number;
 }
 
+// ─── Partial Release DOF ────────────────────────────────────────────────────
+
+export interface PartialReleaseDOF {
+  mode: 'fixed' | 'released' | 'partial';
+  factor?: number; // 0.001–0.999, only when mode === 'partial'
+}
+
+export interface PartialReleaseEndSpec {
+  fx?: PartialReleaseDOF;
+  fy?: PartialReleaseDOF;
+  fz?: PartialReleaseDOF;
+  mx?: PartialReleaseDOF;
+  my?: PartialReleaseDOF;
+  mz?: PartialReleaseDOF;
+}
+
+// ─── Diaphragm ──────────────────────────────────────────────────────────────
+
+export type DiaphragmType = 'rigid' | 'semi-rigid' | 'flexible';
+export type DiaphragmPlane = 'XY' | 'XZ' | 'YZ';
+
+export interface DiaphragmSpec {
+  id: string;
+  type: DiaphragmType;
+  plane: DiaphragmPlane;
+  storyLabel: string;
+  nodeIds: string[];
+}
+
+// ─── Built-Up Section ───────────────────────────────────────────────────────
+
+export interface BuiltUpComponent {
+  shapeType: SectionType;
+  dimensions: SectionDimensions;
+  offsetX: number; // centroid offset from reference point (mm)
+  offsetY: number;
+}
+
+export interface BuiltUpSectionDef {
+  id: string;
+  name: string;
+  components: BuiltUpComponent[];
+  // Computed combined properties (mm units for section builder)
+  combinedArea?: number;       // mm²
+  combinedIxx?: number;        // mm⁴
+  combinedIyy?: number;        // mm⁴
+  combinedCentroidX?: number;  // mm
+  combinedCentroidY?: number;  // mm
+}
+
 export interface Member {
   id: string;
   startNodeId: string;
@@ -336,6 +394,34 @@ export interface Member {
   startOffset?: { x: number; y: number; z: number };
   endOffset?: { x: number; y: number; z: number };
   betaAngle?: number; // Rotation angle in degrees
+
+  // ── STAAD.Pro parity extensions ──
+
+  // Axial behavior (tension-only / compression-only)
+  axialBehavior?: 'tension-only' | 'compression-only' | 'normal';
+
+  // Inactive member specification
+  inactive?: {
+    scope: 'global' | 'load_cases';
+    loadCaseIds?: string[];
+  };
+
+  // Partial moment releases (extends existing releases)
+  partialReleases?: {
+    start: PartialReleaseEndSpec;
+    end: PartialReleaseEndSpec;
+  };
+
+  // Property reduction factors (cracked section, AISC DAM)
+  propertyReductionFactors?: {
+    rax?: number; // axial area multiplier (0.01–1.00)
+    rix?: number; // torsional inertia multiplier
+    riy?: number; // weak-axis bending inertia multiplier
+    riz?: number; // strong-axis bending inertia multiplier
+  };
+
+  // Diaphragm assignment
+  diaphragmId?: string; // references DiaphragmSpec.id
 }
 
 // ─── Member Groups ──────────────────────────────────────────────────────────

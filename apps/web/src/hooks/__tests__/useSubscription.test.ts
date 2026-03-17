@@ -8,9 +8,6 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { SubscriptionProvider, useSubscription } from '../useSubscription';
 
-// Declare global for TypeScript
-declare const global: any;
-
 // Mock fetch
 const mockFetch = vi.fn();
 global.fetch = mockFetch;

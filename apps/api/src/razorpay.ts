@@ -1,6 +1,8 @@
 /**
  * ============================================================================
- * Razorpay Payment Gateway — Billing Service
+ * @deprecated Razorpay Payment Gateway — Billing Service
+ * This module is deprecated. Use PhonePe (phonepe.ts) for all new payment flows.
+ * Kept for backward compatibility with existing Razorpay transactions.
  * ============================================================================
  *
  * Handles the Razorpay checkout flow for BeamLab:
@@ -24,7 +26,13 @@
 import { Router, Request, Response, type IRouter } from "express";
 import { createHmac } from "crypto";
 import { requireAuth, getAuth, isUsingClerk } from "./middleware/authMiddleware.js";
-import { User, Subscription, UserModel } from "./models.js";
+import {
+  validateBody,
+  billingCreateOrderSchema,
+  razorpayVerifySchema,
+} from "./middleware/validation.js";
+import { User, Subscription, UserModel, PaymentWebhookEvent } from "./models.js";
+import { resolveTierFromPlanId } from "./utils/billingConfig.js";
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { createOrderUsingVendorPattern } from "./razorpay.custom.js";
@@ -158,7 +166,8 @@ interface RazorpayOrderResponse {
 const RAZORPAY_KEY_ID = env.RAZORPAY_KEY_ID ?? "";
 const RAZORPAY_KEY_SECRET = env.RAZORPAY_KEY_SECRET ?? "";
 const RAZORPAY_WEBHOOK_SECRET = env.RAZORPAY_WEBHOOK_SECRET ?? "";
-const BILLING_BYPASS = process.env["TEMP_UNLOCK_ALL"] === "true";
+const BILLING_BYPASS_REQUESTED = process.env["TEMP_UNLOCK_ALL"] === "true";
+const BILLING_BYPASS = BILLING_BYPASS_REQUESTED && env.NODE_ENV !== "production";
 
 const isRazorpayConfigured = !!(RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET);
 
@@ -171,8 +180,10 @@ if (isRazorpayConfigured) {
   });
 }
 
-if (BILLING_BYPASS) {
-  log.warn("Billing bypass enabled — Razorpay verification skipped");
+if (BILLING_BYPASS_REQUESTED && env.NODE_ENV === "production") {
+  log.warn("TEMP_UNLOCK_ALL was requested but is ignored in production");
+} else if (BILLING_BYPASS) {
+  log.warn("Billing bypass enabled (non-production only) — Razorpay verification skipped");
 }
 
 // ============================================
@@ -180,7 +191,6 @@ if (BILLING_BYPASS) {
 // ============================================
 
 const idempotencyStore = new Map<string, { result: unknown; expiresAt: number }>();
-const processedWebhookEvents = new Set<string>();
 const IDEMPOTENCY_TTL = 5 * 60 * 1000; // 5 minutes
 
 function cleanIdempotencyStore() {
@@ -323,6 +333,7 @@ export class RazorpayBillingService {
     orderId: string,
     plan: PlanConfig,
   ): Promise<void> {
+    const targetTier = resolveTierFromPlanId(plan.planId);
     const now = new Date();
     const expiresAt = new Date(now.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
 
@@ -333,6 +344,34 @@ export class RazorpayBillingService {
 
     if (!userDoc?._id) {
       throw new BillingError("User not found", "USER_NOT_FOUND", 404);
+    }
+
+    const duplicateTxSub = await Subscription.findOne({
+      $or: [
+        { razorpayPaymentId: transactionId },
+        { razorpayOrderId: orderId },
+      ],
+    })
+      .select('user razorpayPaymentId razorpayOrderId')
+      .lean();
+
+    if (duplicateTxSub) {
+      const duplicateUserId = String(duplicateTxSub.user);
+      const currentUserId = String(userDoc._id);
+      if (duplicateUserId !== currentUserId) {
+        throw new BillingError(
+          'Transaction already linked to another account',
+          'VERIFICATION_FAILED',
+          409,
+          false,
+        );
+      }
+      log.info('Duplicate Razorpay activation skipped', {
+        userId: String(userId),
+        transactionId,
+        orderId,
+      });
+      return;
     }
 
     const subscription = await Subscription.findOneAndUpdate(
@@ -355,12 +394,12 @@ export class RazorpayBillingService {
     if (USE_CLERK) {
       await User.updateOne(
         { _id: userDoc._id },
-        { $set: { tier: "pro", subscription: subscription._id } },
+        { $set: { tier: targetTier, subscription: subscription._id } },
       );
     } else {
       await UserModel.updateOne(
         { _id: userDoc._id },
-        { $set: { subscriptionTier: "pro" } },
+        { $set: { subscriptionTier: targetTier } },
       );
     }
 
@@ -408,13 +447,21 @@ export class RazorpayBillingService {
 
     const eventId = event.payload?.payment?.entity?.id ?? `evt_${Date.now()}`;
 
-    // Deduplication guard
-    if (processedWebhookEvents.has(eventId)) {
-      log.info("Webhook duplicate — skipping", { eventId });
-      return { processed: false, eventId };
+    // Deduplication guard (persistent)
+    try {
+      await PaymentWebhookEvent.create({
+        gateway: "razorpay",
+        eventKey: eventId,
+        status: "processing",
+        metadata: { eventType: event.event },
+      });
+    } catch (err: any) {
+      if (err?.code === 11000) {
+        log.info("Webhook duplicate — skipping", { eventId });
+        return { processed: false, eventId };
+      }
+      throw err;
     }
-    if (processedWebhookEvents.size > 50_000) processedWebhookEvents.clear();
-    processedWebhookEvents.add(eventId);
 
     if (event.event === "payment.captured") {
       const payment = event.payload?.payment?.entity;
@@ -439,6 +486,18 @@ export class RazorpayBillingService {
       }
     }
 
+    await PaymentWebhookEvent.updateOne(
+      { gateway: "razorpay", eventKey: eventId },
+      {
+        $set: {
+          status: "processed",
+          metadata: {
+            eventType: event.event,
+          },
+        },
+      },
+    );
+
     return { processed: true, eventId };
   }
 }
@@ -456,6 +515,7 @@ export const razorpayBillingRouter: IRouter = Router();
 razorpayBillingRouter.post(
   "/create-order",
   requireAuth(),
+  validateBody(billingCreateOrderSchema),
   async (req: Request, res: Response) => {
     const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
@@ -466,19 +526,10 @@ razorpayBillingRouter.post(
       }
 
       const { planType, planId, checkoutPlanId } = req.body as {
-        planType?: string;
-        planId?: string;
+        planType: PlanType;
+        planId?: PlanId;
         checkoutPlanId?: string;
       };
-
-      if (!planType || !["monthly", "yearly"].includes(planType)) {
-        res.status(400).json({
-          success: false,
-          message: "planType must be 'monthly' or 'yearly'",
-          requestId,
-        });
-        return;
-      }
 
       if (BILLING_BYPASS) {
         res.json({
@@ -531,6 +582,7 @@ razorpayBillingRouter.post(
 razorpayBillingRouter.post(
   "/verify-payment",
   requireAuth(),
+  validateBody(razorpayVerifySchema),
   async (req: Request, res: Response) => {
     const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
@@ -542,29 +594,20 @@ razorpayBillingRouter.post(
 
       const { razorpayOrderId, razorpayPaymentId, razorpaySignature, planType, planId, checkoutPlanId } =
         req.body as {
-          razorpayOrderId?: string;
-          razorpayPaymentId?: string;
-          razorpaySignature?: string;
-          planType?: string;
-          planId?: string;
+          razorpayOrderId: string;
+          razorpayPaymentId: string;
+          razorpaySignature: string;
+          planType: PlanType;
+          planId?: PlanId;
           checkoutPlanId?: string;
         };
-
-      if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature || !planType) {
-        res.status(400).json({
-          success: false,
-          message: "Missing required fields: razorpayOrderId, razorpayPaymentId, razorpaySignature, planType",
-          requestId,
-        });
-        return;
-      }
 
       if (BILLING_BYPASS) {
         res.json({
           success: true,
           message: "Billing bypass active. Pro features unlocked.",
           requestId,
-          data: { tier: "pro", planType, transactionId: razorpayPaymentId },
+          data: { tier: "enterprise", planType, transactionId: razorpayPaymentId },
         });
         return;
       }
@@ -582,8 +625,12 @@ razorpayBillingRouter.post(
       res.json({
         success: true,
         requestId,
-        message: "Payment verified. Welcome to BeamLab Pro!",
-        data: { tier: "pro", planType, transactionId: razorpayPaymentId },
+        message: `Payment verified. Welcome to BeamLab ${planId === 'business' ? 'Enterprise' : 'Pro'}!`,
+        data: {
+          tier: resolveTierFromPlanId((planId as PlanId | undefined) ?? 'pro'),
+          planType,
+          transactionId: razorpayPaymentId,
+        },
       });
     } catch (err) {
       if (err instanceof BillingError) {

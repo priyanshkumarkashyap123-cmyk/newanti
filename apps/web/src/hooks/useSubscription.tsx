@@ -28,6 +28,7 @@ import { useAuth } from "../providers/AuthProvider";
 import { API_CONFIG } from "@/config/env";
 import { PAYMENT_CONFIG } from "@/config/env";
 import { createLogger } from "../utils/logger";
+import { TIER_CONFIG, type TierName } from "../config/tierConfig";
 
 // ============================================
 // MASTER USER ACCESS
@@ -62,45 +63,59 @@ export interface SubscriptionStatus {
   isRevalidating: boolean;
 }
 
-// ⚠️  TEMPORARY: All tiers unlocked for beta/testing until payment
-//    gateway (PhonePe / Razorpay) is integrated.
-//    When payment is live, restore free-tier limits:
-//    maxProjects: 3, pdfExport: false, aiAssistant: false,
-//    advancedDesignCodes: false, teamMembers: 1,
-//    prioritySupport: false, apiAccess: false
-// TODO(payment): Revert free tier limits after payment gateway integration
+// Re-export TIER_FEATURES from TIER_CONFIG for backward compatibility
 const TIER_FEATURES: Record<SubscriptionTier, SubscriptionFeatures> = {
   free: {
-    maxProjects: 3,
-    pdfExport: false,
-    aiAssistant: false,
-    advancedDesignCodes: false,
-    teamMembers: 1,
-    prioritySupport: false,
-    apiAccess: false,
+    maxProjects: TIER_CONFIG.free.maxProjects,
+    pdfExport: TIER_CONFIG.free.pdfExport,
+    aiAssistant: TIER_CONFIG.free.aiAssistant,
+    advancedDesignCodes: TIER_CONFIG.free.advancedDesignCodes,
+    teamMembers: TIER_CONFIG.free.teamMembers,
+    prioritySupport: TIER_CONFIG.free.prioritySupport,
+    apiAccess: TIER_CONFIG.free.apiAccess,
   },
   pro: {
-    maxProjects: -1, // unlimited
-    pdfExport: true,
-    aiAssistant: true,
-    advancedDesignCodes: true,
-    teamMembers: 5,
-    prioritySupport: true,
-    apiAccess: false,
+    maxProjects: TIER_CONFIG.pro.maxProjects,
+    pdfExport: TIER_CONFIG.pro.pdfExport,
+    aiAssistant: TIER_CONFIG.pro.aiAssistant,
+    advancedDesignCodes: TIER_CONFIG.pro.advancedDesignCodes,
+    teamMembers: TIER_CONFIG.pro.teamMembers,
+    prioritySupport: TIER_CONFIG.pro.prioritySupport,
+    apiAccess: TIER_CONFIG.pro.apiAccess,
   },
   enterprise: {
-    maxProjects: -1,
-    pdfExport: true,
-    aiAssistant: true,
-    advancedDesignCodes: true,
-    teamMembers: -1, // unlimited
-    prioritySupport: true,
-    apiAccess: true,
+    maxProjects: TIER_CONFIG.enterprise.maxProjects,
+    pdfExport: TIER_CONFIG.enterprise.pdfExport,
+    aiAssistant: TIER_CONFIG.enterprise.aiAssistant,
+    advancedDesignCodes: TIER_CONFIG.enterprise.advancedDesignCodes,
+    teamMembers: TIER_CONFIG.enterprise.teamMembers,
+    prioritySupport: TIER_CONFIG.enterprise.prioritySupport,
+    apiAccess: TIER_CONFIG.enterprise.apiAccess,
   },
 };
 
-// TEMPORARY BILLING BYPASS (default true while KYC/payment onboarding is pending)
+// TEMPORARY BILLING BYPASS — defaults to false when env var is absent (safe default)
+// SECURITY: PAYMENT_CONFIG.billingBypass must be false in production
 const TEMP_UNLOCK_ALL = PAYMENT_CONFIG.billingBypass;
+
+/**
+ * computeCanAccess — pure function for testability.
+ * Returns whether a given tier grants access to a feature,
+ * respecting the billingBypass flag.
+ *
+ * Property 1: When billingBypass=false, result equals TIER_CONFIG[tier][feature].
+ */
+export function computeCanAccess(
+  tier: TierName,
+  feature: keyof SubscriptionFeatures,
+  billingBypass: boolean,
+): boolean {
+  if (billingBypass) return true;
+  const value = TIER_CONFIG[tier][feature];
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  return false;
+}
 
 // ============================================
 // CONTEXT
@@ -271,14 +286,13 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
   const canAccess = useCallback(
     (feature: keyof SubscriptionFeatures): boolean => {
       if (TEMP_UNLOCK_ALL) return true;
-      // SECURITY: deny during loading
-      if (subscription.isLoading) return false;
-      const value = subscription.features[feature];
-      if (typeof value === "boolean") return value;
-      if (typeof value === "number") return value !== 0;
-      return false;
+      // Stale-while-revalidate: use cached tier during loading to prevent flash
+      const effectiveTier: TierName = subscription.isLoading
+        ? cachedTier()   // from localStorage, defaults to 'free' if absent
+        : (subscription.tier as TierName);
+      return computeCanAccess(effectiveTier, feature, false);
     },
-    [subscription.isLoading, subscription.features],
+    [subscription.isLoading, subscription.tier],
   );
 
   const requiresUpgrade = useCallback(

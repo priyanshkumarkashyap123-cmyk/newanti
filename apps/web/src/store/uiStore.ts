@@ -133,14 +133,23 @@ export const CATEGORY_TOOLS: Record<Category, string[]> = {
     "ASSIGN_SECTION",
     "ASSIGN_MATERIAL",
     "ASSIGN_RELEASE",
+    "ASSIGN_PARTIAL_RELEASE",
     "ASSIGN_OFFSET",
     // Advanced property tools
     "ASSIGN_CABLE_PROPS",
     "ASSIGN_SPRING",
     "ASSIGN_MASS",
     "MEMBER_ORIENTATION",
+    "ASSIGN_SUPPORT",
     "ASSIGN_RIGID",
     "ASSIGN_HINGE",
+    // STAAD.Pro parity property tools
+    "ASSIGN_TENSION_ONLY",
+    "ASSIGN_COMPRESSION_ONLY",
+    "ASSIGN_INACTIVE",
+    "ASSIGN_DIAPHRAGM",
+    "ASSIGN_MASTER_SLAVE",
+    "ASSIGN_PROPERTY_REDUCTION",
     // Section tools
     "SECTION_BUILDER",
     "IMPORT_SECTION",
@@ -174,6 +183,9 @@ export const CATEGORY_TOOLS: Record<Category, string[]> = {
     "ADD_TRAPEZOID",
     "ADD_WIND",
     "ADD_SEISMIC",
+    "ADD_SNOW_LOAD",
+    "ADD_FLOOR_LOAD",
+    "ADD_AREA_LOAD",
     "LOAD_COMBINATIONS",
     // Extended loading tools
     "ADD_PRETENSION",
@@ -184,7 +196,6 @@ export const CATEGORY_TOOLS: Record<Category, string[]> = {
     "ADD_SETTLEMENT",
     "ADD_PRESSURE",
     "ADD_CENTRIFUGAL",
-    "ADD_SNOW_LOAD",
     // Load management
     "LOAD_PATTERN",
     "ENVELOPE",
@@ -194,18 +205,26 @@ export const CATEGORY_TOOLS: Record<Category, string[]> = {
   ],
   ANALYSIS: [
     "RUN_ANALYSIS",
+    "PDELTA_ANALYSIS",
+    "BUCKLING_ANALYSIS",
+    "NONLINEAR_ANALYSIS",
+    "IMPERFECTION_ANALYSIS",
+    "RESPONSE_SPECTRUM_ANALYSIS",
+    "TIME_HISTORY_ANALYSIS",
+    "STEADY_STATE_ANALYSIS",
+    "PUSHOVER_ANALYSIS",
+    "DYNAMICS_PANEL",
+    "MODAL_ANALYSIS",
     "VIEW_DEFORMED",
     "VIEW_REACTIONS",
     "VIEW_SFD",
     "VIEW_BMD",
     "VIEW_DIAGRAMS",
-    // Advanced analysis
-    "MODAL_ANALYSIS",
-    "BUCKLING_ANALYSIS",
-    "P_DELTA",
-    "PUSHOVER",
-    "TIME_HISTORY",
-    "RESPONSE_SPECTRUM",
+    "PLATE_STRESS_CONTOUR",
+    "ANIMATE_MODE_SHAPE",
+    "VIEW_STORY_DRIFT",
+    "VIEW_FORCE_ENVELOPE",
+    "VIEW_SECTION_FORCES",
     // Additional analysis
     "CABLE_ANALYSIS",
     "STRESS_CONTOUR",
@@ -413,6 +432,31 @@ interface UIState {
     timberDesignDialog: boolean;
     compositeDesignDialog: boolean;
     aluminumDesignDialog: boolean;
+    // ── STAAD.Pro parity: Analysis panels ──
+    pDeltaAnalysisPanel: boolean;
+    bucklingAnalysisPanel: boolean;
+    timeHistoryPanel: boolean;
+    nonLinearAnalysisPanel: boolean;
+    dynamicsPanel: boolean;
+    plateResultsVisualization: boolean;
+    // ── STAAD.Pro parity: New analysis dialogs ──
+    responseSpectrumDialog: boolean;
+    pushoverAnalysisDialog: boolean;
+    imperfectionAnalysisDialog: boolean;
+    // ── STAAD.Pro parity: Post-processing panels ──
+    storyDriftPanel: boolean;
+    forceEnvelopePanel: boolean;
+    sectionForcesPanel: boolean;
+    modeShapeAnimationPanel: boolean;
+    // ── STAAD.Pro parity: Property assignment dialogs ──
+    partialReleaseDialog: boolean;
+    inactiveMemberDialog: boolean;
+    diaphragmAssignmentDialog: boolean;
+    masterSlaveDialog: boolean;
+    propertyReductionDialog: boolean;
+    // ── STAAD.Pro parity: Load generator dialogs ──
+    floorLoadDialog: boolean;
+    areaLoadDialog: boolean;
   };
 
   // Graphics State
@@ -736,6 +780,31 @@ export const useUIStore = create<UIState>()(
         timberDesignDialog: false,
         compositeDesignDialog: false,
         aluminumDesignDialog: false,
+        // ── STAAD.Pro parity: Analysis panels ──
+        pDeltaAnalysisPanel: false,
+        bucklingAnalysisPanel: false,
+        timeHistoryPanel: false,
+        nonLinearAnalysisPanel: false,
+        dynamicsPanel: false,
+        plateResultsVisualization: false,
+        // ── STAAD.Pro parity: New analysis dialogs ──
+        responseSpectrumDialog: false,
+        pushoverAnalysisDialog: false,
+        imperfectionAnalysisDialog: false,
+        // ── STAAD.Pro parity: Post-processing panels ──
+        storyDriftPanel: false,
+        forceEnvelopePanel: false,
+        sectionForcesPanel: false,
+        modeShapeAnimationPanel: false,
+        // ── STAAD.Pro parity: Property assignment dialogs ──
+        partialReleaseDialog: false,
+        inactiveMemberDialog: false,
+        diaphragmAssignmentDialog: false,
+        masterSlaveDialog: false,
+        propertyReductionDialog: false,
+        // ── STAAD.Pro parity: Load generator dialogs ──
+        floorLoadDialog: false,
+        areaLoadDialog: false,
       },
 
       // Graphics State
@@ -1053,6 +1122,13 @@ export const useUIStore = create<UIState>()(
             notionalLoadsDialog: false, loadCaseManagerDialog: false,
             cableAnalysisDialog: false, stressContourDialog: false, steadyStateDialog: false,
             timberDesignDialog: false, compositeDesignDialog: false, aluminumDesignDialog: false,
+            pDeltaAnalysisPanel: false, bucklingAnalysisPanel: false, timeHistoryPanel: false,
+            nonLinearAnalysisPanel: false, dynamicsPanel: false, plateResultsVisualization: false,
+            responseSpectrumDialog: false, pushoverAnalysisDialog: false, imperfectionAnalysisDialog: false,
+            storyDriftPanel: false, forceEnvelopePanel: false, sectionForcesPanel: false,
+            modeShapeAnimationPanel: false, partialReleaseDialog: false, inactiveMemberDialog: false,
+            diaphragmAssignmentDialog: false, masterSlaveDialog: false, propertyReductionDialog: false,
+            floorLoadDialog: false, areaLoadDialog: false,
           },
         }),
       // Grid Settings

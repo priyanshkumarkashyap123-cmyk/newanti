@@ -25,7 +25,14 @@
 import { Router, Request, Response, type IRouter } from "express";
 import { createHmac } from "crypto";
 import { requireAuth, getAuth, isUsingClerk } from "./middleware/authMiddleware.js";
-import { User, Subscription, UserModel } from "./models.js";
+import {
+  validateBody,
+  billingInitiateSchema,
+  billingCreateOrderSchema,
+  billingVerifySchema,
+} from "./middleware/validation.js";
+import { User, Subscription, UserModel, PaymentWebhookEvent } from "./models.js";
+import { resolveTierFromPlanId } from "./utils/billingConfig.js";
 import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 
@@ -190,7 +197,10 @@ const PHONEPE_API_BASE = PHONEPE_ENV === "PRODUCTION"
   : "https://api-preprod.phonepe.com/apis/pg-sandbox";
 
 const FRONTEND_URL = env.FRONTEND_URL ?? "http://localhost:5173";
-const BILLING_BYPASS = process.env["TEMP_UNLOCK_ALL"] === "true";
+const BILLING_BYPASS_REQUESTED = process.env["TEMP_UNLOCK_ALL"] === "true";
+// SAFE DEFAULT: BILLING_BYPASS is false when TEMP_UNLOCK_ALL env var is absent or not "true".
+// This ensures production deployments are secure by default.
+const BILLING_BYPASS = BILLING_BYPASS_REQUESTED && env.NODE_ENV !== "production";
 
 const isPhonePeConfigured = !!(PHONEPE_MERCHANT_ID && PHONEPE_SALT_KEY);
 
@@ -203,8 +213,10 @@ if (isPhonePeConfigured) {
   });
 }
 
-if (BILLING_BYPASS) {
-  log.warn("Billing bypass enabled: payment verification disabled; all users have pro access");
+if (BILLING_BYPASS_REQUESTED && env.NODE_ENV === "production") {
+  log.warn("TEMP_UNLOCK_ALL was requested but is ignored in production");
+} else if (BILLING_BYPASS) {
+  log.warn("Billing bypass enabled (non-production only): payment verification disabled");
 }
 
 // ============================================
@@ -212,9 +224,7 @@ if (BILLING_BYPASS) {
 // ============================================
 
 const idempotencyStore = new Map<string, { result: unknown; expiresAt: number }>();
-const processedWebhookEvents = new Set<string>();
 const IDEMPOTENCY_TTL = 5 * 60 * 1000; // 5 minutes
-const WEBHOOK_DEDUP_MAX = 10_000;
 
 function cleanIdempotencyStore() {
   const now = Date.now();
@@ -424,6 +434,7 @@ export class PhonePeBillingService {
     merchantTransactionId: string,
     plan: PlanConfig,
   ): Promise<void> {
+    const targetTier = resolveTierFromPlanId(plan.planId);
     const USE_CLERK = isUsingClerk();
 
     // Resolve user
@@ -433,6 +444,34 @@ export class PhonePeBillingService {
 
     if (!user) {
       throw new BillingError("User not found", "USER_NOT_FOUND", 404);
+    }
+
+    const duplicateTxSub = await Subscription.findOne({
+      $or: [
+        { phonepeTransactionId: transactionId },
+        { phonepeMerchantTransactionId: merchantTransactionId },
+      ],
+    })
+      .select('user phonepeTransactionId phonepeMerchantTransactionId')
+      .lean();
+
+    if (duplicateTxSub) {
+      const duplicateUserId = String(duplicateTxSub.user);
+      const currentUserId = String(user._id);
+      if (duplicateUserId !== currentUserId) {
+        throw new BillingError(
+          'Transaction already linked to another account',
+          'DUPLICATE_ORDER',
+          409,
+          false,
+        );
+      }
+      log.info('Duplicate transaction activation skipped', {
+        userId,
+        transactionId,
+        merchantTransactionId,
+      });
+      return;
     }
 
     // Guard against duplicate activation
@@ -466,9 +505,9 @@ export class PhonePeBillingService {
 
     // Upgrade user tier
     if (USE_CLERK) {
-      await User.updateOne({ clerkId: userId }, { $set: { tier: "pro", subscription: subscription._id } });
+      await User.updateOne({ clerkId: userId }, { $set: { tier: targetTier, subscription: subscription._id } });
     } else {
-      await UserModel.updateOne({ _id: userId }, { $set: { subscriptionTier: "pro" } });
+      await UserModel.updateOne({ _id: userId }, { $set: { subscriptionTier: targetTier } });
     }
 
     log.info("Subscription activated", {
@@ -502,20 +541,37 @@ export class PhonePeBillingService {
 
     // Dedup
     const eventKey = `${merchantTransactionId}_${transactionId}`;
-    if (processedWebhookEvents.has(eventKey)) {
-      log.info("Webhook replay skipped", { eventKey, requestId });
-      return { processed: false, event: "duplicate" };
+    try {
+      await PaymentWebhookEvent.create({
+        gateway: "phonepe",
+        eventKey,
+        status: "processing",
+        metadata: { requestId, merchantTransactionId, transactionId },
+      });
+    } catch (err: any) {
+      if (err?.code === 11000) {
+        log.info("Webhook replay skipped", { eventKey, requestId });
+        return { processed: false, event: "duplicate" };
+      }
+      throw err;
     }
-
-    // Evict oldest if too many
-    if (processedWebhookEvents.size >= WEBHOOK_DEDUP_MAX) {
-      const first = processedWebhookEvents.values().next().value;
-      if (first) processedWebhookEvents.delete(first);
-    }
-    processedWebhookEvents.add(eventKey);
 
     if (code !== "PAYMENT_SUCCESS") {
       log.warn("Non-success webhook", { code, merchantTransactionId, requestId });
+      await PaymentWebhookEvent.updateOne(
+        { gateway: "phonepe", eventKey },
+        {
+          $set: {
+            status: "processed",
+            metadata: {
+              requestId,
+              merchantTransactionId,
+              transactionId,
+              code,
+            },
+          },
+        },
+      );
       return { processed: true, event: code };
     }
 
@@ -536,6 +592,10 @@ export class PhonePeBillingService {
     if (existingSub) {
       // Already processed via verify-payment endpoint
       log.info("Webhook: subscription already active", { merchantTransactionId });
+      await PaymentWebhookEvent.updateOne(
+        { gateway: "phonepe", eventKey },
+        { $set: { status: "processed" } },
+      );
       return { processed: true, event: "already_active" };
     }
 
@@ -546,6 +606,22 @@ export class PhonePeBillingService {
       merchantTransactionId,
       transactionId,
     });
+
+    await PaymentWebhookEvent.updateOne(
+      { gateway: "phonepe", eventKey },
+      {
+        $set: {
+          status: "processed",
+          metadata: {
+            requestId,
+            merchantTransactionId,
+            transactionId,
+            code,
+            note: "unmapped_transaction_manual_review",
+          },
+        },
+      },
+    );
 
     return { processed: true, event: "PAYMENT_SUCCESS" };
   }
@@ -564,6 +640,7 @@ export const billingRouter: IRouter = Router();
 billingRouter.post(
   "/initiate-payment",
   requireAuth(),
+  validateBody(billingInitiateSchema),
   async (req: Request, res: Response) => {
     const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
@@ -573,16 +650,27 @@ billingRouter.post(
         return;
       }
 
-      const { email, planType, planId, checkoutPlanId } = req.body;
-      const userEmail = email || authEmail;
+      const { email, planType, planId, checkoutPlanId } = req.body as {
+        email: string;
+        planType: PlanType;
+        planId?: PlanId;
+        checkoutPlanId?: string;
+      };
+      const userEmail = email || authEmail || "";
 
-      if (!userEmail || !planType) {
-        res.status(400).json({
-          success: false,
-          message: "Missing required fields: email, planType",
-          requestId,
-        });
-        return;
+      // SECURITY: Warn if client attempts to pass amount — it is ignored.
+      // Amount is always derived server-side from PLANS[checkoutPlanId].amountPaise.
+      if ((req.body as Record<string, unknown>).amount !== undefined) {
+        const resolvedPlan = resolveCheckoutPlan({ planType, planId, checkoutPlanId });
+        const serverAmount = resolvedPlan?.amountPaise;
+        const clientAmount = (req.body as Record<string, unknown>).amount;
+        if (clientAmount !== serverAmount) {
+          log.warn("Client-provided amount ignored — using server-derived amount", {
+            clientAmount,
+            serverAmount,
+            requestId,
+          });
+        }
       }
 
       if (BILLING_BYPASS) {
@@ -647,6 +735,7 @@ billingRouter.post(
 billingRouter.post(
   "/create-order",
   requireAuth(),
+  validateBody(billingCreateOrderSchema),
   async (req: Request, res: Response) => {
     const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
@@ -656,13 +745,18 @@ billingRouter.post(
         return;
       }
 
-      const { email, planType, planId, checkoutPlanId } = req.body;
-      const userEmail = email || authEmail;
+      const { email, planType, planId, checkoutPlanId } = req.body as {
+        email?: string;
+        planType: PlanType;
+        planId?: PlanId;
+        checkoutPlanId?: string;
+      };
+      const userEmail = email || authEmail || "";
 
-      if (!userEmail || !planType) {
+      if (!userEmail) {
         res.status(400).json({
           success: false,
-          message: "Missing required fields: email, planType",
+          message: "Missing required email",
           requestId,
         });
         return;
@@ -745,6 +839,7 @@ billingRouter.post(
 billingRouter.post(
   "/verify-payment",
   requireAuth(),
+  validateBody(billingVerifySchema),
   async (req: Request, res: Response) => {
     const requestId = (req as Request & { requestId?: string }).requestId || "unknown";
     try {
@@ -754,7 +849,12 @@ billingRouter.post(
         return;
       }
 
-      const { merchantTransactionId, planType, planId, checkoutPlanId } = req.body;
+      const { merchantTransactionId, planType, planId, checkoutPlanId } = req.body as {
+        merchantTransactionId: string;
+        planType?: PlanType;
+        planId?: PlanId;
+        checkoutPlanId?: string;
+      };
 
       if (BILLING_BYPASS) {
         res.json({
@@ -767,15 +867,6 @@ billingRouter.post(
             planType: (planType as PlanType) || "monthly",
             transactionId: merchantTransactionId || "BYPASS",
           },
-        });
-        return;
-      }
-
-      if (!merchantTransactionId) {
-        res.status(400).json({
-          success: false,
-          message: "Missing required field: merchantTransactionId",
-          requestId,
         });
         return;
       }
@@ -828,10 +919,10 @@ billingRouter.post(
 
       res.json({
         success: true,
-        message: "Payment verified! Welcome to Pro.",
+        message: `Payment verified! Welcome to ${resolvedPlan.planId === 'business' ? 'Enterprise' : 'Pro'}.`,
         requestId,
         data: {
-          tier: "pro",
+          tier: resolveTierFromPlanId(resolvedPlan.planId),
           planType: resolvedPlan.billingCycle,
           planId: resolvedPlan.planId,
           checkoutPlanId: resolvedPlan.checkoutPlanId,

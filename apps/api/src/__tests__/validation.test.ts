@@ -36,6 +36,10 @@ import {
   checkModelLimitsSchema,
   recordExportSchema,
   adminUpgradeSchema,
+  billingInitiateSchema,
+  billingCreateOrderSchema,
+  billingVerifySchema,
+  razorpayVerifySchema,
   recordConsentSchema,
   createAiSessionSchema,
   updateAiSessionSchema,
@@ -762,6 +766,81 @@ describe('Activity & Admin schemas', () => {
     ).toBe(true);
     expect(
       recordConsentSchema.safeParse({ consentType: 'unknown' }).success,
+    ).toBe(false);
+  });
+});
+
+describe('Billing schemas', () => {
+  it('billingInitiateSchema accepts valid payload', () => {
+    const result = billingInitiateSchema.safeParse({
+      email: 'Buyer@Example.com',
+      planType: 'monthly',
+      planId: 'business',
+      checkoutPlanId: 'business_monthly',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe('buyer@example.com');
+    }
+  });
+
+  it('billingInitiateSchema rejects invalid checkout plan id', () => {
+    const result = billingInitiateSchema.safeParse({
+      email: 'buyer@example.com',
+      planType: 'monthly',
+      checkoutPlanId: 'enterprise_monthly',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('billingCreateOrderSchema requires valid planType', () => {
+    expect(
+      billingCreateOrderSchema.safeParse({
+        email: 'buyer@example.com',
+        planType: 'yearly',
+        planId: 'pro',
+      }).success,
+    ).toBe(true);
+
+    expect(
+      billingCreateOrderSchema.safeParse({
+        email: 'buyer@example.com',
+        planType: 'weekly',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('billingVerifySchema requires merchantTransactionId', () => {
+    expect(
+      billingVerifySchema.safeParse({
+        merchantTransactionId: 'BL_123',
+        checkoutPlanId: 'pro_monthly',
+      }).success,
+    ).toBe(true);
+
+    expect(
+      billingVerifySchema.safeParse({
+        checkoutPlanId: 'pro_monthly',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('razorpayVerifySchema enforces required signature fields', () => {
+    expect(
+      razorpayVerifySchema.safeParse({
+        razorpayOrderId: 'order_abc',
+        razorpayPaymentId: 'pay_xyz',
+        razorpaySignature: 'sig_123',
+        planType: 'monthly',
+        checkoutPlanId: 'pro_monthly',
+      }).success,
+    ).toBe(true);
+
+    expect(
+      razorpayVerifySchema.safeParse({
+        razorpayOrderId: 'order_abc',
+        planType: 'monthly',
+      }).success,
     ).toBe(false);
   });
 });

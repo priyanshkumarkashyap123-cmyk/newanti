@@ -173,6 +173,12 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
                 color = '#ef4444'; // Red for error element
             } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
                 color = '#' + getUtilizationColor(utilizationMap.get(member.id) ?? 0).getHexString();
+            } else if (member.axialBehavior === 'tension-only') {
+                color = '#22c55e'; // Green for tension-only
+            } else if (member.axialBehavior === 'compression-only') {
+                color = '#f97316'; // Orange for compression-only
+            } else if (member.inactive) {
+                color = '#94a3b8'; // Slate/grey for inactive
             }
 
             memberDatas.push({
@@ -227,6 +233,12 @@ export const MembersRenderer: FC<MembersRendererProps> = memo(({
                     color = '#ef4444';
                 } else if (colorMode === 'UTILIZATION' && utilizationMap?.has(member.id)) {
                     color = '#' + getUtilizationColor(utilizationMap.get(member.id) ?? 0).getHexString();
+                } else if (member.axialBehavior === 'tension-only') {
+                    color = '#22c55e'; // Green for tension-only
+                } else if (member.axialBehavior === 'compression-only') {
+                    color = '#f97316'; // Orange for compression-only
+                } else if (member.inactive) {
+                    color = '#94a3b8'; // Slate/grey for inactive
                 }
 
                 lines.push({

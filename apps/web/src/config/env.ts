@@ -146,6 +146,9 @@ export const FEATURES = {
   sourceMaps: getBoolEnv("VITE_SOURCE_MAPS", import.meta.env.DEV),
 } as const;
 
+// Billing bypass is intentionally disabled in production builds.
+const BILLING_BYPASS = getBoolEnv("VITE_TEMP_UNLOCK_ALL", false) && !import.meta.env.PROD;
+
 // ============================================
 // PAYMENT
 // ============================================
@@ -158,13 +161,13 @@ export const PAYMENT_CONFIG = {
   razorpayKeyId: getEnv("VITE_RAZORPAY_KEY_ID"),
   /** Active payment gateway: 'razorpay' | 'phonepe' | 'both' */
   activeGateway: getEnv("VITE_PAYMENT_GATEWAY", "both") as "razorpay" | "phonepe" | "both",
-  /** Temporary bypass while payment onboarding/KYC is pending */
-  billingBypass: getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),
+  /** Temporary bypass for non-production environments only */
+  billingBypass: BILLING_BYPASS,
   /** Force subscription checkout path for testing (hides free/demo experience) */
   forcePaymentTestMode: getBoolEnv("VITE_FORCE_PAYMENT_TEST_MODE", false),
   isPaymentEnabled:
     (Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) || Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID)) &&
-    !getBoolEnv("VITE_TEMP_UNLOCK_ALL", false),
+    !BILLING_BYPASS,
 } as const;
 
 // ============================================

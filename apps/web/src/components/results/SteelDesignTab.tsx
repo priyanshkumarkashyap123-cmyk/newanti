@@ -158,7 +158,7 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
             {/* Design Checks */}
             <div className="bg-slate-100/60 dark:bg-slate-800/60 rounded-xl p-4 border border-slate-300/40 dark:border-slate-700/40">
               <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                Design Checks
+                Design Checks {activeMember.designCode ? `— ${activeMember.designCode === 'IS800' ? 'IS 800:2007' : activeMember.designCode === 'AISC360' ? 'AISC 360-16' : activeMember.designCode}` : ''}
               </h4>
               <div className="space-y-2">
                 {activeMember.designResult.checks.map((check, i) => {
@@ -216,6 +216,41 @@ const SteelDesignTab: FC<SteelDesignTabProps> = ({
                 })}
               </div>
             </div>
+
+            {/* IS 800:2007 Checks — shown when Python backend provides IS 800 results */}
+            {activeMember.is800Result && (
+              <div className="bg-amber-900/10 border border-amber-500/30 rounded-xl p-4">
+                <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-3">
+                  IS 800:2007 Checks
+                </h4>
+                <div className="space-y-2">
+                  {activeMember.is800Result.checks.map((check, i) => {
+                    const sc = statusColors[check.status];
+                    return (
+                      <div key={i} className="bg-white dark:bg-slate-900 rounded-lg p-3 border-l-[3px]"
+                        style={{ borderLeftColor: check.status === 'PASS' ? '#10b981' : check.status === 'FAIL' ? '#ef4444' : '#f59e0b' }}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{check.name}</span>
+                            <span className={`text-xs px-1.5 py-0.5 rounded ${sc.bg} ${sc.text} font-semibold`}>{check.status}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-28 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${utilizationColor(check.utilization)}`}
+                                style={{ width: `${Math.min(check.utilization * 100, 100)}%` }} />
+                            </div>
+                            <span className={`text-xs font-bold font-mono w-12 text-right ${utilizationTextColor(check.utilization)}`}>
+                              {(check.utilization * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                        {check.description && <div className="text-xs text-slate-500 mt-1">{check.description}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Recommendations */}
             {activeMember.designResult.recommendations &&

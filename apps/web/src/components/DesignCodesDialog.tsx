@@ -28,6 +28,7 @@ import { Button } from './ui/button';
 import { SteelDesignPanel } from './SteelDesignPanel';
 import { IS456DesignPanel } from './IS456DesignPanel';
 import { ConnectionDesignDialog } from './ConnectionDesignDialog';
+import { TierGate } from './TierGate';
 
 // ============================================
 // TYPES
@@ -423,7 +424,9 @@ export const DesignCodesDialog: FC<DesignCodesDialogProps> = ({
 
                         {/* Panel Content */}
                         <div className="flex-1 overflow-y-auto">
-                            {renderPanel()}
+                            <TierGate feature="advancedDesignCodes">
+                                {renderPanel()}
+                            </TierGate>
                         </div>
                     </div>
                 </DialogContent>

@@ -12,8 +12,9 @@
 
 import { FC, useState, useCallback } from "react";
 import { PAYMENT_CONFIG } from "../config/env";
-import { RazorpayPaymentModal } from "./RazorpayPayment";
 import { PhonePePaymentModal } from "./PhonePePayment";
+// RazorpayPaymentModal is aliased to PhonePePaymentModal for backward compat
+const RazorpayPaymentModal = PhonePePaymentModal;
 import type { BillingCycle, PaidPlanId } from "../config/pricing";
 
 // ============================================

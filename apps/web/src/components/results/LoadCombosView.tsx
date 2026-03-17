@@ -5,6 +5,7 @@
 
 import React from "react";
 import { AlertTriangle, FileText } from "lucide-react";
+import type { LoadCombination } from "../../hooks/useAnalysis";
 import {
   IS_COMBINATIONS,
   ASCE_COMBINATIONS,
@@ -17,7 +18,61 @@ const CODES = [
   { key: "EC", label: "Eurocode EN 1990", combos: EC_COMBINATIONS },
 ] as const;
 
-const LoadCombosView: React.FC = React.memo(() => {
+interface LoadCombosViewProps {
+  loadCombos?: LoadCombination[];
+}
+
+const LoadCombosView: React.FC<LoadCombosViewProps> = React.memo(({ loadCombos }) => {
+  // If live load combinations are available from analysis, show them
+  if (loadCombos && loadCombos.length > 0) {
+    return (
+      <div key="loadCombos" className="space-y-6 animate-slideUp">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <span className="text-sm font-medium text-slate-900 dark:text-white">Analysis Load Combinations</span>
+            <span className="ml-auto text-xs text-slate-500">{loadCombos.length} combinations</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700">
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">ID</th>
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Name</th>
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 text-xs">Factors</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loadCombos.map((combo) => (
+                  <tr key={combo.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                    <td className="px-3 py-1.5 font-mono text-xs text-slate-500 dark:text-slate-400">{combo.id}</td>
+                    <td className="px-3 py-1.5 font-mono text-slate-900 dark:text-white text-xs">{combo.name}</td>
+                    <td className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400">
+                      {Object.entries(combo.factors).map(([k, v]) => `${k}×${v}`).join(' + ')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state when no load combinations available
+  if (loadCombos !== undefined && loadCombos.length === 0) {
+    return (
+      <div key="loadCombos" className="space-y-6 animate-slideUp">
+        <div className="bg-slate-100/50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 p-8 text-center">
+          <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">No load combinations available for this analysis.</p>
+          <p className="text-xs text-slate-400 mt-1">Configure multiple load cases to enable load combination analysis.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div key="loadCombos" className="space-y-6 animate-slideUp">
       {/* Info notice */}

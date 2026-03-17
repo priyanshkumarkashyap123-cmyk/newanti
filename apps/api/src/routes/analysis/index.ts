@@ -159,6 +159,48 @@ function parseAnalysisError(error: string, model: AnalyzeRequest): {
 }
 
 // ============================================
+// MODEL SIZE LIMIT MIDDLEWARE (per-tier)
+// ============================================
+
+const MODEL_SIZE_LIMITS: Record<string, number> = {
+    free: 100,
+    pro: 2000,
+    enterprise: 10000,
+};
+
+async function enforceModelSizeLimit(req: Request, res: Response, next: () => void): Promise<void> {
+    const model = req.body as AnalyzeRequest;
+    const nodeCount = model.nodes?.length || 0;
+
+    if (nodeCount === 0) { next(); return; }
+
+    try {
+        const { userId } = getAuth(req);
+        if (!userId) { next(); return; }
+
+        const user = await User.findOne({ clerkId: userId }).select('tier email').lean();
+        const tier = user?.tier || 'free';
+        const limit = MODEL_SIZE_LIMITS[tier] ?? MODEL_SIZE_LIMITS.free;
+
+        if (nodeCount > limit) {
+            res.status(400).json({
+                success: false,
+                error: 'MODEL_TOO_LARGE',
+                message: `Model has ${nodeCount} nodes, but your ${tier} plan allows up to ${limit} nodes. Upgrade to increase the limit.`,
+                nodeCount,
+                limit,
+                tier,
+            });
+            return;
+        }
+    } catch {
+        // Non-fatal: allow request through if tier check fails
+    }
+
+    next();
+}
+
+// ============================================
 // CORE HANDLER - Proxies to Rust API
 // ============================================
 
@@ -297,8 +339,8 @@ async function forwardAnalysisToRust(
 /**
  * POST /analyze - Run structural analysis via Rust API
  */
-router.post("/", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
-router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(handleAnalysisRequest));
+router.post("/", validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
+router.post("/solve", validateBody(analyzeRequestSchema), asyncHandler(async (req, res, next) => { await enforceModelSizeLimit(req, res, () => handleAnalysisRequest(req, res)); }));
 
 /**
  * POST /analysis/run - Quota-gated analysis run (returns spec envelope with computeMode/computeUnitsCharged)

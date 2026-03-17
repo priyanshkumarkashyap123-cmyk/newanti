@@ -1,113 +1,36 @@
 /**
  * useTierAccess - Hook for accessing user tier information
- * Provides tier status and feature limits throughout the app
+ *
+ * Reads tier and feature access exclusively from SubscriptionContext,
+ * eliminating the dual-fetch race condition (Bug Condition C1 root cause 4).
+ * No independent /api/user/limits call is made here.
  */
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '../providers/AuthProvider';
-import { API_CONFIG } from '../config/env';
-import { PAYMENT_CONFIG } from '../config/env';
+import { useSubscription } from './useSubscription';
+import { TIER_CONFIG, type TierName, type TierConfigEntry } from '../config/tierConfig';
 
 // ============================================
 // TYPES
 // ============================================
 
-export type UserTier = 'free' | 'pro' | 'enterprise';
+export type UserTier = TierName;
 
-export interface TierLimits {
-    maxNodes: number;
-    maxMembers: number;
-    maxProjects: number;
-    maxAnalysisPerDay: number;
-    maxPdfExportsPerDay: number;
-    canSaveProjects: boolean;
-    canExportCleanPDF: boolean;
-    hasDesignCodes: boolean;
-    hasAIFeatures: boolean;
-    hasAdvancedAnalysis: boolean;
-}
+export type TierLimits = TierConfigEntry;
+
+/**
+ * TIER_LIMITS — backward-compatible re-export of TIER_CONFIG.
+ * Existing callers of TIER_LIMITS continue to work without changes.
+ */
+export const TIER_LIMITS = TIER_CONFIG;
 
 export interface TierAccess {
     tier: UserTier;
     isFree: boolean;
     isPro: boolean;
     isEnterprise: boolean;
-    isMasterUser: boolean;
-    isAuthenticated: boolean;
     isLoading: boolean;
     limits: TierLimits;
-    userEmail: string | null;
-}
-
-// TEMPORARY BILLING BYPASS (default true while KYC/payment onboarding is pending)
-const TEMP_UNLOCK_ALL = PAYMENT_CONFIG.billingBypass;
-
-// ============================================
-// TIER LIMITS CONFIGURATION
-// ============================================
-
-// ⚠️  TEMPORARY: All tiers unlocked for beta/testing until payment
-//    gateway (PhonePe / Razorpay) is integrated.
-//    When payment is live, restore free-tier limits:
-//    maxNodes: 10, maxMembers: 15, maxProjects: 1,
-//    maxAnalysisPerDay: 3, maxPdfExportsPerDay: 1,
-//    canSaveProjects: false, canExportCleanPDF: false,
-//    hasDesignCodes: false, hasAIFeatures: true (limited),
-//    hasAdvancedAnalysis: false
-// TODO(payment): Revert free tier limits after payment gateway integration
-
-export const TIER_LIMITS: Record<UserTier, TierLimits> = {
-    free: {
-        maxNodes: Infinity,
-        maxMembers: Infinity,
-        maxProjects: Infinity,
-        maxAnalysisPerDay: Infinity,
-        maxPdfExportsPerDay: Infinity,
-        canSaveProjects: true,
-        canExportCleanPDF: true,
-        hasDesignCodes: true,
-        hasAIFeatures: true,
-        hasAdvancedAnalysis: true,
-    },
-    pro: {
-        maxNodes: Infinity,
-        maxMembers: Infinity,
-        maxProjects: 10,
-        maxAnalysisPerDay: Infinity,
-        maxPdfExportsPerDay: Infinity,
-        canSaveProjects: true,
-        canExportCleanPDF: true,
-        hasDesignCodes: true,
-        hasAIFeatures: true,
-        hasAdvancedAnalysis: true,
-    },
-    enterprise: {
-        maxNodes: Infinity,
-        maxMembers: Infinity,
-        maxProjects: Infinity,
-        maxAnalysisPerDay: Infinity,
-        maxPdfExportsPerDay: Infinity,
-        canSaveProjects: true,
-        canExportCleanPDF: true,
-        hasDesignCodes: true,
-        hasAIFeatures: true,
-        hasAdvancedAnalysis: true,
-    },
-};
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-/**
- * Get effective tier — tier is exclusively determined by the backend API.
- * No client-side overrides to prevent security bypass.
- */
-export function getEffectiveTier(
-    _email: string | null | undefined,
-    storedTier: UserTier = 'free'
-): UserTier {
-    return storedTier;
+    canAccess: (feature: keyof import('./useSubscription').SubscriptionFeatures) => boolean;
 }
 
 // ============================================
@@ -115,80 +38,19 @@ export function getEffectiveTier(
 // ============================================
 
 export function useTierAccess(): TierAccess {
-    const [tier, setTier] = useState<UserTier>('free');
-    const [isLoading, setIsLoading] = useState(true);
+    const { subscription, canAccess } = useSubscription();
 
-    // Use unified auth provider (works with both Clerk and in-house auth)
-    const { isSignedIn, user, getToken } = useAuth();
-
-    // Derive auth state from unified auth
-    const isAuthenticated = !!isSignedIn;
-    const userEmail = user?.email || null;
-
-    useEffect(() => {
-        const controller = new AbortController();
-
-        const fetchTier = async () => {
-            setIsLoading(true);
-
-            try {
-                // Fetch tier exclusively from the backend API.
-                // No client-side master-user override — the backend already handles it.
-                if (isAuthenticated && userEmail) {
-                    try {
-                        const token = await getToken();
-                        const headers: Record<string, string> = {
-                            'Content-Type': 'application/json',
-                        };
-
-                        if (token) {
-                            headers['Authorization'] = `Bearer ${token}`;
-                        }
-
-                        const response = await fetch(`${API_CONFIG.baseUrl}/api/user/limits`, {
-                            headers,
-                            credentials: 'include',
-                            signal: controller.signal,
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            // Unwrap API envelope: { success, data: { tier, limits }, requestId, ts }
-                            const payload = data?.data ?? data;
-                            setTier(payload.tier || 'free');
-                        }
-                    } catch (err) {
-                        if (err instanceof DOMException && err.name === 'AbortError') {
-                            return;
-                        }
-                        // SECURITY: On API failure, always default to 'free'.
-                        // Never trust localStorage for tier — it can be modified via DevTools.
-                        setTier('free');
-                    }
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchTier();
-        return () => controller.abort();
-    }, [isAuthenticated, userEmail, getToken]);
-
-    const effectiveTier = getEffectiveTier(userEmail, tier);
-    const accessTier: UserTier = TEMP_UNLOCK_ALL ? 'enterprise' : effectiveTier;
-    const limits = TIER_LIMITS[accessTier];
+    const tier = (subscription.tier as UserTier) ?? 'free';
+    const limits = TIER_CONFIG[tier] ?? TIER_CONFIG.free;
 
     return {
-        tier: accessTier,
-        isFree: accessTier === 'free',
-        isPro: accessTier === 'pro' || accessTier === 'enterprise', // Enterprise includes all Pro features
-        isEnterprise: accessTier === 'enterprise',
-        isMasterUser: false, // Master user status is determined server-side only
-        isAuthenticated,
-        isLoading,
+        tier,
+        isFree: tier === 'free',
+        isPro: tier === 'pro' || tier === 'enterprise',
+        isEnterprise: tier === 'enterprise',
+        isLoading: subscription.isLoading,
         limits,
-        userEmail,
+        canAccess,
     };
 }
 
@@ -212,7 +74,6 @@ export function getPdfExportCount(): number {
         const today = new Date().toISOString().split('T')[0];
 
         if (record.date !== today) {
-            // New day - reset count
             return 0;
         }
 
@@ -236,10 +97,18 @@ export function incrementPdfExportCount(): number {
     return newCount;
 }
 
-export function canExportPdf(_tier: UserTier): { allowed: boolean; remaining: number; message?: string } {
-    // TODO(payment): Restore free-tier PDF limits after payment gateway integration
-    // For now, all users get unlimited exports during beta/testing period
-    return { allowed: true, remaining: Infinity };
+export function canExportPdf(tier: UserTier): { allowed: boolean; remaining: number; message?: string } {
+    const limits = TIER_CONFIG[tier] ?? TIER_CONFIG.free;
+    if (limits.maxPdfExportsPerDay === Infinity) {
+        return { allowed: true, remaining: Infinity };
+    }
+    const used = getPdfExportCount();
+    const remaining = Math.max(0, limits.maxPdfExportsPerDay - used);
+    return {
+        allowed: remaining > 0,
+        remaining,
+        message: remaining === 0 ? `Daily PDF export limit reached (${limits.maxPdfExportsPerDay}/day). Upgrade to Pro for unlimited exports.` : undefined,
+    };
 }
 
 export default useTierAccess;
