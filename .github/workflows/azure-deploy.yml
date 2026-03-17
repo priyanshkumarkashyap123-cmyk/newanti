@@ -602,34 +602,34 @@ jobs:
         run: |
           echo "=== POST-DEPLOYMENT HEALTH CHECKS ==="
           FAILED=0
+
+          check_health() {
+            local label="$1"
+            local url="$2"
+            local status="000"
+
+            echo "Checking ${label}..."
+            for i in {1..10}; do
+              status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" "$url" || echo "000")
+              echo "  Attempt $i: HTTP $status"
+              if [ "$status" = "200" ]; then
+                return 0
+              fi
+              if [ "$i" -lt 10 ]; then
+                sleep 15
+              fi
+            done
+
+            FAILED=$((FAILED + 1))
+            return 1
+          }
           
-          # Check Node API
-          echo "Checking Node API..."
-          for i in {1..10}; do
-            status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-node.azurewebsites.net/health/dependencies || echo "000")
-            echo "  Attempt $i: HTTP $status"
-            [ "$status" = "200" ] && break
-            [ $i -lt 10 ] && sleep 15
-            [ $i -eq 10 ] && ((FAILED++))
-          done
-          
-          echo "Checking Python API..."
-          for i in {1..10}; do
-            status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlab-backend-python.azurewebsites.net/health || echo "000")
-            echo "  Attempt $i: HTTP $status"
-            [ "$status" = "200" ] && break
-            [ $i -lt 10 ] && sleep 15
-            [ $i -eq 10 ] && ((FAILED++))
-          done
-          
-          echo "Checking Rust API..."
-          for i in {1..10}; do
-            status=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" https://beamlab-rust-api.azurewebsites.net/health || echo "000")
-            echo "  Attempt $i: HTTP $status"
-            [ "$status" = "200" ] && break
-            [ $i -lt 10 ] && sleep 15
-            [ $i -eq 10 ] && ((FAILED++))
-          done
+          # Check Node API process health (not dependency health) to avoid cascading false negatives.
+          check_health "Node API" "https://beamlab-backend-node.azurewebsites.net/health" || true
+
+          check_health "Python API" "https://beamlab-backend-python.azurewebsites.net/health" || true
+
+          check_health "Rust API" "https://beamlab-rust-api.azurewebsites.net/health" || true
           
           echo
           if [ "$FAILED" -eq 0 ]; then

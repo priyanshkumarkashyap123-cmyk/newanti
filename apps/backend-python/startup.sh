@@ -15,6 +15,11 @@ MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-500}
 
 echo "Workers: $WORKERS, Max requests: $MAX_REQUESTS, Port: $PORT"
 
+# Ensure vendored dependencies from Azure ZIP deploy are importable.
+# Without this, modules like uvicorn may not be found at runtime.
+export PYTHONPATH="/home/site/wwwroot/.python_packages/lib/site-packages:${PYTHONPATH}"
+echo "PYTHONPATH includes /home/site/wwwroot/.python_packages/lib/site-packages"
+
 gunicorn -w "$WORKERS" \
     -k uvicorn.workers.UvicornWorker \
     main:app \
