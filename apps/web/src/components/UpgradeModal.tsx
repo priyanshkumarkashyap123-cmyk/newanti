@@ -17,7 +17,7 @@ import { useAuth } from '../providers/AuthProvider';
 import { PRICING_LABELS } from '../config/pricing';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
-import { PhonePePaymentModal } from './PhonePePayment';
+import { PaymentGatewaySelector } from './PaymentGatewaySelector';
 
 // ============================================
 // FEATURE REGISTRY
@@ -188,7 +188,7 @@ export const UpgradeModal: FC<UpgradeModalProps> = ({
     // Inline checkout view — shows gateway selector (Razorpay + PhonePe)
     if (view === 'checkout' && userId && user?.email) {
         return (
-            <PhonePePaymentModal
+            <PaymentGatewaySelector
                 userId={userId}
                 email={user.email}
                 userName={user.firstName || undefined}

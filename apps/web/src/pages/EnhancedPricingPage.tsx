@@ -11,7 +11,7 @@
 import React, { FC, memo, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { PhonePePaymentModal } from '../components/PhonePePayment';
+import { PaymentGatewaySelector } from '../components/PaymentGatewaySelector';
 import { useAuth } from '../providers/AuthProvider';
 import { useAnalytics, ANALYTICS_EVENTS } from '../providers/AnalyticsProvider';
 import { SEO } from '../components/SEO';
@@ -1087,7 +1087,7 @@ export const EnhancedPricingPage: FC = () => {
 
     {/* Payment Gateway Selector — shown as overlay when user clicks upgrade */}
     {gatewayModalOpen && isSignedIn && user && (
-      <PhonePePaymentModal
+      <PaymentGatewaySelector
         userId={user.id}
         email={user.email || ''}
         userName={user.firstName || undefined}

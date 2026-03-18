@@ -157,13 +157,22 @@ export const PAYMENT_CONFIG = {
   phonePeMerchantId: getEnv("VITE_PHONEPE_MERCHANT_ID"),
   /** PhonePe environment: UAT (sandbox) or PRODUCTION */
   phonePeEnv: getEnv("VITE_PHONEPE_ENV") || "UAT",
+  
+  /** Razorpay live key ID */
+  razorpayKeyId: getEnv("VITE_RAZORPAY_KEY_ID"),
+
   /** Active payment gateway */
-  activeGateway: "phonepe" as const,
+  activeGateway: ((gateway) => {
+    if (gateway === "razorpay" || gateway === "phonepe" || gateway === "both") {
+      return gateway;
+    }
+    return "both";
+  })(getEnv("VITE_PAYMENT_GATEWAY", "both").toLowerCase()) as "razorpay" | "phonepe" | "both",
   /** Temporary bypass for non-production environments only */
   billingBypass: BILLING_BYPASS,
   /** Force subscription checkout path for testing (hides free/demo experience) */
   forcePaymentTestMode: getBoolEnv("VITE_FORCE_PAYMENT_TEST_MODE", false),
-  isPaymentEnabled: Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) && !BILLING_BYPASS,
+  isPaymentEnabled: (Boolean(import.meta.env.VITE_PHONEPE_MERCHANT_ID) || Boolean(import.meta.env.VITE_RAZORPAY_KEY_ID)) && !BILLING_BYPASS,
 } as const;
 
 // ============================================
@@ -246,12 +255,12 @@ export function validateEnvironment(): { valid: boolean; warnings: string[]; err
   }
 
   // Payment gateway readiness checks
-  if (!PAYMENT_CONFIG.phonePeMerchantId && !PAYMENT_CONFIG.billingBypass) {
-    errors.push('PhonePe is enabled but VITE_PHONEPE_MERCHANT_ID is missing.');
+  if (!PAYMENT_CONFIG.phonePeMerchantId && !PAYMENT_CONFIG.razorpayKeyId && !PAYMENT_CONFIG.billingBypass) {
+    errors.push('Payment is enabled but no gateway (VITE_PHONEPE_MERCHANT_ID or VITE_RAZORPAY_KEY_ID) is configured.');
   }
 
-  if (APP_ENV.isProd && PAYMENT_CONFIG.phonePeEnv !== 'PRODUCTION' && !PAYMENT_CONFIG.billingBypass) {
-    errors.push(`VITE_PHONEPE_ENV must be PRODUCTION in production builds. Current: ${PAYMENT_CONFIG.phonePeEnv}`);
+  if (APP_ENV.isProd && PAYMENT_CONFIG.phonePeMerchantId && PAYMENT_CONFIG.phonePeEnv !== 'PRODUCTION' && !PAYMENT_CONFIG.billingBypass) {
+    warnings.push(`VITE_PHONEPE_ENV is ${PAYMENT_CONFIG.phonePeEnv} in production builds. Using Razorpay is recommended for live payments.`);
   }
 
   // Pricing/checkout mapping readiness checks
